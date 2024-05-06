@@ -1,0 +1,30 @@
+FROM alpine:latest
+LABEL maintainer="Bernd Paysan <bernd@net2o.de>"
+ENV LANG C.UTF-8
+ENV VERSION 0.7.9_20240418
+
+RUN adduser -D gforth \
+    && apk add --no-cache libltdl libffi \
+    && apk add --no-cache --virtual .fetch-deps wget file xz tar \
+    && apk add --no-cache --virtual .build-deps freetype-dev \
+        build-base autoconf automake m4 libtool git \
+        coreutils gcc libffi-dev mesa-dev glew-dev libx11-dev \
+        libxrandr-dev glfw-dev harfbuzz-dev gstreamer-dev gst-plugins-base-dev \
+	opus-dev pulseaudio-dev unzip texinfo wayland-dev wayland-protocols libxkbcommon-dev pipewire-dev \
+    && cd /tmp && git clone https://github.com/nothings/stb.git \
+    && mkdir /usr/include/stb && cp stb/*.h /usr/include/stb && rm -rf stb \
+    && wget https://www.complang.tuwien.ac.at/forth/gforth/Snapshots/$VERSION/gforth-$VERSION.tar.xz -O /tmp/gforth.tar.xz \
+    && xzcat /tmp/gforth.tar.xz | tar xf - -C /tmp  \
+    && rm /tmp/gforth.tar.xz \
+    && cd /tmp/gforth-* \
+    && cd /tmp/gforth-* \
+    && ./configure --disable-lib --prefix=/usr --exec-prefix=/usr \
+    && make  \
+    && make install -i \
+    && cd /tmp && rm -rf gforth-* \
+    && apk del .build-deps \
+    && apk del .fetch-deps \
+    && rm -rf /usr/include/stb
+
+USER gforth
+CMD [ "gforth" ]
