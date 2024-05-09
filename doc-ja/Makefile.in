@@ -1,0 +1,107 @@
+#Makefile for Gforth
+
+#Authors: Bernd Paysan, Anton Ertl, Gerald Wodni
+#Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2021,2022,2023 Free Software Foundation, Inc.
+
+#This file is part of Gforth.
+
+#Gforth is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation, either version 3
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program. If not, see http://www.gnu.org/licenses/.
+
+srcdir = @srcdir@
+SRCINC = -I $(realpath @srcdir@)
+TEXI2DVI = @TEXI2DVI@ $(SRCINC)
+TEXI2PDF = @TEXI2DVI@ $(SRCINC) --pdf
+DVI2PS	= dvips -t letterSize -Z
+#you can get texi2html from http://wwwcn.cern.ch/dci/texi2html/
+MAKEINFO = @MAKEINFO@ $(SRCINC)
+GFORTH_CSS = gforth.css
+GFORTH_JS = gforth.js
+TEXI2HTML = @TEXI2HTML@ $(SRCINC)
+CP	= cp -p
+RECODE = sed -e "s/‘/'/g" -e "s/’/'/g" -e 's/“/"/g' -e 's/”/"/g' -e 's/•/*/g' -e 's/–/--/g' -e 's/—/---/g' -e 's/−/-/g'
+RECODE_UTF  = @RECODE@ @RECODE_ARGS@
+
+VPATH = @srcdir@:.
+
+GFORTH_TEXI =  gforth.texi version.texi fdl.texi gpl.texi
+
+VMGEN_TEXI = vmgen.texi version.texi fdl.texi
+
+gforth.dvi gforth.fns:	$(GFORTH_TEXI)
+		$(TEXI2DVI) gforth.texi
+
+gforth.pdf:	$(GFORTH_TEXI)
+		$(TEXI2PDF) gforth.texi
+
+gforth-ebook.texi:	$(GFORTH_TEXI)
+		sed -e 's/^@c <ebook>/@/g' <gforth.texi >gforth-ebook.texi
+
+gforth-ebook.pdf:	gforth-ebook.texi
+		$(TEXI2PDF) $<
+
+vmgen.dvi:	$(VMGEN_TEXI)
+		$(TEXI2DVI) $<
+
+vmgen.pdf:	$(VMGEN_TEXI)
+		$(TEXI2PDF) $<
+
+gforth.ps:	gforth.dvi
+		$(DVI2PS) gforth.dvi -o $@
+
+vmgen.ps:	vmgen.dvi
+		$(DVI2PS) vmgen.dvi -o $@
+
+gforth.info:	$(GFORTH_TEXI)
+		$(MAKEINFO) $<
+
+vmgen.info:	$(VMGEN_TEXI)
+		$(MAKEINFO) $<
+
+gforth:		$(GFORTH_TEXI)
+		$(MAKEINFO) @MAKEINFOREF@ -o gforth --html $<
+		$(CP) $(srcdir)/$(GFORTH_CSS) gforth/
+		$(CP) $(srcdir)/$(GFORTH_JS) gforth/
+
+vmgen:		$(VMGEN_TEXI)
+		$(MAKEINFO) -o vmgen --html $<
+
+gforth.txt:	$(GFORTH_TEXI)
+		echo "Table of Contents" >gforth.txt
+		echo "*****************" >>gforth.txt
+		echo >>gforth.txt
+		-$(MAKEINFO) --no-headers --no-split --enable-encoding $< | $(RECODE) >>gforth.txt
+
+vmgen.txt:	$(VMGEN_TEXI)
+		-$(MAKEINFO) --no-headers --no-split $< >vmgen.txt
+
+dvi:		gforth.dvi vmgen.dvi
+
+pdf:		gforth.pdf vmgen.pdf
+
+ebook:		gforth-ebook.pdf
+
+ps:		gforth.ps vmgen.ps
+
+info:		gforth.info vmgen.info
+
+txt:		gforth.txt vmgen.txt
+
+html:		gforth vmgen
+
+doc:		info html ps txt
+
+Makefile: Makefile.in ../config.status ../configure.ac
+	cd .. && $(MAKE) doc/Makefile.in
+
+all:		Makefile doc
