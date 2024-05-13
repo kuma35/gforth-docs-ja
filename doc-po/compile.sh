@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 PROJ=${HOME}/work/gforth-docs-ja
 cd ${PROJ}/doc-po
 make ja
@@ -8,6 +8,11 @@ if [ ${exitcode} -ne 0 ]; then
     exit ${exitcode}
 fi
 cd ${PROJ}/doc-ja
+
+for no_translate_file in Makefile Makefile.in fdl.texi gpl.texi version.texi gforth.css gforth.js ; do
+    cp -n ../doc/${no_translate_file} .
+done
+
 # 2024.05.08
 # make から ターゲット ps はとりあえず外す。エラー出たので。
 # l.2: Unicode char @u8:こ not defined for Texinfo

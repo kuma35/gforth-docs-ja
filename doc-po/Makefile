@@ -4,7 +4,7 @@ TEXI_EXT = .texi
 PO_DIR = .
 PO_EXT = .po
 DST_DIR = ../doc-ja
-IGNORE = version.texi fdl.texi
+IGNORE = version.texi fdl.texi gpl.texi
 
 # 2024/05/09
 # version.texi, fdl.texi は 翻訳対象から外す(doc/ から /doc-ja へ直にcp)
