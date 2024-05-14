@@ -27,6 +27,301 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Mini-OOF2,  Next: Comparison with other object models,  Prev: Mini-OOF,  Up: Object-oriented Forth
+
+6.24.6 Mini-OOF2
+----------------
+
+Mini-OOF2 is very similar to Mini-OOF in many respects, but differs
+significantly in a few aspects.  In particular, Mini-OOF2 has a current
+object variable, and uses the primitives ‘>o’ and ‘o>’ to manipulate
+that object stack.  All method invocations and instance variable
+accesses refer to the current object.
+
+‘>o’ ( c-addr – r:c-old ) new “to-o”
+   Set the current object to C_ADDR, the previous current object is
+pushed to the return stack
+
+‘o>’ ( r:c-addr – ) new “o-restore”
+   Restore the previous current object from the return stack
+
+   To ease passing an object pointer to method invocation or instance
+variable accesses, the additional recognizer ‘rec-moof2’ is activated.
+
+‘rec-moof2’ ( addr u – xt translate-moof2 | notfound  ) mini-oof2 “rec-moof2”
+   Very simplistic dot-parser, transforms ‘.’SELECTOR/IVAR to ‘>o’
+SELECTOR/IVAR ‘o>’.
+
+   To assign methods to selectors, use XT CLASS ‘is’ SELECTOR, so no
+‘defines’ necessary.  For early binding of methods, ‘[’ CLASS ‘] defers’
+SELECTOR is used, no need for ‘::’.
+
+
+File: gforth.info,  Node: Comparison with other object models,  Prev: Mini-OOF2,  Up: Object-oriented Forth
+
+6.24.7 Comparison with other object models
+------------------------------------------
+
+Many object-oriented Forth extensions have been proposed (‘A survey of
+object-oriented Forths’ (SIGPLAN Notices, April 1996) by Bradford J.
+Rodriguez and W. F. S. Poehlman lists 17).  This section discusses the
+relation of the object models described here to two well-known and two
+closely-related (by the use of method maps) models.  Andras Zsoter
+helped us with this section.
+
+   The most popular model currently seems to be the Neon model (see
+‘Object-oriented programming in ANS Forth’ (Forth Dimensions, March
+1997) by Andrew McKewan) but this model has a number of limitations (1):
+
+   • It uses a ‘_selector object_’ syntax, which makes it unnatural to
+     pass objects on the stack.
+
+   • It requires that the selector parses the input stream (at compile
+     time); this leads to reduced extensibility and to bugs that are
+     hard to find.
+
+   • It allows using every selector on every object; this eliminates the
+     need for interfaces, but makes it harder to create efficient
+     implementations.
+
+   Another well-known publication is ‘Object-Oriented Forth’ (Academic
+Press, London, 1987) by Dick Pountain.  However, it is not really about
+object-oriented programming, because it hardly deals with late binding.
+Instead, it focuses on features like information hiding and overloading
+that are characteristic of modular languages like Ada (83).
+
+   In Does late binding have to be slow?
+(http://www.forth.org/oopf.html) (Forth Dimensions 18(1) 1996, pages
+31-35) Andras Zsoter describes a model that makes heavy use of an active
+object (like ‘this’ in ‘objects.fs’): The active object is not only used
+for accessing all fields, but also specifies the receiving object of
+every selector invocation; you have to change the active object
+explicitly with ‘{ ... }’, whereas in ‘objects.fs’ it changes more or
+less implicitly at ‘m: ... ;m’.  Such a change at the method entry point
+is unnecessary with Zsoter’s model, because the receiving object is the
+active object already.  On the other hand, the explicit change is
+absolutely necessary in that model, because otherwise no one could ever
+change the active object.  An Standard Forth implementation of this
+model is available through <http://www.forth.org/oopf.html>.
+
+   The ‘oof.fs’ model combines information hiding and overloading
+resolution (by keeping names in various word lists) with object-oriented
+programming.  It sets the active object implicitly on method entry, but
+also allows explicit changing (with ‘>o...o>’ or with ‘with...endwith’).
+It uses parsing and state-smart objects and classes for resolving
+overloading and for early binding: the object or class parses the
+selector and determines the method from this.  If the selector is not
+parsed by an object or class, it performs a call to the selector for the
+active object (late binding), like Zsoter’s model.  Fields are always
+accessed through the active object.  The big disadvantage of this model
+is the parsing and the state-smartness, which reduces extensibility and
+increases the opportunities for subtle bugs; essentially, you are only
+safe if you never tick or ‘postpone’ an object or class (Bernd
+disagrees, but I (Anton) am not convinced).
+
+   The ‘mini-oof.fs’ model is quite similar to a very stripped-down
+version of the ‘objects.fs’ model, but syntactically it is a mixture of
+the ‘objects.fs’ and ‘oof.fs’ models.
+
+   ---------- Footnotes ----------
+
+   (1) A longer version of this critique can be found in ‘On
+Standardizing Object-Oriented Forth Extensions’ (Forth Dimensions, May
+1997) by Anton Ertl.
+
+
+File: gforth.info,  Node: Regular Expressions,  Next: Programming Tools,  Prev: Object-oriented Forth,  Up: Words
+
+6.25 Regular Expressions
+========================
+
+Regular expressions are pattern matching algorithms for strings found in
+many contemporary languages.  You can add regular expression
+functionality to Gforth with ‘require regexp.fs’.
+
+   The classical implementation for this pattern matching is a
+backtracking algorithm, which is also necessary if you want to have
+features like backreferencing.  Gforth implements regular expressions by
+providing a language to define backtracking programs for pattern
+matching.  Basic element is the control structure ‘FORK’ ... ‘JOIN’,
+which is a forward call within a word, and therefore allows to code a
+lightweight try and fail control structure.
+
+‘FORK’ ( compilation – orig ; run-time f –  ) gforth-0.7 “FORK”
+   AHEAD-like control structure: calls the code after JOIN.
+
+‘JOIN’ ( orig –  ) gforth-0.7 “JOIN”
+   THEN-like control structure for FORK
+
+   You can program any sort of arbitrary checks yourself by computing a
+flag and ‘?LEAVE’ when the check fails.  Your regular expression code is
+enclosed in ‘((’ and ‘))’.
+
+‘((’ ( addr u –  ) regexp-pattern “((”
+   start regexp block
+
+‘))’ ( – flag  ) regexp-pattern “))”
+   end regexp block
+
+   Pattern matching in regular expressions have character sets as
+elements, so a number of functions allow you to create and modify
+character sets (called ‘charclass’).  All characters here are bytes, so
+this doesn’t extend to unicode characters.
+
+‘charclass’ ( –  ) regexp-cg “charclass”
+   Create a charclass
+
+‘+char’ ( char –  ) regexp-cg “+char”
+   add a char to the current charclass
+
+‘-char’ ( char –  ) regexp-cg “-char”
+   remove a char from the current charclass
+
+‘..char’ ( start end –  ) regexp-cg “..char”
+   add a range of chars to the current charclass
+
+‘+chars’ ( addr u –  ) regexp-cg “+chars”
+   add a string of chars to the current charclass
+
+‘+class’ ( class –  ) regexp-cg “+class”
+   union of charclass CLASS and the current charclass
+
+‘-class’ ( class –  ) regexp-cg “-class”
+   subtract the charclass CLASS from the current charclass
+
+   There are predefined charclasses and tests for them, and generic
+checks.  If a check fails, the next possible alternative of the regular
+expression is tried, or a loop is terminated.
+
+‘c?’ ( addr class –  ) regexp-pattern “c?”
+   check ADDR for membership in charclass CLASS
+
+‘-c?’ ( addr class –  ) regexp-pattern “-c?”
+   check ADDR for not membership in charclass CLASS
+
+‘\d’ ( addr – addr’  ) regexp-pattern “\d”
+   check for digit
+
+‘\s’ ( addr – addr’  ) regexp-pattern “\s”
+   check for blanks
+
+‘.?’ ( addr – addr’  ) regexp-pattern “.?”
+   check for any single charachter
+
+‘-\d’ ( addr – addr’  ) regexp-pattern “-\d”
+   check for not digit
+
+‘-\s’ ( addr – addr’  ) regexp-pattern “-\s”
+   check for not blank
+
+‘`’ ( "char" –  ) regexp-pattern “‘”
+   check for particular char
+
+‘`?’ ( "char" –  ) regexp-pattern “‘?”
+
+‘-`’ ( "char" –  ) regexp-pattern “-‘”
+   check for particular char
+
+   You can certainly also check for start and end of the string, and for
+whole string constants.
+
+‘\^’ ( addr – addr  ) regexp-pattern “\^”
+   check for string start
+
+‘\$’ ( addr – addr  ) regexp-pattern “\$”
+   check for string end
+
+‘str=?’ ( addr1 addr u – addr2  ) regexp-pattern “str=?”
+   check for a computed string on the stack (possibly a backreference)
+
+   doc-=”
+
+   Loops that check for repeated character sets can be greedy or
+non-greedy.
+
+‘{**’ ( addr – addr addr  ) regexp-pattern “begin-greedy-star”
+   greedy zero-or-more pattern
+
+‘**}’ ( sys –  ) regexp-pattern “end-greedy-star”
+   end of greedy zero-or-more pattern
+
+‘{++’ ( addr – addr addr  ) regexp-pattern “begin-greedy-plus”
+   greedy one-or-more pattern
+
+‘++}’ ( sys –  ) regexp-pattern “end-greedy-plus”
+   end of greedy one-or-more pattern
+
+‘{*’ ( addr – addr addr  ) regexp-pattern “begin-non-greedy-star”
+   non-greedy zero-or-more pattern
+
+‘*}’ ( addr addr’ – addr’  ) regexp-pattern “end-non-greedy-star”
+   end of non-greedy zero-or-more pattern
+
+‘{+’ ( addr – addr addr  ) regexp-pattern “begin-non-greedy-plus”
+   non-greedy one-or-more pattern
+
+‘+}’ ( addr addr’ – addr’  ) regexp-pattern “end-non-greedy-plus”
+   end of non-greedy one-or-more pattern
+
+   Example: Searching for a substring really is a non-greedy match of
+anything in front of it.
+
+‘//’ ( –  ) regexp-pattern “//”
+   search for string
+
+   Alternatives are written with
+
+‘{{’ ( addr – addr addr  ) regexp-pattern “begin-alternatives”
+   Start of alternatives
+
+‘||’ ( addr addr – addr addr  ) regexp-pattern “next-alternative”
+   separator between alternatives
+
+‘}}’ ( addr addr – addr  ) regexp-pattern “end-alternatives”
+   end of alternatives
+
+   You can use up to 9 variables named ‘\1’ to ‘\9’ to refer to matched
+substrings
+
+‘\(’ ( addr – addr  ) regexp-pattern “\(”
+   start of matching variable; variables are referred as \\1–9
+
+‘\)’ ( addr – addr  ) regexp-pattern “\)”
+   end of matching variable
+
+‘\0’ ( – addr u  ) regexp-pattern “\0”
+   the whole string
+
+   Certainly, you can also write code to replace patterns you found.
+
+‘s>>’ ( addr – addr  ) regexp-replace “s>>”
+   Start replace pattern region
+
+‘>>’ ( addr – addr  ) regexp-replace “>>”
+   Start arbitrary replacement code, the code shall compute a string on
+the stack and pass it to ‘<<’
+
+‘<<’ ( run-addr addr u – run-addr  ) regexp-replace “<<”
+   Replace string from start of replace pattern region with ADDR U
+
+‘<<"’ ( "string<">" –  ) regexp-replace “<<"”
+   Replace string from start of replace pattern region with STRING
+
+‘s//’ ( addr u – ptr  ) regexp-replace “s//”
+   start search/replace loop
+
+‘//s’ ( ptr –  ) regexp-replace “//s”
+   search end
+
+‘//o’ ( ptr addr u – addr’ u’  ) regexp-replace “//o”
+   end search/replace single loop
+
+‘//g’ ( ptr addr u – addr’ u’  ) regexp-replace “//g”
+   end search/replace all loop
+
+   Examples can be found in ‘test/regexp-test.fs’.
+
+
 File: gforth.info,  Node: Programming Tools,  Next: Multitasker,  Prev: Regular Expressions,  Up: Words
 
 6.26 Programming Tools
@@ -724,7 +1019,7 @@ File: gforth.info,  Node: Multitasker,  Next: C Interface,  Prev: Programming To
 
 * Menu:
 
-* Pthreads::                 Native Unix multitasker
+* Pthreads::                 ネイティブ Unix 用マルチタスカー
 * Cilk::                     Cilk風の spawn+sync 実装
 
 Gforth offers two multitaskers: a traditional, cooperative round-robin
@@ -2935,7 +3230,7 @@ File: gforth.info,  Node: Tools,  Next: Standard conformance,  Prev: Error messa
 * Menu:
 
 * Standard Report::          使用されたワードをワードセットごとにソートして報告します
-* Stack depth changes::      Where does this stack item come from?
+* Stack depth changes::      このスタック値はどこから来たのか?
 
 See also *note Emacs and Gforth::.
 
@@ -3035,7 +3330,7 @@ File: gforth.info,  Node: Standard conformance,  Next: Standard vs Extensions,  
 9 Standard conformance
 **********************
 
-To the best of our knowledge, Gforth is a
+(標準適合度)私達の知る限り、 Gforth は…
 
    ANS Forth System and a Forth-2012 System
    • providing the Core Extensions word set
@@ -4470,7 +4765,7 @@ convention, we use the extension ‘.fi’ for image files.
 * Fully Relocatable Image Files::  ※こちらの方がもっといいです
 * Stack and Dictionary Sizes::  イメージでのデフォルト・サイズを設定
 * Running Image Files::      ‘gforth -i file’ or file.
-* Modifying the Startup Sequence::  and turnkey applications.
+* Modifying the Startup Sequence::  ターンキー・アプリケーションにする事もできる
 
 
 File: gforth.info,  Node: Image Licensing Issues,  Next: Image File Background,  Prev: Image Files,  Up: Image Files

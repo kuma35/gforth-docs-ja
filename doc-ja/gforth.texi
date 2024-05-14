@@ -144,7 +144,7 @@ Foundation raise funds for GNU development.''
 * Words::                    Gforth で使用可能な Forth ワード
 * Error messages::           エラーメッセージをどのようにして解釈すればいいのか
 * Tools::                    プログラム作成支援ツール
-* Standard conformance::     Implementation-defined options etc.
+* Standard conformance::     Gforth実装用に定義されたオプションなど
 * Standard vs Extensions::   拡張機能を使用する必要ある?
 * Model::                    Gforth の抽象マシン
 * Integrating Gforth::       アプリのスクリプト言語としてのForth
@@ -380,9 +380,10 @@ Tokens for Words
 
 
 
-* Execution token::          represents execution/interpretation semantics
-* Name token::               represents named words
-* Compilation token::        represents compilation semantics
+* Execution token::          実行(execution)/解釈(interpretation) 
+                               セマンティクス
+* Name token::               名前付きワード
+* Compilation token::        コンパイル・セマンティクス
 
 Compiling words
 
@@ -549,7 +550,7 @@ Multitasker
 
 
 
-* Pthreads::                 Native Unix multitasker
+* Pthreads::                 ネイティブ Unix 用マルチタスカー
 * Cilk::                     Cilk風の spawn+sync 実装
 
 Pthreads
@@ -605,7 +606,7 @@ Tools
 
 
 * Standard Report::          使用されたワードをワードセットごとにソートして報告します
-* Stack depth changes::      Where does this stack item come from?
+* Stack depth changes::      このスタック値はどこから来たのか?
 
 Standard conformance
 
@@ -720,7 +721,7 @@ Image Files
 * Fully Relocatable Image Files::  ※こちらの方がもっといいです
 * Stack and Dictionary Sizes::  イメージでのデフォルト・サイズを設定
 * Running Image Files::      @code{gforth -i @i{file}} or @i{file}.
-* Modifying the Startup Sequence::  and turnkey applications.
+* Modifying the Startup Sequence::  ターンキー・アプリケーションにする事もできる
 
 Fully Relocatable Image Files
 
@@ -941,13 +942,12 @@ Files})。
 @cindex -p, command-line option
 @item --path @i{path}
 @itemx -p @i{path}
-Uses @i{path} for searching the image file and Forth source code files
-instead of the default in the environment variable @code{GFORTHPATH} or the
-path specified at installation time and the working directory @code{.}
-(e.g., @file{/usr/local/share/gforth/0.2.0:.}). A path is given as a list of
-directories, separated by @samp{:} (previous versions had @samp{;} for other
-OSes, but since Cygwin now only accepts @code{/cygdrive/<letter>}, and we
-dropped support for OS/2 and MS-DOS, it is @samp{:} everywhere).
+デフォルトである環境変数 @code{GFORTHPATH} 、 またはインストール時に指定されたパス(例:
+@file{/usr/local/share/gforth/0.2.0:.})と作業ディレクトリ @code{.} の代わりに、
+指定のパスを使用してイメージ・ファイルと Forth ソース・コード・ファイルを検索します。 パスは @samp{:}
+で区切られたディレクトリのリストとして指定されます(以前のバージョンには他の OS 用に @samp{;} がありましたが、 Cygwin は現在は
+@code{/cygdrive/<letter>} のみを受け入れ、 かつ、 私達は OS/2 や MS-DOS のサポートは終了してしまったため、
+どこでも全部 @samp{:} になりました)。
 
 @cindex --dictionary-size, command-line option
 @cindex -m, command-line option
@@ -955,62 +955,69 @@ dropped support for OS/2 and MS-DOS, it is @samp{:} everywhere).
 @cindex size of the dictionary and the stacks
 @item --dictionary-size @i{size}
 @itemx -m @i{size}
-Allocate @i{size} space for the Forth dictionary space instead of using the
-default specified in the image (typically 256K). The @i{size} specification
-for this and subsequent options consists of an integer and a unit (e.g.,
-@code{4M}). The unit can be one of @code{b} (bytes), @code{e} (element size,
-in this case Cells), @code{k} (kilobytes), @code{M} (Megabytes), @code{G}
-(Gigabytes), and @code{T} (Terabytes). If no unit is specified, @code{e} is
-used.
+イメージで指定されているデフォルト(通常は 256K)を使用する代わりに、 Forth
+ディクショナリ用のスペースに指定サイズ(@i{size})のスペースを割り当てます。
+このオプションと、下記のオプションのサイズ(@i{size})指定は整数と単位で構成されます(例: @code{4M})。 単位は @code{b}
+(バイト)、 @code{e} (elementの略。セル単位)、 @code{k} (キロバイト)、 @code{M} (メガバイト)、
+@code{G} (ギガバイト)、 @code{T} (テラバイト)のいずれかになります。 単位が指定されていない場合 @code{e}
+が使用されます。
 
 @cindex --data-stack-size, command-line option
 @cindex -d, command-line option
 @item --data-stack-size @i{size}
 @itemx -d @i{size}
-Allocate @i{size} space for the data stack instead of using the default
-specified in the image (typically 16K).
+イメージで指定されているデフォルト(通常は 16K) を使用する代わりに、
+データ・スタックに指定のサイズ(@i{size})のスペースを割り当てます。サイズ(@i{size})指定は整数と単位で構成されます(例:
+@code{4M})。 単位は @code{b} (バイト)、 @code{e} (elementの略。セル単位)、 @code{k} (キロバイト)、
+@code{M} (メガバイト)、 @code{G} (ギガバイト)、 @code{T} (テラバイト)のいずれかになります。
+単位が指定されていない場合 @code{e} が使用されます。
 
 @cindex --return-stack-size, command-line option
 @cindex -r, command-line option
 @item --return-stack-size @i{size}
 @itemx -r @i{size}
-Allocate @i{size} space for the return stack instead of using the default
-specified in the image (typically 15K).
+イメージで指定されたデフォルト(通常は 15K)を使用する代わりに、 リターン・スタックに指定のサイズ(@i{size})のスペースを割り当てます。
+サイズ(@i{size})指定は整数と単位で構成されます(例: @code{4M})。 単位は @code{b} (バイト)、 @code{e}
+(elementの略。セル単位)、 @code{k} (キロバイト)、 @code{M} (メガバイト)、 @code{G} (ギガバイト)、
+@code{T} (テラバイト)のいずれかになります。 単位が指定されていない場合 @code{e} が使用されます。
 
 @cindex --fp-stack-size, command-line option
 @cindex -f, command-line option
 @item --fp-stack-size @i{size}
 @itemx -f @i{size}
-Allocate @i{size} space for the floating point stack instead of using the
-default specified in the image (typically 15.5K). In this case the unit
-specifier @code{e} refers to floating point numbers.
+イメージで指定されているデフォルト(通常は 15.5K)を使用する代わりに、
+浮動小数点スタックに指定のサイズ(@i{size})のスペースを割り当てます。この場合、単位指定子 @code{e} は浮動小数点数を参照します。
+サイズ(@i{size})指定は整数と単位で構成されます(例: @code{4M})。 単位は @code{b} (バイト)、 @code{e}
+(elementの略。セル単位)、 @code{k} (キロバイト)、 @code{M} (メガバイト)、 @code{G} (ギガバイト)、
+@code{T} (テラバイト)のいずれかになります。 単位が指定されていない場合 @code{e} が使用されます。
 
 @cindex --locals-stack-size, command-line option
 @cindex -l, command-line option
 @item --locals-stack-size @i{size}
 @itemx -l @i{size}
-Allocate @i{size} space for the locals stack instead of using the default
-specified in the image (typically 14.5K).
+イメージで指定されているデフォルト(通常は 14.5K)を使用する代わりに、 ローカル・スタック(locals
+stack)に指定サイズ(@i{size})のスペースを割り当てます。 サイズ(@i{size})指定は整数と単位で構成されます(例:
+@code{4M})。 単位は @code{b} (バイト)、 @code{e} (elementの略。セル単位)、 @code{k} (キロバイト)、
+@code{M} (メガバイト)、 @code{G} (ギガバイト)、 @code{T} (テラバイト)のいずれかになります。
+単位が指定されていない場合 @code{e} が使用されます。
 
 @cindex --vm-commit, command-line option
 @cindex overcommit memory for dictionary and stacks
 @cindex memory overcommit for dictionary and stacks
 @item --vm-commit
-Normally, Gforth tries to start up even if there is not enough virtual
-memory for the dictionary and the stacks (using @code{MAP_NORESERVE} on OSs
-that support it); so you can ask for a really big dictionary and/or stacks,
-and as long as you don't use more virtual memory than is available,
-everything will be fine (but if you use more, processes get killed).  With
-this option you just use the default allocation policy of the OS; for OSs
-that don't overcommit (e.g., Solaris), this means that you cannot and should
-not ask for as big dictionary and stacks, but once Gforth successfully
-starts up, out-of-memory won't kill it.
+通常 Gforth は、 ディクショナリとスタックに十分な仮想メモリ(virtual memory)がない場合でも起動しようとします(OS
+がサポートしていれば @code{MAP_NORESERVE} を使用します)。 したがって、
+あなたは非常に大きなディクショナリやスタックを要求することができ、 利用可能なのを超える仮想メモリを使用しない限り、
+すべて問題ありません(ただし、それを超えて使用すると、 プロセスが強制終了(kill)されます)。 このオプションを使用すると、 OS
+のデフォルトの割り当てポリシーを使用するようになります。 とりわけ、 オーバーコミットしない OS (Solaris など) の場合、 これは、
+大きなディクショナリやスタックを要求することはできませんし、 要求すべきではないことを意味しますが、 しかし、 Gforth
+が正常に起動する事に成功したならば、 メモリ不足によって強制終了(kill)させられることはありません。
 
 @cindex -h, command-line option
 @cindex --help, command-line option
 @item --help
 @itemx -h
-Print a message about the command-line options
+コマンドライン・オプションに関するメッセージを出力します
 
 @cindex -v, command-line option
 @cindex --version, command-line option
@@ -1020,122 +1027,106 @@ Print a message about the command-line options
 
 @cindex --debug, command-line option
 @item --debug
-Print some information useful for debugging on startup.
+起動時のデバッグに役立ついくつかの情報を出力します。
 
 @cindex --offset-image, command-line option
 @item --offset-image
-Start the dictionary at a slightly different position than would be used
-otherwise (useful for creating data-relocatable images,
-@pxref{Data-Relocatable Image Files}).
+それ以外の場合に使用される位置とはわずかに異なる位置でディクショナリを開始します (データ再配置可能イメージ(data-relocatable
+images)の作成に役立ちます @pxref{Data-Relocatable Image Files})。
 
 @cindex --no-offset-im, command-line option
 @item --no-offset-im
-Start the dictionary at the normal position.
+ディクショナリを通常の位置で開始します。
 
 @cindex --clear-dictionary, command-line option
 @item --clear-dictionary
-Initialize all bytes in the dictionary to 0 before loading the image
-(@pxref{Data-Relocatable Image Files}).
+イメージをロードする前に、 ディクショナリ内の全てのバイトを 0 に初期化します(@pxref{Data-Relocatable Image
+Files})。
 
 @cindex --die-on-signal, command-line-option
 @item --die-on-signal
-Normally Gforth handles most signals (e.g., the user interrupt SIGINT, or
-the segmentation violation SIGSEGV) by translating it into a Forth
-@code{THROW}. With this option, Gforth exits if it receives such a
-signal. This option is useful when the engine and/or the image might be
-severely broken (such that it causes another signal before recovering from
-the first); this option avoids endless loops in such cases.
+通常、 Gforth はほとんどのシグナル(例えば、 ユーザー割り込みの SIGINT や、 セグメンテーション違反 SIGSEGV)を Forth の
+@code{THROW} に変換することで処理します。 このオプションを使用すると、 Gforth
+はそのようなシグナルを受信すると終了(exit)します。 このオプションは、
+(最初のシグナルから回復する前に別のシグナルが発生するなど、)エンジンやイメージがひどく壊れている可能性がある場合に役立ちます。 このオプションは、
+そのような場合の無限ループを回避します。
 
 @cindex --no-dynamic, command-line option
 @cindex --dynamic, command-line option
 @item --no-dynamic
 @item --dynamic
-Disable or enable dynamic superinstructions with replication (@pxref{Dynamic
-Superinstructions}).
+レプリケーション(replication)を伴う動的スーパー命令(dynamic
+superinstructions)を無効または有効にします(@pxref{Dynamic Superinstructions})。
 
 @cindex --no-super, command-line option
 @item --no-super
-Disable dynamic superinstructions, use just dynamic replication; this is
-useful if you want to patch threaded code (@pxref{Dynamic
-Superinstructions}).
+動的スーパー命令(dynamic superinstructions)を無効にし、 動的レプリケーション(dynamic
+replication)のみを使用します。 これは、 スレッド化コード(threaded
+code)にパッチを適用する場合に便利です(@pxref{Dynamic Superinstructions})。
 
 @cindex --ss-number, command-line option
 @item --ss-number=@var{N}
-Use only the first @var{N} static superinstructions compiled into the engine
-(default: use them all; note that only @code{gforth-fast} has any).  This
-option is useful for measuring the performance impact of static
-superinstructions.
+エンジンにコンパイル済みの最初の @var{N} 個の静的スーパー命令(static
+superinstructions)のみを使用します(デフォルトでは全てを使用します。 注意: @code{gforth-fast}
+のみのオプションです)。 このオプションは、 静的スーパー命令(static
+superinstructions)のパフォーマンスへの影響を測定するのに役立ちます。
 
 @cindex --ss-min-..., command-line options
 @item --ss-min-codesize
 @item --ss-min-ls
 @item --ss-min-lsu
 @item --ss-min-nexts
-Use specified metric for determining the cost of a primitive or static
-superinstruction for static superinstruction selection.  @code{Codesize} is
-the native code size of the primive or static superinstruction, @code{ls} is
-the number of loads and stores, @code{lsu} is the number of loads, stores,
-and updates, and @code{nexts} is the number of dispatches (not taking
-dynamic superinstructions into account), i.e. every primitive or static
-superinstruction has cost 1. Default: @code{codesize} if you use dynamic
-code generation, otherwise @code{nexts}.
+指定のメトリックを使用して、 静的スーパー命令の選択(static superinstruction
+selection)をするためにプリミティブまたは静的スーパー命令のコストを決定します。 @code{Codesize}
+はプリミティブまたは静的スーパー命令のネイティブ・コード・サイズ、 そして、 @code{ls} はロードとストアの数、 そして、 @code{lsu}
+はロードとストアと更新の数、 そして、 @code{nexts} は(動的スーパー命令を考慮しない)ディスパッチの数です。 ここで、
+すべてのプリミティブまたは静的スーパー命令のコストは 1 です。 デフォルトでは、 動的コード生成を使用する場合は @code{codesize}、
+それ以外の場合は @code{nexts} です。
 
 @cindex --ss-greedy, command-line option
 @item --ss-greedy
-This option is useful for measuring the performance impact of static
-superinstructions.  By default, an optimal shortest-path algorithm is used
-for selecting static superinstructions.  With @option{--ss-greedy} this
-algorithm is modified to assume that anything after the static
-superinstruction currently under consideration is not combined into static
-superinstructions.  With @option{--ss-min-nexts} this produces the same
-result as a greedy algorithm that always selects the longest
-superinstruction available at the moment.  E.g., if there are
-superinstructions AB and BCD, then for the sequence A B C D the optimal
-algorithm will select A BCD and the greedy algorithm will select AB C D.
+このオプションは、 静的スーパー命令のパフォーマンスへの影響を測定するのに役立ちます。 デフォルトでは、
+静的スーパー命令の選択には最適な最短パス・アルゴリズム(shortest-path algorithm)が使用されます。
+@option{--ss-greedy} を使用すると、 そのアルゴリズムは、
+現在検討中の静的スーパー命令以降は静的スーパー命令に結合されないと想定するように変更されます。 @option{--ss-min-nexts}
+を使用すると、 その時点で利用可能な最長のスーパー命令を常に選択する貪欲なアルゴリズムと同じ結果が生成されます。 たとえば、スーパー命令 AB と
+BCD がある場合、 シーケンス A B C D に対して、 最適アルゴリズムは A BCD を選択し、 貪欲アルゴリズムは AB C D
+を選択します。
 
 @cindex --print-metrics, command-line option
 @item --print-metrics
-Prints some metrics used during static superinstruction selection:
-@code{code size} is the actual size of the dynamically generated code.
-@code{Metric codesize} is the sum of the codesize metrics as seen by static
-superinstruction selection; there is a difference from @code{code size},
-because not all primitives and static superinstructions are compiled into
-dynamically generated code, and because of markers.  The other metrics
-correspond to the @option{ss-min-...} options.  This option is useful for
-evaluating the effects of the @option{--ss-...} options.
+静的スーパー命令の選択中に使用されるいくつかのメトリックを出力します。 @code{code size} は、
+動的に生成されたコードの実際のサイズです。  @code{Metric codesize}
+は、静的スーパー命令の選択によって確認できるコードサイズ・メトリック(codesize metrics)の合計で、 @code{code size}
+とは異なります。 これは、 すべてのプリミティブと静的スーパー命令が動的に生成されるコードにコンパイルされるわけではないことと、
+マーカーがあるためです。 他のメトリクスは @option{ss-min-...} オプションに対応します。
+このオプションは、@option{--ss-...} オプションの効果を評価するのに役立ちます。
 
 @end table
 
 @cindex loading files at startup
 @cindex executing code on startup
 @cindex batch processing with Gforth
-As explained above, the image-specific command-line arguments for the
-default image @file{gforth.fi} consist of a sequence of filenames and
-@code{-e @var{forth-code}} options that are interpreted in the sequence in
-which they are given. The @code{-e @var{forth-code}} or @code{--evaluate
-@var{forth-code}} option evaluates the Forth code. This option takes only
-one argument; if you want to evaluate more Forth words, you have to quote
-them or use @code{-e} several times. To exit after processing the command
-line (instead of entering interactive mode)  append @code{-e bye} to the
-command line.  You can also process the command-line arguments with a Forth
-program (@pxref{OS command line arguments}).
+上記にて説明したように、 デフォルト・イメージである @file{gforth.fi} のイメージ固有のコマンドライン引数は、 一連のファイル名と、
+指定した順序で解釈(interpret)される @code{-e @var{forth-code}} オプションで構成されます。 @code{-e
+@var{forth-code}} または @code{--evaluate @var{forth-code}} オプションは Forth
+コードを評価(evaluate)します。 このオプションは引数を 1 つだけ取ります。 あなたが、もし、 さらに多くの Forth
+ワードを評価したい場合は、 ワードを引用符で囲むか、 @code{-e} を複数回使用する必要があります。
+コマンド・ラインの処理後に(対話モードに入るのではなく、)終了(exit)するには、 コマンド・ラインに @code{-e bye} を追加します。
+Forth プログラムではコマンド・ライン引数を処理することもできます(@pxref{OS command line arguments})。
 
 @cindex versions, invoking other versions of Gforth
-If you have several versions of Gforth installed, @code{gforth} will invoke
-the version that was installed last. @code{gforth-@i{<version>}} invokes a
-specific version. If your environment contains the variable
-@code{GFORTHPATH}, you may want to override it by using the @code{--path}
-option.
+複数のバージョンの Gforth がインストールされている場合、 @code{gforth} は最後にインストールされたバージョンを呼び出します。
+@code{gforth-@i{<version>}} は特定のバージョンを呼び出します。 あなたの環境に環境変数 @code{GFORTHPATH}
+がある場合、 @code{--path} オプションを使用してこの環境変数をオーバーライドできます。
 
-On startup, before processing any of the image option, the user
-initialization file either specified in the environment variable
-@code{GFORTH_ENV} or, if not set, @file{~/.config/gforthrc0} is included, if
-it exists.  If @code{GFORTH_ENV} is ``@code{off},'' nothing is included.
-After processing all the image options and just before printing the boot
-message, the user initialization file @file{~/.config/gforthrc} from your
-home directory is included, unless the option @code{--no-rc} is given.
+起動時、 イメージ・オプションを処理する前に、 環境変数 @code{GFORTH_ENV} で指定されたユーザー初期化ファイル、
+またはその環境変数が設定されていない場合は(存在する場合、) @file{~/.config/gforthrc0} がインクルードされます。
+@code{GFORTH_ENV} が「@code{off}」の場合は何もインクルードしません。 すべてのイメージ・オプションを処理した後、
+ブート・メッセージを出力する直前に、 オプション @code{--no-rc} が指定されていない限り、 ホーム・ディレクトリのユーザー初期化ファイル
+@file{~/.config/gforthrc} がインクルードされます。
 
-Warning levels can be set with
+警告レベルは以下のように設定できます
 
 @table @code
 @cindex -W, command-line option
@@ -1165,11 +1156,10 @@ Warning levels can be set with
 @cindex Gforth - leaving
 @cindex leaving Gforth
 
-You can leave Gforth by typing @code{bye} or @kbd{Ctrl-d} (at the start of a
-line) or (if you invoked Gforth with the @code{--die-on-signal} option)
-@kbd{Ctrl-c}. When you leave Gforth, all of your definitions and data are
-discarded.  For ways of saving the state of the system before leaving Gforth
-see @ref{Image Files}.
+@code{bye} または (行の先頭で、) @kbd{Ctrl-d} または (@code{--die-on-signal} オプションを指定して
+Gforth を起動した場合、) @kbd{Ctrl+C} を入力すると、 Gforth を終了できます。 Gforth を終了すると、
+あなたの定義とデータはすべて破棄されます。 Gforth を終了する前にシステムの状態を保存する方法については、 @ref{Image Files}
+を参照してください。
 
 doc-bye
 
@@ -1178,7 +1168,7 @@ doc-bye
 @section Help on Gforth
 @cindex help
 
-Gforth has a simple, text-based online help system.
+Gforth には、 シンプルなテキストベースのオンライン・ヘルプ・システムがあります。
 
 @findex help ( @var{ "rest-of-line" --   } ) gforth-1.0
 @cindex @code{help}
@@ -1186,13 +1176,11 @@ Gforth has a simple, text-based online help system.
 @format
 @code{help} ( @i{"rest-of-line" --  }) gforth-1.0 ``help''
 @end format
-If no name is given, show basic help.  If a documentation node name is given
-followed by "::", show the start of the node.  If the name of a word is
-given, show the documentation of the word if it exists, or its source code
-if not.  Use @code{g} to enter the editor at the point shown by
-@code{help}.  @code{Help} sets the current location, so you can use @code{n}
-and @code{b} to show more of the text, or @code{g} to visit the
-documentation in an editor (@pxref{Locating source code definitions}).
+名前が指定されていない場合は、 基礎的なヘルプが表示されます。 ドキュメント・ノード名に `::` が続く場合、 ノードの最初を表示します。
+ワードの名前が指定されている場合、 そのワードのドキュメントが存在する場合はそのドキュメントを、 存在しない場合はソース・コードを表示します。
+@code{g} を使用して、 @code{help} で表示された場所でエディタに入ります。 @code{Help} は現在の位置をマークするため、
+@code{n} と @code{b} を使用してテキストの詳細を表示したり、 @code{g}
+を使用してエディターでドキュメントにアクセスしたりできます(@pxref{Locating source code definitions})。
 
 
 @findex authors ( @var{ --   } ) gforth-1.0
@@ -1201,7 +1189,7 @@ documentation in an editor (@pxref{Locating source code definitions}).
 @format
 @code{authors} ( @i{--  }) gforth-1.0 ``authors''
 @end format
-show the list of authors
+著者のリストを表示
 
 
 @findex license ( @var{ --   } ) gforth-0.2
@@ -1210,7 +1198,7 @@ show the list of authors
 @format
 @code{license} ( @i{--  }) gforth-0.2 ``license''
 @end format
-print the license statement
+ライセンス声明を出力します
 
 
 
@@ -1219,59 +1207,48 @@ print the license statement
 @section Command-line editing
 @cindex command-line editing
 
-Gforth maintains a history file that records every line that you type to the
-text interpreter. This file is preserved between sessions, and is used to
-provide a command-line recall facility; if you type @kbd{Ctrl-P} repeatedly
-you can recall successively older commands from this (or previous)
-session(s). The full list of command-line editing facilities is:
+Gforth は、 テキスト・インタプリタに入力したすべての行を記録するヒストリ・ファイルを維持しています。
+このファイルはセッションをまたいで保存され、 コマンドラインの再呼び出し機能を提供するために使用されます。 @kbd{Ctrl-P}
+を繰り返し入力すると、このセッション(または前のセッション)から古いコマンドを連続して呼び出すことができます。
+コマンドライン編集機能の完全なリストは以下のとおりです:
 
 @itemize @bullet
 @item
-@kbd{Ctrl-p} (``previous'') (or up-arrow) to recall successively older lines
-from the history buffer.
+@kbd{Ctrl-p} (``previous'') (または「↑」上矢印)を使用して、 ヒストリ・バッファーから古い行を順に呼び出します。
 @item
-@kbd{Ctrl-n} (``next'') (or down-arrow) to recall successively newer lines
-from the history buffer.  If you moved to an older line earlier and gave it
-to Gforth for text-interpretation, asking for the next line as the first
-editing command gives you the next line after the one you selected last
-time.
+@kbd{Ctrl-n} (``next'')(または「↓」下矢印)を押すと、 ヒストリ・バッファーからより新しい行を連続して呼び出します。
+以前に古い行に移動し、 それをテキスト解釈(text-interpretation)のために Gforth に与えた場合、
+最初の編集コマンドとして「nextコマンド」を要求すると、 最後に選択した行の次の行が表示されます。
 @item
-@kbd{Ctrl-f} (or right-arrow) to move the cursor right, non-destructively.
+@kbd{Ctrl-f} (または「→」右矢印)を使用して、 非破壊的にカーソルを右に移動します。
 @item
-@kbd{Ctrl-b} (or left-arrow) to move the cursor left, non-destructively.
+@kbd{Ctrl-b} (または「←」左矢印)を使用して、 非破壊的にカーソルを左に移動します。
 @item
-@kbd{Ctrl-h} (backspace) to delete the character to the left of the cursor,
-closing up the line.
+@kbd{Ctrl-h} (backspace) カーソルの左側の文字を削除し、 桁を詰めます。
 @item
-@kbd{Ctrl-k} to delete (``kill'') from the cursor to the end of the line.
+@kbd{Ctrl-k} カーソルから行末までを削除 (``kill'') します。
 @item
-@kbd{Ctrl-a} to move the cursor to the start of the line.
+@kbd{Ctrl-a} カーソルを行頭に移動します。
 @item
-@kbd{Ctrl-e} to move the cursor to the end of the line.
+@kbd{Ctrl-e} カーソルを行末に移動します。
 @item
-@key{RET} (@kbd{Ctrl-m}) or @key{LFD} (@kbd{Ctrl-j}) to submit the current
-line.
+@key{RET} (@kbd{Ctrl-m}) または @key{LFD} (@kbd{Ctrl-j}) 現在行を gforth へ送ります
 @item
-@key{TAB} to step through all possible full-word completions of the word
-currently being typed.
+@key{TAB} 現在入力中のワードの、 可能なすべての全ワード補完をステップ実行します。
 @item
-@kbd{Ctrl-d} on an empty line line to terminate Gforth (gracefully, using
-@code{bye}). 
+@kbd{Ctrl-d} 空行で押すと Gforth を終了(terminate)します。 (@code{bye} 使用すると正常に終了します)。 
 @item
-@kbd{Ctrl-x} (or @code{Ctrl-d} on a non-empty line) to delete the character
-under the cursor.
+@kbd{Ctrl-x} (空行以外では @code{Ctrl-d} も使えます) カーソル位置の文字を削除します。
 @end itemize
 
-When editing, displayable characters are inserted to the left of the cursor
-position; the line is always in ``insert'' (as opposed to ``overstrike'')
-mode.
+編集中、 表示可能な文字はカーソル位置の左側に挿入されます。
+行は常に(「上書きモード」(overstrike)ではなく、)「挿入モード」(insert)です。
 
 @cindex history file
 @cindex @file{.gforth-history}
-On Unix systems, the history file is
-@file{$HOME/.local/share/gforth/history} by default@footnote{i.e. it is
-stored in the user's home directory.}. You can find out the name and
-location of your history file using:
+Unix システムでは、 ヒストリ・ファイルは デフォルトでは
+@file{$HOME/.local/share/gforth/history}です@footnote{つまり、
+ユーザーのホーム・ディレクトリに保存されます。}。 以下のコマンドを使用して、 ヒストリ・ファイルの名前と場所を確認できます:
 
 @example
 history-file type \ Unix-class systems
@@ -1280,12 +1257,9 @@ history-file type \ Other systems
 history-dir  type
 @end example
 
-If you enter long definitions by hand, you can use a text editor to paste
-them out of the history file into a Forth source file for reuse at a later
-time.
+あなたが長い定義を手入力した場合、 テキスト・エディターを使用してヒストリ・ファイルから Forth ソース・ファイルに貼り付け、 後で再利用できます。
 
-Gforth never trims the size of the history file, so you should do this
-periodically, if necessary.
+Gforth はヒストリ・ファイルのサイズを決して削減しないため、 あなたは必要に応じて定期的にヒストリ・ファイルのサイズを削減する必要があります。
 
 @comment this is all defined in history.fs
 @comment NAC TODO the ctrl-D behaviour can either do a bye or a beep.. how is that option
@@ -1297,65 +1271,58 @@ periodically, if necessary.
 @section Environment variables
 @cindex environment variables
 
-Gforth uses these environment variables:
+Gforth は以下の環境変数を使用します:
 
 @itemize @bullet
 @item
 @cindex @code{GFORTHHIST} -- environment variable
-@code{GFORTHHIST} -- (Unix systems only) specifies the path for the history
-file @file{.gforth-history}. Default:
-@code{$HOME/.local/share/gforth/history}.
+@code{GFORTHHIST} -- (Unix系のみ) ヒストリ・ファイル @file{.gforth-history} のパスを指定。
+デフォルト: @code{$HOME/.local/share/gforth/history}.
 
 @item
 @cindex @code{GFORTHPATH} -- environment variable
-@code{GFORTHPATH} -- specifies the path used when searching for the gforth
-image file and for Forth source-code files (usually @samp{.}, the current
-working directory).  Path separator is @samp{:}, a typical path would be
-@file{/usr/local/share/gforth/1.0:.}.
+gforth イメージ・ファイルと Forth ソースコード・ファイル を検索するときに使用するパスを指定(通常 @samp{.}
+、現在の作業ディレクトリ)。 パス区切り文字は @samp{:} です。 @file{/usr/local/share/gforth/1.0:.}
+のみたいなのが典型です。
 
 @item
 @cindex @code{LANG} -- environment variable
-@code{LANG} -- see @code{LC_CTYPE}
+@code{LANG} -- @code{LC_CTYPE} 参照
 
 @item
 @cindex @code{LC_ALL} -- environment variable
-@code{LC_ALL} -- see @code{LC_CTYPE}
+@code{LC_ALL} -- @code{LC_CTYPE} 参照
 
 @item
 @cindex @code{LC_CTYPE} -- environment variable
-@code{LC_CTYPE} -- If this variable contains ``UTF-8'' on Gforth startup,
-Gforth uses the UTF-8 encoding for strings internally and expects its input
-and produces its output in UTF-8 encoding, otherwise the encoding is 8bit
-(see @pxref{Xchars and Unicode}).  If this environment variable is unset,
-Gforth looks in @code{LC_ALL}, and if that is unset, in @code{LANG}.
+@code{LC_CTYPE} -- Gforth の起動時にこの環境変数が ``UTF-8'' を含んでいる場合、 Gforth は内部で文字列に
+UTF-8 エンコーディングを使用し、 UTF-8 エンコーディングでの入力を期待し、 UTF-8 エンコーディングで出力を生成します。
+それ以外の場合、 エンコーディングは 8 ビットです(@pxref{Xchars and Unicode})。 この環境変数が設定されていない場合、
+Gforth は @code{LC_ALL} を調べ、 それも設定されていない場合は @code{LANG} を調べます。
 
 @item
 @cindex @code{GFORTHSYSTEMPREFIX} -- environment variable
-@code{GFORTHSYSTEMPREFIX} -- specifies what to prepend to the argument of
-@code{system} before passing it to C's @code{system()}.  Default:
-@code{"./$COMSPEC /c "} on Windows, @code{""} on other OSs.  The prefix and
-the command are directly concatenated, so if a space between them is
-necessary, append it to the prefix.
+@code{GFORTHSYSTEMPREFIX} -- C言語 の @code{system()} に渡す前に @code{system}
+の引数に何を付加するかを指定します。 デフォルト: Windows では @code{"./$COMSPEC /c "}で、他の OS では
+@code{""} です。 このプレフィックスとコマンドは直接連結されるため、 間にスペースが必要な場合はプレフィックスに追加してください。
 
 @item
 @cindex @code{GFORTH} -- environment variable
-@code{GFORTH} -- used by @file{gforthmi}, @xref{gforthmi}.
+@code{GFORTH} -- @file{gforthmi} によって使用されます(@xref{gforthmi})。
 
 @item
 @cindex @code{GFORTHD} -- environment variable
-@code{GFORTHD} -- used by @file{gforthmi}, @xref{gforthmi}.
+@code{GFORTHD} -- @file{gforthmi} によって使用されます(@xref{gforthmi})。
 
 @item
 @cindex @code{TMP}, @code{TEMP} - environment variable
-@code{TMP}, @code{TEMP} - (non-Unix systems only) used as a potential
-location for the history file.
+@code{TMP}, @code{TEMP} - (Unix系以外) ヒストリ・ファイルの場所として暗黙に使用されます。
 @end itemize
 
 @comment also POSIXELY_CORRECT LINES COLUMNS HOME but no interest in
 @comment mentioning these.
 
-All the Gforth environment variables default to sensible values if they are
-not set.
+すべての Gforth 環境変数は、 設定されていない場合、 デフォルトで適切な値になります。
 
 
 @comment ----------------------------------------------
@@ -1363,8 +1330,7 @@ not set.
 @section Gforth files
 @cindex Gforth files
 
-When you install Gforth on a Unix system, it installs files in these
-locations by default:
+Gforth を Unix系にインストールすると、 デフォルトでは以下の場所にファイルがインストールされます:
 
 @itemize @bullet
 @item
@@ -1385,49 +1351,44 @@ locations by default:
 @file{.../emacs/site-lisp/gforth.el} - Emacs gforth mode.
 @end itemize
 
-You can select different places for installation by using @code{configure}
-options (listed with @code{configure --help}).
+@code{configure} のオプションを使用すると、 インストール先に違う場所を選択できます(どんなオプションがあるかは
+@code{configure --help} してください)。
 
 @comment ----------------------------------------------
 @node Gforth in pipes, Startup speed, Gforth Files, Gforth Environment
 @section Gforth in pipes
 @cindex pipes, Gforth as part of
 
-Gforth can be used in pipes created elsewhere (described in the following).
-It can also create pipes on its own (@pxref{Pipes}).
+Gforth は、他の場所で作成されたパイプラインを使用できます(以下で説明します)。
+独自にパイプラインを作成することもできます(@pxref{Pipes})。
 
 @cindex input from pipes
-If you pipe into Gforth, your program should read with @code{read-file} or
-@code{read-line} from @code{stdin} (@pxref{General files}).  @code{Key} does
-not recognize the end of input.  Words like @code{accept} echo the input and
-are therefore usually not useful for reading from a pipe.  You have to
-invoke the Forth program with an OS command-line option, as you have no
-chance to use the Forth command line (the text interpreter would try to
-interpret the pipe input).
+Gforth にパイプライン入力する場合、 プログラムは @code{stdin} から @code{read-file} または
+@code{read-line} を使用して読み取る必要があります(@pxref{General files})。 @code{Key}
+は入力の終わりを認識しません。  @code{accept} のようなワードは入力をエコーするため、
+通常はパイプラインからの読み取りには役に立ちません。 あなたは、
+(Forthのテキスト・インタープリタはパイプライン入力を解釈(interpret)しようとしてしまうため、)Forth内のコマンド・ラインを使用する機会はなく、
+OSのコマンド・ライン・オプションを使用して Forth プログラムを呼び出す必要があります。
 
 @cindex output in pipes
-You can output to a pipe with @code{type}, @code{emit}, @code{cr} etc.
+あなたは @code{type}、 @code{emit}、 @code{cr} などでパイプラインへ出力できます。
 
 @cindex silent exiting from Gforth
-When you write to a pipe that has been closed at the other end, Gforth
-receives a SIGPIPE signal (``pipe broken'').  Gforth translates this into
-the exception @code{broken-pipe-error}.  If your application does not catch
-that exception, the system catches it and exits, usually silently (unless
-you were working on the Forth command line; then it prints an error message
-and exits).  This is usually the desired behaviour.
+もう一方の端で既に閉じられているパイプラインに書き込むと、 Gforth は SIGPIPE シグナル(「パイプが壊れた」シグナル)を受け取ります。
+Gforth はこれを例外 @code{broken-pipe-error} に変換します。 あなたのアプリケーションがその例外をキャッチしない場合、
+システムはその例外をキャッチして、 通常は黙って終了(exit)します(Forth コマンド・ラインで作業している場合を除き、
+エラー・メッセージを出力して終了します)。 これは通常、 望ましい動作です。
 
-If you do not like this behaviour, you have to catch the exception yourself,
-and react to it.
+この振る舞いが気に入らない場合は、 自分で例外をキャッチし、 対応する必要があります。
 
-Here's an example of an invocation of Gforth that is usable in a pipe:
+ここで、 パイプライン内で使用できる Gforth の呼び出しの例を以下に示します:
 
 @example
 gforth -e ": foo begin pad dup 10 stdin read-file throw dup while \
  type repeat ; foo bye"
 @end example
 
-This example just copies the input verbatim to the output.  A very simple
-pipe containing this example looks like this:
+この例では、 入力をそのまま出力にコピーするだけです。 この例を含む非常に単純なパイプラインは以下のようになります:
 
 @example
 cat startup.fs |
@@ -1437,7 +1398,7 @@ head
 @end example
 
 @cindex stderr and pipes
-Pipes involving Gforth's @code{stderr} output do not work.
+Gforth の @code{stderr} 出力に関連するパイプラインは機能しません。
 
 @comment ----------------------------------------------
 @node Startup speed, , Gforth in pipes, Gforth Environment
@@ -1445,63 +1406,51 @@ Pipes involving Gforth's @code{stderr} output do not work.
 @cindex Startup speed
 @cindex speed, startup
 
-If Gforth is used for CGI scripts or in shell scripts, its startup speed may
-become a problem.  On a 3GHz Core 2 Duo E8400 under 64-bit Linux 2.6.27.8
-with libc-2.7, @code{gforth-fast -e bye} takes 13.1ms user and 1.2ms system
-time (@code{gforth -e bye} is faster on startup with about 3.4ms user time
-and 1.2ms system time, because it subsumes some of the options discussed
-below).
+Gforth を CGI スクリプトやシェルスクリプトで使用する場合、 起動速度が問題になる場合があります。 libc-2.7 を搭載した 64 ビット
+Linux 2.6.27.8 上の 3GHz Core 2 Duo E8400 では、 @code{gforth-fast -e bye}
+でユーザー時間は 13.1 ミリ秒、システム時間は 1.2 ミリ秒かかります(@code{gforth -e bye} は、
+下記で説明するオプションの一部を組み込んでいるため、 ユーザー時間は約 3.4 ミリ秒、 システム時間は 1.2 ミリ秒で起動がより高速になります)。
 
-If startup speed is a problem, you may consider the following ways to
-improve it; or you may consider ways to reduce the number of startups (for
-example, by using Fast-CGI).  Note that the first steps below improve the
-startup time at the cost of run-time (including compile-time), so whether
-they are profitable depends on the balance of these times in your
-application.
+起動速度が問題になる場合は、 以下の改善方法を検討してください。 または、 起動の数を減らす方法(Fast-CGI
+の使用など)を検討することもできます。 以下の最初の手順では、 (コンパイル時間を含む)実行時間を犠牲にして起動時間を短縮するため、
+それで利益が得られるかどうかはあなたのアプリケーションでのこれらの時間のバランスによって決まることに注意してください。
 
-An easy step that influences Gforth startup speed is the use of a number of
-options that increase run-time, but decrease image-loading time.
+Gforth の起動速度に影響を及ぼす簡単な手順は、 実行時間(run-time)を増加させながらイメージの読み込み時間(image-loading
+time)を短縮する多数のオプションを使用してみることです。
 
-The first of these that you should try is @code{--ss-number=0 --ss-states=1}
-because this option buys relatively little run-time speedup and costs quite
-a bit of time at startup.  @code{gforth-fast --ss-number=0 --ss-states=1 -e
-bye} takes about 2.8ms user and 1.5ms system time.
+最初に試す必要があるのは @code{--ss-number=0 --ss-states=1} です。
+このオプションは実行時の高速化が比較的わずかなのに、 起動時にかなりの時間がかかるためです。 @code{gforth-fast
+--ss-number=0 --ss-states=1 -e bye} には、 ユーザー時間が約 2.8 ミリ秒、 システム時間が約 1.5
+ミリ秒かかります。
 
-The next option is @code{--no-dynamic} which has a substantial impact on
-run-time (about a factor of 2 on several platforms), but still makes startup
-speed a little faster: @code{gforth-fast --ss-number=0 --ss-states=1
---no-dynamic -e bye} consumes about 2.6ms user and 1.2ms system time.
+次のオプションは @code{--no-dynamic} です。 これは実行時間に大きな影響を及ぼします(いくつかのプラットフォームでは約 2
+倍です)が、 それでも起動速度が若干速くなります。 @code{gforth-fast -- ss-number=0 --ss-states=1
+--no-dynamic -e bye} は、 約 2.6 ミリ秒のユーザー時間と 1.2 ミリ秒のシステム時間を消費します。
 
 @c !! check
-The next step to improve startup speed is to use a data-relocatable image
-(@pxref{Data-Relocatable Image Files}).  This avoids the relocation cost for
-the code in the image (but not for the data).  Note that the image is then
-specific to the particular binary you are using (i.e., whether it is
-@code{gforth}, @code{gforth-fast}, and even the particular build).  You
-create the data-relocatable image that works with @code{./gforth-fast} with
-@code{GFORTHD="./gforth-fast --no-dynamic" gforthmi gforthdr.fi} (the
-@code{--no-dynamic} is required here or the image will not work).  And you
-run it with @code{gforth-fast -i gforthdr.fi ... -e bye} (the flags
-discussed above don't matter here, because they only come into play on
-relocatable code).  @code{gforth-fast -i gforthdr.fi -e bye} takes about
-1.1ms user and 1.2ms system time.
+起動速度を向上させるための次のステップは、 データ再配置可能イメージ(data-relocatable
+image)を使用することです(@pxref{Data-Relocatable Image Files})。 これにより、
+イメージ内のコードの再配置コストが回避されます(ただし、 データの再配置コストは回避されません)。 イメージは、 使用している特定のバイナリ(つまり、
+@code{gforth}、 @code{gforth-fast}、さらには特定のビルド)に固有であることに注意してください。
+@code{./gforth-fast} で動作するデータ再配置可能イメージを作成するには、 @code{GFORTHD="./gforth-fast
+--no-dynamic" gforthmi gforthdr.fi} とします(これには @code{--no-dynamic}
+が必要です。そうしないとこのイメージは機能しません)。 そして、 @code{gforth-fast -i gforthdr.fi ... -e
+bye} で実行します(上記で説明したフラグは、 再配置可能なコードでのみ機能するため、ここでは重要ではありません)。
+@code{gforth-fast -i gforthdr.fi -e bye} では、 ユーザー時間は約 1.1 ミリ秒、 システム時間は約 1.2
+ミリ秒かかります。
 
-One step further is to avoid all relocation cost and part of the
-copy-on-write cost through using a non-relocatable image
-(@pxref{Non-Relocatable Image Files}).  However, this has the disadvantage
-that it does not work on operating systems with address space randomization
-(the default in, e.g., Linux nowadays), or if the dictionary moves for any
-other reason (e.g., because of a change of the OS kernel or an updated
-library), so we cannot really recommend it.  You create a non-relocatable
-image with @code{gforth-fast --no-dynamic -e "savesystem gforthnr.fi bye"}
-(the @code{--no-dynamic} is required here, too).  And you run it with
-@code{gforth-fast -i gforthnr.fi ... -e bye} (again the flags discussed
-above don't matter).  @code{gforth-fast -i gforthdr.fi -e bye} takes about
-0.9ms user and 0.9ms system time.
+さらにもう 1 つのステップは、 再配置不可イメージ(non-relocatable image)を使用することで、
+すべての再配置コストと書き換え時コピー(copy-on-write;COW)コストの一部を回避することです(@pxref{Non-Relocatable
+Image Files})。ただし、 アドレス空間のランダム化が行われているオペレーティング・システム(最近の Linux 等ではこれがデフォルト)や、
+その他の理由でディクショナリが移動した場合(OS カーネルの変更や、 ライブラリ更新などの場合)には機能しないという欠点があるため、
+あまりお勧めできません。再配置不可イメージ(non-relocatable image)を作成するために @code{gforth-fast
+--no-dynamic -e "savesystem gforthnr.fi bye"} とします(ここでも @code{--no-dynamic}
+が必要です)。  そして、  @code{gforth-fast -i gforthnr.fi ... -e bye} として実行します(ここでも、
+上記で説明したフラグは重要ではありません)。  @code{gforth-fast -i gforthdr.fi -e bye} はユーザー時間は約
+0.9 ミリ秒、 システム時間は約 0.9 ミリ秒かかります。
 
-If the script you want to execute contains a significant amount of code, it
-may be profitable to compile it into the image to avoid the cost of
-compiling it at startup time.
+実行するスクリプトに大量のコードが含まれている場合は、 起動時のコンパイルのコストを避けるために、
+それをイメージにコンパイルすると有益な場合があります。
 
 @c ******************************************************************
 @node Tutorial, Introduction, Gforth Environment, Top
@@ -1516,27 +1465,19 @@ compiling it at startup time.
 @c what happens on redefinition
 @c parsing words (in particular, defining words)
 
-The difference of this chapter from the Introduction (@pxref{Introduction})
-is that this tutorial is more fast-paced, should be used while sitting in
-front of a computer, and covers much more material, but does not explain how
-the Forth system works.
+この章と Introduction(@pxref{Introduction}) の違いは、 このチュートリアルの方がハイペースで、 かつ、
+あなたがコンピューターをさわれるときに読む必要があり、 かつ、 より多くの内容をカバーしていますが、 しかし、 Forth
+システムがどのように機能するかについては説明してい無いことです。
 
-This tutorial can be used with any Standard-compliant Forth; any
-Gforth-specific features are marked as such and you can skip them if you
-work with another Forth.  This tutorial does not explain all features of
-Forth, just enough to get you started and give you some ideas about the
-facilities available in Forth.  Read the rest of the manual when you are
-through this.
+このチュートリアルは、 標準に準拠した任意の Forth でご利用できます。 Gforth 固有の機能はすべてその旨の目印が付けられており、 別の
+Forth を使用する場合はその部分はスキップできます。 このチュートリアルでは、 Forth のすべての機能について説明するわけではありませんが、
+あなたが Forth を使い始めて、 Forth で使用できる機能についていくつかのアイデアを得るには十分です。 このチュートリアルが終わったら、
+マニュアルの残りの部分をお読みください。
 
-The intended way to use this tutorial is that you work through it while
-sitting in front of the console, take a look at the examples and predict
-what they will do, then try them out; if the outcome is not as expected,
-find out why (e.g., by trying out variations of the example), so you
-understand what's going on.  There are also some assignments that you should
-solve.
+このチュートリアルの使用目的は、 あなたがコンソールの前に座って作業を進め、 例を見てその結果を予測してから、 自分で試してみるというものです。
+結果が期待どおりでない場合は、 何が起こっているのかを理解できるように(類似の例を試すなどして)理由を調べます。 いくつか課題も出題してあります。
 
-This tutorial assumes that you have programmed before and know what, e.g., a
-loop is.
+このチュートリアルでは、 あなたが以前にプログラミングをしたことがあり、 例えば、 ループとは何か、とかを理解していることを前提としています。
 
 @c !! explain compat library
 
@@ -1583,24 +1524,22 @@ loop is.
 @node Starting Gforth Tutorial, Syntax Tutorial, Tutorial, Tutorial
 @section Starting Gforth
 @cindex starting Gforth tutorial
-You can start Gforth by typing its name:
+あなたが Gforth を開始するには、その名前をタイプします:
 
 @example
 gforth
 @end example
 
-That puts you into interactive mode; you can leave Gforth by typing
-@code{bye}.  While in Gforth, you can edit the command line and access the
-command line history with cursor keys, similar to bash.
+これにより、 対話モードに入ります。 @code{bye} と入力すると Gforth を終了できます。 Gforth では、 bash と同様に、
+コマンド・ラインを編集し、 カーソル・キーを使用してコマンド・ライン・ヒストリ(履歴)にアクセスできます。
 
 
 @node Syntax Tutorial, Crash Course Tutorial, Starting Gforth Tutorial, Tutorial
 @section Syntax
 @cindex syntax tutorial
 
-A @dfn{word} is a sequence of arbitrary characters (except white space).
-Words are separated by white space.  E.g., each of the following lines
-contains exactly one word:
+@dfn{word} は、任意の文字のシーケンスです(空白(white space)を除く)。 ワードは空白(white space)で区切られます。
+たとえば、 以下の各行には正確にただ 1 つのワードが含まれています:
 
 @example
 word
@@ -1609,26 +1548,23 @@ word
 5!a
 @end example
 
-A frequent beginner's error is to leave out necessary white space, resulting
-in an error like @samp{Undefined word}; so if you see such an error, check
-if you have put spaces wherever necessary.
+初心者によくある間違いは、 必要な空白を省略することです。 その結果、 @samp{Undefined word}
+のようなエラーが発生します。そのため、 このようなエラーが表示された場合は、 必要な場所に空白を入れてあるかどうかを確認してください。
 
 @example
 ." hello, world" \ correct
 ."hello, world"  \ gives an "Undefined word" error
 @end example
 
-Gforth and most other Forth systems ignore differences in case (they are
-case-insensitive), i.e., @samp{word} is the same as @samp{Word}.  If your
-system is case-sensitive, you may have to type all the examples given here
-in upper case.
+Gforth および他のほとんどの Forth システムは、 大文字と小文字の違いを無視します(大文字と小文字は区別されません)。 つまり、
+@samp{word} は @samp{Word} と同一です。 あなたのシステムで大文字と小文字が区別される場合は、
+ここに示されているすべての例を大文字で入力する必要がある場合があります。
 
 
 @node Crash Course Tutorial, Stack Tutorial, Syntax Tutorial, Tutorial
 @section Crash Course
 
-Forth does not prevent you from shooting yourself in the foot.  Let's try a
-few ways to crash Gforth:
+Forth は、 自分の足を撃つような馬鹿げた事を妨げたりはしません。 以下のように Gforth をクラッシュさせるいくつかの方法を試してみましょう:
 
 @example
 0 0 !
@@ -1637,44 +1573,41 @@ here execute
 ' (quit1) >body 20 erase
 @end example
 
-The last two examples are guaranteed to destroy important parts of Gforth
-(and most other systems), so you better leave Gforth afterwards (if it has
-not finished by itself).  On some systems you may have to kill gforth from
-outside (e.g., in Unix with @code{kill}).
+最後の 2 つの例は、Gforth (および他のほとんどのシステム) の重要な部分を破壊することが保証されているため、 (Gforth
+が自動的に終了していない場合、) この後は Gforth を終了させたほうがよいでしょう。 一部のシステムでは、 外部から gforth
+を強制終了する必要がある場合があります(例: Unix系 では @code{kill} を使用します)。
 
-You will find out later what these lines do and then you will get an idea
-why they produce crashes.
+これらの行が何を行うのか、 なぜクラッシュが発生するのかは後ほど分かります。
 
-Now that you know how to produce crashes (and that there's not much to
-them), let's learn how to produce meaningful programs.
+クラッシュを発生させる方法がわかったので(そして、 それは大したことがない事がわかったので)、
+今度は意味のあるプログラムを作成する方法を学ぶとしましょう。
 
 
 @node Stack Tutorial, Arithmetics Tutorial, Crash Course Tutorial, Tutorial
 @section Stack
 @cindex stack tutorial
 
-The most obvious feature of Forth is the stack.  When you type in a number,
-it is pushed on the stack.  You can display the contents of the stack with
-@code{.s}.
+Forth の最も明々白々な機能はスタックです。 数値を入力すると、 その数値がスタックにプッシュされます。 @code{.s}
+を使用してスタックの内容を表示できます。
 
 @example
 1 2 .s
 3 .s
 @end example
 
-@code{.s} displays the top-of-stack to the right, i.e., the numbers appear
-in @code{.s} output as they appeared in the input.
+@code{.s} はスタックの最上位(top-of-stack)が一番右になるように表示します。 つまり、 数値は入力時に表記されたとおりに
+@code{.s} 出力に表れます。
 
-You can print the top element of the stack with @code{.}.
+@code{.} を使用してスタックの最上位要素を出力できます。
 
 @example
 1 2 3 . . .
 @end example
 
-In general, words consume their stack arguments (@code{.s} is an exception).
+一般に、 ワードはスタック引数を消費します(@code{.s} は例外です)。
 
-@quotation Assignment
-What does the stack contain after @code{5 6 7 .}?
+@quotation 研究課題(assignment)
+@code{5 6 7 .} の後、 スタックには何が含まれていますか？
 @end quotation
 
 
@@ -1682,8 +1615,8 @@ What does the stack contain after @code{5 6 7 .}?
 @section Arithmetics
 @cindex arithmetics tutorial
 
-The words @code{+}, @code{-}, @code{*}, @code{/}, and @code{mod} always
-operate on the top two stack items:
+@code{+} や @code{-} や @code{*} や @code{/} や @code{mod} というワードは、 常に頂上から見て 2
+つのスタック項目に作用します:
 
 @example
 2 2 .s
@@ -1693,40 +1626,39 @@ operate on the top two stack items:
 7 3 mod .
 @end example
 
-The operands of @code{-}, @code{/}, and @code{mod} are in the same order as
-in the corresponding infix expression (this is generally the case in Forth).
+@code{-} や @code{/} や @code{mod} のオペランドは、 対応する中置式と同じ順序になります(これが Forth
+における一般的なケースです)。
 
-Parentheses are superfluous (and not available), because the order of the
-words unambiguously determines the order of evaluation and the operands:
+ワードの順序によって評価の順序とオペランドが明確に決定されるため、 括弧は不要です(そして、 括弧は使用不可です):
 
 @example
 3 4 + 5 * .
 3 4 5 * + .
 @end example
 
-@quotation Assignment
-What are the infix expressions corresponding to the Forth code above? Write
-@code{6-7*8+9} in Forth notation@footnote{This notation is also known as
-Postfix or RPN (Reverse Polish Notation).}.
+@quotation 研究課題(assignment)
+上記の Forth コードに対応する中置式はどうなるでしょうか？ また、 @code{6-7*8+9} を Forth
+表記で記述してください@footnote{この表記法は、 後値記法(postfix notation) または RPN (逆ポーランド記法)
+と呼ばれます。}。
 @end quotation
 
-To change the sign, use @code{negate}:
+符号を変更するには、 以下のように @code{negate} を使用します:
 
 @example
 2 negate .
 @end example
 
-@quotation Assignment
-Convert -(-3)*4-5 to Forth.
+@quotation 研究課題(assignment)
+`-(-3)*4-5` を Forth に変換してみましょう。
 @end quotation
 
-@code{/mod} performs both @code{/} and @code{mod}.
+@code{/mod} は @code{/} と @code{mod} の両方を実行します。
 
 @example
 7 3 /mod . .
 @end example
 
-Reference: @ref{Arithmetic}.
+詳しくはこちらを参照ください: @ref{Arithmetic}
 
 
 @node Stack Manipulation Tutorial, Using files for Forth code Tutorial, Arithmetics Tutorial, Tutorial
@@ -1757,7 +1689,7 @@ Two more stack manipulation words are:
 1 2 .s tuck .s 2drop drop
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Replace @code{nip} and @code{tuck} with combinations of other stack
 manipulation words.
 
@@ -1781,7 +1713,7 @@ Given:          How do you get:
 5 dup * .
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write 17^3 and 17^4 in Forth, without writing @code{17} more than once.
 Write a piece of Forth code that expects two numbers on the stack (@var{a}
 and @var{b}, with @var{b} on top) and computes @code{(a-b)(a+1)}.
@@ -1902,7 +1834,7 @@ in other definitions:
 3 fourth-power .
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write colon definitions for @code{nip}, @code{tuck}, @code{negate}, and
 @code{/mod} in terms of other Forth words, and check if they work (hint:
 test your tests on the originals first).  Don't let the
@@ -1954,7 +1886,7 @@ complicated words (I usually do this in the lines following @code{:}).  If
 you don't do this, your code becomes unreadable (because you have to work
 through every definition before you can understand any).
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 The stack effect of @code{swap} can be written like this: @code{x1 x2 -- x2
 x1}.  Describe the stack effect of @code{-}, @code{drop}, @code{dup},
 @code{over}, @code{rot}, @code{nip}, and @code{tuck}.  Hint: When you are
@@ -2013,7 +1945,7 @@ Float (on the FP stack)
 
 You can find a more complete list in @ref{Notation}.
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write stack-effect comments for all definitions you have written up to now.
 @end quotation
 
@@ -2186,7 +2118,7 @@ stack trouble.  However, I recommend trying to write colon definitions
 without locals for exercise purposes to help you gain the essential
 factoring skills.
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Rewrite your definitions until now with locals
 @end quotation
 
@@ -2244,7 +2176,7 @@ You can optionally use an @code{else}-part:
 3 2 min .
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write @code{min} without @code{else}-part (hint: what's the definition of
 @code{nip}?).
 @end quotation
@@ -2347,7 +2279,7 @@ operation of the Boolean operations to avoid @code{if}s:
 1 foo .
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write @code{min} without @code{if}.
 @end quotation
 
@@ -2427,7 +2359,7 @@ Here's a loop with an exit at the end:
 @code{Until} consumes a flag; if it is zero, execution continues at the
 @code{begin}, otherwise after the @code{until}.
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write a definition for computing the greatest common divisor.
 @end quotation
 
@@ -2472,7 +2404,7 @@ You can access the counter of a counted loop with @code{i}:
 There is also @code{+do}, which expects signed numbers (important for
 deciding whether to enter the loop).
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write a definition for computing the nth Fibonacci number.
 @end quotation
 
@@ -2534,7 +2466,7 @@ For recursive definitions you can use @code{recursive} (non-standard) or
 8 fac2 .
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write a recursive definition for computing the nth Fibonacci number.
 @end quotation
 
@@ -2634,7 +2566,7 @@ You cannot mix using locals and using the return stack (according to the
 standard; Gforth has no problem).  However, they solve the same problems, so
 this shouldn't be an issue.
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Can you rewrite any of the definitions you wrote until now in a better way
 using the return stack?
 @end quotation
@@ -2698,7 +2630,7 @@ v3 2 cells + @@ .
 v3 5 cells dump
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write a definition @code{vsum ( addr u -- n )} that computes the sum of
 @code{u} cells, with the first of these cells at @code{addr}, the next one
 at @code{addr cell+} etc.
@@ -2810,7 +2742,7 @@ type
 type
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 @code{Emit ( c -- )} types @code{c} as character (not a number).  Implement
 @code{type ( addr u -- )}.
 @end quotation
@@ -2923,7 +2855,7 @@ create v 1.23e f, 4.56e f, 7.89e f,
 v 1 floats  v 1 floats  3  v* f.
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write a program to solve a quadratic equation.  Then read @cite{Henry
 G. Baker,
 @uref{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.4448&rep=rep1&type=pdf,You
@@ -3051,7 +2983,7 @@ Likewise, you can put that into definitions, too:
 : close-output ( -- )  fd-out close-file throw ;
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 How could you modify @code{copy-file} so that it copies until a second line
 is matched? Can you write a program that extracts a section of a text file,
 given the line that starts and the line that terminates that section?
@@ -3265,7 +3197,7 @@ stacks have the same depth as when entering @code{catch}:
 3 2 ' / catch .s
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Try the same with @code{execute} instead of @code{catch}.
 @end quotation
 
@@ -3420,7 +3352,7 @@ foo .
 foo .
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Define @code{defer ( "name" -- )}, which creates a word that stores an XT
 (at the start the XT of @code{abort}), and upon execution @code{execute}s
 the XT.  Define @code{is ( xt "name" -- )} that stores @code{xt} into
@@ -3519,7 +3451,7 @@ You can define @code{ENDIF} in this way:
   POSTPONE then ; immediate
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write @code{MY-2DUP} that has compilation semantics equivalent to
 @code{2dup}, but compiles @code{over over}.
 @end quotation
@@ -3559,7 +3491,7 @@ computed at compile time into the current word:
 see bar
 @end example
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Write @code{]L} which allows writing the example above as @code{: bar ( -- n
 ) [ 2 2 + ]L ;}
 @end quotation
@@ -3729,7 +3661,7 @@ order
 Yes, the order of wordlists in the output of @code{order} is reversed from
 stack comments and the output of @code{.s} and thus unintuitive.
 
-@quotation Assignment
+@quotation 研究課題(assignment)
 Define @code{>order ( wid -- )} which adds @code{wid} as first searched
 wordlist to the search order.  Define @code{previous ( -- )}, which removes
 the first searched wordlist from the search order.  Experiment with boundary
@@ -13143,9 +13075,10 @@ it is Evil and How to Exorcise it}}, EuroForth '98.}!
 This section describes the creation and use of tokens that represent words.
 
 @menu
-* Execution token::          represents execution/interpretation semantics
-* Name token::               represents named words
-* Compilation token::        represents compilation semantics
+* Execution token::          実行(execution)/解釈(interpretation) 
+                               セマンティクス
+* Name token::               名前付きワード
+* Compilation token::        コンパイル・セマンティクス
 @end menu
 
 @node Execution token, Name token, Tokens for Words, Tokens for Words
@@ -25007,7 +24940,7 @@ Load coverage counters.
 @cindex multitasker
 
 @menu
-* Pthreads::                 Native Unix multitasker
+* Pthreads::                 ネイティブ Unix 用マルチタスカー
 * Cilk::                     Cilk風の spawn+sync 実装
 @end menu
 
@@ -28043,7 +27976,7 @@ by zero and division overflow, because that costs time in every division.
 
 @menu
 * Standard Report::          使用されたワードをワードセットごとにソートして報告します
-* Stack depth changes::      Where does this stack item come from?
+* Stack depth changes::      このスタック値はどこから来たのか?
 @end menu
 
 See also @ref{Emacs and Gforth}.
@@ -28151,7 +28084,7 @@ gforth depth-changes.fs -e "' most-lines is depth-changes-filter" my-file.fs
 @chapter Standard conformance
 @cindex Standard conformance of Gforth
 
-To the best of our knowledge, Gforth is a
+(標準適合度)私達の知る限り、 Gforth は…
 
 ANS Forth System and a Forth-2012 System
 @itemize @bullet
@@ -29966,7 +29899,7 @@ use the extension @code{.fi} for image files.
 * Fully Relocatable Image Files::  ※こちらの方がもっといいです
 * Stack and Dictionary Sizes::  イメージでのデフォルト・サイズを設定
 * Running Image Files::      @code{gforth -i @i{file}} or @i{file}.
-* Modifying the Startup Sequence::  and turnkey applications.
+* Modifying the Startup Sequence::  ターンキー・アプリケーションにする事もできる
 @end menu
 
 @node Image Licensing Issues, Image File Background, Image Files, Image Files

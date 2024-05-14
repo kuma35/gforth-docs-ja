@@ -64,7 +64,7 @@ Software Foundation, Inc.
 * Words::                    Gforth で使用可能な Forth ワード
 * Error messages::           エラーメッセージをどのようにして解釈すればいいのか
 * Tools::                    プログラム作成支援ツール
-* Standard conformance::     Implementation-defined options etc.
+* Standard conformance::     Gforth実装用に定義されたオプションなど
 * Standard vs Extensions::   拡張機能を使用する必要ある?
 * Model::                    Gforth の抽象マシン
 * Integrating Gforth::       アプリのスクリプト言語としてのForth
@@ -299,9 +299,10 @@ Tokens for Words
 
 
 
-* Execution token::          represents execution/interpretation semantics
-* Name token::               represents named words
-* Compilation token::        represents compilation semantics
+* Execution token::          実行(execution)/解釈(interpretation)
+                               セマンティクス
+* Name token::               名前付きワード
+* Compilation token::        コンパイル・セマンティクス
 
 Compiling words
 
@@ -468,7 +469,7 @@ Multitasker
 
 
 
-* Pthreads::                 Native Unix multitasker
+* Pthreads::                 ネイティブ Unix 用マルチタスカー
 * Cilk::                     Cilk風の spawn+sync 実装
 
 Pthreads
@@ -524,7 +525,7 @@ Tools
 
 
 * Standard Report::          使用されたワードをワードセットごとにソートして報告します
-* Stack depth changes::      Where does this stack item come from?
+* Stack depth changes::      このスタック値はどこから来たのか?
 
 Standard conformance
 
@@ -639,7 +640,7 @@ Image Files
 * Fully Relocatable Image Files::  ※こちらの方がもっといいです
 * Stack and Dictionary Sizes::  イメージでのデフォルト・サイズを設定
 * Running Image Files::      ‘gforth -i file’ or file.
-* Modifying the Startup Sequence::  and turnkey applications.
+* Modifying the Startup Sequence::  ターンキー・アプリケーションにする事もできる
 
 Fully Relocatable Image Files
 
@@ -846,169 +847,190 @@ Forth コードが、 指定の順序で解釈実行(interpret)されます。
 
 ‘--path path’
 ‘-p path’
-     Uses path for searching the image file and Forth source code files
-     instead of the default in the environment variable ‘GFORTHPATH’ or
-     the path specified at installation time and the working directory
-     ‘.’ (e.g., ‘/usr/local/share/gforth/0.2.0:.’).  A path is given as
-     a list of directories, separated by ‘:’ (previous versions had ‘;’
-     for other OSes, but since Cygwin now only accepts
-     ‘/cygdrive/<letter>’, and we dropped support for OS/2 and MS-DOS,
-     it is ‘:’ everywhere).
+     デフォルトである環境変数 ‘GFORTHPATH’ 、 またはインストール時に指定
+     されたパス(例: ‘/usr/local/share/gforth/0.2.0:.’)と作業ディレクトリ
+     ‘.’ の代わりに、 指定のパスを使用してイメージ・ファイルと Forth ソ
+     ース・コード・ファイルを検索します。 パスは ‘:’ で区切られたディレ
+     クトリのリストとして指定されます(以前のバージョンには他の OS 用に
+     ‘;’ がありましたが、 Cygwin は現在は ‘/cygdrive/<letter>’ のみを受
+     け入れ、 かつ、 私達は OS/2 や MS-DOS のサポートは終了してしまった
+     ため、 どこでも全部 ‘:’ になりました)。
 
 ‘--dictionary-size size’
 ‘-m size’
-     Allocate size space for the Forth dictionary space instead of using
-     the default specified in the image (typically 256K). The size
-     specification for this and subsequent options consists of an
-     integer and a unit (e.g., ‘4M’).  The unit can be one of ‘b’
-     (bytes), ‘e’ (element size, in this case Cells), ‘k’ (kilobytes),
-     ‘M’ (Megabytes), ‘G’ (Gigabytes), and ‘T’ (Terabytes).  If no unit
-     is specified, ‘e’ is used.
+     イメージで指定されているデフォルト(通常は 256K)を使用する代わりに、
+     Forth ディクショナリ用のスペースに指定サイズ(size)のスペースを割り
+     当てます。 このオプションと、下記のオプションのサイズ(size)指定は整
+     数と単位で構成されます(例: ‘4M’)。 単位は ‘b’ (バイト)、 ‘e’
+     (elementの略。セル単位)、 ‘k’ (キロバイト)、 ‘M’ (メガバイト)、 ‘G’
+     (ギガバイト)、 ‘T’ (テラバイト)のいずれかになります。 単位が指定さ
+     れていない場合 ‘e’ が使用されます。
 
 ‘--data-stack-size size’
 ‘-d size’
-     Allocate size space for the data stack instead of using the default
-     specified in the image (typically 16K).
+     イメージで指定されているデフォルト(通常は 16K) を使用する代わりに、
+     データ・スタックに指定のサイズ(size)のスペースを割り当てます。サイ
+     ズ(size)指定は整数と単位で構成されます(例: ‘4M’)。 単位は ‘b’ (バイ
+     ト)、 ‘e’ (elementの略。セル単位)、 ‘k’ (キロバイト)、 ‘M’ (メガバ
+     イト)、 ‘G’ (ギガバイト)、 ‘T’ (テラバイト)のいずれかになります。 単
+     位が指定されていない場合 ‘e’ が使用されます。
 
 ‘--return-stack-size size’
 ‘-r size’
-     Allocate size space for the return stack instead of using the
-     default specified in the image (typically 15K).
+     イメージで指定されたデフォルト(通常は 15K)を使用する代わりに、 リタ
+     ーン・スタックに指定のサイズ(size)のスペースを割り当てます。 サイズ
+     (size)指定は整数と単位で構成されます(例: ‘4M’)。 単位は ‘b’ (バイト
+     )、 ‘e’ (elementの略。セル単位)、 ‘k’ (キロバイト)、 ‘M’ (メガバイ
+     ト)、 ‘G’ (ギガバイト)、 ‘T’ (テラバイト)のいずれかになります。 単
+     位が指定されていない場合 ‘e’ が使用されます。
 
 ‘--fp-stack-size size’
 ‘-f size’
-     Allocate size space for the floating point stack instead of using
-     the default specified in the image (typically 15.5K). In this case
-     the unit specifier ‘e’ refers to floating point numbers.
+     イメージで指定されているデフォルト(通常は 15.5K)を使用する代わりに
+     、 浮動小数点スタックに指定のサイズ(size)のスペースを割り当てます。
+     この場合、単位指定子 ‘e’ は浮動小数点数を参照します。 サイズ
+     (size)指定は整数と単位で構成されます(例: ‘4M’)。 単位は ‘b’ (バイト
+     )、 ‘e’ (elementの略。セル単位)、 ‘k’ (キロバイト)、 ‘M’ (メガバイ
+     ト)、 ‘G’ (ギガバイト)、 ‘T’ (テラバイト)のいずれかになります。 単
+     位が指定されていない場合 ‘e’ が使用されます。
 
 ‘--locals-stack-size size’
 ‘-l size’
-     Allocate size space for the locals stack instead of using the
-     default specified in the image (typically 14.5K).
+     イメージで指定されているデフォルト(通常は 14.5K)を使用する代わりに
+     、 ローカル・スタック(locals stack)に指定サイズ(size)のスペースを割
+     り当てます。 サイズ(size)指定は整数と単位で構成されます(例: ‘4M’)。
+     単位は ‘b’ (バイト)、 ‘e’ (elementの略。セル単位)、 ‘k’ (キロバイト
+     )、 ‘M’ (メガバイト)、 ‘G’ (ギガバイト)、 ‘T’ (テラバイト)のいずれ
+     かになります。 単位が指定されていない場合 ‘e’ が使用されます。
 
 ‘--vm-commit’
-     Normally, Gforth tries to start up even if there is not enough
-     virtual memory for the dictionary and the stacks (using
-     ‘MAP_NORESERVE’ on OSs that support it); so you can ask for a
-     really big dictionary and/or stacks, and as long as you don’t use
-     more virtual memory than is available, everything will be fine (but
-     if you use more, processes get killed).  With this option you just
-     use the default allocation policy of the OS; for OSs that don’t
-     overcommit (e.g., Solaris), this means that you cannot and should
-     not ask for as big dictionary and stacks, but once Gforth
-     successfully starts up, out-of-memory won’t kill it.
+     通常 Gforth は、 ディクショナリとスタックに十分な仮想メモリ(virtual
+     memory)がない場合でも起動しようとします(OS がサポートしていれば
+     ‘MAP_NORESERVE’ を使用します)。 したがって、 あなたは非常に大きなデ
+     ィクショナリやスタックを要求することができ、 利用可能なのを超える仮
+     想メモリを使用しない限り、 すべて問題ありません(ただし、それを超え
+     て使用すると、 プロセスが強制終了(kill)されます)。 このオプションを
+     使用すると、 OS のデフォルトの割り当てポリシーを使用するようになり
+     ます。 とりわけ、 オーバーコミットしない OS (Solaris など) の場合、
+     これは、 大きなディクショナリやスタックを要求することはできませんし
+     、 要求すべきではないことを意味しますが、 しかし、 Gforth が正常に
+     起動する事に成功したならば、 メモリ不足によって強制終了(kill)させら
+     れることはありません。
 
 ‘--help’
 ‘-h’
-     Print a message about the command-line options
+     コマンドライン・オプションに関するメッセージを出力します
 
 ‘--version’
 ‘-v’
      バージョンを出力して終了(exit)
 
 ‘--debug’
-     Print some information useful for debugging on startup.
+     起動時のデバッグに役立ついくつかの情報を出力します。
 
 ‘--offset-image’
-     Start the dictionary at a slightly different position than would be
-     used otherwise (useful for creating data-relocatable images, *note
-     Data-Relocatable Image Files::).
+     それ以外の場合に使用される位置とはわずかに異なる位置でディクショナ
+     リを開始します (データ再配置可能イメージ(data-relocatable images)の
+     作成に役立ちます *note Data-Relocatable Image Files::)。
 
 ‘--no-offset-im’
-     Start the dictionary at the normal position.
+     ディクショナリを通常の位置で開始します。
 
 ‘--clear-dictionary’
-     Initialize all bytes in the dictionary to 0 before loading the
-     image (*note Data-Relocatable Image Files::).
+     イメージをロードする前に、 ディクショナリ内の全てのバイトを 0 に初
+     期化します(*note Data-Relocatable Image Files::)。
 
 ‘--die-on-signal’
-     Normally Gforth handles most signals (e.g., the user interrupt
-     SIGINT, or the segmentation violation SIGSEGV) by translating it
-     into a Forth ‘THROW’.  With this option, Gforth exits if it
-     receives such a signal.  This option is useful when the engine
-     and/or the image might be severely broken (such that it causes
-     another signal before recovering from the first); this option
-     avoids endless loops in such cases.
+     通常、 Gforth はほとんどのシグナル(例えば、 ユーザー割り込みの
+     SIGINT や、 セグメンテーション違反 SIGSEGV)を Forth の ‘THROW’ に変
+     換することで処理します。 このオプションを使用すると、 Gforth はその
+     ようなシグナルを受信すると終了(exit)します。 このオプションは、 (最
+     初のシグナルから回復する前に別のシグナルが発生するなど、)エンジンや
+     イメージがひどく壊れている可能性がある場合に役立ちます。 このオプシ
+     ョンは、 そのような場合の無限ループを回避します。
 
 ‘--no-dynamic’
 ‘--dynamic’
-     Disable or enable dynamic superinstructions with replication (*note
-     Dynamic Superinstructions::).
+     レプリケーション(replication)を伴う動的スーパー命令(dynamic
+     superinstructions)を無効または有効にします(*note Dynamic
+     Superinstructions::)。
 
 ‘--no-super’
-     Disable dynamic superinstructions, use just dynamic replication;
-     this is useful if you want to patch threaded code (*note Dynamic
-     Superinstructions::).
+     動的スーパー命令(dynamic superinstructions)を無効にし、 動的レプリ
+     ケーション(dynamic replication)のみを使用します。 これは、 スレッド
+     化コード(threaded code)にパッチを適用する場合に便利です(*note
+     Dynamic Superinstructions::)。
 
 ‘--ss-number=N’
-     Use only the first N static superinstructions compiled into the
-     engine (default: use them all; note that only ‘gforth-fast’ has
-     any).  This option is useful for measuring the performance impact
-     of static superinstructions.
+     エンジンにコンパイル済みの最初の N 個の静的スーパー命令(static
+     superinstructions)のみを使用します(デフォルトでは全てを使用します。
+     注意: ‘gforth-fast’ のみのオプションです)。 このオプションは、 静的
+     スーパー命令(static superinstructions)のパフォーマンスへの影響を測
+     定するのに役立ちます。
 
 ‘--ss-min-codesize’
 ‘--ss-min-ls’
 ‘--ss-min-lsu’
 ‘--ss-min-nexts’
-     Use specified metric for determining the cost of a primitive or
-     static superinstruction for static superinstruction selection.
-     ‘Codesize’ is the native code size of the primive or static
-     superinstruction, ‘ls’ is the number of loads and stores, ‘lsu’ is
-     the number of loads, stores, and updates, and ‘nexts’ is the number
-     of dispatches (not taking dynamic superinstructions into account),
-     i.e.  every primitive or static superinstruction has cost 1.
-     Default: ‘codesize’ if you use dynamic code generation, otherwise
-     ‘nexts’.
+     指定のメトリックを使用して、 静的スーパー命令の選択(static
+     superinstruction selection)をするためにプリミティブまたは静的スーパ
+     ー命令のコストを決定します。 ‘Codesize’ はプリミティブまたは静的ス
+     ーパー命令のネイティブ・コード・サイズ、 そして、 ‘ls’ はロードとス
+     トアの数、 そして、 ‘lsu’ はロードとストアと更新の数、 そして、
+     ‘nexts’ は(動的スーパー命令を考慮しない)ディスパッチの数です。 ここ
+     で、 すべてのプリミティブまたは静的スーパー命令のコストは 1 です。
+     デフォルトでは、 動的コード生成を使用する場合は ‘codesize’、 それ以
+     外の場合は ‘nexts’ です。
 
 ‘--ss-greedy’
-     This option is useful for measuring the performance impact of
-     static superinstructions.  By default, an optimal shortest-path
-     algorithm is used for selecting static superinstructions.  With
-     ‘--ss-greedy’ this algorithm is modified to assume that anything
-     after the static superinstruction currently under consideration is
-     not combined into static superinstructions.  With ‘--ss-min-nexts’
-     this produces the same result as a greedy algorithm that always
-     selects the longest superinstruction available at the moment.
-     E.g., if there are superinstructions AB and BCD, then for the
-     sequence A B C D the optimal algorithm will select A BCD and the
-     greedy algorithm will select AB C D.
+     このオプションは、 静的スーパー命令のパフォーマンスへの影響を測定す
+     るのに役立ちます。 デフォルトでは、 静的スーパー命令の選択には最適
+     な最短パス・アルゴリズム(shortest-path algorithm)が使用されます。
+     ‘--ss-greedy’ を使用すると、 そのアルゴリズムは、 現在検討中の静的
+     スーパー命令以降は静的スーパー命令に結合されないと想定するように変
+     更されます。 ‘--ss-min-nexts’ を使用すると、 その時点で利用可能な最
+     長のスーパー命令を常に選択する貪欲なアルゴリズムと同じ結果が生成さ
+     れます。 たとえば、スーパー命令 AB と BCD がある場合、 シーケンス A
+     B C D に対して、 最適アルゴリズムは A BCD を選択し、 貪欲アルゴリズ
+     ムは AB C D を選択します。
 
 ‘--print-metrics’
-     Prints some metrics used during static superinstruction selection:
-     ‘code size’ is the actual size of the dynamically generated code.
-     ‘Metric codesize’ is the sum of the codesize metrics as seen by
-     static superinstruction selection; there is a difference from ‘code
-     size’, because not all primitives and static superinstructions are
-     compiled into dynamically generated code, and because of markers.
-     The other metrics correspond to the ‘ss-min-...’ options.  This
-     option is useful for evaluating the effects of the ‘--ss-...’
-     options.
+     静的スーパー命令の選択中に使用されるいくつかのメトリックを出力しま
+     す。 ‘code size’ は、 動的に生成されたコードの実際のサイズです。
+     ‘Metric codesize’ は、静的スーパー命令の選択によって確認できるコー
+     ドサイズ・メトリック(codesize metrics)の合計で、 ‘code size’ とは異
+     なります。 これは、 すべてのプリミティブと静的スーパー命令が動的に
+     生成されるコードにコンパイルされるわけではないことと、 マーカーがあ
+     るためです。 他のメトリクスは ‘ss-min-...’ オプションに対応します。
+     このオプションは、‘--ss-...’ オプションの効果を評価するのに役立ちま
+     す。
 
-   As explained above, the image-specific command-line arguments for the
-default image ‘gforth.fi’ consist of a sequence of filenames and ‘-e
-FORTH-CODE’ options that are interpreted in the sequence in which they
-are given.  The ‘-e FORTH-CODE’ or ‘--evaluate FORTH-CODE’ option
-evaluates the Forth code.  This option takes only one argument; if you
-want to evaluate more Forth words, you have to quote them or use ‘-e’
-several times.  To exit after processing the command line (instead of
-entering interactive mode) append ‘-e bye’ to the command line.  You can
-also process the command-line arguments with a Forth program (*note OS
-command line arguments::).
+   上記にて説明したように、 デフォルト・イメージである ‘gforth.fi’ のイ
+メージ固有のコマンドライン引数は、 一連のファイル名と、 指定した順序で解
+釈(interpret)される ‘-e FORTH-CODE’ オプションで構成されます。 ‘-e
+FORTH-CODE’ または ‘--evaluate FORTH-CODE’ オプションは Forth コードを評
+価(evaluate)します。 このオプションは引数を 1 つだけ取ります。 あなたが
+、もし、 さらに多くの Forth ワードを評価したい場合は、 ワードを引用符で
+囲むか、 ‘-e’ を複数回使用する必要があります。 コマンド・ラインの処理後
+に(対話モードに入るのではなく、)終了(exit)するには、 コマンド・ラインに
+‘-e bye’ を追加します。 Forth プログラムではコマンド・ライン引数を処理す
+ることもできます(*note OS command line arguments::)。
 
-   If you have several versions of Gforth installed, ‘gforth’ will
-invoke the version that was installed last.  ‘gforth-<version>’ invokes
-a specific version.  If your environment contains the variable
-‘GFORTHPATH’, you may want to override it by using the ‘--path’ option.
+   複数のバージョンの Gforth がインストールされている場合、 ‘gforth’ は
+最後にインストールされたバージョンを呼び出します。 ‘gforth-<version>’ は
+特定のバージョンを呼び出します。 あなたの環境に環境変数 ‘GFORTHPATH’ が
+ある場合、 ‘--path’ オプションを使用してこの環境変数をオーバーライドでき
+ます。
 
-   On startup, before processing any of the image option, the user
-initialization file either specified in the environment variable
-‘GFORTH_ENV’ or, if not set, ‘~/.config/gforthrc0’ is included, if it
-exists.  If ‘GFORTH_ENV’ is “‘off’,” nothing is included.  After
-processing all the image options and just before printing the boot
-message, the user initialization file ‘~/.config/gforthrc’ from your
-home directory is included, unless the option ‘--no-rc’ is given.
+   起動時、 イメージ・オプションを処理する前に、 環境変数 ‘GFORTH_ENV’ で
+指定されたユーザー初期化ファイル、 またはその環境変数が設定されていない
+場合は(存在する場合、) ‘~/.config/gforthrc0’ がインクルードされます。
+‘GFORTH_ENV’ が「‘off’」の場合は何もインクルードしません。 すべてのイメ
+ージ・オプションを処理した後、 ブート・メッセージを出力する直前に、 オプ
+ション ‘--no-rc’ が指定されていない限り、 ホーム・ディレクトリのユーザー
+初期化ファイル ‘~/.config/gforthrc’ がインクルードされます。
 
-   Warning levels can be set with
+   警告レベルは以下のように設定できます
 
 ‘-W’
      警告(warnings)をオフにする
@@ -1031,11 +1053,11 @@ File: gforth.info,  Node: Leaving Gforth,  Next: Help on Gforth,  Prev: Invoking
 2.2 Leaving Gforth
 ==================
 
-You can leave Gforth by typing ‘bye’ or ‘Ctrl-d’ (at the start of a
-line) or (if you invoked Gforth with the ‘--die-on-signal’ option)
-‘Ctrl-c’.  When you leave Gforth, all of your definitions and data are
-discarded.  For ways of saving the state of the system before leaving
-Gforth see *note Image Files::.
+‘bye’ または (行の先頭で、) ‘Ctrl-d’ または (‘--die-on-signal’ オプショ
+ンを指定して Gforth を起動した場合、) ‘Ctrl+C’ を入力すると、 Gforth を
+終了できます。 Gforth を終了すると、 あなたの定義とデータはすべて破棄さ
+れます。 Gforth を終了する前にシステムの状態を保存する方法については、
+*note Image Files:: を参照してください。
 
    doc-bye
 
@@ -1045,22 +1067,24 @@ File: gforth.info,  Node: Help on Gforth,  Next: Command-line editing,  Prev: Le
 2.3 Help on Gforth
 ==================
 
-Gforth has a simple, text-based online help system.
+Gforth には、 シンプルなテキストベースのオンライン・ヘルプ・システムがあ
+ります。
 
 ‘help’ ( "rest-of-line" –  ) gforth-1.0 “help”
-   If no name is given, show basic help.  If a documentation node name
-is given followed by "::", show the start of the node.  If the name of a
-word is given, show the documentation of the word if it exists, or its
-source code if not.  Use ‘g’ to enter the editor at the point shown by
-‘help’.  ‘Help’ sets the current location, so you can use ‘n’ and ‘b’ to
-show more of the text, or ‘g’ to visit the documentation in an editor
-(*note Locating source code definitions::).
+   名前が指定されていない場合は、 基礎的なヘルプが表示されます。 ドキュ
+メント・ノード名に ‘::‘ が続く場合、 ノードの最初を表示します。 ワードの
+名前が指定されている場合、 そのワードのドキュメントが存在する場合はその
+ドキュメントを、 存在しない場合はソース・コードを表示します。 ‘g’ を使用
+して、 ‘help’ で表示された場所でエディタに入ります。 ‘Help’ は現在の位置
+をマークするため、 ‘n’ と ‘b’ を使用してテキストの詳細を表示したり、 ‘g’
+を使用してエディターでドキュメントにアクセスしたりできます(*note
+Locating source code definitions::)。
 
 ‘authors’ ( –  ) gforth-1.0 “authors”
-   show the list of authors
+   著者のリストを表示
 
 ‘license’ ( –  ) gforth-0.2 “license”
-   print the license statement
+   ライセンス声明を出力します
 
 
 File: gforth.info,  Node: Command-line editing,  Next: Environment variables,  Prev: Help on Gforth,  Up: Gforth Environment
@@ -1068,60 +1092,58 @@ File: gforth.info,  Node: Command-line editing,  Next: Environment variables,  P
 2.4 Command-line editing
 ========================
 
-Gforth maintains a history file that records every line that you type to
-the text interpreter.  This file is preserved between sessions, and is
-used to provide a command-line recall facility; if you type ‘Ctrl-P’
-repeatedly you can recall successively older commands from this (or
-previous) session(s).  The full list of command-line editing facilities
-is:
+Gforth は、 テキスト・インタプリタに入力したすべての行を記録するヒストリ
+・ファイルを維持しています。 このファイルはセッションをまたいで保存され
+、 コマンドラインの再呼び出し機能を提供するために使用されます。 ‘Ctrl-P’
+を繰り返し入力すると、このセッション(または前のセッション)から古いコマン
+ドを連続して呼び出すことができます。 コマンドライン編集機能の完全なリス
+トは以下のとおりです:
 
-   • ‘Ctrl-p’ (“previous”) (or up-arrow) to recall successively older
-     lines from the history buffer.
-   • ‘Ctrl-n’ (“next”) (or down-arrow) to recall successively newer
-     lines from the history buffer.  If you moved to an older line
-     earlier and gave it to Gforth for text-interpretation, asking for
-     the next line as the first editing command gives you the next line
-     after the one you selected last time.
-   • ‘Ctrl-f’ (or right-arrow) to move the cursor right,
-     non-destructively.
-   • ‘Ctrl-b’ (or left-arrow) to move the cursor left,
-     non-destructively.
-   • ‘Ctrl-h’ (backspace) to delete the character to the left of the
-     cursor, closing up the line.
-   • ‘Ctrl-k’ to delete (“kill”) from the cursor to the end of the line.
-   • ‘Ctrl-a’ to move the cursor to the start of the line.
-   • ‘Ctrl-e’ to move the cursor to the end of the line.
-   • <RET> (‘Ctrl-m’) or <LFD> (‘Ctrl-j’) to submit the current line.
-   • <TAB> to step through all possible full-word completions of the
-     word currently being typed.
-   • ‘Ctrl-d’ on an empty line line to terminate Gforth (gracefully,
-     using ‘bye’).
-   • ‘Ctrl-x’ (or ‘Ctrl-d’ on a non-empty line) to delete the character
-     under the cursor.
+   • ‘Ctrl-p’ (“previous”) (または「↑」上矢印)を使用して、 ヒストリ・バ
+     ッファーから古い行を順に呼び出します。
+   • ‘Ctrl-n’ (“next”)(または「↓」下矢印)を押すと、 ヒストリ・バッファー
+     からより新しい行を連続して呼び出します。 以前に古い行に移動し、 そ
+     れをテキスト解釈(text-interpretation)のために Gforth に与えた場合、
+     最初の編集コマンドとして「nextコマンド」を要求すると、 最後に選択し
+     た行の次の行が表示されます。
+   • ‘Ctrl-f’ (または「→」右矢印)を使用して、 非破壊的にカーソルを右に移
+     動します。
+   • ‘Ctrl-b’ (または「←」左矢印)を使用して、 非破壊的にカーソルを左に移
+     動します。
+   • ‘Ctrl-h’ (backspace) カーソルの左側の文字を削除し、 桁を詰めます。
+   • ‘Ctrl-k’ カーソルから行末までを削除 (“kill”) します。
+   • ‘Ctrl-a’ カーソルを行頭に移動します。
+   • ‘Ctrl-e’ カーソルを行末に移動します。
+   • <RET> (‘Ctrl-m’) または <LFD> (‘Ctrl-j’) 現在行を gforth へ送ります
+   • <TAB> 現在入力中のワードの、 可能なすべての全ワード補完をステップ実
+     行します。
+   • ‘Ctrl-d’ 空行で押すと Gforth を終了(terminate)します。 (‘bye’ 使用
+     すると正常に終了します)。
+   • ‘Ctrl-x’ (空行以外では ‘Ctrl-d’ も使えます) カーソル位置の文字を削
+     除します。
 
-   When editing, displayable characters are inserted to the left of the
-cursor position; the line is always in “insert” (as opposed to
-“overstrike”) mode.
+   編集中、 表示可能な文字はカーソル位置の左側に挿入されます。 行は常に
+(「上書きモード」(overstrike)ではなく、)「挿入モード」(insert)です。
 
-   On Unix systems, the history file is
-‘$HOME/.local/share/gforth/history’ by default(1).  You can find out the
-name and location of your history file using:
+   Unix システムでは、 ヒストリ・ファイルは デフォルトでは
+‘$HOME/.local/share/gforth/history’です(1)。 以下のコマンドを使用して、
+ヒストリ・ファイルの名前と場所を確認できます:
 
      history-file type \ Unix-class systems
 
      history-file type \ Other systems
      history-dir  type
 
-   If you enter long definitions by hand, you can use a text editor to
-paste them out of the history file into a Forth source file for reuse at
-a later time.
+   あなたが長い定義を手入力した場合、 テキスト・エディターを使用してヒス
+トリ・ファイルから Forth ソース・ファイルに貼り付け、 後で再利用できます
+。
 
-   Gforth never trims the size of the history file, so you should do
-this periodically, if necessary.
+   Gforth はヒストリ・ファイルのサイズを決して削減しないため、 あなたは
+必要に応じて定期的にヒストリ・ファイルのサイズを削減する必要があります。
 
    ---------- Footnotes ----------
 
-   (1) i.e.  it is stored in the user’s home directory.
+   (1) つまり、 ユーザーのホーム・ディレクトリに保存されます。
 
 
 File: gforth.info,  Node: Environment variables,  Next: Gforth Files,  Prev: Command-line editing,  Up: Gforth Environment
@@ -1129,43 +1151,43 @@ File: gforth.info,  Node: Environment variables,  Next: Gforth Files,  Prev: Com
 2.5 Environment variables
 =========================
 
-Gforth uses these environment variables:
+Gforth は以下の環境変数を使用します:
 
-   • ‘GFORTHHIST’ – (Unix systems only) specifies the path for the
-     history file ‘.gforth-history’.  Default:
-     ‘$HOME/.local/share/gforth/history’.
+   • ‘GFORTHHIST’ – (Unix系のみ) ヒストリ・ファイル ‘.gforth-history’ の
+     パスを指定。 デフォルト: ‘$HOME/.local/share/gforth/history’.
 
-   • ‘GFORTHPATH’ – specifies the path used when searching for the
-     gforth image file and for Forth source-code files (usually ‘.’, the
-     current working directory).  Path separator is ‘:’, a typical path
-     would be ‘/usr/local/share/gforth/1.0:.’.
+   • gforth イメージ・ファイルと Forth ソースコード・ファイル を検索する
+     ときに使用するパスを指定(通常 ‘.’ 、現在の作業ディレクトリ)。 パス
+     区切り文字は ‘:’ です。 ‘/usr/local/share/gforth/1.0:.’ のみたいな
+     のが典型です。
 
-   • ‘LANG’ – see ‘LC_CTYPE’
+   • ‘LANG’ – ‘LC_CTYPE’ 参照
 
-   • ‘LC_ALL’ – see ‘LC_CTYPE’
+   • ‘LC_ALL’ – ‘LC_CTYPE’ 参照
 
-   • ‘LC_CTYPE’ – If this variable contains “UTF-8” on Gforth startup,
-     Gforth uses the UTF-8 encoding for strings internally and expects
-     its input and produces its output in UTF-8 encoding, otherwise the
-     encoding is 8bit (see *note Xchars and Unicode::).  If this
-     environment variable is unset, Gforth looks in ‘LC_ALL’, and if
-     that is unset, in ‘LANG’.
+   • ‘LC_CTYPE’ – Gforth の起動時にこの環境変数が “UTF-8” を含んでいる場
+     合、 Gforth は内部で文字列に UTF-8 エンコーディングを使用し、 UTF-8
+     エンコーディングでの入力を期待し、 UTF-8 エンコーディングで出力を生
+     成します。 それ以外の場合、 エンコーディングは 8 ビットです(*note
+     Xchars and Unicode::)。 この環境変数が設定されていない場合、 Gforth
+     は ‘LC_ALL’ を調べ、 それも設定されていない場合は ‘LANG’ を調べます
+     。
 
-   • ‘GFORTHSYSTEMPREFIX’ – specifies what to prepend to the argument of
-     ‘system’ before passing it to C’s ‘system()’.  Default:
-     ‘"./$COMSPEC /c "’ on Windows, ‘""’ on other OSs.  The prefix and
-     the command are directly concatenated, so if a space between them
-     is necessary, append it to the prefix.
+   • ‘GFORTHSYSTEMPREFIX’ – C言語 の ‘system()’ に渡す前に ‘system’ の引
+     数に何を付加するかを指定します。 デフォルト: Windows では
+     ‘"./$COMSPEC /c "’で、他の OS では ‘""’ です。 このプレフィックスと
+     コマンドは直接連結されるため、 間にスペースが必要な場合はプレフィッ
+     クスに追加してください。
 
-   • ‘GFORTH’ – used by ‘gforthmi’, *Note gforthmi::.
+   • ‘GFORTH’ – ‘gforthmi’ によって使用されます(*Note gforthmi::)。
 
-   • ‘GFORTHD’ – used by ‘gforthmi’, *Note gforthmi::.
+   • ‘GFORTHD’ – ‘gforthmi’ によって使用されます(*Note gforthmi::)。
 
-   • ‘TMP’, ‘TEMP’ - (non-Unix systems only) used as a potential
-     location for the history file.
+   • ‘TMP’, ‘TEMP’ - (Unix系以外) ヒストリ・ファイルの場所として暗黙に使
+     用されます。
 
-   All the Gforth environment variables default to sensible values if
-they are not set.
+   すべての Gforth 環境変数は、 設定されていない場合、 デフォルトで適切
+な値になります。
 
 
 File: gforth.info,  Node: Gforth Files,  Next: Gforth in pipes,  Prev: Environment variables,  Up: Gforth Environment
@@ -1173,8 +1195,8 @@ File: gforth.info,  Node: Gforth Files,  Next: Gforth in pipes,  Prev: Environme
 2.6 Gforth files
 ================
 
-When you install Gforth on a Unix system, it installs files in these
-locations by default:
+Gforth を Unix系にインストールすると、 デフォルトでは以下の場所にファイ
+ルがインストールされます:
 
    • ‘/usr/local/bin/gforth’
    • ‘/usr/local/bin/gforthmi’
@@ -1185,8 +1207,8 @@ locations by default:
    • ‘/usr/local/share/gforth/<version>/...’ - Gforth source files.
    • ‘.../emacs/site-lisp/gforth.el’ - Emacs gforth mode.
 
-   You can select different places for installation by using ‘configure’
-options (listed with ‘configure --help’).
+   ‘configure’ のオプションを使用すると、 インストール先に違う場所を選択
+できます(どんなオプションがあるかは ‘configure --help’ してください)。
 
 
 File: gforth.info,  Node: Gforth in pipes,  Next: Startup speed,  Prev: Gforth Files,  Up: Gforth Environment
@@ -1194,45 +1216,45 @@ File: gforth.info,  Node: Gforth in pipes,  Next: Startup speed,  Prev: Gforth F
 2.7 Gforth in pipes
 ===================
 
-Gforth can be used in pipes created elsewhere (described in the
-following).  It can also create pipes on its own (*note Pipes::).
+Gforth は、他の場所で作成されたパイプラインを使用できます(以下で説明しま
+す)。 独自にパイプラインを作成することもできます(*note Pipes::)。
 
-   If you pipe into Gforth, your program should read with ‘read-file’ or
-‘read-line’ from ‘stdin’ (*note General files::).  ‘Key’ does not
-recognize the end of input.  Words like ‘accept’ echo the input and are
-therefore usually not useful for reading from a pipe.  You have to
-invoke the Forth program with an OS command-line option, as you have no
-chance to use the Forth command line (the text interpreter would try to
-interpret the pipe input).
+   Gforth にパイプライン入力する場合、 プログラムは ‘stdin’ から
+‘read-file’ または ‘read-line’ を使用して読み取る必要があります(*note
+General files::)。 ‘Key’ は入力の終わりを認識しません。 ‘accept’ のよう
+なワードは入力をエコーするため、 通常はパイプラインからの読み取りには役
+に立ちません。 あなたは、 (Forthのテキスト・インタープリタはパイプライン
+入力を解釈(interpret)しようとしてしまうため、)Forth内のコマンド・ライン
+を使用する機会はなく、 OSのコマンド・ライン・オプションを使用して Forth
+プログラムを呼び出す必要があります。
 
-   You can output to a pipe with ‘type’, ‘emit’, ‘cr’ etc.
+   あなたは ‘type’、 ‘emit’、 ‘cr’ などでパイプラインへ出力できます。
 
-   When you write to a pipe that has been closed at the other end,
-Gforth receives a SIGPIPE signal (“pipe broken”).  Gforth translates
-this into the exception ‘broken-pipe-error’.  If your application does
-not catch that exception, the system catches it and exits, usually
-silently (unless you were working on the Forth command line; then it
-prints an error message and exits).  This is usually the desired
-behaviour.
+   もう一方の端で既に閉じられているパイプラインに書き込むと、 Gforth は
+SIGPIPE シグナル(「パイプが壊れた」シグナル)を受け取ります。 Gforth はこ
+れを例外 ‘broken-pipe-error’ に変換します。 あなたのアプリケーションがそ
+の例外をキャッチしない場合、 システムはその例外をキャッチして、 通常は黙
+って終了(exit)します(Forth コマンド・ラインで作業している場合を除き、 エ
+ラー・メッセージを出力して終了します)。 これは通常、 望ましい動作です。
 
-   If you do not like this behaviour, you have to catch the exception
-yourself, and react to it.
+   この振る舞いが気に入らない場合は、 自分で例外をキャッチし、 対応する
+必要があります。
 
-   Here’s an example of an invocation of Gforth that is usable in a
-pipe:
+   ここで、 パイプライン内で使用できる Gforth の呼び出しの例を以下に示し
+ます:
 
      gforth -e ": foo begin pad dup 10 stdin read-file throw dup while \
       type repeat ; foo bye"
 
-   This example just copies the input verbatim to the output.  A very
-simple pipe containing this example looks like this:
+   この例では、 入力をそのまま出力にコピーするだけです。 この例を含む非
+常に単純なパイプラインは以下のようになります:
 
      cat startup.fs |
      gforth -e ": foo begin pad dup 80 stdin read-file throw dup while \
       type repeat ; foo bye"|
      head
 
-   Pipes involving Gforth’s ‘stderr’ output do not work.
+   Gforth の ‘stderr’ 出力に関連するパイプラインは機能しません。
 
 
 File: gforth.info,  Node: Startup speed,  Prev: Gforth in pipes,  Up: Gforth Environment
@@ -1240,64 +1262,65 @@ File: gforth.info,  Node: Startup speed,  Prev: Gforth in pipes,  Up: Gforth Env
 2.8 Startup speed
 =================
 
-If Gforth is used for CGI scripts or in shell scripts, its startup speed
-may become a problem.  On a 3GHz Core 2 Duo E8400 under 64-bit Linux
-2.6.27.8 with libc-2.7, ‘gforth-fast -e bye’ takes 13.1ms user and 1.2ms
-system time (‘gforth -e bye’ is faster on startup with about 3.4ms user
-time and 1.2ms system time, because it subsumes some of the options
-discussed below).
+Gforth を CGI スクリプトやシェルスクリプトで使用する場合、 起動速度が問
+題になる場合があります。 libc-2.7 を搭載した 64 ビット Linux 2.6.27.8 上
+の 3GHz Core 2 Duo E8400 では、 ‘gforth-fast -e bye’ でユーザー時間は
+13.1 ミリ秒、システム時間は 1.2 ミリ秒かかります(‘gforth -e bye’ は、 下
+記で説明するオプションの一部を組み込んでいるため、 ユーザー時間は約 3.4
+ミリ秒、 システム時間は 1.2 ミリ秒で起動がより高速になります)。
 
-   If startup speed is a problem, you may consider the following ways to
-improve it; or you may consider ways to reduce the number of startups
-(for example, by using Fast-CGI). Note that the first steps below
-improve the startup time at the cost of run-time (including
-compile-time), so whether they are profitable depends on the balance of
-these times in your application.
+   起動速度が問題になる場合は、 以下の改善方法を検討してください。 また
+は、 起動の数を減らす方法(Fast-CGI の使用など)を検討することもできます。
+以下の最初の手順では、 (コンパイル時間を含む)実行時間を犠牲にして起動時
+間を短縮するため、 それで利益が得られるかどうかはあなたのアプリケーショ
+ンでのこれらの時間のバランスによって決まることに注意してください。
 
-   An easy step that influences Gforth startup speed is the use of a
-number of options that increase run-time, but decrease image-loading
-time.
+   Gforth の起動速度に影響を及ぼす簡単な手順は、 実行時間(run-time)を増
+加させながらイメージの読み込み時間(image-loading time)を短縮する多数のオ
+プションを使用してみることです。
 
-   The first of these that you should try is ‘--ss-number=0
---ss-states=1’ because this option buys relatively little run-time
-speedup and costs quite a bit of time at startup.  ‘gforth-fast
---ss-number=0 --ss-states=1 -e bye’ takes about 2.8ms user and 1.5ms
-system time.
+   最初に試す必要があるのは ‘--ss-number=0 --ss-states=1’ です。 このオ
+プションは実行時の高速化が比較的わずかなのに、 起動時にかなりの時間がか
+かるためです。 ‘gforth-fast --ss-number=0 --ss-states=1 -e bye’ には、 ユ
+ーザー時間が約 2.8 ミリ秒、 システム時間が約 1.5 ミリ秒かかります。
 
-   The next option is ‘--no-dynamic’ which has a substantial impact on
-run-time (about a factor of 2 on several platforms), but still makes
-startup speed a little faster: ‘gforth-fast --ss-number=0 --ss-states=1
---no-dynamic -e bye’ consumes about 2.6ms user and 1.2ms system time.
+   次のオプションは ‘--no-dynamic’ です。 これは実行時間に大きな影響を及
+ぼします(いくつかのプラットフォームでは約 2 倍です)が、 それでも起動速度
+が若干速くなります。 ‘gforth-fast -- ss-number=0 --ss-states=1
+--no-dynamic -e bye’ は、 約 2.6 ミリ秒のユーザー時間と 1.2 ミリ秒のシス
+テム時間を消費します。
 
-   The next step to improve startup speed is to use a data-relocatable
-image (*note Data-Relocatable Image Files::).  This avoids the
-relocation cost for the code in the image (but not for the data).  Note
-that the image is then specific to the particular binary you are using
-(i.e., whether it is ‘gforth’, ‘gforth-fast’, and even the particular
-build).  You create the data-relocatable image that works with
-‘./gforth-fast’ with ‘GFORTHD="./gforth-fast --no-dynamic" gforthmi
-gforthdr.fi’ (the ‘--no-dynamic’ is required here or the image will not
-work).  And you run it with ‘gforth-fast -i gforthdr.fi ... -e bye’ (the
-flags discussed above don’t matter here, because they only come into
-play on relocatable code).  ‘gforth-fast -i gforthdr.fi -e bye’ takes
-about 1.1ms user and 1.2ms system time.
+   起動速度を向上させるための次のステップは、 データ再配置可能イメージ
+(data-relocatable image)を使用することです(*note Data-Relocatable Image
+Files::)。 これにより、 イメージ内のコードの再配置コストが回避されます
+(ただし、 データの再配置コストは回避されません)。 イメージは、 使用して
+いる特定のバイナリ(つまり、 ‘gforth’、 ‘gforth-fast’、さらには特定のビル
+ド)に固有であることに注意してください。 ‘./gforth-fast’ で動作するデータ
+再配置可能イメージを作成するには、 ‘GFORTHD="./gforth-fast --no-dynamic"
+gforthmi gforthdr.fi’ とします(これには ‘--no-dynamic’ が必要です。そう
+しないとこのイメージは機能しません)。 そして、 ‘gforth-fast -i
+gforthdr.fi ... -e bye’ で実行します(上記で説明したフラグは、 再配置可能
+なコードでのみ機能するため、ここでは重要ではありません)。 ‘gforth-fast
+-i gforthdr.fi -e bye’ では、 ユーザー時間は約 1.1 ミリ秒、 システム時間
+は約 1.2 ミリ秒かかります。
 
-   One step further is to avoid all relocation cost and part of the
-copy-on-write cost through using a non-relocatable image (*note
-Non-Relocatable Image Files::).  However, this has the disadvantage that
-it does not work on operating systems with address space randomization
-(the default in, e.g., Linux nowadays), or if the dictionary moves for
-any other reason (e.g., because of a change of the OS kernel or an
-updated library), so we cannot really recommend it.  You create a
-non-relocatable image with ‘gforth-fast --no-dynamic -e "savesystem
-gforthnr.fi bye"’ (the ‘--no-dynamic’ is required here, too).  And you
-run it with ‘gforth-fast -i gforthnr.fi ... -e bye’ (again the flags
-discussed above don’t matter).  ‘gforth-fast -i gforthdr.fi -e bye’
-takes about 0.9ms user and 0.9ms system time.
+   さらにもう 1 つのステップは、 再配置不可イメージ(non-relocatable
+image)を使用することで、 すべての再配置コストと書き換え時コピー
+(copy-on-write;COW)コストの一部を回避することです(*note Non-Relocatable
+Image Files::)。ただし、 アドレス空間のランダム化が行われているオペレー
+ティング・システム(最近の Linux 等ではこれがデフォルト)や、 その他の理由
+でディクショナリが移動した場合(OS カーネルの変更や、 ライブラリ更新など
+の場合)には機能しないという欠点があるため、 あまりお勧めできません。再配
+置不可イメージ(non-relocatable image)を作成するために ‘gforth-fast
+--no-dynamic -e "savesystem gforthnr.fi bye"’ とします(ここでも
+‘--no-dynamic’ が必要です)。 そして、 ‘gforth-fast -i gforthnr.fi ... -e
+bye’ として実行します(ここでも、 上記で説明したフラグは重要ではありませ
+ん)。 ‘gforth-fast -i gforthdr.fi -e bye’ はユーザー時間は約 0.9 ミリ秒
+、 システム時間は約 0.9 ミリ秒かかります。
 
-   If the script you want to execute contains a significant amount of
-code, it may be profitable to compile it into the image to avoid the
-cost of compiling it at startup time.
+   実行するスクリプトに大量のコードが含まれている場合は、 起動時のコンパ
+イルのコストを避けるために、 それをイメージにコンパイルすると有益な場合
+があります。
 
 
 File: gforth.info,  Node: Tutorial,  Next: Introduction,  Prev: Gforth Environment,  Up: Top
@@ -1305,27 +1328,26 @@ File: gforth.info,  Node: Tutorial,  Next: Introduction,  Prev: Gforth Environme
 3 Forth Tutorial
 ****************
 
-The difference of this chapter from the Introduction (*note
-Introduction::) is that this tutorial is more fast-paced, should be used
-while sitting in front of a computer, and covers much more material, but
-does not explain how the Forth system works.
+この章と Introduction(*note Introduction::) の違いは、 このチュートリア
+ルの方がハイペースで、 かつ、 あなたがコンピューターをさわれるときに読む
+必要があり、 かつ、 より多くの内容をカバーしていますが、 しかし、 Forth
+システムがどのように機能するかについては説明してい無いことです。
 
-   This tutorial can be used with any Standard-compliant Forth; any
-Gforth-specific features are marked as such and you can skip them if you
-work with another Forth.  This tutorial does not explain all features of
-Forth, just enough to get you started and give you some ideas about the
-facilities available in Forth.  Read the rest of the manual when you are
-through this.
+   このチュートリアルは、 標準に準拠した任意の Forth でご利用できます。
+Gforth 固有の機能はすべてその旨の目印が付けられており、 別の Forth を使
+用する場合はその部分はスキップできます。 このチュートリアルでは、 Forth
+のすべての機能について説明するわけではありませんが、 あなたが Forth を使
+い始めて、 Forth で使用できる機能についていくつかのアイデアを得るには十
+分です。 このチュートリアルが終わったら、 マニュアルの残りの部分をお読み
+ください。
 
-   The intended way to use this tutorial is that you work through it
-while sitting in front of the console, take a look at the examples and
-predict what they will do, then try them out; if the outcome is not as
-expected, find out why (e.g., by trying out variations of the example),
-so you understand what’s going on.  There are also some assignments that
-you should solve.
+   このチュートリアルの使用目的は、 あなたがコンソールの前に座って作業を
+進め、 例を見てその結果を予測してから、 自分で試してみるというものです。
+結果が期待どおりでない場合は、 何が起こっているのかを理解できるように(類
+似の例を試すなどして)理由を調べます。 いくつか課題も出題してあります。
 
-   This tutorial assumes that you have programmed before and know what,
-e.g., a loop is.
+   このチュートリアルでは、 あなたが以前にプログラミングをしたことがあり
+、 例えば、 ループとは何か、とかを理解していることを前提としています。
 
 * Menu:
 
@@ -1373,13 +1395,13 @@ File: gforth.info,  Node: Starting Gforth Tutorial,  Next: Syntax Tutorial,  Pre
 3.1 Starting Gforth
 ===================
 
-You can start Gforth by typing its name:
+あなたが Gforth を開始するには、その名前をタイプします:
 
      gforth
 
-   That puts you into interactive mode; you can leave Gforth by typing
-‘bye’.  While in Gforth, you can edit the command line and access the
-command line history with cursor keys, similar to bash.
+   これにより、 対話モードに入ります。 ‘bye’ と入力すると Gforth を終了
+できます。 Gforth では、 bash と同様に、 コマンド・ラインを編集し、 カー
+ソル・キーを使用してコマンド・ライン・ヒストリ(履歴)にアクセスできます。
 
 
 File: gforth.info,  Node: Syntax Tutorial,  Next: Crash Course Tutorial,  Prev: Starting Gforth Tutorial,  Up: Tutorial
@@ -1387,26 +1409,27 @@ File: gforth.info,  Node: Syntax Tutorial,  Next: Crash Course Tutorial,  Prev: 
 3.2 Syntax
 ==========
 
-A “word” is a sequence of arbitrary characters (except white space).
-Words are separated by white space.  E.g., each of the following lines
-contains exactly one word:
+“word” は、任意の文字のシーケンスです(空白(white space)を除く)。 ワード
+は空白(white space)で区切られます。 たとえば、 以下の各行には正確にただ
+1 つのワードが含まれています:
 
      word
      !@#$%^&*()
      1234567890
      5!a
 
-   A frequent beginner’s error is to leave out necessary white space,
-resulting in an error like ‘Undefined word’; so if you see such an
-error, check if you have put spaces wherever necessary.
+   初心者によくある間違いは、 必要な空白を省略することです。 その結果、
+‘Undefined word’ のようなエラーが発生します。そのため、 このようなエラー
+が表示された場合は、 必要な場所に空白を入れてあるかどうかを確認してくだ
+さい。
 
      ." hello, world" \ correct
      ."hello, world"  \ gives an "Undefined word" error
 
-   Gforth and most other Forth systems ignore differences in case (they
-are case-insensitive), i.e., ‘word’ is the same as ‘Word’.  If your
-system is case-sensitive, you may have to type all the examples given
-here in upper case.
+   Gforth および他のほとんどの Forth システムは、 大文字と小文字の違いを
+無視します(大文字と小文字は区別されません)。 つまり、 ‘word’ は ‘Word’ と
+同一です。 あなたのシステムで大文字と小文字が区別される場合は、 ここに示
+されているすべての例を大文字で入力する必要がある場合があります。
 
 
 File: gforth.info,  Node: Crash Course Tutorial,  Next: Stack Tutorial,  Prev: Syntax Tutorial,  Up: Tutorial
@@ -1414,24 +1437,26 @@ File: gforth.info,  Node: Crash Course Tutorial,  Next: Stack Tutorial,  Prev: S
 3.3 Crash Course
 ================
 
-Forth does not prevent you from shooting yourself in the foot.  Let’s
-try a few ways to crash Gforth:
+Forth は、 自分の足を撃つような馬鹿げた事を妨げたりはしません。 以下のよ
+うに Gforth をクラッシュさせるいくつかの方法を試してみましょう:
 
      0 0 !
      here execute
      ' catch >body 20 erase abort
      ' (quit1) >body 20 erase
 
-   The last two examples are guaranteed to destroy important parts of
-Gforth (and most other systems), so you better leave Gforth afterwards
-(if it has not finished by itself).  On some systems you may have to
-kill gforth from outside (e.g., in Unix with ‘kill’).
+   最後の 2 つの例は、Gforth (および他のほとんどのシステム) の重要な部分
+を破壊することが保証されているため、 (Gforth が自動的に終了していない場
+合、) この後は Gforth を終了させたほうがよいでしょう。 一部のシステムで
+は、 外部から gforth を強制終了する必要がある場合があります(例: Unix系 で
+は ‘kill’ を使用します)。
 
-   You will find out later what these lines do and then you will get an
-idea why they produce crashes.
+   これらの行が何を行うのか、 なぜクラッシュが発生するのかは後ほど分かり
+ます。
 
-   Now that you know how to produce crashes (and that there’s not much
-to them), let’s learn how to produce meaningful programs.
+   クラッシュを発生させる方法がわかったので(そして、 それは大したことが
+ない事がわかったので)、 今度は意味のあるプログラムを作成する方法を学ぶと
+しましょう。
 
 
 File: gforth.info,  Node: Stack Tutorial,  Next: Arithmetics Tutorial,  Prev: Crash Course Tutorial,  Up: Tutorial
@@ -1439,24 +1464,24 @@ File: gforth.info,  Node: Stack Tutorial,  Next: Arithmetics Tutorial,  Prev: Cr
 3.4 Stack
 =========
 
-The most obvious feature of Forth is the stack.  When you type in a
-number, it is pushed on the stack.  You can display the contents of the
-stack with ‘.s’.
+Forth の最も明々白々な機能はスタックです。 数値を入力すると、 その数値が
+スタックにプッシュされます。 ‘.s’ を使用してスタックの内容を表示できます
+。
 
      1 2 .s
      3 .s
 
-   ‘.s’ displays the top-of-stack to the right, i.e., the numbers appear
-in ‘.s’ output as they appeared in the input.
+   ‘.s’ はスタックの最上位(top-of-stack)が一番右になるように表示します。
+つまり、 数値は入力時に表記されたとおりに ‘.s’ 出力に表れます。
 
-   You can print the top element of the stack with ‘.’.
+   ‘.’ を使用してスタックの最上位要素を出力できます。
 
      1 2 3 . . .
 
-   In general, words consume their stack arguments (‘.s’ is an
-exception).
+   一般に、 ワードはスタック引数を消費します(‘.s’ は例外です)。
 
-     Assignment: What does the stack contain after ‘5 6 7 .’?
+     研究課題(assignment): ‘5 6 7 .’ の後、 スタックには何が含まれていま
+     すか？
 
 
 File: gforth.info,  Node: Arithmetics Tutorial,  Next: Stack Manipulation Tutorial,  Prev: Stack Tutorial,  Up: Tutorial
@@ -1464,8 +1489,8 @@ File: gforth.info,  Node: Arithmetics Tutorial,  Next: Stack Manipulation Tutori
 3.5 Arithmetics
 ===============
 
-The words ‘+’, ‘-’, ‘*’, ‘/’, and ‘mod’ always operate on the top two
-stack items:
+‘+’ や ‘-’ や ‘*’ や ‘/’ や ‘mod’ というワードは、 常に頂上から見て 2 つ
+のスタック項目に作用します:
 
      2 2 .s
      + .s
@@ -1473,35 +1498,34 @@ stack items:
      2 1 - .
      7 3 mod .
 
-   The operands of ‘-’, ‘/’, and ‘mod’ are in the same order as in the
-corresponding infix expression (this is generally the case in Forth).
+   ‘-’ や ‘/’ や ‘mod’ のオペランドは、 対応する中置式と同じ順序になりま
+す(これが Forth における一般的なケースです)。
 
-   Parentheses are superfluous (and not available), because the order of
-the words unambiguously determines the order of evaluation and the
-operands:
+   ワードの順序によって評価の順序とオペランドが明確に決定されるため、 括
+弧は不要です(そして、 括弧は使用不可です):
 
      3 4 + 5 * .
      3 4 5 * + .
 
-     Assignment: What are the infix expressions corresponding to the
-     Forth code above?  Write ‘6-7*8+9’ in Forth notation(1).
+     研究課題(assignment): 上記の Forth コードに対応する中置式はどうなる
+     でしょうか？ また、 ‘6-7*8+9’ を Forth 表記で記述してください(1)。
 
-   To change the sign, use ‘negate’:
+   符号を変更するには、 以下のように ‘negate’ を使用します:
 
      2 negate .
 
-     Assignment: Convert -(-3)*4-5 to Forth.
+     研究課題(assignment): ‘-(-3)*4-5‘ を Forth に変換してみましょう。
 
-   ‘/mod’ performs both ‘/’ and ‘mod’.
+   ‘/mod’ は ‘/’ と ‘mod’ の両方を実行します。
 
      7 3 /mod . .
 
-   Reference: *note Arithmetic::.
+   詳しくはこちらを参照ください: *note Arithmetic::
 
    ---------- Footnotes ----------
 
-   (1) This notation is also known as Postfix or RPN (Reverse Polish
-Notation).
+   (1) この表記法は、 後値記法(postfix notation) または RPN (逆ポーラン
+ド記法) と呼ばれます。
 
 
 File: gforth.info,  Node: Stack Manipulation Tutorial,  Next: Using files for Forth code Tutorial,  Prev: Arithmetics Tutorial,  Up: Tutorial
@@ -1527,8 +1551,8 @@ also variants that manipulate twice as many stack items:
      1 2 .s nip .s drop
      1 2 .s tuck .s 2drop drop
 
-     Assignment: Replace ‘nip’ and ‘tuck’ with combinations of other
-     stack manipulation words.
+     研究課題(assignment): Replace ‘nip’ and ‘tuck’ with combinations of
+     other stack manipulation words.
 
           Given:          How do you get:
           1 2 3           3 2 1
@@ -1545,9 +1569,10 @@ also variants that manipulate twice as many stack items:
 
      5 dup * .
 
-     Assignment: Write 17^3 and 17^4 in Forth, without writing ‘17’ more
-     than once.  Write a piece of Forth code that expects two numbers on
-     the stack (A and B, with B on top) and computes ‘(a-b)(a+1)’.
+     研究課題(assignment): Write 17^3 and 17^4 in Forth, without writing
+     ‘17’ more than once.  Write a piece of Forth code that expects two
+     numbers on the stack (A and B, with B on top) and computes
+     ‘(a-b)(a+1)’.
 
    Reference: *note Stack Manipulation::.
 
@@ -1653,10 +1678,10 @@ using it in other definitions:
         squared squared ;
      3 fourth-power .
 
-     Assignment: Write colon definitions for ‘nip’, ‘tuck’, ‘negate’,
-     and ‘/mod’ in terms of other Forth words, and check if they work
-     (hint: test your tests on the originals first).  Don’t let the
-     ‘redefined’-Messages spook you, they are just warnings.
+     研究課題(assignment): Write colon definitions for ‘nip’, ‘tuck’,
+     ‘negate’, and ‘/mod’ in terms of other Forth words, and check if
+     they work (hint: test your tests on the originals first).  Don’t
+     let the ‘redefined’-Messages spook you, they are just warnings.
 
    Reference: *note Colon Definitions::.
 
@@ -1700,11 +1725,11 @@ complicated words (I usually do this in the lines following ‘:’).  If
 you don’t do this, your code becomes unreadable (because you have to
 work through every definition before you can understand any).
 
-     Assignment: The stack effect of ‘swap’ can be written like this:
-     ‘x1 x2 -- x2 x1’.  Describe the stack effect of ‘-’, ‘drop’, ‘dup’,
-     ‘over’, ‘rot’, ‘nip’, and ‘tuck’.  Hint: When you are done, you can
-     compare your stack effects to those in this manual (*note Word
-     Index::).
+     研究課題(assignment): The stack effect of ‘swap’ can be written
+     like this: ‘x1 x2 -- x2 x1’.  Describe the stack effect of ‘-’,
+     ‘drop’, ‘dup’, ‘over’, ‘rot’, ‘nip’, and ‘tuck’.  Hint: When you
+     are done, you can compare your stack effects to those in this
+     manual (*note Word Index::).
 
    Sometimes programmers put comments at various places in colon
 definitions that describe the contents of the stack at that place (stack
@@ -1756,8 +1781,8 @@ most frequent prefixes are:
 
    You can find a more complete list in *note Notation::.
 
-     Assignment: Write stack-effect comments for all definitions you
-     have written up to now.
+     研究課題(assignment): Write stack-effect comments for all
+     definitions you have written up to now.
 
 
 File: gforth.info,  Node: Types Tutorial,  Next: Factoring Tutorial,  Prev: Stack-Effect Comments Tutorial,  Up: Tutorial
@@ -1920,7 +1945,8 @@ into stack trouble.  However, I recommend trying to write colon
 definitions without locals for exercise purposes to help you gain the
 essential factoring skills.
 
-     Assignment: Rewrite your definitions until now with locals
+     研究課題(assignment): Rewrite your definitions until now with
+     locals
 
    Reference: *note Locals::.
 
@@ -1968,8 +1994,8 @@ define it with
      2 3 min .
      3 2 min .
 
-     Assignment: Write ‘min’ without ‘else’-part (hint: what’s the
-     definition of ‘nip’?).
+     研究課題(assignment): Write ‘min’ without ‘else’-part (hint: what’s
+     the definition of ‘nip’?).
 
    Reference: *note Selection::.
 
@@ -2055,7 +2081,7 @@ bitwise operation of the Boolean operations to avoid ‘if’s:
      0 foo .
      1 foo .
 
-     Assignment: Write ‘min’ without ‘if’.
+     研究課題(assignment): Write ‘min’ without ‘if’.
 
    For reference, see *note Boolean Flags::, *note Numeric comparison::,
 and *note Bitwise operations::.
@@ -2123,8 +2149,8 @@ by trying
    ‘Until’ consumes a flag; if it is zero, execution continues at the
 ‘begin’, otherwise after the ‘until’.
 
-     Assignment: Write a definition for computing the greatest common
-     divisor.
+     研究課題(assignment): Write a definition for computing the greatest
+     common divisor.
 
    Reference: *note Simple Loops::.
 
@@ -2165,8 +2191,8 @@ top-of-stack.
    There is also ‘+do’, which expects signed numbers (important for
 deciding whether to enter the loop).
 
-     Assignment: Write a definition for computing the nth Fibonacci
-     number.
+     研究課題(assignment): Write a definition for computing the nth
+     Fibonacci number.
 
    You can also use increments other than 1:
 
@@ -2221,8 +2247,8 @@ earlier definitions are usually visible:
       endif ;
      8 fac2 .
 
-     Assignment: Write a recursive definition for computing the nth
-     Fibonacci number.
+     研究課題(assignment): Write a recursive definition for computing
+     the nth Fibonacci number.
 
    Reference (including indirect recursion): *Note Calls and returns::.
 
@@ -2308,8 +2334,8 @@ stack outside some definition or loop within the definition of loop.
 the standard; Gforth has no problem).  However, they solve the same
 problems, so this shouldn’t be an issue.
 
-     Assignment: Can you rewrite any of the definitions you wrote until
-     now in a better way using the return stack?
+     研究課題(assignment): Can you rewrite any of the definitions you
+     wrote until now in a better way using the return stack?
 
    Reference: *note Return stack::.
 
@@ -2359,9 +2385,9 @@ cells; the address pushed by ‘v2’ points to the start of these 20 cells
      v3 2 cells + @ .
      v3 5 cells dump
 
-     Assignment: Write a definition ‘vsum ( addr u -- n )’ that computes
-     the sum of ‘u’ cells, with the first of these cells at ‘addr’, the
-     next one at ‘addr cell+’ etc.
+     研究課題(assignment): Write a definition ‘vsum ( addr u -- n )’
+     that computes the sum of ‘u’ cells, with the first of these cells
+     at ‘addr’, the next one at ‘addr cell+’ etc.
 
    The difference between ‘variable’ and ‘create’ is that ‘variable’
 allots a cell, and that you cannot allot additional memory to a variable
@@ -2453,8 +2479,8 @@ live forever (well, for as long as the definition):
      type
      type
 
-     Assignment: ‘Emit ( c -- )’ types ‘c’ as character (not a number).
-     Implement ‘type ( addr u -- )’.
+     研究課題(assignment): ‘Emit ( c -- )’ types ‘c’ as character (not a
+     number).  Implement ‘type ( addr u -- )’.
 
    Reference: *note Memory Blocks::.
 
@@ -2557,8 +2583,9 @@ been read from or will be written to a file).
 
      v 1 floats  v 1 floats  3  v* f.
 
-     Assignment: Write a program to solve a quadratic equation.  Then
-     read ‘Henry G. Baker, You Could Learn a Lot from a Quadratic
+     研究課題(assignment): Write a program to solve a quadratic
+     equation.  Then read ‘Henry G. Baker, You Could Learn a Lot from a
+     Quadratic
      (https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.4448&rep=rep1&type=pdf),
      ACM SIGPLAN Notices, 33(1):30−39, January 1998’, and see if you can
      improve your program.  Finally, find a test case where the original
@@ -2670,10 +2697,10 @@ that separately; that’s after the ‘else’.
      : close-input ( -- )  fd-in close-file throw ;
      : close-output ( -- )  fd-out close-file throw ;
 
-     Assignment: How could you modify ‘copy-file’ so that it copies
-     until a second line is matched?  Can you write a program that
-     extracts a section of a text file, given the line that starts and
-     the line that terminates that section?
+     研究課題(assignment): How could you modify ‘copy-file’ so that it
+     copies until a second line is matched?  Can you write a program
+     that extracts a section of a text file, given the line that starts
+     and the line that terminates that section?
 
 
 File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy Tutorial,  Next: Execution Tokens Tutorial,  Prev: Files Tutorial,  Up: Tutorial
@@ -2860,7 +2887,8 @@ exception, the stacks have the same depth as when entering ‘catch’:
      3 0 ' / catch .s
      3 2 ' / catch .s
 
-     Assignment: Try the same with ‘execute’ instead of ‘catch’.
+     研究課題(assignment): Try the same with ‘execute’ instead of
+     ‘catch’.
 
    ‘Throw’ always jumps to the dynamically next enclosing ‘catch’, even
 if it has to leave several call levels to achieve this:
@@ -2986,11 +3014,11 @@ after the ‘does>’, you can access the body of a ‘create’d word with
      7 to foo
      foo .
 
-     Assignment: Define ‘defer ( "name" -- )’, which creates a word that
-     stores an XT (at the start the XT of ‘abort’), and upon execution
-     ‘execute’s the XT. Define ‘is ( xt "name" -- )’ that stores ‘xt’
-     into ‘name’, a word defined with ‘defer’.  Indirect recursion is
-     one application of ‘defer’.
+     研究課題(assignment): Define ‘defer ( "name" -- )’, which creates a
+     word that stores an XT (at the start the XT of ‘abort’), and upon
+     execution ‘execute’s the XT. Define ‘is ( xt "name" -- )’ that
+     stores ‘xt’ into ‘name’, a word defined with ‘defer’.  Indirect
+     recursion is one application of ‘defer’.
 
    Reference: *note User-defined Defining Words::.
 
@@ -3076,8 +3104,8 @@ in 1999.
      : ENDIF ( Compilation: orig -- )
        POSTPONE then ; immediate
 
-     Assignment: Write ‘MY-2DUP’ that has compilation semantics
-     equivalent to ‘2dup’, but compiles ‘over over’.
+     研究課題(assignment): Write ‘MY-2DUP’ that has compilation
+     semantics equivalent to ‘2dup’, but compiles ‘over over’.
 
 
 File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Prev: POSTPONE Tutorial,  Up: Tutorial
@@ -3107,8 +3135,8 @@ number computed at compile time into the current word:
        [ 2 2 + ] literal ;
      see bar
 
-     Assignment: Write ‘]L’ which allows writing the example above as ‘:
-     bar ( -- n ) [ 2 2 + ]L ;’
+     研究課題(assignment): Write ‘]L’ which allows writing the example
+     above as ‘: bar ( -- n ) [ 2 2 + ]L ;’
 
 
 File: gforth.info,  Node: Advanced macros Tutorial,  Next: Compilation Tokens Tutorial,  Prev: Literal Tutorial,  Up: Tutorial
@@ -3254,11 +3282,11 @@ wordlist is topmost.
    Yes, the order of wordlists in the output of ‘order’ is reversed from
 stack comments and the output of ‘.s’ and thus unintuitive.
 
-     Assignment: Define ‘>order ( wid -- )’ which adds ‘wid’ as first
-     searched wordlist to the search order.  Define ‘previous ( -- )’,
-     which removes the first searched wordlist from the search order.
-     Experiment with boundary conditions (you will see some crashes or
-     situations that are hard or impossible to leave).
+     研究課題(assignment): Define ‘>order ( wid -- )’ which adds ‘wid’
+     as first searched wordlist to the search order.  Define ‘previous (
+     -- )’, which removes the first searched wordlist from the search
+     order.  Experiment with boundary conditions (you will see some
+     crashes or situations that are hard or impossible to leave).
 
    The search order is a powerful foundation for providing features
 similar to Modula-2 modules and C++ namespaces.  However, trying to
@@ -7651,346 +7679,4 @@ space.  However, there is no standard way of doing this.
 
    (1) Well, often it can be – but not in a Standard, portable way.
 It’s safer to use a ‘Value’ (read on).
-
-
-File: gforth.info,  Node: Values,  Next: Varues,  Prev: Constants,  Up: Defining Words
-
-6.10.4 Values
--------------
-
-A ‘Value’ behaves like a ‘Constant’, but it can be changed.  ‘TO’ is a
-parsing word that changes a ‘Values’.  In Gforth (not in Standard Forth)
-you can access (and change) a ‘value’ also with ‘>body’.
-
-   Here are some examples:
-
-     12 Value APPLES     \ Define APPLES with an initial value of 12
-     34 TO APPLES        \ Change the value of APPLES. TO is a parsing word
-     1 ' APPLES >body +! \ Increment APPLES.  Non-standard usage.
-     APPLES              \ puts 35 on the top of the stack.
-
-‘Value’ ( w "name" –  ) core-ext “Value”
-   Define name with the initial value w; this value can be changed with
-‘to name’ or ‘->name’.
-
-   name execution: – w2
-
-‘AValue’ ( w "name" –  ) gforth-0.6 “AValue”
-   Like ‘value’, but defines a value for an address (this only makes a
-difference in the cross-compiler).
-
-‘2Value’ ( d "name" –  ) double-ext “two-value”
-
-‘fvalue’ ( r "name" –  ) floating-ext “f-value”
-   Define name ‘( -- r1 )’ where r1 initially is r; this value can be
-changed with ‘to name’ or ‘->name’.
-
-‘TO’ ( value "name" –  ) core-ext “TO”
-   changes the value of NAME to VALUE
-
-‘+TO’ ( value "name" –  ) gforth-1.0 “+TO”
-   increments the value of NAME by VALUE
-
-
-File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: Defining Words
-
-6.10.5 Varues
--------------
-
-Sometimes you want to take the address of a value-like word.  Because
-this has some disadvantages, Gforth asks you to be explicit about it,
-and use ‘varue’ (named that way because it combines characteristics of a
-variable and a value) to declare the name.
-
-‘Varue’ ( w "name" –  ) gforth-1.0 “Varue”
-   Like ‘value’, but you can also use ‘addr name’; in the future, varues
-may be less efficient than values.
-
-‘2varue’ ( x1 x2 "name" –  ) gforth-1.0 “2varue”
-   Like ‘2value’, but you can also use ‘addr name’; in the future,
-2varues may be less efficient than 2values.
-
-‘fvarue’ ( r "name" –  ) gforth-1.0 “fvarue”
-   Like ‘fvalue’, but you can also use ‘addr name’; in the future,
-fvarues may be less efficient than fvalues.
-
-‘addr’ ( "name" – addr  ) gforth-1.0 “addr”
-   provides the address ADDR of the varue, 2varue, or fvarue NAME or a
-local name defined with one of ‘wa: ca: da: fa: xta:’.
-
-
-File: gforth.info,  Node: Colon Definitions,  Next: Anonymous Definitions,  Prev: Varues,  Up: Defining Words
-
-6.10.6 Colon Definitions
-------------------------
-
-     : name ( ... -- ... )
-         word1 word2 word3 ;
-
-Creates a word called ‘name’ that, upon execution, executes ‘word1 word2
-word3’.  ‘name’ is a “(colon) definition”.
-
-   The explanation above is somewhat superficial.  For simple examples
-of colon definitions see *note Your first definition::.  For an in-depth
-discussion of some of the issues involved, *Note Interpretation and
-Compilation Semantics::.
-
-‘:’ ( "name" – colon-sys  ) core “colon”
-
-‘;’ ( compilation colon-sys – ; run-time nest-sys –  ) core “semicolon”
-
-   We plan to to perform automatic inlining eventually, but for now you
-can perform inlining with
-
-‘inline:’ ( "name" – inline:-sys  ) gforth-experimental “inline-colon”
-   Start inline colon definition.  The code between ‘inline:’ and
-‘;inline’ has to compile (not perform) the code to be inlined, but the
-resulting definition name is a colon definition that performs the
-inlined code.  Note that the compiling code must have the stack effect
-‘( -- )’, otherwise you will get an error when Gforth tries to create
-the colon definition for name.
-
-‘;inline’ ( inline:-sys –  ) gforth-experimental “semi-inline”
-   end inline definition started with ‘inline:’
-
-   As an example, you can define an inlined word and use it with
-
-     inline: my2dup ( a b -- a b a b )
-         ]] over over [[ ;inline
-
-     #1. my2dup d. d.
-     : foo my2dup ;
-     #1. foo d. d.
-     see foo
-
-   Inline words are related to macros (*note Macros::); the difference
-is that a macro has immediate compilation semantics while an
-‘inline:’-defined word has default compilation semantics; this means
-that you normally use a macro only inside a colon definition, while you
-can use an ‘inline:’ word also interpretively.  But that also means that
-you can do some things with macros that you cannot do as an ‘inline:’
-word.  E.g.,
-
-     \ Doesn't work:
-     \   inline: endif ]] then [[ ;inline
-     \ Instead, write a macro:
-     : endif ]] then [[ ; immediate
-
-   Conversely, for words that would be fine as non-immediate colon
-definitions, define them as non-immediate colon definitions or (if
-utmost performance is required) as ‘inline:’ words; don’t define them as
-macros, because then you cannot properly use them interpretively:
-
-     : another2dup ]] over over [[ ; immediate
-     \ Doesn't work:
-     \   #1. another2dup d. d.
-
-   You may wonder why you have to write compiling code between ‘inline:’
-and ‘;inline’.  That’s because the implementation of an inline word like
-‘my2dup’ above works similar to:
-
-     : compile-my2dup ( xt -- )
-         drop ]] over over [[ ;
-
-     : my2dup [ 0 compile-my2dup ] ;
-     ' compile-my2dup set-optimizer
-
-   The ‘DROP’ and ‘0’ are there because ‘compile-my2dup’ is the
-implementation of ‘compile,’ for ‘my2dup’, and ‘compile,’ expects an xt
-(*note User-defined compile-comma::).
-
-
-File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon Definitions,  Up: Defining Words
-
-6.10.7 Anonymous Definitions
-----------------------------
-
-Sometimes you want to define an “anonymous word”; a word without a name.
-You can do this with:
-
-‘:noname’ ( – xt colon-sys  ) core-ext “colon-no-name”
-
-   This leaves the execution token for the word on the stack after the
-closing ‘;’.  Here’s an example in which a deferred word is initialised
-with an ‘xt’ from an anonymous colon definition:
-
-     Defer deferred
-     :noname ( ... -- ... )
-       ... ;
-     IS deferred
-
-Gforth provides an alternative way of doing this, using two separate
-words:
-
-‘noname’ ( –  ) gforth-0.2 “noname”
-   The next defined word will be anonymous.  The defining word will
-leave the input stream alone.  The xt of the defined word will be given
-by ‘latestxt’.
-
-‘latestxt’ ( – xt  ) gforth-0.6 “latestxt”
-   xt is the execution token of the last word defined.
-
-The previous example can be rewritten using ‘noname’ and ‘latestxt’:
-
-     Defer deferred
-     noname : ( ... -- ... )
-       ... ;
-     latestxt IS deferred
-
-‘noname’ works with any defining word, not just ‘:’.
-
-   ‘latestxt’ also works when the last word was not defined as ‘noname’.
-It does not work for combined words, though.  It also has the useful
-property that is is valid as soon as the header for a definition has
-been built.  Thus:
-
-     latestxt . : foo [ latestxt . ] ; ' foo .
-
-prints 3 numbers; the last two are the same.
-
-
-File: gforth.info,  Node: Quotations,  Next: Supplying names,  Prev: Anonymous Definitions,  Up: Defining Words
-
-6.10.8 Quotations
------------------
-
-A quotation is an anonymous colon definition inside another colon
-definition.  Quotations are useful when dealing with words that consume
-an execution token, like ‘catch’ or ‘outfile-execute’.  E.g.  consider
-the following example of using ‘outfile-execute’ (*note Redirection::):
-
-     : some-warning ( n -- )
-         cr ." warning# " . ;
-
-     : print-some-warning ( n -- )
-         ['] some-warning stderr outfile-execute ;
-
-   Here we defined ‘some-warning’ as a helper word whose xt we could
-pass to outfile-execute.  Instead, we can use a quotation to define such
-a word anonymously inside ‘print-some-warning’:
-
-     : print-some-warning ( n -- )
-       [: cr ." warning# " . ;] stderr outfile-execute ;
-
-   The quotation is bouded by ‘[:’ and ‘;]’.  It produces an execution
-token at run-time.
-
-‘[:’ ( compile-time: – quotation-sys flag colon-sys  ) gforth-1.0 “bracket-colon”
-   Starts a quotation
-
-‘;]’ ( compile-time: quotation-sys – ; run-time: – xt  ) gforth-1.0 “semi-bracket”
-   ends a quotation
-
-
-File: gforth.info,  Node: Supplying names,  Next: User-defined Defining Words,  Prev: Quotations,  Up: Defining Words
-
-6.10.9 Supplying the name of a defined word
--------------------------------------------
-
-By default, a defining word takes the name for the defined word from the
-input stream.  Sometimes you want to supply the name from a string.  You
-can do this with:
-
-‘nextname’ ( c-addr u –  ) gforth-0.2 “nextname”
-   The next defined word will have the name C-ADDR U; the defining word
-will leave the input stream alone.
-
-   For example:
-
-     s" foo" nextname create
-
-is equivalent to:
-
-     create foo
-
-‘nextname’ works with any defining word.
-
-
-File: gforth.info,  Node: User-defined Defining Words,  Next: Deferred Words,  Prev: Supplying names,  Up: Defining Words
-
-6.10.10 User-defined Defining Words
------------------------------------
-
-You can define new defining words in terms of any existing defining
-word, but ‘:’ and ‘create’...‘does>’/‘set-does>’ are particularly
-flexible, whereas the children of, e.g., ‘constant’ are all just
-constants.
-
-* Menu:
-
-* User-defined defining words with colon definitions::
-* User-defined defining words using CREATE::
-* CREATE..DOES> applications::
-* CREATE..DOES> details::
-* Advanced does> usage example::
-* User-defined TO and DEFER@::
-* User-defined compile-comma::
-* Creating from a prototype::
-* Making a word current::
-* Const-does>::
-
-
-File: gforth.info,  Node: User-defined defining words with colon definitions,  Next: User-defined defining words using CREATE,  Prev: User-defined Defining Words,  Up: User-defined Defining Words
-
-6.10.10.1 User-defined defining words with colon definitions
-............................................................
-
-You can create a new defining word by wrapping defining-time code around
-an existing defining word and putting the sequence in a colon
-definition.
-
-   For example, suppose that you have a word ‘stats’ that gathers
-statistics about colon definitions given the xt of the definition, and
-you want every colon definition in your application to make a call to
-‘stats’.  You can define and use a new version of ‘:’ like this:
-
-     : stats
-       ( xt -- ) DUP ." (Gathering statistics for " . ." )"
-       ... ;  \ other code
-
-     : my: : latestxt postpone literal ['] stats compile, ;
-
-     my: foo + - ;
-
-   When ‘foo’ is defined using ‘my:’ these steps occur:
-
-   • ‘my:’ is executed.
-   • The ‘:’ within the definition (the one between ‘my:’ and
-     ‘latestxt’) is executed, and does just what it always does; it
-     parses the input stream for a name, builds a dictionary header for
-     the name ‘foo’ and switches ‘state’ from interpret to compile.
-   • The word ‘latestxt’ is executed.  It puts the xt for the word that
-     is being defined – ‘foo’ – onto the stack.
-   • The code that was produced by ‘postpone literal’ is executed; this
-     causes the value on the stack to be compiled as a literal in the
-     code area of ‘foo’.
-   • The code ‘['] stats’ compiles a literal into the definition of
-     ‘my:’.  When ‘compile,’ is executed, that literal – the execution
-     token for ‘stats’ – is layed down in the code area of ‘foo’ ,
-     following the literal(1).
-   • At this point, the execution of ‘my:’ is complete, and control
-     returns to the text interpreter.  The text interpreter is in
-     compile state, so subsequent text ‘+ -’ is compiled into the
-     definition of ‘foo’ and the ‘;’ terminates the definition as
-     always.
-
-   You can use ‘see’ to decompile a word that was defined using ‘my:’
-and see how it is different from a normal ‘:’ definition.  For example:
-
-     : bar + - ;  \ like foo but using : rather than my:
-     see bar
-     : bar
-       + - ;
-     see foo
-     : foo
-       `foo stats + - ;
-
-   ‘`foo’ is another way of writing ‘['] foo’.
-
-   ---------- Footnotes ----------
-
-   (1) Strictly speaking, the mechanism that ‘compile,’ uses to convert
-an xt into something in the code area is implementation-dependent.  A
-threaded implementation might spit out the execution token directly
-whilst another implementation might spit out a native code sequence.
 

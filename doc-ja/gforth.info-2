@@ -27,6 +27,348 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Values,  Next: Varues,  Prev: Constants,  Up: Defining Words
+
+6.10.4 Values
+-------------
+
+A ‘Value’ behaves like a ‘Constant’, but it can be changed.  ‘TO’ is a
+parsing word that changes a ‘Values’.  In Gforth (not in Standard Forth)
+you can access (and change) a ‘value’ also with ‘>body’.
+
+   Here are some examples:
+
+     12 Value APPLES     \ Define APPLES with an initial value of 12
+     34 TO APPLES        \ Change the value of APPLES. TO is a parsing word
+     1 ' APPLES >body +! \ Increment APPLES.  Non-standard usage.
+     APPLES              \ puts 35 on the top of the stack.
+
+‘Value’ ( w "name" –  ) core-ext “Value”
+   Define name with the initial value w; this value can be changed with
+‘to name’ or ‘->name’.
+
+   name execution: – w2
+
+‘AValue’ ( w "name" –  ) gforth-0.6 “AValue”
+   Like ‘value’, but defines a value for an address (this only makes a
+difference in the cross-compiler).
+
+‘2Value’ ( d "name" –  ) double-ext “two-value”
+
+‘fvalue’ ( r "name" –  ) floating-ext “f-value”
+   Define name ‘( -- r1 )’ where r1 initially is r; this value can be
+changed with ‘to name’ or ‘->name’.
+
+‘TO’ ( value "name" –  ) core-ext “TO”
+   changes the value of NAME to VALUE
+
+‘+TO’ ( value "name" –  ) gforth-1.0 “+TO”
+   increments the value of NAME by VALUE
+
+
+File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: Defining Words
+
+6.10.5 Varues
+-------------
+
+Sometimes you want to take the address of a value-like word.  Because
+this has some disadvantages, Gforth asks you to be explicit about it,
+and use ‘varue’ (named that way because it combines characteristics of a
+variable and a value) to declare the name.
+
+‘Varue’ ( w "name" –  ) gforth-1.0 “Varue”
+   Like ‘value’, but you can also use ‘addr name’; in the future, varues
+may be less efficient than values.
+
+‘2varue’ ( x1 x2 "name" –  ) gforth-1.0 “2varue”
+   Like ‘2value’, but you can also use ‘addr name’; in the future,
+2varues may be less efficient than 2values.
+
+‘fvarue’ ( r "name" –  ) gforth-1.0 “fvarue”
+   Like ‘fvalue’, but you can also use ‘addr name’; in the future,
+fvarues may be less efficient than fvalues.
+
+‘addr’ ( "name" – addr  ) gforth-1.0 “addr”
+   provides the address ADDR of the varue, 2varue, or fvarue NAME or a
+local name defined with one of ‘wa: ca: da: fa: xta:’.
+
+
+File: gforth.info,  Node: Colon Definitions,  Next: Anonymous Definitions,  Prev: Varues,  Up: Defining Words
+
+6.10.6 Colon Definitions
+------------------------
+
+     : name ( ... -- ... )
+         word1 word2 word3 ;
+
+Creates a word called ‘name’ that, upon execution, executes ‘word1 word2
+word3’.  ‘name’ is a “(colon) definition”.
+
+   The explanation above is somewhat superficial.  For simple examples
+of colon definitions see *note Your first definition::.  For an in-depth
+discussion of some of the issues involved, *Note Interpretation and
+Compilation Semantics::.
+
+‘:’ ( "name" – colon-sys  ) core “colon”
+
+‘;’ ( compilation colon-sys – ; run-time nest-sys –  ) core “semicolon”
+
+   We plan to to perform automatic inlining eventually, but for now you
+can perform inlining with
+
+‘inline:’ ( "name" – inline:-sys  ) gforth-experimental “inline-colon”
+   Start inline colon definition.  The code between ‘inline:’ and
+‘;inline’ has to compile (not perform) the code to be inlined, but the
+resulting definition name is a colon definition that performs the
+inlined code.  Note that the compiling code must have the stack effect
+‘( -- )’, otherwise you will get an error when Gforth tries to create
+the colon definition for name.
+
+‘;inline’ ( inline:-sys –  ) gforth-experimental “semi-inline”
+   end inline definition started with ‘inline:’
+
+   As an example, you can define an inlined word and use it with
+
+     inline: my2dup ( a b -- a b a b )
+         ]] over over [[ ;inline
+
+     #1. my2dup d. d.
+     : foo my2dup ;
+     #1. foo d. d.
+     see foo
+
+   Inline words are related to macros (*note Macros::); the difference
+is that a macro has immediate compilation semantics while an
+‘inline:’-defined word has default compilation semantics; this means
+that you normally use a macro only inside a colon definition, while you
+can use an ‘inline:’ word also interpretively.  But that also means that
+you can do some things with macros that you cannot do as an ‘inline:’
+word.  E.g.,
+
+     \ Doesn't work:
+     \   inline: endif ]] then [[ ;inline
+     \ Instead, write a macro:
+     : endif ]] then [[ ; immediate
+
+   Conversely, for words that would be fine as non-immediate colon
+definitions, define them as non-immediate colon definitions or (if
+utmost performance is required) as ‘inline:’ words; don’t define them as
+macros, because then you cannot properly use them interpretively:
+
+     : another2dup ]] over over [[ ; immediate
+     \ Doesn't work:
+     \   #1. another2dup d. d.
+
+   You may wonder why you have to write compiling code between ‘inline:’
+and ‘;inline’.  That’s because the implementation of an inline word like
+‘my2dup’ above works similar to:
+
+     : compile-my2dup ( xt -- )
+         drop ]] over over [[ ;
+
+     : my2dup [ 0 compile-my2dup ] ;
+     ' compile-my2dup set-optimizer
+
+   The ‘DROP’ and ‘0’ are there because ‘compile-my2dup’ is the
+implementation of ‘compile,’ for ‘my2dup’, and ‘compile,’ expects an xt
+(*note User-defined compile-comma::).
+
+
+File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon Definitions,  Up: Defining Words
+
+6.10.7 Anonymous Definitions
+----------------------------
+
+Sometimes you want to define an “anonymous word”; a word without a name.
+You can do this with:
+
+‘:noname’ ( – xt colon-sys  ) core-ext “colon-no-name”
+
+   This leaves the execution token for the word on the stack after the
+closing ‘;’.  Here’s an example in which a deferred word is initialised
+with an ‘xt’ from an anonymous colon definition:
+
+     Defer deferred
+     :noname ( ... -- ... )
+       ... ;
+     IS deferred
+
+Gforth provides an alternative way of doing this, using two separate
+words:
+
+‘noname’ ( –  ) gforth-0.2 “noname”
+   The next defined word will be anonymous.  The defining word will
+leave the input stream alone.  The xt of the defined word will be given
+by ‘latestxt’.
+
+‘latestxt’ ( – xt  ) gforth-0.6 “latestxt”
+   xt is the execution token of the last word defined.
+
+The previous example can be rewritten using ‘noname’ and ‘latestxt’:
+
+     Defer deferred
+     noname : ( ... -- ... )
+       ... ;
+     latestxt IS deferred
+
+‘noname’ works with any defining word, not just ‘:’.
+
+   ‘latestxt’ also works when the last word was not defined as ‘noname’.
+It does not work for combined words, though.  It also has the useful
+property that is is valid as soon as the header for a definition has
+been built.  Thus:
+
+     latestxt . : foo [ latestxt . ] ; ' foo .
+
+prints 3 numbers; the last two are the same.
+
+
+File: gforth.info,  Node: Quotations,  Next: Supplying names,  Prev: Anonymous Definitions,  Up: Defining Words
+
+6.10.8 Quotations
+-----------------
+
+A quotation is an anonymous colon definition inside another colon
+definition.  Quotations are useful when dealing with words that consume
+an execution token, like ‘catch’ or ‘outfile-execute’.  E.g.  consider
+the following example of using ‘outfile-execute’ (*note Redirection::):
+
+     : some-warning ( n -- )
+         cr ." warning# " . ;
+
+     : print-some-warning ( n -- )
+         ['] some-warning stderr outfile-execute ;
+
+   Here we defined ‘some-warning’ as a helper word whose xt we could
+pass to outfile-execute.  Instead, we can use a quotation to define such
+a word anonymously inside ‘print-some-warning’:
+
+     : print-some-warning ( n -- )
+       [: cr ." warning# " . ;] stderr outfile-execute ;
+
+   The quotation is bouded by ‘[:’ and ‘;]’.  It produces an execution
+token at run-time.
+
+‘[:’ ( compile-time: – quotation-sys flag colon-sys  ) gforth-1.0 “bracket-colon”
+   Starts a quotation
+
+‘;]’ ( compile-time: quotation-sys – ; run-time: – xt  ) gforth-1.0 “semi-bracket”
+   ends a quotation
+
+
+File: gforth.info,  Node: Supplying names,  Next: User-defined Defining Words,  Prev: Quotations,  Up: Defining Words
+
+6.10.9 Supplying the name of a defined word
+-------------------------------------------
+
+By default, a defining word takes the name for the defined word from the
+input stream.  Sometimes you want to supply the name from a string.  You
+can do this with:
+
+‘nextname’ ( c-addr u –  ) gforth-0.2 “nextname”
+   The next defined word will have the name C-ADDR U; the defining word
+will leave the input stream alone.
+
+   For example:
+
+     s" foo" nextname create
+
+is equivalent to:
+
+     create foo
+
+‘nextname’ works with any defining word.
+
+
+File: gforth.info,  Node: User-defined Defining Words,  Next: Deferred Words,  Prev: Supplying names,  Up: Defining Words
+
+6.10.10 User-defined Defining Words
+-----------------------------------
+
+You can define new defining words in terms of any existing defining
+word, but ‘:’ and ‘create’...‘does>’/‘set-does>’ are particularly
+flexible, whereas the children of, e.g., ‘constant’ are all just
+constants.
+
+* Menu:
+
+* User-defined defining words with colon definitions::
+* User-defined defining words using CREATE::
+* CREATE..DOES> applications::
+* CREATE..DOES> details::
+* Advanced does> usage example::
+* User-defined TO and DEFER@::
+* User-defined compile-comma::
+* Creating from a prototype::
+* Making a word current::
+* Const-does>::
+
+
+File: gforth.info,  Node: User-defined defining words with colon definitions,  Next: User-defined defining words using CREATE,  Prev: User-defined Defining Words,  Up: User-defined Defining Words
+
+6.10.10.1 User-defined defining words with colon definitions
+............................................................
+
+You can create a new defining word by wrapping defining-time code around
+an existing defining word and putting the sequence in a colon
+definition.
+
+   For example, suppose that you have a word ‘stats’ that gathers
+statistics about colon definitions given the xt of the definition, and
+you want every colon definition in your application to make a call to
+‘stats’.  You can define and use a new version of ‘:’ like this:
+
+     : stats
+       ( xt -- ) DUP ." (Gathering statistics for " . ." )"
+       ... ;  \ other code
+
+     : my: : latestxt postpone literal ['] stats compile, ;
+
+     my: foo + - ;
+
+   When ‘foo’ is defined using ‘my:’ these steps occur:
+
+   • ‘my:’ is executed.
+   • The ‘:’ within the definition (the one between ‘my:’ and
+     ‘latestxt’) is executed, and does just what it always does; it
+     parses the input stream for a name, builds a dictionary header for
+     the name ‘foo’ and switches ‘state’ from interpret to compile.
+   • The word ‘latestxt’ is executed.  It puts the xt for the word that
+     is being defined – ‘foo’ – onto the stack.
+   • The code that was produced by ‘postpone literal’ is executed; this
+     causes the value on the stack to be compiled as a literal in the
+     code area of ‘foo’.
+   • The code ‘['] stats’ compiles a literal into the definition of
+     ‘my:’.  When ‘compile,’ is executed, that literal – the execution
+     token for ‘stats’ – is layed down in the code area of ‘foo’ ,
+     following the literal(1).
+   • At this point, the execution of ‘my:’ is complete, and control
+     returns to the text interpreter.  The text interpreter is in
+     compile state, so subsequent text ‘+ -’ is compiled into the
+     definition of ‘foo’ and the ‘;’ terminates the definition as
+     always.
+
+   You can use ‘see’ to decompile a word that was defined using ‘my:’
+and see how it is different from a normal ‘:’ definition.  For example:
+
+     : bar + - ;  \ like foo but using : rather than my:
+     see bar
+     : bar
+       + - ;
+     see foo
+     : foo
+       `foo stats + - ;
+
+   ‘`foo’ is another way of writing ‘['] foo’.
+
+   ---------- Footnotes ----------
+
+   (1) Strictly speaking, the mechanism that ‘compile,’ uses to convert
+an xt into something in the code area is implementation-dependent.  A
+threaded implementation might spit out the execution token directly
+whilst another implementation might spit out a native code sequence.
+
+
 File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREATE..DOES> applications,  Prev: User-defined defining words with colon definitions,  Up: User-defined Defining Words
 
 6.10.10.2 User-defined defining words using create
@@ -992,9 +1334,10 @@ words.
 
 * Menu:
 
-* Execution token::          represents execution/interpretation semantics
-* Name token::               represents named words
-* Compilation token::        represents compilation semantics
+* Execution token::          実行(execution)/解釈(interpretation)
+                               セマンティクス
+* Name token::               名前付きワード
+* Compilation token::        コンパイル・セマンティクス
 
 
 File: gforth.info,  Node: Execution token,  Next: Name token,  Prev: Tokens for Words,  Up: Tokens for Words
@@ -6983,299 +7326,4 @@ Finally, create two objects and apply selectors:
      s" fat bar" bar init
      1 bar y !
      bar draw
-
-
-File: gforth.info,  Node: Mini-OOF2,  Next: Comparison with other object models,  Prev: Mini-OOF,  Up: Object-oriented Forth
-
-6.24.6 Mini-OOF2
-----------------
-
-Mini-OOF2 is very similar to Mini-OOF in many respects, but differs
-significantly in a few aspects.  In particular, Mini-OOF2 has a current
-object variable, and uses the primitives ‘>o’ and ‘o>’ to manipulate
-that object stack.  All method invocations and instance variable
-accesses refer to the current object.
-
-‘>o’ ( c-addr – r:c-old ) new “to-o”
-   Set the current object to C_ADDR, the previous current object is
-pushed to the return stack
-
-‘o>’ ( r:c-addr – ) new “o-restore”
-   Restore the previous current object from the return stack
-
-   To ease passing an object pointer to method invocation or instance
-variable accesses, the additional recognizer ‘rec-moof2’ is activated.
-
-‘rec-moof2’ ( addr u – xt translate-moof2 | notfound  ) mini-oof2 “rec-moof2”
-   Very simplistic dot-parser, transforms ‘.’SELECTOR/IVAR to ‘>o’
-SELECTOR/IVAR ‘o>’.
-
-   To assign methods to selectors, use XT CLASS ‘is’ SELECTOR, so no
-‘defines’ necessary.  For early binding of methods, ‘[’ CLASS ‘] defers’
-SELECTOR is used, no need for ‘::’.
-
-
-File: gforth.info,  Node: Comparison with other object models,  Prev: Mini-OOF2,  Up: Object-oriented Forth
-
-6.24.7 Comparison with other object models
-------------------------------------------
-
-Many object-oriented Forth extensions have been proposed (‘A survey of
-object-oriented Forths’ (SIGPLAN Notices, April 1996) by Bradford J.
-Rodriguez and W. F. S. Poehlman lists 17).  This section discusses the
-relation of the object models described here to two well-known and two
-closely-related (by the use of method maps) models.  Andras Zsoter
-helped us with this section.
-
-   The most popular model currently seems to be the Neon model (see
-‘Object-oriented programming in ANS Forth’ (Forth Dimensions, March
-1997) by Andrew McKewan) but this model has a number of limitations (1):
-
-   • It uses a ‘_selector object_’ syntax, which makes it unnatural to
-     pass objects on the stack.
-
-   • It requires that the selector parses the input stream (at compile
-     time); this leads to reduced extensibility and to bugs that are
-     hard to find.
-
-   • It allows using every selector on every object; this eliminates the
-     need for interfaces, but makes it harder to create efficient
-     implementations.
-
-   Another well-known publication is ‘Object-Oriented Forth’ (Academic
-Press, London, 1987) by Dick Pountain.  However, it is not really about
-object-oriented programming, because it hardly deals with late binding.
-Instead, it focuses on features like information hiding and overloading
-that are characteristic of modular languages like Ada (83).
-
-   In Does late binding have to be slow?
-(http://www.forth.org/oopf.html) (Forth Dimensions 18(1) 1996, pages
-31-35) Andras Zsoter describes a model that makes heavy use of an active
-object (like ‘this’ in ‘objects.fs’): The active object is not only used
-for accessing all fields, but also specifies the receiving object of
-every selector invocation; you have to change the active object
-explicitly with ‘{ ... }’, whereas in ‘objects.fs’ it changes more or
-less implicitly at ‘m: ... ;m’.  Such a change at the method entry point
-is unnecessary with Zsoter’s model, because the receiving object is the
-active object already.  On the other hand, the explicit change is
-absolutely necessary in that model, because otherwise no one could ever
-change the active object.  An Standard Forth implementation of this
-model is available through <http://www.forth.org/oopf.html>.
-
-   The ‘oof.fs’ model combines information hiding and overloading
-resolution (by keeping names in various word lists) with object-oriented
-programming.  It sets the active object implicitly on method entry, but
-also allows explicit changing (with ‘>o...o>’ or with ‘with...endwith’).
-It uses parsing and state-smart objects and classes for resolving
-overloading and for early binding: the object or class parses the
-selector and determines the method from this.  If the selector is not
-parsed by an object or class, it performs a call to the selector for the
-active object (late binding), like Zsoter’s model.  Fields are always
-accessed through the active object.  The big disadvantage of this model
-is the parsing and the state-smartness, which reduces extensibility and
-increases the opportunities for subtle bugs; essentially, you are only
-safe if you never tick or ‘postpone’ an object or class (Bernd
-disagrees, but I (Anton) am not convinced).
-
-   The ‘mini-oof.fs’ model is quite similar to a very stripped-down
-version of the ‘objects.fs’ model, but syntactically it is a mixture of
-the ‘objects.fs’ and ‘oof.fs’ models.
-
-   ---------- Footnotes ----------
-
-   (1) A longer version of this critique can be found in ‘On
-Standardizing Object-Oriented Forth Extensions’ (Forth Dimensions, May
-1997) by Anton Ertl.
-
-
-File: gforth.info,  Node: Regular Expressions,  Next: Programming Tools,  Prev: Object-oriented Forth,  Up: Words
-
-6.25 Regular Expressions
-========================
-
-Regular expressions are pattern matching algorithms for strings found in
-many contemporary languages.  You can add regular expression
-functionality to Gforth with ‘require regexp.fs’.
-
-   The classical implementation for this pattern matching is a
-backtracking algorithm, which is also necessary if you want to have
-features like backreferencing.  Gforth implements regular expressions by
-providing a language to define backtracking programs for pattern
-matching.  Basic element is the control structure ‘FORK’ ... ‘JOIN’,
-which is a forward call within a word, and therefore allows to code a
-lightweight try and fail control structure.
-
-‘FORK’ ( compilation – orig ; run-time f –  ) gforth-0.7 “FORK”
-   AHEAD-like control structure: calls the code after JOIN.
-
-‘JOIN’ ( orig –  ) gforth-0.7 “JOIN”
-   THEN-like control structure for FORK
-
-   You can program any sort of arbitrary checks yourself by computing a
-flag and ‘?LEAVE’ when the check fails.  Your regular expression code is
-enclosed in ‘((’ and ‘))’.
-
-‘((’ ( addr u –  ) regexp-pattern “((”
-   start regexp block
-
-‘))’ ( – flag  ) regexp-pattern “))”
-   end regexp block
-
-   Pattern matching in regular expressions have character sets as
-elements, so a number of functions allow you to create and modify
-character sets (called ‘charclass’).  All characters here are bytes, so
-this doesn’t extend to unicode characters.
-
-‘charclass’ ( –  ) regexp-cg “charclass”
-   Create a charclass
-
-‘+char’ ( char –  ) regexp-cg “+char”
-   add a char to the current charclass
-
-‘-char’ ( char –  ) regexp-cg “-char”
-   remove a char from the current charclass
-
-‘..char’ ( start end –  ) regexp-cg “..char”
-   add a range of chars to the current charclass
-
-‘+chars’ ( addr u –  ) regexp-cg “+chars”
-   add a string of chars to the current charclass
-
-‘+class’ ( class –  ) regexp-cg “+class”
-   union of charclass CLASS and the current charclass
-
-‘-class’ ( class –  ) regexp-cg “-class”
-   subtract the charclass CLASS from the current charclass
-
-   There are predefined charclasses and tests for them, and generic
-checks.  If a check fails, the next possible alternative of the regular
-expression is tried, or a loop is terminated.
-
-‘c?’ ( addr class –  ) regexp-pattern “c?”
-   check ADDR for membership in charclass CLASS
-
-‘-c?’ ( addr class –  ) regexp-pattern “-c?”
-   check ADDR for not membership in charclass CLASS
-
-‘\d’ ( addr – addr’  ) regexp-pattern “\d”
-   check for digit
-
-‘\s’ ( addr – addr’  ) regexp-pattern “\s”
-   check for blanks
-
-‘.?’ ( addr – addr’  ) regexp-pattern “.?”
-   check for any single charachter
-
-‘-\d’ ( addr – addr’  ) regexp-pattern “-\d”
-   check for not digit
-
-‘-\s’ ( addr – addr’  ) regexp-pattern “-\s”
-   check for not blank
-
-‘`’ ( "char" –  ) regexp-pattern “‘”
-   check for particular char
-
-‘`?’ ( "char" –  ) regexp-pattern “‘?”
-
-‘-`’ ( "char" –  ) regexp-pattern “-‘”
-   check for particular char
-
-   You can certainly also check for start and end of the string, and for
-whole string constants.
-
-‘\^’ ( addr – addr  ) regexp-pattern “\^”
-   check for string start
-
-‘\$’ ( addr – addr  ) regexp-pattern “\$”
-   check for string end
-
-‘str=?’ ( addr1 addr u – addr2  ) regexp-pattern “str=?”
-   check for a computed string on the stack (possibly a backreference)
-
-   doc-=”
-
-   Loops that check for repeated character sets can be greedy or
-non-greedy.
-
-‘{**’ ( addr – addr addr  ) regexp-pattern “begin-greedy-star”
-   greedy zero-or-more pattern
-
-‘**}’ ( sys –  ) regexp-pattern “end-greedy-star”
-   end of greedy zero-or-more pattern
-
-‘{++’ ( addr – addr addr  ) regexp-pattern “begin-greedy-plus”
-   greedy one-or-more pattern
-
-‘++}’ ( sys –  ) regexp-pattern “end-greedy-plus”
-   end of greedy one-or-more pattern
-
-‘{*’ ( addr – addr addr  ) regexp-pattern “begin-non-greedy-star”
-   non-greedy zero-or-more pattern
-
-‘*}’ ( addr addr’ – addr’  ) regexp-pattern “end-non-greedy-star”
-   end of non-greedy zero-or-more pattern
-
-‘{+’ ( addr – addr addr  ) regexp-pattern “begin-non-greedy-plus”
-   non-greedy one-or-more pattern
-
-‘+}’ ( addr addr’ – addr’  ) regexp-pattern “end-non-greedy-plus”
-   end of non-greedy one-or-more pattern
-
-   Example: Searching for a substring really is a non-greedy match of
-anything in front of it.
-
-‘//’ ( –  ) regexp-pattern “//”
-   search for string
-
-   Alternatives are written with
-
-‘{{’ ( addr – addr addr  ) regexp-pattern “begin-alternatives”
-   Start of alternatives
-
-‘||’ ( addr addr – addr addr  ) regexp-pattern “next-alternative”
-   separator between alternatives
-
-‘}}’ ( addr addr – addr  ) regexp-pattern “end-alternatives”
-   end of alternatives
-
-   You can use up to 9 variables named ‘\1’ to ‘\9’ to refer to matched
-substrings
-
-‘\(’ ( addr – addr  ) regexp-pattern “\(”
-   start of matching variable; variables are referred as \\1–9
-
-‘\)’ ( addr – addr  ) regexp-pattern “\)”
-   end of matching variable
-
-‘\0’ ( – addr u  ) regexp-pattern “\0”
-   the whole string
-
-   Certainly, you can also write code to replace patterns you found.
-
-‘s>>’ ( addr – addr  ) regexp-replace “s>>”
-   Start replace pattern region
-
-‘>>’ ( addr – addr  ) regexp-replace “>>”
-   Start arbitrary replacement code, the code shall compute a string on
-the stack and pass it to ‘<<’
-
-‘<<’ ( run-addr addr u – run-addr  ) regexp-replace “<<”
-   Replace string from start of replace pattern region with ADDR U
-
-‘<<"’ ( "string<">" –  ) regexp-replace “<<"”
-   Replace string from start of replace pattern region with STRING
-
-‘s//’ ( addr u – ptr  ) regexp-replace “s//”
-   start search/replace loop
-
-‘//s’ ( ptr –  ) regexp-replace “//s”
-   search end
-
-‘//o’ ( ptr addr u – addr’ u’  ) regexp-replace “//o”
-   end search/replace single loop
-
-‘//g’ ( ptr addr u – addr’ u’  ) regexp-replace “//g”
-   end search/replace all loop
-
-   Examples can be found in ‘test/regexp-test.fs’.
 
