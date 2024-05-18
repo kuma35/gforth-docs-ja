@@ -1281,9 +1281,9 @@ Gforth は以下の環境変数を使用します:
 
 @item
 @cindex @code{GFORTHPATH} -- environment variable
-gforth イメージ・ファイルと Forth ソースコード・ファイル を検索するときに使用するパスを指定(通常 @samp{.}
-、現在の作業ディレクトリ)。 パス区切り文字は @samp{:} です。 @file{/usr/local/share/gforth/1.0:.}
-のみたいなのが典型です。
+@code{GFORTHPATH} -- gforth イメージ・ファイルと Forth ソースコード・ファイル
+を検索するときに使用するパスを指定(通常 @samp{.} 、現在の作業ディレクトリ)。 パス区切り文字は @samp{:} です。
+@file{/usr/local/share/gforth/1.0:.} みたいなのが典型です。
 
 @item
 @cindex @code{LANG} -- environment variable
@@ -1665,7 +1665,7 @@ Forth の最も明々白々な機能はスタックです。 数値を入力す�
 @section Stack Manipulation
 @cindex stack manipulation tutorial
 
-Stack manipulation words rearrange the data on the stack.
+スタック操作ワードはスタックのデータを並べ替えます。
 
 @example
 1 .s drop .s
@@ -1675,14 +1675,13 @@ Stack manipulation words rearrange the data on the stack.
 1 2 3 .s rot .s drop drop drop
 @end example
 
-These are the most important stack manipulation words.  There are also
-variants that manipulate twice as many stack items:
+上記は最も重要なスタック操作ワードです。 以下のように2つペアでスタック項目を操作する亜種もあります:
 
 @example
 1 2 3 4 .s 2swap .s 2drop 2drop
 @end example
 
-Two more stack manipulation words are:
+さらに 2 つ、 以下のスタック操作ワードがあります:
 
 @example
 1 2 .s nip .s drop
@@ -1690,36 +1689,49 @@ Two more stack manipulation words are:
 @end example
 
 @quotation 研究課題(assignment)
-Replace @code{nip} and @code{tuck} with combinations of other stack
-manipulation words.
+@code{nip} と @code{tuck} を他のスタック操作ワードの組み合わせに置き換えてみましょう。
 
 @example
+以下の結果になるスタック操作を考えてみましょう
 Given:          How do you get:
-1 2 3           3 2 1           
-1 2 3           1 2 3 2                 
-1 2 3           1 2 3 3                 
-1 2 3           1 3 3           
-1 2 3           2 1 3           
-1 2 3 4         4 3 2 1         
-1 2 3           1 2 3 1 2 3             
-1 2 3 4         1 2 3 4 1 2             
+1 2 3           3 2 1
+1 2 3           1 2 3 2
+1 2 3           1 2 3 3
+1 2 3           1 3 3
+1 2 3           2 1 3
+1 2 3 4         4 3 2 1
+1 2 3           1 2 3 1 2 3
+1 2 3 4         1 2 3 4 1 2
 1 2 3
-1 2 3           1 2 3 4                 
-1 2 3           1 3             
+1 2 3           1 2 3 4
+1 2 3           1 3
+( 訳注: 正解はこれだけではないが一例として
+1 2 3           3 2 1  \ rot rot swap
+1 2 3           1 2 3 2  \ over
+1 2 3           1 2 3 3  \ dup
+1 2 3           1 3 3  \ swap drop dup
+1 2 3           2 1 3  \ -rot swap rot
+1 2 3 4         4 3 2 1  \ swap 2swap swap
+1 2 3           1 2 3 1 2 3  \ third third third
+1 2 3 4         1 2 3 4 1 2  \ 2over 
+1 2 3                        \ 2drop drop
+1 2 3           1 2 3 4  \ dup 1+
+1 2 3           1 3  \ swap drop
+)
 @end example
 @end quotation
 
 @example
-5 dup * .
+5 dup * . \ 5^2 を 出力
 @end example
 
 @quotation 研究課題(assignment)
-Write 17^3 and 17^4 in Forth, without writing @code{17} more than once.
-Write a piece of Forth code that expects two numbers on the stack (@var{a}
-and @var{b}, with @var{b} on top) and computes @code{(a-b)(a+1)}.
+@code{17} を複数回書かずに、 Forth で 17^3 と 17^4 を書いてみましょう。 また、 スタック上の 2 つの数値
+(@var{a} と @var{b}、 スタック・トップ @var{b} とする) を想定し、@code{(a-b)(a+1)} を計算する Forth
+コードを作成してみましょう。 
 @end quotation
 
-Reference: @ref{Stack Manipulation}.
+こちらも参照してください: @ref{Stack Manipulation}
 
 
 @node Using files for Forth code Tutorial, Comments Tutorial, Stack Manipulation Tutorial, Tutorial
@@ -1727,46 +1739,39 @@ Reference: @ref{Stack Manipulation}.
 @cindex loading Forth code, tutorial
 @cindex files containing Forth code, tutorial
 
-While working at the Forth command line is convenient for one-line examples
-and short one-off code, you probably want to store your source code in files
-for convenient editing and persistence.  You can use your favourite editor
-(Gforth includes Emacs support, @pxref{Emacs and Gforth}) to create
-@var{file.fs} and use
+Forth コマンド・ラインでの作業は、 1 行の例や短い 1 回限りのコードの場合には便利ですが、 あなたは編集や永続化に便利なように、
+ソース・コードをファイルに保存したいと思うかもしれません。 お気に入りのエディター(なお、 Gforth には Emacs サポートがあります
+@pxref{Emacs and Gforth})を使用して @var{file.fs} を作成し以下のようにします
 
 @example
 s" @var{file.fs}" included
 @end example
 
-to load it into your Forth system.  The file name extension I use for Forth
-files is @samp{.fs}.
+こうすると、 @var{file.fs} ファイルを Forth システムにロードします。 私達は Forth ファイルの拡張子には
+@samp{.fs} を使っています。
 
-You can easily start Gforth with some files loaded like this:
+以下のようにいくつかのファイルをロードして、 Gforth を簡単に開始できます:
 
 @example
 gforth @var{file1.fs} @var{file2.fs}
 @end example
 
-If an error occurs during loading these files, Gforth terminates, whereas an
-error during @code{INCLUDED} within Gforth usually gives you a Gforth
-command line.  Starting the Forth system every time gives you a clean start
-every time, without interference from the results of earlier tries.
+これらのファイルのロード中にエラーが発生した場合、 Gforth は終了(terminate)しますが、 Gforth 内で
+@code{INCLUDED} 中にエラーが発生すると、 通常は Gforth コマンド・ラインになります。 Forth システムを毎回開始させれば、
+あなたの以前の試行の結果に影響されることなく、 毎回クリーンな開始が可能になります。
 
-I often put all the tests in a file, then load the code and run the tests
-with
+私達は多くの場合、 すべてのテストをファイルに入れて、 それからそのコードをロードし以下のようにしてテストを実行します
 
 @example
 gforth @var{code.fs} @var{tests.fs} -e bye
 @end example
 
-(often by performing this command with @kbd{C-x C-e} in Emacs).  The
-@code{-e bye} ensures that Gforth terminates afterwards so that I can
-restart this command without ado.
+(多くの場合、 Emacs内 で @kbd{C-x C-e} を使用してこのコマンドを実行します。) @code{-e bye} により、 テスト後に
+Gforth が確実に終了(terminate)するので、 面倒なくこのコマンドを再度開始できます。
 
-The advantage of this approach is that the tests can be repeated easily
-every time the program ist changed, making it easy to catch bugs introduced
-by the change.
+このアプローチの利点は、 プログラムが変更されるたびにテストを簡単に繰り返すことができ、 変更によって生じたバグを簡単に発見できることです。
 
-Reference: @ref{Forth source files}.
+こちらも参照してください: @ref{Forth source files}
 
 
 @node Comments Tutorial, Colon Definitions Tutorial, Using files for Forth code Tutorial, Tutorial
@@ -1774,31 +1779,29 @@ Reference: @ref{Forth source files}.
 @cindex comments tutorial
 
 @example
-\ That's a comment; it ends at the end of the line
-( Another comment; it ends here: )  .s
+\ これはコメントです。これは行末で終わります
+( もう一つのコメント。 これはこのように閉じ丸括弧で終わります: )  .s
 @end example
 
-@code{\} and @code{(} are ordinary Forth words and therefore have to be
-separated with white space from the following text.
+@code{\} と @code{(} は通常の Forth ワードであるため、 その後ろのテキストと空白(white
+space)で区切る必要があります。
 
 @example
 \This gives an "Undefined word" error
 @end example
 
-The first @code{)} ends a comment started with @code{(}, so you cannot nest
-@code{(}-comments; and you cannot comment out text containing a @code{)}
-with @code{( ... )}@footnote{therefore it's a good idea to avoid @code{)} in
-word names.}.
+最初にあらわれる @code{)} が @code{(} で始まるコメントを終了するため、 「@code{(}
+型のコメント」を入れ子(nest)にすることはできません。 そして、 @code{( ... )} を使用して @code{)}
+を含むテキストをコメントアウトすることはできません@footnote{したがって、 ワード名には @code{)} を使用しないことをお勧めします。}。
 
-I use @code{\}-comments for descriptive text and for commenting out code of
-one or more line; I use @code{(}-comments for describing the stack effect,
-the stack contents, or for commenting out sub-line pieces of code.
+私達は、 説明テキストや、 1 行以上のコードのコメントアウトに @code{\} コメントを使用します。 @code{(} コメントは、
+スタック効果やスタックの内容を説明したり、 コードの下位部分をコメントアウトしたりするために使用します。
 
-The Emacs mode @file{gforth.el} (@pxref{Emacs and Gforth}) supports these
-uses by commenting out a region with @kbd{C-x \}, uncommenting a region with
-@kbd{C-u C-x \}, and filling a @code{\}-commented region with @kbd{M-q}.
+Emacs モード @file{gforth.el} (@pxref{Emacs and Gforth}) は、 @kbd{C-x \}
+でリージョンをコメントアウトし、 @kbd{C-u C-x \} でリージョンのコメントを解除し、 @code{\} でコメントされた領域を
+@kbd{M-q} でフィル(fill)します。
 
-Reference: @ref{Comments}.
+こちらも参照してください: @ref{Comments}
 
 
 @node Colon Definitions Tutorial, Decompilation Tutorial, Comments Tutorial, Tutorial
@@ -1808,7 +1811,7 @@ Reference: @ref{Comments}.
 @cindex procedures, tutorial
 @cindex functions, tutorial
 
-are similar to procedures and functions in other programming languages.
+コロン定義(Colon Definitions)は、 他のプログラミング言語のプロシージャや関数に似ています。
 
 @example
 : squared ( n -- n^2 )
@@ -1817,13 +1820,11 @@ are similar to procedures and functions in other programming languages.
 7 squared .
 @end example
 
-@code{:} starts the colon definition; its name is @code{squared}.  The
-following comment describes its stack effect.  The words @code{dup *} are
-not executed, but compiled into the definition.  @code{;} ends the colon
-definition.
+@code{:} はコロン定義を開始します。 その名前は @code{squared} です。 それに続くコメントは、
+そのスタック効果について説明しています。  @code{dup *} というワードは実行はされませんが、 定義にコンパイルされます(compiled
+into the definition)。 @code{;} はコロン定義を終了します。
 
-The newly-defined word can be used like any other word, including using it
-in other definitions:
+新しく定義されたワードは、 他の定義での使用を含め、 他のワードと同様に使用できます:
 
 @example
 : cubed ( n -- n^3 )
@@ -1835,13 +1836,15 @@ in other definitions:
 @end example
 
 @quotation 研究課題(assignment)
-Write colon definitions for @code{nip}, @code{tuck}, @code{negate}, and
-@code{/mod} in terms of other Forth words, and check if they work (hint:
-test your tests on the originals first).  Don't let the
-@samp{redefined}-Messages spook you, they are just warnings.
+@code{nip} や @code{tuck} や @code{negate} や @code{/mod} のコロン定義を他の Forth
+ワードで記述し、 それらが機能するかどうかを確認してみましょう (ヒント:
+最初にオリジナルであなたの作成したテストコードをテストして結果を確認してから、 その後あなたが定義して、 再度テストして結果を比較しましょう)。
+@samp{redefine} メッセージに驚かないでください。 これらは単なる警告です。 (訳注: redefine;
+同じ名前のワードを定義したという警告。 置き換えではなく追加となる。 これ以降の解釈・コンパイルは新しい方のワードを参照するが、
+通常は新しい方のワード定義後も、 既にコンパイル済みのワードは古い方のワードを参照しつづける。 詳しくはディクショナリ等の項目を参照)
 @end quotation
 
-Reference: @ref{Colon Definitions}.
+こちらも参照してください: @ref{Colon Definitions}
 
 
 @node Decompilation Tutorial, Stack-Effect Comments Tutorial, Colon Definitions Tutorial, Tutorial
@@ -1849,18 +1852,17 @@ Reference: @ref{Colon Definitions}.
 @cindex decompilation tutorial
 @cindex see tutorial
 
-You can decompile colon definitions with @code{see}:
+@code{see}: を使用してコロン定義を逆コンパイルできます:
 
 @example
 see squared
 see cubed
 @end example
 
-In Gforth @code{see} shows you a reconstruction of the source code from the
-executable code.  Informations that were present in the source, but not in
-the executable code, are lost (e.g., comments).
+Gforth では、 @code{see} は実行可能コードからソース・コードを再構築したものを示します。 ソースには存在するが、
+実行可能コードには存在しない情報(コメントなど)は失われます。
 
-You can also decompile the predefined words:
+最初から義済みのワードを逆コンパイルすることもできます:
 
 @example
 see .
@@ -1872,81 +1874,71 @@ see +
 @section Stack-Effect Comments
 @cindex stack-effect comments, tutorial
 @cindex --, tutorial
-By convention the comment after the name of a definition describes the stack
-effect: The part in front of the @samp{--} describes the state of the stack
-before the execution of the definition, i.e., the parameters that are passed
-into the colon definition; the part behind the @samp{--} is the state of the
-stack after the execution of the definition, i.e., the results of the
-definition.  The stack comment only shows the top stack items that the
-definition accesses and/or changes.
+慣例により、 定義名の後のコメントはスタック効果を説明します。 @samp{--} の前の部分は、 定義の実行前のスタックの状態、
+つまりコロン定義に渡されるパラメータを説明します。 @samp{--} の後ろの部分は、 定義の実行後のスタックの状態、 つまり定義の実行結果です。
+スタック・コメントには、 定義がアクセス、 または、変更する、 (訳注: 定義の外部から見える、 )スタック項目のみを記述します。
 
-You should put a correct stack effect on every definition, even if it is
-just @code{( -- )}.  You should also add some descriptive comment to more
-complicated words (I usually do this in the lines following @code{:}).  If
-you don't do this, your code becomes unreadable (because you have to work
-through every definition before you can understand any).
+たとえ スタック効果が @code{( -- )} (訳注: スタックに何の効果も及ぼさない)であっても、 あなたは、
+すべての定義に正しいスタック効果を記述するべきです。 また、 より複雑なワードには説明的なコメントを追加する必要があります(通常、 これは
+@code{:} の後ろに続けます)。 これを行わないと、 あなたコードの行動は解読不能になります(なぜなら、 とある定義を理解するためには、
+全ての定義を辿るハメになるから)。
 
 @quotation 研究課題(assignment)
-The stack effect of @code{swap} can be written like this: @code{x1 x2 -- x2
-x1}.  Describe the stack effect of @code{-}, @code{drop}, @code{dup},
-@code{over}, @code{rot}, @code{nip}, and @code{tuck}.  Hint: When you are
-done, you can compare your stack effects to those in this manual
-(@pxref{Word Index}).
+例えば @code{swap} のスタック効果は、 @code{x1 x2 -- x2 x1} のように記述できます。 同様に、 @code{-} や
+@code{drop} や @code{dup} や @code{over} や @code{rot} や @code{nip} や
+@code{tuck} のスタック効果を書いてみましょう。 ヒント: 書けたら、
+このマニュアルに書いてあるスタック効果と合っているかどうかチェックしましょう(@pxref{Word Index})。
 @end quotation
 
-Sometimes programmers put comments at various places in colon definitions
-that describe the contents of the stack at that place (stack comments);
-i.e., they are like the first part of a stack-effect comment. E.g.,
+プログラマーは、 コロン定義内のさまざまな場所に、 その場所のスタックの内容を説明するコメント(スタック・コメント)を挿入することがあります。 つまり、
+スタック効果コメントの最初の部分のようなものです。 例えば以下のようなのです
 
 @example
 : cubed ( n -- n^3 )
    dup squared  ( n n^2 ) * ;
 @end example
 
-In this case the stack comment is pretty superfluous, because the word is
-simple enough.  If you think it would be a good idea to add such a comment
-to increase readability, you should also consider factoring the word into
-several simpler words (@pxref{Factoring Tutorial,, Factoring}), which
-typically eliminates the need for the stack comment; however, if you decide
-not to refactor it, then having such a comment is better than not having it.
+この場合、 ワードが十分に単純であるため、 スタック・コメントは割と余計です。 あなたが、
+読みやすさを高めるためにそのようなコメントを追加することが良いと思った場合、
+ワードをいくつかの単純なワードにファクタリング(因数分解)することも検討する必要があります(@pxref{Factoring Tutorial,,
+Factoring})。 ファクタリングにより、 通常はスタック・コメントが不要になります。 ただし、
+あなたが結果としてリファクタリングしないことに決めた場合は、 そのようなコメントがある方が、 無いよりも良いです。
 
-The names of the stack items in stack-effect and stack comments in the
-standard, in this manual, and in many programs specify the type through a
-type prefix, similar to Fortran and Hungarian notation.  The most frequent
-prefixes are:
+標準や、 このマニュアルや、 多くのプログラムの、 スタック効果およびスタック・コメント内のスタック項目の名前は、 Fortran
+やハンガリアン記法と同様に、 型プレフィックスによって型を指定します。 最も頻繁に使用されるプレフィックスは以下のとおりです:
 
 @table @code
 @item n
-signed integer
+符号付き整数
 @item u
-unsigned integer
+符号なし整数
 @item c
-character
+文字(character)
 @item f
-Boolean flags, i.e. @code{false} or @code{true}.
+二値フラグ(Boolean flags)。 つまり @code{false} または @code{true}
 @item a-addr,a-
-Cell-aligned address
+セル揃えアドレス(Cell-aligned address)
 @item c-addr,c-
-Char-aligned address (note that a Char may have two bytes in Windows NT)
+文字揃えアドレス(Char-aligned address)(注意: NTWindows NT では 文字(char) は 2
+バイトになる場合があることに注意)
 @item xt
-Execution token, same size as Cell
+実行トークン(Execution token)。 セルと同一サイズ
 @item w,x
-Cell, can contain an integer or an address.  It usually takes 32, 64 or 16
-bits (depending on your platform and Forth system). A cell is more commonly
-known as machine word, but the term @emph{word} already means something
-different in Forth.
+セル(cell)。 セルには整数またはアドレスを含めることができます。 通常は 32ビットまたは 64 ビットまたは 16
+ビットを必要とします(プラットフォームと Forth システムによって異なります)。 cell は一般には machine word
+として知られていますが、 Forth では @emph{word} という用語はすでに別の意味を持っています。
 @item d
-signed double-cell integer
+符号付き2倍長整数(signed double-cell integer)
 @item ud
-unsigned double-cell integer
+符号無し2倍長整数(unsigned double-cell integer)
 @item r
-Float (on the FP stack)
+浮動小数点数(Float)(FP スタック上に置かれる)
 @end table
 
-You can find a more complete list in @ref{Notation}.
+より完全なリストは @ref{Notation} にあります。
 
 @quotation 研究課題(assignment)
-Write stack-effect comments for all definitions you have written up to now.
+あなたがここまでで記述したすべての定義に対してスタック効果コメントを記述してみましょう。
 @end quotation
 
 
@@ -1954,74 +1946,63 @@ Write stack-effect comments for all definitions you have written up to now.
 @section Types
 @cindex types tutorial
 
-In Forth the names of the operations are not overloaded; so similar
-operations on different types need different names; e.g., @code{+} adds
-integers, and you have to use @code{f+} to add floating-point numbers.  The
-following prefixes are often used for related operations on different types:
+Forth では、 演算子の名前はオーバーロードされません。 したがって、 異なる型に対する同様の演算には異なる名前が必要です。 たとえば、
+@code{+} は整数の加算をしますが、 浮動小数点数を加算するには @code{f+} を使用する必要があります。 以下のプレフィックスは、
+さまざまな型の関連する演算によく使用されます:
 
 @table @code
 @item (none)
-signed integer
+符号付き整数
 @item u
-unsigned integer
+符号なし整数
 @item c
-character
+文字(character)
 @item d
-signed double-cell integer
+符号付き2倍長整数(signed double-cell integer)
 @item ud, du
-unsigned double-cell integer
+符号無し2倍長整数(unsigned double-cell integer)
 @item 2
-two cells (not-necessarily double-cell numbers)
+2 つのセル(必ずしも 2倍長整数(double-cell numbers)とは限りません)
 @item m, um
-mixed single-cell and double-cell operations
+単一セルとダブル・セルの混合操作
 @item f
-floating-point (note that in stack comments @samp{f} represents flags, and
-@samp{r} represents FP numbers; also, you need to include the exponent part
-in literal FP numbers, @pxref{Floating Point Tutorial}).
+浮動小数点(注意: スタック・コメントでは、 @samp{f} はフラグを表し、 @samp{r} は FP 数値を表すことに注意してください。 また、
+リテラル FP 数値には指数部分を含める必要があります @pxref{Floating Point Tutorial})。
 @end table
 
-If there are no differences between the signed and the unsigned variant
-(e.g., for @code{+}), there is only the prefix-less variant.
+符号付きのバリエーションと符号なしのバリエーションに違いがない場合(例えば @code{+} の場合)、
+プレフィックスのないバリエーションのみが存在します。
 
-Forth does not perform type checking, neither at compile time, nor at run
-time.  If you use the wrong operation, the data are interpreted incorrectly:
+Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、 データが正しく解釈されません:
 
 @example
 -1 u.
 @end example
 
-If you have only experience with type-checked languages until now, and have
-heard how important type-checking is, don't panic! In my experience (and
-that of other Forthers), type errors in Forth code are usually easy to find
-(once you get used to it), the increased vigilance of the programmer tends
-to catch some harder errors in addition to most type errors, and you never
-have to work around the type system, so in most situations the lack of
-type-checking seems to be a win (projects to add type checking to Forth have
-not caught on).
+あなたが、 これまで型チェック言語しか使用したことがなく、 型チェックがいかに重要であるかを聞いたことがある場合でも、 パニックに陥る必要はありません。
+著者の経験(および他の Forth 利用者(Forthers)の経験)では、 Forth コードの型エラーは通常(慣れてしまえば)簡単に見つかります。
+プログラマの警戒心が高まると、 ほとんどの型エラーに加えて、 より困難なエラーも発見される傾向があります。 型システムを回避する必要がまったくないため、
+ほとんどの状況では型チェックがないことが利点であるようです(Forth に型チェックを追加するプロジェクトは普及していません)。
 
 
 @node Factoring Tutorial, Designing the stack effect Tutorial, Types Tutorial, Tutorial
 @section Factoring
 @cindex factoring tutorial
 
-If you try to write longer definitions, you will soon find it hard to keep
-track of the stack contents.  Therefore, good Forth programmers tend to
-write only short definitions (e.g., three lines).  The art of finding
-meaningful short definitions is known as factoring (as in factoring
-polynomials).
+あなたが長ったらしい定義を書こうとすると、 スタックの内容を追跡するのがすぐに困難になることがわかります。 したがって、優れた Forth
+プログラマは短い定義 (たとえば 3 行)のみを記述する傾向があります。 意味のある短い定義を見つける技術は、 (多項式の因数分解(factoring
+polynomials)と同様に)ファクタリング(factoring)として知られています。
 
-Well-factored programs offer additional advantages: smaller, more general
-words, are easier to test and debug and can be reused more and better than
-larger, specialized words.
+よくファクタリングされたプログラムには、 追加の利点もあります。 つまり、小さくて一般的なワードは、
+大きくて特殊なワードよりもテストとデバッグが容易で、より再利用性に富みます。
 
-So, if you run into difficulties with stack management, when writing code,
-try to define meaningful factors for the word, and define the word in terms
-of those.  Even if a factor contains only two words, it is often helpful.
+したがって、 あなたが、 スタック管理に問題を抱えてるなら、 コードを記述するときにワードに意味のある要素を定義し、
+それらの観点からワードを定義するようにしてください。 たった 2 つのワードしかしか含まれないような定義でも、 多くの場合役に立ちます。
 
-Good factoring is not easy, and it takes some practice to get the knack for
-it; but even experienced Forth programmers often don't find the right
-solution right away, but only when rewriting the program.  So, if you don't
-come up with a good solution immediately, keep trying, don't despair.
+上手なファクタリングは簡単ではなく、 コツを掴むにはある程度の練習が必要です。 しかし、経験豊富な Forth プログラマーであっても、
+すぐには適切な解決策を見つけられないことが多く、 プログラムの書き直し時に見つかるのです。 したがって、 すぐに良い解決策が思い浮かばなくても、
+絶望しないで試し続けてください。(訳注: 参考: 拙訳 Thinking Forth 第6章 ファクタリング
+https://thinking-forth-ja.readthedocs.io/ja/latest/chapter6.html)
 
 @c example !!
 
@@ -2031,53 +2012,39 @@ come up with a good solution immediately, keep trying, don't despair.
 @cindex Stack effect design, tutorial
 @cindex design of stack effects, tutorial
 
-In other languages you can use an arbitrary order of parameters for a
-function; and since there is only one result, you don't have to deal with
-the order of results, either.
+他の言語では、 関数(function)のパラメータに任意の順序を使用できます。 また、 結果は 1 つだけなので、 結果の順序を扱う必要もありません。
 
-In Forth (and other stack-based languages, e.g., PostScript) the parameter
-and result order of a definition is important and should be designed well.
-The general guideline is to design the stack effect such that the word is
-simple to use in most cases, even if that complicates the implementation of
-the word.  Some concrete rules are:
+Forth (および他のスタック・ベースの言語、 たとえば PostScript)では、 定義のパラメーターの順序と結果の順序が重要であり、
+適切に設計する必要があります。 一般的なガイドラインは、 ワードの実装が複雑になる場合でも、
+ワードがほとんどの場合に簡単に使用できるようにスタック効果を設計することです。 いくつかの具体的なルールは以下のとおりです:
 
 @itemize @bullet
 
 @item
-Words consume all of their parameters (e.g., @code{.}).
+ワードがパラメータの全てを消費する(例: @code{.})。
 
 @item
-If there is a convention on the order of parameters (e.g., from mathematics
-or another programming language), stick with it (e.g., @code{-}).
+パラメータの順序に関する慣習がある場合(数学や他のプログラミング言語など)、 それに従ってください(例: @code{-})。
 
 @item
-If one parameter usually requires only a short computation (e.g., it is a
-constant), pass it on the top of the stack.  Conversely, parameters that
-usually require a long sequence of code to compute should be passed as the
-bottom (i.e., first) parameter.  This makes the code easier to read, because
-the reader does not need to keep track of the bottom item through a long
-sequence of code (or, alternatively, through stack manipulations). E.g.,
-@code{!} (store, @pxref{Memory}) expects the address on top of the stack
-because it is usually simpler to compute than the stored value (often the
-address is just a variable).
+1 つのパラメータが通常短い計算のみを必要とする場合(たとえば、それが定数である場合)、 それをスタック頂上(top of
+stack;TOS)に渡します。 逆に、 通常、 計算に長いコード シーケンスが必要なパラメータは、 スタック底(bottom) (つまり、最初の)
+パラメータとして渡す必要があります。 これにより、 リーダーはコードの長いシーケンス(またはスタック操作)を通じてスタック底の項目(bottom
+item)を追跡する必要がなくなるため、 コードが読みやすくなります。 たとえば、 @code{!}(「ストア」 @pxref{Memory})は、
+通常、 格納されている値よりも計算が簡単であるため、 スタック頂上にアドレスがあるのを期待します(多くの場合、 アドレスは単なる変数です)。
 
 @item
-Similarly, results that are usually consumed quickly should be returned on
-the top of stack, whereas a result that is often used in long computations
-should be passed as bottom result.  E.g., the file words like
-@code{open-file} return the error code on the top of stack, because it is
-usually consumed quickly by @code{throw}; moreover, the error code has to be
-checked before doing anything with the other results.
+同様に、 通常すぐに消費される結果はスタック頂上(top of stack)に返されるべきですが、
+長い計算でよく使用される結果はスタック底(bottom)の結果として渡される必要があります。 たとえば、 @code{open-file}
+のようなファイル・ワードは、スタック頂上にエラー・コードを返します。 これは、 通常、 @code{throw} によってすぐに消費されるためです。
+さらに言えば、 他の結果に対して何かを行う前に、 エラー・コードをチェックする必要があります。
 
 @end itemize
 
-These rules are just general guidelines, don't lose sight of the overall
-goal to make the words easy to use.  E.g., if the convention rule conflicts
-with the computation-length rule, you might decide in favour of the
-convention if the word will be used rarely, and in favour of the
-computation-length rule if the word will be used frequently (because with
-frequent use the cost of breaking the computation-length rule would be quite
-high, and frequent use makes it easier to remember an unconventional order).
+これらのルールは一般的なガイドラインに過ぎません。 ワードを使いやすくするという全体的な目標を見失わないでください。 例えば、
+慣習のルールが計算長のルールと衝突する場合、 ワードがあまり使われない場合は慣習を優先するかもしれません。 一方、 ワードが頻繁に使われる場合は、
+計算長のルールを優先するかもしれません(だからといって頻繁に使うと、 計算長のルールを破るコストが非常に高くなりますし、
+頻繁に使うことで非慣習的な順序を覚えてしまいがちになります)。
 
 @c example !! structure package
 
@@ -2086,7 +2053,7 @@ high, and frequent use makes it easier to remember an unconventional order).
 @section Local Variables
 @cindex local variables, tutorial
 
-You can define local variables (@emph{locals}) in a colon definition:
+コロン定義内でローカル変数(ローカルズ(locals))を定義できます:
 
 @example
 : swap @{ a b -- b a @}
@@ -2094,35 +2061,29 @@ You can define local variables (@emph{locals}) in a colon definition:
 1 2 swap .s 2drop
 @end example
 
-(If your Forth system does not support this syntax, include
-@file{compat/anslocal.fs} first).
+(あなたの Forth システムがこの構文をサポートしていない場合は、  最初に @file{compat/anslocal.fs}
+をインクルードしてください)
 
-In this example @code{@{ a b -- b a @}} is the locals definition; it takes
-two cells from the stack, puts the top of stack in @code{b} and the next
-stack element in @code{a}.  @code{--} starts a comment ending with
-@code{@}}.  After the locals definition, using the name of the local will
-push its value on the stack.  You can omit the comment part (@code{-- b a}):
+この例では、 @code{@{ a b -- b a @}} がローカルズ定義です。 スタックから 2 つのセルを取得し、スタック頂上を
+@code{b} に、 その次のスタック要素を @code{a} にします。 @code{--} は @code{@}} で終わるコメントを開始します。
+ローカルズの定義後、 ローカルズの名前を使用すると、 その値がスタックに積まれます。 コメント部分(@code{-- b a})は省略できます:
 
 @example
 : swap ( x1 x2 -- x2 x1 )
   @{ a b @} b a ;
 @end example
 
-In Gforth you can have several locals definitions, anywhere in a colon
-definition; in contrast, in a standard program you can have only one locals
-definition per colon definition, and that locals definition must be outside
-any control structure.
+Gforth では、 コロン定義内の任意の場所に複数のローカルズ定義を含めることができます。 対照的に、 標準Forthのプログラムでは、
+コロン定義ごとにローカルズ定義を 1 つだけしか持つことができず、 そのローカルズ定義は制御構造の外側にある必要があります。
 
-With locals you can write slightly longer definitions without running into
-stack trouble.  However, I recommend trying to write colon definitions
-without locals for exercise purposes to help you gain the essential
-factoring skills.
+ローカルズを使用すると、 スタックの問題に遭遇することなく、 少し長い定義を書くことができます。
+ただし、重要な、ファクタリング技能を身につけるための演習として、 ローカルズを使用せずにコロン定義を記述してみることをお勧めします。
 
 @quotation 研究課題(assignment)
-Rewrite your definitions until now with locals
+ここまでのあなたの定義をローカルズを使ってで書き換えてみましょう。
 @end quotation
 
-Reference: @ref{Locals}.
+こちらも参照下さい: @ref{Locals}
 
 
 @node Conditional execution Tutorial, Flags and Comparisons Tutorial, Local Variables Tutorial, Tutorial
@@ -2130,8 +2091,7 @@ Reference: @ref{Locals}.
 @cindex conditionals, tutorial
 @cindex if, tutorial
 
-In Forth you can use control structures only inside colon definitions.  An
-@code{if}-structure looks like this:
+Forth では、 コロン定義内でのみ制御構造を使用できます。 @code{if} 構造は以下のようになります:
 
 @example
 : abs ( n1 -- +n2 )
@@ -2142,10 +2102,9 @@ In Forth you can use control structures only inside colon definitions.  An
 -5 abs .
 @end example
 
-@code{if} takes a flag from the stack.  If the flag is non-zero (true), the
-following code is performed, otherwise execution continues after the
-@code{endif} (or @code{else}).  @code{<} compares the top two stack elements
-and produces a flag:
+@code{if} はスタックからフラグを取得します。 フラグがゼロ以外 (true) の場合は、 その次のコードが実行されます。 そうでない場合は、
+@code{endif} (または @code{else}) の後から実行が続けられます。 @code{<} は、 頂上から 2
+つのスタック要素を比較し、 フラグを生成します。
 
 @example
 1 2 < .
@@ -2153,17 +2112,15 @@ and produces a flag:
 1 1 < .
 @end example
 
-Actually the standard name for @code{endif} is @code{then}.  This tutorial
-presents the examples using @code{endif}, because this is often less
-confusing for people familiar with other programming languages where
-@code{then} has a different meaning.  If your system does not have
-@code{endif}, define it with
+実は、 @code{endif} の標準Forthでの名前は @code{then} です。 このチュートリアルでは、 @code{endif}
+を使用した例を示します。 なぜなら、 @code{then} が異なる意味を持つ他のプログラミング言語に慣れている人々にとっては、
+@code{endif} を使用する方が混乱が少ないからです。 システムに @code{endif} がない場合は、 以下のように定義します
 
 @example
 : endif postpone then ; immediate
 @end example
 
-You can optionally use an @code{else}-part:
+あなたはオプションで @code{else} 部分を使用できます:
 
 @example
 : min ( n1 n2 -- n )
@@ -2177,11 +2134,10 @@ You can optionally use an @code{else}-part:
 @end example
 
 @quotation 研究課題(assignment)
-Write @code{min} without @code{else}-part (hint: what's the definition of
-@code{nip}?).
+@code{else} 部分を付けずに @code{min} を記述してみましょう。 (ヒント: @code{nip} の定義は何ですか?)。
 @end quotation
 
-Reference: @ref{Selection}.
+こちらも参照下さい: @ref{Selection}
 
 
 @node Flags and Comparisons Tutorial, General Loops Tutorial, Conditional execution Tutorial, Tutorial
@@ -2189,10 +2145,9 @@ Reference: @ref{Selection}.
 @cindex flags tutorial
 @cindex comparison tutorial
 
-In a false-flag all bits are clear (0 when interpreted as integer).  In a
-canonical true-flag all bits are set (-1 as a twos-complement signed
-integer); in many contexts (e.g., @code{if}) any non-zero value is treated
-as true flag.
+false フラグはすべてのビットがクリアです(整数として解釈される場合は 0)。 正規化された true フラグは、
+すべてのビットがセットされています(2の補数の符号付き整数として -1)。 多くの文脈(例: @code{if})では、ゼロ以外の値はすべて true
+フラグとして扱われます。
 
 @example
 false .
@@ -2200,24 +2155,23 @@ true .
 true hex u. decimal
 @end example
 
-Comparison words produce canonical flags:
+比較ワードは正規化フラグを生成します:
 
 @example
 1 1 = .
 1 0= .
 0 1 < .
 0 0 < .
--1 1 u< . \ type error, u< interprets -1 as large unsigned number
+-1 1 u< . \ 型エラー。 u< は -1 を 大きな符号なし数として扱ってしまいます
 -1 1 < .
 @end example
 
-Gforth supports all combinations of the prefixes @code{0 u d d0 du f f0} (or
-none) and the comparisons @code{= <> < > <= >=}.  Only a part of these
-combinations are standard (for details see the standard, @ref{Numeric
-comparison}, @ref{Floating Point} or @ref{Word Index}).
+Gforth は、接頭辞 @code{0 u d d0 du f f0} (または「 接頭辞なし」)との比較 @code{= <> < > <= >=}
+のすべての組み合わせをサポートします。 これらの組み合わせの一部のみが標準Forthです (詳細については、標準Forth または
+@ref{Numeric comparison} または @ref{Floating Point} または @ref{Word Index}
+を参照してください)。
 
-You can use @code{and or xor invert} as operations on canonical flags.
-Actually they are bitwise operations:
+@code{and or xor invert} を正規化フラグ用の演算子として使用できます。 実際には、 これらはビット単位演算です:
 
 @example
 1 2 and .
@@ -2226,22 +2180,21 @@ Actually they are bitwise operations:
 1 invert .
 @end example
 
-You can convert a zero/non-zero flag into a canonical flag with @code{0<>}
-(and complement it on the way with @code{0=}; indeed, it is more common to
-use @code{0=} instead of @code{invert} for canonical flags).
+@code{0<>} を使用して ゼロ/非ゼロ フラグを正規化フラグに変換できます(そして、 その途中で @code{0=} を使用して ゼロ/非ゼロ
+フラグの余数(complement)を取ります。 実際、 正規化フラグでは @code{invert} の代わりに @code{0=}
+を使用するのが一般的です)。
 
 @example
 1 0= .
 1 0<> .
 @end example
 
-While you can use @code{if} without @code{0<>} to test for zero/non-zero,
-you sometimes need to use @code{0<>} when combining zero/non-zero values
-with @code{and or xor} because of their bitwise nature.  The simplest, least
-error-prone, and probably clearest way is to use @code{0<>} in all these
-cases, but in some cases you can use fewer @code{0<>}s.  Here are some stack
-effects, where @i{fc} represents a canonical flag, and @i{fz} represents
-zero/non-zero (every @i{fc} also works as @i{fz}):
+@code{0<>} 無しでも @code{if} で ゼロ/非ゼロ をテストすることはできますが、 ゼロ/非ゼロ 値を @code{and or
+xor} と組み合わせる場合、 @code{and or xor} はビット単位での操作なので、 @code{0<>}
+を使用する必要がある場合があります。 最も単純で、 エラーが少なく、 おそらく最も明確な方法は、 これらすべての場合に @code{0<>}
+を使用することですが、 場合によっては、 使用する @code{0<>} の数を減らすこともできます。 以下にいくつかのスタック効果を示します。
+@i{fc} は正規化フラグ(canonical flag)を表し、 @i{fz} は ゼロ/非ゼロ を表します(すべての @i{fc} は
+@i{fz} としても機能します):
 
 @example
 or  ( fz1 fz2 -- fz3 )
@@ -2249,19 +2202,17 @@ and ( fz1 fc  -- fz2 )
 and ( fc  fz1 -- fz2 )
 @end example
 
-So, if you see code like this:
+したがって、 以下のようなコードの場合:
 
 @example
 ( n1 n2 ) 0<> and if
 @end example
 
-This tests whether n1 and n2 are non-zero and if yes, performs the code
-after @code{if}; it treats n1 as zero/non-zero and uses @code{0<>} to
-convert n2 into a canonical flag; the @code{and} then produces an fz, which
-is consumed by the @code{if}.
+これは、 n1 and n2 (n1 かつ n2)がゼロ以外であるかどうかをテストし、 イエスの場合は @code{if} の後のコードを実行します。
+n1 を ゼロ/非ゼロ として扱い、 @code{0<>} を使用して n2 を正規化フラグに変換します。 @code{and} は fz を生成し、
+それは @code{if} によって消費されます。
 
-You can use the all-bits-set feature of canonical flags and the bitwise
-operation of the Boolean operations to avoid @code{if}s:
+正規化フラグの全ビットセット機能とブール演算のビット単位の演算を使用して、 @code{if} を回避することもできます:
 
 @example
 : foo ( n1 -- n2 )
@@ -2280,18 +2231,18 @@ operation of the Boolean operations to avoid @code{if}s:
 @end example
 
 @quotation 研究課題(assignment)
-Write @code{min} without @code{if}.
+@code{min} を @code{if} 無しで書いてみましょう。
 @end quotation
 
-For reference, see @ref{Boolean Flags}, @ref{Numeric comparison}, and
-@ref{Bitwise operations}.
+こちらも参照下さい: @ref{Boolean Flags}, @ref{Numeric comparison}, @ref{Bitwise
+operations}
 
 
 @node General Loops Tutorial, Counted loops Tutorial, Flags and Comparisons Tutorial, Tutorial
 @section General Loops
 @cindex loops, indefinite, tutorial
 
-The endless loop is the most simple one:
+無限ループは非常に単純です:
 
 @example
 : endless ( -- )
@@ -2301,10 +2252,10 @@ The endless loop is the most simple one:
 endless
 @end example
 
-Terminate this loop by pressing @kbd{Ctrl-C} (in Gforth).  @code{begin} does
-nothing at run-time, @code{again} jumps back to @code{begin}.
+(Gforth の場合、) @kbd{Ctrl-C} を押してこのループを終了します。  @code{begin} は実行時に何も行わず、
+@code{again} は @code{begin} にジャンプします。
 
-A loop with one exit at any place looks like this:
+任意の場所に 1 つの出口があるループは以下のようになります:
 
 @example
 : log2 ( +n1 -- n2 )
@@ -2319,31 +2270,28 @@ A loop with one exit at any place looks like this:
 8 log2 .
 @end example
 
-At run-time @code{while} consumes a flag; if it is 0, execution continues
-behind the @code{repeat}; if the flag is non-zero, execution continues
-behind the @code{while}.  @code{Repeat} jumps back to @code{begin}, just
-like @code{again}.
+実行時には @code{while} はフラグを1つ消費します。 フラグが 0 の場合、 @code{repeat} の後ろへ飛んで実行が継続されます。
+フラグがゼロ以外の場合、 実行は @code{while} の後ろから継続されます。 @code{Repeat} は、 @code{again}
+と全く同じように、  @code{begin} に戻ります。
 
-In Forth there are a number of combinations/abbreviations, like @code{1+}.
-However, @code{2/} is not one of them; it shifts its argument right by one
-bit (arithmetic shift right), and viewed as division that always rounds
-towards negative infinity (floored division), like Gforth's @code{/} (since
-Gforth 0.7), but unlike @code{/} in many other Forth systems.
+Forth には、 @code{1+} など、多数の 組み合わせ/省略形 があります。 しかし、 @code{2/} は 組み合わせ/省略形
+ではありません。 これは引数を 1 ビット右にシフトし、 Gforth の (Gforth 0.7 以降の) @code{/} と同様、
+常に負の無限大方向に向かって小数点以下を丸める除算(フロア除算)と見なされますが、 他の多くの Forth システムの @code{/}
+とは異なります。
 
 @example
 -5 2 / . \ -2 or -3
 -5 2/ .  \ -3
 @end example
 
-@code{assert(} is no standard word, but you can get it on systems other than
-Gforth by including @file{compat/assert.fs}.  You can see what it does by
-trying
+@code{assert(} は標準Forthのワードではありませんが、 Gforth 以外のシステムでも
+@file{compat/assert.fs} を含めることで取得できます。 それが何をするかは、 以下のように試してみることで確認できます。
 
 @example
 0 log2 .
 @end example
 
-Here's a loop with an exit at the end:
+以下は、 最後に出口があるループです:
 
 @example
 : log2 ( +n1 -- n2 )
@@ -2356,14 +2304,14 @@ Here's a loop with an exit at the end:
   nip ;
 @end example
 
-@code{Until} consumes a flag; if it is zero, execution continues at the
-@code{begin}, otherwise after the @code{until}.
+@code{Until} はフラグを消費します。 フラグがゼロの場合は @code{begin} から実行が継続され、 それ以外の場合は
+@code{until} の後から実行が継続されます。
 
 @quotation 研究課題(assignment)
-Write a definition for computing the greatest common divisor.
+最大公約数を計算する定義を書いてみましょう。
 @end quotation
 
-Reference: @ref{Simple Loops}.
+こちらも参照ください: @ref{Simple Loops}
 
 
 @node Counted loops Tutorial, Recursion Tutorial, General Loops Tutorial, Tutorial
@@ -2381,16 +2329,14 @@ Reference: @ref{Simple Loops}.
 4 3 ^ .
 @end example
 
-@code{U+do} (from @file{compat/loops.fs}, if your Forth system doesn't have
-it) takes two numbers of the stack @code{( u3 u4 -- )}, and then performs
-the code between @code{u+do} and @code{loop} for @code{u3-u4} times (or not
-at all, if @code{u3-u4<0}).
+@code{U+do} (あなたの Forth システムにない場合は @file{compat/loops.fs} をインクルードしてください)は、
+@code{( u3 u4 -- )} 、 つまり、 スタックから 2 つの数値を取得し、 @code{u+do} と @code{loop}
+の間のコードを @code{u3 - u4} 回実行します(@code{ u3 - u4 < 0} の場合はまったく実行しません)。
 
-You can see the stack effect design rules at work in the stack effect of the
-loop start words: Since the start value of the loop is more frequently
-constant than the end value, the start value is passed on the top-of-stack.
+ループ開始ワードのスタック効果を見れば、スタック効果の設計ルールが機能していることがわかります。
+ループの開始値は終了値と比べて定数であることが多いため、 開始値はスタック頂上(top-of-stack)に渡されます。
 
-You can access the counter of a counted loop with @code{i}:
+@code{i} を使用して、 ループ・カウンターにアクセスできます:
 
 @example
 : fac ( u -- u! )
@@ -2401,14 +2347,13 @@ You can access the counter of a counted loop with @code{i}:
 7 fac .
 @end example
 
-There is also @code{+do}, which expects signed numbers (important for
-deciding whether to enter the loop).
+@code{+do} もあります。 これは符号付きの数値を期待します(それはループに入るかどうかを決定するために重要です)。
 
 @quotation 研究課題(assignment)
-Write a definition for computing the nth Fibonacci number.
+n 番目のフィボナッチ数を計算するための定義を記述してみましょう。
 @end quotation
 
-You can also use increments other than 1:
+増分として 1 以外も使用できます:
 
 @example
 : up2 ( n1 n2 -- )
@@ -2424,15 +2369,15 @@ You can also use increments other than 1:
 0 10 down2
 @end example
 
-Reference: @ref{Counted Loops}.
+こちらも参照ください: @ref{Counted Loops}
 
 
 @node Recursion Tutorial, Leaving definitions or loops Tutorial, Counted loops Tutorial, Tutorial
 @section Recursion
 @cindex recursion tutorial
 
-Usually the name of a definition is not visible in the definition; but
-earlier definitions are usually visible:
+通常、 定義の名前はその定義内に表れません。ただし、 それ以前の(同名の)定義は普通に表れます(訳注: 下記例は再帰呼出しではなくて、 '/'
+の古いバージョンを呼び出しているに過ぎない事に注意。同じ名前の古いバージョンが存在しなければエラーになるが、存在すればエラーにならないので注意。):
 
 @example
 1 0 / . \ "Floating-point unidentified fault" in Gforth on some platforms
@@ -2445,8 +2390,7 @@ earlier definitions are usually visible:
 1 0 /
 @end example
 
-For recursive definitions you can use @code{recursive} (non-standard) or
-@code{recurse}:
+再帰定義の場合は、 @code{recursive} (非標準) または @code{recurse} を使用できます:
 
 @example
 : fac1 ( n -- n! ) recursive
@@ -2467,10 +2411,10 @@ For recursive definitions you can use @code{recursive} (non-standard) or
 @end example
 
 @quotation 研究課題(assignment)
-Write a recursive definition for computing the nth Fibonacci number.
+n 番目のフィボナッチ数を計算するための再帰定義を記述してみましょう。
 @end quotation
 
-Reference (including indirect recursion): @xref{Calls and returns}.
+こちらも参照ください (間接再帰に関してもコチラ): @xref{Calls and returns}
 
 
 @node Leaving definitions or loops Tutorial, Return Stack Tutorial, Recursion Tutorial, Tutorial
@@ -2478,9 +2422,9 @@ Reference (including indirect recursion): @xref{Calls and returns}.
 @cindex leaving definitions, tutorial
 @cindex leaving loops, tutorial
 
-@code{EXIT} exits the current definition right away.  For every counted loop
-that is left in this way, an @code{UNLOOP} has to be performed before the
-@code{EXIT}:
+@code{EXIT} は、 現在の定義をすぐに終了(exit)します。 @code{EXIT} の実行前に、
+(残ったループ・カウンタ達を全て取り除くために、)ネストしたカウンタ付きループの数だけ @code{UNLOOP} を実行する必要があります(訳注:
+下記例は1重のループなので unloop が1つ。 2重ループになったら unloop unloop と2つ必要):
 
 @c !! real examples
 @example
@@ -2494,7 +2438,7 @@ that is left in this way, an @code{UNLOOP} has to be performed before the
  ... ;
 @end example
 
-@code{LEAVE} leaves the innermost counted loop right away:
+@code{LEAVE} は、 (@code{LEAVE} から見て)最も内側にあるカウンタ付きループを直ちに終了します:
 
 @example
 : ...
@@ -2509,16 +2453,16 @@ that is left in this way, an @code{UNLOOP} has to be performed before the
 
 @c !! example
 
-Reference: @ref{Calls and returns}, @ref{Counted Loops}.
+こちらも参照ください: @ref{Calls and returns}, @ref{Counted Loops}
 
 
 @node Return Stack Tutorial, Memory Tutorial, Leaving definitions or loops Tutorial, Tutorial
 @section Return Stack
 @cindex return stack tutorial
 
-In addition to the data stack Forth also has a second stack, the return
-stack; most Forth systems store the return addresses of procedure calls
-there (thus its name).  Programmers can also use this stack:
+データ・スタックに加えて、 Forth には 2 番目のスタックであるリターン・スタックもあります。 ほとんどの Forth
+システムは、プロシージャ呼び出しの戻りアドレスをそこに保存します(したがって、 リターン・スタックという名前が付けられています)。
+プログラマもリターン・スタックを利用することができます。
 
 @example
 : foo ( n1 n2 -- )
@@ -2533,28 +2477,23 @@ there (thus its name).  Programmers can also use this stack:
 1 2 foo
 @end example
 
-@code{>r} takes an element from the data stack and pushes it onto the return
-stack; conversely, @code{r>} moves an element from the return to the data
-stack; @code{r@@} pushes a copy of the top of the return stack on the data
-stack.
+@code{>r} はデータ・スタックから1つの要素を取得し、 それをリターン・スタックにプッシュします。 逆に、 @code{r>}
+は1つの要素をリターンからデータ・スタックに移動します。 @code{r@@} は、リターン・スタック頂上のコピーをデータ・スタックにプッシュします。
 
-Forth programmers usually use the return stack for storing data temporarily,
-if using the data stack alone would be too complex, and factoring and locals
-are not an option:
+Forth プログラマーは通常、 データ・スタックのみを使用すると複雑すぎて、 かつ、 ファクタリングとローカルがオプションに無い場合、
+データを一時的に保存するためにリターン・スタックを使用します。
 
 @example
 : 2swap ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
  rot >r rot r> ;
 @end example
 
-The return address of the definition and the loop control parameters of
-counted loops usually reside on the return stack, so you have to take all
-items, that you have pushed on the return stack in a colon definition or
-counted loop, from the return stack before the definition or loop ends.  You
-cannot access items that you pushed on the return stack outside some
-definition or loop within the definition of loop.
+定義のリターン・アドレスとカウント付きループのループ制御パラメータは通常、 リターン・スタック上に存在するため、
+コロン定義またはカウント付きループでリターン
+スタックにプッシュしたすべての項目を、定義の終了やループの終了の前にリターン・スタックから取得する必要があります。
+ある定義の外側やループの外側でリターン・スタックにプッシュしたアイテムに、 ループの定義内からアクセスすることはできません。
 
-If you miscount the return stack items, this usually ends in a crash:
+リターン・スタック項目の数を間違えると、 通常はクラッシュします:
 
 @example
 : crash ( n -- )
@@ -2562,16 +2501,14 @@ If you miscount the return stack items, this usually ends in a crash:
 5 crash
 @end example
 
-You cannot mix using locals and using the return stack (according to the
-standard; Gforth has no problem).  However, they solve the same problems, so
-this shouldn't be an issue.
+ローカルの使用とリターン・スタックの使用を混在させることはできません(標準Forthの場合。 Gforth では問題ありません)。 ただし、
+これらは同一の問題の解決なので、 問題にはなりません。
 
 @quotation 研究課題(assignment)
-Can you rewrite any of the definitions you wrote until now in a better way
-using the return stack?
+リターン・スタックを使用して、 ここまでにあなたが書いた定義をより良い方法で書き直すことができるでしょうか？
 @end quotation
 
-Reference: @ref{Return stack}.
+こちらも参照ください: @ref{Return stack}
 
 
 @node Memory Tutorial, Characters and Strings Tutorial, Return Stack Tutorial, Tutorial
@@ -4897,7 +4834,7 @@ with:
 @table @code
 @item f
 @cindex @code{f}, stack item type
-Boolean flags, i.e. @code{false} or @code{true}.
+二値フラグ(Boolean flags)。 つまり @code{false} または @code{true}
 @item c
 @cindex @code{c}, stack item type
 Char
@@ -4906,10 +4843,10 @@ Char
 Cell, can contain an integer or an address
 @item n
 @cindex @code{n}, stack item type
-signed integer
+符号付き整数
 @item u
 @cindex @code{u}, stack item type
-unsigned integer
+符号なし整数
 @item d
 @cindex @code{d}, stack item type
 double sized signed integer
@@ -4918,13 +4855,14 @@ double sized signed integer
 double sized unsigned integer
 @item r
 @cindex @code{r}, stack item type
-Float (on the FP stack)
+浮動小数点数(Float)(FP スタック上に置かれる)
 @item a-
 @cindex @code{a_}, stack item type
-Cell-aligned address
+セル揃えアドレス(Cell-aligned address)
 @item c-
 @cindex @code{c_}, stack item type
-Char-aligned address (note that a Char may have two bytes in Windows NT)
+文字揃えアドレス(Char-aligned address)(注意: NTWindows NT では 文字(char) は 2
+バイトになる場合があることに注意)
 @item f-
 @cindex @code{f_}, stack item type
 Float-aligned address
@@ -4936,7 +4874,7 @@ Address aligned for IEEE double precision float
 Address aligned for IEEE single precision float
 @item xt
 @cindex @code{xt}, stack item type
-Execution token, same size as Cell
+実行トークン(Execution token)。 セルと同一サイズ
 @item wid
 @cindex @code{wid}, stack item type
 Word list ID, same size as Cell

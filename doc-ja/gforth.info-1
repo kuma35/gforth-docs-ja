@@ -1156,10 +1156,10 @@ Gforth は以下の環境変数を使用します:
    • ‘GFORTHHIST’ – (Unix系のみ) ヒストリ・ファイル ‘.gforth-history’ の
      パスを指定。 デフォルト: ‘$HOME/.local/share/gforth/history’.
 
-   • gforth イメージ・ファイルと Forth ソースコード・ファイル を検索する
-     ときに使用するパスを指定(通常 ‘.’ 、現在の作業ディレクトリ)。 パス
-     区切り文字は ‘:’ です。 ‘/usr/local/share/gforth/1.0:.’ のみたいな
-     のが典型です。
+   • ‘GFORTHPATH’ – gforth イメージ・ファイルと Forth ソースコード・ファ
+     イル を検索するときに使用するパスを指定(通常 ‘.’ 、現在の作業ディレ
+     クトリ)。 パス区切り文字は ‘:’ です。
+     ‘/usr/local/share/gforth/1.0:.’ みたいなのが典型です。
 
    • ‘LANG’ – ‘LC_CTYPE’ 参照
 
@@ -1533,7 +1533,7 @@ File: gforth.info,  Node: Stack Manipulation Tutorial,  Next: Using files for Fo
 3.6 Stack Manipulation
 ======================
 
-Stack manipulation words rearrange the data on the stack.
+スタック操作ワードはスタックのデータを並べ替えます。
 
      1 .s drop .s
      1 .s dup .s drop drop .s
@@ -1541,19 +1541,20 @@ Stack manipulation words rearrange the data on the stack.
      1 2 .s swap .s drop drop
      1 2 3 .s rot .s drop drop drop
 
-   These are the most important stack manipulation words.  There are
-also variants that manipulate twice as many stack items:
+   上記は最も重要なスタック操作ワードです。 以下のように2つペアでスタッ
+ク項目を操作する亜種もあります:
 
      1 2 3 4 .s 2swap .s 2drop 2drop
 
-   Two more stack manipulation words are:
+   さらに 2 つ、 以下のスタック操作ワードがあります:
 
      1 2 .s nip .s drop
      1 2 .s tuck .s 2drop drop
 
-     研究課題(assignment): Replace ‘nip’ and ‘tuck’ with combinations of
-     other stack manipulation words.
+     研究課題(assignment): ‘nip’ と ‘tuck’ を他のスタック操作ワードの組
+     み合わせに置き換えてみましょう。
 
+          以下の結果になるスタック操作を考えてみましょう
           Given:          How do you get:
           1 2 3           3 2 1
           1 2 3           1 2 3 2
@@ -1566,15 +1567,28 @@ also variants that manipulate twice as many stack items:
           1 2 3
           1 2 3           1 2 3 4
           1 2 3           1 3
+          ( 訳注: 正解はこれだけではないが一例として
+          1 2 3           3 2 1  \ rot rot swap
+          1 2 3           1 2 3 2  \ over
+          1 2 3           1 2 3 3  \ dup
+          1 2 3           1 3 3  \ swap drop dup
+          1 2 3           2 1 3  \ -rot swap rot
+          1 2 3 4         4 3 2 1  \ swap 2swap swap
+          1 2 3           1 2 3 1 2 3  \ third third third
+          1 2 3 4         1 2 3 4 1 2  \ 2over
+          1 2 3                        \ 2drop drop
+          1 2 3           1 2 3 4  \ dup 1+
+          1 2 3           1 3  \ swap drop
+          )
 
-     5 dup * .
+     5 dup * . \ 5^2 を 出力
 
-     研究課題(assignment): Write 17^3 and 17^4 in Forth, without writing
-     ‘17’ more than once.  Write a piece of Forth code that expects two
-     numbers on the stack (A and B, with B on top) and computes
-     ‘(a-b)(a+1)’.
+     研究課題(assignment): ‘17’ を複数回書かずに、 Forth で 17^3 と 17^4
+     を書いてみましょう。 また、 スタック上の 2 つの数値 (A と B、 スタ
+     ック・トップ B とする) を想定し、‘(a-b)(a+1)’ を計算する Forth コー
+     ドを作成してみましょう。
 
-   Reference: *note Stack Manipulation::.
+   こちらも参照してください: *note Stack Manipulation::
 
 
 File: gforth.info,  Node: Using files for Forth code Tutorial,  Next: Comments Tutorial,  Prev: Stack Manipulation Tutorial,  Up: Tutorial
@@ -1582,41 +1596,41 @@ File: gforth.info,  Node: Using files for Forth code Tutorial,  Next: Comments T
 3.7 Using files for Forth code
 ==============================
 
-While working at the Forth command line is convenient for one-line
-examples and short one-off code, you probably want to store your source
-code in files for convenient editing and persistence.  You can use your
-favourite editor (Gforth includes Emacs support, *note Emacs and
-Gforth::) to create FILE.FS and use
+Forth コマンド・ラインでの作業は、 1 行の例や短い 1 回限りのコードの場合
+には便利ですが、 あなたは編集や永続化に便利なように、 ソース・コードをフ
+ァイルに保存したいと思うかもしれません。 お気に入りのエディター(なお、
+Gforth には Emacs サポートがあります *note Emacs and Gforth::)を使用して
+FILE.FS を作成し以下のようにします
 
      s" FILE.FS" included
 
-   to load it into your Forth system.  The file name extension I use for
-Forth files is ‘.fs’.
+   こうすると、 FILE.FS ファイルを Forth システムにロードします。 私達は
+Forth ファイルの拡張子には ‘.fs’ を使っています。
 
-   You can easily start Gforth with some files loaded like this:
+   以下のようにいくつかのファイルをロードして、 Gforth を簡単に開始でき
+ます:
 
      gforth FILE1.FS FILE2.FS
 
-   If an error occurs during loading these files, Gforth terminates,
-whereas an error during ‘INCLUDED’ within Gforth usually gives you a
-Gforth command line.  Starting the Forth system every time gives you a
-clean start every time, without interference from the results of earlier
-tries.
+   これらのファイルのロード中にエラーが発生した場合、 Gforth は終了
+(terminate)しますが、 Gforth 内で ‘INCLUDED’ 中にエラーが発生すると、 通
+常は Gforth コマンド・ラインになります。 Forth システムを毎回開始させれ
+ば、 あなたの以前の試行の結果に影響されることなく、 毎回クリーンな開始が
+可能になります。
 
-   I often put all the tests in a file, then load the code and run the
-tests with
+   私達は多くの場合、 すべてのテストをファイルに入れて、 それからそのコ
+ードをロードし以下のようにしてテストを実行します
 
      gforth CODE.FS TESTS.FS -e bye
 
-   (often by performing this command with ‘C-x C-e’ in Emacs).  The ‘-e
-bye’ ensures that Gforth terminates afterwards so that I can restart
-this command without ado.
+   (多くの場合、 Emacs内 で ‘C-x C-e’ を使用してこのコマンドを実行します
+。) ‘-e bye’ により、 テスト後に Gforth が確実に終了(terminate)するので
+、 面倒なくこのコマンドを再度開始できます。
 
-   The advantage of this approach is that the tests can be repeated
-easily every time the program ist changed, making it easy to catch bugs
-introduced by the change.
+   このアプローチの利点は、 プログラムが変更されるたびにテストを簡単に繰
+り返すことができ、 変更によって生じたバグを簡単に発見できることです。
 
-   Reference: *note Forth source files::.
+   こちらも参照してください: *note Forth source files::
 
 
 File: gforth.info,  Node: Comments Tutorial,  Next: Colon Definitions Tutorial,  Prev: Using files for Forth code Tutorial,  Up: Tutorial
@@ -1624,31 +1638,31 @@ File: gforth.info,  Node: Comments Tutorial,  Next: Colon Definitions Tutorial, 
 3.8 Comments
 ============
 
-     \ That's a comment; it ends at the end of the line
-     ( Another comment; it ends here: )  .s
+     \ これはコメントです。これは行末で終わります
+     ( もう一つのコメント。 これはこのように閉じ丸括弧で終わります: )  .s
 
-   ‘\’ and ‘(’ are ordinary Forth words and therefore have to be
-separated with white space from the following text.
+   ‘\’ と ‘(’ は通常の Forth ワードであるため、 その後ろのテキストと空白
+(white space)で区切る必要があります。
 
      \This gives an "Undefined word" error
 
-   The first ‘)’ ends a comment started with ‘(’, so you cannot nest
-‘(’-comments; and you cannot comment out text containing a ‘)’ with ‘(
-... )’(1).
+   最初にあらわれる ‘)’ が ‘(’ で始まるコメントを終了するため、 「‘(’ 型
+のコメント」を入れ子(nest)にすることはできません。 そして、 ‘( ... )’ を
+使用して ‘)’ を含むテキストをコメントアウトすることはできません(1)。
 
-   I use ‘\’-comments for descriptive text and for commenting out code
-of one or more line; I use ‘(’-comments for describing the stack effect,
-the stack contents, or for commenting out sub-line pieces of code.
+   私達は、 説明テキストや、 1 行以上のコードのコメントアウトに ‘\’ コメ
+ントを使用します。 ‘(’ コメントは、 スタック効果やスタックの内容を説明し
+たり、 コードの下位部分をコメントアウトしたりするために使用します。
 
-   The Emacs mode ‘gforth.el’ (*note Emacs and Gforth::) supports these
-uses by commenting out a region with ‘C-x \’, uncommenting a region with
-‘C-u C-x \’, and filling a ‘\’-commented region with ‘M-q’.
+   Emacs モード ‘gforth.el’ (*note Emacs and Gforth::) は、 ‘C-x \’ でリ
+ージョンをコメントアウトし、 ‘C-u C-x \’ でリージョンのコメントを解除し
+、 ‘\’ でコメントされた領域を ‘M-q’ でフィル(fill)します。
 
-   Reference: *note Comments::.
+   こちらも参照してください: *note Comments::
 
    ---------- Footnotes ----------
 
-   (1) therefore it’s a good idea to avoid ‘)’ in word names.
+   (1) したがって、 ワード名には ‘)’ を使用しないことをお勧めします。
 
 
 File: gforth.info,  Node: Colon Definitions Tutorial,  Next: Decompilation Tutorial,  Prev: Comments Tutorial,  Up: Tutorial
@@ -1656,20 +1670,21 @@ File: gforth.info,  Node: Colon Definitions Tutorial,  Next: Decompilation Tutor
 3.9 Colon Definitions
 =====================
 
-are similar to procedures and functions in other programming languages.
+コロン定義(Colon Definitions)は、 他のプログラミング言語のプロシージャや
+関数に似ています。
 
      : squared ( n -- n^2 )
         dup * ;
      5 squared .
      7 squared .
 
-   ‘:’ starts the colon definition; its name is ‘squared’.  The
-following comment describes its stack effect.  The words ‘dup *’ are not
-executed, but compiled into the definition.  ‘;’ ends the colon
-definition.
+   ‘:’ はコロン定義を開始します。 その名前は ‘squared’ です。 それに続く
+コメントは、 そのスタック効果について説明しています。 ‘dup *’ というワー
+ドは実行はされませんが、 定義にコンパイルされます(compiled into the
+definition)。 ‘;’ はコロン定義を終了します。
 
-   The newly-defined word can be used like any other word, including
-using it in other definitions:
+   新しく定義されたワードは、 他の定義での使用を含め、 他のワードと同様
+に使用できます:
 
      : cubed ( n -- n^3 )
         dup squared * ;
@@ -1678,12 +1693,18 @@ using it in other definitions:
         squared squared ;
      3 fourth-power .
 
-     研究課題(assignment): Write colon definitions for ‘nip’, ‘tuck’,
-     ‘negate’, and ‘/mod’ in terms of other Forth words, and check if
-     they work (hint: test your tests on the originals first).  Don’t
-     let the ‘redefined’-Messages spook you, they are just warnings.
+     研究課題(assignment): ‘nip’ や ‘tuck’ や ‘negate’ や ‘/mod’ のコロ
+     ン定義を他の Forth ワードで記述し、 それらが機能するかどうかを確認
+     してみましょう (ヒント: 最初にオリジナルであなたの作成したテストコ
+     ードをテストして結果を確認してから、 その後あなたが定義して、 再度
+     テストして結果を比較しましょう)。 ‘redefine’ メッセージに驚かないで
+     ください。 これらは単なる警告です。 (訳注: redefine; 同じ名前のワー
+     ドを定義したという警告。 置き換えではなく追加となる。 これ以降の解
+     釈・コンパイルは新しい方のワードを参照するが、 通常は新しい方のワー
+     ド定義後も、 既にコンパイル済みのワードは古い方のワードを参照しつづ
+     ける。 詳しくはディクショナリ等の項目を参照)
 
-   Reference: *note Colon Definitions::.
+   こちらも参照してください: *note Colon Definitions::
 
 
 File: gforth.info,  Node: Decompilation Tutorial,  Next: Stack-Effect Comments Tutorial,  Prev: Colon Definitions Tutorial,  Up: Tutorial
@@ -1691,16 +1712,16 @@ File: gforth.info,  Node: Decompilation Tutorial,  Next: Stack-Effect Comments T
 3.10 Decompilation
 ==================
 
-You can decompile colon definitions with ‘see’:
+‘see’: を使用してコロン定義を逆コンパイルできます:
 
      see squared
      see cubed
 
-   In Gforth ‘see’ shows you a reconstruction of the source code from
-the executable code.  Informations that were present in the source, but
-not in the executable code, are lost (e.g., comments).
+   Gforth では、 ‘see’ は実行可能コードからソース・コードを再構築したも
+のを示します。 ソースには存在するが、 実行可能コードには存在しない情報
+(コメントなど)は失われます。
 
-   You can also decompile the predefined words:
+   最初から義済みのワードを逆コンパイルすることもできます:
 
      see .
      see +
@@ -1711,78 +1732,79 @@ File: gforth.info,  Node: Stack-Effect Comments Tutorial,  Next: Types Tutorial,
 3.11 Stack-Effect Comments
 ==========================
 
-By convention the comment after the name of a definition describes the
-stack effect: The part in front of the ‘--’ describes the state of the
-stack before the execution of the definition, i.e., the parameters that
-are passed into the colon definition; the part behind the ‘--’ is the
-state of the stack after the execution of the definition, i.e., the
-results of the definition.  The stack comment only shows the top stack
-items that the definition accesses and/or changes.
+慣例により、 定義名の後のコメントはスタック効果を説明します。 ‘--’ の前
+の部分は、 定義の実行前のスタックの状態、 つまりコロン定義に渡されるパラ
+メータを説明します。 ‘--’ の後ろの部分は、 定義の実行後のスタックの状態
+、 つまり定義の実行結果です。 スタック・コメントには、 定義がアクセス、
+または、変更する、 (訳注: 定義の外部から見える、 )スタック項目のみを記述
+します。
 
-   You should put a correct stack effect on every definition, even if it
-is just ‘( -- )’.  You should also add some descriptive comment to more
-complicated words (I usually do this in the lines following ‘:’).  If
-you don’t do this, your code becomes unreadable (because you have to
-work through every definition before you can understand any).
+   たとえ スタック効果が ‘( -- )’ (訳注: スタックに何の効果も及ぼさない
+)であっても、 あなたは、 すべての定義に正しいスタック効果を記述するべき
+です。 また、 より複雑なワードには説明的なコメントを追加する必要がありま
+す(通常、 これは ‘:’ の後ろに続けます)。 これを行わないと、 あなたコード
+の行動は解読不能になります(なぜなら、 とある定義を理解するためには、 全
+ての定義を辿るハメになるから)。
 
-     研究課題(assignment): The stack effect of ‘swap’ can be written
-     like this: ‘x1 x2 -- x2 x1’.  Describe the stack effect of ‘-’,
-     ‘drop’, ‘dup’, ‘over’, ‘rot’, ‘nip’, and ‘tuck’.  Hint: When you
-     are done, you can compare your stack effects to those in this
-     manual (*note Word Index::).
+     研究課題(assignment): 例えば ‘swap’ のスタック効果は、 ‘x1 x2 -- x2
+     x1’ のように記述できます。 同様に、 ‘-’ や ‘drop’ や ‘dup’ や
+     ‘over’ や ‘rot’ や ‘nip’ や ‘tuck’ のスタック効果を書いてみましょう
+     。 ヒント: 書けたら、 このマニュアルに書いてあるスタック効果と合っ
+     ているかどうかチェックしましょう(*note Word Index::)。
 
-   Sometimes programmers put comments at various places in colon
-definitions that describe the contents of the stack at that place (stack
-comments); i.e., they are like the first part of a stack-effect comment.
-E.g.,
+   プログラマーは、 コロン定義内のさまざまな場所に、 その場所のスタック
+の内容を説明するコメント(スタック・コメント)を挿入することがあります。 つ
+まり、 スタック効果コメントの最初の部分のようなものです。 例えば以下のよ
+うなのです
 
      : cubed ( n -- n^3 )
         dup squared  ( n n^2 ) * ;
 
-   In this case the stack comment is pretty superfluous, because the
-word is simple enough.  If you think it would be a good idea to add such
-a comment to increase readability, you should also consider factoring
-the word into several simpler words (*note Factoring: Factoring
-Tutorial.), which typically eliminates the need for the stack comment;
-however, if you decide not to refactor it, then having such a comment is
-better than not having it.
+   この場合、 ワードが十分に単純であるため、 スタック・コメントは割と余
+計です。 あなたが、 読みやすさを高めるためにそのようなコメントを追加する
+ことが良いと思った場合、 ワードをいくつかの単純なワードにファクタリング
+(因数分解)することも検討する必要があります(*note Factoring: Factoring
+Tutorial.)。 ファクタリングにより、 通常はスタック・コメントが不要になり
+ます。 ただし、 あなたが結果としてリファクタリングしないことに決めた場合
+は、 そのようなコメントがある方が、 無いよりも良いです。
 
-   The names of the stack items in stack-effect and stack comments in
-the standard, in this manual, and in many programs specify the type
-through a type prefix, similar to Fortran and Hungarian notation.  The
-most frequent prefixes are:
+   標準や、 このマニュアルや、 多くのプログラムの、 スタック効果およびス
+タック・コメント内のスタック項目の名前は、 Fortran やハンガリアン記法と
+同様に、 型プレフィックスによって型を指定します。 最も頻繁に使用されるプ
+レフィックスは以下のとおりです:
 
 ‘n’
-     signed integer
+     符号付き整数
 ‘u’
-     unsigned integer
+     符号なし整数
 ‘c’
-     character
+     文字(character)
 ‘f’
-     Boolean flags, i.e.  ‘false’ or ‘true’.
+     二値フラグ(Boolean flags)。 つまり ‘false’ または ‘true’
 ‘a-addr,a-’
-     Cell-aligned address
+     セル揃えアドレス(Cell-aligned address)
 ‘c-addr,c-’
-     Char-aligned address (note that a Char may have two bytes in
-     Windows NT)
+     文字揃えアドレス(Char-aligned address)(注意: NTWindows NT では 文字
+     (char) は 2 バイトになる場合があることに注意)
 ‘xt’
-     Execution token, same size as Cell
+     実行トークン(Execution token)。 セルと同一サイズ
 ‘w,x’
-     Cell, can contain an integer or an address.  It usually takes 32,
-     64 or 16 bits (depending on your platform and Forth system).  A
-     cell is more commonly known as machine word, but the term _word_
-     already means something different in Forth.
+     セル(cell)。 セルには整数またはアドレスを含めることができます。 通
+     常は 32ビットまたは 64 ビットまたは 16 ビットを必要とします(プラッ
+     トフォームと Forth システムによって異なります)。 cell は一般には
+     machine word として知られていますが、 Forth では _word_ という用語
+     はすでに別の意味を持っています。
 ‘d’
-     signed double-cell integer
+     符号付き2倍長整数(signed double-cell integer)
 ‘ud’
-     unsigned double-cell integer
+     符号無し2倍長整数(unsigned double-cell integer)
 ‘r’
-     Float (on the FP stack)
+     浮動小数点数(Float)(FP スタック上に置かれる)
 
-   You can find a more complete list in *note Notation::.
+   より完全なリストは *note Notation:: にあります。
 
-     研究課題(assignment): Write stack-effect comments for all
-     definitions you have written up to now.
+     研究課題(assignment): あなたがここまでで記述したすべての定義に対し
+     てスタック効果コメントを記述してみましょう。
 
 
 File: gforth.info,  Node: Types Tutorial,  Next: Factoring Tutorial,  Prev: Stack-Effect Comments Tutorial,  Up: Tutorial
@@ -1790,49 +1812,47 @@ File: gforth.info,  Node: Types Tutorial,  Next: Factoring Tutorial,  Prev: Stac
 3.12 Types
 ==========
 
-In Forth the names of the operations are not overloaded; so similar
-operations on different types need different names; e.g., ‘+’ adds
-integers, and you have to use ‘f+’ to add floating-point numbers.  The
-following prefixes are often used for related operations on different
-types:
+Forth では、 演算子の名前はオーバーロードされません。 したがって、 異な
+る型に対する同様の演算には異なる名前が必要です。 たとえば、 ‘+’ は整数の
+加算をしますが、 浮動小数点数を加算するには ‘f+’ を使用する必要がありま
+す。 以下のプレフィックスは、 さまざまな型の関連する演算によく使用されま
+す:
 
 ‘(none)’
-     signed integer
+     符号付き整数
 ‘u’
-     unsigned integer
+     符号なし整数
 ‘c’
-     character
+     文字(character)
 ‘d’
-     signed double-cell integer
+     符号付き2倍長整数(signed double-cell integer)
 ‘ud, du’
-     unsigned double-cell integer
+     符号無し2倍長整数(unsigned double-cell integer)
 ‘2’
-     two cells (not-necessarily double-cell numbers)
+     2 つのセル(必ずしも 2倍長整数(double-cell numbers)とは限りません)
 ‘m, um’
-     mixed single-cell and double-cell operations
+     単一セルとダブル・セルの混合操作
 ‘f’
-     floating-point (note that in stack comments ‘f’ represents flags,
-     and ‘r’ represents FP numbers; also, you need to include the
-     exponent part in literal FP numbers, *note Floating Point
-     Tutorial::).
+     浮動小数点(注意: スタック・コメントでは、 ‘f’ はフラグを表し、 ‘r’
+     は FP 数値を表すことに注意してください。 また、 リテラル FP 数値に
+     は指数部分を含める必要があります *note Floating Point Tutorial::)。
 
-   If there are no differences between the signed and the unsigned
-variant (e.g., for ‘+’), there is only the prefix-less variant.
+   符号付きのバリエーションと符号なしのバリエーションに違いがない場合(例
+えば ‘+’ の場合)、 プレフィックスのないバリエーションのみが存在します。
 
-   Forth does not perform type checking, neither at compile time, nor at
-run time.  If you use the wrong operation, the data are interpreted
-incorrectly:
+   Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のよ
+うに間違った演算子を使うと、 データが正しく解釈されません:
 
      -1 u.
 
-   If you have only experience with type-checked languages until now,
-and have heard how important type-checking is, don’t panic!  In my
-experience (and that of other Forthers), type errors in Forth code are
-usually easy to find (once you get used to it), the increased vigilance
-of the programmer tends to catch some harder errors in addition to most
-type errors, and you never have to work around the type system, so in
-most situations the lack of type-checking seems to be a win (projects to
-add type checking to Forth have not caught on).
+   あなたが、 これまで型チェック言語しか使用したことがなく、 型チェック
+がいかに重要であるかを聞いたことがある場合でも、 パニックに陥る必要はあ
+りません。 著者の経験(および他の Forth 利用者(Forthers)の経験)では、
+Forth コードの型エラーは通常(慣れてしまえば)簡単に見つかります。 プログ
+ラマの警戒心が高まると、 ほとんどの型エラーに加えて、 より困難なエラーも
+発見される傾向があります。 型システムを回避する必要がまったくないため、
+ほとんどの状況では型チェックがないことが利点であるようです(Forth に型チ
+ェックを追加するプロジェクトは普及していません)。
 
 
 File: gforth.info,  Node: Factoring Tutorial,  Next: Designing the stack effect Tutorial,  Prev: Types Tutorial,  Up: Tutorial
@@ -1840,26 +1860,27 @@ File: gforth.info,  Node: Factoring Tutorial,  Next: Designing the stack effect 
 3.13 Factoring
 ==============
 
-If you try to write longer definitions, you will soon find it hard to
-keep track of the stack contents.  Therefore, good Forth programmers
-tend to write only short definitions (e.g., three lines).  The art of
-finding meaningful short definitions is known as factoring (as in
-factoring polynomials).
+あなたが長ったらしい定義を書こうとすると、 スタックの内容を追跡するのが
+すぐに困難になることがわかります。 したがって、優れた Forth プログラマは
+短い定義 (たとえば 3 行)のみを記述する傾向があります。 意味のある短い定
+義を見つける技術は、 (多項式の因数分解(factoring polynomials)と同様に)フ
+ァクタリング(factoring)として知られています。
 
-   Well-factored programs offer additional advantages: smaller, more
-general words, are easier to test and debug and can be reused more and
-better than larger, specialized words.
+   よくファクタリングされたプログラムには、 追加の利点もあります。 つま
+り、小さくて一般的なワードは、 大きくて特殊なワードよりもテストとデバッ
+グが容易で、より再利用性に富みます。
 
-   So, if you run into difficulties with stack management, when writing
-code, try to define meaningful factors for the word, and define the word
-in terms of those.  Even if a factor contains only two words, it is
-often helpful.
+   したがって、 あなたが、 スタック管理に問題を抱えてるなら、 コードを記
+述するときにワードに意味のある要素を定義し、 それらの観点からワードを定
+義するようにしてください。 たった 2 つのワードしかしか含まれないような定
+義でも、 多くの場合役に立ちます。
 
-   Good factoring is not easy, and it takes some practice to get the
-knack for it; but even experienced Forth programmers often don’t find
-the right solution right away, but only when rewriting the program.  So,
-if you don’t come up with a good solution immediately, keep trying,
-don’t despair.
+   上手なファクタリングは簡単ではなく、 コツを掴むにはある程度の練習が必
+要です。 しかし、経験豊富な Forth プログラマーであっても、 すぐには適切
+な解決策を見つけられないことが多く、 プログラムの書き直し時に見つかるの
+です。 したがって、 すぐに良い解決策が思い浮かばなくても、 絶望しないで
+試し続けてください。(訳注: 参考: 拙訳 Thinking Forth 第6章 ファクタリン
+グ https://thinking-forth-ja.readthedocs.io/ja/latest/chapter6.html)
 
 
 File: gforth.info,  Node: Designing the stack effect Tutorial,  Next: Local Variables Tutorial,  Prev: Factoring Tutorial,  Up: Tutorial
@@ -1867,49 +1888,46 @@ File: gforth.info,  Node: Designing the stack effect Tutorial,  Next: Local Vari
 3.14 Designing the stack effect
 ===============================
 
-In other languages you can use an arbitrary order of parameters for a
-function; and since there is only one result, you don’t have to deal
-with the order of results, either.
+他の言語では、 関数(function)のパラメータに任意の順序を使用できます。 ま
+た、 結果は 1 つだけなので、 結果の順序を扱う必要もありません。
 
-   In Forth (and other stack-based languages, e.g., PostScript) the
-parameter and result order of a definition is important and should be
-designed well.  The general guideline is to design the stack effect such
-that the word is simple to use in most cases, even if that complicates
-the implementation of the word.  Some concrete rules are:
+   Forth (および他のスタック・ベースの言語、 たとえば PostScript)では、
+定義のパラメーターの順序と結果の順序が重要であり、 適切に設計する必要が
+あります。 一般的なガイドラインは、 ワードの実装が複雑になる場合でも、 ワ
+ードがほとんどの場合に簡単に使用できるようにスタック効果を設計することで
+す。 いくつかの具体的なルールは以下のとおりです:
 
-   • Words consume all of their parameters (e.g., ‘.’).
+   • ワードがパラメータの全てを消費する(例: ‘.’)。
 
-   • If there is a convention on the order of parameters (e.g., from
-     mathematics or another programming language), stick with it (e.g.,
-     ‘-’).
+   • パラメータの順序に関する慣習がある場合(数学や他のプログラミング言語
+     など)、 それに従ってください(例: ‘-’)。
 
-   • If one parameter usually requires only a short computation (e.g.,
-     it is a constant), pass it on the top of the stack.  Conversely,
-     parameters that usually require a long sequence of code to compute
-     should be passed as the bottom (i.e., first) parameter.  This makes
-     the code easier to read, because the reader does not need to keep
-     track of the bottom item through a long sequence of code (or,
-     alternatively, through stack manipulations).  E.g., ‘!’ (store,
-     *note Memory::) expects the address on top of the stack because it
-     is usually simpler to compute than the stored value (often the
-     address is just a variable).
+   • 1 つのパラメータが通常短い計算のみを必要とする場合(たとえば、それが
+     定数である場合)、 それをスタック頂上(top of stack;TOS)に渡します。
+     逆に、 通常、 計算に長いコード シーケンスが必要なパラメータは、 ス
+     タック底(bottom) (つまり、最初の) パラメータとして渡す必要がありま
+     す。 これにより、 リーダーはコードの長いシーケンス(またはスタック操
+     作)を通じてスタック底の項目(bottom item)を追跡する必要がなくなるた
+     め、 コードが読みやすくなります。 たとえば、 ‘!’(「ストア」 *note
+     Memory::)は、 通常、 格納されている値よりも計算が簡単であるため、 ス
+     タック頂上にアドレスがあるのを期待します(多くの場合、 アドレスは単
+     なる変数です)。
 
-   • Similarly, results that are usually consumed quickly should be
-     returned on the top of stack, whereas a result that is often used
-     in long computations should be passed as bottom result.  E.g., the
-     file words like ‘open-file’ return the error code on the top of
-     stack, because it is usually consumed quickly by ‘throw’; moreover,
-     the error code has to be checked before doing anything with the
-     other results.
+   • 同様に、 通常すぐに消費される結果はスタック頂上(top of stack)に返さ
+     れるべきですが、 長い計算でよく使用される結果はスタック底(bottom)の
+     結果として渡される必要があります。 たとえば、 ‘open-file’ のような
+     ファイル・ワードは、スタック頂上にエラー・コードを返します。 これは
+     、 通常、 ‘throw’ によってすぐに消費されるためです。 さらに言えば、
+     他の結果に対して何かを行う前に、 エラー・コードをチェックする必要が
+     あります。
 
-   These rules are just general guidelines, don’t lose sight of the
-overall goal to make the words easy to use.  E.g., if the convention
-rule conflicts with the computation-length rule, you might decide in
-favour of the convention if the word will be used rarely, and in favour
-of the computation-length rule if the word will be used frequently
-(because with frequent use the cost of breaking the computation-length
-rule would be quite high, and frequent use makes it easier to remember
-an unconventional order).
+   これらのルールは一般的なガイドラインに過ぎません。 ワードを使いやすく
+するという全体的な目標を見失わないでください。 例えば、 慣習のルールが計
+算長のルールと衝突する場合、 ワードがあまり使われない場合は慣習を優先す
+るかもしれません。 一方、 ワードが頻繁に使われる場合は、 計算長のルール
+を優先するかもしれません(だからといって頻繁に使うと、 計算長のルールを破
+るコストが非常に高くなりますし、 頻繁に使うことで非慣習的な順序を覚えて
+しまいがちになります)。
 
 
 File: gforth.info,  Node: Local Variables Tutorial,  Next: Conditional execution Tutorial,  Prev: Designing the stack effect Tutorial,  Up: Tutorial
@@ -1917,38 +1935,38 @@ File: gforth.info,  Node: Local Variables Tutorial,  Next: Conditional execution
 3.15 Local Variables
 ====================
 
-You can define local variables (_locals_) in a colon definition:
+コロン定義内でローカル変数(ローカルズ(locals))を定義できます:
 
      : swap { a b -- b a }
        b a ;
      1 2 swap .s 2drop
 
-   (If your Forth system does not support this syntax, include
-‘compat/anslocal.fs’ first).
+   (あなたの Forth システムがこの構文をサポートしていない場合は、 最初に
+‘compat/anslocal.fs’ をインクルードしてください)
 
-   In this example ‘{ a b -- b a }’ is the locals definition; it takes
-two cells from the stack, puts the top of stack in ‘b’ and the next
-stack element in ‘a’.  ‘--’ starts a comment ending with ‘}’.  After the
-locals definition, using the name of the local will push its value on
-the stack.  You can omit the comment part (‘-- b a’):
+   この例では、 ‘{ a b -- b a }’ がローカルズ定義です。 スタックから 2 つ
+のセルを取得し、スタック頂上を ‘b’ に、 その次のスタック要素を ‘a’ にし
+ます。 ‘--’ は ‘}’ で終わるコメントを開始します。 ローカルズの定義後、 ロ
+ーカルズの名前を使用すると、 その値がスタックに積まれます。 コメント部分
+(‘-- b a’)は省略できます:
 
      : swap ( x1 x2 -- x2 x1 )
        { a b } b a ;
 
-   In Gforth you can have several locals definitions, anywhere in a
-colon definition; in contrast, in a standard program you can have only
-one locals definition per colon definition, and that locals definition
-must be outside any control structure.
+   Gforth では、 コロン定義内の任意の場所に複数のローカルズ定義を含める
+ことができます。 対照的に、 標準Forthのプログラムでは、 コロン定義ごとに
+ローカルズ定義を 1 つだけしか持つことができず、 そのローカルズ定義は制御
+構造の外側にある必要があります。
 
-   With locals you can write slightly longer definitions without running
-into stack trouble.  However, I recommend trying to write colon
-definitions without locals for exercise purposes to help you gain the
-essential factoring skills.
+   ローカルズを使用すると、 スタックの問題に遭遇することなく、 少し長い
+定義を書くことができます。 ただし、重要な、ファクタリング技能を身につけ
+るための演習として、 ローカルズを使用せずにコロン定義を記述してみること
+をお勧めします。
 
-     研究課題(assignment): Rewrite your definitions until now with
-     locals
+     研究課題(assignment): ここまでのあなたの定義をローカルズを使ってで
+     書き換えてみましょう。
 
-   Reference: *note Locals::.
+   こちらも参照下さい: *note Locals::
 
 
 File: gforth.info,  Node: Conditional execution Tutorial,  Next: Flags and Comparisons Tutorial,  Prev: Local Variables Tutorial,  Up: Tutorial
@@ -1956,8 +1974,8 @@ File: gforth.info,  Node: Conditional execution Tutorial,  Next: Flags and Compa
 3.16 Conditional execution
 ==========================
 
-In Forth you can use control structures only inside colon definitions.
-An ‘if’-structure looks like this:
+Forth では、 コロン定義内でのみ制御構造を使用できます。 ‘if’ 構造は以下
+のようになります:
 
      : abs ( n1 -- +n2 )
          dup 0 < if
@@ -1966,24 +1984,24 @@ An ‘if’-structure looks like this:
      5 abs .
      -5 abs .
 
-   ‘if’ takes a flag from the stack.  If the flag is non-zero (true),
-the following code is performed, otherwise execution continues after the
-‘endif’ (or ‘else’).  ‘<’ compares the top two stack elements and
-produces a flag:
+   ‘if’ はスタックからフラグを取得します。 フラグがゼロ以外 (true) の場
+合は、 その次のコードが実行されます。 そうでない場合は、 ‘endif’ (または
+‘else’) の後から実行が続けられます。 ‘<’ は、 頂上から 2 つのスタック要
+素を比較し、 フラグを生成します。
 
      1 2 < .
      2 1 < .
      1 1 < .
 
-   Actually the standard name for ‘endif’ is ‘then’.  This tutorial
-presents the examples using ‘endif’, because this is often less
-confusing for people familiar with other programming languages where
-‘then’ has a different meaning.  If your system does not have ‘endif’,
-define it with
+   実は、 ‘endif’ の標準Forthでの名前は ‘then’ です。 このチュートリアル
+では、 ‘endif’ を使用した例を示します。 なぜなら、 ‘then’ が異なる意味を
+持つ他のプログラミング言語に慣れている人々にとっては、 ‘endif’ を使用す
+る方が混乱が少ないからです。 システムに ‘endif’ がない場合は、 以下のよ
+うに定義します
 
      : endif postpone then ; immediate
 
-   You can optionally use an ‘else’-part:
+   あなたはオプションで ‘else’ 部分を使用できます:
 
      : min ( n1 n2 -- n )
        2dup < if
@@ -1994,10 +2012,10 @@ define it with
      2 3 min .
      3 2 min .
 
-     研究課題(assignment): Write ‘min’ without ‘else’-part (hint: what’s
-     the definition of ‘nip’?).
+     研究課題(assignment): ‘else’ 部分を付けずに ‘min’ を記述してみまし
+     ょう。 (ヒント: ‘nip’ の定義は何ですか?)。
 
-   Reference: *note Selection::.
+   こちらも参照下さい: *note Selection::
 
 
 File: gforth.info,  Node: Flags and Comparisons Tutorial,  Next: General Loops Tutorial,  Prev: Conditional execution Tutorial,  Up: Tutorial
@@ -2005,67 +2023,70 @@ File: gforth.info,  Node: Flags and Comparisons Tutorial,  Next: General Loops T
 3.17 Flags and Comparisons
 ==========================
 
-In a false-flag all bits are clear (0 when interpreted as integer).  In
-a canonical true-flag all bits are set (-1 as a twos-complement signed
-integer); in many contexts (e.g., ‘if’) any non-zero value is treated as
-true flag.
+false フラグはすべてのビットがクリアです(整数として解釈される場合は 0)。
+正規化された true フラグは、 すべてのビットがセットされています(2の補数
+の符号付き整数として -1)。 多くの文脈(例: ‘if’)では、ゼロ以外の値はすべ
+て true フラグとして扱われます。
 
      false .
      true .
      true hex u. decimal
 
-   Comparison words produce canonical flags:
+   比較ワードは正規化フラグを生成します:
 
      1 1 = .
      1 0= .
      0 1 < .
      0 0 < .
-     -1 1 u< . \ type error, u< interprets -1 as large unsigned number
+     -1 1 u< . \ 型エラー。 u< は -1 を 大きな符号なし数として扱ってしまいます
      -1 1 < .
 
-   Gforth supports all combinations of the prefixes ‘0 u d d0 du f f0’
-(or none) and the comparisons ‘= <> < > <= >=’.  Only a part of these
-combinations are standard (for details see the standard, *note Numeric
-comparison::, *note Floating Point:: or *note Word Index::).
+   Gforth は、接頭辞 ‘0 u d d0 du f f0’ (または「 接頭辞なし」)との比較
+‘= <> < > <= >=’ のすべての組み合わせをサポートします。 これらの組み合わ
+せの一部のみが標準Forthです (詳細については、標準Forth または *note
+Numeric comparison:: または *note Floating Point:: または *note Word
+Index:: を参照してください)。
 
-   You can use ‘and or xor invert’ as operations on canonical flags.
-Actually they are bitwise operations:
+   ‘and or xor invert’ を正規化フラグ用の演算子として使用できます。 実際
+には、 これらはビット単位演算です:
 
      1 2 and .
      1 2 or .
      1 3 xor .
      1 invert .
 
-   You can convert a zero/non-zero flag into a canonical flag with ‘0<>’
-(and complement it on the way with ‘0=’; indeed, it is more common to
-use ‘0=’ instead of ‘invert’ for canonical flags).
+   ‘0<>’ を使用して ゼロ/非ゼロ フラグを正規化フラグに変換できます(そし
+て、 その途中で ‘0=’ を使用して ゼロ/非ゼロ フラグの余数(complement)を取
+ります。 実際、 正規化フラグでは ‘invert’ の代わりに ‘0=’ を使用するのが
+一般的です)。
 
      1 0= .
      1 0<> .
 
-   While you can use ‘if’ without ‘0<>’ to test for zero/non-zero, you
-sometimes need to use ‘0<>’ when combining zero/non-zero values with
-‘and or xor’ because of their bitwise nature.  The simplest, least
-error-prone, and probably clearest way is to use ‘0<>’ in all these
-cases, but in some cases you can use fewer ‘0<>’s.  Here are some stack
-effects, where fc represents a canonical flag, and fz represents
-zero/non-zero (every fc also works as fz):
+   ‘0<>’ 無しでも ‘if’ で ゼロ/非ゼロ をテストすることはできますが、 ゼ
+ロ/非ゼロ 値を ‘and or xor’ と組み合わせる場合、 ‘and or xor’ はビット単
+位での操作なので、 ‘0<>’ を使用する必要がある場合があります。 最も単純で
+、 エラーが少なく、 おそらく最も明確な方法は、 これらすべての場合に
+‘0<>’ を使用することですが、 場合によっては、 使用する ‘0<>’ の数を減ら
+すこともできます。 以下にいくつかのスタック効果を示します。 fc は正規化
+フラグ(canonical flag)を表し、 fz は ゼロ/非ゼロ を表します(すべての fc
+は fz としても機能します):
 
      or  ( fz1 fz2 -- fz3 )
      and ( fz1 fc  -- fz2 )
      and ( fc  fz1 -- fz2 )
 
-   So, if you see code like this:
+   したがって、 以下のようなコードの場合:
 
      ( n1 n2 ) 0<> and if
 
-   This tests whether n1 and n2 are non-zero and if yes, performs the
-code after ‘if’; it treats n1 as zero/non-zero and uses ‘0<>’ to convert
-n2 into a canonical flag; the ‘and’ then produces an fz, which is
-consumed by the ‘if’.
+   これは、 n1 and n2 (n1 かつ n2)がゼロ以外であるかどうかをテストし、 イ
+エスの場合は ‘if’ の後のコードを実行します。 n1 を ゼロ/非ゼロ として扱
+い、 ‘0<>’ を使用して n2 を正規化フラグに変換します。 ‘and’ は fz を生成
+し、 それは ‘if’ によって消費されます。
 
-   You can use the all-bits-set feature of canonical flags and the
-bitwise operation of the Boolean operations to avoid ‘if’s:
+   正規化フラグの全ビットセット機能とブール演算のビット単位の演算を使用
+して、 ‘if’ を回避することもできます:
 
      : foo ( n1 -- n2 )
        0= if
@@ -2081,10 +2102,10 @@ bitwise operation of the Boolean operations to avoid ‘if’s:
      0 foo .
      1 foo .
 
-     研究課題(assignment): Write ‘min’ without ‘if’.
+     研究課題(assignment): ‘min’ を ‘if’ 無しで書いてみましょう。
 
-   For reference, see *note Boolean Flags::, *note Numeric comparison::,
-and *note Bitwise operations::.
+   こちらも参照下さい: *note Boolean Flags::, *note Numeric
+comparison::, *note Bitwise operations::
 
 
 File: gforth.info,  Node: General Loops Tutorial,  Next: Counted loops Tutorial,  Prev: Flags and Comparisons Tutorial,  Up: Tutorial
@@ -2092,7 +2113,7 @@ File: gforth.info,  Node: General Loops Tutorial,  Next: Counted loops Tutorial,
 3.18 General Loops
 ==================
 
-The endless loop is the most simple one:
+無限ループは非常に単純です:
 
      : endless ( -- )
        0 begin
@@ -2100,10 +2121,10 @@ The endless loop is the most simple one:
        again ;
      endless
 
-   Terminate this loop by pressing ‘Ctrl-C’ (in Gforth).  ‘begin’ does
-nothing at run-time, ‘again’ jumps back to ‘begin’.
+   (Gforth の場合、) ‘Ctrl-C’ を押してこのループを終了します。 ‘begin’ は
+実行時に何も行わず、 ‘again’ は ‘begin’ にジャンプします。
 
-   A loop with one exit at any place looks like this:
+   任意の場所に 1 つの出口があるループは以下のようになります:
 
      : log2 ( +n1 -- n2 )
      \ logarithmus dualis of n1>0, rounded down to the next integer
@@ -2116,26 +2137,27 @@ nothing at run-time, ‘again’ jumps back to ‘begin’.
      7 log2 .
      8 log2 .
 
-   At run-time ‘while’ consumes a flag; if it is 0, execution continues
-behind the ‘repeat’; if the flag is non-zero, execution continues behind
-the ‘while’.  ‘Repeat’ jumps back to ‘begin’, just like ‘again’.
+   実行時には ‘while’ はフラグを1つ消費します。 フラグが 0 の場合、
+‘repeat’ の後ろへ飛んで実行が継続されます。 フラグがゼロ以外の場合、 実
+行は ‘while’ の後ろから継続されます。 ‘Repeat’ は、 ‘again’ と全く同じよ
+うに、 ‘begin’ に戻ります。
 
-   In Forth there are a number of combinations/abbreviations, like ‘1+’.
-However, ‘2/’ is not one of them; it shifts its argument right by one
-bit (arithmetic shift right), and viewed as division that always rounds
-towards negative infinity (floored division), like Gforth’s ‘/’ (since
-Gforth 0.7), but unlike ‘/’ in many other Forth systems.
+   Forth には、 ‘1+’ など、多数の 組み合わせ/省略形 があります。 しかし
+、 ‘2/’ は 組み合わせ/省略形 ではありません。 これは引数を 1 ビット右に
+シフトし、 Gforth の (Gforth 0.7 以降の) ‘/’ と同様、 常に負の無限大方向
+に向かって小数点以下を丸める除算(フロア除算)と見なされますが、 他の多く
+の Forth システムの ‘/’ とは異なります。
 
      -5 2 / . \ -2 or -3
      -5 2/ .  \ -3
 
-   ‘assert(’ is no standard word, but you can get it on systems other
-than Gforth by including ‘compat/assert.fs’.  You can see what it does
-by trying
+   ‘assert(’ は標準Forthのワードではありませんが、 Gforth 以外のシステム
+でも ‘compat/assert.fs’ を含めることで取得できます。 それが何をするかは
+、 以下のように試してみることで確認できます。
 
      0 log2 .
 
-   Here’s a loop with an exit at the end:
+   以下は、 最後に出口があるループです:
 
      : log2 ( +n1 -- n2 )
      \ logarithmus dualis of n1>0, rounded down to the next integer
@@ -2146,13 +2168,12 @@ by trying
        until
        nip ;
 
-   ‘Until’ consumes a flag; if it is zero, execution continues at the
-‘begin’, otherwise after the ‘until’.
+   ‘Until’ はフラグを消費します。 フラグがゼロの場合は ‘begin’ から実行
+が継続され、 それ以外の場合は ‘until’ の後から実行が継続されます。
 
-     研究課題(assignment): Write a definition for computing the greatest
-     common divisor.
+     研究課題(assignment): 最大公約数を計算する定義を書いてみましょう。
 
-   Reference: *note Simple Loops::.
+   こちらも参照ください: *note Simple Loops::
 
 
 File: gforth.info,  Node: Counted loops Tutorial,  Next: Recursion Tutorial,  Prev: General Loops Tutorial,  Up: Tutorial
@@ -2169,17 +2190,16 @@ File: gforth.info,  Node: Counted loops Tutorial,  Next: Recursion Tutorial,  Pr
      3 2 ^ .
      4 3 ^ .
 
-   ‘U+do’ (from ‘compat/loops.fs’, if your Forth system doesn’t have it)
-takes two numbers of the stack ‘( u3 u4 -- )’, and then performs the
-code between ‘u+do’ and ‘loop’ for ‘u3-u4’ times (or not at all, if
-‘u3-u4<0’).
+   ‘U+do’ (あなたの Forth システムにない場合は ‘compat/loops.fs’ をイン
+クルードしてください)は、 ‘( u3 u4 -- )’ 、 つまり、 スタックから 2 つの
+数値を取得し、 ‘u+do’ と ‘loop’ の間のコードを ‘u3 - u4’ 回実行します(‘
+u3 - u4 < 0’ の場合はまったく実行しません)。
 
-   You can see the stack effect design rules at work in the stack effect
-of the loop start words: Since the start value of the loop is more
-frequently constant than the end value, the start value is passed on the
-top-of-stack.
+   ループ開始ワードのスタック効果を見れば、スタック効果の設計ルールが機
+能していることがわかります。 ループの開始値は終了値と比べて定数であるこ
+とが多いため、 開始値はスタック頂上(top-of-stack)に渡されます。
 
-   You can access the counter of a counted loop with ‘i’:
+   ‘i’ を使用して、 ループ・カウンターにアクセスできます:
 
      : fac ( u -- u! )
        1 swap 1+ 1 u+do
@@ -2188,13 +2208,13 @@ top-of-stack.
      5 fac .
      7 fac .
 
-   There is also ‘+do’, which expects signed numbers (important for
-deciding whether to enter the loop).
+   ‘+do’ もあります。 これは符号付きの数値を期待します(それはループに入
+るかどうかを決定するために重要です)。
 
-     研究課題(assignment): Write a definition for computing the nth
-     Fibonacci number.
+     研究課題(assignment): n 番目のフィボナッチ数を計算するための定義を
+     記述してみましょう。
 
-   You can also use increments other than 1:
+   増分として 1 以外も使用できます:
 
      : up2 ( n1 n2 -- )
        +do
@@ -2208,7 +2228,7 @@ deciding whether to enter the loop).
        2 -loop ;
      0 10 down2
 
-   Reference: *note Counted Loops::.
+   こちらも参照ください: *note Counted Loops::
 
 
 File: gforth.info,  Node: Recursion Tutorial,  Next: Leaving definitions or loops Tutorial,  Prev: Counted loops Tutorial,  Up: Tutorial
@@ -2216,8 +2236,10 @@ File: gforth.info,  Node: Recursion Tutorial,  Next: Leaving definitions or loop
 3.20 Recursion
 ==============
 
-Usually the name of a definition is not visible in the definition; but
-earlier definitions are usually visible:
+通常、 定義の名前はその定義内に表れません。ただし、 それ以前の(同名の)定
+義は普通に表れます(訳注: 下記例は再帰呼出しではなくて、 ’/’ の古いバージ
+ョンを呼び出しているに過ぎない事に注意。同じ名前の古いバージョンが存在し
+なければエラーになるが、存在すればエラーにならないので注意。):
 
      1 0 / . \ "Floating-point unidentified fault" in Gforth on some platforms
      : / ( n1 n2 -- n )
@@ -2228,8 +2250,8 @@ earlier definitions are usually visible:
      ;
      1 0 /
 
-   For recursive definitions you can use ‘recursive’ (non-standard) or
-‘recurse’:
+   再帰定義の場合は、 ‘recursive’ (非標準) または ‘recurse’ を使用できま
+す:
 
      : fac1 ( n -- n! ) recursive
       dup 0> if
@@ -2247,10 +2269,11 @@ earlier definitions are usually visible:
       endif ;
      8 fac2 .
 
-     研究課題(assignment): Write a recursive definition for computing
-     the nth Fibonacci number.
+     研究課題(assignment): n 番目のフィボナッチ数を計算するための再帰定
+     義を記述してみましょう。
 
-   Reference (including indirect recursion): *Note Calls and returns::.
+   こちらも参照ください (間接再帰に関してもコチラ): *Note Calls and
+returns::
 
 
 File: gforth.info,  Node: Leaving definitions or loops Tutorial,  Next: Return Stack Tutorial,  Prev: Recursion Tutorial,  Up: Tutorial
@@ -2258,9 +2281,10 @@ File: gforth.info,  Node: Leaving definitions or loops Tutorial,  Next: Return S
 3.21 Leaving definitions or loops
 =================================
 
-‘EXIT’ exits the current definition right away.  For every counted loop
-that is left in this way, an ‘UNLOOP’ has to be performed before the
-‘EXIT’:
+‘EXIT’ は、 現在の定義をすぐに終了(exit)します。 ‘EXIT’ の実行前に、 (残
+ったループ・カウンタ達を全て取り除くために、)ネストしたカウンタ付きルー
+プの数だけ ‘UNLOOP’ を実行する必要があります(訳注: 下記例は1重のループな
+ので unloop が1つ。 2重ループになったら unloop unloop と2つ必要):
 
      : ...
       ... u+do
@@ -2271,7 +2295,8 @@ that is left in this way, an ‘UNLOOP’ has to be performed before the
       loop
       ... ;
 
-   ‘LEAVE’ leaves the innermost counted loop right away:
+   ‘LEAVE’ は、 (‘LEAVE’ から見て)最も内側にあるカウンタ付きループを直ち
+に終了します:
 
      : ...
       ... u+do
@@ -2282,7 +2307,8 @@ that is left in this way, an ‘UNLOOP’ has to be performed before the
       loop
       ... ;
 
-   Reference: *note Calls and returns::, *note Counted Loops::.
+   こちらも参照ください: *note Calls and returns::, *note Counted
+Loops::
 
 
 File: gforth.info,  Node: Return Stack Tutorial,  Next: Memory Tutorial,  Prev: Leaving definitions or loops Tutorial,  Up: Tutorial
@@ -2290,9 +2316,11 @@ File: gforth.info,  Node: Return Stack Tutorial,  Next: Memory Tutorial,  Prev: 
 3.22 Return Stack
 =================
 
-In addition to the data stack Forth also has a second stack, the return
-stack; most Forth systems store the return addresses of procedure calls
-there (thus its name).  Programmers can also use this stack:
+データ・スタックに加えて、 Forth には 2 番目のスタックであるリターン・ス
+タックもあります。 ほとんどの Forth システムは、プロシージャ呼び出しの戻
+りアドレスをそこに保存します(したがって、 リターン・スタックという名前が
+付けられています)。 プログラマもリターン・スタックを利用することができま
+す。
 
      : foo ( n1 n2 -- )
       .s
@@ -2305,39 +2333,39 @@ there (thus its name).  Programmers can also use this stack:
       r> . ;
      1 2 foo
 
-   ‘>r’ takes an element from the data stack and pushes it onto the
-return stack; conversely, ‘r>’ moves an element from the return to the
-data stack; ‘r@’ pushes a copy of the top of the return stack on the
-data stack.
+   ‘>r’ はデータ・スタックから1つの要素を取得し、 それをリターン・スタッ
+クにプッシュします。 逆に、 ‘r>’ は1つの要素をリターンからデータ・スタッ
+クに移動します。 ‘r@’ は、リターン・スタック頂上のコピーをデータ・スタッ
+クにプッシュします。
 
-   Forth programmers usually use the return stack for storing data
-temporarily, if using the data stack alone would be too complex, and
-factoring and locals are not an option:
+   Forth プログラマーは通常、 データ・スタックのみを使用すると複雑すぎて
+、 かつ、 ファクタリングとローカルがオプションに無い場合、 データを一時
+的に保存するためにリターン・スタックを使用します。
 
      : 2swap ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
       rot >r rot r> ;
 
-   The return address of the definition and the loop control parameters
-of counted loops usually reside on the return stack, so you have to take
-all items, that you have pushed on the return stack in a colon
-definition or counted loop, from the return stack before the definition
-or loop ends.  You cannot access items that you pushed on the return
-stack outside some definition or loop within the definition of loop.
+   定義のリターン・アドレスとカウント付きループのループ制御パラメータは
+通常、 リターン・スタック上に存在するため、 コロン定義またはカウント付き
+ループでリターン スタックにプッシュしたすべての項目を、定義の終了やルー
+プの終了の前にリターン・スタックから取得する必要があります。 ある定義の
+外側やループの外側でリターン・スタックにプッシュしたアイテムに、 ループ
+の定義内からアクセスすることはできません。
 
-   If you miscount the return stack items, this usually ends in a crash:
+   リターン・スタック項目の数を間違えると、 通常はクラッシュします:
 
      : crash ( n -- )
        >r ;
      5 crash
 
-   You cannot mix using locals and using the return stack (according to
-the standard; Gforth has no problem).  However, they solve the same
-problems, so this shouldn’t be an issue.
+   ローカルの使用とリターン・スタックの使用を混在させることはできません
+(標準Forthの場合。 Gforth では問題ありません)。 ただし、 これらは同一の
+問題の解決なので、 問題にはなりません。
 
-     研究課題(assignment): Can you rewrite any of the definitions you
-     wrote until now in a better way using the return stack?
+     研究課題(assignment): リターン・スタックを使用して、 ここまでにあな
+     たが書いた定義をより良い方法で書き直すことができるでしょうか？
 
-   Reference: *note Return stack::.
+   こちらも参照ください: *note Return stack::
 
 
 File: gforth.info,  Node: Memory Tutorial,  Next: Characters and Strings Tutorial,  Prev: Return Stack Tutorial,  Up: Tutorial
@@ -4283,26 +4311,26 @@ DESCRIPTION
 starts with:
 
 ‘f’
-     Boolean flags, i.e.  ‘false’ or ‘true’.
+     二値フラグ(Boolean flags)。 つまり ‘false’ または ‘true’
 ‘c’
      Char
 ‘w’
      Cell, can contain an integer or an address
 ‘n’
-     signed integer
+     符号付き整数
 ‘u’
-     unsigned integer
+     符号なし整数
 ‘d’
      double sized signed integer
 ‘ud’
      double sized unsigned integer
 ‘r’
-     Float (on the FP stack)
+     浮動小数点数(Float)(FP スタック上に置かれる)
 ‘a-’
-     Cell-aligned address
+     セル揃えアドレス(Cell-aligned address)
 ‘c-’
-     Char-aligned address (note that a Char may have two bytes in
-     Windows NT)
+     文字揃えアドレス(Char-aligned address)(注意: NTWindows NT では 文字
+     (char) は 2 バイトになる場合があることに注意)
 ‘f-’
      Float-aligned address
 ‘df-’
@@ -4310,7 +4338,7 @@ starts with:
 ‘sf-’
      Address aligned for IEEE single precision float
 ‘xt’
-     Execution token, same size as Cell
+     実行トークン(Execution token)。 セルと同一サイズ
 ‘wid’
      Word list ID, same size as Cell
 ‘ior, wior’
@@ -7475,208 +7503,4 @@ allows to tune how many warnings you see.
      pedantic warnings on
 ‘-4’
      turns warnings into errors (including beginner warnings)
-
-
-File: gforth.info,  Node: Defining Words,  Next: Interpretation and Compilation Semantics,  Prev: Control Structures,  Up: Words
-
-6.10 Defining Words
-===================
-
-Defining words are used to extend Forth by creating new entries in the
-dictionary.
-
-* Menu:
-
-* CREATE::
-* Variables::                Variables and user variables
-* Constants::
-* Values::                   Initialised variables
-* Varues::
-* Colon Definitions::
-* Anonymous Definitions::    名前無しのワード定義
-* Quotations::
-* Supplying names::          定義ワードの名前を文字列として渡す
-* User-defined Defining Words::
-* Deferred Words::           前方参照の許容
-* Forward::                  自動解決される前方参照
-* Aliases::
-
-
-File: gforth.info,  Node: CREATE,  Next: Variables,  Prev: Defining Words,  Up: Defining Words
-
-6.10.1 ‘CREATE’
----------------
-
-Defining words are used to create new entries in the dictionary.  The
-simplest defining word is ‘CREATE’.  ‘CREATE’ is used like this:
-
-     CREATE new-word1
-
-   ‘CREATE’ is a parsing word, i.e., it takes an argument from the input
-stream (‘new-word1’ in our example).  It generates a dictionary entry
-for ‘new-word1’.  When ‘new-word1’ is executed, all that it does is
-leave an address on the stack.  The address represents the value of the
-data space pointer (‘HERE’) at the time that ‘new-word1’ was defined.
-Therefore, ‘CREATE’ is a way of associating a name with the address of a
-region of memory.
-
-‘Create’ ( "name" –  ) core “Create”
-
-   Note that Standard Forth guarantees only for ‘create’ that its body
-is in dictionary data space (i.e., where ‘here’, ‘allot’ etc.  work,
-*note Dictionary allocation::).  Also, in Standard Forth only ‘create’d
-words can be modified with ‘does>’ (*note User-defined Defining
-Words::).  And in Standard Forth ‘>body’ can only be applied to
-‘create’d words.
-
-   By extending this example to reserve some memory in data space, we
-end up with something like a variable.  Here are two different ways to
-do it:
-
-     CREATE new-word2 1 cells allot  \ reserve 1 cell - initial value undefined
-     CREATE new-word3 4 ,            \ reserve 1 cell and initialise it (to 4)
-
-   The variable can be examined and modified using ‘@’ (“fetch”) and ‘!’
-(“store”) like this:
-
-     new-word2 @ .      \ get address, fetch from it and display
-     1234 new-word2 !   \ new value, get address, store to it
-
-   A similar mechanism can be used to create arrays.  For example, an
-80-character text input buffer:
-
-     CREATE text-buf 80 chars allot
-
-     text-buf 0 chars + c@ \ the 1st character (offset 0)
-     text-buf 3 chars + c@ \ the 4th character (offset 3)
-
-   You can build arbitrarily complex data structures by allocating
-appropriate areas of memory.  For further discussions of this, and to
-learn about some Gforth tools that make it easier, *Note Structures::.
-
-
-File: gforth.info,  Node: Variables,  Next: Constants,  Prev: CREATE,  Up: Defining Words
-
-6.10.2 Variables
-----------------
-
-The previous section showed how a sequence of commands could be used to
-generate a variable.  As a final refinement, the whole code sequence can
-be wrapped up in a defining word (pre-empting the subject of the next
-section), making it easier to create new variables:
-
-     : myvariableX ( "name" -- a-addr ) CREATE 1 cells allot ;
-     : myvariable0 ( "name" -- a-addr ) CREATE 0 , ;
-
-     myvariableX foo \ variable foo starts off with an unknown value
-     myvariable0 joe \ whilst joe is initialised to 0
-
-     45 3 * foo !   \ set foo to 135
-     1234 joe !     \ set joe to 1234
-     3 joe +!       \ increment joe by 3.. to 1237
-
-   Not surprisingly, there is no need to define ‘myvariable’, since
-Forth already has a definition ‘Variable’.  Standard Forth does not
-guarantee that a ‘Variable’ is initialised when it is created (i.e., it
-may behave like ‘myvariableX’).  In contrast, Gforth’s ‘Variable’
-initialises the variable to 0 (i.e., it behaves exactly like
-‘myvariable0’).  Forth also provides ‘2Variable’ and ‘fvariable’ for
-double and floating-point variables, respectively – they are initialised
-to 0.  and 0e in Gforth.  If you use a ‘Variable’ to store a boolean,
-you can use ‘on’ and ‘off’ to toggle its state.
-
-‘Variable’ ( "name" –  ) core “Variable”
-   Define name and reserve a cell starting at addr.  name run-time: ‘(
--- addr )’.
-
-‘AVariable’ ( "name" –  ) gforth-0.2 “AVariable”
-   Works like ‘variable’, but (when used in cross-compiled code) tells
-the cross-compiler that the cell stored in the variable is an address.
-
-‘2Variable’ ( "name" –  ) double “two-variable”
-
-‘fvariable’ ( "name" –  ) floating “f-variable”
-
-   Finally, for buffers of arbitrary length there is
-
-‘buffer:’ ( u "name" –  ) core-ext “buffer-colon”
-   Define name and reserve u bytes starting at addr.  name run-time: ‘(
--- addr )’.  Gforth initializes the reserved bytes to 0, but the
-standard does not guarantee this.
-
-
-File: gforth.info,  Node: Constants,  Next: Values,  Prev: Variables,  Up: Defining Words
-
-6.10.3 Constants
-----------------
-
-‘Constant’ allows you to declare a fixed value and refer to it by name.
-For example:
-
-     12 Constant INCHES-PER-FOOT
-     3E+08 fconstant SPEED-O-LIGHT
-
-   A ‘Variable’ can be both read and written, so its run-time behaviour
-is to supply an address through which its current value can be
-manipulated.  In contrast, the value of a ‘Constant’ cannot be changed
-once it has been declared(1) so it’s not necessary to supply the address
-– it is more efficient to return the value of the constant directly.
-That’s exactly what happens; the run-time effect of a constant is to put
-its value on the top of the stack (You can find one way of implementing
-‘Constant’ in *note User-defined Defining Words::).
-
-   Forth also provides ‘2Constant’ and ‘fconstant’ for defining double
-and floating-point constants, respectively.
-
-‘Constant’ ( w "name" –  ) core “Constant”
-   Define a constant name with value w.
-
-   name execution: – w
-
-‘AConstant’ ( addr "name" –  ) gforth-0.2 “AConstant”
-   Like ‘constant’, but defines a constant for an address (this only
-makes a difference in the cross-compiler).
-
-‘2Constant’ ( w1 w2 "name" –  ) double “two-constant”
-
-‘fconstant’ ( r "name" –  ) floating “f-constant”
-
-   Constants in Forth behave differently from their equivalents in other
-programming languages.  In other languages, a constant (such as an EQU
-in assembler or a #define in C) only exists at compile-time; in the
-executable program the constant has been translated into an absolute
-number and, unless you are using a symbolic debugger, it’s impossible to
-know what abstract thing that number represents.  In Forth a constant
-has an entry in the header space and remains there after the code that
-uses it has been defined.  In fact, it must remain in the dictionary
-since it has run-time duties to perform.  For example:
-
-     12 Constant INCHES-PER-FOOT
-     : FEET-TO-INCHES ( n1 -- n2 ) INCHES-PER-FOOT * ;
-
-   When ‘FEET-TO-INCHES’ is executed, it will in turn execute the xt
-associated with the constant ‘INCHES-PER-FOOT’.  If you use ‘see’ to
-decompile the definition of ‘FEET-TO-INCHES’, you can see that it makes
-a call to ‘INCHES-PER-FOOT’.  Some Forth compilers attempt to optimise
-constants by in-lining them where they are used.  You can force Gforth
-to in-line a constant like this:
-
-     : FEET-TO-INCHES ( n1 -- n2 ) [ INCHES-PER-FOOT ] LITERAL * ;
-
-   If you use ‘see’ to decompile this version of ‘FEET-TO-INCHES’, you
-can see that ‘INCHES-PER-FOOT’ is no longer present.  To understand how
-this works, read *note Interpret/Compile states::, and *note Literals::.
-
-   In-lining constants in this way might improve execution time
-fractionally, and can ensure that a constant is now only referenced at
-compile-time.  However, the definition of the constant still remains in
-the dictionary.  Some Forth compilers provide a mechanism for
-controlling a second dictionary for holding transient words such that
-this second dictionary can be deleted later in order to recover memory
-space.  However, there is no standard way of doing this.
-
-   ---------- Footnotes ----------
-
-   (1) Well, often it can be – but not in a Standard, portable way.
-It’s safer to use a ‘Value’ (read on).
 
