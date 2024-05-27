@@ -142,7 +142,7 @@ Foundation raise funds for GNU development.''
 * Introduction::             標準Forth(Standard Forth)の紹介
 * Literals in source code::
 * Words::                    Gforth で使用可能な Forth ワード
-* Error messages::           エラーメッセージをどのようにして解釈すればいいのか
+* Error messages::           エラーメッセージをどのように読み解けばいいのか
 * Tools::                    プログラム作成支援ツール
 * Standard conformance::     Gforth実装用に定義されたオプションなど
 * Standard vs Extensions::   拡張機能を使用する必要ある?
@@ -380,7 +380,7 @@ Tokens for Words
 
 
 
-* Execution token::          実行(execution)/解釈(interpretation) 
+* Execution token::          実行(execution)/インタプリタ(interpretation) 
                                セマンティクス
 * Name token::               名前付きワード
 * Compilation token::        コンパイル・セマンティクス
@@ -905,7 +905,7 @@ Gforth は 2 つの部分から成ります。 実行可能「エンジン」(@c
 gforth [file | -e forth-code] ...
 @end example
 @noindent
-これにより、 ファイルの内容や、 (訳注:コマンドラインに記述された、) Forth コードが、 指定の順序で解釈実行(interpret)されます。
+これにより、 ファイルの内容や、 (訳注:コマンドラインに記述された、) Forth コードが、 指定の順序で解釈(interpret)されます。
 
 @command{gforth} エンジンに加えて、 @command{gforth-fast} というエンジンもあります。 これは高速ですが、
 表示されるエラー・メッセージ(@pxref{Error messages})の情報が少なく、 そして、 一部のエラーのキャッチ(特に、
@@ -1705,29 +1705,16 @@ Given:          How do you get:
 1 2 3
 1 2 3           1 2 3 4
 1 2 3           1 3
-( 訳注: 正解はこれだけではないが一例として
-1 2 3           3 2 1  \ rot rot swap
-1 2 3           1 2 3 2  \ over
-1 2 3           1 2 3 3  \ dup
-1 2 3           1 3 3  \ swap drop dup
-1 2 3           2 1 3  \ -rot swap rot
-1 2 3 4         4 3 2 1  \ swap 2swap swap
-1 2 3           1 2 3 1 2 3  \ third third third
-1 2 3 4         1 2 3 4 1 2  \ 2over 
-1 2 3                        \ 2drop drop
-1 2 3           1 2 3 4  \ dup 1+
-1 2 3           1 3  \ swap drop
-)
 @end example
 @end quotation
 
 @example
-5 dup * . \ 5^2 を 出力
+5 dup * . \ 5^2
 @end example
 
 @quotation 研究課題(assignment)
 @code{17} を複数回書かずに、 Forth で 17^3 と 17^4 を書いてみましょう。 また、 スタック上の 2 つの数値
-(@var{a} と @var{b}、 スタック・トップ @var{b} とする) を想定し、@code{(a-b)(a+1)} を計算する Forth
+(@var{a} と @var{b}、 スタック頂上を @var{b} とする) を想定し、@code{(a-b)(a+1)} を計算する Forth
 コードを作成してみましょう。 
 @end quotation
 
@@ -1840,7 +1827,7 @@ into the definition)。 @code{;} はコロン定義を終了します。
 ワードで記述し、 それらが機能するかどうかを確認してみましょう (ヒント:
 最初にオリジナルであなたの作成したテストコードをテストして結果を確認してから、 その後あなたが定義して、 再度テストして結果を比較しましょう)。
 @samp{redefine} メッセージに驚かないでください。 これらは単なる警告です。 (訳注: redefine;
-同じ名前のワードを定義したという警告。 置き換えではなく追加となる。 これ以降の解釈・コンパイルは新しい方のワードを参照するが、
+同じ名前のワードを定義したという警告。 置き換えではなく追加となる。 これ以降の解釈(interpret)・コンパイルは新しい方のワードを参照するが、
 通常は新しい方のワード定義後も、 既にコンパイル済みのワードは古い方のワードを参照しつづける。 詳しくはディクショナリ等の項目を参照)
 @end quotation
 
@@ -1973,7 +1960,8 @@ Forth では、 演算子の名前はオーバーロードされません。 し
 符号付きのバリエーションと符号なしのバリエーションに違いがない場合(例えば @code{+} の場合)、
 プレフィックスのないバリエーションのみが存在します。
 
-Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、 データが正しく解釈されません:
+Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、
+データが正しく解釈(interpret)されません:
 
 @example
 -1 u.
@@ -2064,9 +2052,10 @@ item)を追跡する必要がなくなるため、 コードが読みやすく�
 (あなたの Forth システムがこの構文をサポートしていない場合は、  最初に @file{compat/anslocal.fs}
 をインクルードしてください)
 
-この例では、 @code{@{ a b -- b a @}} がローカルズ定義です。 スタックから 2 つのセルを取得し、スタック頂上を
-@code{b} に、 その次のスタック要素を @code{a} にします。 @code{--} は @code{@}} で終わるコメントを開始します。
-ローカルズの定義後、 ローカルズの名前を使用すると、 その値がスタックに積まれます。 コメント部分(@code{-- b a})は省略できます:
+この例では、 @code{@{ a b -- b a @}} がローカルズ定義です。 スタックから 2 つのセルを取得し、 スタック頂上を
+@code{b} に入れ、 その次のスタック要素を @code{a} に入れます(訳注: a b はスタック上から取り除かれる)。 @code{--}
+は @code{@}} で終わるコメントを開始します。 ローカルズの定義後、 ローカルズの名前を使用すると、 その値がスタックに積まれます。
+コメント部分(@code{-- b a})は省略できます:
 
 @example
 : swap ( x1 x2 -- x2 x1 )
@@ -2080,7 +2069,7 @@ Gforth では、 コロン定義内の任意の場所に複数のローカルズ
 ただし、重要な、ファクタリング技能を身につけるための演習として、 ローカルズを使用せずにコロン定義を記述してみることをお勧めします。
 
 @quotation 研究課題(assignment)
-ここまでのあなたの定義をローカルズを使ってで書き換えてみましょう。
+ここまでのあなたの定義をローカルズを使って書き換えてみましょう。
 @end quotation
 
 こちらも参照下さい: @ref{Locals}
@@ -2145,7 +2134,7 @@ Forth では、 コロン定義内でのみ制御構造を使用できます。 
 @cindex flags tutorial
 @cindex comparison tutorial
 
-false フラグはすべてのビットがクリアです(整数として解釈される場合は 0)。 正規化された true フラグは、
+false フラグはすべてのビットがクリアです(整数として解釈(interpret)される場合は 0)。 正規化された true フラグは、
 すべてのビットがセットされています(2の補数の符号付き整数として -1)。 多くの文脈(例: @code{if})では、ゼロ以外の値はすべて true
 フラグとして扱われます。
 
@@ -2480,7 +2469,7 @@ n 番目のフィボナッチ数を計算するための再帰定義を記述し
 @code{>r} はデータ・スタックから1つの要素を取得し、 それをリターン・スタックにプッシュします。 逆に、 @code{r>}
 は1つの要素をリターンからデータ・スタックに移動します。 @code{r@@} は、リターン・スタック頂上のコピーをデータ・スタックにプッシュします。
 
-Forth プログラマーは通常、 データ・スタックのみを使用すると複雑すぎて、 かつ、 ファクタリングとローカルがオプションに無い場合、
+Forth プログラマーは通常、 データ・スタックのみを使用すると複雑すぎて、 かつ、 ファクタリングやローカルが選択肢に無い場合、
 データを一時的に保存するためにリターン・スタックを使用します。
 
 @example
@@ -2515,16 +2504,15 @@ Forth プログラマーは通常、 データ・スタックのみを使用す�
 @section Memory
 @cindex memory access/allocation tutorial
 
-You can create a global variable @code{v} with
+以下使用してグローバル変数 @code{v} を作成できます:
 
 @example
 variable v ( -- addr )
 @end example
 
-@code{v} pushes the address of a cell in memory on the stack.  This cell was
-reserved by @code{variable}.  You can use @code{!} (store) to store values
-from the stack into this cell and @code{@@} (fetch) to load the value from
-memory onto the stack:
+@code{v} は、スタックにメモリ内の、とあるセルのアドレスをプッシュします。 このセルは @code{variable}
+によって予約されています。 @code{!}(ストア)を使用してスタックからこのセルに値を保存し、
+@code{@@}(フェッチ)を使用して値をメモリからスタックにロードできます:
 
 @example
 v .
@@ -2532,31 +2520,30 @@ v .
 v @@ .
 @end example
 
-You can see a raw dump of memory with @code{dump}:
+@code{dump} を使用すると、 メモリの生のダンプ(メモリー・ダンプ)を確認できます:
 
 @example
 v 1 cells .s dump
 @end example
 
-@code{Cells ( n1 -- n2 )} gives you the number of bytes (or, more generally,
-address units (aus)) that @code{n1 cells} occupy.  You can also reserve more
-memory:
+@code{Cells ( n1 -- n2 )} は、 n1 個のセル が占めるバイト数(より一般的にはアドレス単位(address
+units)(aus))を与えます。 そして、 あなたは、 さらに多くのメモリを予約することもできます:
 
 @example
 create v2 20 cells allot
 v2 20 cells dump
 @end example
 
-creates a variable-like word @code{v2} and reserves 20 uninitialized cells;
-the address pushed by @code{v2} points to the start of these 20 cells
-(@pxref{CREATE}).  You can use address arithmetic to access these cells:
+変数のようなワード @code{v2} を作成し、 20 個の初期化されていないセルを予約します。 @code{v2}
+によってプッシュされたアドレスは、 これら 20 個のセルの先頭を指します(@pxref{CREATE})。 あなたは、 アドレス演算を使用して、
+これらのセルにアクセスできます:
 
 @example
 3 v2 5 cells + !
 v2 20 cells dump
 @end example
 
-You can reserve and initialize memory with @code{,}:
+@code{,} を使用してメモリを予約 かつ 初期化できます:
 
 @example
 create v3
@@ -2568,43 +2555,38 @@ v3 5 cells dump
 @end example
 
 @quotation 研究課題(assignment)
-Write a definition @code{vsum ( addr u -- n )} that computes the sum of
-@code{u} cells, with the first of these cells at @code{addr}, the next one
-at @code{addr cell+} etc.
+最初のセルは @code{addr} 、 次のセルは @code{addr cell+} などとして、 @code{u}
+個のセルの値の合計を計算する定義 @code{vsum ( addr u -- n )} を記述してみましょう。
 @end quotation
 
-The difference between @code{variable} and @code{create} is that
-@code{variable} allots a cell, and that you cannot allot additional memory
-to a variable in standard Forth.
+@code{variable} と @code{create} の違いは、@code{variable} がセルを割り当てる(allots)ことと、
+標準 Forth では変数(variable)に追加のメモリを割り当てることができないことです。
 
-You can also reserve memory without creating a new word:
+新しいワードを作成せずにメモリを予約することもできます:
 
 @example
 here 10 cells allot .
 here .
 @end example
 
-The first @code{here} pushes the start address of the memory area, the
-second @code{here} the address after the dictionary area.  You should store
-the start address somewhere, or you will have a hard time finding the memory
-area again.
+最初の @code{here} は(最初の @code{here} 時点の)ディクショナリ領域の後のアドレスをプッシュし、
+メモリ領域の開始アドレスとして使い、 2 番目の @code{here} は(2 番目の @code{here}
+時点の)ディクショナリ領域の後のアドレスをプッシュします。 この開始アドレスはどこかに保存する必要があります。 そうしないと、
+あなたはこのメモリ領域を再度見つけるのが困難になります。
 
-@code{Allot} manages dictionary memory.  The dictionary memory contains the
-system's data structures for words etc. on Gforth and most other Forth
-systems.  It is managed like a stack: You can free the memory that you have
-just @code{allot}ed with
+@code{Allot} はディクショナリ・メモリを管理します。 ディクショナリ・メモリには、 Gforth や他のほとんどの Forth システムの、
+ワードなどのシステムのデータ構造が含まれています。 これはスタックのように管理されます。
+あなたは以下のようにして割り当て(@code{allot})したメモリを解放できます:
 
 @example
 -10 cells allot
 here .
 @end example
 
-Note that you cannot do this if you have created a new word in the meantime
-(because then your @code{allot}ed memory is no longer on the top of the
-dictionary ``stack'').
+注意: その合間に新しいワードを作成した場合、 それを実行できないことに注意してください(@code{allot} で作成されたメモリが、
+もはやディクショナリ「スタック」の頂上ではなくなるため)。
 
-Alternatively, you can use @code{allocate} and @code{free} which allow
-freeing memory in any order:
+その代わりに、 @code{allocate} や @code{free} を使用すると、 任意の順序でメモリを解放できます:
 
 @example
 10 cells allocate throw .s
@@ -2614,14 +2596,12 @@ free throw
 free throw
 @end example
 
-The @code{throw}s deal with errors (e.g., out of memory).
+@code{throw} はエラー(メモリ不足など)を処理します。
 
-And there is also a
-@uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip,
-garbage collector}, which eliminates the need to @code{free} memory
-explicitly.
+また、 @uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip,
+ガベージ・コレクター} なら、 メモリを明示的に解放(@code{free})する必要がなくなります。
 
-Reference: @ref{Memory}.
+こちらも参照ください: @ref{Memory}
 
 
 @node Characters and Strings Tutorial, Alignment Tutorial, Memory Tutorial, Tutorial
@@ -2629,9 +2609,8 @@ Reference: @ref{Memory}.
 @cindex strings tutorial
 @cindex characters tutorial
 
-On the stack characters take up a cell, like numbers.  In memory they have
-their own size (one 8-bit byte on most systems), and therefore require their
-own words for memory access:
+スタック上では、 数と同様に文字がセルを占めます。 メモリ内では文字は独自のサイズ(ほとんどのシステムでは 8 ビットのバイト値)であるため、
+メモリ・アクセスには文字独自のワードが必要です:
 
 @example
 create v4 
@@ -2640,28 +2619,25 @@ v4 4 chars + c@@ .
 v4 5 chars dump
 @end example
 
-The preferred representation of strings on the stack is @code{addr u-count},
-where @code{addr} is the address of the first character and @code{u-count}
-is the number of characters in the string.
+スタック上の文字列の推奨される表現は @code{addr u-count} です。ここで、@code{addr} は文字列の最初の文字のアドレスで、
+@code{u-count} は文字列の文字数です。
 
 @example
 v4 5 type
 @end example
 
-You get a string constant with
+以下を使用すると文字列定数を取得できます
 
 @example
 s" hello, world" .s
 type
 @end example
 
-Make sure you have a space between @code{s"} and the string; @code{s"} is a
-normal Forth word and must be delimited with white space (try what happens
-when you remove the space).
+@code{s"} と文字列の間にスペースがあることを確かめてください。 @code{s"} は通常の Forth ワードであり、 空白(white
+space)で区切る必要があります(スペースを削除するとどうなるかを試してみましょう)。
 
-However, this interpretive use of @code{s"} is quite restricted: the string
-exists only until the next call of @code{s"} (some Forth systems keep more
-than one of these strings, but usually they still have a limited lifetime).
+ただし、 この @code{s"} のインタプリタでの使用(interpretive use)は非常に制限されています。 文字列は、 @code{s"}
+が次に呼び出されるまでの間だけ存在します(一部の Forth システムはこれらの文字列を複数保持しますが、 普通は未だ限られた寿命です)。
 
 @example
 s" hello," s" world" .s
@@ -2669,8 +2645,7 @@ type
 type
 @end example
 
-You can also use @code{s"} in a definition, and the resulting strings then
-live forever (well, for as long as the definition):
+あなたは定義内で @code{s"} を使用することもでき、 (定義が続く限り、)その結果の文字列は永久に存続します:
 
 @example
 : foo s" hello," s" world" ;
@@ -2680,11 +2655,11 @@ type
 @end example
 
 @quotation 研究課題(assignment)
-@code{Emit ( c -- )} types @code{c} as character (not a number).  Implement
-@code{type ( addr u -- )}.
+@code{Emit ( c -- )} は @code{c} を(数値ではなく)文字として出力します。 これを使って @code{type (
+addr u -- )} を実装してみましょう。
 @end quotation
 
-Reference: @ref{Memory Blocks}.
+こちらも参照ください: @ref{Memory Blocks}
 
 
 @node Alignment Tutorial, Floating Point Tutorial, Characters and Strings Tutorial, Tutorial
@@ -2692,26 +2667,24 @@ Reference: @ref{Memory Blocks}.
 @cindex alignment tutorial
 @cindex memory alignment tutorial
 
-On many processors cells have to be aligned in memory, if you want to access
-them with @code{@@} and @code{!} (and even if the processor does not require
-alignment, access to aligned cells is faster).
+多くのプロセッサでは、 @code{@@} と @code{!} を使用してセルにアクセスする場合、 メモリ内でセ​​ルをアライメントする必要があります
+(プロセッサがアライメントを必要としない場合でも、 アライメントされたセルへのアクセスは高速です)。
 
-@code{Create} aligns @code{here} (i.e., the place where the next allocation
-will occur, and that the @code{create}d word points to).  Likewise, the
-memory produced by @code{allocate} starts at an aligned address.  Adding a
-number of @code{cells} to an aligned address produces another aligned
-address.
+@code{Create} は @code{here}(つまり、 次の割り当てが行われる場所、
+そして@code{create}されたワードが指す場所)でアライメントします。 同様に、
+@code{allocate}によって生成されたメモリはアライメントしたアドレスから始まります。 アライメントしたアドレスに @code{cells}
+の数値 を足すと、 次のアライメントされたアドレスが生成されます。
 
-However, address arithmetic involving @code{char+} and @code{chars} can
-create an address that is not cell-aligned.  @code{Aligned ( addr -- a-addr
-)} produces the next aligned address:
+ただし、 @code{char+} および @code{chars}
+を含むアドレス演算では、セルにアライメントしていないアドレスが作成される可能性があります。 @code{Aligned ( addr -- a-addr
+)} は、 その次のアライメントせされたアドレスを生成します:
 
 @example
 v3 char+ aligned .s @@ .
 v3 char+ .s @@ .
 @end example
 
-Similarly, @code{align} advances @code{here} to the next aligned address:
+同様に、 @code{align} は @code{here} を次のアライメントされたアドレスに進めます:
 
 @example
 create v5 97 c,
@@ -2720,65 +2693,56 @@ align here .
 1000 ,
 @end example
 
-Note that you should use aligned addresses even if your processor does not
-require them, if you want your program to be portable.
+注意: プログラムを移植可能にしたい場合は、 プロセッサがそれらを必要としない場合でも、
+アライメントれたアドレスを使用する必要があることに注意してください。
 
-Reference: @ref{Address arithmetic}.
+こちらも参照ください: @ref{Address arithmetic}
 
 @node Floating Point Tutorial, Files Tutorial, Alignment Tutorial, Tutorial
 @section Floating Point
 @cindex floating point tutorial
 @cindex FP tutorial
 
-Floating-point (FP) numbers and arithmetic in Forth works mostly as one
-might expect, but there are a few things worth noting:
+Forth の浮動小数点(floating-point)(FP)の、 数値と算術演算は、 ほぼ期待された通りに機能しますが、
+特筆すべき点がいくつかあります:
 
-The first point is not specific to Forth, but so important and yet not
-universally known that I mention it here: FP numbers are not reals.  Many
-properties (e.g., arithmetic laws) that reals have and that one expects of
-all kinds of numbers do not hold for FP numbers.  If you want to use FP
-computations, you should learn about their problems and how to avoid them; a
-good starting point is @cite{David Goldberg,
+最初の点は Forth に固有のものではありませんが、 非常に重要で、 まだ広く知られていないため、 ここで言及します。
+浮動小数点数は実数(real)ではありません。 実数(real)が持ち、 あらゆる種類の数値に期待される多くの性質(算術法則など)は、
+浮動小数点数には当てはまりません。 浮動小数点演算したい場合、 浮動小数点演算の問題とその回避方法について学ぶ必要があります。 良い出発点は
+@cite{David Goldberg,
 @uref{https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html,What
 Every Computer Scientist Should Know About Floating-Point Arithmetic}, ACM
-Computing Surveys 23(1):5@minus{}48, March 1991}.
+Computing Surveys 23(1):5@minus{}48, March 1991} です。
 
-In Forth source code literal FP numbers need an exponent, e.g., @code{1e0};
-this can also be written shorter as @code{1e}, longer as @code{+1.0e+0}, and
-many variations in between.  The reason for this is that, for historical
-reasons, Forth interprets a decimal point alone (e.g., @code{1.}) as
-indicating a double-cell integer.  Examples:
+Forth ソース・コードでは、リテラル浮動小数点数には指数が必要です(例: @code{1e0})。これは、 @code{1e}
+のように短く書くことも、 @code{+1.0e+0} のように長く書くこともでき、 その間にはさまざまなバリエーションがあります。 その理由は、
+歴史的な理由により、 Forth は小数点のみ(例: @code{1.}) の数を 2 セル整数を示すものとして解釈(interpret)するためです。
+例:
 
 @example
 2e 2e f+ f.
 @end example
 
-Another requirement for literal FP numbers is that the current base is
-decimal; with a hex base @code{1e} is interpreted as an integer.
+リテラル浮動小数点数のもう 1 つの要件は、 現在の基数が 10 進数であることです。 16 進数の @code{1e}
+は整数として解釈(interpret)されます:
 
-Forth has a separate stack for FP numbers in conformance with Forth-2012.
-One advantage of this model is that cells are not in the way when accessing
-FP values, and vice versa.  Forth has a set of words for manipulating the FP
-stack: @code{fdup fswap fdrop fover frot} and (non-standard) @code{fnip
-ftuck fpick}.
+Forth には、Forth-2012 に準拠した浮動小数点数用の別個のスタックがあります。 このモデルの利点の 1 つは、
+浮動小数点数にアクセスするときにセルが邪魔にならないこと、 またその逆も同様であることです。 Forth には、 浮動小数点スタック(FP
+スタック)を操作するためのワードのセットがあります:  @code{fdup fswap fdrop fover frot} や (非標準の、)
+@code{fnip ftuck fpick}
 
-FP arithmetic words are prefixed with @code{F}.  There is the usual set
-@code{f+ f- f* f/ f** fnegate} as well as a number of words for other
-functions, e.g., @code{fsqrt fsin fln fmin}.  One word that you might expect
-is @code{f=}; but @code{f=} is non-standard, because FP computation results
-are usually inaccurate, so exact comparison is usually a mistake, and one
-should use approximate comparison.  Unfortunately, @code{f~}, the standard
-word for that purpose, is not well designed, so Gforth provides @code{f~abs}
-and @code{f~rel} as well.
+FP 算術ワードには @code{F} という接頭辞が付きます。 通常の @code{f+ f- f* f/ f** fnegate} のほか、 他の、
+関数用の多数のワード (例: @code{fsqrt fsin fln fmin}) があります。 期待されるワードの 1 つが @code{f=}
+ですが、 @code{f=} は標準にはありません。 浮動小数点数の計算結果は通常不正確であるため、 正確な比較は通常間違いであり、
+近似的な比較を使用する必要があります。 残念ながら、この目的のための標準のワードである @code{f~} は適切に設計されていないため、 Gforth
+では @code{f~abs} と @code{f~rel} も提供しています。
 
-And of course there are words for accessing FP numbers in memory (@code{f@@
-f!}), and for address arithmetic (@code{floats float+ faligned}).  There are
-also variants of these words with an @code{sf} and @code{df} prefix for
-accessing IEEE format single-precision and double-precision numbers in
-memory; their main purpose is for accessing external FP data (e.g., that has
-been read from or will be written to a file).
+そしてもちろん、 メモリ内の浮動小数点数にアクセスするためのワード(@code{f@@ f!})や、 アドレス演算用のワード(@code{floats
+float+ faligned})もあります。 メモリ内の IEEE 書式の単精度および倍精度数値にアクセスするために、 @code{sf} および
+@code{df} プレフィックスを付けた、 これらのワードのバリエーションもあります。 その主な目的は、
+外部浮動小数点数データ(ファイルから読み取られた、 またはファイルに書き込まれるデータなど)にアクセスすることです。
 
-Here is an example of a dot-product word and its use:
+以下は、 ドット出力ワード(dot-product word)とその使用例です:
 
 @example
 : v* ( f_addr1 nstride1 f_addr2 nstride2 ucount -- r )
@@ -2793,34 +2757,31 @@ v 1 floats  v 1 floats  3  v* f.
 @end example
 
 @quotation 研究課題(assignment)
-Write a program to solve a quadratic equation.  Then read @cite{Henry
-G. Baker,
+二次方程式を解くプログラムを作成してみましょう。 次に、 @cite{Henry G. Baker,
 @uref{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.4448&rep=rep1&type=pdf,You
 Could Learn a Lot from a Quadratic}, ACM SIGPLAN Notices,
-33(1):30@minus{}39, January 1998}, and see if you can improve your program.
-Finally, find a test case where the original and the improved version
-produce different results.
+33(1):30@minus{}39, January 1998} を読んで、 そのプログラムを改善できるかどうか確認してください。 最後に、
+元のバージョンと改良されたバージョンで異なる結果が生成されるテスト・ケースを探しましょう。
 @end quotation
 
-Reference: @ref{Floating Point}; @ref{Floating point stack}; @ref{Number
+こちらも参照ください: @ref{Floating Point}; @ref{Floating point stack}; @ref{Number
 Conversion}; @ref{Memory Access}; @ref{Address arithmetic}.
 
 @node Files Tutorial, Interpretation and Compilation Semantics and Immediacy Tutorial, Floating Point Tutorial, Tutorial
 @section Files
 @cindex files tutorial
 
-This section gives a short introduction into how to use files inside
-Forth. It's broken up into five easy steps:
+このセクションでは、 Forth 内でファイルを使用する方法について簡単に説明します。 それは 5 つの簡単なステップに分かれています:
 
 @enumerate 1
-@item Open an ASCII text file for input
-@item Open a file for output
-@item Read input file until string matches (or some other condition is met)
-@item Write some lines from input (modified or not) to output
-@item Close the files.
+@item 入力用に ASCII テキスト・ファイルを開きます
+@item 出力用にファイルを開く
+@item 文字列が一致する (または他の条件が満たされる) まで入力ファイルを読み取ります
+@item 入力 (が変更されたかどうかに関係なく、) から数行を出力に書き込みます
+@item ファイルを閉じます。
 @end enumerate
 
-Reference: @ref{General files}.
+こちらも参照ください: @ref{General files}
 
 @subsection Open file for input
 
@@ -2834,13 +2795,11 @@ s" foo.in"  r/o open-file throw Value fd-in
 s" foo.out" w/o create-file throw Value fd-out
 @end example
 
-The available file modes are r/o for read-only access, r/w for read-write
-access, and w/o for write-only access. You could open both files with r/w,
-too, if you like. All file words return error codes; for most applications,
-it's best to pass there error codes with @code{throw} to the outer error
-handler.
+使用可能なファイル・モードは、 読み取り専用アクセスの場合は r/o 、 読み取り/書き込み アクセスの場合は r/w 、書き込み専用アクセスの場合は
+w/o です。 必要に応じて、 読み取りと書き込みの両方のファイルを r/w で開くこともできます。 すべてのファイル用ワードはエラーコードを返します。
+ほとんどのアプリケーションでは、 @code{throw} を使用してエラー・コードを外部のエラー・ハンドラーに渡すのが最善(best)です。
 
-If you want words for opening and assigning, define them as follows:
+開いたり(opening)割り当てたり(assigning)するためのワードが必要な場合は、 以下のように定義します:
 
 @example
 0 Value fd-in
@@ -2849,14 +2808,14 @@ If you want words for opening and assigning, define them as follows:
 : open-output ( addr u -- )  w/o create-file throw to fd-out ;
 @end example
 
-Usage example:
+使用例:
 
 @example
 s" foo.in" open-input
 s" foo.out" open-output
 @end example
 
-@subsection Scan file for a particular line
+@subsection ファイルの特定の行をスキャン
 
 @example
 256 Constant max-line
@@ -2874,20 +2833,18 @@ Create line-buffer  max-line 2 + allot
   2drop ;
 @end example
 
-@code{read-line ( addr u1 fd -- u2 flag ior )} reads up to u1 bytes into the
-buffer at addr, and returns the number of bytes read, a flag that is false
-when the end of file is reached, and an error code.
+@code{read-line ( addr u1 fd -- u2 flag ior )} は、 addr からのバッファに最大 u1
+バイトを読み取り、 読み取ったバイト数と、 ファイルの終わりに達した場合に false になるフラグと、 エラーコードを返します。
 
-@code{compare ( addr1 u1 addr2 u2 -- n )} compares two strings and returns
-zero if both strings are equal. It returns a positive number if the first
-string is lexically greater, a negative if the second string is lexically
-greater.
+@code{compare ( addr1 u1 addr2 u2 -- n )} は 2 つの文字列を比較し、 両方の文字列が等しい場合は 0
+を返します。 最初の文字列の方が字句的に大きい(lexically greater)場合は正の数値を返し、 2
+番目の文字列の方が字句的に大きい(lexically greater)場合は負の数値を返します。
 
-We haven't seen this loop here; it has two exits. Since the @code{while}
-exits with the number of bytes read on the stack, we have to clean up that
-separately; that's after the @code{else}.
+このループは、 まだ見たことがないですよね。 このループは出口が2つあります。  @code{while}
+はスタック上にある読み取ったバイト数で終了するため、 それを個別にクリーンアップする必要があります。 そのクリーンアップする部分は
+@code{else} の後にあります。
 
-Usage example:
+使用例:
 
 @example
 s" The text I search is here" scan-file
@@ -2913,7 +2870,7 @@ fd-in close-file throw
 fd-out close-file throw
 @end example
 
-Likewise, you can put that into definitions, too:
+これも、同様に、 定義に組み込むことができます:
 
 @example
 : close-input ( -- )  fd-in close-file throw ;
@@ -2921,9 +2878,8 @@ Likewise, you can put that into definitions, too:
 @end example
 
 @quotation 研究課題(assignment)
-How could you modify @code{copy-file} so that it copies until a second line
-is matched? Can you write a program that extracts a section of a text file,
-given the line that starts and the line that terminates that section?
+@code{copy-file} を変更して、 2 行目が一致するまでコピーするようにするにはどうすればよいでしょうか？
+セクションの開始行と終了行を指定して、 テキスト・ファイルのセクションを抽出するプログラムを作成できますか？
 @end quotation
 
 @node Interpretation and Compilation Semantics and Immediacy Tutorial, Execution Tokens Tutorial, Files Tutorial, Tutorial
@@ -2933,25 +2889,21 @@ given the line that starts and the line that terminates that section?
 @cindex compilation semantics tutorial
 @cindex immediate, tutorial
 
-When a word is compiled, it behaves differently from being interpreted.
-E.g., consider @code{+}:
+ワードがコンパイルされるときと、 解釈(interpret)されるときでは異なる動作をします。 たとえば、 @code{+} について考えてみましょう:
 
 @example
 1 2 + .
 : foo + ;
 @end example
 
-These two behaviours are known as compilation and interpretation semantics.
-For normal words (e.g., @code{+}), the compilation semantics is to append
-the interpretation semantics to the currently defined word (@code{foo} in
-the example above).  I.e., when @code{foo} is executed later, the
-interpretation semantics of @code{+} (i.e., adding two numbers) will be
-performed.
+これらの 2 つの振る舞いは、 コンパイルと解釈(interpret)のセマンティクスとして知られています。 通常のワード(例:
+@code{+})の場合、 コンパイル・セマンティクスは、 現在定義されているワード(上記の例では
+@code{foo})に解釈セマンティクスを追加します。 つまり、 後で @code{foo} が実行されると、 @code{+}
+の解釈(interret)セマンティクス(つまり、2 つの数値の加算)が実行されます。
 
-However, there are words with non-default compilation semantics, e.g., the
-control-flow words like @code{if}.  You can use @code{immediate} to change
-the compilation semantics of the last defined word to be equal to the
-interpretation semantics:
+ただし、 @code{if} のような制御フロー・ワードなど、 デフォルト以外のコンパイル・セマンティクスを持つワードが存在します。
+@code{immediate}
+を使用すると、最後に定義されたワードのコンパイル・セマンティクスを解釈(interpret)セマンティクスと等しくなるように変更できます:
 
 @example
 : [FOO] ( -- )
@@ -2964,13 +2916,11 @@ bar
 see bar
 @end example
 
-Two conventions to mark words with non-default compilation semantics are
-names with brackets (more frequently used) and to write them all in upper
-case (less frequently used).
+デフォルト以外のコンパイル・セマンティクスのワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、
+名前をすべて大文字で記述する(あまり使用されない)ことです。
 
-For some words, such as @code{if}, using their interpretation semantics is
-usually a mistake, so we mark them as @code{compile-only}, and you get a
-warning when you interpret them.
+@code{if} などの一部のワードについては、 その解釈(interpret)セマンティクスを使用するのは通常間違いであるため、 それらを
+@code{compile-only} としてマークし、 解釈(interpret)すると警告が表示されます。
 
 @example
 : flip ( -- )
@@ -2982,20 +2932,16 @@ flip
 flop
 @end example
 
-In this example, first the interpretation semantics of @code{flip} is used
-(and you get a warning); the second use of @code{flip} uses the compilation
-semantics (and you get no warning).  You can also see in this example that
-compile-only is a property that is evaluated at text interpretation time,
-not at run-time.
+この例では、 最初に @code{flip} の解釈(interpret)セマンティクスが使用されます(警告が表示されます)。 @code{flip}
+の 2 番目の使用では、 コンパイル・セマンティクスが使用されます(警告は表示されません)。 この例では、 compile-only
+が実行時(run-time)ではなくテキスト解釈時(text interpretation time)に評価されるプロパティであることもわかります。
 
-The text interpreter has two states: in interpret state, it performs the
-interpretation semantics of words it encounters; in compile state, it
-performs the compilation semantics of these words.
+テキスト・インタプリタには 2 つの状態があります。 解釈(interpret)状態では、
+遭遇したワードの解釈(interpret)セマンティクスを実行します。 コンパイル状態では、これらのワードのコンパイル・セマンティクスが実行されます。
 
-Among other things, @code{:} switches into compile state, and @code{;}
-switches back to interpret state.  They contain the factors @code{]} (switch
-to compile state) and @code{[} (switch to interpret state), that do nothing
-but switch the state.
+特に、 @code{:} はコンパイル状態に切り替え、 @code{;} は解釈(interpret)状態に戻ります。 これらには、
+状態を切り替えるだけがその効果である @code{]} (コンパイル状態に切り替える) と @code{[}
+(解釈(interpret)状態に切り替える) が含まれています。
 
 @example
 : xxx ( -- )
@@ -3006,9 +2952,9 @@ xxx
 see xxx
 @end example
 
-These brackets are also the source of the naming convention mentioned above.
+これらの角括弧(brackets)は、 上記の命名慣習の源でもあります。
 
-Reference: @ref{Interpretation and Compilation Semantics}.
+こちらも参照ください: @ref{Interpretation and Compilation Semantics}
 
 
 @node Execution Tokens Tutorial, Exceptions Tutorial, Interpretation and Compilation Semantics and Immediacy Tutorial, Tutorial
@@ -3016,22 +2962,20 @@ Reference: @ref{Interpretation and Compilation Semantics}.
 @cindex execution tokens tutorial
 @cindex XT tutorial
 
-@code{' word} gives you the execution token (XT) of a word.  The XT is a
-cell representing the interpretation semantics of a word.  You can execute
-this semantics with @code{execute}:
+@code{' word} は、 ワードの実行トークン(execution token)(XT)を提供します。 XT は、
+ワードの解釈(interpret)セマンティクスを表すセルです。 このセマンティクスは @code{execute} で実行できます:
 
 @example
 ' + .s
 1 2 rot execute .
 @end example
 
-The XT is similar to a function pointer in C.  However, parameter passing
-through the stack makes it a little more flexible:
+XT は C の関数ポインタに似ています。 ただし、 パラメータがスタックで渡されるため、もう少し柔軟になります:
 
 @example
 : map-array ( ... addr u xt -- ... )
-\ executes xt ( ... x -- ... ) for every element of the array starting
-\ at addr and containing u elements
+\ addr で始まり u 個の要素を含む配列のすべての要素に対して
+\ xt ( ... x -- ... ) を実行します
   @{ xt @}
   cells over + swap ?do
     i @@ xt execute
@@ -3040,18 +2984,16 @@ through the stack makes it a little more flexible:
 create a 3 , 4 , 2 , -1 , 4 ,
 a 5 ' . map-array .s
 0 a 5 ' + map-array .
-s" max-n" environment? drop .s
-a 5 ' min map-array .
+
+s" max-n" environment? drop .s \ 下記比較初期値用に整数最大値を得る
+a 5 ' min map-array . \ 最初の要素は、 environment? で取得した整数最大値と比較
 @end example
 
-You can use map-array with the XTs of words that consume one element more
-than they produce.  In theory you can also use it with other XTs, but the
-stack effect then depends on the size of the array, which is hard to
-understand.
+生成するより消費する要素が 1 つ多いワードの XT に対して map-array を使用できます。 理論的には、他の XT でも使用できますが、
+スタック効果は配列のサイズに依存するため、理解するのが困難です。
 
-Since XTs are cell-sized, you can store them in memory and manipulate them
-on the stack like other cells.  You can also compile the XT into a word with
-@code{compile,}:
+XT はセルサイズであるため、 メモリに保存し、 他のセルと同様にスタック上で操作できます。 @code{compile,} を使用して XT
+をワードにコンパイルすることもできます:
 
 @example
 : foo1 ( n1 n2 -- n )
@@ -3059,9 +3001,8 @@ on the stack like other cells.  You can also compile the XT into a word with
 see foo1
 @end example
 
-This is non-standard, because @code{compile,} has no compilation semantics
-in the standard, but it works in good Forth systems.  For the broken ones,
-use
+@code{compile,} は標準ではコンパイル・セマンティクスがないため、 上記は標準ではないけれども、 良い Forth
+システムでは動作します。 うまくいかなかったモノついては、 以下を使用してください
 
 @example
 : [compile,] compile, ; immediate
@@ -3071,8 +3012,8 @@ use
 see foo1
 @end example
 
-@code{'} is a word with default compilation semantics; it parses the next
-word when its interpretation semantics are executed, not during compilation:
+@code{'} は、 デフォルトでコンパイル・セマンティクスを持つワードです。 コンパイル中ではなく、
+解釈(interpret)セマンティクスの実行時、 その次のワードを解析(parse)します。
 
 @example
 : foo ( -- xt )
@@ -3084,8 +3025,8 @@ see bar
 1 2 bar + .
 @end example
 
-You often want to parse a word during compilation and compile its XT so it
-will be pushed on the stack at run-time.  @code{[']} does this:
+コンパイル中にワードを解析(parse)し、 その XT をコンパイルして、 実行時にスタックにプッシュされるようにしたいことがよくあります。
+@code{[']} はこれを行います:
 
 @example
 : xt-+ ( -- xt )
@@ -3094,39 +3035,35 @@ see xt-+
 1 2 xt-+ execute .
 @end example
 
-Many programmers tend to see @code{'} and the word it parses as one unit,
-and expect it to behave like @code{[']} when compiled, and are confused by
-the actual behaviour.  If you are, just remember that the Forth system just
-takes @code{'} as one unit and has no idea that it is a parsing word
-(attempts to convenience programmers in this issue have usually resulted in
-even worse pitfalls, see
+多くのプログラマーは、 @code{'} とそれが解析(parse)するワードを 1 つの単位として認識し、 コンパイル時に @code{[']}
+のように動作することを期待し、 実際の動作に混乱する傾向があります。 あなたがもしそうなら、 Forth システムは @code{'} を 1
+つの単位として捉えているだけであり、
+それが解析(parse)ワードであるとはまったく考えていないことを覚えておいてください(この問題でプログラマーの便宜を図る試みは、 通常、
+さらにひどい落とし穴につながります。
 @uref{https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz,
-@code{State}-smartness---Why it is evil and How to Exorcise it}).
+@code{State}-smartness---Why it is evil and How to Exorcise it})。
 
-Note that the state of the interpreter does not come into play when creating
-and executing XTs.  I.e., even when you execute @code{'} in compile state,
-it still gives you the interpretation semantics.  And whatever that state
-is, @code{execute} performs the semantics represented by the XT (i.e., for
-XTs produced with @code{'} the interpretation semantics).
+XT の作成および実行は、 インタプリタの状態には影響を受けないことに注意してください。 つまり、 コンパイル状態で @code{'}
+を実行した場合でも、 解釈(interpret)セマンティクスが得られます。 そして、 そこでの状態が何であれ、 @code{execute} は XT
+によって表されるセマンティクス(つまり、@code{'} で生成された XT の場合は解釈(interpret)セマンティクス)を実行します。
 
-Reference: @ref{Tokens for Words}.
+こちらも参照ください: @ref{Tokens for Words}
 
 
 @node Exceptions Tutorial, Defining Words Tutorial, Execution Tokens Tutorial, Tutorial
 @section Exceptions
 @cindex exceptions tutorial
 
-@code{throw ( n -- )} causes an exception unless n is zero.
+@code{throw ( n -- )} は、 n がゼロでない限り例外を引き起こします。
 
 @example
 100 throw .s
 0 throw .s
 @end example
 
-@code{catch ( ... xt -- ... n )} behaves similar to @code{execute}, but it
-catches exceptions and pushes the number of the exception on the stack (or
-0, if the xt executed without exception).  If there was an exception, the
-stacks have the same depth as when entering @code{catch}:
+@code{catch ( ... xt -- ... n )} は @code{execute} と同様に動作しますが、 例外をキャッチし、
+スタック上に例外の数値(または XT が例外なしで実行された場合は 0)をプッシュします。 例外があった場合、 スタックの深さは
+@code{catch} の実行直前と同一です。
 
 @example
 .s
@@ -3135,11 +3072,11 @@ stacks have the same depth as when entering @code{catch}:
 @end example
 
 @quotation 研究課題(assignment)
-Try the same with @code{execute} instead of @code{catch}.
+@code{catch} の代わりに @code{execute} を使用して同じことを試してみましょう。
 @end quotation
 
-@code{Throw} always jumps to the dynamically next enclosing @code{catch},
-even if it has to leave several call levels to achieve this:
+@code{throw} は、常に動的に直近にこの @code{throw} を囲んでいる(定義の) @code{catch} にジャンプします、
+たとえそのジャンプを達成するために複数の呼び出しレベルを飛び越す必要がある場合でもです:
 
 @example
 : foo 100 throw ;
@@ -3148,8 +3085,7 @@ even if it has to leave several call levels to achieve this:
 bar .
 @end example
 
-It is often important to restore a value upon leaving a definition, even if
-the definition is left through an exception.  You can ensure this like this:
+多くの場合、 定義が例外によって終了した場合でも、 定義を終了したときに値を復元することが重要です。 以下のようにしてみるのはどうでしょうか:
 
 @example
 : ...
@@ -3159,17 +3095,15 @@ the definition is left through an exception.  You can ensure this like this:
    ( ... n ) throw ;
 @end example
 
-However, this is still not safe against, e.g., the user pressing
-@kbd{Ctrl-C} when execution is between the @code{catch} and
-@code{restore-x}.
+しかし、 これでも、 たとえば、@code{catch} と @code{restore-x} の間を実行中にユーザーが @kbd{Ctrl-C}
+を押すなどしたら安全ではありません。
 
-Gforth provides an alternative exception handling syntax that is safe
-against such cases: @code{try ... restore ... endtry}.  If the code between
-@code{try} and @code{endtry} has an exception, the stack depths are
-restored, the exception number is pushed on the stack, and the execution
-continues right after @code{restore}.
+Gforth は、そのような場合に対して安全な代替例外処理構文(alternative exception handling syntax)
+@code{try ...restore ... endtry} を提供します。  @code{try} と @code{endtry}
+の間のコードに例外があった場合、 スタックの深さが復元され、 例外数値がスタックにプッシュされ、 @code{restore}
+の直後から実行が続行されます。
 
-The safer equivalent to the restoration code above is
+以下は、 上記のコードと同等の、 より安全なコードです
 
 @example
 : ...
@@ -3182,7 +3116,7 @@ The safer equivalent to the restoration code above is
   throw ;
 @end example
 
-Reference: @ref{Exception Handling}.
+こちらも参照ください: @ref{Exception Handling}
 
 
 @node Defining Words Tutorial, Arrays and Records Tutorial, Exceptions Tutorial, Tutorial
@@ -3193,26 +3127,25 @@ Reference: @ref{Exception Handling}.
 
 @c before semantics?
 
-@code{:}, @code{create}, and @code{variable} are definition words: They
-define other words.  @code{Constant} is another definition word:
+これまでに出てきた @code{:} や @code{create} や @code{variable} は定義ワードです。
+これらは他のワードを定義します。 @code{Constant} はもう一つの定義ワードです:
 
 @example
 5 constant foo
 foo .
 @end example
 
-You can also use the prefixes @code{2} (double-cell) and @code{f} (floating
-point) with @code{variable} and @code{constant}.
+@code{variable} や @code{constant} でも接頭辞 @code{2} (2倍長セル) や @code{f} (浮動小数点)
+を使用することができます。
 
-You can also define your own defining words.  E.g.:
+あなた独自の定義ワードを定義することもできます。 例:
 
 @example
 : variable ( "name" -- )
   create 0 , ;
 @end example
 
-You can also define defining words that create words that do something other
-than just producing their address:
+また、 単にアドレスを生成する以外のことを行うワードを作成する定義ワードを定義することもできます:
 
 @example
 : constant ( n "name" -- )
@@ -3224,37 +3157,32 @@ does> ( -- n )
 foo .
 @end example
 
-The definition of @code{constant} above ends at the @code{does>}; i.e.,
-@code{does>} replaces @code{;}, but it also does something else: It changes
-the last defined word such that it pushes the address of the body of the
-word and then performs the code after the @code{does>} whenever it is
-called.
+上記の @code{constant} の定義は @code{does>} で終了します。 つまり、 @code{does>} は @code{;}
+を置き換えるのですが、 他のことも行います。 最後に定義されたワードを変更して、 ワード本体(body)のアドレスをプッシュし、 呼び出されるたびに
+@code{does>} の後のコードを実行します。
 
-In the example above, @code{constant} uses @code{,} to store 5 into the body
-of @code{foo}.  When @code{foo} executes, it pushes the address of the body
-onto the stack, then (in the code after the @code{does>})  fetches the 5
-from there.
+上の例では、 @code{constant} は @code{,} を使用して @code{foo} の本体に 5 を格納します。
+@code{foo} が実行されると、 本体のアドレスがスタックにプッシュされ、 (@code{does>} の後のコードにより、)そこから 5
+がフェッチされます。
 
-The stack comment near the @code{does>} reflects the stack effect of the
-defined word, not the stack effect of the code after the @code{does>} (the
-difference is that the code expects the address of the body that the stack
-comment does not show).
+@code{does>} の脇のスタック・コメントは、 @code{does>} の後のコードのスタック効果ではなく、
+定義されたワードのスタック効果です(違いは、 @code{does>} の後のコードは @code{does>}
+の脇のスタック・コメントには書いてない、 ワード本体(body)のアドレスを期待している点です)。
 
-You can use these definition words to do factoring in cases that involve
-(other) definition words.  E.g., a field offset is always added to an
-address.  Instead of defining
+これらの定義ワードを使用すると、 (他の)定義ワードが関係する場合にファクタリングを行うことができます。  たとえば、
+フィールド・オフセットは常にアドレスに加算するものですが、 その代わりに以下を定義します
 
 @example
 2 cells constant offset-field1
 @end example
 
-and using this like
+この offset-field1 は以下のように使います
 
 @example
 ( addr ) offset-field1 +
 @end example
 
-you can define a definition word
+ここで、 あなたは以下のような定義ワードをを定義できます
 
 @example
 : simple-field ( n "name" -- )
@@ -3263,7 +3191,7 @@ does> ( n1 -- n1+n )
   ( addr ) @@ + ;
 @end example
 
-Definition and use of field offsets now look like this:
+フィールド・オフセットの定義と使用は以下のようになります:
 
 @example
 2 cells simple-field field1
@@ -3271,9 +3199,8 @@ create mystruct 4 cells allot
 mystruct .s field1 .s drop
 @end example
 
-If you want to do something with the word without performing the code after
-the @code{does>}, you can access the body of a @code{create}d word with
-@code{>body ( xt -- addr )}:
+@code{does>} の後のコードを実行せずに、 そのワードで何かをしたい場合は、 @code{>body ( xt -- addr )}
+を使用すれば @code{create} したワードの本体(body)にアクセスできます:
 
 @example
 : value ( n "name" -- )
@@ -3290,14 +3217,11 @@ foo .
 @end example
 
 @quotation 研究課題(assignment)
-Define @code{defer ( "name" -- )}, which creates a word that stores an XT
-(at the start the XT of @code{abort}), and upon execution @code{execute}s
-the XT.  Define @code{is ( xt "name" -- )} that stores @code{xt} into
-@code{name}, a word defined with @code{defer}.  Indirect recursion is one
-application of @code{defer}.
+(@code{abort} の XT の先頭に、) XT を格納するワードを作成する、 @code{defer ( "name" -- )} を定義し、
+実行時に XT を @code{execute} で実行するようにしてみましょう。 間接再帰は @code{defer} の応用の 1 つです。
 @end quotation
 
-Reference: @ref{User-defined Defining Words}.
+こちらも参照ください: @ref{User-defined Defining Words}
 
 
 @node Arrays and Records Tutorial, POSTPONE Tutorial, Defining Words Tutorial, Tutorial
@@ -3306,34 +3230,28 @@ Reference: @ref{User-defined Defining Words}.
 @cindex records tutorial
 @cindex structs tutorial
 
-Forth has no standard words for defining arrays, but you can build them
-yourself based on address arithmetic.  You can also define words for
-defining arrays and records (@pxref{Defining Words Tutorial,, Defining
-Words}).
+Forth には配列を定義するための標準ワードはありませんが、 アドレス演算に基づいて自分で配列を構築できます。
+配列とレコードを定義するためのワードを定義することもできます(@pxref{Defining Words Tutorial,, Defining
+Words})。
 
-One of the first projects a Forth newcomer sets out upon when learning about
-defining words is an array defining word (possibly for n-dimensional
-arrays).  Go ahead and do it, I did it, too; you will learn something from
-it.  However, don't be disappointed when you later learn that you have
-little use for these words (inappropriate use would be even worse).  I have
-not found a set of useful array words yet; the needs are just too diverse,
-and named, global arrays (the result of naive use of defining words) are
-often not flexible enough (e.g., consider how to pass them as parameters).
-Another such project is a set of words to help dealing with strings.
+Forth の初心者がワードの定義について学ぶときに最初に着手するプロジェクトの 1 つが配列定義ワード(ことによっては n 次元配列)です。
+さぁあなたもやってみましょう。 あなたはそこから何かを学ぶでしょう。 ただし、
+後からこれらのワードをほとんど使用しないことがわかってもがっかりしないでください(不適切に使用するとさらに悪いことになります)。
+私はまだ有用な配列ワードのセットを見つけられていません。 ニーズがあまりにも多様で、
+(定義ワードを単純に使用した結果である、)名前付きのグローバル配列は、 柔軟性が十分ではないことがよくあります(たとえば、
+どのようにしてパラメーターを渡すか、など)。 同様のプロジェクトのもう 1 つは、 文字列の処理に役立つワードのセットです。
 
-On the other hand, there is a useful set of record words, and it has been
-defined in @file{compat/struct.fs}; these words are predefined in Gforth.
-They are explained in depth elsewhere in this manual (see
-@pxref{Structures}).  The @code{simple-field} example above is simplified
-variant of fields in this package.
+その一方、 レコード・ワードには便利なセットがあり、 @file{compat/struct.fs} で定義されています。 これらのワードは
+Gforth で事前定義されています。 これらについては、 このマニュアルの他の場所で詳しく説明されています(@pxref{Structures}
+参照)。 上記の @code{simple-field} の例は、 このパッケージのフィールドの簡略化されたバリエーションです。
 
 
 @node POSTPONE Tutorial, Literal Tutorial, Arrays and Records Tutorial, Tutorial
 @section @code{POSTPONE}
 @cindex postpone tutorial
 
-You can compile the compilation semantics (instead of compiling the
-interpretation semantics) of a word with @code{POSTPONE}:
+@code{POSTPONE} を使用すると、 (解釈(interpret)セマンティクスをコンパイルする代わりに、)
+ワードのコンパイル・セマンティクスをコンパイルできます:
 
 @example
 : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
@@ -3344,33 +3262,28 @@ interpretation semantics) of a word with @code{POSTPONE}:
 see foo
 @end example
 
-During the definition of @code{foo} the text interpreter performs the
-compilation semantics of @code{MY-+}, which performs the compilation
-semantics of @code{+}, i.e., it compiles @code{+} into @code{foo}.
+@code{foo} の定義中に、 テキスト・インタプリタは @code{MY-+} のコンパイル・セマンティクスを実行し、 それが @code{+}
+のコンパイル・セマンティクスを実行します。 つまり、 @code{+} を @code{foo} 内にコンパイルします。
 
-This example also displays separate stack comments for the compilation
-semantics and for the stack effect of the compiled code.  For words with
-default compilation semantics these stack effects are usually not displayed;
-the stack effect of the compilation semantics is always @code{( -- )} for
-these words, the stack effect for the compiled code is the stack effect of
-the interpretation semantics.
+この例では、 コンパイル・セマンティクスとコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。
+デフォルトのコンパイル・セマンティクスを持つワードの場合、 通常、 これらのスタック効果は表示されません。
+これらのワードのコンパイル・セマンティクスのスタック効果は常に @code{( -- )} であり、
+コンパイルされたコードのスタック効果は解釈(interpret)セマンティクスのスタック効果です。
 
-Note that the state of the interpreter does not come into play when
-performing the compilation semantics in this way.  You can also perform it
-interpretively, e.g.:
+注意: この方法でコンパイル・セマンティクスを実行する場合、 インタプリタの状態には影響を受けないことに注意してください。
+あなたは解釈的(interpretively)に実行することもできます。 例:
 
 @example
 : foo2 ( n1 n2 -- n )
  [ MY-+ ] ;
-1 2 foo .
-see foo
+1 2 foo2 .
+see foo2
 @end example
 
 @c !! repair.fs
-However, there are some broken Forth systems where this does not always
-work, and therefore this practice was been declared non-standard in 1999.
+ただし、 これが常に機能するとは限らない、良くない Forth システムがいくつかあるため、 この方法は 1999 年に非標準となりました。
 
-Here is another example for using @code{POSTPONE}:
+@code{POSTPONE} を使用する別の例を以下に示します:
 
 @example
 : MY-- ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
@@ -3381,7 +3294,7 @@ Here is another example for using @code{POSTPONE}:
 see bar
 @end example
 
-You can define @code{ENDIF} in this way:
+@code{ENDIF} は以下の方法で定義できます:
 
 @example
 : ENDIF ( Compilation: orig -- )
@@ -3389,8 +3302,8 @@ You can define @code{ENDIF} in this way:
 @end example
 
 @quotation 研究課題(assignment)
-Write @code{MY-2DUP} that has compilation semantics equivalent to
-@code{2dup}, but compiles @code{over over}.
+@code{2dup} と同等のコンパイル・セマンティクスを持つ @code{MY-2DUP} を作成しますが、 コンパイルされるのは
+@code{over over} になるようにしてみましょう。
 @end quotation
 
 @c !! @xref{Macros} for reference
@@ -3400,13 +3313,13 @@ Write @code{MY-2DUP} that has compilation semantics equivalent to
 @section @code{Literal}
 @cindex literal tutorial
 
-You cannot @code{POSTPONE} numbers:
+数値を @code{POSTPONE} することはできません:
 
 @example
 : [FOO] POSTPONE 500 ; immediate
 @end example
 
-Instead, you can use @code{LITERAL (compilation: n --; run-time: -- n )}:
+代わりに @code{LITERAL (compilation: n --; run-time: -- n )} を使用します:
 
 @example
 : [FOO] ( compilation: --; run-time: -- n )
@@ -3417,10 +3330,9 @@ flip .
 see flip
 @end example
 
-@code{LITERAL} consumes a number at compile-time (when it's compilation
-semantics are executed) and pushes it at run-time (when the code it compiled
-is executed).  A frequent use of @code{LITERAL} is to compile a number
-computed at compile time into the current word:
+@code{LITERAL} は、 コンパイル時(コンパイル・セマンティクスが実行されるとき)に数値を消費し、
+実行時(コンパイルされたコードが実行されるとき)にそれをプッシュします。 @code{LITERAL} のよくある使用法は、
+コンパイル時に計算された数値を現在のワードにコンパイルすることです:
 
 @example
 : bar ( -- n )
@@ -3429,8 +3341,7 @@ see bar
 @end example
 
 @quotation 研究課題(assignment)
-Write @code{]L} which allows writing the example above as @code{: bar ( -- n
-) [ 2 2 + ]L ;}
+上記の例を @code{: bar ( -- n ) [ 2 2 + ]L ;} と記述できるような @code{]L} を定義してみましょう。
 @end quotation
 
 @c !! @xref{Macros} for reference
@@ -3441,11 +3352,10 @@ Write @code{]L} which allows writing the example above as @code{: bar ( -- n
 @cindex macros, advanced tutorial
 @cindex run-time code generation, tutorial
 
-Reconsider @code{map-array} from @ref{Execution Tokens Tutorial,, Execution
-Tokens}.  It frequently performs @code{execute}, a relatively expensive
-operation in some Forth implementations.  You can use @code{compile,} and
-@code{POSTPONE} to eliminate these @code{execute}s and produce a word that
-contains the word to be performed directly:
+@ref{Execution Tokens Tutorial,, Execution Tokens} の @code{map-array}
+について再検討してみましょう。 @code{map-array} は @code{execute} を頻繁に実行しますが、 これは一部の Forth
+実装では比較的高価な操作です。 @code{compile,} と @code{POSTPONE} を使用すると、 これらの
+@code{execute} を削除し、 直接実行されるワードを含むワードを生成できます:
 
 @c use ]] ... [[
 @example
@@ -3463,8 +3373,7 @@ see sum-array
 a 5 sum-array .
 @end example
 
-You can use the full power of Forth for generating the code; here's an
-example where the code is generated in a loop:
+コードの生成には Forth の機能を最大限に活用できます。 以下に、 コードがループ内で生成される例を示します:
 
 @example
 : compile-vmul-step ( compilation: n --; run-time: n1 addr1 -- n2 addr2 )
@@ -3487,15 +3396,12 @@ see a-vmul
 a a-vmul .
 @end example
 
-This example uses @code{compile-map-array} to show off, but you could also
-use @code{map-array} instead (try it now!).
+この例では @code{compile-map-array} を使用していますが、 代わりに @code{map-array}
+を使用することもできます(是非試してみてください)。
 
-You can use this technique for efficient multiplication of large matrices.
-In matrix multiplication, you multiply every row of one matrix with every
-column of the other matrix.  You can generate the code for one row once, and
-use it for every column.  The only downside of this technique is that it is
-cumbersome to recover the memory consumed by the generated code when you are
-done (and in more complicated cases it is not possible portably).
+この手法を使用すると、 巨大な行列を効率的に乗算できます。 行列の乗算では、 一方の行列のすべての行ともう一方の行列のすべての列を乗算します。 1
+行のコードを 1 回生成し、 それをすべての列に使用できます。 この手法の唯一の欠点は、
+生成されたコードによって消費されたメモリを完了時に開放するのが面倒なことです(さらに複雑な場合は移植可能ではありません)。
 
 @c !! @xref{Macros} for reference
 
@@ -3505,24 +3411,21 @@ done (and in more complicated cases it is not possible portably).
 @cindex compilation tokens, tutorial
 @cindex CT, tutorial
 
-This section is Gforth-specific.  You can skip it.
+このセクションは Gforth 固有です。 スキップしても構いません。
 
-@code{' word compile,} compiles the interpretation semantics.  For words
-with default compilation semantics this is the same as performing the
-compilation semantics.  To represent the compilation semantics of other
-words (e.g., words like @code{if} that have no interpretation semantics),
-Gforth has the concept of a compilation token (CT, consisting of two cells),
-and words @code{comp'} and @code{[comp']}.  You can perform the compilation
-semantics represented by a CT with @code{execute}:
+@code{' word compile,} は解釈(interpret)セマンティクスをコンパイルします。
+デフォルトのコンパイル・セマンティクスを持つワードの場合、 これはコンパイル・セマンティクスを実行するのと同じです。
+他のワードのコンパイル・セマンティクス(解釈(interpret)セマンティクスを持たない @code{if} などのワード)を表すために、
+Gforth にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワード @code{comp'} と、 @code{[comp']}
+の概念があります。 @code{execute} を使用して、 CT によって表されるコンパイル・セマンティクスを実行できます:
 
 @example
 : foo2 ( n1 n2 -- n )
    [ comp' + execute ] ;
-see foo
+see foo2
 @end example
 
-You can compile the compilation semantics represented by a CT with
-@code{postpone,}:
+@code{postpone,} を使用して、 CT によって表されるコンパイル・セマンティクスをコンパイルできます:
 
 @example
 : foo3 ( -- )
@@ -3530,16 +3433,15 @@ You can compile the compilation semantics represented by a CT with
 see foo3
 @end example
 
-@code{[ comp' word postpone, ]} is equivalent to @code{POSTPONE word}.
-@code{comp'} is particularly useful for words that have no interpretation
-semantics:
+@code{[ comp' word postpone, ]} @code{POSTPONE word} と同等です。  @code{comp'} は、
+解釈(interpret)セマンティクスを持たないワードに対して特に役立ちます:
 
 @example
 ' if
 comp' if .s 2drop
 @end example
 
-Reference: @ref{Tokens for Words}.
+こちらも参照ください: @ref{Tokens for Words}
 
 
 @node Wordlists and Search Order Tutorial, , Compilation Tokens Tutorial, Tutorial
@@ -3547,38 +3449,34 @@ Reference: @ref{Tokens for Words}.
 @cindex wordlists tutorial
 @cindex search order, tutorial
 
-The dictionary is not just a memory area that allows you to allocate memory
-with @code{allot}, it also contains the Forth words, arranged in several
-wordlists.  When searching for a word in a wordlist, conceptually you start
-searching at the youngest and proceed towards older words (in reality most
-systems nowadays use hash-tables); i.e., if you define a word with the same
-name as an older word, the new word shadows the older word.
+ディクショナリ(辞書)は、 @code{allot} でメモリを割り当てることができる、 単なるメモリ領域ではなく、
+複数のワード・リスト(wordlist)上にある Forth ワード達も含まれています。  ワード・リスト内のワードを検索するとき、 概念的には、
+最も新しいワードから検索を開始し、 古いワードに向かって進みます(実際には、 最近のほとんどのシステムはハッシュ・テーブルを使用します)。 つまり、
+古いワードと同一の名前のワードを定義すると、 新しいワードが古いワードを隠します。
 
-Which wordlists are searched in which order is determined by the search
-order.  You can display the search order with @code{order}.  It displays
-first the search order, starting with the wordlist searched first, then it
-displays the wordlist that will contain newly defined words.
+どのワードリストがどの順序で検索されるかは、 検索順序(search order)によって決まります。  @code{order}
+で検索順を表示できます。  まず、 最初に検索されたワード・リスト(wordlist)から始まる検索順序が表示され、
+次に新しく定義されたワードを含むワード・リスト(wordlist)が表示されます:
 
-You can create a new, empty wordlist with @code{wordlist ( -- wid )}:
+@code{wordlist ( -- wid )} を使用して、 新しい空のワード・リスト(wordlist)を作成できます:
 
 @example
 wordlist constant mywords
 @end example
 
-@code{Set-current ( wid -- )} sets the wordlist that will contain newly
-defined words (the @emph{current} wordlist):
+@code{Set-current ( wid -- )} は、 新しく定義されたワードを入れるワード・リストを設定します(the current
+wordlist):
 
 @example
 mywords set-current
 order
 @end example
 
-Gforth does not display a name for the wordlist in @code{mywords} because
-this wordlist was created anonymously with @code{wordlist}.
+このワード・リストは @code{wordlist} を使用して匿名で作成されたため、 Gforth は @code{mywords}
+のワード・リスト名を表示しません。
 
-You can get the current wordlist with @code{get-current ( -- wid)}.  If you
-want to put something into a specific wordlist without overall effect on the
-current wordlist, this typically looks like this:
+@code{get-current ( -- wid)} で現在のワード・リストを取得できます。  現在のワード・リストに影響を与えずに、
+指定のワード・リストに何かを入れたい場合、 通常は以下のようにします:
 
 @example
 get-current mywords set-current ( wid )
@@ -3586,37 +3484,32 @@ create someword
 ( wid ) set-current
 @end example
 
-You can write the search order with @code{set-order ( wid1 .. widn n -- )}
-and read it with @code{get-order ( -- wid1 .. widn n )}.  The first searched
-wordlist is topmost.
+検索順序は @code{set-order ( wid1 .. widn n -- )} で記述し、 @code{get-order ( -- wid1
+.. widn n )} で読み取ることができます。  最初に検索されたワード・リストが最上位(topmost)になります。
 
 @example
 get-order mywords swap 1+ set-order
 order
 @end example
 
-Yes, the order of wordlists in the output of @code{order} is reversed from
-stack comments and the output of @code{.s} and thus unintuitive.
+ええ、 @code{order} の出力内のワードリストの順序は、 スタック・コメントや @code{.s} の出力とは逆になっているため、
+直感的ではありません。
 
 @quotation 研究課題(assignment)
-Define @code{>order ( wid -- )} which adds @code{wid} as first searched
-wordlist to the search order.  Define @code{previous ( -- )}, which removes
-the first searched wordlist from the search order.  Experiment with boundary
-conditions (you will see some crashes or situations that are hard or
-impossible to leave).
+@code{>order ( wid -- )} を定義して、 最初に検索されるワード・リスト(wordlist)として @code{wid}
+を検索順序に追加してみましょう。 @code{previous ( -- )} を定義してみましょう。 これは、
+最初に検索されたワードリスト(wordlist)を検索順序から削除(search order)するものです。 定義したら、
+境界条件を試してみましょう(クラッシュや、 そこから抜け出すことが困難または不可能な状況がいくつか見られる事でしょう)。
 @end quotation
 
-The search order is a powerful foundation for providing features similar to
-Modula-2 modules and C++ namespaces.  However, trying to modularize programs
-in this way has disadvantages for debugging and reuse/factoring that
-overcome the advantages in my experience (I don't do huge projects,
-though).  These disadvantages are not so clear in other
-languages/programming environments, because these languages are not so
-strong in debugging and reuse.
+検索順序(search order)は、 Modula-2 モジュールや、 C++ の名前空間と同様の機能を提供するための強力な基盤です。  ただし、
+この方法でプログラムをモジュール化しようとすると、 デバッグや 再利用/ファクタリング に関しては、
+(大規模なプロジェクトの経験はありませんけれども、)私の経験では利点を上回る欠点があります。  他の言語/プログラミング環境では、
+デバッグや再利用がそれほど強力ではないため、 これらの欠点はそれほど目立ちません。
 
 @c !! example
 
-Reference: @ref{Word Lists}.
+こしらも参照ください: @ref{Word Lists}
 
 @c ******************************************************************
 @node Introduction, Literals in source code, Tutorial, Top
@@ -13013,7 +12906,7 @@ it is Evil and How to Exorcise it}}, EuroForth '98.}!
 This section describes the creation and use of tokens that represent words.
 
 @menu
-* Execution token::          実行(execution)/解釈(interpretation) 
+* Execution token::          実行(execution)/インタプリタ(interpretation) 
                                セマンティクス
 * Name token::               名前付きワード
 * Compilation token::        コンパイル・セマンティクス

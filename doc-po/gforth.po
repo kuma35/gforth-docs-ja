@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gforth-docs-ja 0.0\n"
 "POT-Creation-Date: 2024-05-08 04:43+0900\n"
-"PO-Revision-Date: 2024-05-18 13:28+0900\n"
+"PO-Revision-Date: 2024-05-27 23:19+0900\n"
 "Last-Translator: kuma35\n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -276,7 +276,7 @@ msgstr "Error messages"
 #. type: menuentry
 #: ../doc/gforth.texi:156
 msgid "How to interpret them"
-msgstr "エラーメッセージをどのようにして解釈すればいいのか"
+msgstr "エラーメッセージをどのように読み解けばいいのか"
 
 #. type: node
 #: ../doc/gforth.texi:156 ../doc/gforth.texi:526 ../doc/gforth.texi:28433
@@ -1483,7 +1483,7 @@ msgstr "Execution token"
 #. type: menuentry
 #: ../doc/gforth.texi:349 ../doc/gforth.texi:13259
 msgid "represents execution/interpretation semantics"
-msgstr "実行(execution)/解釈(interpretation) セマンティクス"
+msgstr "実行(execution)/インタプリタ(interpretation) セマンティクス"
 
 #. type: node
 #: ../doc/gforth.texi:349 ../doc/gforth.texi:13259 ../doc/gforth.texi:13261
@@ -3354,7 +3354,7 @@ msgstr "gforth [file | -e forth-code] ...\n"
 msgid ""
 "This interprets the contents of the files and the Forth code in the order "
 "they are given."
-msgstr "これにより、 ファイルの内容や、 (訳注:コマンドラインに記述された、) Forth コードが、 指定の順序で解釈実行(interpret)されます。"
+msgstr "これにより、 ファイルの内容や、 (訳注:コマンドラインに記述された、) Forth コードが、 指定の順序で解釈(interpret)されます。"
 
 #. type: table
 #: ../doc/gforth.texi:809
@@ -5105,6 +5105,7 @@ msgstr "一般に、 ワードはスタック引数を消費します(@code{.s} 
 msgid "Assignment"
 msgstr "研究課題(assignment)"
 
+# 5 6 7 . .s 7 <2> 5 6  ok 2
 #. type: quotation
 #: ../doc/gforth.texi:1593
 msgid "What does the stack contain after @code{5 6 7 .}?"
@@ -5175,6 +5176,34 @@ msgstr ""
 "3 4 + 5 * .\n"
 "3 4 5 * + .\n"
 
+# 3 4 + 5 * .
+# → (3 + 4) * 5
+#
+# 3 4 5 * + .
+# → 3 + (4 * 5)
+#
+# 6-7*8+9
+# ※優先順位なし →
+# 6 7 - 8 * 9 + . 1  ok
+# 先に置数してから計算
+# 6 7 8 9
+# 2swap .s <4> 8 9 6 7  ok 4
+# -     .s <3> 8 9 -1  ok 3
+# rot   .s <3> 9 -1 8  ok 3
+# *     .s <2> 9 -8  ok 2
+# +     .s <1> 1  ok 1
+# . 1  ok
+#
+# ※優先順位あり 6-(7*8)+9 →
+# 先に置数してから計算
+# 6 7 8 9  ok 4
+# rot rot .s <4> 6 9 7 8  ok 4
+# * .s       <3> 6 9 56  ok 3
+# rot .s     <3> 9 56 6  ok 3
+# swap .s    <3> 9 6 56  ok 3
+# - .s       <2> 9 -50  ok 2
+# + .s       <1> -41  ok 1
+# . -41  ok
 #. type: quotation
 #: ../doc/gforth.texi:1628
 msgid ""
@@ -5194,6 +5223,13 @@ msgstr "符号を変更するには、 以下のように @code{negate} を使�
 msgid "2 negate .\n"
 msgstr "2 negate .\n"
 
+# -(-3)*4-5
+#
+# -3 4 5 rot negate .s <3> 4 5 3  ok 3
+# rot               .s <3> 5 3 4  ok 3
+# *                 .s <2> 5 12  ok 2
+# swap -            .s <1> 7  ok 1
+# . 7  ok
 #. type: quotation
 #: ../doc/gforth.texi:1638
 msgid "Convert -(-3)*4-5 to Forth."
@@ -5276,6 +5312,21 @@ msgstr ""
 "1 2 .s nip .s drop\n"
 "1 2 .s tuck .s 2drop drop\n"
 
+# / nip ( n1 n2 -- n2 )<
+#
+# : my-nip  ( n1 n2 -- n2 )  compiled
+#   swap drop ;  ok 1
+#
+# 1 2 .s nip .s drop <2> 1 2 <1> 2  ok
+# 1 2 .s my-nip .s drop <2> 1 2 <1> 2  ok
+#
+# / tuck ( n1 n2 -- n2 n1 n2 )
+# 1 2 .s tuck .s 2drop drop <2> 1 2 <3> 2 1 2  ok
+# : my-tuck  ( n1 n2 -- n2 n1 n2)  compiled
+#   dup -rot ;  ok
+# 1 2 .s my-tuck .s 2drop drop <2> 1 2 <3> 2 1 2  ok
+#
+#   
 #. type: quotation
 #: ../doc/gforth.texi:1680
 msgid ""
@@ -5283,6 +5334,18 @@ msgid ""
 "manipulation words."
 msgstr "@code{nip} と @code{tuck} を他のスタック操作ワードの組み合わせに置き換えてみましょう。"
 
+# ( 訳注: 正解はこれだけではないが一例として
+# 1 2 3           3 2 1  ( rot rot swap ) ( -rot swap )
+# 1 2 3           1 2 3 2  \ over
+# 1 2 3           1 2 3 3  \ dup
+# 1 2 3           1 3 3  ( swap drop dup ) ( nip swap )
+# 1 2 3           2 1 3  \ rot swap
+# 1 2 3 4         4 3 2 1  \ swap 2swap swap
+# 1 2 3           1 2 3 1 2 3  \ third third third
+# 1 2 3 4         1 2 3 4 1 2  \ 2over 
+# 1 2 3                        \ 2drop drop
+# 1 2 3           1 2 3 4  \ dup 1+
+# 1 2 3           1 3  \ swap drop
 #. type: example
 #: ../doc/gforth.texi:1694
 #, no-wrap
@@ -5313,33 +5376,33 @@ msgstr ""
 "1 2 3\n"
 "1 2 3           1 2 3 4\n"
 "1 2 3           1 3\n"
-"( 訳注: 正解はこれだけではないが一例として\n"
-"1 2 3           3 2 1  \\ rot rot swap\n"
-"1 2 3           1 2 3 2  \\ over\n"
-"1 2 3           1 2 3 3  \\ dup\n"
-"1 2 3           1 3 3  \\ swap drop dup\n"
-"1 2 3           2 1 3  \\ -rot swap rot\n"
-"1 2 3 4         4 3 2 1  \\ swap 2swap swap\n"
-"1 2 3           1 2 3 1 2 3  \\ third third third\n"
-"1 2 3 4         1 2 3 4 1 2  \\ 2over \n"
-"1 2 3                        \\ 2drop drop\n"
-"1 2 3           1 2 3 4  \\ dup 1+\n"
-"1 2 3           1 3  \\ swap drop\n"
-")\n"
 
 #. type: example
 #: ../doc/gforth.texi:1699
 #, no-wrap
 msgid "5 dup * .\n"
-msgstr "5 dup * . \\ 5^2 を 出力\n"
+msgstr "5 dup * . \\ 5^2\n"
 
+# 17^3
+# 17 dup dup * * . 4913  ok
+#
+# 17^4
+# 17 dup 2dup .s * * * . <4> 17 17 17 17 83521  ok
+#
+# \ (a-b)(a+1)
+# 3 4 over 1+ .s <3> 3 4 4  ok 3
+# -rot        .s <3> 4 3 4  ok 3
+# -           .s <2> 4 -1  ok 2
+# *           .s <1> -4  ok 1
+# . -4  ok
+#
 #. type: quotation
 #: ../doc/gforth.texi:1706
 msgid ""
 "Write 17^3 and 17^4 in Forth, without writing @code{17} more than once.  "
 "Write a piece of Forth code that expects two numbers on the stack (@var{a} "
 "and @var{b}, with @var{b} on top) and computes @code{(a-b)(a+1)}."
-msgstr "@code{17} を複数回書かずに、 Forth で 17^3 と 17^4 を書いてみましょう。 また、 スタック上の 2 つの数値 (@var{a} と @var{b}、 スタック・トップ @var{b} とする) を想定し、@code{(a-b)(a+1)} を計算する Forth コードを作成してみましょう。 "
+msgstr "@code{17} を複数回書かずに、 Forth で 17^3 と 17^4 を書いてみましょう。 また、 スタック上の 2 つの数値 (@var{a} と @var{b}、 スタック頂上を @var{b} とする) を想定し、@code{(a-b)(a+1)} を計算する Forth コードを作成してみましょう。 "
 
 #. type: table
 #: ../doc/gforth.texi:1709
@@ -5610,6 +5673,17 @@ msgstr ""
 "   squared squared ;\n"
 "3 fourth-power .\n"
 
+# : my-/mod  ( n1 n2 -- n3 n4 : my /mod )
+#   2dup /
+#   tuck
+#   *
+#   rot
+#   swap -
+#   swap
+# ;
+#
+# 22 4 /mod .s 2drop <2> 2 5  ok
+# 22 4 my-/mod .s 2drop <2> 2 5  ok
 #. type: quotation
 #: ../doc/gforth.texi:1831
 msgid ""
@@ -5617,7 +5691,7 @@ msgid ""
 "@code{/mod} in terms of other Forth words, and check if they work (hint: "
 "test your tests on the originals first).  Don't let the "
 "@samp{redefined}-Messages spook you, they are just warnings."
-msgstr "@code{nip} や @code{tuck} や @code{negate} や @code{/mod} のコロン定義を他の Forth ワードで記述し、 それらが機能するかどうかを確認してみましょう (ヒント: 最初にオリジナルであなたの作成したテストコードをテストして結果を確認してから、 その後あなたが定義して、 再度テストして結果を比較しましょう)。 @samp{redefine} メッセージに驚かないでください。 これらは単なる警告です。 (訳注: redefine; 同じ名前のワードを定義したという警告。 置き換えではなく追加となる。 これ以降の解釈・コンパイルは新しい方のワードを参照するが、 通常は新しい方のワード定義後も、 既にコンパイル済みのワードは古い方のワードを参照しつづける。 詳しくはディクショナリ等の項目を参照)"
+msgstr "@code{nip} や @code{tuck} や @code{negate} や @code{/mod} のコロン定義を他の Forth ワードで記述し、 それらが機能するかどうかを確認してみましょう (ヒント: 最初にオリジナルであなたの作成したテストコードをテストして結果を確認してから、 その後あなたが定義して、 再度テストして結果を比較しましょう)。 @samp{redefine} メッセージに驚かないでください。 これらは単なる警告です。 (訳注: redefine; 同じ名前のワードを定義したという警告。 置き換えではなく追加となる。 これ以降の解釈(interpret)・コンパイルは新しい方のワードを参照するが、 通常は新しい方のワード定義後も、 既にコンパイル済みのワードは古い方のワードを参照しつづける。 詳しくはディクショナリ等の項目を参照)"
 
 #. type: table
 #: ../doc/gforth.texi:1834
@@ -6002,7 +6076,7 @@ msgstr "符号付きのバリエーションと符号なしのバリエーショ
 msgid ""
 "Forth does not perform type checking, neither at compile time, nor at run "
 "time.  If you use the wrong operation, the data are interpreted incorrectly:"
-msgstr "Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、 データが正しく解釈されません:"
+msgstr "Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、 データが正しく解釈(interpret)されません:"
 
 #. type: example
 #: ../doc/gforth.texi:1986
@@ -6214,6 +6288,11 @@ msgid ""
 "@file{compat/anslocal.fs} first)."
 msgstr "(あなたの Forth システムがこの構文をサポートしていない場合は、  最初に @file{compat/anslocal.fs} をインクルードしてください)"
 
+# : locals-and-others ( n1 n2 n3 n4 -- n5 )
+#   { n3 n4 }
+#   +
+# ;
+# 1 2 3 4 locals-and-others .s <1> 3  ok 1
 #. type: table
 #: ../doc/gforth.texi:2105
 msgid ""
@@ -6222,7 +6301,7 @@ msgid ""
 "stack element in @code{a}.  @code{--} starts a comment ending with "
 "@code{@}}.  After the locals definition, using the name of the local will "
 "push its value on the stack.  You can omit the comment part (@code{-- b a}):"
-msgstr "この例では、 @code{@{ a b -- b a @}} がローカルズ定義です。 スタックから 2 つのセルを取得し、スタック頂上を @code{b} に、 その次のスタック要素を @code{a} にします。 @code{--} は @code{@}} で終わるコメントを開始します。 ローカルズの定義後、 ローカルズの名前を使用すると、 その値がスタックに積まれます。 コメント部分(@code{-- b a})は省略できます:"
+msgstr "この例では、 @code{@{ a b -- b a @}} がローカルズ定義です。 スタックから 2 つのセルを取得し、 スタック頂上を @code{b} に入れ、 その次のスタック要素を @code{a} に入れます(訳注: a b はスタック上から取り除かれる)。 @code{--} は @code{@}} で終わるコメントを開始します。 ローカルズの定義後、 ローカルズの名前を使用すると、 その値がスタックに積まれます。 コメント部分(@code{-- b a})は省略できます:"
 
 #. type: example
 #: ../doc/gforth.texi:2109
@@ -6255,7 +6334,7 @@ msgstr "ローカルズを使用すると、 スタックの問題に遭遇す�
 #. type: quotation
 #: ../doc/gforth.texi:2123
 msgid "Rewrite your definitions until now with locals"
-msgstr "ここまでのあなたの定義をローカルズを使ってで書き換えてみましょう。"
+msgstr "ここまでのあなたの定義をローカルズを使って書き換えてみましょう。"
 
 #. type: table
 #: ../doc/gforth.texi:2126
@@ -6375,6 +6454,15 @@ msgstr ""
 "2 3 min .\n"
 "3 2 min .\n"
 
+# : my-min  ( n1 n2 -- n : my min )
+#     2dup > if
+# 	swap
+#     endif
+#     drop
+# ;
+#
+# 2 3 my-min . cr ( expect 2 )
+# 3 2 my-min . cr ( expect 2 )
 #. type: quotation
 #: ../doc/gforth.texi:2182
 msgid ""
@@ -6418,7 +6506,7 @@ msgid ""
 "canonical true-flag all bits are set (-1 as a twos-complement signed "
 "integer); in many contexts (e.g., @code{if}) any non-zero value is treated "
 "as true flag."
-msgstr "false フラグはすべてのビットがクリアです(整数として解釈される場合は 0)。 正規化された true フラグは、 すべてのビットがセットされています(2の補数の符号付き整数として -1)。 多くの文脈(例: @code{if})では、ゼロ以外の値はすべて true フラグとして扱われます。"
+msgstr "false フラグはすべてのビットがクリアです(整数として解釈(interpret)される場合は 0)。 正規化された true フラグは、 すべてのビットがセットされています(2の補数の符号付き整数として -1)。 多くの文脈(例: @code{if})では、ゼロ以外の値はすべて true フラグとして扱われます。"
 
 #. type: example
 #: ../doc/gforth.texi:2201
@@ -6592,6 +6680,17 @@ msgstr ""
 "0 foo .\n"
 "1 foo .\n"
 
+# : my-min-if-less  ( n1 n2 -- n3 ; my min by less if )
+#     { a b }
+#     a a b < and
+#     b a b < 0= and
+#     +
+# ;
+#
+# 3 2 min .s drop cr
+# 2 3 min .s drop cr
+# 3 2 my-min-if-less .s drop cr
+# 2 3 my-min-if-less .s drop cr
 #. type: quotation
 #: ../doc/gforth.texi:2286
 msgid "Write @code{min} without @code{if}."
@@ -6758,6 +6857,7 @@ msgid ""
 "@code{begin}, otherwise after the @code{until}."
 msgstr "@code{Until} はフラグを消費します。 フラグがゼロの場合は @code{begin} から実行が継続され、 それ以外の場合は @code{until} の後から実行が継続されます。"
 
+# ヒント：ユークリッド互除法
 #. type: quotation
 #: ../doc/gforth.texi:2367
 msgid "Write a definition for computing the greatest common divisor."
@@ -7247,7 +7347,7 @@ msgstr "こちらも参照ください: @ref{Return stack}"
 #: ../doc/gforth.texi:2581 ../doc/gforth.texi:2695 ../doc/gforth.texi:2759
 #, no-wrap
 msgid "Characters and Strings Tutorial"
-msgstr ""
+msgstr "Characters and Strings Tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:2583
@@ -7258,13 +7358,13 @@ msgstr "memory access/allocation tutorial"
 #. type: table
 #: ../doc/gforth.texi:2586
 msgid "You can create a global variable @code{v} with"
-msgstr ""
+msgstr "以下使用してグローバル変数 @code{v} を作成できます:"
 
 #. type: example
 #: ../doc/gforth.texi:2589
 #, no-wrap
 msgid "variable v ( -- addr )\n"
-msgstr ""
+msgstr "variable v ( -- addr )\n"
 
 #. type: table
 #: ../doc/gforth.texi:2595
@@ -7273,7 +7373,7 @@ msgid ""
 "reserved by @code{variable}.  You can use @code{!} (store) to store values "
 "from the stack into this cell and @code{@@} (fetch) to load the value from "
 "memory onto the stack:"
-msgstr ""
+msgstr "@code{v} は、スタックにメモリ内の、とあるセルのアドレスをプッシュします。 このセルは @code{variable} によって予約されています。 @code{!}(ストア)を使用してスタックからこのセルに値を保存し、 @code{@@}(フェッチ)を使用して値をメモリからスタックにロードできます:"
 
 #. type: example
 #: ../doc/gforth.texi:2600
@@ -7283,17 +7383,20 @@ msgid ""
 "5 v ! .s\n"
 "v @@ .\n"
 msgstr ""
+"v .\n"
+"5 v ! .s\n"
+"v @@ .\n"
 
 #. type: table
 #: ../doc/gforth.texi:2603
 msgid "You can see a raw dump of memory with @code{dump}:"
-msgstr ""
+msgstr "@code{dump} を使用すると、 メモリの生のダンプ(メモリー・ダンプ)を確認できます:"
 
 #. type: example
 #: ../doc/gforth.texi:2606
 #, no-wrap
 msgid "v 1 cells .s dump\n"
-msgstr ""
+msgstr "v 1 cells .s dump\n"
 
 #. type: table
 #: ../doc/gforth.texi:2611
@@ -7301,7 +7404,7 @@ msgid ""
 "@code{Cells ( n1 -- n2 )} gives you the number of bytes (or, more generally, "
 "address units (aus)) that @code{n1 cells} occupy.  You can also reserve more "
 "memory:"
-msgstr ""
+msgstr "@code{Cells ( n1 -- n2 )} は、 n1 個のセル が占めるバイト数(より一般的にはアドレス単位(address units)(aus))を与えます。 そして、 あなたは、 さらに多くのメモリを予約することもできます:"
 
 #. type: example
 #: ../doc/gforth.texi:2615
@@ -7310,6 +7413,8 @@ msgid ""
 "create v2 20 cells allot\n"
 "v2 20 cells dump\n"
 msgstr ""
+"create v2 20 cells allot\n"
+"v2 20 cells dump\n"
 
 #. type: table
 #: ../doc/gforth.texi:2621
@@ -7317,7 +7422,7 @@ msgid ""
 "creates a variable-like word @code{v2} and reserves 20 uninitialized cells; "
 "the address pushed by @code{v2} points to the start of these 20 cells "
 "(@pxref{CREATE}).  You can use address arithmetic to access these cells:"
-msgstr ""
+msgstr "変数のようなワード @code{v2} を作成し、 20 個の初期化されていないセルを予約します。 @code{v2} によってプッシュされたアドレスは、 これら 20 個のセルの先頭を指します(@pxref{CREATE})。 あなたは、 アドレス演算を使用して、 これらのセルにアクセスできます:"
 
 #. type: example
 #: ../doc/gforth.texi:2625
@@ -7326,11 +7431,13 @@ msgid ""
 "3 v2 5 cells + !\n"
 "v2 20 cells dump\n"
 msgstr ""
+"3 v2 5 cells + !\n"
+"v2 20 cells dump\n"
 
 #. type: table
 #: ../doc/gforth.texi:2628
 msgid "You can reserve and initialize memory with @code{,}:"
-msgstr ""
+msgstr "@code{,} を使用してメモリを予約 かつ 初期化できます:"
 
 #. type: example
 #: ../doc/gforth.texi:2636
@@ -7343,6 +7450,12 @@ msgid ""
 "v3 2 cells + @@ .\n"
 "v3 5 cells dump\n"
 msgstr ""
+"create v3\n"
+"  5 , 4 , 3 , 2 , 1 ,\n"
+"v3 @@ .\n"
+"v3 cell+ @@ .\n"
+"v3 2 cells + @@ .\n"
+"v3 5 cells dump\n"
 
 #. type: quotation
 #: ../doc/gforth.texi:2642
@@ -7350,7 +7463,7 @@ msgid ""
 "Write a definition @code{vsum ( addr u -- n )} that computes the sum of "
 "@code{u} cells, with the first of these cells at @code{addr}, the next one "
 "at @code{addr cell+} etc."
-msgstr ""
+msgstr "最初のセルは @code{addr} 、 次のセルは @code{addr cell+} などとして、 @code{u} 個のセルの値の合計を計算する定義 @code{vsum ( addr u -- n )} を記述してみましょう。"
 
 #. type: table
 #: ../doc/gforth.texi:2647
@@ -7358,12 +7471,12 @@ msgid ""
 "The difference between @code{variable} and @code{create} is that "
 "@code{variable} allots a cell, and that you cannot allot additional memory "
 "to a variable in standard Forth."
-msgstr ""
+msgstr "@code{variable} と @code{create} の違いは、@code{variable} がセルを割り当てる(allots)ことと、 標準 Forth では変数(variable)に追加のメモリを割り当てることができないことです。"
 
 #. type: table
 #: ../doc/gforth.texi:2649
 msgid "You can also reserve memory without creating a new word:"
-msgstr ""
+msgstr "新しいワードを作成せずにメモリを予約することもできます:"
 
 #. type: example
 #: ../doc/gforth.texi:2653
@@ -7372,6 +7485,8 @@ msgid ""
 "here 10 cells allot .\n"
 "here .\n"
 msgstr ""
+"here 10 cells allot .\n"
+"here .\n"
 
 #. type: table
 #: ../doc/gforth.texi:2659
@@ -7380,7 +7495,7 @@ msgid ""
 "second @code{here} the address after the dictionary area.  You should store "
 "the start address somewhere, or you will have a hard time finding the memory "
 "area again."
-msgstr ""
+msgstr "最初の @code{here} は(最初の @code{here} 時点の)ディクショナリ領域の後のアドレスをプッシュし、 メモリ領域の開始アドレスとして使い、 2 番目の @code{here} は(2 番目の @code{here} 時点の)ディクショナリ領域の後のアドレスをプッシュします。 この開始アドレスはどこかに保存する必要があります。 そうしないと、 あなたはこのメモリ領域を再度見つけるのが困難になります。"
 
 #. type: table
 #: ../doc/gforth.texi:2664
@@ -7389,7 +7504,7 @@ msgid ""
 "system's data structures for words etc. on Gforth and most other Forth "
 "systems.  It is managed like a stack: You can free the memory that you have "
 "just @code{allot}ed with"
-msgstr ""
+msgstr "@code{Allot} はディクショナリ・メモリを管理します。 ディクショナリ・メモリには、 Gforth や他のほとんどの Forth システムの、 ワードなどのシステムのデータ構造が含まれています。 これはスタックのように管理されます。 あなたは以下のようにして割り当て(@code{allot})したメモリを解放できます:"
 
 #. type: example
 #: ../doc/gforth.texi:2668
@@ -7398,6 +7513,8 @@ msgid ""
 "-10 cells allot\n"
 "here .\n"
 msgstr ""
+"-10 cells allot\n"
+"here .\n"
 
 #. type: table
 #: ../doc/gforth.texi:2673
@@ -7405,14 +7522,14 @@ msgid ""
 "Note that you cannot do this if you have created a new word in the meantime "
 "(because then your @code{allot}ed memory is no longer on the top of the "
 "dictionary ``stack'')."
-msgstr ""
+msgstr "注意: その合間に新しいワードを作成した場合、 それを実行できないことに注意してください(@code{allot} で作成されたメモリが、 もはやディクショナリ「スタック」の頂上ではなくなるため)。"
 
 #. type: table
 #: ../doc/gforth.texi:2676
 msgid ""
 "Alternatively, you can use @code{allocate} and @code{free} which allow "
 "freeing memory in any order:"
-msgstr ""
+msgstr "その代わりに、 @code{allocate} や @code{free} を使用すると、 任意の順序でメモリを解放できます:"
 
 #. type: example
 #: ../doc/gforth.texi:2683
@@ -7424,11 +7541,16 @@ msgid ""
 "free throw\n"
 "free throw\n"
 msgstr ""
+"10 cells allocate throw .s\n"
+"20 cells allocate throw .s\n"
+"swap\n"
+"free throw\n"
+"free throw\n"
 
 #. type: table
 #: ../doc/gforth.texi:2686
 msgid "The @code{throw}s deal with errors (e.g., out of memory)."
-msgstr ""
+msgstr "@code{throw} はエラー(メモリ不足など)を処理します。"
 
 #. type: table
 #: ../doc/gforth.texi:2691
@@ -7437,24 +7559,24 @@ msgid ""
 "@uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip, "
 "garbage collector}, which eliminates the need to @code{free} memory "
 "explicitly."
-msgstr ""
+msgstr "また、 @uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip, ガベージ・コレクター} なら、 メモリを明示的に解放(@code{free})する必要がなくなります。"
 
 #. type: table
 #: ../doc/gforth.texi:2693
 msgid "Reference: @ref{Memory}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Memory}"
 
 #. type: node
 #: ../doc/gforth.texi:2695 ../doc/gforth.texi:2759 ../doc/gforth.texi:2798
 #, no-wrap
 msgid "Alignment Tutorial"
-msgstr ""
+msgstr "Alignment Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:2696
 #, no-wrap
 msgid "Characters and Strings"
-msgstr ""
+msgstr "Characters and Strings"
 
 #. type: cindex
 #: ../doc/gforth.texi:2697
@@ -7474,7 +7596,7 @@ msgid ""
 "On the stack characters take up a cell, like numbers.  In memory they have "
 "their own size (one 8-bit byte on most systems), and therefore require their "
 "own words for memory access:"
-msgstr ""
+msgstr "スタック上では、 数と同様に文字がセルを占めます。 メモリ内では文字は独自のサイズ(ほとんどのシステムでは 8 ビットのバイト値)であるため、 メモリ・アクセスには文字独自のワードが必要です:"
 
 #. type: example
 #: ../doc/gforth.texi:2709
@@ -7496,18 +7618,18 @@ msgid ""
 "The preferred representation of strings on the stack is @code{addr u-count}, "
 "where @code{addr} is the address of the first character and @code{u-count} "
 "is the number of characters in the string."
-msgstr ""
+msgstr "スタック上の文字列の推奨される表現は @code{addr u-count} です。ここで、@code{addr} は文字列の最初の文字のアドレスで、 @code{u-count} は文字列の文字数です。"
 
 #. type: example
 #: ../doc/gforth.texi:2717
 #, no-wrap
 msgid "v4 5 type\n"
-msgstr ""
+msgstr "v4 5 type\n"
 
 #. type: table
 #: ../doc/gforth.texi:2720
 msgid "You get a string constant with"
-msgstr ""
+msgstr "以下を使用すると文字列定数を取得できます"
 
 #. type: example
 #: ../doc/gforth.texi:2724
@@ -7516,6 +7638,8 @@ msgid ""
 "s\" hello, world\" .s\n"
 "type\n"
 msgstr ""
+"s\" hello, world\" .s\n"
+"type\n"
 
 #. type: table
 #: ../doc/gforth.texi:2729
@@ -7523,7 +7647,7 @@ msgid ""
 "Make sure you have a space between @code{s\"} and the string; @code{s\"} is "
 "a normal Forth word and must be delimited with white space (try what happens "
 "when you remove the space)."
-msgstr ""
+msgstr "@code{s\"} と文字列の間にスペースがあることを確かめてください。 @code{s\"} は通常の Forth ワードであり、 空白(white space)で区切る必要があります(スペースを削除するとどうなるかを試してみましょう)。"
 
 #. type: table
 #: ../doc/gforth.texi:2734
@@ -7531,8 +7655,12 @@ msgid ""
 "However, this interpretive use of @code{s\"} is quite restricted: the string "
 "exists only until the next call of @code{s\"} (some Forth systems keep more "
 "than one of these strings, but usually they still have a limited lifetime)."
-msgstr ""
+msgstr "ただし、 この @code{s\"} のインタプリタでの使用(interpretive use)は非常に制限されています。 文字列は、 @code{s\"} が次に呼び出されるまでの間だけ存在します(一部の Forth システムはこれらの文字列を複数保持しますが、 普通は未だ限られた寿命です)。"
 
+# gforth はエラーにならない
+# s" hello," s" world" .s <4> 94542410621392 6 94542410653696 5  ok 4
+# type world ok 2
+# type hello, ok
 #. type: example
 #: ../doc/gforth.texi:2739
 #, no-wrap
@@ -7541,13 +7669,16 @@ msgid ""
 "type\n"
 "type\n"
 msgstr ""
+"s\" hello,\" s\" world\" .s\n"
+"type\n"
+"type\n"
 
 #. type: table
 #: ../doc/gforth.texi:2743
 msgid ""
 "You can also use @code{s\"} in a definition, and the resulting strings then "
 "live forever (well, for as long as the definition):"
-msgstr ""
+msgstr "あなたは定義内で @code{s\"} を使用することもでき、 (定義が続く限り、)その結果の文字列は永久に存続します:"
 
 #. type: example
 #: ../doc/gforth.texi:2749
@@ -7558,30 +7689,34 @@ msgid ""
 "type\n"
 "type\n"
 msgstr ""
+": foo s\" hello,\" s\" world\" ;\n"
+"foo .s\n"
+"type\n"
+"type\n"
 
 #. type: quotation
 #: ../doc/gforth.texi:2754
 msgid ""
 "@code{Emit ( c -- )} types @code{c} as character (not a number).  Implement "
 "@code{type ( addr u -- )}."
-msgstr ""
+msgstr "@code{Emit ( c -- )} は @code{c} を(数値ではなく)文字として出力します。 これを使って @code{type ( addr u -- )} を実装してみましょう。"
 
 #. type: table
 #: ../doc/gforth.texi:2757
 msgid "Reference: @ref{Memory Blocks}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Memory Blocks}"
 
 #. type: node
 #: ../doc/gforth.texi:2759 ../doc/gforth.texi:2798 ../doc/gforth.texi:2881
 #, no-wrap
 msgid "Floating Point Tutorial"
-msgstr ""
+msgstr "Floating Point Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:2760
 #, no-wrap
 msgid "Alignment"
-msgstr ""
+msgstr "Alignment"
 
 #. type: cindex
 #: ../doc/gforth.texi:2761
@@ -7601,7 +7736,7 @@ msgid ""
 "On many processors cells have to be aligned in memory, if you want to access "
 "them with @code{@@} and @code{!} (and even if the processor does not require "
 "alignment, access to aligned cells is faster)."
-msgstr ""
+msgstr "多くのプロセッサでは、 @code{@@} と @code{!} を使用してセルにアクセスする場合、 メモリ内でセ​​ルをアライメントする必要があります (プロセッサがアライメントを必要としない場合でも、 アライメントされたセルへのアクセスは高速です)。"
 
 #. type: table
 #: ../doc/gforth.texi:2773
@@ -7611,7 +7746,7 @@ msgid ""
 "memory produced by @code{allocate} starts at an aligned address.  Adding a "
 "number of @code{cells} to an aligned address produces another aligned "
 "address."
-msgstr ""
+msgstr "@code{Create} は @code{here}(つまり、 次の割り当てが行われる場所、 そして@code{create}されたワードが指す場所)でアライメントします。 同様に、 @code{allocate}によって生成されたメモリはアライメントしたアドレスから始まります。 アライメントしたアドレスに @code{cells} の数値 を足すと、 次のアライメントされたアドレスが生成されます。"
 
 #. type: table
 #: ../doc/gforth.texi:2777
@@ -7619,7 +7754,7 @@ msgid ""
 "However, address arithmetic involving @code{char+} and @code{chars} can "
 "create an address that is not cell-aligned.  @code{Aligned ( addr -- a-addr "
 ")} produces the next aligned address:"
-msgstr ""
+msgstr "ただし、 @code{char+} および @code{chars} を含むアドレス演算では、セルにアライメントしていないアドレスが作成される可能性があります。 @code{Aligned ( addr -- a-addr )} は、 その次のアライメントせされたアドレスを生成します:"
 
 #. type: example
 #: ../doc/gforth.texi:2781
@@ -7628,11 +7763,13 @@ msgid ""
 "v3 char+ aligned .s @@ .\n"
 "v3 char+ .s @@ .\n"
 msgstr ""
+"v3 char+ aligned .s @@ .\n"
+"v3 char+ .s @@ .\n"
 
 #. type: table
 #: ../doc/gforth.texi:2785
 msgid "Similarly, @code{align} advances @code{here} to the next aligned address:"
-msgstr ""
+msgstr "同様に、 @code{align} は @code{here} を次のアライメントされたアドレスに進めます:"
 
 #. type: example
 #: ../doc/gforth.texi:2791
@@ -7643,24 +7780,28 @@ msgid ""
 "align here .\n"
 "1000 ,\n"
 msgstr ""
+"create v5 97 c,\n"
+"here .\n"
+"align here .\n"
+"1000 ,\n"
 
 #. type: table
 #: ../doc/gforth.texi:2795
 msgid ""
 "Note that you should use aligned addresses even if your processor does not "
 "require them, if you want your program to be portable."
-msgstr ""
+msgstr "注意: プログラムを移植可能にしたい場合は、 プロセッサがそれらを必要としない場合でも、 アライメントれたアドレスを使用する必要があることに注意してください。"
 
 #. type: table
 #: ../doc/gforth.texi:2797
 msgid "Reference: @ref{Address arithmetic}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Address arithmetic}"
 
 #. type: node
 #: ../doc/gforth.texi:2798 ../doc/gforth.texi:2881 ../doc/gforth.texi:3002
 #, no-wrap
 msgid "Files Tutorial"
-msgstr ""
+msgstr "Files Tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:2800
@@ -7679,7 +7820,7 @@ msgstr "FP tutorial"
 msgid ""
 "Floating-point (FP) numbers and arithmetic in Forth works mostly as one "
 "might expect, but there are a few things worth noting:"
-msgstr ""
+msgstr "Forth の浮動小数点(floating-point)(FP)の、 数値と算術演算は、 ほぼ期待された通りに機能しますが、 特筆すべき点がいくつかあります:"
 
 #. type: table
 #: ../doc/gforth.texi:2815
@@ -7693,7 +7834,7 @@ msgid ""
 "@uref{https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html,What "
 "Every Computer Scientist Should Know About Floating-Point Arithmetic}, ACM "
 "Computing Surveys 23(1):5@minus{}48, March 1991}."
-msgstr ""
+msgstr "最初の点は Forth に固有のものではありませんが、 非常に重要で、 まだ広く知られていないため、 ここで言及します。 浮動小数点数は実数(real)ではありません。 実数(real)が持ち、 あらゆる種類の数値に期待される多くの性質(算術法則など)は、 浮動小数点数には当てはまりません。 浮動小数点演算したい場合、 浮動小数点演算の問題とその回避方法について学ぶ必要があります。 良い出発点は @cite{David Goldberg, @uref{https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html,What Every Computer Scientist Should Know About Floating-Point Arithmetic}, ACM Computing Surveys 23(1):5@minus{}48, March 1991} です。"
 
 #. type: table
 #: ../doc/gforth.texi:2821
@@ -7703,7 +7844,7 @@ msgid ""
 "many variations in between.  The reason for this is that, for historical "
 "reasons, Forth interprets a decimal point alone (e.g., @code{1.}) as "
 "indicating a double-cell integer.  Examples:"
-msgstr ""
+msgstr "Forth ソース・コードでは、リテラル浮動小数点数には指数が必要です(例: @code{1e0})。これは、 @code{1e} のように短く書くことも、 @code{+1.0e+0} のように長く書くこともでき、 その間にはさまざまなバリエーションがあります。 その理由は、 歴史的な理由により、 Forth は小数点のみ(例: @code{1.}) の数を 2 セル整数を示すものとして解釈(interpret)するためです。 例:"
 
 #. type: example
 #: ../doc/gforth.texi:2824
@@ -7716,7 +7857,7 @@ msgstr "2e 2e f+ f.\n"
 msgid ""
 "Another requirement for literal FP numbers is that the current base is "
 "decimal; with a hex base @code{1e} is interpreted as an integer."
-msgstr ""
+msgstr "リテラル浮動小数点数のもう 1 つの要件は、 現在の基数が 10 進数であることです。 16 進数の @code{1e} は整数として解釈(interpret)されます:"
 
 #. type: table
 #: ../doc/gforth.texi:2834
@@ -7726,7 +7867,7 @@ msgid ""
 "FP values, and vice versa.  Forth has a set of words for manipulating the FP "
 "stack: @code{fdup fswap fdrop fover frot} and (non-standard) @code{fnip "
 "ftuck fpick}."
-msgstr ""
+msgstr "Forth には、Forth-2012 に準拠した浮動小数点数用の別個のスタックがあります。 このモデルの利点の 1 つは、 浮動小数点数にアクセスするときにセルが邪魔にならないこと、 またその逆も同様であることです。 Forth には、 浮動小数点スタック(FP スタック)を操作するためのワードのセットがあります:  @code{fdup fswap fdrop fover frot} や (非標準の、) @code{fnip ftuck fpick}"
 
 #. type: table
 #: ../doc/gforth.texi:2844
@@ -7739,7 +7880,7 @@ msgid ""
 "should use approximate comparison.  Unfortunately, @code{f~}, the standard "
 "word for that purpose, is not well designed, so Gforth provides @code{f~abs} "
 "and @code{f~rel} as well."
-msgstr ""
+msgstr "FP 算術ワードには @code{F} という接頭辞が付きます。 通常の @code{f+ f- f* f/ f** fnegate} のほか、 他の、 関数用の多数のワード (例: @code{fsqrt fsin fln fmin}) があります。 期待されるワードの 1 つが @code{f=} ですが、 @code{f=} は標準にはありません。 浮動小数点数の計算結果は通常不正確であるため、 正確な比較は通常間違いであり、 近似的な比較を使用する必要があります。 残念ながら、この目的のための標準のワードである @code{f~} は適切に設計されていないため、 Gforth では @code{f~abs} と @code{f~rel} も提供しています。"
 
 #. type: table
 #: ../doc/gforth.texi:2852
@@ -7750,12 +7891,12 @@ msgid ""
 "accessing IEEE format single-precision and double-precision numbers in "
 "memory; their main purpose is for accessing external FP data (e.g., that has "
 "been read from or will be written to a file)."
-msgstr ""
+msgstr "そしてもちろん、 メモリ内の浮動小数点数にアクセスするためのワード(@code{f@@ f!})や、 アドレス演算用のワード(@code{floats float+ faligned})もあります。 メモリ内の IEEE 書式の単精度および倍精度数値にアクセスするために、 @code{sf} および @code{df} プレフィックスを付けた、 これらのワードのバリエーションもあります。 その主な目的は、 外部浮動小数点数データ(ファイルから読み取られた、 またはファイルに書き込まれるデータなど)にアクセスすることです。"
 
 #. type: table
 #: ../doc/gforth.texi:2854
 msgid "Here is an example of a dot-product word and its use:"
-msgstr ""
+msgstr "以下は、 ドット出力ワード(dot-product word)とその使用例です:"
 
 #. type: example
 #: ../doc/gforth.texi:2861
@@ -7799,20 +7940,20 @@ msgid ""
 "33(1):30@minus{}39, January 1998}, and see if you can improve your program.  "
 "Finally, find a test case where the original and the improved version "
 "produce different results."
-msgstr ""
+msgstr "二次方程式を解くプログラムを作成してみましょう。 次に、 @cite{Henry G. Baker, @uref{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.4448&rep=rep1&type=pdf,You Could Learn a Lot from a Quadratic}, ACM SIGPLAN Notices, 33(1):30@minus{}39, January 1998} を読んで、 そのプログラムを改善できるかどうか確認してください。 最後に、 元のバージョンと改良されたバージョンで異なる結果が生成されるテスト・ケースを探しましょう。"
 
 #. type: table
 #: ../doc/gforth.texi:2880
 msgid ""
 "Reference: @ref{Floating Point}; @ref{Floating point stack}; @ref{Number "
 "Conversion}; @ref{Memory Access}; @ref{Address arithmetic}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Floating Point}; @ref{Floating point stack}; @ref{Number Conversion}; @ref{Memory Access}; @ref{Address arithmetic}."
 
 #. type: node
 #: ../doc/gforth.texi:2881 ../doc/gforth.texi:3002 ../doc/gforth.texi:3087
 #, no-wrap
 msgid "Interpretation and Compilation Semantics and Immediacy Tutorial"
-msgstr ""
+msgstr "Interpretation and Compilation Semantics and Immediacy Tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:2883
@@ -7825,66 +7966,66 @@ msgstr "files tutorial"
 msgid ""
 "This section gives a short introduction into how to use files inside "
 "Forth. It's broken up into five easy steps:"
-msgstr ""
+msgstr "このセクションでは、 Forth 内でファイルを使用する方法について簡単に説明します。 それは 5 つの簡単なステップに分かれています:"
 
 #. type: item
 #: ../doc/gforth.texi:2889
 #, no-wrap
 msgid "Open an ASCII text file for input"
-msgstr ""
+msgstr "入力用に ASCII テキスト・ファイルを開きます"
 
 #. type: item
 #: ../doc/gforth.texi:2890
 #, no-wrap
 msgid "Open a file for output"
-msgstr ""
+msgstr "出力用にファイルを開く"
 
 #. type: item
 #: ../doc/gforth.texi:2891
 #, no-wrap
 msgid "Read input file until string matches (or some other condition is met)"
-msgstr ""
+msgstr "文字列が一致する (または他の条件が満たされる) まで入力ファイルを読み取ります"
 
 #. type: item
 #: ../doc/gforth.texi:2892
 #, no-wrap
 msgid "Write some lines from input (modified or not) to output"
-msgstr ""
+msgstr "入力 (が変更されたかどうかに関係なく、) から数行を出力に書き込みます"
 
 #. type: item
 #: ../doc/gforth.texi:2893
 #, no-wrap
 msgid "Close the files."
-msgstr ""
+msgstr "ファイルを閉じます。"
 
 #. type: table
 #: ../doc/gforth.texi:2897
 msgid "Reference: @ref{General files}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{General files}"
 
 #. type: subsection
 #: ../doc/gforth.texi:2898
 #, no-wrap
 msgid "Open file for input"
-msgstr ""
+msgstr "Open file for input"
 
 #. type: example
 #: ../doc/gforth.texi:2902
 #, no-wrap
 msgid "s\" foo.in\"  r/o open-file throw Value fd-in\n"
-msgstr ""
+msgstr "s\" foo.in\"  r/o open-file throw Value fd-in\n"
 
 #. type: subsection
 #: ../doc/gforth.texi:2904
 #, no-wrap
 msgid "Create file for output"
-msgstr ""
+msgstr "Create file for output"
 
 #. type: example
 #: ../doc/gforth.texi:2908
 #, no-wrap
 msgid "s\" foo.out\" w/o create-file throw Value fd-out\n"
-msgstr ""
+msgstr "s\" foo.out\" w/o create-file throw Value fd-out\n"
 
 #. type: table
 #: ../doc/gforth.texi:2915
@@ -7894,12 +8035,12 @@ msgid ""
 "too, if you like. All file words return error codes; for most applications, "
 "it's best to pass there error codes with @code{throw} to the outer error "
 "handler."
-msgstr ""
+msgstr "使用可能なファイル・モードは、 読み取り専用アクセスの場合は r/o 、 読み取り/書き込み アクセスの場合は r/w 、書き込み専用アクセスの場合は w/o です。 必要に応じて、 読み取りと書き込みの両方のファイルを r/w で開くこともできます。 すべてのファイル用ワードはエラーコードを返します。 ほとんどのアプリケーションでは、 @code{throw} を使用してエラー・コードを外部のエラー・ハンドラーに渡すのが最善(best)です。"
 
 #. type: table
 #: ../doc/gforth.texi:2917
 msgid "If you want words for opening and assigning, define them as follows:"
-msgstr ""
+msgstr "開いたり(opening)割り当てたり(assigning)するためのワードが必要な場合は、 以下のように定義します:"
 
 #. type: example
 #: ../doc/gforth.texi:2923
@@ -7910,11 +8051,15 @@ msgid ""
 ": open-input ( addr u -- )  r/o open-file throw to fd-in ;\n"
 ": open-output ( addr u -- )  w/o create-file throw to fd-out ;\n"
 msgstr ""
+"0 Value fd-in\n"
+"0 Value fd-out\n"
+": open-input ( addr u -- )  r/o open-file throw to fd-in ;\n"
+": open-output ( addr u -- )  w/o create-file throw to fd-out ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:2926 ../doc/gforth.texi:2964
 msgid "Usage example:"
-msgstr ""
+msgstr "使用例:"
 
 #. type: example
 #: ../doc/gforth.texi:2930
@@ -7923,12 +8068,14 @@ msgid ""
 "s\" foo.in\" open-input\n"
 "s\" foo.out\" open-output\n"
 msgstr ""
+"s\" foo.in\" open-input\n"
+"s\" foo.out\" open-output\n"
 
 #. type: subsection
 #: ../doc/gforth.texi:2932
 #, no-wrap
 msgid "Scan file for a particular line"
-msgstr ""
+msgstr "ファイルの特定の行をスキャン"
 
 #. type: example
 #: ../doc/gforth.texi:2937
@@ -7938,6 +8085,9 @@ msgid ""
 "Create line-buffer  max-line 2 + allot\n"
 "\n"
 msgstr ""
+"256 Constant max-line\n"
+"Create line-buffer  max-line 2 + allot\n"
+"\n"
 
 #. type: example
 #: ../doc/gforth.texi:2948
@@ -7954,6 +8104,16 @@ msgid ""
 "  then\n"
 "  2drop ;\n"
 msgstr ""
+": scan-file ( addr u -- )\n"
+"  begin\n"
+"      line-buffer max-line fd-in read-line throw\n"
+"  while\n"
+"         >r 2dup line-buffer r> compare 0=\n"
+"     until\n"
+"  else\n"
+"     drop\n"
+"  then\n"
+"  2drop ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:2953
@@ -7961,7 +8121,7 @@ msgid ""
 "@code{read-line ( addr u1 fd -- u2 flag ior )} reads up to u1 bytes into the "
 "buffer at addr, and returns the number of bytes read, a flag that is false "
 "when the end of file is reached, and an error code."
-msgstr ""
+msgstr "@code{read-line ( addr u1 fd -- u2 flag ior )} は、 addr からのバッファに最大 u1 バイトを読み取り、 読み取ったバイト数と、 ファイルの終わりに達した場合に false になるフラグと、 エラーコードを返します。"
 
 #. type: table
 #: ../doc/gforth.texi:2958
@@ -7970,7 +8130,7 @@ msgid ""
 "zero if both strings are equal. It returns a positive number if the first "
 "string is lexically greater, a negative if the second string is lexically "
 "greater."
-msgstr ""
+msgstr "@code{compare ( addr1 u1 addr2 u2 -- n )} は 2 つの文字列を比較し、 両方の文字列が等しい場合は 0 を返します。 最初の文字列の方が字句的に大きい(lexically greater)場合は正の数値を返し、 2 番目の文字列の方が字句的に大きい(lexically greater)場合は負の数値を返します。"
 
 #. type: table
 #: ../doc/gforth.texi:2962
@@ -7978,19 +8138,19 @@ msgid ""
 "We haven't seen this loop here; it has two exits. Since the @code{while} "
 "exits with the number of bytes read on the stack, we have to clean up that "
 "separately; that's after the @code{else}."
-msgstr ""
+msgstr "このループは、 まだ見たことがないですよね。 このループは出口が2つあります。  @code{while} はスタック上にある読み取ったバイト数で終了するため、 それを個別にクリーンアップする必要があります。 そのクリーンアップする部分は @code{else} の後にあります。"
 
 #. type: example
 #: ../doc/gforth.texi:2967
 #, no-wrap
 msgid "s\" The text I search is here\" scan-file\n"
-msgstr ""
+msgstr "s\" The text I search is here\" scan-file\n"
 
 #. type: subsection
 #: ../doc/gforth.texi:2969
 #, no-wrap
 msgid "Copy input to output"
-msgstr ""
+msgstr "Copy input to output"
 
 #. type: example
 #: ../doc/gforth.texi:2979
@@ -8004,12 +8164,19 @@ msgid ""
 "  repeat \n"
 "  drop ;\n"
 msgstr ""
+": copy-file ( -- )\n"
+"  begin\n"
+"      line-buffer max-line fd-in read-line throw\n"
+"  while\n"
+"      line-buffer swap fd-out write-line throw\n"
+"  repeat \n"
+"  drop ;\n"
 
 #. type: subsection
 #: ../doc/gforth.texi:2982
 #, no-wrap
 msgid "Close files"
-msgstr ""
+msgstr "Close files"
 
 #. type: example
 #: ../doc/gforth.texi:2987
@@ -8018,11 +8185,13 @@ msgid ""
 "fd-in close-file throw\n"
 "fd-out close-file throw\n"
 msgstr ""
+"fd-in close-file throw\n"
+"fd-out close-file throw\n"
 
 #. type: table
 #: ../doc/gforth.texi:2990
 msgid "Likewise, you can put that into definitions, too:"
-msgstr ""
+msgstr "これも、同様に、 定義に組み込むことができます:"
 
 #. type: example
 #: ../doc/gforth.texi:2994
@@ -8031,6 +8200,8 @@ msgid ""
 ": close-input ( -- )  fd-in close-file throw ;\n"
 ": close-output ( -- )  fd-out close-file throw ;\n"
 msgstr ""
+": close-input ( -- )  fd-in close-file throw ;\n"
+": close-output ( -- )  fd-out close-file throw ;\n"
 
 #. type: quotation
 #: ../doc/gforth.texi:3000
@@ -8038,50 +8209,50 @@ msgid ""
 "How could you modify @code{copy-file} so that it copies until a second line "
 "is matched? Can you write a program that extracts a section of a text file, "
 "given the line that starts and the line that terminates that section?"
-msgstr ""
+msgstr "@code{copy-file} を変更して、 2 行目が一致するまでコピーするようにするにはどうすればよいでしょうか？ セクションの開始行と終了行を指定して、 テキスト・ファイルのセクションを抽出するプログラムを作成できますか？"
 
 #. type: node
 #: ../doc/gforth.texi:3002 ../doc/gforth.texi:3087 ../doc/gforth.texi:3190
 #, no-wrap
 msgid "Execution Tokens Tutorial"
-msgstr ""
+msgstr "Execution Tokens Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:3003
 #, no-wrap
 msgid "Interpretation and Compilation Semantics and Immediacy"
-msgstr ""
+msgstr "Interpretation and Compilation Semantics and Immediacy"
 
 #. type: cindex
 #: ../doc/gforth.texi:3004
 #, no-wrap
 msgid "semantics tutorial"
-msgstr ""
+msgstr "semantics tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3005
 #, no-wrap
 msgid "interpretation semantics tutorial"
-msgstr ""
+msgstr "interpretation semantics tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3006
 #, no-wrap
 msgid "compilation semantics tutorial"
-msgstr ""
+msgstr "compilation semantics tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3007
 #, no-wrap
 msgid "immediate, tutorial"
-msgstr ""
+msgstr "immediate, tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3011
 msgid ""
 "When a word is compiled, it behaves differently from being interpreted.  "
 "E.g., consider @code{+}:"
-msgstr ""
+msgstr "ワードがコンパイルされるときと、 解釈(interpret)されるときでは異なる動作をします。 たとえば、 @code{+} について考えてみましょう:"
 
 #. type: example
 #: ../doc/gforth.texi:3015
@@ -8090,6 +8261,8 @@ msgid ""
 "1 2 + .\n"
 ": foo + ;\n"
 msgstr ""
+"1 2 + .\n"
+": foo + ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:3023
@@ -8100,7 +8273,7 @@ msgid ""
 "the example above).  I.e., when @code{foo} is executed later, the "
 "interpretation semantics of @code{+} (i.e., adding two numbers) will be "
 "performed."
-msgstr ""
+msgstr "これらの 2 つの振る舞いは、 コンパイルと解釈(interpret)のセマンティクスとして知られています。 通常のワード(例: @code{+})の場合、 コンパイル・セマンティクスは、 現在定義されているワード(上記の例では @code{foo})に解釈セマンティクスを追加します。 つまり、 後で @code{foo} が実行されると、 @code{+} の解釈(interret)セマンティクス(つまり、2 つの数値の加算)が実行されます。"
 
 #. type: table
 #: ../doc/gforth.texi:3028
@@ -8109,7 +8282,7 @@ msgid ""
 "control-flow words like @code{if}.  You can use @code{immediate} to change "
 "the compilation semantics of the last defined word to be equal to the "
 "interpretation semantics:"
-msgstr ""
+msgstr "ただし、 @code{if} のような制御フロー・ワードなど、 デフォルト以外のコンパイル・セマンティクスを持つワードが存在します。 @code{immediate} を使用すると、最後に定義されたワードのコンパイル・セマンティクスを解釈(interpret)セマンティクスと等しくなるように変更できます:"
 
 #. type: example
 #: ../doc/gforth.texi:3032
@@ -8119,6 +8292,9 @@ msgid ""
 " 5 . ; immediate\n"
 "\n"
 msgstr ""
+": [FOO] ( -- )\n"
+" 5 . ; immediate\n"
+"\n"
 
 #. type: example
 #: ../doc/gforth.texi:3038
@@ -8130,6 +8306,11 @@ msgid ""
 "bar\n"
 "see bar\n"
 msgstr ""
+"[FOO]\n"
+": bar ( -- )\n"
+"  [FOO] ;\n"
+"bar\n"
+"see bar\n"
 
 #. type: table
 #: ../doc/gforth.texi:3043
@@ -8137,7 +8318,7 @@ msgid ""
 "Two conventions to mark words with non-default compilation semantics are "
 "names with brackets (more frequently used) and to write them all in upper "
 "case (less frequently used)."
-msgstr ""
+msgstr "デフォルト以外のコンパイル・セマンティクスのワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、 名前をすべて大文字で記述する(あまり使用されない)ことです。"
 
 #. type: table
 #: ../doc/gforth.texi:3046
@@ -8145,7 +8326,7 @@ msgid ""
 "For some words, such as @code{if}, using their interpretation semantics is "
 "usually a mistake, so we mark them as @code{compile-only}, and you get a "
 "warning when you interpret them."
-msgstr ""
+msgstr "@code{if} などの一部のワードについては、 その解釈(interpret)セマンティクスを使用するのは通常間違いであるため、 それらを @code{compile-only} としてマークし、 解釈(interpret)すると警告が表示されます。"
 
 #. type: example
 #: ../doc/gforth.texi:3051
@@ -8156,6 +8337,10 @@ msgid ""
 "flip\n"
 "\n"
 msgstr ""
+": flip ( -- )\n"
+" 6 . ; compile-only \\ but not immediate\n"
+"flip\n"
+"\n"
 
 #. type: example
 #: ../doc/gforth.texi:3055
@@ -8165,6 +8350,9 @@ msgid ""
 " flip ;\n"
 "flop\n"
 msgstr ""
+": flop ( -- )\n"
+" flip ;\n"
+"flop\n"
 
 #. type: table
 #: ../doc/gforth.texi:3062
@@ -8174,7 +8362,7 @@ msgid ""
 "semantics (and you get no warning).  You can also see in this example that "
 "compile-only is a property that is evaluated at text interpretation time, "
 "not at run-time."
-msgstr ""
+msgstr "この例では、 最初に @code{flip} の解釈(interpret)セマンティクスが使用されます(警告が表示されます)。 @code{flip} の 2 番目の使用では、 コンパイル・セマンティクスが使用されます(警告は表示されません)。 この例では、 compile-only が実行時(run-time)ではなくテキスト解釈時(text interpretation time)に評価されるプロパティであることもわかります。"
 
 #. type: table
 #: ../doc/gforth.texi:3066
@@ -8182,7 +8370,7 @@ msgid ""
 "The text interpreter has two states: in interpret state, it performs the "
 "interpretation semantics of words it encounters; in compile state, it "
 "performs the compilation semantics of these words."
-msgstr ""
+msgstr "テキスト・インタプリタには 2 つの状態があります。 解釈(interpret)状態では、 遭遇したワードの解釈(interpret)セマンティクスを実行します。 コンパイル状態では、これらのワードのコンパイル・セマンティクスが実行されます。"
 
 #. type: table
 #: ../doc/gforth.texi:3071
@@ -8191,7 +8379,7 @@ msgid ""
 "switches back to interpret state.  They contain the factors @code{]} (switch "
 "to compile state) and @code{[} (switch to interpret state), that do nothing "
 "but switch the state."
-msgstr ""
+msgstr "特に、 @code{:} はコンパイル状態に切り替え、 @code{;} は解釈(interpret)状態に戻ります。 これらには、 状態を切り替えるだけがその効果である @code{]} (コンパイル状態に切り替える) と @code{[} (解釈(interpret)状態に切り替える) が含まれています。"
 
 #. type: example
 #: ../doc/gforth.texi:3076
@@ -8202,6 +8390,10 @@ msgid ""
 ";\n"
 "\n"
 msgstr ""
+": xxx ( -- )\n"
+"  [ 5 . ]\n"
+";\n"
+"\n"
 
 #. type: example
 #: ../doc/gforth.texi:3079
@@ -8210,40 +8402,42 @@ msgid ""
 "xxx\n"
 "see xxx\n"
 msgstr ""
+"xxx\n"
+"see xxx\n"
 
 #. type: table
 #: ../doc/gforth.texi:3083
 msgid "These brackets are also the source of the naming convention mentioned above."
-msgstr ""
+msgstr "これらの角括弧(brackets)は、 上記の命名慣習の源でもあります。"
 
 #. type: table
 #: ../doc/gforth.texi:3085
 msgid "Reference: @ref{Interpretation and Compilation Semantics}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Interpretation and Compilation Semantics}"
 
 #. type: node
 #: ../doc/gforth.texi:3087 ../doc/gforth.texi:3190 ../doc/gforth.texi:3265
 #, no-wrap
 msgid "Exceptions Tutorial"
-msgstr ""
+msgstr "Exceptions Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:3088
 #, no-wrap
 msgid "Execution Tokens"
-msgstr ""
+msgstr "Execution Tokens"
 
 #. type: cindex
 #: ../doc/gforth.texi:3089
 #, no-wrap
 msgid "execution tokens tutorial"
-msgstr ""
+msgstr "execution tokens tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3090
 #, no-wrap
 msgid "XT tutorial"
-msgstr ""
+msgstr "XT tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3095
@@ -8251,7 +8445,7 @@ msgid ""
 "@code{' word} gives you the execution token (XT) of a word.  The XT is a "
 "cell representing the interpretation semantics of a word.  You can execute "
 "this semantics with @code{execute}:"
-msgstr ""
+msgstr "@code{' word} は、 ワードの実行トークン(execution token)(XT)を提供します。 XT は、 ワードの解釈(interpret)セマンティクスを表すセルです。 このセマンティクスは @code{execute} で実行できます:"
 
 #. type: example
 #: ../doc/gforth.texi:3099
@@ -8260,14 +8454,17 @@ msgid ""
 "' + .s\n"
 "1 2 rot execute .\n"
 msgstr ""
+"' + .s\n"
+"1 2 rot execute .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3103
 msgid ""
 "The XT is similar to a function pointer in C.  However, parameter passing "
 "through the stack makes it a little more flexible:"
-msgstr ""
+msgstr "XT は C の関数ポインタに似ています。 ただし、 パラメータがスタックで渡されるため、もう少し柔軟になります:"
 
+# \ map-array.fs
 #. type: example
 #: ../doc/gforth.texi:3112
 #, no-wrap
@@ -8281,7 +8478,29 @@ msgid ""
 "  1 cells +loop ;\n"
 "\n"
 msgstr ""
+": map-array ( ... addr u xt -- ... )\n"
+"\\ addr で始まり u 個の要素を含む配列のすべての要素に対して\n"
+"\\ xt ( ... x -- ... ) を実行します\n"
+"  @{ xt @}\n"
+"  cells over + swap ?do\n"
+"    i @@ xt execute\n"
+"  1 cells +loop ;\n"
+"\n"
 
+# \ map-array.fs
+# \ 3.29 Execution Tokens  ok
+# : map-array ( ... addr u xt -- ... )  compiled
+#     \ addr で始まり u 個の要素を含む配列のすべての要素に対して  compiled
+#     \ xt ( ... x -- ... ) を実行します  compiled
+#     { xt }  compiled
+#     cells over + swap ?do  compiled
+#         i @ xt execute  compiled
+#     1 cells +loop ;  ok
+# create a 3 , 4 , 2 , -1 , 4 ,  ok
+# a 5 ' . map-array 3 4 2 -1 4  ok
+# 0 a 5 ' + map-array . 12  ok
+# s" max-n" environment? drop .s  <1> 9223372036854775807  ok 1 \ Largest usable signed integer.
+# a 5 ' min map-array . -1  ok
 #. type: example
 #: ../doc/gforth.texi:3118
 #, no-wrap
@@ -8292,6 +8511,12 @@ msgid ""
 "s\" max-n\" environment? drop .s\n"
 "a 5 ' min map-array .\n"
 msgstr ""
+"create a 3 , 4 , 2 , -1 , 4 ,\n"
+"a 5 ' . map-array .s\n"
+"0 a 5 ' + map-array .\n"
+"\n"
+"s\" max-n\" environment? drop .s \\ 下記比較初期値用に整数最大値を得る\n"
+"a 5 ' min map-array . \\ 最初の要素は、 environment? で取得した整数最大値と比較\n"
 
 #. type: table
 #: ../doc/gforth.texi:3124
@@ -8300,7 +8525,7 @@ msgid ""
 "than they produce.  In theory you can also use it with other XTs, but the "
 "stack effect then depends on the size of the array, which is hard to "
 "understand."
-msgstr ""
+msgstr "生成するより消費する要素が 1 つ多いワードの XT に対して map-array を使用できます。 理論的には、他の XT でも使用できますが、 スタック効果は配列のサイズに依存するため、理解するのが困難です。"
 
 #. type: table
 #: ../doc/gforth.texi:3128
@@ -8308,8 +8533,13 @@ msgid ""
 "Since XTs are cell-sized, you can store them in memory and manipulate them "
 "on the stack like other cells.  You can also compile the XT into a word with "
 "@code{compile,}:"
-msgstr ""
+msgstr "XT はセルサイズであるため、 メモリに保存し、 他のセルと同様にスタック上で操作できます。 @code{compile,} を使用して XT をワードにコンパイルすることもできます:"
 
+# : foo1 ( n1 n2 -- n )  compiled
+#   [ ' + compile, ] ;  ok
+# see foo1 
+# : foo1  
+#   + ; ok
 #. type: example
 #: ../doc/gforth.texi:3133
 #, no-wrap
@@ -8318,6 +8548,9 @@ msgid ""
 "   [ ' + compile, ] ;\n"
 "see foo1\n"
 msgstr ""
+": foo1 ( n1 n2 -- n )\n"
+"   [ ' + compile, ] ;\n"
+"see foo1\n"
 
 #. type: table
 #: ../doc/gforth.texi:3138
@@ -8325,7 +8558,7 @@ msgid ""
 "This is non-standard, because @code{compile,} has no compilation semantics "
 "in the standard, but it works in good Forth systems.  For the broken ones, "
 "use"
-msgstr ""
+msgstr "@code{compile,} は標準ではコンパイル・セマンティクスがないため、 上記は標準ではないけれども、 良い Forth システムでは動作します。 うまくいかなかったモノついては、 以下を使用してください"
 
 #. type: example
 #: ../doc/gforth.texi:3141
@@ -8333,8 +8566,15 @@ msgstr ""
 msgid ""
 ": [compile,] compile, ; immediate\n"
 "\n"
-msgstr ""
+msgstr ": [compile,] compile, ; immediate\n\n"
 
+#      : [compile,] compile, ; immediate  ok
+#   ok
+#      : foo1 ( n1 n2 -- n )  compiled
+#         [ ' + ] [compile,] ;  ok
+#      see foo1 
+# : foo1  
+#   + ; ok
 #. type: example
 #: ../doc/gforth.texi:3145
 #, no-wrap
@@ -8343,14 +8583,25 @@ msgid ""
 "   [ ' + ] [compile,] ;\n"
 "see foo1\n"
 msgstr ""
+": foo1 ( n1 n2 -- n )\n"
+"   [ ' + ] [compile,] ;\n"
+"see foo1\n"
 
 #. type: table
 #: ../doc/gforth.texi:3150
 msgid ""
 "@code{'} is a word with default compilation semantics; it parses the next "
 "word when its interpretation semantics are executed, not during compilation:"
-msgstr ""
+msgstr "@code{'} は、 デフォルトでコンパイル・セマンティクスを持つワードです。 コンパイル中ではなく、 解釈(interpret)セマンティクスの実行時、 その次のワードを解析(parse)します。"
 
+# : foo  
+#   ' ; ok
+# : bar ( ... "word" -- ... )  compiled
+#   ' execute ;  ok
+# see bar
+# : bar  
+#   ' execute ; ok
+# 1 2 bar + . 3  ok
 #. type: example
 #: ../doc/gforth.texi:3159
 #, no-wrap
@@ -8363,14 +8614,26 @@ msgid ""
 "see bar\n"
 "1 2 bar + .\n"
 msgstr ""
+": foo ( -- xt )\n"
+"  ' ;\n"
+"see foo\n"
+": bar ( ... \"word\" -- ... )\n"
+"  ' execute ;\n"
+"see bar\n"
+"1 2 bar + .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3163
 msgid ""
 "You often want to parse a word during compilation and compile its XT so it "
 "will be pushed on the stack at run-time.  @code{[']} does this:"
-msgstr ""
+msgstr "コンパイル中にワードを解析(parse)し、 その XT をコンパイルして、 実行時にスタックにプッシュされるようにしたいことがよくあります。 @code{[']} はこれを行います:"
 
+# : xt-+ ( -- xt )  compiled
+#   ['] + ;  ok
+# see xt-+ 
+# : xt-+  `+ ; ok
+# 1 2 xt-+ execute . 3  ok
 #. type: example
 #: ../doc/gforth.texi:3169
 #, no-wrap
@@ -8380,6 +8643,10 @@ msgid ""
 "see xt-+\n"
 "1 2 xt-+ execute .\n"
 msgstr ""
+": xt-+ ( -- xt )\n"
+"  ['] + ;\n"
+"see xt-+\n"
+"1 2 xt-+ execute .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3179
@@ -8392,7 +8659,7 @@ msgid ""
 "even worse pitfalls, see "
 "@uref{https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz, "
 "@code{State}-smartness---Why it is evil and How to Exorcise it})."
-msgstr ""
+msgstr "多くのプログラマーは、 @code{'} とそれが解析(parse)するワードを 1 つの単位として認識し、 コンパイル時に @code{[']} のように動作することを期待し、 実際の動作に混乱する傾向があります。 あなたがもしそうなら、 Forth システムは @code{'} を 1 つの単位として捉えているだけであり、 それが解析(parse)ワードであるとはまったく考えていないことを覚えておいてください(この問題でプログラマーの便宜を図る試みは、 通常、 さらにひどい落とし穴につながります。 @uref{https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz, @code{State}-smartness---Why it is evil and How to Exorcise it})。"
 
 #. type: table
 #: ../doc/gforth.texi:3186
@@ -8402,35 +8669,35 @@ msgid ""
 "it still gives you the interpretation semantics.  And whatever that state "
 "is, @code{execute} performs the semantics represented by the XT (i.e., for "
 "XTs produced with @code{'} the interpretation semantics)."
-msgstr ""
+msgstr "XT の作成および実行は、 インタプリタの状態には影響を受けないことに注意してください。 つまり、 コンパイル状態で @code{'} を実行した場合でも、 解釈(interpret)セマンティクスが得られます。 そして、 そこでの状態が何であれ、 @code{execute} は XT によって表されるセマンティクス(つまり、@code{'} で生成された XT の場合は解釈(interpret)セマンティクス)を実行します。"
 
 #. type: table
 #: ../doc/gforth.texi:3188 ../doc/gforth.texi:3624
 msgid "Reference: @ref{Tokens for Words}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Tokens for Words}"
 
 #. type: node
 #: ../doc/gforth.texi:3190 ../doc/gforth.texi:3265 ../doc/gforth.texi:3380
 #, no-wrap
 msgid "Defining Words Tutorial"
-msgstr ""
+msgstr "Defining Words Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:3191
 #, no-wrap
 msgid "Exceptions"
-msgstr ""
+msgstr "Exceptions"
 
 #. type: cindex
 #: ../doc/gforth.texi:3192
 #, no-wrap
 msgid "exceptions tutorial"
-msgstr ""
+msgstr "exceptions tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3195
 msgid "@code{throw ( n -- )} causes an exception unless n is zero."
-msgstr ""
+msgstr "@code{throw ( n -- )} は、 n がゼロでない限り例外を引き起こします。"
 
 #. type: example
 #: ../doc/gforth.texi:3199
@@ -8439,6 +8706,8 @@ msgid ""
 "100 throw .s\n"
 "0 throw .s\n"
 msgstr ""
+"100 throw .s\n"
+"0 throw .s\n"
 
 #. type: table
 #: ../doc/gforth.texi:3205
@@ -8447,7 +8716,7 @@ msgid ""
 "catches exceptions and pushes the number of the exception on the stack (or "
 "0, if the xt executed without exception).  If there was an exception, the "
 "stacks have the same depth as when entering @code{catch}:"
-msgstr ""
+msgstr "@code{catch ( ... xt -- ... n )} は @code{execute} と同様に動作しますが、 例外をキャッチし、 スタック上に例外の数値(または XT が例外なしで実行された場合は 0)をプッシュします。 例外があった場合、 スタックの深さは @code{catch} の実行直前と同一です。"
 
 #. type: example
 #: ../doc/gforth.texi:3210
@@ -8457,19 +8726,35 @@ msgid ""
 "3 0 ' / catch .s\n"
 "3 2 ' / catch .s\n"
 msgstr ""
+".s\n"
+"3 0 ' / catch .s\n"
+"3 2 ' / catch .s\n"
 
+# 3 0 ' / .s catch .s <3> 3 0 140112178093152 <3> 3 0 -10  ok 3
+#
+# 3 0 ' / .s execute .s <6> 3 0 -10 3 0 140112178093152 
+# *the terminal*:33:12: error: Division by zero
+# 3 0 ' / .s >>>execute<<< .s
+#
+# 3 2 ' / .s catch .s <3> 3 2 140112178093152 <2> 1 0  ok 2
+#
+# 3 2 ' / .s execute .s <3> 3 2 140112178093152 <1> 1  ok 1
 #. type: quotation
 #: ../doc/gforth.texi:3214
 msgid "Try the same with @code{execute} instead of @code{catch}."
-msgstr ""
+msgstr "@code{catch} の代わりに @code{execute} を使用して同じことを試してみましょう。"
 
 #. type: table
 #: ../doc/gforth.texi:3219
 msgid ""
 "@code{Throw} always jumps to the dynamically next enclosing @code{catch}, "
 "even if it has to leave several call levels to achieve this:"
-msgstr ""
+msgstr "@code{throw} は、常に動的に直近にこの @code{throw} を囲んでいる(定義の) @code{catch} にジャンプします、 たとえそのジャンプを達成するために複数の呼び出しレベルを飛び越す必要がある場合でもです:"
 
+# : foo 100 throw ;
+# : foo1 foo ." after foo" ;
+# : bar ['] foo1 catch ;
+# bar . 100  ok
 #. type: example
 #: ../doc/gforth.texi:3225
 #, no-wrap
@@ -8479,13 +8764,17 @@ msgid ""
 ": bar ['] foo1 catch ;\n"
 "bar .\n"
 msgstr ""
+": foo 100 throw ;\n"
+": foo1 foo .\" after foo\" ;\n"
+": bar ['] foo1 catch ;\n"
+"bar .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3230
 msgid ""
 "It is often important to restore a value upon leaving a definition, even if "
 "the definition is left through an exception.  You can ensure this like this:"
-msgstr ""
+msgstr "多くの場合、 定義が例外によって終了した場合でも、 定義を終了したときに値を復元することが重要です。 以下のようにしてみるのはどうでしょうか:"
 
 #. type: example
 #: ../doc/gforth.texi:3237
@@ -8497,6 +8786,11 @@ msgid ""
 "   restore-x\n"
 "   ( ... n ) throw ;\n"
 msgstr ""
+": ...\n"
+"   save-x\n"
+"   ['] word-changing-x catch ( ... n )\n"
+"   restore-x\n"
+"   ( ... n ) throw ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:3242
@@ -8504,7 +8798,7 @@ msgid ""
 "However, this is still not safe against, e.g., the user pressing "
 "@kbd{Ctrl-C} when execution is between the @code{catch} and "
 "@code{restore-x}."
-msgstr ""
+msgstr "しかし、 これでも、 たとえば、@code{catch} と @code{restore-x} の間を実行中にユーザーが @kbd{Ctrl-C} を押すなどしたら安全ではありません。"
 
 #. type: table
 #: ../doc/gforth.texi:3248
@@ -8514,12 +8808,12 @@ msgid ""
 "@code{try} and @code{endtry} has an exception, the stack depths are "
 "restored, the exception number is pushed on the stack, and the execution "
 "continues right after @code{restore}."
-msgstr ""
+msgstr "Gforth は、そのような場合に対して安全な代替例外処理構文(alternative exception handling syntax) @code{try ...restore ... endtry} を提供します。  @code{try} と @code{endtry} の間のコードに例外があった場合、 スタックの深さが復元され、 例外数値がスタックにプッシュされ、 @code{restore} の直後から実行が続行されます。"
 
 #. type: table
 #: ../doc/gforth.texi:3250
 msgid "The safer equivalent to the restoration code above is"
-msgstr ""
+msgstr "以下は、 上記のコードと同等の、 より安全なコードです"
 
 #. type: example
 #: ../doc/gforth.texi:3260
@@ -8534,42 +8828,50 @@ msgid ""
 "  endtry\n"
 "  throw ;\n"
 msgstr ""
+": ...\n"
+"  save-x\n"
+"  try\n"
+"    word-changing-x 0\n"
+"  restore\n"
+"    restore-x\n"
+"  endtry\n"
+"  throw ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:3263
 msgid "Reference: @ref{Exception Handling}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{Exception Handling}"
 
 #. type: node
 #: ../doc/gforth.texi:3265 ../doc/gforth.texi:3380 ../doc/gforth.texi:3409
 #, no-wrap
 msgid "Arrays and Records Tutorial"
-msgstr ""
+msgstr "Arrays and Records Tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3267
 #, no-wrap
 msgid "defining words tutorial"
-msgstr ""
+msgstr "defining words tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3268
 #, no-wrap
 msgid "does> tutorial"
-msgstr ""
+msgstr "does> tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3269
 #, no-wrap
 msgid "create...does> tutorial"
-msgstr ""
+msgstr "create...does> tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3275
 msgid ""
 "@code{:}, @code{create}, and @code{variable} are definition words: They "
 "define other words.  @code{Constant} is another definition word:"
-msgstr ""
+msgstr "これまでに出てきた @code{:} や @code{create} や @code{variable} は定義ワードです。 これらは他のワードを定義します。 @code{Constant} はもう一つの定義ワードです:"
 
 #. type: example
 #: ../doc/gforth.texi:3279 ../doc/gforth.texi:3302
@@ -8578,18 +8880,20 @@ msgid ""
 "5 constant foo\n"
 "foo .\n"
 msgstr ""
+"5 constant foo\n"
+"foo .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3283
 msgid ""
 "You can also use the prefixes @code{2} (double-cell) and @code{f} (floating "
 "point) with @code{variable} and @code{constant}."
-msgstr ""
+msgstr "@code{variable} や @code{constant} でも接頭辞 @code{2} (2倍長セル) や @code{f} (浮動小数点) を使用することができます。"
 
 #. type: table
 #: ../doc/gforth.texi:3285
 msgid "You can also define your own defining words.  E.g.:"
-msgstr ""
+msgstr "あなた独自の定義ワードを定義することもできます。 例:"
 
 #. type: example
 #: ../doc/gforth.texi:3289
@@ -8598,13 +8902,15 @@ msgid ""
 ": variable ( \"name\" -- )\n"
 "  create 0 , ;\n"
 msgstr ""
+": variable ( \"name\" -- )\n"
+"  create 0 , ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:3293
 msgid ""
 "You can also define defining words that create words that do something other "
 "than just producing their address:"
-msgstr ""
+msgstr "また、 単にアドレスを生成する以外のことを行うワードを作成する定義ワードを定義することもできます:"
 
 #. type: example
 #: ../doc/gforth.texi:3299
@@ -8616,6 +8922,11 @@ msgid ""
 "  ( addr ) @@ ;\n"
 "\n"
 msgstr ""
+": constant ( n \"name\" -- )\n"
+"  create ,\n"
+"does> ( -- n )\n"
+"  ( addr ) @@ ;\n"
+"\n"
 
 #. type: table
 #: ../doc/gforth.texi:3309
@@ -8625,7 +8936,7 @@ msgid ""
 "the last defined word such that it pushes the address of the body of the "
 "word and then performs the code after the @code{does>} whenever it is "
 "called."
-msgstr ""
+msgstr "上記の @code{constant} の定義は @code{does>} で終了します。 つまり、 @code{does>} は @code{;} を置き換えるのですが、 他のことも行います。 最後に定義されたワードを変更して、 ワード本体(body)のアドレスをプッシュし、 呼び出されるたびに @code{does>} の後のコードを実行します。"
 
 #. type: table
 #: ../doc/gforth.texi:3314
@@ -8634,7 +8945,7 @@ msgid ""
 "of @code{foo}.  When @code{foo} executes, it pushes the address of the body "
 "onto the stack, then (in the code after the @code{does>})  fetches the 5 "
 "from there."
-msgstr ""
+msgstr "上の例では、 @code{constant} は @code{,} を使用して @code{foo} の本体に 5 を格納します。  @code{foo} が実行されると、 本体のアドレスがスタックにプッシュされ、 (@code{does>} の後のコードにより、)そこから 5 がフェッチされます。"
 
 #. type: table
 #: ../doc/gforth.texi:3319
@@ -8643,7 +8954,7 @@ msgid ""
 "defined word, not the stack effect of the code after the @code{does>} (the "
 "difference is that the code expects the address of the body that the stack "
 "comment does not show)."
-msgstr ""
+msgstr "@code{does>} の脇のスタック・コメントは、 @code{does>} の後のコードのスタック効果ではなく、 定義されたワードのスタック効果です(違いは、 @code{does>} の後のコードは @code{does>} の脇のスタック・コメントには書いてない、 ワード本体(body)のアドレスを期待している点です)。"
 
 #. type: table
 #: ../doc/gforth.texi:3323
@@ -8651,29 +8962,29 @@ msgid ""
 "You can use these definition words to do factoring in cases that involve "
 "(other) definition words.  E.g., a field offset is always added to an "
 "address.  Instead of defining"
-msgstr ""
+msgstr "これらの定義ワードを使用すると、 (他の)定義ワードが関係する場合にファクタリングを行うことができます。  たとえば、 フィールド・オフセットは常にアドレスに加算するものですが、 その代わりに以下を定義します"
 
 #. type: example
 #: ../doc/gforth.texi:3326
 #, no-wrap
 msgid "2 cells constant offset-field1\n"
-msgstr ""
+msgstr "2 cells constant offset-field1\n"
 
 #. type: table
 #: ../doc/gforth.texi:3329
 msgid "and using this like"
-msgstr ""
+msgstr "この offset-field1 は以下のように使います"
 
 #. type: example
 #: ../doc/gforth.texi:3332
 #, no-wrap
 msgid "( addr ) offset-field1 +\n"
-msgstr ""
+msgstr "( addr ) offset-field1 +\n"
 
 #. type: table
 #: ../doc/gforth.texi:3335
 msgid "you can define a definition word"
-msgstr ""
+msgstr "ここで、 あなたは以下のような定義ワードをを定義できます"
 
 #. type: example
 #: ../doc/gforth.texi:3341
@@ -8684,12 +8995,25 @@ msgid ""
 "does> ( n1 -- n1+n )\n"
 "  ( addr ) @@ + ;\n"
 msgstr ""
+": simple-field ( n \"name\" -- )\n"
+"  create ,\n"
+"does> ( n1 -- n1+n )\n"
+"  ( addr ) @@ + ;\n"
 
 #. type: table
 #: ../doc/gforth.texi:3344
 msgid "Definition and use of field offsets now look like this:"
-msgstr ""
+msgstr "フィールド・オフセットの定義と使用は以下のようになります:"
 
+# / 固定のオフセットを定義するワード…らしい
+# : simple-field ( n "name" -- )
+#   create ,
+# does> ( n1 -- n1+n )
+#   ( addr ) @ + ;
+# 2 cells simple-field field1
+# create mystruct 4 cells allot
+#
+# mystruct .s field1 .s <1> 140112178740144 <1> 140112178740160  ok 1
 #. type: example
 #: ../doc/gforth.texi:3349
 #, no-wrap
@@ -8698,6 +9022,9 @@ msgid ""
 "create mystruct 4 cells allot\n"
 "mystruct .s field1 .s drop\n"
 msgstr ""
+"2 cells simple-field field1\n"
+"create mystruct 4 cells allot\n"
+"mystruct .s field1 .s drop\n"
 
 #. type: table
 #: ../doc/gforth.texi:3354
@@ -8705,7 +9032,7 @@ msgid ""
 "If you want to do something with the word without performing the code after "
 "the @code{does>}, you can access the body of a @code{create}d word with "
 "@code{>body ( xt -- addr )}:"
-msgstr ""
+msgstr "@code{does>} の後のコードを実行せずに、 そのワードで何かをしたい場合は、 @code{>body ( xt -- addr )} を使用すれば @code{create} したワードの本体(body)にアクセスできます:"
 
 #. type: example
 #: ../doc/gforth.texi:3362
@@ -8719,7 +9046,26 @@ msgid ""
 "  ' >body ! ;\n"
 "\n"
 msgstr ""
+": value ( n \"name\" -- )\n"
+"  create ,\n"
+"does> ( -- n1 )\n"
+"  @@ ;\n"
+": to ( n \"name\" -- )\n"
+"  ' >body ! ;\n"
+"\n"
 
+# : value ( n "name" -- )
+#   create ,
+#   does> ( -- n1 )
+#   @ ; 
+#
+# : to ( n "name" -- )
+#   ' >body ! ; 
+#
+# 5 value foo 
+# foo . 5  ok
+# 7 to foo  ok
+# foo . 7  ok
 #. type: example
 #: ../doc/gforth.texi:3367
 #, no-wrap
@@ -8729,6 +9075,10 @@ msgid ""
 "7 to foo\n"
 "foo .\n"
 msgstr ""
+"5 value foo\n"
+"foo .\n"
+"7 to foo\n"
+"foo .\n"
 
 #. type: quotation
 #: ../doc/gforth.texi:3375
@@ -8738,24 +9088,24 @@ msgid ""
 "the XT.  Define @code{is ( xt \"name\" -- )} that stores @code{xt} into "
 "@code{name}, a word defined with @code{defer}.  Indirect recursion is one "
 "application of @code{defer}."
-msgstr ""
+msgstr "(@code{abort} の XT の先頭に、) XT を格納するワードを作成する、 @code{defer ( \"name\" -- )} を定義し、 実行時に XT を @code{execute} で実行するようにしてみましょう。 間接再帰は @code{defer} の応用の 1 つです。"
 
 #. type: table
 #: ../doc/gforth.texi:3378
 msgid "Reference: @ref{User-defined Defining Words}."
-msgstr ""
+msgstr "こちらも参照ください: @ref{User-defined Defining Words}"
 
 #. type: node
 #: ../doc/gforth.texi:3380 ../doc/gforth.texi:3409 ../doc/gforth.texi:3478
 #, no-wrap
 msgid "POSTPONE Tutorial"
-msgstr ""
+msgstr "POSTPONE Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:3381
 #, no-wrap
 msgid "Arrays and Records"
-msgstr ""
+msgstr "Arrays and Records"
 
 #. type: cindex
 #: ../doc/gforth.texi:3382
@@ -8767,13 +9117,13 @@ msgstr ""
 #: ../doc/gforth.texi:3383
 #, no-wrap
 msgid "records tutorial"
-msgstr ""
+msgstr "records tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3384
 #, no-wrap
 msgid "structs tutorial"
-msgstr ""
+msgstr "structs tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3390
@@ -8782,7 +9132,7 @@ msgid ""
 "yourself based on address arithmetic.  You can also define words for "
 "defining arrays and records (@pxref{Defining Words Tutorial,, Defining "
 "Words})."
-msgstr ""
+msgstr "Forth には配列を定義するための標準ワードはありませんが、 アドレス演算に基づいて自分で配列を構築できます。 配列とレコードを定義するためのワードを定義することもできます(@pxref{Defining Words Tutorial,, Defining Words})。"
 
 #. type: table
 #: ../doc/gforth.texi:3401
@@ -8796,7 +9146,7 @@ msgid ""
 "and named, global arrays (the result of naive use of defining words) are "
 "often not flexible enough (e.g., consider how to pass them as parameters).  "
 "Another such project is a set of words to help dealing with strings."
-msgstr ""
+msgstr "Forth の初心者がワードの定義について学ぶときに最初に着手するプロジェクトの 1 つが配列定義ワード(ことによっては n 次元配列)です。 さぁあなたもやってみましょう。 あなたはそこから何かを学ぶでしょう。 ただし、 後からこれらのワードをほとんど使用しないことがわかってもがっかりしないでください(不適切に使用するとさらに悪いことになります)。 私はまだ有用な配列ワードのセットを見つけられていません。 ニーズがあまりにも多様で、 (定義ワードを単純に使用した結果である、)名前付きのグローバル配列は、 柔軟性が十分ではないことがよくあります(たとえば、 どのようにしてパラメーターを渡すか、など)。 同様のプロジェクトのもう 1 つは、 文字列の処理に役立つワードのセットです。"
 
 #. type: table
 #: ../doc/gforth.texi:3407
@@ -8806,33 +9156,43 @@ msgid ""
 "They are explained in depth elsewhere in this manual (see "
 "@pxref{Structures}).  The @code{simple-field} example above is simplified "
 "variant of fields in this package."
-msgstr ""
+msgstr "その一方、 レコード・ワードには便利なセットがあり、 @file{compat/struct.fs} で定義されています。 これらのワードは Gforth で事前定義されています。 これらについては、 このマニュアルの他の場所で詳しく説明されています(@pxref{Structures} 参照)。 上記の @code{simple-field} の例は、 このパッケージのフィールドの簡略化されたバリエーションです。"
 
 #. type: node
 #: ../doc/gforth.texi:3409 ../doc/gforth.texi:3478 ../doc/gforth.texi:3518
 #, no-wrap
 msgid "Literal Tutorial"
-msgstr ""
+msgstr "Literal Tutorial"
 
 #. type: code{#1}
 #: ../doc/gforth.texi:3410
 #, no-wrap
 msgid "POSTPONE"
-msgstr ""
+msgstr "POSTPONE"
 
 #. type: cindex
 #: ../doc/gforth.texi:3411
 #, no-wrap
 msgid "postpone tutorial"
-msgstr ""
+msgstr "postpone tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3415
 msgid ""
 "You can compile the compilation semantics (instead of compiling the "
 "interpretation semantics) of a word with @code{POSTPONE}:"
-msgstr ""
+msgstr "@code{POSTPONE} を使用すると、 (解釈(interpret)セマンティクスをコンパイルする代わりに、) ワードのコンパイル・セマンティクスをコンパイルできます:"
 
+# : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
+#   POSTPONE + ; immediate
+# : foo ( n1 n2 -- n )
+#   MY-+ ;
+#
+# 1 2 foo . 3  ok
+#
+# see foo 
+# : foo  
+#   + ; ok
 #. type: example
 #: ../doc/gforth.texi:3423
 #, no-wrap
@@ -8844,6 +9204,12 @@ msgid ""
 "1 2 foo .\n"
 "see foo\n"
 msgstr ""
+": MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )\n"
+" POSTPONE + ; immediate\n"
+": foo ( n1 n2 -- n )\n"
+" MY-+ ;\n"
+"1 2 foo .\n"
+"see foo\n"
 
 #. type: table
 #: ../doc/gforth.texi:3428
@@ -8851,7 +9217,7 @@ msgid ""
 "During the definition of @code{foo} the text interpreter performs the "
 "compilation semantics of @code{MY-+}, which performs the compilation "
 "semantics of @code{+}, i.e., it compiles @code{+} into @code{foo}."
-msgstr ""
+msgstr "@code{foo} の定義中に、 テキスト・インタプリタは @code{MY-+} のコンパイル・セマンティクスを実行し、 それが @code{+} のコンパイル・セマンティクスを実行します。 つまり、 @code{+} を @code{foo} 内にコンパイルします。"
 
 #. type: table
 #: ../doc/gforth.texi:3435
@@ -8862,7 +9228,7 @@ msgid ""
 "the stack effect of the compilation semantics is always @code{( -- )} for "
 "these words, the stack effect for the compiled code is the stack effect of "
 "the interpretation semantics."
-msgstr ""
+msgstr "この例では、 コンパイル・セマンティクスとコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。 デフォルトのコンパイル・セマンティクスを持つワードの場合、 通常、 これらのスタック効果は表示されません。 これらのワードのコンパイル・セマンティクスのスタック効果は常に @code{( -- )} であり、 コンパイルされたコードのスタック効果は解釈(interpret)セマンティクスのスタック効果です。"
 
 #. type: table
 #: ../doc/gforth.texi:3439
@@ -8870,8 +9236,25 @@ msgid ""
 "Note that the state of the interpreter does not come into play when "
 "performing the compilation semantics in this way.  You can also perform it "
 "interpretively, e.g.:"
-msgstr ""
+msgstr "注意: この方法でコンパイル・セマンティクスを実行する場合、 インタプリタの状態には影響を受けないことに注意してください。 あなたは解釈的(interpretively)に実行することもできます。 例:"
 
+# 2024/05/21 foo2のスペルミスと思われる。修正。
+#
+# : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
+#   POSTPONE + ; immediate
+# : foo ( n1 n2 -- n )
+#   MY-+ ; 
+# 1 2 foo . 3  ok
+# see foo 
+# : foo  
+#   + ; ok
+#
+# : foo2 ( n1 n2 -- n )
+#   [ MY-+ ] ;
+# 1 2 foo2 . 3  ok
+# see foo2 
+# : foo2  
+#   + ; ok
 #. type: example
 #: ../doc/gforth.texi:3445
 #, no-wrap
@@ -8881,19 +9264,31 @@ msgid ""
 "1 2 foo .\n"
 "see foo\n"
 msgstr ""
+": foo2 ( n1 n2 -- n )\n"
+" [ MY-+ ] ;\n"
+"1 2 foo2 .\n"
+"see foo2\n"
 
 #. type: table
 #: ../doc/gforth.texi:3451
 msgid ""
 "However, there are some broken Forth systems where this does not always "
 "work, and therefore this practice was been declared non-standard in 1999."
-msgstr ""
+msgstr "ただし、 これが常に機能するとは限らない、良くない Forth システムがいくつかあるため、 この方法は 1999 年に非標準となりました。"
 
 #. type: table
 #: ../doc/gforth.texi:3453
 msgid "Here is another example for using @code{POSTPONE}:"
-msgstr ""
+msgstr "@code{POSTPONE} を使用する別の例を以下に示します:"
 
+# : MY-- ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
+#   POSTPONE negate POSTPONE + ; immediate compile-only
+# : bar ( n1 n2 -- n )
+#   MY-- ; 
+# 2 1 bar . 1  ok
+# see bar 
+# : bar  
+#   negate + ; ok
 #. type: example
 #: ../doc/gforth.texi:3461
 #, no-wrap
@@ -8905,11 +9300,17 @@ msgid ""
 "2 1 bar .\n"
 "see bar\n"
 msgstr ""
+": MY-- ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )\n"
+" POSTPONE negate POSTPONE + ; immediate compile-only\n"
+": bar ( n1 n2 -- n )\n"
+"  MY-- ;\n"
+"2 1 bar .\n"
+"see bar\n"
 
 #. type: table
 #: ../doc/gforth.texi:3464
 msgid "You can define @code{ENDIF} in this way:"
-msgstr ""
+msgstr "@code{ENDIF} は以下の方法で定義できます:"
 
 #. type: example
 #: ../doc/gforth.texi:3468
@@ -8918,47 +9319,56 @@ msgid ""
 ": ENDIF ( Compilation: orig -- )\n"
 "  POSTPONE then ; immediate\n"
 msgstr ""
+": ENDIF ( Compilation: orig -- )\n"
+"  POSTPONE then ; immediate\n"
 
+# : MY-2DUP  compiled
+#   POSTPONE over POSTPONE over ; immediate compile-only
+# : hoge MY-2DUP ;
+#
+# see hoge 
+# : hoge  
+#   over over ; ok
 #. type: quotation
 #: ../doc/gforth.texi:3473
 msgid ""
 "Write @code{MY-2DUP} that has compilation semantics equivalent to "
 "@code{2dup}, but compiles @code{over over}."
-msgstr ""
+msgstr "@code{2dup} と同等のコンパイル・セマンティクスを持つ @code{MY-2DUP} を作成しますが、 コンパイルされるのは @code{over over} になるようにしてみましょう。"
 
 #. type: node
 #: ../doc/gforth.texi:3478 ../doc/gforth.texi:3518 ../doc/gforth.texi:3583
 #, no-wrap
 msgid "Advanced macros Tutorial"
-msgstr ""
+msgstr "Advanced macros Tutorial"
 
 #. type: kindex
 #: ../doc/gforth.texi:3479 ../doc/gforth.texi:13754 ../doc/gforth.texi:13755
 #, no-wrap
 msgid "Literal"
-msgstr ""
+msgstr "Literal"
 
 #. type: cindex
 #: ../doc/gforth.texi:3480
 #, no-wrap
 msgid "literal tutorial"
-msgstr ""
+msgstr "literal tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3483
 msgid "You cannot @code{POSTPONE} numbers:"
-msgstr ""
+msgstr "数値を @code{POSTPONE} することはできません:"
 
 #. type: example
 #: ../doc/gforth.texi:3486
 #, no-wrap
 msgid ": [FOO] POSTPONE 500 ; immediate\n"
-msgstr ""
+msgstr ": [FOO] POSTPONE 500 ; immediate\n"
 
 #. type: table
 #: ../doc/gforth.texi:3489
 msgid "Instead, you can use @code{LITERAL (compilation: n --; run-time: -- n )}:"
-msgstr ""
+msgstr "代わりに @code{LITERAL (compilation: n --; run-time: -- n )} を使用します:"
 
 #. type: example
 #: ../doc/gforth.texi:3493
@@ -8968,7 +9378,17 @@ msgid ""
 "  500 POSTPONE literal ; immediate\n"
 "\n"
 msgstr ""
+": [FOO] ( compilation: --; run-time: -- n )\n"
+"  500 POSTPONE literal ; immediate\n"
+"\n"
 
+# : [FOO] ( compilation: --; run-time: -- n )  compiled
+#    500 POSTPONE literal ; immediate  ok
+# : flip [FOO] ;  ok
+# flip . 500  ok
+#
+# see flip 
+# : flip  #500 ; ok
 #. type: example
 #: ../doc/gforth.texi:3497
 #, no-wrap
@@ -8977,6 +9397,9 @@ msgid ""
 "flip .\n"
 "see flip\n"
 msgstr ""
+": flip [FOO] ;\n"
+"flip .\n"
+"see flip\n"
 
 #. type: table
 #: ../doc/gforth.texi:3503
@@ -8985,7 +9408,7 @@ msgid ""
 "semantics are executed) and pushes it at run-time (when the code it compiled "
 "is executed).  A frequent use of @code{LITERAL} is to compile a number "
 "computed at compile time into the current word:"
-msgstr ""
+msgstr "@code{LITERAL} は、 コンパイル時(コンパイル・セマンティクスが実行されるとき)に数値を消費し、 実行時(コンパイルされたコードが実行されるとき)にそれをプッシュします。 @code{LITERAL} のよくある使用法は、 コンパイル時に計算された数値を現在のワードにコンパイルすることです:"
 
 #. type: example
 #: ../doc/gforth.texi:3508
@@ -8995,37 +9418,40 @@ msgid ""
 "  [ 2 2 + ] literal ;\n"
 "see bar\n"
 msgstr ""
+": bar ( -- n )\n"
+"  [ 2 2 + ] literal ;\n"
+"see bar\n"
 
 #. type: quotation
 #: ../doc/gforth.texi:3513
 msgid ""
 "Write @code{]L} which allows writing the example above as @code{: bar ( -- n "
 ") [ 2 2 + ]L ;}"
-msgstr ""
+msgstr "上記の例を @code{: bar ( -- n ) [ 2 2 + ]L ;} と記述できるような @code{]L} を定義してみましょう。"
 
 #. type: node
 #: ../doc/gforth.texi:3518 ../doc/gforth.texi:3583 ../doc/gforth.texi:3626
 #, no-wrap
 msgid "Compilation Tokens Tutorial"
-msgstr ""
+msgstr "Compilation Tokens Tutorial"
 
 #. type: section
 #: ../doc/gforth.texi:3519
 #, no-wrap
 msgid "Advanced macros"
-msgstr ""
+msgstr "Advanced macros"
 
 #. type: cindex
 #: ../doc/gforth.texi:3520
 #, no-wrap
 msgid "macros, advanced tutorial"
-msgstr ""
+msgstr "macros, advanced tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3521
 #, no-wrap
 msgid "run-time code generation, tutorial"
-msgstr ""
+msgstr "run-time code generation, tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3528
@@ -9035,8 +9461,9 @@ msgid ""
 "operation in some Forth implementations.  You can use @code{compile,} and "
 "@code{POSTPONE} to eliminate these @code{execute}s and produce a word that "
 "contains the word to be performed directly:"
-msgstr ""
+msgstr "@ref{Execution Tokens Tutorial,, Execution Tokens} の @code{map-array} について再検討してみましょう。 @code{map-array} は @code{execute} を頻繁に実行しますが、 これは一部の Forth 実装では比較的高価な操作です。 @code{compile,} と @code{POSTPONE} を使用すると、 これらの @code{execute} を削除し、 直接実行されるワードを含むワードを生成できます:"
 
+# \ map-array.fs
 #. type: example
 #: ../doc/gforth.texi:3538
 #, no-wrap
@@ -9050,7 +9477,16 @@ msgid ""
 "  1 cells POSTPONE literal POSTPONE +loop ;\n"
 "\n"
 msgstr ""
+": compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )\n"
+"\\ at run-time, execute xt ( ... x -- ... ) for each element of the\n"
+"\\ array beginning at addr and containing u elements\n"
+"  @{ xt @}\n"
+"  POSTPONE cells POSTPONE over POSTPONE + POSTPONE swap POSTPONE ?do\n"
+"    POSTPONE i POSTPONE @@ xt compile,\n"
+"  1 cells POSTPONE literal POSTPONE +loop ;\n"
+"\n"
 
+# \ map-array.fs
 #. type: example
 #: ../doc/gforth.texi:3543
 #, no-wrap
@@ -9060,14 +9496,19 @@ msgid ""
 "see sum-array\n"
 "a 5 sum-array .\n"
 msgstr ""
+": sum-array ( addr u -- n )\n"
+" 0 rot rot [ ' + compile-map-array ] ;\n"
+"see sum-array\n"
+"a 5 sum-array .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3547
 msgid ""
 "You can use the full power of Forth for generating the code; here's an "
 "example where the code is generated in a loop:"
-msgstr ""
+msgstr "コードの生成には Forth の機能を最大限に活用できます。 以下に、 コードがループ内で生成される例を示します:"
 
+# \ map-array.fs
 #. type: example
 #: ../doc/gforth.texi:3554
 #, no-wrap
@@ -9079,7 +9520,14 @@ msgid ""
 "  POSTPONE swap POSTPONE cell+ ;\n"
 "\n"
 msgstr ""
+": compile-vmul-step ( compilation: n --; run-time: n1 addr1 -- n2 addr2 )\n"
+"\\ n2=n1+(addr1)*n, addr2=addr1+cell\n"
+"  POSTPONE tuck POSTPONE @@\n"
+"  POSTPONE literal POSTPONE * POSTPONE +\n"
+"  POSTPONE swap POSTPONE cell+ ;\n"
+"\n"
 
+# \ map-array.fs
 #. type: example
 #: ../doc/gforth.texi:3561
 #, no-wrap
@@ -9092,7 +9540,15 @@ msgid ""
 "see compile-vmul\n"
 "\n"
 msgstr ""
+": compile-vmul ( compilation: addr1 u -- ; run-time: addr2 -- n )\n"
+"\\ n=v1*v2 (inner product), where the v_i are represented as addr_i u\n"
+"  0 postpone literal postpone swap\n"
+"  [ ' compile-vmul-step compile-map-array ]\n"
+"  postpone drop ;\n"
+"see compile-vmul\n"
+"\n"
 
+# \ map-array.fs
 #. type: example
 #: ../doc/gforth.texi:3567
 #, no-wrap
@@ -9103,13 +9559,18 @@ msgid ""
 "see a-vmul\n"
 "a a-vmul .\n"
 msgstr ""
+": a-vmul ( addr -- n )\n"
+"\\ n=a*v, where v is a vector that's as long as a and starts at addr\n"
+" [ a 5 compile-vmul ] ;\n"
+"see a-vmul\n"
+"a a-vmul .\n"
 
 #. type: table
 #: ../doc/gforth.texi:3571
 msgid ""
 "This example uses @code{compile-map-array} to show off, but you could also "
 "use @code{map-array} instead (try it now!)."
-msgstr ""
+msgstr "この例では @code{compile-map-array} を使用していますが、 代わりに @code{map-array} を使用することもできます(是非試してみてください)。"
 
 #. type: table
 #: ../doc/gforth.texi:3579
@@ -9120,30 +9581,30 @@ msgid ""
 "use it for every column.  The only downside of this technique is that it is "
 "cumbersome to recover the memory consumed by the generated code when you are "
 "done (and in more complicated cases it is not possible portably)."
-msgstr ""
+msgstr "この手法を使用すると、 巨大な行列を効率的に乗算できます。 行列の乗算では、 一方の行列のすべての行ともう一方の行列のすべての列を乗算します。 1 行のコードを 1 回生成し、 それをすべての列に使用できます。 この手法の唯一の欠点は、 生成されたコードによって消費されたメモリを完了時に開放するのが面倒なことです(さらに複雑な場合は移植可能ではありません)。"
 
 #. type: section
 #: ../doc/gforth.texi:3584
 #, no-wrap
 msgid "Compilation Tokens"
-msgstr ""
+msgstr "Compilation Tokens"
 
 #. type: cindex
 #: ../doc/gforth.texi:3585
 #, no-wrap
 msgid "compilation tokens, tutorial"
-msgstr ""
+msgstr "compilation tokens, tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3586
 #, no-wrap
 msgid "CT, tutorial"
-msgstr ""
+msgstr "CT, tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3589
 msgid "This section is Gforth-specific.  You can skip it."
-msgstr ""
+msgstr "このセクションは Gforth 固有です。 スキップしても構いません。"
 
 #. type: table
 #: ../doc/gforth.texi:3598
@@ -9155,8 +9616,9 @@ msgid ""
 "Gforth has the concept of a compilation token (CT, consisting of two cells), "
 "and words @code{comp'} and @code{[comp']}.  You can perform the compilation "
 "semantics represented by a CT with @code{execute}:"
-msgstr ""
+msgstr "@code{' word compile,} は解釈(interpret)セマンティクスをコンパイルします。 デフォルトのコンパイル・セマンティクスを持つワードの場合、 これはコンパイル・セマンティクスを実行するのと同じです。  他のワードのコンパイル・セマンティクス(解釈(interpret)セマンティクスを持たない @code{if} などのワード)を表すために、 Gforth にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワード @code{comp'} と、 @code{[comp']} の概念があります。 @code{execute} を使用して、 CT によって表されるコンパイル・セマンティクスを実行できます:"
 
+# 修正： see foo → see foo2
 #. type: example
 #: ../doc/gforth.texi:3603
 #, no-wrap
@@ -9165,13 +9627,16 @@ msgid ""
 "   [ comp' + execute ] ;\n"
 "see foo\n"
 msgstr ""
+": foo2 ( n1 n2 -- n )\n"
+"   [ comp' + execute ] ;\n"
+"see foo2\n"
 
 #. type: table
 #: ../doc/gforth.texi:3607
 msgid ""
 "You can compile the compilation semantics represented by a CT with "
 "@code{postpone,}:"
-msgstr ""
+msgstr "@code{postpone,} を使用して、 CT によって表されるコンパイル・セマンティクスをコンパイルできます:"
 
 #. type: example
 #: ../doc/gforth.texi:3612
@@ -9181,6 +9646,9 @@ msgid ""
 "  [ comp' + postpone, ] ;\n"
 "see foo3\n"
 msgstr ""
+": foo3 ( -- )\n"
+"  [ comp' + postpone, ] ;\n"
+"see foo3\n"
 
 #. type: table
 #: ../doc/gforth.texi:3617
@@ -9188,7 +9656,7 @@ msgid ""
 "@code{[ comp' word postpone, ]} is equivalent to @code{POSTPONE word}.  "
 "@code{comp'} is particularly useful for words that have no interpretation "
 "semantics:"
-msgstr ""
+msgstr "@code{[ comp' word postpone, ]} @code{POSTPONE word} と同等です。  @code{comp'} は、 解釈(interpret)セマンティクスを持たないワードに対して特に役立ちます:"
 
 #. type: example
 #: ../doc/gforth.texi:3621
@@ -9197,24 +9665,26 @@ msgid ""
 "' if\n"
 "comp' if .s 2drop\n"
 msgstr ""
+"' if\n"
+"comp' if .s 2drop\n"
 
 #. type: section
 #: ../doc/gforth.texi:3627
 #, no-wrap
 msgid "Wordlists and Search Order"
-msgstr ""
+msgstr "Wordlists and Search Order"
 
 #. type: cindex
 #: ../doc/gforth.texi:3628
 #, no-wrap
 msgid "wordlists tutorial"
-msgstr ""
+msgstr "wordlists tutorial"
 
 #. type: cindex
 #: ../doc/gforth.texi:3629
 #, no-wrap
 msgid "search order, tutorial"
-msgstr ""
+msgstr "search order, tutorial"
 
 #. type: table
 #: ../doc/gforth.texi:3638
@@ -9225,7 +9695,7 @@ msgid ""
 "searching at the youngest and proceed towards older words (in reality most "
 "systems nowadays use hash-tables); i.e., if you define a word with the same "
 "name as an older word, the new word shadows the older word."
-msgstr ""
+msgstr "ディクショナリ(辞書)は、 @code{allot} でメモリを割り当てることができる、 単なるメモリ領域ではなく、 複数のワード・リスト(wordlist)上にある Forth ワード達も含まれています。  ワード・リスト内のワードを検索するとき、 概念的には、 最も新しいワードから検索を開始し、 古いワードに向かって進みます(実際には、 最近のほとんどのシステムはハッシュ・テーブルを使用します)。 つまり、 古いワードと同一の名前のワードを定義すると、 新しいワードが古いワードを隠します。"
 
 #. type: table
 #: ../doc/gforth.texi:3643
@@ -9234,25 +9704,25 @@ msgid ""
 "order.  You can display the search order with @code{order}.  It displays "
 "first the search order, starting with the wordlist searched first, then it "
 "displays the wordlist that will contain newly defined words."
-msgstr ""
+msgstr "どのワードリストがどの順序で検索されるかは、 検索順序(search order)によって決まります。  @code{order} で検索順を表示できます。  まず、 最初に検索されたワード・リスト(wordlist)から始まる検索順序が表示され、 次に新しく定義されたワードを含むワード・リスト(wordlist)が表示されます:"
 
 #. type: table
 #: ../doc/gforth.texi:3645
 msgid "You can create a new, empty wordlist with @code{wordlist ( -- wid )}:"
-msgstr ""
+msgstr "@code{wordlist ( -- wid )} を使用して、 新しい空のワード・リスト(wordlist)を作成できます:"
 
 #. type: example
 #: ../doc/gforth.texi:3648
 #, no-wrap
 msgid "wordlist constant mywords\n"
-msgstr ""
+msgstr "wordlist constant mywords\n"
 
 #. type: table
 #: ../doc/gforth.texi:3652
 msgid ""
 "@code{Set-current ( wid -- )} sets the wordlist that will contain newly "
 "defined words (the @emph{current} wordlist):"
-msgstr ""
+msgstr "@code{Set-current ( wid -- )} は、 新しく定義されたワードを入れるワード・リストを設定します(the current wordlist):"
 
 #. type: example
 #: ../doc/gforth.texi:3656
@@ -9261,13 +9731,15 @@ msgid ""
 "mywords set-current\n"
 "order\n"
 msgstr ""
+"mywords set-current\n"
+"order\n"
 
 #. type: table
 #: ../doc/gforth.texi:3660
 msgid ""
 "Gforth does not display a name for the wordlist in @code{mywords} because "
 "this wordlist was created anonymously with @code{wordlist}."
-msgstr ""
+msgstr "このワード・リストは @code{wordlist} を使用して匿名で作成されたため、 Gforth は @code{mywords} のワード・リスト名を表示しません。"
 
 #. type: table
 #: ../doc/gforth.texi:3664
@@ -9275,7 +9747,7 @@ msgid ""
 "You can get the current wordlist with @code{get-current ( -- wid)}.  If you "
 "want to put something into a specific wordlist without overall effect on the "
 "current wordlist, this typically looks like this:"
-msgstr ""
+msgstr "@code{get-current ( -- wid)} で現在のワード・リストを取得できます。  現在のワード・リストに影響を与えずに、 指定のワード・リストに何かを入れたい場合、 通常は以下のようにします:"
 
 #. type: example
 #: ../doc/gforth.texi:3669
@@ -9285,6 +9757,9 @@ msgid ""
 "create someword\n"
 "( wid ) set-current\n"
 msgstr ""
+"get-current mywords set-current ( wid )\n"
+"create someword\n"
+"( wid ) set-current\n"
 
 #. type: table
 #: ../doc/gforth.texi:3674
@@ -9292,7 +9767,7 @@ msgid ""
 "You can write the search order with @code{set-order ( wid1 .. widn n -- )} "
 "and read it with @code{get-order ( -- wid1 .. widn n )}.  The first searched "
 "wordlist is topmost."
-msgstr ""
+msgstr "検索順序は @code{set-order ( wid1 .. widn n -- )} で記述し、 @code{get-order ( -- wid1 .. widn n )} で読み取ることができます。  最初に検索されたワード・リストが最上位(topmost)になります。"
 
 #. type: example
 #: ../doc/gforth.texi:3678
@@ -9301,13 +9776,15 @@ msgid ""
 "get-order mywords swap 1+ set-order\n"
 "order\n"
 msgstr ""
+"get-order mywords swap 1+ set-order\n"
+"order\n"
 
 #. type: table
 #: ../doc/gforth.texi:3682
 msgid ""
 "Yes, the order of wordlists in the output of @code{order} is reversed from "
 "stack comments and the output of @code{.s} and thus unintuitive."
-msgstr ""
+msgstr "ええ、 @code{order} の出力内のワードリストの順序は、 スタック・コメントや @code{.s} の出力とは逆になっているため、 直感的ではありません。"
 
 #. type: quotation
 #: ../doc/gforth.texi:3689
@@ -9317,7 +9794,7 @@ msgid ""
 "the first searched wordlist from the search order.  Experiment with boundary "
 "conditions (you will see some crashes or situations that are hard or "
 "impossible to leave)."
-msgstr ""
+msgstr "@code{>order ( wid -- )} を定義して、 最初に検索されるワード・リスト(wordlist)として @code{wid} を検索順序に追加してみましょう。 @code{previous ( -- )} を定義してみましょう。 これは、 最初に検索されたワードリスト(wordlist)を検索順序から削除(search order)するものです。 定義したら、 境界条件を試してみましょう(クラッシュや、 そこから抜け出すことが困難または不可能な状況がいくつか見られる事でしょう)。"
 
 #. type: table
 #: ../doc/gforth.texi:3698
@@ -9329,25 +9806,25 @@ msgid ""
 "though).  These disadvantages are not so clear in other "
 "languages/programming environments, because these languages are not so "
 "strong in debugging and reuse."
-msgstr ""
+msgstr "検索順序(search order)は、 Modula-2 モジュールや、 C++ の名前空間と同様の機能を提供するための強力な基盤です。  ただし、 この方法でプログラムをモジュール化しようとすると、 デバッグや 再利用/ファクタリング に関しては、 (大規模なプロジェクトの経験はありませんけれども、)私の経験では利点を上回る欠点があります。  他の言語/プログラミング環境では、 デバッグや再利用がそれほど強力ではないため、 これらの欠点はそれほど目立ちません。"
 
 #. type: table
 #: ../doc/gforth.texi:3702
 msgid "Reference: @ref{Word Lists}."
-msgstr ""
+msgstr "こしらも参照ください: @ref{Word Lists}"
 
 #. type: node
 #: ../doc/gforth.texi:3704 ../doc/gforth.texi:4619 ../doc/gforth.texi:4620
 #: ../doc/gforth.texi:4815
 #, no-wrap
 msgid "Literals in source code"
-msgstr ""
+msgstr "Literals in source code"
 
 #. type: cindex
 #: ../doc/gforth.texi:3707
 #, no-wrap
 msgid "Forth - an introduction"
-msgstr ""
+msgstr "Forth - an introduction"
 
 #. type: table
 #: ../doc/gforth.texi:3714

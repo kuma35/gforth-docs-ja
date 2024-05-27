@@ -27,6 +27,332 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: Arbitrary control structures,  Up: Control Structures
+
+6.9.7 Calls and returns
+-----------------------
+
+A definition can be called simply be writing the name of the definition
+to be called.  Normally a definition is invisible during its own
+definition.  If you want to write a directly recursive definition, you
+can use ‘recursive’ to make the current definition visible, or ‘recurse’
+to call the current definition directly.
+
+‘recursive’ ( compilation – ; run-time –  ) gforth-0.2 “recursive”
+   Make the current definition visible, enabling it to call itself
+recursively.
+
+‘recurse’ ( ... – ...  ) core “recurse”
+   Alias to the current definition.
+
+For examples of using these words, *Note Recursion Tutorial::.
+
+   Programming style note: I prefer using ‘recursive’ to ‘recurse’,
+because calling the definition by name is more descriptive (if the name
+is well-chosen) than the somewhat cryptic ‘recurse’.  E.g., in a
+quicksort implementation, it is much better to read (and think) “now
+sort the partitions” than to read “now do a recursive call”.
+
+   For mutual recursion, use ‘Defer’red words, like this:
+
+     Defer foo
+
+     : bar ( ... -- ... )
+      ... foo ... ;
+
+     :noname ( ... -- ... )
+      ... bar ... ;
+     IS foo
+
+   Deferred words are discussed in more detail in *note Deferred
+Words::.
+
+   The current definition returns control to the calling definition when
+the end of the definition is reached or ‘EXIT’ is encountered.
+
+‘EXIT’ ( compilation – ; run-time nest-sys –  ) core “EXIT”
+   Return to the calling definition; usually used as a way of forcing an
+early return from a definition.  Before ‘EXIT’ing you must clean up the
+return stack and ‘UNLOOP’ any outstanding ‘?DO’...‘LOOP’s.  Use ‘;s’ for
+a tickable word that behaves like ‘exit’ in the absence of locals.
+
+‘?EXIT’ ( –  ) gforth-0.2 “?EXIT”
+   Return to the calling definition if f is true.
+
+‘;s’ ( R:w – ) gforth-0.2 “semis”
+   The primitive compiled by ‘EXIT’.
+
+
+File: gforth.info,  Node: Exception Handling,  Prev: Calls and returns,  Up: Control Structures
+
+6.9.8 Exception Handling
+------------------------
+
+If a word detects an error condition that it cannot handle, it can
+‘throw’ an exception.  In the simplest case, this will terminate your
+program, and report an appropriate error.
+
+‘throw’ ( y1 .. ym nerror – y1 .. ym / z1 .. zn error  ) exception “throw”
+   If nerror is 0, drop it and continue.  Otherwise, transfer control to
+the next dynamically enclosing exception handler, reset the stacks
+accordingly, and push nerror.
+
+‘fast-throw’ ( ... wball – ... wball ) gforth-experimental “fast-throw”
+   Lightweight ‘throw’ variant: only for non-zero balls, and does not
+store a backtrace or deal with missing ‘catch’.
+
+   ‘Throw’ consumes a cell-sized error number on the stack.  There are
+some predefined error numbers in Standard Forth (see ‘errors.fs’).  In
+Gforth (and most other systems) you can use the iors produced by various
+words as error numbers (e.g., a typical use of ‘allocate’ is ‘allocate
+throw’).  Gforth also provides the word ‘exception’ to define your own
+error numbers (with decent error reporting); a Standard Forth version of
+this word (but without the error messages) is available in
+‘compat/except.fs’.  And finally, you can use your own error numbers
+(anything outside the range -4095..0), but won’t get nice error
+messages, only numbers.  For example, try:
+
+     -10 throw                    \ Standard defined
+     -267 throw                   \ system defined
+     s" my error" exception throw \ user defined
+     7 throw                      \ arbitrary number
+
+‘exception’ ( addr u – n  ) gforth-0.2 “exception”
+   N is a previously unused ‘throw’ value in the range (-4095...-256).
+Consecutive calls to ‘exception’ return consecutive decreasing numbers.
+Gforth uses the string ADDR U as an error message.
+
+   There are also cases where you have a word (typically modeled after
+POSIX’ ‘strerror’) for converting an error number into a string.  You
+can use the following word to get these strings into Gforth’s error
+handling:
+
+‘exceptions’ ( xt n1 – n2  ) gforth-1.0 “exceptions”
+   Xt ‘( +n -- c-addr u )’ converts an error number in the range 0<=n<n1
+into an error message.  ‘Exceptions’ reserves n1 error codes in the
+range n2-n1<n3<=n2.  When (at some later point in time) the Gforth error
+code n3 in that range is thrown, it pushes n2-n3 and then executes xt to
+produce the error message.
+
+   As an example, if the ‘errno’ errors (and the conversion using
+‘strerror’) was not already directly supported by Gforth, you could tie
+‘strerror’ in as follows:
+
+     ' strerror 1536 exceptions constant errno-base
+     : errno-ior ( -- n )
+     \ n is the Gforth ior corresponding to the value in errno, so
+     \ we have to convert between the ranges here.
+     \ ERRNO is not a Gforth word, so you  would have to use the
+     \ C interface to access it.
+       errno errno-base over - swap 0<> and ;
+
+   When you call a C function (with the C interface) and its return
+value indictes that an error happened, you can then perform ‘errno-ior
+throw’ to produce an exception with the proper error message (such as
+“Permission denied”).
+
+   A common idiom to ‘THROW’ a specific err# if a flag is true is this:
+
+     ( flag ) 0<> err# and throw
+
+   Your program can provide exception handlers to catch exceptions.  An
+exception handler can be used to correct the problem, or to clean up
+some data structures and just throw the exception to the next exception
+handler.  Note that ‘throw’ jumps to the dynamically innermost exception
+handler.  The system’s exception handler is outermost, and just prints
+an error and restarts command-line interpretation (or, in batch mode
+(i.e., while processing the shell command line), leaves Gforth).
+
+   The Standard Forth way to catch exceptions is ‘catch’:
+
+‘catch’ ( x1 .. xn xt – y1 .. ym 0 / z1 .. zn error  ) exception “catch”
+   ‘Executes’ xt.  If execution returns normally, ‘catch’ pushes 0 on
+the stack.  If execution returns through ‘throw’, all the stacks are
+reset to the depth on entry to ‘catch’, and the TOS (the xt position) is
+replaced with the throw code.
+
+‘nothrow’ ( –  ) gforth-0.7 “nothrow”
+   Use this (or the standard sequence ‘['] false catch 2drop’) after a
+‘catch’ or ‘endtry’ that does not rethrow; this ensures that the next
+‘throw’ will record a backtrace.
+
+   The most common use of exception handlers is to clean up the state
+when an error happens.  E.g.,
+
+     base @ >r hex \ actually the HEX should be inside foo to protect
+                   \ against exceptions between HEX and CATCH
+     ['] foo catch ( nerror|0 )
+     r> base !
+     ( nerror|0 ) throw \ pass it on
+
+   A use of ‘catch’ for handling the error ‘myerror’ might look like
+this:
+
+     ['] foo catch
+     CASE
+       myerror OF ... ( do something about it ) nothrow ENDOF
+       dup throw \ default: pass other errors on, do nothing on non-errors
+     ENDCASE
+
+   Having to wrap the code into a separate word is often cumbersome,
+therefore Gforth provides an alternative syntax:
+
+     TRY
+       code1
+       IFERROR
+         code2
+       THEN
+       code3
+     ENDTRY
+
+   This performs code1.  If code1 completes normally, execution
+continues with code3.  If there is an exception in code1 or before
+‘endtry’, the stacks are reset to the depth during ‘try’, the throw
+value is pushed on the data stack, and execution continues at code2, and
+finally falls through to code3.
+
+‘try’ ( compilation  – orig ; run-time  – R:sys1  ) gforth-0.5 “try”
+   Start an exception-catching region.
+
+‘endtry’ ( compilation  – ; run-time  R:sys1 –  ) gforth-0.5 “endtry”
+   End an exception-catching region.
+
+‘iferror’ ( compilation  orig1 – orig2 ; run-time  –  ) gforth-0.7 “iferror”
+   Starts the exception handling code (executed if there is an exception
+between ‘try’ and ‘endtry’).  This part has to be finished with ‘then’.
+
+   If you don’t need code2, you can write ‘restore’ instead of ‘iferror
+then’:
+
+     TRY
+       code1
+     RESTORE
+       code3
+     ENDTRY
+
+   The cleanup example from above in this syntax:
+
+     base @ { oldbase }
+     TRY
+       hex foo \ now the hex is placed correctly
+       0       \ value for throw
+     RESTORE
+       oldbase base !
+     ENDTRY
+     throw
+
+   An additional advantage of this variant is that an exception between
+‘restore’ and ‘endtry’ (e.g., from the user pressing ‘Ctrl-C’) restarts
+the execution of the code after ‘restore’, so the base will be restored
+under all circumstances.
+
+   However, you have to ensure that this code does not cause an
+exception itself, otherwise the ‘iferror’/‘restore’ code will loop.
+Moreover, you should also make sure that the stack contents needed by
+the ‘iferror’/‘restore’ code exist everywhere between ‘try’ and
+‘endtry’; in our example this is achived by putting the data in a local
+before the ‘try’ (you cannot use the return stack because the exception
+frame (sys1) is in the way there).
+
+   This kind of usage corresponds to Lisp’s ‘unwind-protect’.
+
+   If you do not want this exception-restarting behaviour, you achieve
+this as follows:
+
+     TRY
+       code1
+     ENDTRY-IFERROR
+       code2
+     THEN
+
+   If there is an exception in code1, then code2 is executed, otherwise
+execution continues behind the ‘then’ (or in a possible ‘else’ branch).
+This corresponds to the construct
+
+     TRY
+       code1
+     RECOVER
+       code2
+     ENDTRY
+
+   in Gforth before version 0.7.  So you can directly replace
+‘recover’-using code; however, we recommend that you check if it would
+not be better to use one of the other ‘try’ variants while you are at
+it.
+
+   To ease the transition, Gforth provides two compatibility files:
+‘endtry-iferror.fs’ provides the ‘try ... endtry-iferror ... then’
+syntax (but not ‘iferror’ or ‘restore’) for old systems;
+‘recover-endtry.fs’ provides the ‘try ... recover ... endtry’ syntax on
+new systems, so you can use that file as a stopgap to run old programs.
+Both files work on any system (they just do nothing if the system
+already has the syntax it implements), so you can unconditionally
+‘require’ one of these files, even if you use a mix old and new systems.
+
+‘restore’ ( compilation  orig1 – ; run-time  –  ) gforth-0.7 “restore”
+   Starts restoring code, that is executed if there is an exception, and
+if there is no exception.
+
+‘endtry-iferror’ ( compilation  orig1 – orig2 ; run-time  R:sys1 –  ) gforth-0.7 “endtry-iferror”
+   End an exception-catching region while starting exception-handling
+code outside that region (executed if there is an exception between
+‘try’ and ‘endtry-iferror’).  This part has to be finished with ‘then’
+(or ‘else’...‘then’).
+
+   Here’s the error handling example:
+
+     TRY
+       foo
+     ENDTRY-IFERROR
+       CASE
+         myerror OF ... ( do something about it ) nothrow ENDOF
+         throw \ pass other errors on
+       ENDCASE
+     THEN
+
+   Programming style note: As usual, you should ensure that the stack
+depth is statically known at the end: either after the ‘throw’ for
+passing on errors, or after the ‘ENDTRY’ (or, if you use ‘catch’, after
+the end of the selection construct for handling the error).
+
+   There are two alternatives to ‘throw’: ‘Abort"’ is conditional and
+you can provide an error message.  ‘Abort’ just produces an “Aborted”
+error.
+
+   The problem with these words is that exception handlers cannot
+differentiate between different ‘abort"’s; they just look like ‘-2
+throw’ to them (the error message cannot be accessed by standard
+programs).  Similar ‘abort’ looks like ‘-1 throw’ to exception handlers.
+
+‘ABORT"’ ( compilation ’ccc"’ – ; run-time f –  ) core,exception-ext “abort-quote”
+   If any bit of f is non-zero, perform the function of ‘-2 throw’,
+displaying the string ccc if there is no exception frame on the
+exception stack.
+
+‘abort’ ( ?? – ??  ) core,exception-ext “abort”
+   ‘-1 throw’.
+
+   For problems that are not that awful that you need to abort
+execution, you can just display a warning.  The variable ‘warnings’
+allows to tune how many warnings you see.
+
+‘WARNING"’ ( compilation ’ccc"’ – ; run-time f –  ) gforth-1.0 “WARNING"”
+   if f is non-zero, display the string ccc as warning message.
+
+‘warnings’ ( – addr  ) gforth-0.2 “warnings”
+   set warnings level to
+‘0’
+     turns warnings off
+‘-1’
+     turns normal warnings on
+‘-2’
+     turns beginner warnings on
+‘-3’
+     pedantic warnings on
+‘-4’
+     turns warnings into errors (including beginner warnings)
+
+
 File: gforth.info,  Node: Defining Words,  Next: Interpretation and Compilation Semantics,  Prev: Control Structures,  Up: Words
 
 6.10 Defining Words
@@ -1538,7 +1864,7 @@ words.
 
 * Menu:
 
-* Execution token::          実行(execution)/解釈(interpretation)
+* Execution token::          実行(execution)/インタプリタ(interpretation)
                                セマンティクス
 * Name token::               名前付きワード
 * Compilation token::        コンパイル・セマンティクス
@@ -6895,277 +7221,4 @@ assuming a cell size of 4.
 
    (1) This is Self terminology; in C++ terminology: virtual function
 table.
-
-
-File: gforth.info,  Node: Objects Glossary,  Prev: Objects Implementation,  Up: Objects
-
-6.24.3.12 ‘objects.fs’ Glossary
-...............................
-
-‘bind’ ( ... "class" "selector" – ...  ) objects “bind”
-   Execute the method for SELECTOR in CLASS.
-
-‘<bind>’ ( class selector-xt – xt  ) objects “<bind>”
-   XT is the method for the selector SELECTOR-XT in CLASS.
-
-‘bind'’ ( "class" "selector" – xt  ) objects “bind”’
-   XT is the method for SELECTOR in CLASS.
-
-‘[bind]’ ( compile-time: "class" "selector" – ; run-time: ... object – ...  ) objects “[bind]”
-   Compile the method for SELECTOR in CLASS.
-
-‘class’ ( parent-class – align offset  ) objects “class”
-   Start a new class definition as a child of PARENT-CLASS.  ALIGN
-OFFSET are for use by FIELD etc.
-
-‘class->map’ ( class – map  ) objects “class->map”
-   MAP is the pointer to CLASS’s method map; it points to the place in
-the map to which the selector offsets refer (i.e., where OBJECT-MAPs
-point to).
-
-‘class-inst-size’ ( class – addr  ) objects “class-inst-size”
-   Give the size specification for an instance (i.e.  an object) of
-CLASS; used as ‘class-inst-size 2 ( class -- align size )’.
-
-‘class-override!’ ( xt sel-xt class-map –  ) objects “class-override!”
-   XT is the new method for the selector SEL-XT in CLASS-MAP.
-
-‘class-previous’ ( class –  ) objects “class-previous”
-   Drop CLASS’s wordlists from the search order.  No checking is made
-whether CLASS’s wordlists are actually on the search order.
-
-‘class>order’ ( class –  ) objects “class>order”
-   Add CLASS’s wordlists to the head of the search-order.
-
-‘construct’ ( ... object –  ) objects “construct”
-   Initialize the data fields of OBJECT.  The method for the class
-OBJECT just does nothing: ‘( object -- )’.
-
-‘current'’ ( "selector" – xt  ) objects “current”’
-   XT is the method for SELECTOR in the current class.
-
-‘[current]’ ( compile-time: "selector" – ; run-time: ... object – ...  ) objects “[current]”
-   Compile the method for SELECTOR in the current class.
-
-‘current-interface’ ( – addr  ) objects “current-interface”
-   Variable: contains the class or interface currently being defined.
-
-‘dict-new’ ( ... class – object  ) objects “dict-new”
-   ‘allot’ and initialize an object of class CLASS in the dictionary.
-
-‘end-class’ ( align offset "name" –  ) objects “end-class”
-   NAME execution: ‘-- class’
-End a class definition.  The resulting class is CLASS.
-
-‘end-class-noname’ ( align offset – class  ) objects “end-class-noname”
-   End a class definition.  The resulting class is CLASS.
-
-‘end-interface’ ( "name" –  ) objects “end-interface”
-   ‘name’ execution: ‘-- interface’
-End an interface definition.  The resulting interface is INTERFACE.
-
-‘end-interface-noname’ ( – interface  ) objects “end-interface-noname”
-   End an interface definition.  The resulting interface is INTERFACE.
-
-‘end-methods’ ( –  ) objects “end-methods”
-   Switch back from defining methods of a class to normal mode
-(currently this just restores the old search order).
-
-‘exitm’ ( –  ) objects “exitm”
-   ‘exit’ from a method; restore old ‘this’.
-
-‘heap-new’ ( ... class – object  ) objects “heap-new”
-   ‘allocate’ and initialize an object of class CLASS.
-
-‘implementation’ ( interface –  ) objects “implementation”
-   The current class implements INTERFACE.  I.e., you can use all
-selectors of the interface in the current class and its descendents.
-
-‘init-object’ ( ... class object –  ) objects “init-object”
-   Initialize a chunk of memory (OBJECT) to an object of class CLASS;
-then performs ‘construct’.
-
-‘inst-value’ ( align1 offset1 "name" – align2 offset2  ) objects “inst-value”
-   NAME execution: ‘-- w’
-W is the value of the field NAME in ‘this’ object.
-
-‘inst-var’ ( align1 offset1 align size "name" – align2 offset2  ) objects “inst-var”
-   NAME execution: ‘-- addr’
-ADDR is the address of the field NAME in ‘this’ object.
-
-‘interface’ ( –  ) objects “interface”
-   Start an interface definition.
-
-‘m:’ ( – xt colon-sys; run-time: object –  ) objects “m:”
-   Start a method definition; OBJECT becomes new ‘this’.
-
-‘:m’ ( "name" – xt; run-time: object –  ) objects “:m”
-   Start a named method definition; OBJECT becomes new ‘this’.  Has to
-be ended with ‘;m’.
-
-‘;m’ ( colon-sys –; run-time: –  ) objects “;m”
-   End a method definition; restore old ‘this’.
-
-‘method’ ( xt "name" –  ) objects “method”
-   ‘name’ execution: ‘... object -- ...’
-Create selector NAME and makes XT its method in the current class.
-
-‘methods’ ( class –  ) objects “methods”
-   Makes CLASS the current class.  This is intended to be used for
-defining methods to override selectors; you cannot define new fields or
-selectors.
-
-‘object’ ( – class  ) objects “object”
-   the ancestor of all classes.
-
-‘overrides’ ( xt "selector" –  ) objects “overrides”
-   replace default method for SELECTOR in the current class with XT.
-‘overrides’ must not be used during an interface definition.
-
-‘[parent]’ ( compile-time: "selector" – ; run-time: ... object – ...  ) objects “[parent]”
-   Compile the method for SELECTOR in the parent of the current class.
-
-‘print’ ( object –  ) objects “print”
-   Print the object.  The method for the class OBJECT prints the address
-of the object and the address of its class.
-
-‘protected’ ( –  ) objects “protected”
-   Set the compilation wordlist to the current class’s wordlist
-
-‘public’ ( –  ) objects “public”
-   Restore the compilation wordlist that was in effect before the last
-‘protected’ that actually changed the compilation wordlist.
-
-‘selector’ ( "name" –  ) objects “selector”
-   NAME execution: ‘... object -- ...’
-Create selector NAME for the current class and its descendents; you can
-set a method for the selector in the current class with ‘overrides’.
-
-‘this’ ( – object  ) objects “this”
-   the receiving object of the current method (aka active object).
-
-‘<to-inst>’ ( w xt –  ) objects “<to-inst>”
-   store W into the field XT in ‘this’ object.
-
-‘[to-inst]’ ( compile-time: "name" – ; run-time: w –  ) objects “[to-inst]”
-   store W into field NAME in ‘this’ object.
-
-‘to-this’ ( object –  ) objects “to-this”
-   Set ‘this’ (used internally, but useful when debugging).
-
-‘xt-new’ ( ... class xt – object  ) objects “xt-new”
-   Make a new object, using ‘xt ( align size -- addr )’ to get memory.
-
-
-File: gforth.info,  Node: OOF,  Next: Mini-OOF,  Prev: Objects,  Up: Object-oriented Forth
-
-6.24.4 The ‘oof.fs’ model
--------------------------
-
-This section describes the ‘oof.fs’ package.
-
-   The package described in this section has been used in bigFORTH since
-1991, and used for two large applications: a chromatographic system used
-to create new medicaments, and a graphic user interface library (MINOS).
-
-   You can find a description (in German) of ‘oof.fs’ in ‘Object
-oriented bigFORTH’ by Bernd Paysan, published in ‘Vierte Dimension’
-10(2), 1994.
-
-* Menu:
-
-* Properties of the OOF model::
-* Basic OOF Usage::
-* The OOF base class::
-* Class Declaration::
-* Class Implementation::
-
-
-File: gforth.info,  Node: Properties of the OOF model,  Next: Basic OOF Usage,  Prev: OOF,  Up: OOF
-
-6.24.4.1 Properties of the ‘oof.fs’ model
-.........................................
-
-   • This model combines object oriented programming with information
-     hiding.  It helps you writing large application, where scoping is
-     necessary, because it provides class-oriented scoping.
-
-   • Named objects, object pointers, and object arrays can be created,
-     selector invocation uses the “object selector” syntax.  Selector
-     invocation to objects and/or selectors on the stack is a bit less
-     convenient, but possible.
-
-   • Selector invocation and instance variable usage of the active
-     object is straightforward, since both make use of the active
-     object.
-
-   • Late binding is efficient and easy to use.
-
-   • State-smart objects parse selectors.  However, extensibility is
-     provided using a (parsing) selector ‘postpone’ and a selector ‘'’.
-
-   • An implementation in Standard Forth is available.
-
-
-File: gforth.info,  Node: Basic OOF Usage,  Next: The OOF base class,  Prev: Properties of the OOF model,  Up: OOF
-
-6.24.4.2 Basic ‘oof.fs’ Usage
-.............................
-
-This section uses the same example as for ‘objects’ (*note Basic Objects
-Usage::).
-
-   You can define a class for graphical objects like this:
-
-     object class graphical \ "object" is the parent class
-       method draw ( x y -- )
-     class;
-
-   This code defines a class ‘graphical’ with an operation ‘draw’.  We
-can perform the operation ‘draw’ on any ‘graphical’ object, e.g.:
-
-     100 100 t-rex draw
-
-where ‘t-rex’ is an object or object pointer, created with e.g.
-‘graphical : t-rex’.
-
-   How do we create a graphical object?  With the present definitions,
-we cannot create a useful graphical object.  The class ‘graphical’
-describes graphical objects in general, but not any concrete graphical
-object type (C++ users would call it an _abstract class_); e.g., there
-is no method for the selector ‘draw’ in the class ‘graphical’.
-
-   For concrete graphical objects, we define child classes of the class
-‘graphical’, e.g.:
-
-     graphical class circle \ "graphical" is the parent class
-       cell var circle-radius
-     how:
-       : draw ( x y -- )
-         circle-radius @ draw-circle ;
-
-       : init ( n-radius -- )
-         circle-radius ! ;
-     class;
-
-   Here we define a class ‘circle’ as a child of ‘graphical’, with a
-field ‘circle-radius’; it defines new methods for the selectors ‘draw’
-and ‘init’ (‘init’ is defined in ‘object’, the parent class of
-‘graphical’).
-
-   Now we can create a circle in the dictionary with:
-
-     50 circle : my-circle
-
-‘:’ invokes ‘init’, thus initializing the field ‘circle-radius’ with 50.
-We can draw this new circle at (100,100) with:
-
-     100 100 my-circle draw
-
-   Note: You can only invoke a selector if the receiving object belongs
-to the class where the selector was defined or one of its descendents;
-e.g., you can invoke ‘draw’ only for objects belonging to ‘graphical’ or
-its descendents (e.g., ‘circle’).  The scoping mechanism will check if
-you try to invoke a selector that is not defined in this class
-hierarchy, so you’ll get an error at compilation time.
 

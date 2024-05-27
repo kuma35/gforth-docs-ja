@@ -62,7 +62,7 @@ Software Foundation, Inc.
 * Introduction::             標準Forth(Standard Forth)の紹介
 * Literals in source code::
 * Words::                    Gforth で使用可能な Forth ワード
-* Error messages::           エラーメッセージをどのようにして解釈すればいいのか
+* Error messages::           エラーメッセージをどのように読み解けばいいのか
 * Tools::                    プログラム作成支援ツール
 * Standard conformance::     Gforth実装用に定義されたオプションなど
 * Standard vs Extensions::   拡張機能を使用する必要ある?
@@ -299,7 +299,7 @@ Tokens for Words
 
 
 
-* Execution token::          実行(execution)/解釈(interpretation)
+* Execution token::          実行(execution)/インタプリタ(interpretation)
                                セマンティクス
 * Name token::               名前付きワード
 * Compilation token::        コンパイル・セマンティクス
@@ -814,7 +814,7 @@ Gforth は 2 つの部分から成ります。 実行可能「エンジン」(�
 フォルトの Gforth イメージは以下のように呼び出されます:
      gforth [file | -e forth-code] ...
 これにより、 ファイルの内容や、 (訳注:コマンドラインに記述された、)
-Forth コードが、 指定の順序で解釈実行(interpret)されます。
+Forth コードが、 指定の順序で解釈(interpret)されます。
 
    ‘gforth’ エンジンに加えて、 ‘gforth-fast’ というエンジンもあります。
 これは高速ですが、 表示されるエラー・メッセージ(*note Error messages::)の
@@ -1567,26 +1567,13 @@ File: gforth.info,  Node: Stack Manipulation Tutorial,  Next: Using files for Fo
           1 2 3
           1 2 3           1 2 3 4
           1 2 3           1 3
-          ( 訳注: 正解はこれだけではないが一例として
-          1 2 3           3 2 1  \ rot rot swap
-          1 2 3           1 2 3 2  \ over
-          1 2 3           1 2 3 3  \ dup
-          1 2 3           1 3 3  \ swap drop dup
-          1 2 3           2 1 3  \ -rot swap rot
-          1 2 3 4         4 3 2 1  \ swap 2swap swap
-          1 2 3           1 2 3 1 2 3  \ third third third
-          1 2 3 4         1 2 3 4 1 2  \ 2over
-          1 2 3                        \ 2drop drop
-          1 2 3           1 2 3 4  \ dup 1+
-          1 2 3           1 3  \ swap drop
-          )
 
-     5 dup * . \ 5^2 を 出力
+     5 dup * . \ 5^2
 
      研究課題(assignment): ‘17’ を複数回書かずに、 Forth で 17^3 と 17^4
      を書いてみましょう。 また、 スタック上の 2 つの数値 (A と B、 スタ
-     ック・トップ B とする) を想定し、‘(a-b)(a+1)’ を計算する Forth コー
-     ドを作成してみましょう。
+     ック頂上を B とする) を想定し、‘(a-b)(a+1)’ を計算する Forth コード
+     を作成してみましょう。
 
    こちらも参照してください: *note Stack Manipulation::
 
@@ -1700,9 +1687,9 @@ definition)。 ‘;’ はコロン定義を終了します。
      テストして結果を比較しましょう)。 ‘redefine’ メッセージに驚かないで
      ください。 これらは単なる警告です。 (訳注: redefine; 同じ名前のワー
      ドを定義したという警告。 置き換えではなく追加となる。 これ以降の解
-     釈・コンパイルは新しい方のワードを参照するが、 通常は新しい方のワー
-     ド定義後も、 既にコンパイル済みのワードは古い方のワードを参照しつづ
-     ける。 詳しくはディクショナリ等の項目を参照)
+     釈(interpret)・コンパイルは新しい方のワードを参照するが、 通常は新
+     しい方のワード定義後も、 既にコンパイル済みのワードは古い方のワード
+     を参照しつづける。 詳しくはディクショナリ等の項目を参照)
 
    こちらも参照してください: *note Colon Definitions::
 
@@ -1841,7 +1828,7 @@ Forth では、 演算子の名前はオーバーロードされません。 し
 えば ‘+’ の場合)、 プレフィックスのないバリエーションのみが存在します。
 
    Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のよ
-うに間違った演算子を使うと、 データが正しく解釈されません:
+うに間違った演算子を使うと、 データが正しく解釈(interpret)されません:
 
      -1 u.
 
@@ -1945,10 +1932,11 @@ File: gforth.info,  Node: Local Variables Tutorial,  Next: Conditional execution
 ‘compat/anslocal.fs’ をインクルードしてください)
 
    この例では、 ‘{ a b -- b a }’ がローカルズ定義です。 スタックから 2 つ
-のセルを取得し、スタック頂上を ‘b’ に、 その次のスタック要素を ‘a’ にし
-ます。 ‘--’ は ‘}’ で終わるコメントを開始します。 ローカルズの定義後、 ロ
-ーカルズの名前を使用すると、 その値がスタックに積まれます。 コメント部分
-(‘-- b a’)は省略できます:
+のセルを取得し、 スタック頂上を ‘b’ に入れ、 その次のスタック要素を ‘a’
+に入れます(訳注: a b はスタック上から取り除かれる)。 ‘--’ は ‘}’ で終わ
+るコメントを開始します。 ローカルズの定義後、 ローカルズの名前を使用する
+と、 その値がスタックに積まれます。 コメント部分(‘-- b a’)は省略できます
+:
 
      : swap ( x1 x2 -- x2 x1 )
        { a b } b a ;
@@ -1963,8 +1951,8 @@ File: gforth.info,  Node: Local Variables Tutorial,  Next: Conditional execution
 るための演習として、 ローカルズを使用せずにコロン定義を記述してみること
 をお勧めします。
 
-     研究課題(assignment): ここまでのあなたの定義をローカルズを使ってで
-     書き換えてみましょう。
+     研究課題(assignment): ここまでのあなたの定義をローカルズを使って書
+     き換えてみましょう。
 
    こちらも参照下さい: *note Locals::
 
@@ -2023,10 +2011,10 @@ File: gforth.info,  Node: Flags and Comparisons Tutorial,  Next: General Loops T
 3.17 Flags and Comparisons
 ==========================
 
-false フラグはすべてのビットがクリアです(整数として解釈される場合は 0)。
-正規化された true フラグは、 すべてのビットがセットされています(2の補数
-の符号付き整数として -1)。 多くの文脈(例: ‘if’)では、ゼロ以外の値はすべ
-て true フラグとして扱われます。
+false フラグはすべてのビットがクリアです(整数として解釈(interpret)される
+場合は 0)。 正規化された true フラグは、 すべてのビットがセットされてい
+ます(2の補数の符号付き整数として -1)。 多くの文脈(例: ‘if’)では、ゼロ以
+外の値はすべて true フラグとして扱われます。
 
      false .
      true .
@@ -2339,8 +2327,8 @@ File: gforth.info,  Node: Return Stack Tutorial,  Next: Memory Tutorial,  Prev: 
 クにプッシュします。
 
    Forth プログラマーは通常、 データ・スタックのみを使用すると複雑すぎて
-、 かつ、 ファクタリングとローカルがオプションに無い場合、 データを一時
-的に保存するためにリターン・スタックを使用します。
+、 かつ、 ファクタリングやローカルが選択肢に無い場合、 データを一時的に
+保存するためにリターン・スタックを使用します。
 
      : 2swap ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
       rot >r rot r> ;
@@ -2373,38 +2361,40 @@ File: gforth.info,  Node: Memory Tutorial,  Next: Characters and Strings Tutoria
 3.23 Memory
 ===========
 
-You can create a global variable ‘v’ with
+以下使用してグローバル変数 ‘v’ を作成できます:
 
      variable v ( -- addr )
 
-   ‘v’ pushes the address of a cell in memory on the stack.  This cell
-was reserved by ‘variable’.  You can use ‘!’ (store) to store values
-from the stack into this cell and ‘@’ (fetch) to load the value from
-memory onto the stack:
+   ‘v’ は、スタックにメモリ内の、とあるセルのアドレスをプッシュします。
+このセルは ‘variable’ によって予約されています。 ‘!’(ストア)を使用してス
+タックからこのセルに値を保存し、 ‘@’(フェッチ)を使用して値をメモリからス
+タックにロードできます:
 
      v .
      5 v ! .s
      v @ .
 
-   You can see a raw dump of memory with ‘dump’:
+   ‘dump’ を使用すると、 メモリの生のダンプ(メモリー・ダンプ)を確認でき
+ます:
 
      v 1 cells .s dump
 
-   ‘Cells ( n1 -- n2 )’ gives you the number of bytes (or, more
-generally, address units (aus)) that ‘n1 cells’ occupy.  You can also
-reserve more memory:
+   ‘Cells ( n1 -- n2 )’ は、 n1 個のセル が占めるバイト数(より一般的には
+アドレス単位(address units)(aus))を与えます。 そして、 あなたは、 さらに
+多くのメモリを予約することもできます:
 
      create v2 20 cells allot
      v2 20 cells dump
 
-   creates a variable-like word ‘v2’ and reserves 20 uninitialized
-cells; the address pushed by ‘v2’ points to the start of these 20 cells
-(*note CREATE::).  You can use address arithmetic to access these cells:
+   変数のようなワード ‘v2’ を作成し、 20 個の初期化されていないセルを予
+約します。 ‘v2’ によってプッシュされたアドレスは、 これら 20 個のセルの
+先頭を指します(*note CREATE::)。 あなたは、 アドレス演算を使用して、 こ
+れらのセルにアクセスできます:
 
      3 v2 5 cells + !
      v2 20 cells dump
 
-   You can reserve and initialize memory with ‘,’:
+   ‘,’ を使用してメモリを予約 かつ 初期化できます:
 
      create v3
        5 , 4 , 3 , 2 , 1 ,
@@ -2413,38 +2403,39 @@ cells; the address pushed by ‘v2’ points to the start of these 20 cells
      v3 2 cells + @ .
      v3 5 cells dump
 
-     研究課題(assignment): Write a definition ‘vsum ( addr u -- n )’
-     that computes the sum of ‘u’ cells, with the first of these cells
-     at ‘addr’, the next one at ‘addr cell+’ etc.
+     研究課題(assignment): 最初のセルは ‘addr’ 、 次のセルは ‘addr
+     cell+’ などとして、 ‘u’ 個のセルの値の合計を計算する定義 ‘vsum (
+     addr u -- n )’ を記述してみましょう。
 
-   The difference between ‘variable’ and ‘create’ is that ‘variable’
-allots a cell, and that you cannot allot additional memory to a variable
-in standard Forth.
+   ‘variable’ と ‘create’ の違いは、‘variable’ がセルを割り当てる
+(allots)ことと、 標準 Forth では変数(variable)に追加のメモリを割り当てる
+ことができないことです。
 
-   You can also reserve memory without creating a new word:
+   新しいワードを作成せずにメモリを予約することもできます:
 
      here 10 cells allot .
      here .
 
-   The first ‘here’ pushes the start address of the memory area, the
-second ‘here’ the address after the dictionary area.  You should store
-the start address somewhere, or you will have a hard time finding the
-memory area again.
+   最初の ‘here’ は(最初の ‘here’ 時点の)ディクショナリ領域の後のアドレ
+スをプッシュし、 メモリ領域の開始アドレスとして使い、 2 番目の ‘here’ は
+(2 番目の ‘here’ 時点の)ディクショナリ領域の後のアドレスをプッシュします
+。 この開始アドレスはどこかに保存する必要があります。 そうしないと、 あ
+なたはこのメモリ領域を再度見つけるのが困難になります。
 
-   ‘Allot’ manages dictionary memory.  The dictionary memory contains
-the system’s data structures for words etc.  on Gforth and most other
-Forth systems.  It is managed like a stack: You can free the memory that
-you have just ‘allot’ed with
+   ‘Allot’ はディクショナリ・メモリを管理します。 ディクショナリ・メモリ
+には、 Gforth や他のほとんどの Forth システムの、 ワードなどのシステムの
+データ構造が含まれています。 これはスタックのように管理されます。 あなた
+は以下のようにして割り当て(‘allot’)したメモリを解放できます:
 
      -10 cells allot
      here .
 
-   Note that you cannot do this if you have created a new word in the
-meantime (because then your ‘allot’ed memory is no longer on the top of
-the dictionary “stack”).
+   注意: その合間に新しいワードを作成した場合、 それを実行できないことに
+注意してください(‘allot’ で作成されたメモリが、 もはやディクショナリ「ス
+タック」の頂上ではなくなるため)。
 
-   Alternatively, you can use ‘allocate’ and ‘free’ which allow freeing
-memory in any order:
+   その代わりに、 ‘allocate’ や ‘free’ を使用すると、 任意の順序でメモリ
+を解放できます:
 
      10 cells allocate throw .s
      20 cells allocate throw .s
@@ -2452,13 +2443,13 @@ memory in any order:
      free throw
      free throw
 
-   The ‘throw’s deal with errors (e.g., out of memory).
+   ‘throw’ はエラー(メモリ不足など)を処理します。
 
-   And there is also a garbage collector
-(https://www.complang.tuwien.ac.at/forth/garbage-collection.zip), which
-eliminates the need to ‘free’ memory explicitly.
+   また、 ガベージ・コレクター
+(https://www.complang.tuwien.ac.at/forth/garbage-collection.zip) なら、
+メモリを明示的に解放(‘free’)する必要がなくなります。
 
-   Reference: *note Memory::.
+   こちらも参照ください: *note Memory::
 
 
 File: gforth.info,  Node: Characters and Strings Tutorial,  Next: Alignment Tutorial,  Prev: Memory Tutorial,  Up: Tutorial
@@ -2466,51 +2457,52 @@ File: gforth.info,  Node: Characters and Strings Tutorial,  Next: Alignment Tuto
 3.24 Characters and Strings
 ===========================
 
-On the stack characters take up a cell, like numbers.  In memory they
-have their own size (one 8-bit byte on most systems), and therefore
-require their own words for memory access:
+スタック上では、 数と同様に文字がセルを占めます。 メモリ内では文字は独自
+のサイズ(ほとんどのシステムでは 8 ビットのバイト値)であるため、 メモリ・
+アクセスには文字独自のワードが必要です:
 
      create v4
        104 c, 97 c, 108 c, 108 c, 111 c,
      v4 4 chars + c@ .
      v4 5 chars dump
 
-   The preferred representation of strings on the stack is ‘addr
-u-count’, where ‘addr’ is the address of the first character and
-‘u-count’ is the number of characters in the string.
+   スタック上の文字列の推奨される表現は ‘addr u-count’ です。ここで、
+‘addr’ は文字列の最初の文字のアドレスで、 ‘u-count’ は文字列の文字数です
+。
 
      v4 5 type
 
-   You get a string constant with
+   以下を使用すると文字列定数を取得できます
 
      s" hello, world" .s
      type
 
-   Make sure you have a space between ‘s"’ and the string; ‘s"’ is a
-normal Forth word and must be delimited with white space (try what
-happens when you remove the space).
+   ‘s"’ と文字列の間にスペースがあることを確かめてください。 ‘s"’ は通常
+の Forth ワードであり、 空白(white space)で区切る必要があります(スペース
+を削除するとどうなるかを試してみましょう)。
 
-   However, this interpretive use of ‘s"’ is quite restricted: the
-string exists only until the next call of ‘s"’ (some Forth systems keep
-more than one of these strings, but usually they still have a limited
-lifetime).
+   ただし、 この ‘s"’ のインタプリタでの使用(interpretive use)は非常に制
+限されています。 文字列は、 ‘s"’ が次に呼び出されるまでの間だけ存在しま
+す(一部の Forth システムはこれらの文字列を複数保持しますが、 普通は未だ
+限られた寿命です)。
 
      s" hello," s" world" .s
      type
      type
 
-   You can also use ‘s"’ in a definition, and the resulting strings then
-live forever (well, for as long as the definition):
+   あなたは定義内で ‘s"’ を使用することもでき、 (定義が続く限り、)その結
+果の文字列は永久に存続します:
 
      : foo s" hello," s" world" ;
      foo .s
      type
      type
 
-     研究課題(assignment): ‘Emit ( c -- )’ types ‘c’ as character (not a
-     number).  Implement ‘type ( addr u -- )’.
+     研究課題(assignment): ‘Emit ( c -- )’ は ‘c’ を(数値ではなく)文字と
+     して出力します。 これを使って ‘type ( addr u -- )’ を実装してみまし
+     ょう。
 
-   Reference: *note Memory Blocks::.
+   こちらも参照ください: *note Memory Blocks::
 
 
 File: gforth.info,  Node: Alignment Tutorial,  Next: Floating Point Tutorial,  Prev: Characters and Strings Tutorial,  Up: Tutorial
@@ -2518,34 +2510,36 @@ File: gforth.info,  Node: Alignment Tutorial,  Next: Floating Point Tutorial,  P
 3.25 Alignment
 ==============
 
-On many processors cells have to be aligned in memory, if you want to
-access them with ‘@’ and ‘!’ (and even if the processor does not require
-alignment, access to aligned cells is faster).
+多くのプロセッサでは、 ‘@’ と ‘!’ を使用してセルにアクセスする場合、 メ
+モリ内でセ​​ルをアライメントする必要があります (プロセッサがアライメント
+を必要としない場合でも、 アライメントされたセルへのアクセスは高速です)。
 
-   ‘Create’ aligns ‘here’ (i.e., the place where the next allocation
-will occur, and that the ‘create’d word points to).  Likewise, the
-memory produced by ‘allocate’ starts at an aligned address.  Adding a
-number of ‘cells’ to an aligned address produces another aligned
-address.
+   ‘Create’ は ‘here’(つまり、 次の割り当てが行われる場所、 そして
+‘create’されたワードが指す場所)でアライメントします。 同様に、
+‘allocate’によって生成されたメモリはアライメントしたアドレスから始まりま
+す。 アライメントしたアドレスに ‘cells’ の数値 を足すと、 次のアライメン
+トされたアドレスが生成されます。
 
-   However, address arithmetic involving ‘char+’ and ‘chars’ can create
-an address that is not cell-aligned.  ‘Aligned ( addr -- a-addr )’
-produces the next aligned address:
+   ただし、 ‘char+’ および ‘chars’ を含むアドレス演算では、セルにアライ
+メントしていないアドレスが作成される可能性があります。 ‘Aligned ( addr
+-- a-addr )’ は、 その次のアライメントせされたアドレスを生成します:
 
      v3 char+ aligned .s @ .
      v3 char+ .s @ .
 
-   Similarly, ‘align’ advances ‘here’ to the next aligned address:
+   同様に、 ‘align’ は ‘here’ を次のアライメントされたアドレスに進めます
+:
 
      create v5 97 c,
      here .
      align here .
      1000 ,
 
-   Note that you should use aligned addresses even if your processor
-does not require them, if you want your program to be portable.
+   注意: プログラムを移植可能にしたい場合は、 プロセッサがそれらを必要と
+しない場合でも、 アライメントれたアドレスを使用する必要があることに注意
+してください。
 
-   Reference: *note Address arithmetic::.
+   こちらも参照ください: *note Address arithmetic::
 
 
 File: gforth.info,  Node: Floating Point Tutorial,  Next: Files Tutorial,  Prev: Alignment Tutorial,  Up: Tutorial
@@ -2553,53 +2547,52 @@ File: gforth.info,  Node: Floating Point Tutorial,  Next: Files Tutorial,  Prev:
 3.26 Floating Point
 ===================
 
-Floating-point (FP) numbers and arithmetic in Forth works mostly as one
-might expect, but there are a few things worth noting:
+Forth の浮動小数点(floating-point)(FP)の、 数値と算術演算は、 ほぼ期待さ
+れた通りに機能しますが、 特筆すべき点がいくつかあります:
 
-   The first point is not specific to Forth, but so important and yet
-not universally known that I mention it here: FP numbers are not reals.
-Many properties (e.g., arithmetic laws) that reals have and that one
-expects of all kinds of numbers do not hold for FP numbers.  If you want
-to use FP computations, you should learn about their problems and how to
-avoid them; a good starting point is ‘David Goldberg, What Every
-Computer Scientist Should Know About Floating-Point Arithmetic
+   最初の点は Forth に固有のものではありませんが、 非常に重要で、 まだ広
+く知られていないため、 ここで言及します。 浮動小数点数は実数(real)ではあ
+りません。 実数(real)が持ち、 あらゆる種類の数値に期待される多くの性質
+(算術法則など)は、 浮動小数点数には当てはまりません。 浮動小数点演算した
+い場合、 浮動小数点演算の問題とその回避方法について学ぶ必要があります。
+良い出発点は ‘David Goldberg, What Every Computer Scientist Should Know
+About Floating-Point Arithmetic
 (https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html), ACM
-Computing Surveys 23(1):5−48, March 1991’.
+Computing Surveys 23(1):5−48, March 1991’ です。
 
-   In Forth source code literal FP numbers need an exponent, e.g.,
-‘1e0’; this can also be written shorter as ‘1e’, longer as ‘+1.0e+0’,
-and many variations in between.  The reason for this is that, for
-historical reasons, Forth interprets a decimal point alone (e.g., ‘1.’)
-as indicating a double-cell integer.  Examples:
+   Forth ソース・コードでは、リテラル浮動小数点数には指数が必要です(例:
+‘1e0’)。これは、 ‘1e’ のように短く書くことも、 ‘+1.0e+0’ のように長く書
+くこともでき、 その間にはさまざまなバリエーションがあります。 その理由は
+、 歴史的な理由により、 Forth は小数点のみ(例: ‘1.’) の数を 2 セル整数を
+示すものとして解釈(interpret)するためです。 例:
 
      2e 2e f+ f.
 
-   Another requirement for literal FP numbers is that the current base
-is decimal; with a hex base ‘1e’ is interpreted as an integer.
+   リテラル浮動小数点数のもう 1 つの要件は、 現在の基数が 10 進数である
+ことです。 16 進数の ‘1e’ は整数として解釈(interpret)されます:
 
-   Forth has a separate stack for FP numbers in conformance with
-Forth-2012.  One advantage of this model is that cells are not in the
-way when accessing FP values, and vice versa.  Forth has a set of words
-for manipulating the FP stack: ‘fdup fswap fdrop fover frot’ and
-(non-standard) ‘fnip ftuck fpick’.
+   Forth には、Forth-2012 に準拠した浮動小数点数用の別個のスタックがあり
+ます。 このモデルの利点の 1 つは、 浮動小数点数にアクセスするときにセル
+が邪魔にならないこと、 またその逆も同様であることです。 Forth には、 浮
+動小数点スタック(FP スタック)を操作するためのワードのセットがあります:
+‘fdup fswap fdrop fover frot’ や (非標準の、) ‘fnip ftuck fpick’
 
-   FP arithmetic words are prefixed with ‘F’.  There is the usual set
-‘f+ f- f* f/ f** fnegate’ as well as a number of words for other
-functions, e.g., ‘fsqrt fsin fln fmin’.  One word that you might expect
-is ‘f=’; but ‘f=’ is non-standard, because FP computation results are
-usually inaccurate, so exact comparison is usually a mistake, and one
-should use approximate comparison.  Unfortunately, ‘f~’, the standard
-word for that purpose, is not well designed, so Gforth provides ‘f~abs’
-and ‘f~rel’ as well.
+   FP 算術ワードには ‘F’ という接頭辞が付きます。 通常の ‘f+ f- f* f/
+f** fnegate’ のほか、 他の、 関数用の多数のワード (例: ‘fsqrt fsin fln
+fmin’) があります。 期待されるワードの 1 つが ‘f=’ ですが、 ‘f=’ は標準
+にはありません。 浮動小数点数の計算結果は通常不正確であるため、 正確な比
+較は通常間違いであり、 近似的な比較を使用する必要があります。 残念ながら
+、この目的のための標準のワードである ‘f~’ は適切に設計されていないため、
+Gforth では ‘f~abs’ と ‘f~rel’ も提供しています。
 
-   And of course there are words for accessing FP numbers in memory (‘f@
-f!’), and for address arithmetic (‘floats float+ faligned’).  There are
-also variants of these words with an ‘sf’ and ‘df’ prefix for accessing
-IEEE format single-precision and double-precision numbers in memory;
-their main purpose is for accessing external FP data (e.g., that has
-been read from or will be written to a file).
+   そしてもちろん、 メモリ内の浮動小数点数にアクセスするためのワード(‘f@
+f!’)や、 アドレス演算用のワード(‘floats float+ faligned’)もあります。 メ
+モリ内の IEEE 書式の単精度および倍精度数値にアクセスするために、 ‘sf’ お
+よび ‘df’ プレフィックスを付けた、 これらのワードのバリエーションもあり
+ます。 その主な目的は、 外部浮動小数点数データ(ファイルから読み取られた
+、 またはファイルに書き込まれるデータなど)にアクセスすることです。
 
-   Here is an example of a dot-product word and its use:
+   以下は、 ドット出力ワード(dot-product word)とその使用例です:
 
      : v* ( f_addr1 nstride1 f_addr2 nstride2 ucount -- r )
        >r swap 2swap swap 0e r> 0 ?DO
@@ -2611,16 +2604,16 @@ been read from or will be written to a file).
 
      v 1 floats  v 1 floats  3  v* f.
 
-     研究課題(assignment): Write a program to solve a quadratic
-     equation.  Then read ‘Henry G. Baker, You Could Learn a Lot from a
-     Quadratic
+     研究課題(assignment): 二次方程式を解くプログラムを作成してみましょ
+     う。 次に、 ‘Henry G. Baker, You Could Learn a Lot from a Quadratic
      (https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.4448&rep=rep1&type=pdf),
-     ACM SIGPLAN Notices, 33(1):30−39, January 1998’, and see if you can
-     improve your program.  Finally, find a test case where the original
-     and the improved version produce different results.
+     ACM SIGPLAN Notices, 33(1):30−39, January 1998’ を読んで、 そのプロ
+     グラムを改善できるかどうか確認してください。 最後に、 元のバージョ
+     ンと改良されたバージョンで異なる結果が生成されるテスト・ケースを探
+     しましょう。
 
-   Reference: *note Floating Point::; *note Floating point stack::;
-*note Number Conversion::; *note Memory Access::; *note Address
+   こちらも参照ください: *note Floating Point::; *note Floating point
+stack::; *note Number Conversion::; *note Memory Access::; *note Address
 arithmetic::.
 
 
@@ -2629,17 +2622,18 @@ File: gforth.info,  Node: Files Tutorial,  Next: Interpretation and Compilation 
 3.27 Files
 ==========
 
-This section gives a short introduction into how to use files inside
-Forth.  It’s broken up into five easy steps:
+このセクションでは、 Forth 内でファイルを使用する方法について簡単に説明
+します。 それは 5 つの簡単なステップに分かれています:
 
-  1. Open an ASCII text file for input
-  2. Open a file for output
-  3. Read input file until string matches (or some other condition is
-     met)
-  4. Write some lines from input (modified or not) to output
-  5. Close the files.
+  1. 入力用に ASCII テキスト・ファイルを開きます
+  2. 出力用にファイルを開く
+  3. 文字列が一致する (または他の条件が満たされる) まで入力ファイルを読
+     み取ります
+  4. 入力 (が変更されたかどうかに関係なく、) から数行を出力に書き込みま
+     す
+  5. ファイルを閉じます。
 
-   Reference: *note General files::.
+   こちらも参照ください: *note General files::
 
 3.27.1 Open file for input
 --------------------------
@@ -2651,26 +2645,28 @@ Forth.  It’s broken up into five easy steps:
 
      s" foo.out" w/o create-file throw Value fd-out
 
-   The available file modes are r/o for read-only access, r/w for
-read-write access, and w/o for write-only access.  You could open both
-files with r/w, too, if you like.  All file words return error codes;
-for most applications, it’s best to pass there error codes with ‘throw’
-to the outer error handler.
+   使用可能なファイル・モードは、 読み取り専用アクセスの場合は r/o 、 読
+み取り/書き込み アクセスの場合は r/w 、書き込み専用アクセスの場合は w/o
+です。 必要に応じて、 読み取りと書き込みの両方のファイルを r/w で開くこ
+ともできます。 すべてのファイル用ワードはエラーコードを返します。 ほとん
+どのアプリケーションでは、 ‘throw’ を使用してエラー・コードを外部のエラ
+ー・ハンドラーに渡すのが最善(best)です。
 
-   If you want words for opening and assigning, define them as follows:
+   開いたり(opening)割り当てたり(assigning)するためのワードが必要な場合
+は、 以下のように定義します:
 
      0 Value fd-in
      0 Value fd-out
      : open-input ( addr u -- )  r/o open-file throw to fd-in ;
      : open-output ( addr u -- )  w/o create-file throw to fd-out ;
 
-   Usage example:
+   使用例:
 
      s" foo.in" open-input
      s" foo.out" open-output
 
-3.27.3 Scan file for a particular line
---------------------------------------
+3.27.3 ファイルの特定の行をスキャン
+-----------------------------------
 
      256 Constant max-line
      Create line-buffer  max-line 2 + allot
@@ -2686,20 +2682,21 @@ to the outer error handler.
        then
        2drop ;
 
-   ‘read-line ( addr u1 fd -- u2 flag ior )’ reads up to u1 bytes into
-the buffer at addr, and returns the number of bytes read, a flag that is
-false when the end of file is reached, and an error code.
+   ‘read-line ( addr u1 fd -- u2 flag ior )’ は、 addr からのバッファに
+最大 u1 バイトを読み取り、 読み取ったバイト数と、 ファイルの終わりに達し
+た場合に false になるフラグと、 エラーコードを返します。
 
-   ‘compare ( addr1 u1 addr2 u2 -- n )’ compares two strings and returns
-zero if both strings are equal.  It returns a positive number if the
-first string is lexically greater, a negative if the second string is
-lexically greater.
+   ‘compare ( addr1 u1 addr2 u2 -- n )’ は 2 つの文字列を比較し、 両方の
+文字列が等しい場合は 0 を返します。 最初の文字列の方が字句的に大きい
+(lexically greater)場合は正の数値を返し、 2 番目の文字列の方が字句的に大
+きい(lexically greater)場合は負の数値を返します。
 
-   We haven’t seen this loop here; it has two exits.  Since the ‘while’
-exits with the number of bytes read on the stack, we have to clean up
-that separately; that’s after the ‘else’.
+   このループは、 まだ見たことがないですよね。 このループは出口が2つあり
+ます。 ‘while’ はスタック上にある読み取ったバイト数で終了するため、 それ
+を個別にクリーンアップする必要があります。 そのクリーンアップする部分は
+‘else’ の後にあります。
 
-   Usage example:
+   使用例:
 
      s" The text I search is here" scan-file
 
@@ -2720,15 +2717,15 @@ that separately; that’s after the ‘else’.
      fd-in close-file throw
      fd-out close-file throw
 
-   Likewise, you can put that into definitions, too:
+   これも、同様に、 定義に組み込むことができます:
 
      : close-input ( -- )  fd-in close-file throw ;
      : close-output ( -- )  fd-out close-file throw ;
 
-     研究課題(assignment): How could you modify ‘copy-file’ so that it
-     copies until a second line is matched?  Can you write a program
-     that extracts a section of a text file, given the line that starts
-     and the line that terminates that section?
+     研究課題(assignment): ‘copy-file’ を変更して、 2 行目が一致するまで
+     コピーするようにするにはどうすればよいでしょうか？ セクションの開始
+     行と終了行を指定して、 テキスト・ファイルのセクションを抽出するプロ
+     グラムを作成できますか？
 
 
 File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy Tutorial,  Next: Execution Tokens Tutorial,  Prev: Files Tutorial,  Up: Tutorial
@@ -2736,23 +2733,22 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
 3.28 Interpretation and Compilation Semantics and Immediacy
 ===========================================================
 
-When a word is compiled, it behaves differently from being interpreted.
-E.g., consider ‘+’:
+ワードがコンパイルされるときと、 解釈(interpret)されるときでは異なる動作
+をします。 たとえば、 ‘+’ について考えてみましょう:
 
      1 2 + .
      : foo + ;
 
-   These two behaviours are known as compilation and interpretation
-semantics.  For normal words (e.g., ‘+’), the compilation semantics is
-to append the interpretation semantics to the currently defined word
-(‘foo’ in the example above).  I.e., when ‘foo’ is executed later, the
-interpretation semantics of ‘+’ (i.e., adding two numbers) will be
-performed.
+   これらの 2 つの振る舞いは、 コンパイルと解釈(interpret)のセマンティク
+スとして知られています。 通常のワード(例: ‘+’)の場合、 コンパイル・セマ
+ンティクスは、 現在定義されているワード(上記の例では ‘foo’)に解釈セマン
+ティクスを追加します。 つまり、 後で ‘foo’ が実行されると、 ‘+’ の解釈
+(interret)セマンティクス(つまり、2 つの数値の加算)が実行されます。
 
-   However, there are words with non-default compilation semantics,
-e.g., the control-flow words like ‘if’.  You can use ‘immediate’ to
-change the compilation semantics of the last defined word to be equal to
-the interpretation semantics:
+   ただし、 ‘if’ のような制御フロー・ワードなど、 デフォルト以外のコンパ
+イル・セマンティクスを持つワードが存在します。 ‘immediate’ を使用すると
+、最後に定義されたワードのコンパイル・セマンティクスを解釈(interpret)セ
+マンティクスと等しくなるように変更できます:
 
      : [FOO] ( -- )
       5 . ; immediate
@@ -2763,13 +2759,13 @@ the interpretation semantics:
      bar
      see bar
 
-   Two conventions to mark words with non-default compilation semantics
-are names with brackets (more frequently used) and to write them all in
-upper case (less frequently used).
+   デフォルト以外のコンパイル・セマンティクスのワードだと知らしめる 2 つ
+の慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、 名前をすべて大
+文字で記述する(あまり使用されない)ことです。
 
-   For some words, such as ‘if’, using their interpretation semantics is
-usually a mistake, so we mark them as ‘compile-only’, and you get a
-warning when you interpret them.
+   ‘if’ などの一部のワードについては、 その解釈(interpret)セマンティクス
+を使用するのは通常間違いであるため、 それらを ‘compile-only’ としてマー
+クし、 解釈(interpret)すると警告が表示されます。
 
      : flip ( -- )
       6 . ; compile-only \ but not immediate
@@ -2779,20 +2775,21 @@ warning when you interpret them.
       flip ;
      flop
 
-   In this example, first the interpretation semantics of ‘flip’ is used
-(and you get a warning); the second use of ‘flip’ uses the compilation
-semantics (and you get no warning).  You can also see in this example
-that compile-only is a property that is evaluated at text interpretation
-time, not at run-time.
+   この例では、 最初に ‘flip’ の解釈(interpret)セマンティクスが使用され
+ます(警告が表示されます)。 ‘flip’ の 2 番目の使用では、 コンパイル・セマ
+ンティクスが使用されます(警告は表示されません)。 この例では、
+compile-only が実行時(run-time)ではなくテキスト解釈時(text
+interpretation time)に評価されるプロパティであることもわかります。
 
-   The text interpreter has two states: in interpret state, it performs
-the interpretation semantics of words it encounters; in compile state,
-it performs the compilation semantics of these words.
+   テキスト・インタプリタには 2 つの状態があります。 解釈(interpret)状態
+では、 遭遇したワードの解釈(interpret)セマンティクスを実行します。 コン
+パイル状態では、これらのワードのコンパイル・セマンティクスが実行されます
+。
 
-   Among other things, ‘:’ switches into compile state, and ‘;’ switches
-back to interpret state.  They contain the factors ‘]’ (switch to
-compile state) and ‘[’ (switch to interpret state), that do nothing but
-switch the state.
+   特に、 ‘:’ はコンパイル状態に切り替え、 ‘;’ は解釈(interpret)状態に戻
+ります。 これらには、 状態を切り替えるだけがその効果である ‘]’ (コンパイ
+ル状態に切り替える) と ‘[’ (解釈(interpret)状態に切り替える) が含まれて
+います。
 
      : xxx ( -- )
        [ 5 . ]
@@ -2801,10 +2798,10 @@ switch the state.
      xxx
      see xxx
 
-   These brackets are also the source of the naming convention mentioned
-above.
+   これらの角括弧(brackets)は、 上記の命名慣習の源でもあります。
 
-   Reference: *note Interpretation and Compilation Semantics::.
+   こちらも参照ください: *note Interpretation and Compilation
+Semantics::
 
 
 File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,  Prev: Interpretation and Compilation Semantics and Immediacy Tutorial,  Up: Tutorial
@@ -2812,19 +2809,19 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
 3.29 Execution Tokens
 =====================
 
-‘' word’ gives you the execution token (XT) of a word.  The XT is a cell
-representing the interpretation semantics of a word.  You can execute
-this semantics with ‘execute’:
+‘' word’ は、 ワードの実行トークン(execution token)(XT)を提供します。 XT
+は、 ワードの解釈(interpret)セマンティクスを表すセルです。 このセマンテ
+ィクスは ‘execute’ で実行できます:
 
      ' + .s
      1 2 rot execute .
 
-   The XT is similar to a function pointer in C. However, parameter
-passing through the stack makes it a little more flexible:
+   XT は C の関数ポインタに似ています。 ただし、 パラメータがスタックで
+渡されるため、もう少し柔軟になります:
 
      : map-array ( ... addr u xt -- ... )
-     \ executes xt ( ... x -- ... ) for every element of the array starting
-     \ at addr and containing u elements
+     \ addr で始まり u 個の要素を含む配列のすべての要素に対して
+     \ xt ( ... x -- ... ) を実行します
        { xt }
        cells over + swap ?do
          i @ xt execute
@@ -2833,25 +2830,25 @@ passing through the stack makes it a little more flexible:
      create a 3 , 4 , 2 , -1 , 4 ,
      a 5 ' . map-array .s
      0 a 5 ' + map-array .
-     s" max-n" environment? drop .s
-     a 5 ' min map-array .
 
-   You can use map-array with the XTs of words that consume one element
-more than they produce.  In theory you can also use it with other XTs,
-but the stack effect then depends on the size of the array, which is
-hard to understand.
+     s" max-n" environment? drop .s \ 下記比較初期値用に整数最大値を得る
+     a 5 ' min map-array . \ 最初の要素は、 environment? で取得した整数最大値と比較
 
-   Since XTs are cell-sized, you can store them in memory and manipulate
-them on the stack like other cells.  You can also compile the XT into a
-word with ‘compile,’:
+   生成するより消費する要素が 1 つ多いワードの XT に対して map-array を
+使用できます。 理論的には、他の XT でも使用できますが、 スタック効果は配
+列のサイズに依存するため、理解するのが困難です。
+
+   XT はセルサイズであるため、 メモリに保存し、 他のセルと同様にスタック
+上で操作できます。 ‘compile,’ を使用して XT をワードにコンパイルすること
+もできます:
 
      : foo1 ( n1 n2 -- n )
         [ ' + compile, ] ;
      see foo1
 
-   This is non-standard, because ‘compile,’ has no compilation semantics
-in the standard, but it works in good Forth systems.  For the broken
-ones, use
+   ‘compile,’ は標準ではコンパイル・セマンティクスがないため、 上記は標
+準ではないけれども、 良い Forth システムでは動作します。 うまくいかなか
+ったモノついては、 以下を使用してください
 
      : [compile,] compile, ; immediate
 
@@ -2859,9 +2856,9 @@ ones, use
         [ ' + ] [compile,] ;
      see foo1
 
-   ‘'’ is a word with default compilation semantics; it parses the next
-word when its interpretation semantics are executed, not during
-compilation:
+   ‘'’ は、 デフォルトでコンパイル・セマンティクスを持つワードです。 コ
+ンパイル中ではなく、 解釈(interpret)セマンティクスの実行時、 その次のワ
+ードを解析(parse)します。
 
      : foo ( -- xt )
        ' ;
@@ -2871,29 +2868,31 @@ compilation:
      see bar
      1 2 bar + .
 
-   You often want to parse a word during compilation and compile its XT
-so it will be pushed on the stack at run-time.  ‘[']’ does this:
+   コンパイル中にワードを解析(parse)し、 その XT をコンパイルして、 実行
+時にスタックにプッシュされるようにしたいことがよくあります。 ‘[']’ はこ
+れを行います:
 
      : xt-+ ( -- xt )
        ['] + ;
      see xt-+
      1 2 xt-+ execute .
 
-   Many programmers tend to see ‘'’ and the word it parses as one unit,
-and expect it to behave like ‘[']’ when compiled, and are confused by
-the actual behaviour.  If you are, just remember that the Forth system
-just takes ‘'’ as one unit and has no idea that it is a parsing word
-(attempts to convenience programmers in this issue have usually resulted
-in even worse pitfalls, see ‘State’-smartness—Why it is evil and How to
-Exorcise it (https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz)).
+   多くのプログラマーは、 ‘'’ とそれが解析(parse)するワードを 1 つの単位
+として認識し、 コンパイル時に ‘[']’ のように動作することを期待し、 実際
+の動作に混乱する傾向があります。 あなたがもしそうなら、 Forth システムは
+‘'’ を 1 つの単位として捉えているだけであり、 それが解析(parse)ワードで
+あるとはまったく考えていないことを覚えておいてください(この問題でプログ
+ラマーの便宜を図る試みは、 通常、 さらにひどい落とし穴につながります。
+‘State’-smartness—Why it is evil and How to Exorcise it
+(https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz))。
 
-   Note that the state of the interpreter does not come into play when
-creating and executing XTs.  I.e., even when you execute ‘'’ in compile
-state, it still gives you the interpretation semantics.  And whatever
-that state is, ‘execute’ performs the semantics represented by the XT
-(i.e., for XTs produced with ‘'’ the interpretation semantics).
+   XT の作成および実行は、 インタプリタの状態には影響を受けないことに注
+意してください。 つまり、 コンパイル状態で ‘'’ を実行した場合でも、 解釈
+(interpret)セマンティクスが得られます。 そして、 そこでの状態が何であれ
+、 ‘execute’ は XT によって表されるセマンティクス(つまり、‘'’ で生成され
+た XT の場合は解釈(interpret)セマンティクス)を実行します。
 
-   Reference: *note Tokens for Words::.
+   こちらも参照ください: *note Tokens for Words::
 
 
 File: gforth.info,  Node: Exceptions Tutorial,  Next: Defining Words Tutorial,  Prev: Execution Tokens Tutorial,  Up: Tutorial
@@ -2901,34 +2900,34 @@ File: gforth.info,  Node: Exceptions Tutorial,  Next: Defining Words Tutorial,  
 3.30 Exceptions
 ===============
 
-‘throw ( n -- )’ causes an exception unless n is zero.
+‘throw ( n -- )’ は、 n がゼロでない限り例外を引き起こします。
 
      100 throw .s
      0 throw .s
 
-   ‘catch ( ... xt -- ... n )’ behaves similar to ‘execute’, but it
-catches exceptions and pushes the number of the exception on the stack
-(or 0, if the xt executed without exception).  If there was an
-exception, the stacks have the same depth as when entering ‘catch’:
+   ‘catch ( ... xt -- ... n )’ は ‘execute’ と同様に動作しますが、 例外
+をキャッチし、 スタック上に例外の数値(または XT が例外なしで実行された場
+合は 0)をプッシュします。 例外があった場合、 スタックの深さは ‘catch’ の
+実行直前と同一です。
 
      .s
      3 0 ' / catch .s
      3 2 ' / catch .s
 
-     研究課題(assignment): Try the same with ‘execute’ instead of
-     ‘catch’.
+     研究課題(assignment): ‘catch’ の代わりに ‘execute’ を使用して同じこ
+     とを試してみましょう。
 
-   ‘Throw’ always jumps to the dynamically next enclosing ‘catch’, even
-if it has to leave several call levels to achieve this:
+   ‘throw’ は、常に動的に直近にこの ‘throw’ を囲んでいる(定義の) ‘catch’
+にジャンプします、 たとえそのジャンプを達成するために複数の呼び出しレベ
+ルを飛び越す必要がある場合でもです:
 
      : foo 100 throw ;
      : foo1 foo ." after foo" ;
      : bar ['] foo1 catch ;
      bar .
 
-   It is often important to restore a value upon leaving a definition,
-even if the definition is left through an exception.  You can ensure
-this like this:
+   多くの場合、 定義が例外によって終了した場合でも、 定義を終了したとき
+に値を復元することが重要です。 以下のようにしてみるのはどうでしょうか:
 
      : ...
         save-x
@@ -2936,16 +2935,16 @@ this like this:
         restore-x
         ( ... n ) throw ;
 
-   However, this is still not safe against, e.g., the user pressing
-‘Ctrl-C’ when execution is between the ‘catch’ and ‘restore-x’.
+   しかし、 これでも、 たとえば、‘catch’ と ‘restore-x’ の間を実行中にユ
+ーザーが ‘Ctrl-C’ を押すなどしたら安全ではありません。
 
-   Gforth provides an alternative exception handling syntax that is safe
-against such cases: ‘try ... restore ... endtry’.  If the code between
-‘try’ and ‘endtry’ has an exception, the stack depths are restored, the
-exception number is pushed on the stack, and the execution continues
-right after ‘restore’.
+   Gforth は、そのような場合に対して安全な代替例外処理構文(alternative
+exception handling syntax) ‘try ...restore ... endtry’ を提供します。
+‘try’ と ‘endtry’ の間のコードに例外があった場合、 スタックの深さが復元
+され、 例外数値がスタックにプッシュされ、 ‘restore’ の直後から実行が続行
+されます。
 
-   The safer equivalent to the restoration code above is
+   以下は、 上記のコードと同等の、 より安全なコードです
 
      : ...
        save-x
@@ -2956,7 +2955,7 @@ right after ‘restore’.
        endtry
        throw ;
 
-   Reference: *note Exception Handling::.
+   こちらも参照ください: *note Exception Handling::
 
 
 File: gforth.info,  Node: Defining Words Tutorial,  Next: Arrays and Records Tutorial,  Prev: Exceptions Tutorial,  Up: Tutorial
@@ -2964,22 +2963,22 @@ File: gforth.info,  Node: Defining Words Tutorial,  Next: Arrays and Records Tut
 3.31 Defining Words
 ===================
 
-‘:’, ‘create’, and ‘variable’ are definition words: They define other
-words.  ‘Constant’ is another definition word:
+これまでに出てきた ‘:’ や ‘create’ や ‘variable’ は定義ワードです。 これ
+らは他のワードを定義します。 ‘Constant’ はもう一つの定義ワードです:
 
      5 constant foo
      foo .
 
-   You can also use the prefixes ‘2’ (double-cell) and ‘f’ (floating
-point) with ‘variable’ and ‘constant’.
+   ‘variable’ や ‘constant’ でも接頭辞 ‘2’ (2倍長セル) や ‘f’ (浮動小数
+点) を使用することができます。
 
-   You can also define your own defining words.  E.g.:
+   あなた独自の定義ワードを定義することもできます。 例:
 
      : variable ( "name" -- )
        create 0 , ;
 
-   You can also define defining words that create words that do
-something other than just producing their address:
+   また、 単にアドレスを生成する以外のことを行うワードを作成する定義ワー
+ドを定義することもできます:
 
      : constant ( n "name" -- )
        create ,
@@ -2989,46 +2988,46 @@ something other than just producing their address:
      5 constant foo
      foo .
 
-   The definition of ‘constant’ above ends at the ‘does>’; i.e., ‘does>’
-replaces ‘;’, but it also does something else: It changes the last
-defined word such that it pushes the address of the body of the word and
-then performs the code after the ‘does>’ whenever it is called.
+   上記の ‘constant’ の定義は ‘does>’ で終了します。 つまり、 ‘does>’ は
+‘;’ を置き換えるのですが、 他のことも行います。 最後に定義されたワードを
+変更して、 ワード本体(body)のアドレスをプッシュし、 呼び出されるたびに
+‘does>’ の後のコードを実行します。
 
-   In the example above, ‘constant’ uses ‘,’ to store 5 into the body of
-‘foo’.  When ‘foo’ executes, it pushes the address of the body onto the
-stack, then (in the code after the ‘does>’) fetches the 5 from there.
+   上の例では、 ‘constant’ は ‘,’ を使用して ‘foo’ の本体に 5 を格納しま
+す。 ‘foo’ が実行されると、 本体のアドレスがスタックにプッシュされ、
+(‘does>’ の後のコードにより、)そこから 5 がフェッチされます。
 
-   The stack comment near the ‘does>’ reflects the stack effect of the
-defined word, not the stack effect of the code after the ‘does>’ (the
-difference is that the code expects the address of the body that the
-stack comment does not show).
+   ‘does>’ の脇のスタック・コメントは、 ‘does>’ の後のコードのスタック効
+果ではなく、 定義されたワードのスタック効果です(違いは、 ‘does>’ の後の
+コードは ‘does>’ の脇のスタック・コメントには書いてない、 ワード本体
+(body)のアドレスを期待している点です)。
 
-   You can use these definition words to do factoring in cases that
-involve (other) definition words.  E.g., a field offset is always added
-to an address.  Instead of defining
+   これらの定義ワードを使用すると、 (他の)定義ワードが関係する場合にファ
+クタリングを行うことができます。 たとえば、 フィールド・オフセットは常に
+アドレスに加算するものですが、 その代わりに以下を定義します
 
      2 cells constant offset-field1
 
-   and using this like
+   この offset-field1 は以下のように使います
 
      ( addr ) offset-field1 +
 
-   you can define a definition word
+   ここで、 あなたは以下のような定義ワードをを定義できます
 
      : simple-field ( n "name" -- )
        create ,
      does> ( n1 -- n1+n )
        ( addr ) @ + ;
 
-   Definition and use of field offsets now look like this:
+   フィールド・オフセットの定義と使用は以下のようになります:
 
      2 cells simple-field field1
      create mystruct 4 cells allot
      mystruct .s field1 .s drop
 
-   If you want to do something with the word without performing the code
-after the ‘does>’, you can access the body of a ‘create’d word with
-‘>body ( xt -- addr )’:
+   ‘does>’ の後のコードを実行せずに、 そのワードで何かをしたい場合は、
+‘>body ( xt -- addr )’ を使用すれば ‘create’ したワードの本体(body)にア
+クセスできます:
 
      : value ( n "name" -- )
        create ,
@@ -3042,13 +3041,12 @@ after the ‘does>’, you can access the body of a ‘create’d word with
      7 to foo
      foo .
 
-     研究課題(assignment): Define ‘defer ( "name" -- )’, which creates a
-     word that stores an XT (at the start the XT of ‘abort’), and upon
-     execution ‘execute’s the XT. Define ‘is ( xt "name" -- )’ that
-     stores ‘xt’ into ‘name’, a word defined with ‘defer’.  Indirect
-     recursion is one application of ‘defer’.
+     研究課題(assignment): (‘abort’ の XT の先頭に、) XT を格納するワー
+     ドを作成する、 ‘defer ( "name" -- )’ を定義し、 実行時に XT を
+     ‘execute’ で実行するようにしてみましょう。 間接再帰は ‘defer’ の応
+     用の 1 つです。
 
-   Reference: *note User-defined Defining Words::.
+   こちらも参照ください: *note User-defined Defining Words::
 
 
 File: gforth.info,  Node: Arrays and Records Tutorial,  Next: POSTPONE Tutorial,  Prev: Defining Words Tutorial,  Up: Tutorial
@@ -3056,27 +3054,27 @@ File: gforth.info,  Node: Arrays and Records Tutorial,  Next: POSTPONE Tutorial,
 3.32 Arrays and Records
 =======================
 
-Forth has no standard words for defining arrays, but you can build them
-yourself based on address arithmetic.  You can also define words for
-defining arrays and records (*note Defining Words: Defining Words
-Tutorial.).
+Forth には配列を定義するための標準ワードはありませんが、 アドレス演算に
+基づいて自分で配列を構築できます。 配列とレコードを定義するためのワード
+を定義することもできます(*note Defining Words: Defining Words
+Tutorial.)。
 
-   One of the first projects a Forth newcomer sets out upon when
-learning about defining words is an array defining word (possibly for
-n-dimensional arrays).  Go ahead and do it, I did it, too; you will
-learn something from it.  However, don’t be disappointed when you later
-learn that you have little use for these words (inappropriate use would
-be even worse).  I have not found a set of useful array words yet; the
-needs are just too diverse, and named, global arrays (the result of
-naive use of defining words) are often not flexible enough (e.g.,
-consider how to pass them as parameters).  Another such project is a set
-of words to help dealing with strings.
+   Forth の初心者がワードの定義について学ぶときに最初に着手するプロジェ
+クトの 1 つが配列定義ワード(ことによっては n 次元配列)です。 さぁあなた
+もやってみましょう。 あなたはそこから何かを学ぶでしょう。 ただし、 後か
+らこれらのワードをほとんど使用しないことがわかってもがっかりしないでくだ
+さい(不適切に使用するとさらに悪いことになります)。 私はまだ有用な配列ワ
+ードのセットを見つけられていません。 ニーズがあまりにも多様で、 (定義ワ
+ードを単純に使用した結果である、)名前付きのグローバル配列は、 柔軟性が十
+分ではないことがよくあります(たとえば、 どのようにしてパラメーターを渡す
+か、など)。 同様のプロジェクトのもう 1 つは、 文字列の処理に役立つワード
+のセットです。
 
-   On the other hand, there is a useful set of record words, and it has
-been defined in ‘compat/struct.fs’; these words are predefined in
-Gforth.  They are explained in depth elsewhere in this manual (see *note
-Structures::).  The ‘simple-field’ example above is simplified variant
-of fields in this package.
+   その一方、 レコード・ワードには便利なセットがあり、
+‘compat/struct.fs’ で定義されています。 これらのワードは Gforth で事前定
+義されています。 これらについては、 このマニュアルの他の場所で詳しく説明
+されています(*note Structures:: 参照)。 上記の ‘simple-field’ の例は、 こ
+のパッケージのフィールドの簡略化されたバリエーションです。
 
 
 File: gforth.info,  Node: POSTPONE Tutorial,  Next: Literal Tutorial,  Prev: Arrays and Records Tutorial,  Up: Tutorial
@@ -3084,8 +3082,8 @@ File: gforth.info,  Node: POSTPONE Tutorial,  Next: Literal Tutorial,  Prev: Arr
 3.33 ‘POSTPONE’
 ===============
 
-You can compile the compilation semantics (instead of compiling the
-interpretation semantics) of a word with ‘POSTPONE’:
+‘POSTPONE’ を使用すると、 (解釈(interpret)セマンティクスをコンパイルする
+代わりに、) ワードのコンパイル・セマンティクスをコンパイルできます:
 
      : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
       POSTPONE + ; immediate
@@ -3094,31 +3092,30 @@ interpretation semantics) of a word with ‘POSTPONE’:
      1 2 foo .
      see foo
 
-   During the definition of ‘foo’ the text interpreter performs the
-compilation semantics of ‘MY-+’, which performs the compilation
-semantics of ‘+’, i.e., it compiles ‘+’ into ‘foo’.
+   ‘foo’ の定義中に、 テキスト・インタプリタは ‘MY-+’ のコンパイル・セマ
+ンティクスを実行し、 それが ‘+’ のコンパイル・セマンティクスを実行します
+。 つまり、 ‘+’ を ‘foo’ 内にコンパイルします。
 
-   This example also displays separate stack comments for the
-compilation semantics and for the stack effect of the compiled code.
-For words with default compilation semantics these stack effects are
-usually not displayed; the stack effect of the compilation semantics is
-always ‘( -- )’ for these words, the stack effect for the compiled code
-is the stack effect of the interpretation semantics.
+   この例では、 コンパイル・セマンティクスとコンパイルされたコードのスタ
+ック効果について個別のスタック・コメントも表示します。 デフォルトのコン
+パイル・セマンティクスを持つワードの場合、 通常、 これらのスタック効果は
+表示されません。 これらのワードのコンパイル・セマンティクスのスタック効
+果は常に ‘( -- )’ であり、 コンパイルされたコードのスタック効果は解釈
+(interpret)セマンティクスのスタック効果です。
 
-   Note that the state of the interpreter does not come into play when
-performing the compilation semantics in this way.  You can also perform
-it interpretively, e.g.:
+   注意: この方法でコンパイル・セマンティクスを実行する場合、 インタプリ
+タの状態には影響を受けないことに注意してください。 あなたは解釈的
+(interpretively)に実行することもできます。 例:
 
      : foo2 ( n1 n2 -- n )
       [ MY-+ ] ;
-     1 2 foo .
-     see foo
+     1 2 foo2 .
+     see foo2
 
-   However, there are some broken Forth systems where this does not
-always work, and therefore this practice was been declared non-standard
-in 1999.
+   ただし、 これが常に機能するとは限らない、良くない Forth システムがい
+くつかあるため、 この方法は 1999 年に非標準となりました。
 
-   Here is another example for using ‘POSTPONE’:
+   ‘POSTPONE’ を使用する別の例を以下に示します:
 
      : MY-- ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
       POSTPONE negate POSTPONE + ; immediate compile-only
@@ -3127,13 +3124,14 @@ in 1999.
      2 1 bar .
      see bar
 
-   You can define ‘ENDIF’ in this way:
+   ‘ENDIF’ は以下の方法で定義できます:
 
      : ENDIF ( Compilation: orig -- )
        POSTPONE then ; immediate
 
-     研究課題(assignment): Write ‘MY-2DUP’ that has compilation
-     semantics equivalent to ‘2dup’, but compiles ‘over over’.
+     研究課題(assignment): ‘2dup’ と同等のコンパイル・セマンティクスを持
+     つ ‘MY-2DUP’ を作成しますが、 コンパイルされるのは ‘over over’ にな
+     るようにしてみましょう。
 
 
 File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Prev: POSTPONE Tutorial,  Up: Tutorial
@@ -3141,11 +3139,11 @@ File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Pr
 3.34 ‘Literal’
 ==============
 
-You cannot ‘POSTPONE’ numbers:
+数値を ‘POSTPONE’ することはできません:
 
      : [FOO] POSTPONE 500 ; immediate
 
-   Instead, you can use ‘LITERAL (compilation: n --; run-time: -- n )’:
+   代わりに ‘LITERAL (compilation: n --; run-time: -- n )’ を使用します:
 
      : [FOO] ( compilation: --; run-time: -- n )
        500 POSTPONE literal ; immediate
@@ -3154,17 +3152,17 @@ You cannot ‘POSTPONE’ numbers:
      flip .
      see flip
 
-   ‘LITERAL’ consumes a number at compile-time (when it’s compilation
-semantics are executed) and pushes it at run-time (when the code it
-compiled is executed).  A frequent use of ‘LITERAL’ is to compile a
-number computed at compile time into the current word:
+   ‘LITERAL’ は、 コンパイル時(コンパイル・セマンティクスが実行されると
+き)に数値を消費し、 実行時(コンパイルされたコードが実行されるとき)にそれ
+をプッシュします。 ‘LITERAL’ のよくある使用法は、 コンパイル時に計算され
+た数値を現在のワードにコンパイルすることです:
 
      : bar ( -- n )
        [ 2 2 + ] literal ;
      see bar
 
-     研究課題(assignment): Write ‘]L’ which allows writing the example
-     above as ‘: bar ( -- n ) [ 2 2 + ]L ;’
+     研究課題(assignment): 上記の例を ‘: bar ( -- n ) [ 2 2 + ]L ;’ と記
+     述できるような ‘]L’ を定義してみましょう。
 
 
 File: gforth.info,  Node: Advanced macros Tutorial,  Next: Compilation Tokens Tutorial,  Prev: Literal Tutorial,  Up: Tutorial
@@ -3172,11 +3170,11 @@ File: gforth.info,  Node: Advanced macros Tutorial,  Next: Compilation Tokens Tu
 3.35 Advanced macros
 ====================
 
-Reconsider ‘map-array’ from *note Execution Tokens: Execution Tokens
-Tutorial.  It frequently performs ‘execute’, a relatively expensive
-operation in some Forth implementations.  You can use ‘compile,’ and
-‘POSTPONE’ to eliminate these ‘execute’s and produce a word that
-contains the word to be performed directly:
+*note Execution Tokens: Execution Tokens Tutorial. の ‘map-array’ につい
+て再検討してみましょう。 ‘map-array’ は ‘execute’ を頻繁に実行しますが、
+これは一部の Forth 実装では比較的高価な操作です。 ‘compile,’ と
+‘POSTPONE’ を使用すると、 これらの ‘execute’ を削除し、 直接実行されるワ
+ードを含むワードを生成できます:
 
      : compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )
      \ at run-time, execute xt ( ... x -- ... ) for each element of the
@@ -3191,8 +3189,8 @@ contains the word to be performed directly:
      see sum-array
      a 5 sum-array .
 
-   You can use the full power of Forth for generating the code; here’s
-an example where the code is generated in a loop:
+   コードの生成には Forth の機能を最大限に活用できます。 以下に、 コード
+がループ内で生成される例を示します:
 
      : compile-vmul-step ( compilation: n --; run-time: n1 addr1 -- n2 addr2 )
      \ n2=n1+(addr1)*n, addr2=addr1+cell
@@ -3213,16 +3211,14 @@ an example where the code is generated in a loop:
      see a-vmul
      a a-vmul .
 
-   This example uses ‘compile-map-array’ to show off, but you could also
-use ‘map-array’ instead (try it now!).
+   この例では ‘compile-map-array’ を使用していますが、 代わりに
+‘map-array’ を使用することもできます(是非試してみてください)。
 
-   You can use this technique for efficient multiplication of large
-matrices.  In matrix multiplication, you multiply every row of one
-matrix with every column of the other matrix.  You can generate the code
-for one row once, and use it for every column.  The only downside of
-this technique is that it is cumbersome to recover the memory consumed
-by the generated code when you are done (and in more complicated cases
-it is not possible portably).
+   この手法を使用すると、 巨大な行列を効率的に乗算できます。 行列の乗算
+では、 一方の行列のすべての行ともう一方の行列のすべての列を乗算します。
+1 行のコードを 1 回生成し、 それをすべての列に使用できます。 この手法の
+唯一の欠点は、 生成されたコードによって消費されたメモリを完了時に開放す
+るのが面倒なことです(さらに複雑な場合は移植可能ではありません)。
 
 
 File: gforth.info,  Node: Compilation Tokens Tutorial,  Next: Wordlists and Search Order Tutorial,  Prev: Advanced macros Tutorial,  Up: Tutorial
@@ -3230,34 +3226,34 @@ File: gforth.info,  Node: Compilation Tokens Tutorial,  Next: Wordlists and Sear
 3.36 Compilation Tokens
 =======================
 
-This section is Gforth-specific.  You can skip it.
+このセクションは Gforth 固有です。 スキップしても構いません。
 
-   ‘' word compile,’ compiles the interpretation semantics.  For words
-with default compilation semantics this is the same as performing the
-compilation semantics.  To represent the compilation semantics of other
-words (e.g., words like ‘if’ that have no interpretation semantics),
-Gforth has the concept of a compilation token (CT, consisting of two
-cells), and words ‘comp'’ and ‘[comp']’.  You can perform the
-compilation semantics represented by a CT with ‘execute’:
+   ‘' word compile,’ は解釈(interpret)セマンティクスをコンパイルします。
+デフォルトのコンパイル・セマンティクスを持つワードの場合、 これはコンパ
+イル・セマンティクスを実行するのと同じです。 他のワードのコンパイル・セ
+マンティクス(解釈(interpret)セマンティクスを持たない ‘if’ などのワード
+)を表すために、 Gforth にはコンパイル・トークン(CTと略します。 2つのセル
+で構成)と、 ワード ‘comp'’ と、 ‘[comp']’ の概念があります。 ‘execute’ を
+使用して、 CT によって表されるコンパイル・セマンティクスを実行できます:
 
      : foo2 ( n1 n2 -- n )
         [ comp' + execute ] ;
-     see foo
+     see foo2
 
-   You can compile the compilation semantics represented by a CT with
-‘postpone,’:
+   ‘postpone,’ を使用して、 CT によって表されるコンパイル・セマンティク
+スをコンパイルできます:
 
      : foo3 ( -- )
        [ comp' + postpone, ] ;
      see foo3
 
-   ‘[ comp' word postpone, ]’ is equivalent to ‘POSTPONE word’.  ‘comp'’
-is particularly useful for words that have no interpretation semantics:
+   ‘[ comp' word postpone, ]’ ‘POSTPONE word’ と同等です。 ‘comp'’ は、
+解釈(interpret)セマンティクスを持たないワードに対して特に役立ちます:
 
      ' if
      comp' if .s 2drop
 
-   Reference: *note Tokens for Words::.
+   こちらも参照ください: *note Tokens for Words::
 
 
 File: gforth.info,  Node: Wordlists and Search Order Tutorial,  Prev: Compilation Tokens Tutorial,  Up: Tutorial
@@ -3265,66 +3261,67 @@ File: gforth.info,  Node: Wordlists and Search Order Tutorial,  Prev: Compilatio
 3.37 Wordlists and Search Order
 ===============================
 
-The dictionary is not just a memory area that allows you to allocate
-memory with ‘allot’, it also contains the Forth words, arranged in
-several wordlists.  When searching for a word in a wordlist,
-conceptually you start searching at the youngest and proceed towards
-older words (in reality most systems nowadays use hash-tables); i.e., if
-you define a word with the same name as an older word, the new word
-shadows the older word.
+ディクショナリ(辞書)は、 ‘allot’ でメモリを割り当てることができる、 単な
+るメモリ領域ではなく、 複数のワード・リスト(wordlist)上にある Forth ワー
+ド達も含まれています。 ワード・リスト内のワードを検索するとき、 概念的に
+は、 最も新しいワードから検索を開始し、 古いワードに向かって進みます(実
+際には、 最近のほとんどのシステムはハッシュ・テーブルを使用します)。 つ
+まり、 古いワードと同一の名前のワードを定義すると、 新しいワードが古いワ
+ードを隠します。
 
-   Which wordlists are searched in which order is determined by the
-search order.  You can display the search order with ‘order’.  It
-displays first the search order, starting with the wordlist searched
-first, then it displays the wordlist that will contain newly defined
-words.
+   どのワードリストがどの順序で検索されるかは、 検索順序(search order)に
+よって決まります。 ‘order’ で検索順を表示できます。 まず、 最初に検索さ
+れたワード・リスト(wordlist)から始まる検索順序が表示され、 次に新しく定
+義されたワードを含むワード・リスト(wordlist)が表示されます:
 
-   You can create a new, empty wordlist with ‘wordlist ( -- wid )’:
+   ‘wordlist ( -- wid )’ を使用して、 新しい空のワード・リスト
+(wordlist)を作成できます:
 
      wordlist constant mywords
 
-   ‘Set-current ( wid -- )’ sets the wordlist that will contain newly
-defined words (the _current_ wordlist):
+   ‘Set-current ( wid -- )’ は、 新しく定義されたワードを入れるワード・
+リストを設定します(the current wordlist):
 
      mywords set-current
      order
 
-   Gforth does not display a name for the wordlist in ‘mywords’ because
-this wordlist was created anonymously with ‘wordlist’.
+   このワード・リストは ‘wordlist’ を使用して匿名で作成されたため、
+Gforth は ‘mywords’ のワード・リスト名を表示しません。
 
-   You can get the current wordlist with ‘get-current ( -- wid)’.  If
-you want to put something into a specific wordlist without overall
-effect on the current wordlist, this typically looks like this:
+   ‘get-current ( -- wid)’ で現在のワード・リストを取得できます。 現在の
+ワード・リストに影響を与えずに、 指定のワード・リストに何かを入れたい場
+合、 通常は以下のようにします:
 
      get-current mywords set-current ( wid )
      create someword
      ( wid ) set-current
 
-   You can write the search order with ‘set-order ( wid1 .. widn n -- )’
-and read it with ‘get-order ( -- wid1 .. widn n )’.  The first searched
-wordlist is topmost.
+   検索順序は ‘set-order ( wid1 .. widn n -- )’ で記述し、 ‘get-order (
+-- wid1 .. widn n )’ で読み取ることができます。 最初に検索されたワード・
+リストが最上位(topmost)になります。
 
      get-order mywords swap 1+ set-order
      order
 
-   Yes, the order of wordlists in the output of ‘order’ is reversed from
-stack comments and the output of ‘.s’ and thus unintuitive.
+   ええ、 ‘order’ の出力内のワードリストの順序は、 スタック・コメントや
+‘.s’ の出力とは逆になっているため、 直感的ではありません。
 
-     研究課題(assignment): Define ‘>order ( wid -- )’ which adds ‘wid’
-     as first searched wordlist to the search order.  Define ‘previous (
-     -- )’, which removes the first searched wordlist from the search
-     order.  Experiment with boundary conditions (you will see some
-     crashes or situations that are hard or impossible to leave).
+     研究課題(assignment): ‘>order ( wid -- )’ を定義して、 最初に検索さ
+     れるワード・リスト(wordlist)として ‘wid’ を検索順序に追加してみまし
+     ょう。 ‘previous ( -- )’ を定義してみましょう。 これは、 最初に検索
+     されたワードリスト(wordlist)を検索順序から削除(search order)するも
+     のです。 定義したら、 境界条件を試してみましょう(クラッシュや、 そ
+     こから抜け出すことが困難または不可能な状況がいくつか見られる事でし
+     ょう)。
 
-   The search order is a powerful foundation for providing features
-similar to Modula-2 modules and C++ namespaces.  However, trying to
-modularize programs in this way has disadvantages for debugging and
-reuse/factoring that overcome the advantages in my experience (I don’t
-do huge projects, though).  These disadvantages are not so clear in
-other languages/programming environments, because these languages are
-not so strong in debugging and reuse.
+   検索順序(search order)は、 Modula-2 モジュールや、 C++ の名前空間と同
+様の機能を提供するための強力な基盤です。 ただし、 この方法でプログラムを
+モジュール化しようとすると、 デバッグや 再利用/ファクタリング に関しては
+、 (大規模なプロジェクトの経験はありませんけれども、)私の経験では利点を
+上回る欠点があります。 他の言語/プログラミング環境では、 デバッグや再利
+用がそれほど強力ではないため、 これらの欠点はそれほど目立ちません。
 
-   Reference: *note Word Lists::.
+   こしらも参照ください: *note Word Lists::
 
 
 File: gforth.info,  Node: Introduction,  Next: Literals in source code,  Prev: Tutorial,  Up: Top
@@ -7177,330 +7174,4 @@ and then using these to create the control structure:
    That’s much easier to read, isn’t it?  Of course, ‘REPEAT’ and
 ‘WHILE’ are predefined, so in this example it would not be necessary to
 define them.
-
-
-File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: Arbitrary control structures,  Up: Control Structures
-
-6.9.7 Calls and returns
------------------------
-
-A definition can be called simply be writing the name of the definition
-to be called.  Normally a definition is invisible during its own
-definition.  If you want to write a directly recursive definition, you
-can use ‘recursive’ to make the current definition visible, or ‘recurse’
-to call the current definition directly.
-
-‘recursive’ ( compilation – ; run-time –  ) gforth-0.2 “recursive”
-   Make the current definition visible, enabling it to call itself
-recursively.
-
-‘recurse’ ( ... – ...  ) core “recurse”
-   Alias to the current definition.
-
-For examples of using these words, *Note Recursion Tutorial::.
-
-   Programming style note: I prefer using ‘recursive’ to ‘recurse’,
-because calling the definition by name is more descriptive (if the name
-is well-chosen) than the somewhat cryptic ‘recurse’.  E.g., in a
-quicksort implementation, it is much better to read (and think) “now
-sort the partitions” than to read “now do a recursive call”.
-
-   For mutual recursion, use ‘Defer’red words, like this:
-
-     Defer foo
-
-     : bar ( ... -- ... )
-      ... foo ... ;
-
-     :noname ( ... -- ... )
-      ... bar ... ;
-     IS foo
-
-   Deferred words are discussed in more detail in *note Deferred
-Words::.
-
-   The current definition returns control to the calling definition when
-the end of the definition is reached or ‘EXIT’ is encountered.
-
-‘EXIT’ ( compilation – ; run-time nest-sys –  ) core “EXIT”
-   Return to the calling definition; usually used as a way of forcing an
-early return from a definition.  Before ‘EXIT’ing you must clean up the
-return stack and ‘UNLOOP’ any outstanding ‘?DO’...‘LOOP’s.  Use ‘;s’ for
-a tickable word that behaves like ‘exit’ in the absence of locals.
-
-‘?EXIT’ ( –  ) gforth-0.2 “?EXIT”
-   Return to the calling definition if f is true.
-
-‘;s’ ( R:w – ) gforth-0.2 “semis”
-   The primitive compiled by ‘EXIT’.
-
-
-File: gforth.info,  Node: Exception Handling,  Prev: Calls and returns,  Up: Control Structures
-
-6.9.8 Exception Handling
-------------------------
-
-If a word detects an error condition that it cannot handle, it can
-‘throw’ an exception.  In the simplest case, this will terminate your
-program, and report an appropriate error.
-
-‘throw’ ( y1 .. ym nerror – y1 .. ym / z1 .. zn error  ) exception “throw”
-   If nerror is 0, drop it and continue.  Otherwise, transfer control to
-the next dynamically enclosing exception handler, reset the stacks
-accordingly, and push nerror.
-
-‘fast-throw’ ( ... wball – ... wball ) gforth-experimental “fast-throw”
-   Lightweight ‘throw’ variant: only for non-zero balls, and does not
-store a backtrace or deal with missing ‘catch’.
-
-   ‘Throw’ consumes a cell-sized error number on the stack.  There are
-some predefined error numbers in Standard Forth (see ‘errors.fs’).  In
-Gforth (and most other systems) you can use the iors produced by various
-words as error numbers (e.g., a typical use of ‘allocate’ is ‘allocate
-throw’).  Gforth also provides the word ‘exception’ to define your own
-error numbers (with decent error reporting); a Standard Forth version of
-this word (but without the error messages) is available in
-‘compat/except.fs’.  And finally, you can use your own error numbers
-(anything outside the range -4095..0), but won’t get nice error
-messages, only numbers.  For example, try:
-
-     -10 throw                    \ Standard defined
-     -267 throw                   \ system defined
-     s" my error" exception throw \ user defined
-     7 throw                      \ arbitrary number
-
-‘exception’ ( addr u – n  ) gforth-0.2 “exception”
-   N is a previously unused ‘throw’ value in the range (-4095...-256).
-Consecutive calls to ‘exception’ return consecutive decreasing numbers.
-Gforth uses the string ADDR U as an error message.
-
-   There are also cases where you have a word (typically modeled after
-POSIX’ ‘strerror’) for converting an error number into a string.  You
-can use the following word to get these strings into Gforth’s error
-handling:
-
-‘exceptions’ ( xt n1 – n2  ) gforth-1.0 “exceptions”
-   Xt ‘( +n -- c-addr u )’ converts an error number in the range 0<=n<n1
-into an error message.  ‘Exceptions’ reserves n1 error codes in the
-range n2-n1<n3<=n2.  When (at some later point in time) the Gforth error
-code n3 in that range is thrown, it pushes n2-n3 and then executes xt to
-produce the error message.
-
-   As an example, if the ‘errno’ errors (and the conversion using
-‘strerror’) was not already directly supported by Gforth, you could tie
-‘strerror’ in as follows:
-
-     ' strerror 1536 exceptions constant errno-base
-     : errno-ior ( -- n )
-     \ n is the Gforth ior corresponding to the value in errno, so
-     \ we have to convert between the ranges here.
-     \ ERRNO is not a Gforth word, so you  would have to use the
-     \ C interface to access it.
-       errno errno-base over - swap 0<> and ;
-
-   When you call a C function (with the C interface) and its return
-value indictes that an error happened, you can then perform ‘errno-ior
-throw’ to produce an exception with the proper error message (such as
-“Permission denied”).
-
-   A common idiom to ‘THROW’ a specific err# if a flag is true is this:
-
-     ( flag ) 0<> err# and throw
-
-   Your program can provide exception handlers to catch exceptions.  An
-exception handler can be used to correct the problem, or to clean up
-some data structures and just throw the exception to the next exception
-handler.  Note that ‘throw’ jumps to the dynamically innermost exception
-handler.  The system’s exception handler is outermost, and just prints
-an error and restarts command-line interpretation (or, in batch mode
-(i.e., while processing the shell command line), leaves Gforth).
-
-   The Standard Forth way to catch exceptions is ‘catch’:
-
-‘catch’ ( x1 .. xn xt – y1 .. ym 0 / z1 .. zn error  ) exception “catch”
-   ‘Executes’ xt.  If execution returns normally, ‘catch’ pushes 0 on
-the stack.  If execution returns through ‘throw’, all the stacks are
-reset to the depth on entry to ‘catch’, and the TOS (the xt position) is
-replaced with the throw code.
-
-‘nothrow’ ( –  ) gforth-0.7 “nothrow”
-   Use this (or the standard sequence ‘['] false catch 2drop’) after a
-‘catch’ or ‘endtry’ that does not rethrow; this ensures that the next
-‘throw’ will record a backtrace.
-
-   The most common use of exception handlers is to clean up the state
-when an error happens.  E.g.,
-
-     base @ >r hex \ actually the HEX should be inside foo to protect
-                   \ against exceptions between HEX and CATCH
-     ['] foo catch ( nerror|0 )
-     r> base !
-     ( nerror|0 ) throw \ pass it on
-
-   A use of ‘catch’ for handling the error ‘myerror’ might look like
-this:
-
-     ['] foo catch
-     CASE
-       myerror OF ... ( do something about it ) nothrow ENDOF
-       dup throw \ default: pass other errors on, do nothing on non-errors
-     ENDCASE
-
-   Having to wrap the code into a separate word is often cumbersome,
-therefore Gforth provides an alternative syntax:
-
-     TRY
-       code1
-       IFERROR
-         code2
-       THEN
-       code3
-     ENDTRY
-
-   This performs code1.  If code1 completes normally, execution
-continues with code3.  If there is an exception in code1 or before
-‘endtry’, the stacks are reset to the depth during ‘try’, the throw
-value is pushed on the data stack, and execution continues at code2, and
-finally falls through to code3.
-
-‘try’ ( compilation  – orig ; run-time  – R:sys1  ) gforth-0.5 “try”
-   Start an exception-catching region.
-
-‘endtry’ ( compilation  – ; run-time  R:sys1 –  ) gforth-0.5 “endtry”
-   End an exception-catching region.
-
-‘iferror’ ( compilation  orig1 – orig2 ; run-time  –  ) gforth-0.7 “iferror”
-   Starts the exception handling code (executed if there is an exception
-between ‘try’ and ‘endtry’).  This part has to be finished with ‘then’.
-
-   If you don’t need code2, you can write ‘restore’ instead of ‘iferror
-then’:
-
-     TRY
-       code1
-     RESTORE
-       code3
-     ENDTRY
-
-   The cleanup example from above in this syntax:
-
-     base @ { oldbase }
-     TRY
-       hex foo \ now the hex is placed correctly
-       0       \ value for throw
-     RESTORE
-       oldbase base !
-     ENDTRY
-     throw
-
-   An additional advantage of this variant is that an exception between
-‘restore’ and ‘endtry’ (e.g., from the user pressing ‘Ctrl-C’) restarts
-the execution of the code after ‘restore’, so the base will be restored
-under all circumstances.
-
-   However, you have to ensure that this code does not cause an
-exception itself, otherwise the ‘iferror’/‘restore’ code will loop.
-Moreover, you should also make sure that the stack contents needed by
-the ‘iferror’/‘restore’ code exist everywhere between ‘try’ and
-‘endtry’; in our example this is achived by putting the data in a local
-before the ‘try’ (you cannot use the return stack because the exception
-frame (sys1) is in the way there).
-
-   This kind of usage corresponds to Lisp’s ‘unwind-protect’.
-
-   If you do not want this exception-restarting behaviour, you achieve
-this as follows:
-
-     TRY
-       code1
-     ENDTRY-IFERROR
-       code2
-     THEN
-
-   If there is an exception in code1, then code2 is executed, otherwise
-execution continues behind the ‘then’ (or in a possible ‘else’ branch).
-This corresponds to the construct
-
-     TRY
-       code1
-     RECOVER
-       code2
-     ENDTRY
-
-   in Gforth before version 0.7.  So you can directly replace
-‘recover’-using code; however, we recommend that you check if it would
-not be better to use one of the other ‘try’ variants while you are at
-it.
-
-   To ease the transition, Gforth provides two compatibility files:
-‘endtry-iferror.fs’ provides the ‘try ... endtry-iferror ... then’
-syntax (but not ‘iferror’ or ‘restore’) for old systems;
-‘recover-endtry.fs’ provides the ‘try ... recover ... endtry’ syntax on
-new systems, so you can use that file as a stopgap to run old programs.
-Both files work on any system (they just do nothing if the system
-already has the syntax it implements), so you can unconditionally
-‘require’ one of these files, even if you use a mix old and new systems.
-
-‘restore’ ( compilation  orig1 – ; run-time  –  ) gforth-0.7 “restore”
-   Starts restoring code, that is executed if there is an exception, and
-if there is no exception.
-
-‘endtry-iferror’ ( compilation  orig1 – orig2 ; run-time  R:sys1 –  ) gforth-0.7 “endtry-iferror”
-   End an exception-catching region while starting exception-handling
-code outside that region (executed if there is an exception between
-‘try’ and ‘endtry-iferror’).  This part has to be finished with ‘then’
-(or ‘else’...‘then’).
-
-   Here’s the error handling example:
-
-     TRY
-       foo
-     ENDTRY-IFERROR
-       CASE
-         myerror OF ... ( do something about it ) nothrow ENDOF
-         throw \ pass other errors on
-       ENDCASE
-     THEN
-
-   Programming style note: As usual, you should ensure that the stack
-depth is statically known at the end: either after the ‘throw’ for
-passing on errors, or after the ‘ENDTRY’ (or, if you use ‘catch’, after
-the end of the selection construct for handling the error).
-
-   There are two alternatives to ‘throw’: ‘Abort"’ is conditional and
-you can provide an error message.  ‘Abort’ just produces an “Aborted”
-error.
-
-   The problem with these words is that exception handlers cannot
-differentiate between different ‘abort"’s; they just look like ‘-2
-throw’ to them (the error message cannot be accessed by standard
-programs).  Similar ‘abort’ looks like ‘-1 throw’ to exception handlers.
-
-‘ABORT"’ ( compilation ’ccc"’ – ; run-time f –  ) core,exception-ext “abort-quote”
-   If any bit of f is non-zero, perform the function of ‘-2 throw’,
-displaying the string ccc if there is no exception frame on the
-exception stack.
-
-‘abort’ ( ?? – ??  ) core,exception-ext “abort”
-   ‘-1 throw’.
-
-   For problems that are not that awful that you need to abort
-execution, you can just display a warning.  The variable ‘warnings’
-allows to tune how many warnings you see.
-
-‘WARNING"’ ( compilation ’ccc"’ – ; run-time f –  ) gforth-1.0 “WARNING"”
-   if f is non-zero, display the string ccc as warning message.
-
-‘warnings’ ( – addr  ) gforth-0.2 “warnings”
-   set warnings level to
-‘0’
-     turns warnings off
-‘-1’
-     turns normal warnings on
-‘-2’
-     turns beginner warnings on
-‘-3’
-     pedantic warnings on
-‘-4’
-     turns warnings into errors (including beginner warnings)
 
