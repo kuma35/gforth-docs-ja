@@ -27,6 +27,242 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Classes and Scoping,  Next: Dividing classes,  Prev: Method conveniences,  Up: Objects
+
+6.24.3.8 Classes and Scoping
+............................
+
+Inheritance is frequent, unlike structure extension.  This exacerbates
+the problem with the field name convention (*note Structure Naming
+Convention::): One always has to remember in which class the field was
+originally defined; changing a part of the class structure would require
+changes for renaming in otherwise unaffected code.
+
+   To solve this problem, I added a scoping mechanism (which was not in
+my original charter): A field defined with ‘inst-var’ (or ‘inst-value’)
+is visible only in the class where it is defined and in the descendent
+classes of this class.  Using such fields only makes sense in
+‘m:’-defined methods in these classes anyway.
+
+   This scoping mechanism allows us to use the unadorned field name,
+because name clashes with unrelated words become much less likely.
+
+   Once we have this mechanism, we can also use it for controlling the
+visibility of other words: All words defined after ‘protected’ are
+visible only in the current class and its descendents.  ‘public’
+restores the compilation (i.e.  ‘current’) word list that was in effect
+before.  If you have several ‘protected’s without an intervening
+‘public’ or ‘set-current’, ‘public’ will restore the compilation word
+list in effect before the first of these ‘protected’s.
+
+
+File: gforth.info,  Node: Dividing classes,  Next: Object Interfaces,  Prev: Classes and Scoping,  Up: Objects
+
+6.24.3.9 Dividing classes
+.........................
+
+You may want to do the definition of methods separate from the
+definition of the class, its selectors, fields, and instance variables,
+i.e., separate the implementation from the definition.  You can do this
+in the following way:
+
+     graphical class
+       inst-value radius
+     end-class circle
+
+     ... \ do some other stuff
+
+     circle methods \ now we are ready
+
+     m: ( x y circle -- )
+       radius draw-circle ;m
+     overrides draw
+
+     m: ( n-radius circle -- )
+       [to-inst] radius ;m
+     overrides construct
+
+     end-methods
+
+   You can use several ‘methods’...‘end-methods’ sections.  The only
+things you can do to the class in these sections are: defining methods,
+and overriding the class’s selectors.  You must not define new selectors
+or fields.
+
+   Note that you often have to override a selector before using it.  In
+particular, you usually have to override ‘construct’ with a new method
+before you can invoke ‘heap-new’ and friends.  E.g., you must not create
+a circle before the ‘overrides construct’ sequence in the example above.
+
+
+File: gforth.info,  Node: Object Interfaces,  Next: Objects Implementation,  Prev: Dividing classes,  Up: Objects
+
+6.24.3.10 Object Interfaces
+...........................
+
+In this model you can only call selectors defined in the class of the
+receiving objects or in one of its ancestors.  If you call a selector
+with a receiving object that is not in one of these classes, the result
+is undefined; if you are lucky, the program crashes immediately.
+
+   Now consider the case when you want to have a selector (or several)
+available in two classes: You would have to add the selector to a common
+ancestor class, in the worst case to ‘object’.  You may not want to do
+this, e.g., because someone else is responsible for this ancestor class.
+
+   The solution for this problem is interfaces.  An interface is a
+collection of selectors.  If a class implements an interface, the
+selectors become available to the class and its descendents.  A class
+can implement an unlimited number of interfaces.  For the problem
+discussed above, we would define an interface for the selector(s), and
+both classes would implement the interface.
+
+   As an example, consider an interface ‘storage’ for writing objects to
+disk and getting them back, and a class ‘foo’ that implements it.  The
+code would look like this:
+
+     interface
+       selector write ( file object -- )
+       selector read1 ( file object -- )
+     end-interface storage
+
+     bar class
+       storage implementation
+
+     ... overrides write
+     ... overrides read1
+     ...
+     end-class foo
+
+(I would add a word ‘read’ ( file – object ) that uses ‘read1’
+internally, but that’s beyond the point illustrated here.)
+
+   Note that you cannot use ‘protected’ in an interface; and of course
+you cannot define fields.
+
+   In the Neon model, all selectors are available for all classes;
+therefore it does not need interfaces.  The price you pay in this model
+is slower late binding, and therefore, added complexity to avoid late
+binding.
+
+
+File: gforth.info,  Node: Objects Implementation,  Next: Objects Glossary,  Prev: Object Interfaces,  Up: Objects
+
+6.24.3.11 ‘objects.fs’ Implementation
+.....................................
+
+An object is a piece of memory, like one of the data structures
+described with ‘struct...end-struct’.  It has a field ‘object-map’ that
+points to the method map for the object’s class.
+
+   The _method map_(1) is an array that contains the execution tokens
+(xts) of the methods for the object’s class.  Each selector contains an
+offset into a method map.
+
+   ‘selector’ is a defining word that uses ‘CREATE’ and ‘DOES>’.  The
+body of the selector contains the offset; the ‘DOES>’ action for a class
+selector is, basically:
+
+     ( object addr ) @ over object-map @ + @ execute
+
+   Since ‘object-map’ is the first field of the object, it does not
+generate any code.  As you can see, calling a selector has a small,
+constant cost.
+
+   A class is basically a ‘struct’ combined with a method map.  During
+the class definition the alignment and size of the class are passed on
+the stack, just as with ‘struct’s, so ‘field’ can also be used for
+defining class fields.  However, passing more items on the stack would
+be inconvenient, so ‘class’ builds a data structure in memory, which is
+accessed through the variable ‘current-interface’.  After its definition
+is complete, the class is represented on the stack by a pointer (e.g.,
+as parameter for a child class definition).
+
+   A new class starts off with the alignment and size of its parent, and
+a copy of the parent’s method map.  Defining new fields extends the size
+and alignment; likewise, defining new selectors extends the method map.
+‘overrides’ just stores a new xt in the method map at the offset given
+by the selector.
+
+   Class binding just gets the xt at the offset given by the selector
+from the class’s method map and ‘compile,’s (in the case of ‘[bind]’)
+it.
+
+   I implemented ‘this’ as a ‘value’.  At the start of an ‘m:...;m’
+method the old ‘this’ is stored to the return stack and restored at the
+end; and the object on the TOS is stored ‘TO this’.  This technique has
+one disadvantage: If the user does not leave the method via ‘;m’, but
+via ‘throw’ or ‘exit’, ‘this’ is not restored (and ‘exit’ may crash).
+To deal with the ‘throw’ problem, I have redefined ‘catch’ to save and
+restore ‘this’; the same should be done with any word that can catch an
+exception.  As for ‘exit’, I simply forbid it (as a replacement, there
+is ‘exitm’).
+
+   ‘inst-var’ is just the same as ‘field’, with a different ‘DOES>’
+action:
+     @ this +
+   Similar for ‘inst-value’.
+
+   Each class also has a word list that contains the words defined with
+‘inst-var’ and ‘inst-value’, and its protected words.  It also has a
+pointer to its parent.  ‘class’ pushes the word lists of the class and
+all its ancestors onto the search order stack, and ‘end-class’ drops
+them.
+
+   An interface is like a class without fields, parent and protected
+words; i.e., it just has a method map.  If a class implements an
+interface, its method map contains a pointer to the method map of the
+interface.  The positive offsets in the map are reserved for class
+methods, therefore interface map pointers have negative offsets.
+Interfaces have offsets that are unique throughout the system, unlike
+class selectors, whose offsets are only unique for the classes where the
+selector is available (invokable).
+
+   This structure means that interface selectors have to perform one
+indirection more than class selectors to find their method.  Their body
+contains the interface map pointer offset in the class method map, and
+the method offset in the interface method map.  The ‘does>’ action for
+an interface selector is, basically:
+
+     ( object selector-body )
+     2dup selector-interface @ ( object selector-body object interface-offset )
+     swap object-map @ + @ ( object selector-body map )
+     swap selector-offset @ + @ execute
+
+   where ‘object-map’ and ‘selector-offset’ are first fields and
+generate no code.
+
+   As a concrete example, consider the following code:
+
+     interface
+       selector if1sel1
+       selector if1sel2
+     end-interface if1
+
+     object class
+       if1 implementation
+       selector cl1sel1
+       cell% inst-var cl1iv1
+
+     ' m1 overrides construct
+     ' m2 overrides if1sel1
+     ' m3 overrides if1sel2
+     ' m4 overrides cl1sel2
+     end-class cl1
+
+     create obj1 object dict-new drop
+     create obj2 cl1    dict-new drop
+
+   The data structure created by this code (including the data structure
+for ‘object’) is shown in the figure (objects-implementation.eps),
+assuming a cell size of 4.
+
+   ---------- Footnotes ----------
+
+   (1) This is Self terminology; in C++ terminology: virtual function
+table.
+
+
 File: gforth.info,  Node: Objects Glossary,  Prev: Objects Implementation,  Up: Objects
 
 6.24.3.12 ‘objects.fs’ Glossary
@@ -1512,11 +1748,11 @@ File: gforth.info,  Node: Singlestep Debugger,  Next: Code Coverage,  Prev: Asse
 6.26.9 Singlestep Debugger
 --------------------------
 
-The singlestep debugger works only with the engine ‘gforth-itc’.
+シングルステップ・デバッガーは、 ‘gforth-itc’ エンジンでのみ動作します。
 
-   When you create a new word there’s often the need to check whether it
-behaves correctly or not.  You can do this by typing ‘dbg badword’.  A
-debug session might look like this:
+   新しいワードを作成するとき、 それが正しく動作するかどうかを確認する必
+要があることがよくあります。 これを行うには、‘dbg badword’ と入力します
+。 デバッグ・セッションは以下のようになります:
 
      : badword 0 DO i . LOOP ;  ok
      2 dbg badword
@@ -1535,39 +1771,41 @@ debug session might look like this:
      400D474C  8049D0C LOOP           -> [ 0 ]
      400D4758  804B384 ;              ->  ok
 
-   Each line displayed is one step.  You always have to hit return to
-execute the next word that is displayed.  If you don’t want to execute
-the next word in a whole, you have to type ‘n’ for ‘nest’.  Here is an
-overview what keys are available:
+   各行が 1 ステップです。 次のワードを実行して表示するには、 常に
+Return キーを押す必要があります。 次のワード全体を実行したくない場合は、
+‘nest’ に対して ‘n’ と入力する必要があります。 利用可能なキーの概要は以
+下のとおりです:
 
 <RET>
-     Next; Execute the next word.
+     Next; 次のワードを実行する(execute)。
 
 n
-     Nest; Single step through next word.
+     Nest; 次のワードまで 1 ステップずつ辿る。
 
 u
-     Unnest; Stop debugging and execute rest of word.  If we got to this
-     word with nest, continue debugging with the calling word.
+     Unnest; デバッグを停止し(stop)、残りのワードを実行します(execute)。
+     ネスト(nest)機能でこのワードに到達した場合、 それを呼び出したワード
+     でデバッグを続行します。
 
 d
-     Done; Stop debugging and execute rest.
+     Done; デバッグを停止し(stop)、 残りを実行します(execute)。
 
 s
-     Stop; Abort immediately.
+     Stop; 直ちに終了(abort)します。
 
-   Debugging large application with this mechanism is very difficult,
-because you have to nest very deeply into the program before the
-interesting part begins.  This takes a lot of time.
+   このメカニズムを使用して大規模なアプリケーションをデバッグすることは
+、 あなたが関心のある部分が始まる前にプログラム内に非常に深くネストする
+必要があるため、 非常に困難です。 これにはとても時間がかかります。
 
-   To do it more directly put a ‘BREAK:’ command into your source code.
-When program execution reaches ‘BREAK:’ the single step debugger is
-invoked and you have all the features described above.
+   これをより直接的に行うには、 ‘BREAK:’ コマンドをあなたのソース・コー
+ドに追加します。 プログラムの実行が ‘BREAK:’ に達すると、 シングル・ステ
+ップ・デバッガーが呼び出され、 上記すべての機能が利用できるようになりま
+す。
 
-   If you have more than one part to debug it is useful to know where
-the program has stopped at the moment.  You can do this by the ‘BREAK"
-string"’ command.  This behaves like ‘BREAK:’ except that string is
-typed out when the “breakpoint” is reached.
+   デバッグする部分が複数ある場合、 プログラムが現在どこで停止しているか
+を把握できると便利です。 これを行うには、 ‘BREAK" string"’ コマンドを使
+用します。 これは ‘BREAK:’ と同様に動作しますが、 「ブレークポイント」に
+到達したときに文字列が出力される点が異なります。
 
 ‘dbg’ ( "name" –  ) gforth-0.2 “dbg”
 
@@ -1657,11 +1895,12 @@ File: gforth.info,  Node: Multitasker,  Next: C Interface,  Prev: Programming To
 * Pthreads::                 ネイティブ Unix 用マルチタスカー
 * Cilk::                     Cilk風の spawn+sync 実装
 
-Gforth offers two multitaskers: a traditional, cooperative round-robin
-multitasker, and a pthread-based multitasker which allows to run several
-threads concurrently on multi-core machines.  The pthread-based is now
-marked as experimental feature, as standardization of Forth multitaskers
-will likely change the names of words without changing their semantics.
+Gforth は 2 つのマルチタスカーを提供します。 1 つは従来の協調的なラウン
+ドロビン・マルチタスカー(cooperative round-robin multitasker)で、 もう 1
+つはマルチコア・マシン上で複数のスレッドを同時に実行できる pthread ベー
+スのマルチタスカーです。 将来、 Forth マルチタスカーの標準化により、 そ
+の意味は変更せずにワードの名前が変更される可能性が高いため、 pthread ベ
+ースのマルチタスカーは現在、 実験的な機能としてマークされています。
 
 
 File: gforth.info,  Node: Pthreads,  Next: Cilk,  Prev: Multitasker,  Up: Multitasker
@@ -6949,460 +7188,4 @@ You can find more historical and genealogical information about Forth
 there.  For a more general (and graphical) Forth family tree look see
 ‘<https://www.complang.tuwien.ac.at/forth/family-tree/>, Forth Family
 Tree and Timeline’.
-
-
-File: gforth.info,  Node: Forth-related information,  Next: Licenses,  Prev: Origin,  Up: Top
-
-Appendix C Other Forth-related information
-******************************************
-
-There is an active news group (comp.lang.forth) discussing Forth
-(including Gforth) and Forth-related issues.  Its FAQs
-(https://www.complang.tuwien.ac.at/forth/faq/faq-general-2.html)
-(frequently asked questions and their answers) contains a lot of
-information on Forth.  You should read it before posting to
-comp.lang.forth.
-
-   The Forth standard is most usable in its HTML form
-(https://forth-standard.org/).
-
-
-File: gforth.info,  Node: Licenses,  Next: Word Index,  Prev: Forth-related information,  Up: Top
-
-Appendix D Licenses
-*******************
-
-* Menu:
-
-* GNU Free Documentation License::  このマニュアルのコピー時のライセンス
-* Copying::                  GPL (このソフトウェアのコピー用)
-
-
-File: gforth.info,  Node: GNU Free Documentation License,  Next: Copying,  Prev: Licenses,  Up: Licenses
-
-D.1 GNU Free Documentation License
-==================================
-
-                      Version 1.2, November 2002
-
-     Copyright © 2000,2001,2002 Free Software Foundation, Inc.
-     59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
-
-     Everyone is permitted to copy and distribute verbatim copies
-     of this license document, but changing it is not allowed.
-
-  0. PREAMBLE
-
-     The purpose of this License is to make a manual, textbook, or other
-     functional and useful document “free” in the sense of freedom: to
-     assure everyone the effective freedom to copy and redistribute it,
-     with or without modifying it, either commercially or
-     noncommercially.  Secondarily, this License preserves for the
-     author and publisher a way to get credit for their work, while not
-     being considered responsible for modifications made by others.
-
-     This License is a kind of “copyleft”, which means that derivative
-     works of the document must themselves be free in the same sense.
-     It complements the GNU General Public License, which is a copyleft
-     license designed for free software.
-
-     We have designed this License in order to use it for manuals for
-     free software, because free software needs free documentation: a
-     free program should come with manuals providing the same freedoms
-     that the software does.  But this License is not limited to
-     software manuals; it can be used for any textual work, regardless
-     of subject matter or whether it is published as a printed book.  We
-     recommend this License principally for works whose purpose is
-     instruction or reference.
-
-  1. APPLICABILITY AND DEFINITIONS
-
-     This License applies to any manual or other work, in any medium,
-     that contains a notice placed by the copyright holder saying it can
-     be distributed under the terms of this License.  Such a notice
-     grants a world-wide, royalty-free license, unlimited in duration,
-     to use that work under the conditions stated herein.  The
-     “Document”, below, refers to any such manual or work.  Any member
-     of the public is a licensee, and is addressed as “you”.  You accept
-     the license if you copy, modify or distribute the work in a way
-     requiring permission under copyright law.
-
-     A “Modified Version” of the Document means any work containing the
-     Document or a portion of it, either copied verbatim, or with
-     modifications and/or translated into another language.
-
-     A “Secondary Section” is a named appendix or a front-matter section
-     of the Document that deals exclusively with the relationship of the
-     publishers or authors of the Document to the Document’s overall
-     subject (or to related matters) and contains nothing that could
-     fall directly within that overall subject.  (Thus, if the Document
-     is in part a textbook of mathematics, a Secondary Section may not
-     explain any mathematics.)  The relationship could be a matter of
-     historical connection with the subject or with related matters, or
-     of legal, commercial, philosophical, ethical or political position
-     regarding them.
-
-     The “Invariant Sections” are certain Secondary Sections whose
-     titles are designated, as being those of Invariant Sections, in the
-     notice that says that the Document is released under this License.
-     If a section does not fit the above definition of Secondary then it
-     is not allowed to be designated as Invariant.  The Document may
-     contain zero Invariant Sections.  If the Document does not identify
-     any Invariant Sections then there are none.
-
-     The “Cover Texts” are certain short passages of text that are
-     listed, as Front-Cover Texts or Back-Cover Texts, in the notice
-     that says that the Document is released under this License.  A
-     Front-Cover Text may be at most 5 words, and a Back-Cover Text may
-     be at most 25 words.
-
-     A “Transparent” copy of the Document means a machine-readable copy,
-     represented in a format whose specification is available to the
-     general public, that is suitable for revising the document
-     straightforwardly with generic text editors or (for images composed
-     of pixels) generic paint programs or (for drawings) some widely
-     available drawing editor, and that is suitable for input to text
-     formatters or for automatic translation to a variety of formats
-     suitable for input to text formatters.  A copy made in an otherwise
-     Transparent file format whose markup, or absence of markup, has
-     been arranged to thwart or discourage subsequent modification by
-     readers is not Transparent.  An image format is not Transparent if
-     used for any substantial amount of text.  A copy that is not
-     “Transparent” is called “Opaque”.
-
-     Examples of suitable formats for Transparent copies include plain
-     ASCII without markup, Texinfo input format, LaTeX input format,
-     SGML or XML using a publicly available DTD, and standard-conforming
-     simple HTML, PostScript or PDF designed for human modification.
-     Examples of transparent image formats include PNG, XCF and JPG.
-     Opaque formats include proprietary formats that can be read and
-     edited only by proprietary word processors, SGML or XML for which
-     the DTD and/or processing tools are not generally available, and
-     the machine-generated HTML, PostScript or PDF produced by some word
-     processors for output purposes only.
-
-     The “Title Page” means, for a printed book, the title page itself,
-     plus such following pages as are needed to hold, legibly, the
-     material this License requires to appear in the title page.  For
-     works in formats which do not have any title page as such, “Title
-     Page” means the text near the most prominent appearance of the
-     work’s title, preceding the beginning of the body of the text.
-
-     A section “Entitled XYZ” means a named subunit of the Document
-     whose title either is precisely XYZ or contains XYZ in parentheses
-     following text that translates XYZ in another language.  (Here XYZ
-     stands for a specific section name mentioned below, such as
-     “Acknowledgements”, “Dedications”, “Endorsements”, or “History”.)
-     To “Preserve the Title” of such a section when you modify the
-     Document means that it remains a section “Entitled XYZ” according
-     to this definition.
-
-     The Document may include Warranty Disclaimers next to the notice
-     which states that this License applies to the Document.  These
-     Warranty Disclaimers are considered to be included by reference in
-     this License, but only as regards disclaiming warranties: any other
-     implication that these Warranty Disclaimers may have is void and
-     has no effect on the meaning of this License.
-
-  2. VERBATIM COPYING
-
-     You may copy and distribute the Document in any medium, either
-     commercially or noncommercially, provided that this License, the
-     copyright notices, and the license notice saying this License
-     applies to the Document are reproduced in all copies, and that you
-     add no other conditions whatsoever to those of this License.  You
-     may not use technical measures to obstruct or control the reading
-     or further copying of the copies you make or distribute.  However,
-     you may accept compensation in exchange for copies.  If you
-     distribute a large enough number of copies you must also follow the
-     conditions in section 3.
-
-     You may also lend copies, under the same conditions stated above,
-     and you may publicly display copies.
-
-  3. COPYING IN QUANTITY
-
-     If you publish printed copies (or copies in media that commonly
-     have printed covers) of the Document, numbering more than 100, and
-     the Document’s license notice requires Cover Texts, you must
-     enclose the copies in covers that carry, clearly and legibly, all
-     these Cover Texts: Front-Cover Texts on the front cover, and
-     Back-Cover Texts on the back cover.  Both covers must also clearly
-     and legibly identify you as the publisher of these copies.  The
-     front cover must present the full title with all words of the title
-     equally prominent and visible.  You may add other material on the
-     covers in addition.  Copying with changes limited to the covers, as
-     long as they preserve the title of the Document and satisfy these
-     conditions, can be treated as verbatim copying in other respects.
-
-     If the required texts for either cover are too voluminous to fit
-     legibly, you should put the first ones listed (as many as fit
-     reasonably) on the actual cover, and continue the rest onto
-     adjacent pages.
-
-     If you publish or distribute Opaque copies of the Document
-     numbering more than 100, you must either include a machine-readable
-     Transparent copy along with each Opaque copy, or state in or with
-     each Opaque copy a computer-network location from which the general
-     network-using public has access to download using public-standard
-     network protocols a complete Transparent copy of the Document, free
-     of added material.  If you use the latter option, you must take
-     reasonably prudent steps, when you begin distribution of Opaque
-     copies in quantity, to ensure that this Transparent copy will
-     remain thus accessible at the stated location until at least one
-     year after the last time you distribute an Opaque copy (directly or
-     through your agents or retailers) of that edition to the public.
-
-     It is requested, but not required, that you contact the authors of
-     the Document well before redistributing any large number of copies,
-     to give them a chance to provide you with an updated version of the
-     Document.
-
-  4. MODIFICATIONS
-
-     You may copy and distribute a Modified Version of the Document
-     under the conditions of sections 2 and 3 above, provided that you
-     release the Modified Version under precisely this License, with the
-     Modified Version filling the role of the Document, thus licensing
-     distribution and modification of the Modified Version to whoever
-     possesses a copy of it.  In addition, you must do these things in
-     the Modified Version:
-
-       A. Use in the Title Page (and on the covers, if any) a title
-          distinct from that of the Document, and from those of previous
-          versions (which should, if there were any, be listed in the
-          History section of the Document).  You may use the same title
-          as a previous version if the original publisher of that
-          version gives permission.
-
-       B. List on the Title Page, as authors, one or more persons or
-          entities responsible for authorship of the modifications in
-          the Modified Version, together with at least five of the
-          principal authors of the Document (all of its principal
-          authors, if it has fewer than five), unless they release you
-          from this requirement.
-
-       C. State on the Title page the name of the publisher of the
-          Modified Version, as the publisher.
-
-       D. Preserve all the copyright notices of the Document.
-
-       E. Add an appropriate copyright notice for your modifications
-          adjacent to the other copyright notices.
-
-       F. Include, immediately after the copyright notices, a license
-          notice giving the public permission to use the Modified
-          Version under the terms of this License, in the form shown in
-          the Addendum below.
-
-       G. Preserve in that license notice the full lists of Invariant
-          Sections and required Cover Texts given in the Document’s
-          license notice.
-
-       H. Include an unaltered copy of this License.
-
-       I. Preserve the section Entitled “History”, Preserve its Title,
-          and add to it an item stating at least the title, year, new
-          authors, and publisher of the Modified Version as given on the
-          Title Page.  If there is no section Entitled “History” in the
-          Document, create one stating the title, year, authors, and
-          publisher of the Document as given on its Title Page, then add
-          an item describing the Modified Version as stated in the
-          previous sentence.
-
-       J. Preserve the network location, if any, given in the Document
-          for public access to a Transparent copy of the Document, and
-          likewise the network locations given in the Document for
-          previous versions it was based on.  These may be placed in the
-          “History” section.  You may omit a network location for a work
-          that was published at least four years before the Document
-          itself, or if the original publisher of the version it refers
-          to gives permission.
-
-       K. For any section Entitled “Acknowledgements” or “Dedications”,
-          Preserve the Title of the section, and preserve in the section
-          all the substance and tone of each of the contributor
-          acknowledgements and/or dedications given therein.
-
-       L. Preserve all the Invariant Sections of the Document, unaltered
-          in their text and in their titles.  Section numbers or the
-          equivalent are not considered part of the section titles.
-
-       M. Delete any section Entitled “Endorsements”.  Such a section
-          may not be included in the Modified Version.
-
-       N. Do not retitle any existing section to be Entitled
-          “Endorsements” or to conflict in title with any Invariant
-          Section.
-
-       O. Preserve any Warranty Disclaimers.
-
-     If the Modified Version includes new front-matter sections or
-     appendices that qualify as Secondary Sections and contain no
-     material copied from the Document, you may at your option designate
-     some or all of these sections as invariant.  To do this, add their
-     titles to the list of Invariant Sections in the Modified Version’s
-     license notice.  These titles must be distinct from any other
-     section titles.
-
-     You may add a section Entitled “Endorsements”, provided it contains
-     nothing but endorsements of your Modified Version by various
-     parties—for example, statements of peer review or that the text has
-     been approved by an organization as the authoritative definition of
-     a standard.
-
-     You may add a passage of up to five words as a Front-Cover Text,
-     and a passage of up to 25 words as a Back-Cover Text, to the end of
-     the list of Cover Texts in the Modified Version.  Only one passage
-     of Front-Cover Text and one of Back-Cover Text may be added by (or
-     through arrangements made by) any one entity.  If the Document
-     already includes a cover text for the same cover, previously added
-     by you or by arrangement made by the same entity you are acting on
-     behalf of, you may not add another; but you may replace the old
-     one, on explicit permission from the previous publisher that added
-     the old one.
-
-     The author(s) and publisher(s) of the Document do not by this
-     License give permission to use their names for publicity for or to
-     assert or imply endorsement of any Modified Version.
-
-  5. COMBINING DOCUMENTS
-
-     You may combine the Document with other documents released under
-     this License, under the terms defined in section 4 above for
-     modified versions, provided that you include in the combination all
-     of the Invariant Sections of all of the original documents,
-     unmodified, and list them all as Invariant Sections of your
-     combined work in its license notice, and that you preserve all
-     their Warranty Disclaimers.
-
-     The combined work need only contain one copy of this License, and
-     multiple identical Invariant Sections may be replaced with a single
-     copy.  If there are multiple Invariant Sections with the same name
-     but different contents, make the title of each such section unique
-     by adding at the end of it, in parentheses, the name of the
-     original author or publisher of that section if known, or else a
-     unique number.  Make the same adjustment to the section titles in
-     the list of Invariant Sections in the license notice of the
-     combined work.
-
-     In the combination, you must combine any sections Entitled
-     “History” in the various original documents, forming one section
-     Entitled “History”; likewise combine any sections Entitled
-     “Acknowledgements”, and any sections Entitled “Dedications”.  You
-     must delete all sections Entitled “Endorsements.”
-
-  6. COLLECTIONS OF DOCUMENTS
-
-     You may make a collection consisting of the Document and other
-     documents released under this License, and replace the individual
-     copies of this License in the various documents with a single copy
-     that is included in the collection, provided that you follow the
-     rules of this License for verbatim copying of each of the documents
-     in all other respects.
-
-     You may extract a single document from such a collection, and
-     distribute it individually under this License, provided you insert
-     a copy of this License into the extracted document, and follow this
-     License in all other respects regarding verbatim copying of that
-     document.
-
-  7. AGGREGATION WITH INDEPENDENT WORKS
-
-     A compilation of the Document or its derivatives with other
-     separate and independent documents or works, in or on a volume of a
-     storage or distribution medium, is called an “aggregate” if the
-     copyright resulting from the compilation is not used to limit the
-     legal rights of the compilation’s users beyond what the individual
-     works permit.  When the Document is included in an aggregate, this
-     License does not apply to the other works in the aggregate which
-     are not themselves derivative works of the Document.
-
-     If the Cover Text requirement of section 3 is applicable to these
-     copies of the Document, then if the Document is less than one half
-     of the entire aggregate, the Document’s Cover Texts may be placed
-     on covers that bracket the Document within the aggregate, or the
-     electronic equivalent of covers if the Document is in electronic
-     form.  Otherwise they must appear on printed covers that bracket
-     the whole aggregate.
-
-  8. TRANSLATION
-
-     Translation is considered a kind of modification, so you may
-     distribute translations of the Document under the terms of section
-     4.  Replacing Invariant Sections with translations requires special
-     permission from their copyright holders, but you may include
-     translations of some or all Invariant Sections in addition to the
-     original versions of these Invariant Sections.  You may include a
-     translation of this License, and all the license notices in the
-     Document, and any Warranty Disclaimers, provided that you also
-     include the original English version of this License and the
-     original versions of those notices and disclaimers.  In case of a
-     disagreement between the translation and the original version of
-     this License or a notice or disclaimer, the original version will
-     prevail.
-
-     If a section in the Document is Entitled “Acknowledgements”,
-     “Dedications”, or “History”, the requirement (section 4) to
-     Preserve its Title (section 1) will typically require changing the
-     actual title.
-
-  9. TERMINATION
-
-     You may not copy, modify, sublicense, or distribute the Document
-     except as expressly provided for under this License.  Any other
-     attempt to copy, modify, sublicense or distribute the Document is
-     void, and will automatically terminate your rights under this
-     License.  However, parties who have received copies, or rights,
-     from you under this License will not have their licenses terminated
-     so long as such parties remain in full compliance.
-
-  10. FUTURE REVISIONS OF THIS LICENSE
-
-     The Free Software Foundation may publish new, revised versions of
-     the GNU Free Documentation License from time to time.  Such new
-     versions will be similar in spirit to the present version, but may
-     differ in detail to address new problems or concerns.  See
-     <http://www.gnu.org/copyleft/>.
-
-     Each version of the License is given a distinguishing version
-     number.  If the Document specifies that a particular numbered
-     version of this License “or any later version” applies to it, you
-     have the option of following the terms and conditions either of
-     that specified version or of any later version that has been
-     published (not as a draft) by the Free Software Foundation.  If the
-     Document does not specify a version number of this License, you may
-     choose any version ever published (not as a draft) by the Free
-     Software Foundation.
-
-D.1.1 ADDENDUM: How to use this License for your documents
-----------------------------------------------------------
-
-To use this License in a document you have written, include a copy of
-the License in the document and put the following copyright and license
-notices just after the title page:
-
-       Copyright (C)  YEAR  YOUR NAME.
-       Permission is granted to copy, distribute and/or modify this document
-       under the terms of the GNU Free Documentation License, Version 1.2
-       or any later version published by the Free Software Foundation;
-       with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
-       Texts.  A copy of the license is included in the section entitled ``GNU
-       Free Documentation License''.
-
-   If you have Invariant Sections, Front-Cover Texts and Back-Cover
-Texts, replace the “with...Texts.” line with this:
-
-         with the Invariant Sections being LIST THEIR TITLES, with
-         the Front-Cover Texts being LIST, and with the Back-Cover Texts
-         being LIST.
-
-   If you have Invariant Sections without Cover Texts, or some other
-combination of the three, merge those two alternatives to suit the
-situation.
-
-   If your document contains nontrivial examples of program code, we
-recommend releasing these examples in parallel under your choice of free
-software license, such as the GNU General Public License, to permit
-their use in free software.
 

@@ -27,6 +27,238 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: General control structures with CASE,  Next: Arbitrary control structures,  Prev: BEGIN loops with multiple exits,  Up: Control Structures
+
+6.9.5 General control structures with ‘case’
+--------------------------------------------
+
+Gforth provides an extended ‘case’ that solves the problems of the
+multi-exit loops discussed above, and offers additional options.  You
+can find a portable implementation of this extended ‘case’ in
+‘compat/caseext.fs’.
+
+   There are three additional words in the extension.  The first is
+‘?of’ which allows general tests (rather than just testing for equality)
+in a ‘case’; e.g.,
+
+     : sgn ( n -- -1|0|1 )
+       ( n ) case
+         dup 0 < ?of drop -1 endof
+         dup 0 > ?of drop 1  endof
+         \ otherwise leave the 0 on the stack
+       0 endcase ;
+
+   Note that ‘endcase’ drops a value, which works fine much of the time
+with ‘of’, but usually not with ‘?of’, so we leave a 0 on the stack for
+‘endcase’ to drop.  The n that is passed into ‘sgn’ is also 0 if neither
+‘?of’ triggers, and that is then passed out.
+
+   The second additional word is ‘next-case’, which allows turning
+‘case’ into a loop.  Our triple-exit loop becomes:
+
+     case
+       condition1 ?of exit-code1 endof
+       condition2 ?of exit-code2 endof
+       condition3 ?of exit-code3 endof
+       ...
+     next-case
+     common code afterwards
+
+   As you can see, this solves both problems of the variants discussed
+above (*note BEGIN loops with multiple exits::).  Note that ‘next-case’
+does not drop a value, unlike ‘endcase’.(1)
+
+   The last additional word is ‘contof’, which is used instead of
+‘endof’ and starts the next iteration instead of leaving the loop.  This
+can be used in ways similar to Dijkstra’s guarded command do, e.g.:
+
+     : gcd ( n1 n2 -- n )
+         case
+             2dup > ?of tuck - contof
+             2dup < ?of over - contof
+         endcase ;
+
+   Here the two ‘?of’s have different ways of continuing the loop; when
+neither ‘?of’ triggers, the two numbers are equal and are the gcd.
+‘Endcase’ drops one of them, leaving the other as n.
+
+   You can also combine these words.  Here’s an example that uses each
+of the ‘case’ words once, except ‘endcase’:
+
+     : collatz ( u -- )
+         \ print the 3n+1 sequence starting at u until we reach 1
+         case
+             dup .
+             1 of endof
+             dup 1 and ?of 3 * 1+ contof
+             2/
+         next-case ;
+
+   This example keeps the current value of the sequence on the stack.
+If it is 1, the ‘of’ triggers, drops the value, and leaves the ‘case’
+structure.  For odd numbers, the ‘?of’ triggers, computes 3n+1, and
+starts the next iteration with ‘contof’.  Otherwise, if the number is
+even, it is divided by 2, and the loop is restarted with ‘next-case’.
+
+   ---------- Footnotes ----------
+
+   (1) ‘Next-case’ has a ‘-’, unlike the other ‘case’ words, because VFX
+Forth contains a ‘nextcase’ that drops a value.
+
+
+File: gforth.info,  Node: Arbitrary control structures,  Next: Calls and returns,  Prev: General control structures with CASE,  Up: Control Structures
+
+6.9.6 Arbitrary control structures
+----------------------------------
+
+Standard Forth permits and supports using control structures in a
+non-nested way.  Information about incomplete control structures is
+stored on the control-flow stack.  This stack may be implemented on the
+Forth data stack, and this is what we have done in Gforth.
+
+   An orig entry represents an unresolved forward branch, a dest entry
+represents a backward branch target.  A few words are the basis for
+building any control structure possible (except control structures that
+need storage, like calls, coroutines, and backtracking).
+
+‘IF’ ( compilation – orig ; run-time f –  ) core “IF”
+   At run-time, if f=0, execution continues after the ‘THEN’ (or ‘ELSE’)
+that consumes the orig, otherwise right after the ‘IF’ (*note
+Selection::).
+
+‘AHEAD’ ( compilation – orig ; run-time –  ) tools-ext “AHEAD”
+   At run-time, execution continues after the ‘THEN’ that consumes the
+orig.
+
+‘THEN’ ( compilation orig – ; run-time –  ) core “THEN”
+   The ‘IF’, ‘AHEAD’, ‘ELSE’ or ‘WHILE’ that pushed orig jumps right
+after the ‘THEN’ (*note Selection::).
+
+‘BEGIN’ ( compilation – dest ; run-time –  ) core “BEGIN”
+   The ‘UNTIL’, ‘AGAIN’ or ‘REPEAT’ that consumes the dest jumps right
+behind the ‘BEGIN’ (*note Simple Loops::).
+
+‘UNTIL’ ( compilation dest – ; run-time f –  ) core “UNTIL”
+   At run-time, if f=0, execution continues after the ‘BEGIN’ that
+produced dest, otherwise right after the ‘UNTIL’ (*note Simple Loops::).
+
+‘AGAIN’ ( compilation dest – ; run-time –  ) core-ext “AGAIN”
+   At run-time, execution continues after the ‘BEGIN’ that produced the
+dest (*note Simple Loops::).
+
+‘CS-PICK’ ( orig0/dest0 orig1/dest1 ... origu/destu u – ... orig0/dest0  ) tools-ext “c-s-pick”
+
+‘CS-ROLL’ ( destu/origu .. dest0/orig0 u – .. dest0/orig0 destu/origu  ) tools-ext “c-s-roll”
+
+‘CS-DROP’ ( dest –  ) gforth-1.0 “CS-DROP”
+
+   The Standard words ‘CS-PICK’ and ‘CS-ROLL’ allow you to manipulate
+the control-flow stack in a portable way.  Without them, you would need
+to know how many stack items are occupied by a control-flow entry (many
+systems use one cell.  In Gforth they currently take three, but this may
+change in the future).
+
+   ‘CS-PICK’ can only pick a dest and ‘CS-DROP’ can only drop a dest,
+because an orig must be resolved exactly once.
+
+   Some standard control structure words are built from these words:
+
+‘ELSE’ ( compilation orig1 – orig2 ; run-time –  ) core “ELSE”
+   At run-time, execution continues after the ‘THEN’ that consumes the
+orig; the ‘IF’, ‘AHEAD’, ‘ELSE’ or ‘WHILE’ that pushed orig1 jumps right
+after the ‘ELSE’.  (*note Selection::).
+
+‘WHILE’ ( compilation dest – orig dest ; run-time f –  ) core “WHILE”
+   At run-time, if f=0, execution continues after the ‘REPEAT’ (or
+‘THEN’ or ‘ELSE’) that consumes the orig, otherwise right after the
+‘WHILE’ (*note Simple Loops::).
+
+‘REPEAT’ ( compilation orig dest – ; run-time –  ) core “REPEAT”
+   At run-time, execution continues after the ‘BEGIN’ that produced the
+dest; the ‘WHILE’, ‘IF’, ‘AHEAD’ or ‘ELSE’ that pushed orig jumps right
+after the ‘REPEAT’.  (*note Simple Loops::).
+
+Gforth adds some more control-structure words:
+
+‘ENDIF’ ( compilation orig – ; run-time –  ) gforth-0.2 “ENDIF”
+   Same as ‘THEN’.
+
+‘?dup-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-if”
+   This is the preferred alternative to the idiom "‘?DUP IF’", since it
+can be better handled by tools like stack checkers.  Besides, it’s
+faster.
+
+‘?DUP-0=-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-zero-equals-if”
+
+Another group of control structure words are:
+
+‘case’ ( compilation  – case-sys ; run-time  –  ) core-ext “case”
+   Start a ‘case’ structure.
+
+‘endcase’ ( compilation case-sys – ; run-time x –  ) core-ext “end-case”
+   Finish the ‘case’ structure; drop x, and continue behind the
+‘endcase’.  Dropping x is useful in the original ‘case’ construct (with
+only ‘of’s), but you may have to supply an x in other cases (especially
+when using ‘?of’).
+
+‘next-case’ ( compilation case-sys – ; run-time –  ) gforth-1.0 “next-case”
+   Restart the ‘case’ loop by jumping to the matching ‘case’.  Note that
+‘next-case’ does not drop a cell, unlike ‘endcase’.
+
+‘of’ ( compilation  – of-sys ; run-time x1 x2 – |x1  ) core-ext “of”
+   If x1=x2, continue (dropping both); otherwise, leave x1 on the stack
+and jump behind ‘endof’ or ‘contof’.
+
+‘?of’ ( compilation  – of-sys ; run-time  f –  ) gforth-1.0 “question-of”
+   If f is true, continue; otherwise, jump behind ‘endof’ or ‘contof’.
+
+‘endof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) core-ext “end-of”
+   Exit the enclosing ‘case’ structure by jumping behind
+‘endcase’/‘next-case’.
+
+‘contof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) gforth-1.0 “cont-of”
+   Restart the ‘case’ loop by jumping to the enclosing ‘case’.
+
+   Internally, of-sys is an ‘orig’; and case-sys is a cell and some
+stack-depth information, 0 or more ‘orig’s, and a ‘dest’.
+
+6.9.6.1 Programming Style
+.........................
+
+In order to ensure readability we recommend that you do not create
+arbitrary control structures directly, but define new control structure
+words for the control structure you want and use these words in your
+program.  For example, instead of writing:
+
+     BEGIN
+       ...
+     IF [ 1 CS-ROLL ]
+       ...
+     AGAIN THEN
+
+we recommend defining control structure words, e.g.,
+
+     : WHILE ( DEST -- ORIG DEST )
+      POSTPONE IF
+      1 CS-ROLL ; immediate
+
+     : REPEAT ( orig dest -- )
+      POSTPONE AGAIN
+      POSTPONE THEN ; immediate
+
+and then using these to create the control structure:
+
+     BEGIN
+       ...
+     WHILE
+       ...
+     REPEAT
+
+   That’s much easier to read, isn’t it?  Of course, ‘REPEAT’ and
+‘WHILE’ are predefined, so in this example it would not be necessary to
+define them.
+
+
 File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: Arbitrary control structures,  Up: Control Structures
 
 6.9.7 Calls and returns
@@ -1864,10 +2096,9 @@ words.
 
 * Menu:
 
-* Execution token::          実行(execution)/インタプリタ(interpretation)
-                               セマンティクス
+* Execution token::          実行時(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル・セマンティクス
+* Compilation token::        コンパイル時(compilation semantics)
 
 
 File: gforth.info,  Node: Execution token,  Next: Name token,  Prev: Tokens for Words,  Up: Tokens for Words
@@ -6985,240 +7216,4 @@ this:
    (1) Moreover, for any word that calls ‘catch’ and was defined before
 loading ‘objects.fs’, you have to redefine it like I redefined ‘catch’:
 ‘: catch this >r catch r> to-this ;’
-
-
-File: gforth.info,  Node: Classes and Scoping,  Next: Dividing classes,  Prev: Method conveniences,  Up: Objects
-
-6.24.3.8 Classes and Scoping
-............................
-
-Inheritance is frequent, unlike structure extension.  This exacerbates
-the problem with the field name convention (*note Structure Naming
-Convention::): One always has to remember in which class the field was
-originally defined; changing a part of the class structure would require
-changes for renaming in otherwise unaffected code.
-
-   To solve this problem, I added a scoping mechanism (which was not in
-my original charter): A field defined with ‘inst-var’ (or ‘inst-value’)
-is visible only in the class where it is defined and in the descendent
-classes of this class.  Using such fields only makes sense in
-‘m:’-defined methods in these classes anyway.
-
-   This scoping mechanism allows us to use the unadorned field name,
-because name clashes with unrelated words become much less likely.
-
-   Once we have this mechanism, we can also use it for controlling the
-visibility of other words: All words defined after ‘protected’ are
-visible only in the current class and its descendents.  ‘public’
-restores the compilation (i.e.  ‘current’) word list that was in effect
-before.  If you have several ‘protected’s without an intervening
-‘public’ or ‘set-current’, ‘public’ will restore the compilation word
-list in effect before the first of these ‘protected’s.
-
-
-File: gforth.info,  Node: Dividing classes,  Next: Object Interfaces,  Prev: Classes and Scoping,  Up: Objects
-
-6.24.3.9 Dividing classes
-.........................
-
-You may want to do the definition of methods separate from the
-definition of the class, its selectors, fields, and instance variables,
-i.e., separate the implementation from the definition.  You can do this
-in the following way:
-
-     graphical class
-       inst-value radius
-     end-class circle
-
-     ... \ do some other stuff
-
-     circle methods \ now we are ready
-
-     m: ( x y circle -- )
-       radius draw-circle ;m
-     overrides draw
-
-     m: ( n-radius circle -- )
-       [to-inst] radius ;m
-     overrides construct
-
-     end-methods
-
-   You can use several ‘methods’...‘end-methods’ sections.  The only
-things you can do to the class in these sections are: defining methods,
-and overriding the class’s selectors.  You must not define new selectors
-or fields.
-
-   Note that you often have to override a selector before using it.  In
-particular, you usually have to override ‘construct’ with a new method
-before you can invoke ‘heap-new’ and friends.  E.g., you must not create
-a circle before the ‘overrides construct’ sequence in the example above.
-
-
-File: gforth.info,  Node: Object Interfaces,  Next: Objects Implementation,  Prev: Dividing classes,  Up: Objects
-
-6.24.3.10 Object Interfaces
-...........................
-
-In this model you can only call selectors defined in the class of the
-receiving objects or in one of its ancestors.  If you call a selector
-with a receiving object that is not in one of these classes, the result
-is undefined; if you are lucky, the program crashes immediately.
-
-   Now consider the case when you want to have a selector (or several)
-available in two classes: You would have to add the selector to a common
-ancestor class, in the worst case to ‘object’.  You may not want to do
-this, e.g., because someone else is responsible for this ancestor class.
-
-   The solution for this problem is interfaces.  An interface is a
-collection of selectors.  If a class implements an interface, the
-selectors become available to the class and its descendents.  A class
-can implement an unlimited number of interfaces.  For the problem
-discussed above, we would define an interface for the selector(s), and
-both classes would implement the interface.
-
-   As an example, consider an interface ‘storage’ for writing objects to
-disk and getting them back, and a class ‘foo’ that implements it.  The
-code would look like this:
-
-     interface
-       selector write ( file object -- )
-       selector read1 ( file object -- )
-     end-interface storage
-
-     bar class
-       storage implementation
-
-     ... overrides write
-     ... overrides read1
-     ...
-     end-class foo
-
-(I would add a word ‘read’ ( file – object ) that uses ‘read1’
-internally, but that’s beyond the point illustrated here.)
-
-   Note that you cannot use ‘protected’ in an interface; and of course
-you cannot define fields.
-
-   In the Neon model, all selectors are available for all classes;
-therefore it does not need interfaces.  The price you pay in this model
-is slower late binding, and therefore, added complexity to avoid late
-binding.
-
-
-File: gforth.info,  Node: Objects Implementation,  Next: Objects Glossary,  Prev: Object Interfaces,  Up: Objects
-
-6.24.3.11 ‘objects.fs’ Implementation
-.....................................
-
-An object is a piece of memory, like one of the data structures
-described with ‘struct...end-struct’.  It has a field ‘object-map’ that
-points to the method map for the object’s class.
-
-   The _method map_(1) is an array that contains the execution tokens
-(xts) of the methods for the object’s class.  Each selector contains an
-offset into a method map.
-
-   ‘selector’ is a defining word that uses ‘CREATE’ and ‘DOES>’.  The
-body of the selector contains the offset; the ‘DOES>’ action for a class
-selector is, basically:
-
-     ( object addr ) @ over object-map @ + @ execute
-
-   Since ‘object-map’ is the first field of the object, it does not
-generate any code.  As you can see, calling a selector has a small,
-constant cost.
-
-   A class is basically a ‘struct’ combined with a method map.  During
-the class definition the alignment and size of the class are passed on
-the stack, just as with ‘struct’s, so ‘field’ can also be used for
-defining class fields.  However, passing more items on the stack would
-be inconvenient, so ‘class’ builds a data structure in memory, which is
-accessed through the variable ‘current-interface’.  After its definition
-is complete, the class is represented on the stack by a pointer (e.g.,
-as parameter for a child class definition).
-
-   A new class starts off with the alignment and size of its parent, and
-a copy of the parent’s method map.  Defining new fields extends the size
-and alignment; likewise, defining new selectors extends the method map.
-‘overrides’ just stores a new xt in the method map at the offset given
-by the selector.
-
-   Class binding just gets the xt at the offset given by the selector
-from the class’s method map and ‘compile,’s (in the case of ‘[bind]’)
-it.
-
-   I implemented ‘this’ as a ‘value’.  At the start of an ‘m:...;m’
-method the old ‘this’ is stored to the return stack and restored at the
-end; and the object on the TOS is stored ‘TO this’.  This technique has
-one disadvantage: If the user does not leave the method via ‘;m’, but
-via ‘throw’ or ‘exit’, ‘this’ is not restored (and ‘exit’ may crash).
-To deal with the ‘throw’ problem, I have redefined ‘catch’ to save and
-restore ‘this’; the same should be done with any word that can catch an
-exception.  As for ‘exit’, I simply forbid it (as a replacement, there
-is ‘exitm’).
-
-   ‘inst-var’ is just the same as ‘field’, with a different ‘DOES>’
-action:
-     @ this +
-   Similar for ‘inst-value’.
-
-   Each class also has a word list that contains the words defined with
-‘inst-var’ and ‘inst-value’, and its protected words.  It also has a
-pointer to its parent.  ‘class’ pushes the word lists of the class and
-all its ancestors onto the search order stack, and ‘end-class’ drops
-them.
-
-   An interface is like a class without fields, parent and protected
-words; i.e., it just has a method map.  If a class implements an
-interface, its method map contains a pointer to the method map of the
-interface.  The positive offsets in the map are reserved for class
-methods, therefore interface map pointers have negative offsets.
-Interfaces have offsets that are unique throughout the system, unlike
-class selectors, whose offsets are only unique for the classes where the
-selector is available (invokable).
-
-   This structure means that interface selectors have to perform one
-indirection more than class selectors to find their method.  Their body
-contains the interface map pointer offset in the class method map, and
-the method offset in the interface method map.  The ‘does>’ action for
-an interface selector is, basically:
-
-     ( object selector-body )
-     2dup selector-interface @ ( object selector-body object interface-offset )
-     swap object-map @ + @ ( object selector-body map )
-     swap selector-offset @ + @ execute
-
-   where ‘object-map’ and ‘selector-offset’ are first fields and
-generate no code.
-
-   As a concrete example, consider the following code:
-
-     interface
-       selector if1sel1
-       selector if1sel2
-     end-interface if1
-
-     object class
-       if1 implementation
-       selector cl1sel1
-       cell% inst-var cl1iv1
-
-     ' m1 overrides construct
-     ' m2 overrides if1sel1
-     ' m3 overrides if1sel2
-     ' m4 overrides cl1sel2
-     end-class cl1
-
-     create obj1 object dict-new drop
-     create obj2 cl1    dict-new drop
-
-   The data structure created by this code (including the data structure
-for ‘object’) is shown in the figure (objects-implementation.eps),
-assuming a cell size of 4.
-
-   ---------- Footnotes ----------
-
-   (1) This is Self terminology; in C++ terminology: virtual function
-table.
 

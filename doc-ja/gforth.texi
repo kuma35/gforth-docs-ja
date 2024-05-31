@@ -150,7 +150,7 @@ Foundation raise funds for GNU development.''
 * Integrating Gforth::       アプリのスクリプト言語としてのForth
 * Emacs and Gforth::         The Gforth Mode
 * Image Files::              @code{.fi} 
-                               ファイルはコンパイル済のコードです
+                               ファイルはコンパイル済のコード
 * Engine::                   内部インタプリタとプリミティブ・ワード
 * Cross Compiler::           The Cross Compiler
 * MINOS2::                   The GUI library
@@ -380,10 +380,9 @@ Tokens for Words
 
 
 
-* Execution token::          実行(execution)/インタプリタ(interpretation) 
-                               セマンティクス
+* Execution token::          実行時(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル・セマンティクス
+* Compilation token::        コンパイル時(compilation semantics)
 
 Compiling words
 
@@ -2896,14 +2895,13 @@ fd-out close-file throw
 : foo + ;
 @end example
 
-これらの 2 つの振る舞いは、 コンパイルと解釈(interpret)のセマンティクスとして知られています。 通常のワード(例:
-@code{+})の場合、 コンパイル・セマンティクスは、 現在定義されているワード(上記の例では
-@code{foo})に解釈セマンティクスを追加します。 つまり、 後で @code{foo} が実行されると、 @code{+}
-の解釈(interret)セマンティクス(つまり、2 つの数値の加算)が実行されます。
+これらの 2 つの振る舞いは、 コンパイル時compilation semantics)と実行時(interpretation
+semantics)として知られています。 通常のワード(例: @code{+})の場合、 コンパイル時は、 現在定義されているワード(上記の例では
+@code{foo})に実行時コードを追加します。 つまり、 後で @code{foo} が実行されると、 @code{+}
+のj実行時コード(interpretation semantics)(つまり、2 つの数値の加算)が実行されます。
 
-ただし、 @code{if} のような制御フロー・ワードなど、 デフォルト以外のコンパイル・セマンティクスを持つワードが存在します。
-@code{immediate}
-を使用すると、最後に定義されたワードのコンパイル・セマンティクスを解釈(interpret)セマンティクスと等しくなるように変更できます:
+ただし、 @code{if} のような制御フロー・ワードなど、 デフォルト以外のコンパイル時動作を持つワードが存在します。
+@code{immediate} を使用すると、 最後に定義されたワードのコンパイル時コードを実行時コードと等しくなるように変更できます:
 
 @example
 : [FOO] ( -- )
@@ -2916,11 +2914,11 @@ bar
 see bar
 @end example
 
-デフォルト以外のコンパイル・セマンティクスのワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、
+デフォルト以外のコンパイル時ワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、
 名前をすべて大文字で記述する(あまり使用されない)ことです。
 
-@code{if} などの一部のワードについては、 その解釈(interpret)セマンティクスを使用するのは通常間違いであるため、 それらを
-@code{compile-only} としてマークし、 解釈(interpret)すると警告が表示されます。
+@code{if} などの一部のワードについては、 実行時に使用するのは通常間違いであるため、 それらを @code{compile-only}
+としてマークし、 実行時に使用すると警告が表示されます。
 
 @example
 : flip ( -- )
@@ -2932,12 +2930,12 @@ flip
 flop
 @end example
 
-この例では、 最初に @code{flip} の解釈(interpret)セマンティクスが使用されます(警告が表示されます)。 @code{flip}
-の 2 番目の使用では、 コンパイル・セマンティクスが使用されます(警告は表示されません)。 この例では、 compile-only
-が実行時(run-time)ではなくテキスト解釈時(text interpretation time)に評価されるプロパティであることもわかります。
+この例では、 最初に @code{flip} の実行時コードが使用されます(警告が表示されます)。 @code{flip} の 2 番目の使用では、
+コンパイル時コードが使用されます(警告は表示されません)。 この例では、 compile-only
+が実行時(run-time)ではなくテキスト解釈時(text interpretation time)に評価される属性であることもわかります。
 
-テキスト・インタプリタには 2 つの状態があります。 解釈(interpret)状態では、
-遭遇したワードの解釈(interpret)セマンティクスを実行します。 コンパイル状態では、これらのワードのコンパイル・セマンティクスが実行されます。
+テキスト・インタプリタには 2 つの状態があります。 実行時(interpret)は、 遭遇したワードの実行時コードを実行します。 コンパイル時では、
+これらのワードのコンパイル時コードが実行されます。
 
 特に、 @code{:} はコンパイル状態に切り替え、 @code{;} は解釈(interpret)状態に戻ります。 これらには、
 状態を切り替えるだけがその効果である @code{]} (コンパイル状態に切り替える) と @code{[}
@@ -2963,7 +2961,7 @@ see xxx
 @cindex XT tutorial
 
 @code{' word} は、 ワードの実行トークン(execution token)(XT)を提供します。 XT は、
-ワードの解釈(interpret)セマンティクスを表すセルです。 このセマンティクスは @code{execute} で実行できます:
+ワードの実行時コードを表すセルです。 これは @code{execute} で実行できます:
 
 @example
 ' + .s
@@ -3001,8 +2999,8 @@ XT はセルサイズであるため、 メモリに保存し、 他のセルと
 see foo1
 @end example
 
-@code{compile,} は標準ではコンパイル・セマンティクスがないため、 上記は標準ではないけれども、 良い Forth
-システムでは動作します。 うまくいかなかったモノついては、 以下を使用してください
+@code{compile,} は標準ではコンパイル時コードがないため、 上記は標準ではないけれども、 良い Forth システムでは動作します。
+うまくいかなかったモノついては、 以下を使用してください
 
 @example
 : [compile,] compile, ; immediate
@@ -3012,8 +3010,8 @@ see foo1
 see foo1
 @end example
 
-@code{'} は、 デフォルトでコンパイル・セマンティクスを持つワードです。 コンパイル中ではなく、
-解釈(interpret)セマンティクスの実行時、 その次のワードを解析(parse)します。
+@code{'} は、 デフォルトでコンパイル時コードを持つワードです。 コンパイル中ではなく、 実行時コードの実行時、
+その次のワードを構文解析(parse)します。
 
 @example
 : foo ( -- xt )
@@ -3044,8 +3042,8 @@ see xt-+
 @code{State}-smartness---Why it is evil and How to Exorcise it})。
 
 XT の作成および実行は、 インタプリタの状態には影響を受けないことに注意してください。 つまり、 コンパイル状態で @code{'}
-を実行した場合でも、 解釈(interpret)セマンティクスが得られます。 そして、 そこでの状態が何であれ、 @code{execute} は XT
-によって表されるセマンティクス(つまり、@code{'} で生成された XT の場合は解釈(interpret)セマンティクス)を実行します。
+を実行した場合でも、 実行時コードが得られます。 そして、 そこでの状態が何であれ、 @code{execute} は XT
+によって表されるコード(つまり、@code{'} で生成された XT の場合は実行時コード)を実行します。
 
 こちらも参照ください: @ref{Tokens for Words}
 
@@ -3250,8 +3248,8 @@ Gforth で事前定義されています。 これらについては、 この�
 @section @code{POSTPONE}
 @cindex postpone tutorial
 
-@code{POSTPONE} を使用すると、 (解釈(interpret)セマンティクスをコンパイルする代わりに、)
-ワードのコンパイル・セマンティクスをコンパイルできます:
+@code{POSTPONE} を使用すると、 (そのワードの実行時コード(interpretation
+semantics)をコンパイルする代わりに、) そのワードのコンパイル時コード(compilation semantics)をコンパイルできます:
 
 @example
 : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
@@ -3262,16 +3260,16 @@ Gforth で事前定義されています。 これらについては、 この�
 see foo
 @end example
 
-@code{foo} の定義中に、 テキスト・インタプリタは @code{MY-+} のコンパイル・セマンティクスを実行し、 それが @code{+}
-のコンパイル・セマンティクスを実行します。 つまり、 @code{+} を @code{foo} 内にコンパイルします。
+@code{foo} の定義中に、 テキスト・インタプリタは @code{MY-+} のコンパイル時コードを実行し、 そのコンパイル時コードが
+@code{+} のコンパイル時コードを実行します。 つまり、 @code{+} を @code{foo} 内にコンパイルします。
 
-この例では、 コンパイル・セマンティクスとコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。
-デフォルトのコンパイル・セマンティクスを持つワードの場合、 通常、 これらのスタック効果は表示されません。
-これらのワードのコンパイル・セマンティクスのスタック効果は常に @code{( -- )} であり、
-コンパイルされたコードのスタック効果は解釈(interpret)セマンティクスのスタック効果です。
+この例では、 コンパイル時コードとコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。
+デフォルトのコンパイル時コード(compilation semantics)を持つワードの場合、 通常、 これらのスタック効果は表示されません。
+これらのワードのコンパイル時コード(compilation semantics)のスタック効果は常に @code{( -- )} であり、
+コンパイルされたコードのスタック効果は実行時コード(interpretation semantics)のスタック効果です。
 
-注意: この方法でコンパイル・セマンティクスを実行する場合、 インタプリタの状態には影響を受けないことに注意してください。
-あなたは解釈的(interpretively)に実行することもできます。 例:
+注意: この方法でコンパイル時コード(compilation semantics)を実行する場合、
+インタプリタの状態には影響を受けないことに注意してください。 あなたは解釈的(interpretively)に実行することもできます。 例:
 
 @example
 : foo2 ( n1 n2 -- n )
@@ -3302,8 +3300,8 @@ see bar
 @end example
 
 @quotation 研究課題(assignment)
-@code{2dup} と同等のコンパイル・セマンティクスを持つ @code{MY-2DUP} を作成しますが、 コンパイルされるのは
-@code{over over} になるようにしてみましょう。
+@code{2dup} と同等のコンパイル時コードを持つ @code{MY-2DUP} を作成しますが、 コンパイルされるのは @code{over
+over} になるようにしてみましょう。
 @end quotation
 
 @c !! @xref{Macros} for reference
@@ -3330,7 +3328,7 @@ flip .
 see flip
 @end example
 
-@code{LITERAL} は、 コンパイル時(コンパイル・セマンティクスが実行されるとき)に数値を消費し、
+@code{LITERAL} は、 コンパイル時(コンパイル時コードが実行されるとき)に数値を消費し、
 実行時(コンパイルされたコードが実行されるとき)にそれをプッシュします。 @code{LITERAL} のよくある使用法は、
 コンパイル時に計算された数値を現在のワードにコンパイルすることです:
 
@@ -3413,11 +3411,11 @@ a a-vmul .
 
 このセクションは Gforth 固有です。 スキップしても構いません。
 
-@code{' word compile,} は解釈(interpret)セマンティクスをコンパイルします。
-デフォルトのコンパイル・セマンティクスを持つワードの場合、 これはコンパイル・セマンティクスを実行するのと同じです。
-他のワードのコンパイル・セマンティクス(解釈(interpret)セマンティクスを持たない @code{if} などのワード)を表すために、
-Gforth にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワード @code{comp'} と、 @code{[comp']}
-の概念があります。 @code{execute} を使用して、 CT によって表されるコンパイル・セマンティクスを実行できます:
+@code{' word compile,} は実行時コード(interpretation semantics)をコンパイルします。
+デフォルトのコンパイル時コード(compilation semantics)を持つワードの場合、 これはコンパイル時コードを実行するのと同じです。
+他のワードのコンパイル時コード(実行時に使えない @code{if} などのワード)を表すために、 Gforth
+にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワード @code{comp'} と、 ワード @code{[comp']}
+の概念があります。 @code{execute} を使用して、 CT によって表されるコンパイル時コードを実行できます:
 
 @example
 : foo2 ( n1 n2 -- n )
@@ -3425,7 +3423,7 @@ Gforth にはコンパイル・トークン(CTと略します。 2つのセル�
 see foo2
 @end example
 
-@code{postpone,} を使用して、 CT によって表されるコンパイル・セマンティクスをコンパイルできます:
+@code{postpone,} を使用して、 CT によって表されるコンパイル時コードをコンパイルできます:
 
 @example
 : foo3 ( -- )
@@ -3434,7 +3432,7 @@ see foo3
 @end example
 
 @code{[ comp' word postpone, ]} @code{POSTPONE word} と同等です。  @code{comp'} は、
-解釈(interpret)セマンティクスを持たないワードに対して特に役立ちます:
+実行時コードを持たないワードに対して特に役立ちます:
 
 @example
 ' if
@@ -3517,36 +3515,26 @@ order
 @chapter An Introduction to Standard Forth
 @cindex Forth - an introduction
 
-The difference of this chapter from the Tutorial (@pxref{Tutorial}) is that
-it is slower-paced in its examples, but uses them to dive deep into
-explaining Forth internals (not covered by the Tutorial).  Apart from that,
-this chapter covers far less material.  It is suitable for reading without
-using a computer.
+この章とチュートリアル(@pxref{Tutorial})との違いは、 急ぎ足のチュートリアルと違ってじっくり腰を据えて、
+チュートリアルではカバーしきれていない、 Forth の内部を詳しく説明していることです。  それはさておき、
+この章で取り上げる内容はチュートリアルに比べはるかに少ないので、 パソコンを使わずに読むのに適しています。
 
-The primary purpose of this manual is to document Gforth. However, since
-Forth is not a widely-known language and there is a lack of up-to-date
-teaching material, it seems worthwhile to provide some introductory
-material.  For other sources of Forth-related information, see
-@ref{Forth-related information}.
+このマニュアルの主な目的は、 Gforth を文書化することです。 ただし、Forth は広く知られている言語ではなく、 最新の教材が不足しているため、
+入門用の教材を提供する価値があると思われます。  巷の Forth 関連情報その他の情報源については @ref{Forth-related
+information} を参照下さい。
 
-The examples in this section should work on any Standard Forth; the output
-shown was produced using Gforth. Each example attempts to reproduce the
-exact output that Gforth produces. If you try out the examples (and you
-should), what you should type is shown @kbd{like this} and Gforth's response
-is shown @code{like this}. The single exception is that, where the example
-shows @key{RET} it means that you should press the ``carriage return''
-key. Unfortunately, some output formats for this manual cannot show the
-difference between @kbd{this} and @code{this} which will make trying out the
-examples harder (but not impossible).
+このセクションの例は、 どの標準 Forth でも動作するはずです。 示されている出力は Gforth を使用して生成されました。 各例では、
+Gforth が生成する正確な出力を再現しようとしています。 あなたが例を試してみれば(そして、あなたはそうするべきです)、 入力すべき内容は
+@kbd{like this} と示され、 Gforth の応答は @code{like this} で示されます。 唯一の例外は、 例で
+@key{RET} が示されている場合、 これは「Enter」キー(機種によりReturnキー)を押す必要があることを意味します。 残念ながら、
+このマニュアルの一部の出力形式では @kbd{this} と @code{this} の違いを表示できないため、
+例を試してみるのが困難かもしれません(ただし、 不可能ではありません)。
 
-Forth is an unusual language. It provides an interactive development
-environment which includes both an interpreter and compiler. Forth
-programming style encourages you to break a problem down into many
+Forth は珍しい言語です。 インタプリタとコンパイラの両方を含む対話型開発環境を提供します。 Forth のプログラミング・スタイルでは、
+問題をいくつかの要素に分割することが推奨されます
 @cindex factoring
-small fragments (@dfn{factoring}), and then to develop and test each
-fragment interactively. Forth advocates assert that breaking the
-edit-compile-test cycle used by conventional programming languages can lead
-to great productivity improvements.
+小さな断片を作成し(ファクタリング)、 各断片を対話的に開発・テストします。 Forth の支持者は、
+従来のプログラミング言語で使用されている編集・コンパイル・テストのサイクルを打ち破ることで、 生産性の大幅な向上につながる可能性があると主張しています。
 
 @menu
 * Introducing the Text Interpreter::
@@ -3577,26 +3565,23 @@ to great productivity improvements.
 @c done far more efficiently over a beer. Please delete any dialogue
 @c you consider closed.
 
-When you invoke the Forth image, you will see a startup banner printed and
-nothing else (if you have Gforth installed on your system, try invoking it
-now, by typing @kbd{gforth@key{RET}}). Forth is now running its command line
-interpreter, which is called the @dfn{Text Interpreter} (also known as the
-@dfn{Outer Interpreter}).  (You will learn a lot about the text interpreter
-as you read through this chapter, for more detail @pxref{The Text
-Interpreter}).
+Forth イメージを呼び出すと、 起動バナーが出力されますが、 他には何も表示されません (システムに Gforth がインストールされている場合は、
+@kbd{gforth@key{RET}} と入力して今すぐ呼び出してみてください)。 今、 Forth は、 テキスト・インタプリタ(Text
+Interpreter)と呼ばれるコマンド・ライン・インタプリタを実行しています(外部インタプリタとも呼ばれます;訳注: 別途存在する
+内部インタプリタ(inner interpreter)に対してこう呼ばれる)。
+(この章を読み進ればテキスト・インタプリタについて多くのことを学ぶことができます。 詳細については @pxref{The Text
+Interpreter} を参照してください)。
 
-Although it's not obvious, Forth is actually waiting for your input. Type a
-number and press the @key{RET} key:
+明白ではなくて分かりにくいですが、 今や Forth はユーザーの入力を待っています。 数字の 4 と 5 を入力し @key{RET}
+キーを押します:
 
 @example
 @kbd{45@key{RET}}  ok
 @end example
 
-Rather than give you a prompt to invite you to input something, the text
-interpreter prints a status message @i{after} it has processed a line of
-input. The status message in this case (``@code{ ok}'' followed by
-carriage-return) indicates that the text interpreter was able to process all
-of your input successfully. Now type something illegal:
+テキスト・インタプリタは、  次の入力を促すプロンプトを表示するのではなく、 入力行を処理した後に(改行無しで)ステータス・メッセージを出力します。
+この場合のステータス・メッセージ(@key{RET} (「エンター」(リターン)キー押下)の後の @code{ ok} )は、
+テキスト・インタプリタがすべての入力を正常に処理できたことを示します。 それでは次に、 不正な文字列を入力してみましょう:
 
 @example
 @kbd{qwer341@key{RET}}
@@ -3607,57 +3592,43 @@ $2A95B42A20 throw
 $2A95B57FB8 no.extensions 
 @end example
 
-The exact text, other than the ``Undefined word'' may differ slightly on
-your system, but the effect is the same; when the text interpreter detects
-an error, it discards any remaining text on a line, resets certain internal
-state and prints an error message. For a detailed description of error
-messages see @ref{Error messages}.
+`Undefined word` 以外の文章はシステムによって若干異なる場合がありますが、 意味は同じです。
+テキスト・インタプリタがエラーを検出すると、 行に残っているテキストを破棄し、 特定の内部状態をリセットして、 エラー・メッセージを出力します。
+エラー・メッセージの詳細な説明については、 @ref{Error messages} を参照してください。
 
-The text interpreter waits for you to press carriage-return, and then
-processes your input line. Starting at the beginning of the line, it breaks
-the line into groups of characters separated by spaces. For each group of
-characters in turn, it makes two attempts to do something:
+テキスト・インタプリタは、エンター・キー(リターン・キー)が押されるのを待ち、 その後入力行を処理します。 行頭から開始して、
+行をスペースで区切られた文字のグループに分割します。 文字のグループごとに、 以下の順番で、 何かするために計 2 回の試みを行います:
 
 @itemize @bullet
 @item
 @cindex name dictionary
-It tries to treat it as a command. It does this by searching a @dfn{name
-dictionary}. If the group of characters matches an entry in the name
-dictionary, the name dictionary provides the text interpreter with
-information that allows the text interpreter to perform some actions. In
-Forth jargon, we say that the group
 @cindex word
 @cindex definition
 @cindex execution token
 @cindex xt
-of characters names a @dfn{word}, that the dictionary search returns an
-@dfn{execution token (xt)} corresponding to the @dfn{definition} of the
-word, and that the text interpreter executes the xt. Often, the terms
-@dfn{word} and @dfn{definition} are used interchangeably.
+その文字のグループをコマンドとして扱おうとします。 これは、 名前ディクショナリ(name dictionary)を検索することによって行われます。
+その文字のグループが名前ディクショナリのエントリと一致する場合、 名前ディクショナリは、
+いくつかのアクションを実行できるようにする情報をテキスト・インタプリタに提供します。 Forth 流に言うと、文字のグループを「ワードの名前」といい、
+ディクショナリ検索でワードの定義(definition)に対応する実行トークン(execution token;xt)が返され、
+テキスト・インタプリタは xt を実行します。 多くの場合、「ワード」(word)と「定義」(definition)という用語は同じ意味で使用されます。
 @item
-If the text interpreter fails to find a match in the name dictionary, it
-tries to treat the group of characters as a number in the current number
-base (when you start up Forth, the current number base is base 10). If the
-group of characters legitimately represents a number, the text interpreter
-pushes the number onto a stack (we'll learn more about that in the next
-section).
+テキスト・インタプリタが名前ディクショナリ内で一致するものを見つけられなかった場合、
+文字のグループを現在の基数の数値として処理しようとします(Forth を起動したときの、 現在の基数は 10 です)。
+文字のグループが正当な数値を表す場合、 テキスト・インタプリタはその数値をスタックにプッシュします(これについては次のセクションで詳しく説明します)。
 @end itemize
 
-If the text interpreter is unable to do either of these things with any
-group of characters, it discards the group of characters and the rest of the
-line, then prints an error message. If the text interpreter reaches the end
-of the line without error, it prints the status message ``@code{ ok}''
-followed by carriage-return.
+テキスト・インタプリタが文字グループに対して上記のいずれも実行不可能な場合、 その文字グループと行の残りの部分が破棄され、
+エラー・メッセージが出力されます。 テキスト・インタプリタがエラーなく行末に到達すると、 ステータス・メッセージ @code{ ok}
+に続いて改行を出力します。
 
-This is the simplest command we can give to the text interpreter:
+以下は、 テキスト・インタプリタに与えることができる最もシンプルなコマンドです:
 
 @example
 @key{RET}  ok
 @end example
 
-The text interpreter did everything we asked it to do (nothing) without an
-error, so it said that everything is ``@code{ ok}''. Try a slightly longer
-command:
+ここで、 テキスト・インタプリタは、 私たちが要求したことをすべて(何もせずに)エラーなしで実行したため、 すべてが @code{ ok}
+であると表示しました。 今度は少し長いコマンドを試して見ましょう:
 
 @example
 @kbd{12 dup fred dup@key{RET}}
@@ -3668,35 +3639,27 @@ $2A95B42A20 throw
 $2A95B57FB8 no.extensions 
 @end example
 
-When you press the carriage-return key, the text interpreter starts to work
-its way along the line:
+エンター・キー(リターン・キー)を押すと、 テキスト・インタプリタが行に沿って動作を開始します:
 
 @itemize @bullet
 @item
-When it gets to the space after the @code{2}, it takes the group of
-characters @code{12} and looks them up in the name dictionary@footnote{We
-can't tell if it found them or not, but assume for now that it did
-not}. There is no match for this group of characters in the name dictionary,
-so it tries to treat them as a number. It is able to do this successfully,
-so it puts the number, 12, ``on the stack'' (whatever that means).
+@code{2} の後のスペースに到達すると、 文字グループ @code{12} を取得し、
+それらを名前ディクショナリで検索します@footnote{見つかったかどうかはわかりませんが、いまのところ、 見つからなかったと仮定します。 訳注:
+12 というワードを定義することもでき、その場合はワード 12 の方が数値 12 より優先される}。
+名前ディクショナリにはこの文字グループに一致するものがないため、それらを数値として処理しようとし、 そして、
+数値として処理するのは正常に実行できたので、 (それが何を意味するにせよ) 数値 12 を「スタック上」に置きます。
 @item
-The text interpreter resumes scanning the line and gets the next group of
-characters, @code{dup}. It looks it up in the name dictionary and (you'll
-have to take my word for this) finds it, and executes the word @code{dup}
-(whatever that means).
+テキスト・インタプリタは行のスキャンを再開し、 次の文字グループ @code{dup} を取得します。 それを名前ディクショナリで検索し、
+(これについては私の言葉(my word)を信じてください、)それを見つけて、 ワード @code{dup} を実行します(それが何を意味していても)。
 @item
-Once again, the text interpreter resumes scanning the line and gets the
-group of characters @code{fred}. It looks them up in the name dictionary,
-but can't find them. It tries to treat them as a number, but they don't
-represent any legal number.
+更に再び、 テキスト・インタプリタは行のスキャンを再開し、 文字グループ @code{fred} を取得します。
+名前ディクショナリで調べますが、見つかりません。 それらを数値として扱おうとしますが、 正当な数値を表すものではありませんでした。
 @end itemize
 
-At this point, the text interpreter gives up and prints an error
-message. The error message shows exactly how far the text interpreter got in
-processing the line. In particular, it shows that the text interpreter made
-no attempt to do anything with the final character group, @code{dup}, even
-though we have good reason to believe that the text interpreter would have
-no problem looking that word up and executing it a second time.
+この時点で、 テキスト・インタプリタは諦めてエラー・メッセージを出力します。 エラー・メッセージには、
+テキスト・インタプリタが行の処理でどこまで到達したかが正確に示されます。 これは、 特に、 テキスト・インタプリタが最後の文字グループ
+@code{dup} に対して何も行おうとしなかったことを示しています。 テキスト・インタプリタがそのワード @code{dup} を検索して、
+一度はちゃんと実行されたのですから、 もう一度実行することに何の問題はないはずなのに、 です。 
 
 
 @comment ----------------------------------------------
@@ -3705,215 +3668,169 @@ no problem looking that word up and executing it a second time.
 @cindex text interpreter
 @cindex outer interpreter
 
-In procedural programming languages (like C and Pascal), the building-block
-of programs is the @dfn{function} or @dfn{procedure}. These functions or
-procedures are called with @dfn{explicit parameters}. For example, in C we
-might write:
+手続き型プログラミング言語(C や Pascal など)では、 プログラムの構成要素は関数(function)やプロシージャ(procedure)です。
+これらの関数またはプロシージャは、 明示的なパラメータを使用して呼び出されます。 たとえば、 C では以下のように記述できます:
 
 @example
 total = total + new_volume(length,height,depth);
 @end example
 
 @noindent
-where new_volume is a function-call to another piece of code, and total,
-length, height and depth are all variables. length, height and depth are
-parameters to the function-call.
+ここで、  new_volume は別のコード片への関数呼び出し(function-call)であり、 total, length, height,
+depth はすべて変数です。 length, height, depth は関数呼び出しのパラメータです。
 
-In Forth, the equivalent of the function or procedure is the
-@dfn{definition} and parameters are implicitly passed between definitions
-using a shared stack that is visible to the programmer. Although Forth does
-support variables, the existence of the stack means that they are used far
-less often than in most other programming languages. When the text
-interpreter encounters a number, it will place (@dfn{push}) it on the
-stack. There are several stacks (the actual number is
-implementation-dependent ...) and the particular stack used for any
-operation is implied unambiguously by the operation being performed. The
-stack used for all integer operations is called the @dfn{data stack} and,
-since this is the stack used most commonly, references to ``the data stack''
-are often abbreviated to ``the stack''.
+Forth では、 関数またはプロシージャに相当するのは「定義」(definition)であり、
+パラメータはプログラマから見える共有スタックを使用して定義間で暗黙的に渡されます。  Forth は変数をサポートしていますが、 スタックの存在は、
+他のほとんどのプログラミング言語よりも変数が使用される頻度がはるかに低いことを意味します。 テキスト・インタプリタは数値を検出すると、
+それをスタックに置きます(プッシュ)。 何種類かのスタックがあり(いくつあるかは実装依存です)、 操作に使用されるスタックは、
+実行される操作によって明確に示されます。 すべての整数演算に使用されるスタックは「データ・スタック」と呼ばれ、
+これが最も一般的に使用されるスタックであるため、 「データ・スタック」への参照は多くの場合「スタック」と省略されます。
 
-The stacks have a last-in, first-out (LIFO) organisation. If you type:
+スタックには後入れ先出し(last-in, first-out;LIFO)構成が採用されています。 以下のように打ち込むと:
 
 @example
 @kbd{1 2 3@key{RET}}  ok
 @end example
-
-Then this instructs the text interpreter to placed three numbers on the
-(data) stack. An analogy for the behaviour of the stack is to take a pack of
-playing cards and deal out the ace (1), 2 and 3 into a pile on the
-table. The 3 was the last card onto the pile (``last-in'') and if you take a
-card off the pile then, unless you're prepared to fiddle a bit, the card
-that you take off will be the 3 (``first-out''). The number that will be
-first-out of the stack is called the @dfn{top of stack}, which
 @cindex TOS definition
-is often abbreviated to @dfn{TOS}.
+これはテキスト・インタプリタに 3 つの数値を (データ)スタック に配置するように指示します。 スタックの振る舞いはトランプの扱いに例えられます。
+トランプの箱から、 (スートは何でもいいですが、) エース(1)のカードと2のカードと3のカードをテーブルの上の山に配ります。
+3のカードは山の最後のカード (last-in)であり、 山からカードを 1 枚取ると、 あなたがシャッフルとか何もいじってない限り、 取り出すカードは
+3のカードになります(first-out)。 スタックから最初に取り出されるであろう(スタック上の)数値はスタック頂上(スタック・トップ;top of
+stack)と呼ばれ、 多くの場合「TOS」と省略されます。
 
-To understand how parameters are passed in Forth, consider the behaviour of
-the definition @code{+} (pronounced ``plus''). You will not be surprised to
-learn that this definition performs addition. More precisely, it adds two
-numbers together and produces a result. Where does it get the two numbers
-from? It takes the top two numbers off the stack. Where does it place the
-result? On the stack. You can act out the behaviour of @code{+} with your
-playing cards like this:
+Forth でパラメーターがどのように渡されるかを理解するために、 定義 @code{+} (「プラス」と発音します) の振る舞いを見てみましょう。
+あなたは、 この定義が加算を実行することを知っても驚かないでしょう。 より正確には、 これは 2 つの数値を加算して結果を生成します。 さて、 その 2
+つの数値はどこから取得されるのでしょうか？ これはスタック頂上から上位 2 つの数値を取り除きます。 その結果はどこに配置されるのでしょうか？
+それはスタックです。 あなたは以下のように、 トランプを使って @code{+} の振る舞いを演ずることができます。
 
 @itemize @bullet
 @item
-Pick up two cards from the stack on the table
+テーブル上の山(the steck)カードを 2 枚取り出します
 @item
-Stare at them intently and ask yourself ``what @i{is} the sum of these two
-numbers''
+あなたは、 それらをじっと見つめて、 「これら 2 つの数字の合計は何であるか」を自問してください。
 @item
-Decide that the answer is 5
+答えは 5 であると判明しました
 @item
-Shuffle the two cards back into the pack and find a 5
+2 枚のカードをシャッフルしてトランプの箱に戻し、 トランプの箱の中から 5のカード を見つけます
 @item
-Put a 5 on the remaining ace that's on the table.
+テーブル上にある残りのエース(1)のカードの上に 5のカードを置きます。
 @end itemize
 
-If you don't have a pack of cards handy but you do have Forth running, you
-can use the definition @code{.s} to show the current state of the stack,
-without affecting the stack. Type:
+トランプの箱はないですが、 Forth の実行中は、 定義 @code{.s} を使用して、 スタックに影響を与えることなく、
+スタックの現在の状態を表示できます。 以下の様に打ち込みます:
 
 @example
 @kbd{clearstacks 1 2 3@key{RET}} ok
 @kbd{.s@key{RET}} <3> 1 2 3  ok
 @end example
 
-The text interpreter looks up the word @code{clearstacks} and executes it;
-it tidies up the stacks (data and floating point stack) and removes any
-entries that may have been left on them by earlier examples. The text
-interpreter pushes each of the three numbers in turn onto the
-stack. Finally, the text interpreter looks up the word @code{.s} and
-executes it. The effect of executing @code{.s} is to print the ``<3>'' (the
-total number of items on the stack) followed by a list of all the items on
-the stack; the item on the far right-hand side is the TOS.
+テキスト・インタプリタはワード @code{clearstacks} を検索して実行します。 スタック(データおよび浮動小数点スタック)を整理し、
+以前の例の実行によってスタックに残された可能性のあるエントリをすべて削除します。 続けてテキスト・インタプリタは、 3
+つの数値をそれぞれ順番にスタックにプッシュします。 最後に、 テキスト・インタプリタはワード @code{.s} を検索して実行します。
+@code{.s} を実行すると、「<3>」 (スタック上の項目の合計数) に続いて、スタック上のすべての項目のリストが出力されます。 一番右側の項目が
+TOS です。
 
-You can now type:
+あなたは今や以下のように打ち込めます:
 
 @example
 @kbd{+ .s@key{RET}} <2> 1 5  ok
 @end example
 
 @noindent
-which is correct; there are now 2 items on the stack and the result of the
-addition is 5.
+現在スタックには 2 つの項目があり、 (そのうちの項目の1つである)加算の結果は 5 となっていれば正解です。
 
-If you're playing with cards, try doing a second addition: pick up the two
-cards, work out that their sum is 6, shuffle them into the pack, look for a
-6 and place that on the table. You now have just one item on the stack. What
-happens if you try to do a third addition? Pick up the first card, pick up
-the second card -- ah! There is no second card. This is called a @dfn{stack
-underflow} and consitutes an error. If you try to do the same thing with
-Forth it often reports an error (probably a Stack Underflow or an Invalid
-Memory Address error).
+あなたが引き続きトランプで遊んでいるなら、 この結果に対して 2 回目の足し算を行ってみましょう。 2 枚のカードを手に取り、 その合計が 6
+であることを計算し、手に取った2枚のカードをシャッフルして箱に入れ、 箱から 6のカード を探してテーブルに置きます。 これで、 スタックにはアイテムが
+1 つだけになりました。 あなたが 3 回目の足し算を実行しようとするとどうなるでしょうか？ あなたは、 1枚目のカードを手に取り、
+2枚目のカードを手に取ろうとします -- ああ! でも 2枚目のカードはありません。 これは「スタック・アンダーフロー」と呼ばれ、エラーとなります。
+Forth で同じことを行おうとすると、 多くの場合、 エラーが報告されます(おそらく、 スタック・アンダーフロー(Stack
+Underflow)エラー、 または、 無効なメモリアクセス(Invalid Memory Address)エラー)。
 
-The opposite situation to a stack underflow is a @dfn{stack overflow}, which
-simply accepts that there is a finite amount of storage space reserved for
-the stack. To stretch the playing card analogy, if you had enough packs of
-cards and you piled the cards up on the table, you would eventually be
-unable to add another card; you'd hit the ceiling. Gforth allows you to set
-the maximum size of the stacks. In general, the only time that you will get
-a stack overflow is because a definition has a bug in it and is generating
-data on the stack uncontrollably.
+スタック・アンダーフローの逆の状況が「スタック・オーバーフロー」です。 これは、 あなたがたが、
+スタック用に予約されている有限量のストレージ・スペースがあることを単に受け入れるだけで済みます。 トランプの例えを拡張すると、
+沢山の数のトランプのカードがあり、 それらのカードをテーブルに積み上げた場合、 天井にぶつかってしまい、 最終的には別のカードを追加できなくなります。
+Gforth を使用すると、 スタックの最大サイズを設定できます。 一般に、 スタック・オーバーフローが発生するのは、 定義にバグがあり、
+制御不能にスタック上にデータを生成している場合のみです。
 
-There's one final use for the playing card analogy. If you model your stack
-using a pack of playing cards, the maximum number of items on your stack
-will be 52 (I assume you didn't use the Joker). The maximum @i{value} of any
-item on the stack is 13 (the King). In fact, the only possible numbers are
-positive integer numbers 1 through 13; you can't have (for example) 0 or 27
-or 3.52 or -2. If you change the way you think about some of the cards, you
-can accommodate different numbers. For example, you could think of the Jack
-as representing 0, the Queen as representing -1 and the King as representing
--2. Your @i{range} remains unchanged (you can still only represent a total
-of 13 numbers) but the numbers that you can represent are -2 through 10.
+トランプの例えには、 最後にもう 1 つ適用例があります。 トランプを使用してスタックをモデル化した場合、 スタック上のアイテムの最大数は 52
+になります(ジョーカーを使用しなかったと仮定して)。 スタック上のアイテムの最大値は13(キング)です。 実際は、 使用できる数値は 1 ～ 13
+の正の整数のみ(つまり、 13個の数)です。 (たとえば) 0や27や3.52や-2は使用できません。 そこで、 一部のカードについて考え方を変え、
+さまざまな数値に対応できるようにします。 たとえば、ジャックは 0 を表し、 クイーンは -1 を表し、 キングは -2 を表すと見なします。 すると、
+表現できる数値の幅は変更されません(合計 13 個の数値のみを表すことができます)が、 -2 から 10 の数値を表す事ができるようになりました。
 
-In that analogy, the limit was the amount of information that a single stack
-entry could hold, and Forth has a similar limit. In Forth, the size of a
-stack entry is called a @dfn{cell}. The actual size of a cell is
-implementation dependent and affects the maximum value that a stack entry
-can hold. A Standard Forth provides a cell size of at least 16-bits, and
-most desktop systems use a cell size of 32-bits.
+この例えでは、 制限は 1 つのスタック・エントリが保持できる情報の量であり、 Forth にも同様の制限があります。 Forth では、
+スタック・エントリのサイズは「セル」(cell)と呼ばれます。 セルの実際のサイズは実装に依存し、 スタック・エントリが保持できる最大値に影響します。
+標準 Forth は少なくとも 16 ビットのセル・サイズを提供し、 ほとんどのデスクトップ・システムは 32 ビットのセル・サイズを使用します。
 
-Forth does not do any type checking for you, so you are free to manipulate
-and combine stack items in any way you wish. A convenient way of treating
-stack items is as 2's complement signed integers, and that is what Standard
-words like @code{+} do. Therefore you can type:
+Forth は型チェックを一切行わないため、 スタック項目を自由に操作したり組み合わせたりできます。 スタック項目を 2
+の補数の符号付き整数として扱う便利な方法は、 @code{+} などの標準ワードもやっています。 それゆえ、 以下のように入力できます:
 
 @example
 @kbd{-5 12 + .s@key{RET}} <1> 7  ok
 @end example
 
-If you use numbers and definitions like @code{+} in order to turn Forth into
-a great big pocket calculator, you will realise that it's rather different
-from a normal calculator. Rather than typing 2 + 3 = you had to type 2 3 +
-(ignore the fact that you had to use @code{.s} to see the result). The
-terminology used to describe this difference is to say that your calculator
-uses @dfn{Infix Notation} (parameters and operators are mixed) whilst Forth
-uses @dfn{Postfix Notation} (parameters and operators are separate), also
-called @dfn{Reverse Polish Notation}.
+あなたが、 Forth を電卓にするために、 数値や @code{+} のような定義を使用すると、
+それが通常の電卓とはかなり異なることがわかるでしょう。 あなたは 2 + 3 = と入力するのではなく、 2 3 +
+と入力する必要があります(ここでは、 結果を確認するには @code{.s} を使用する必要があるという事実は無視してください)。
+この違いを説明するために使用される用語は、 電卓は「中置記法」(Infix Notation;パラメーターと演算子が混合されている)を使用するのに対し、
+Forth は「後置記法」(Postfix Notation;パラメーターと演算子が分かれている)、 またの名を「逆ポーランド記法」(Reverse
+Polish Notation)と呼ばれるものを使用します。
 
-Whilst postfix notation might look confusing to begin with, it has several
-important advantages:
+後置記法は最初はわかりにくいように見えるかもしれませんが、 いくつかの重要な利点があります:
 
 @itemize @bullet
 @item
-it is unambiguous
+明白です
 @item
-it is more concise
+より簡潔です
 @item
-it fits naturally with a stack-based system
+スタックベースのシステムに自然に適合します
 @end itemize
 
-To examine these claims in more detail, consider these sums:
+これらの主張をさらに詳しく調べるために、 以下の計算について見てみましょう:
 
 @example
 6 + 5 * 4 =
 4 * 5 + 6 =
 @end example
 
-If you're just learning maths or your maths is very rusty, you will probably
-come up with the answer 44 for the first and 26 for the second. If you are a
-bit of a whizz at maths you will remember the @i{convention} that
-multiplication takes precendence over addition, and you'd come up with the
-answer 26 both times. To explain the answer 26 to someone who got the answer
-44, you'd probably rewrite the first sum like this:
+あなたが、算数を勉強中の場合、 または算数が非常に苦手な場合は、 最初の答えは 44、 2 番目の答えは 26 になるでしょう。
+あなたが算数に少し詳しい人なら、 乗算は加算よりも優先されるという法則を覚えているでしょう。 そして、 どちらの場合も答えは 26 になるでしょう。
+答え 44 だと言った人に、 なぜ答えが 26 かを説明するには、 最初の計算を以下のように書き換えることになるでしょう:
 
 @example
 6 + (5 * 4) =
 @end example
 
-If what you really wanted was to perform the addition before the
-multiplication, you would have to use parentheses to force it.
+あなたが、 もし、 乗算より優先して加算を実行したい場合は、 かっこを使用して強制的に加算させる必要があります。
 
-If you did the first two sums on a pocket calculator you would probably get
-the right answers, unless you were very cautious and entered them using
-these keystroke sequences:
+上記 2 つの計算を電卓で計算する場合、 以下のキーストローク・シーケンスを使用して、 入力ミスしない限り、 おそらく正しい答えが得られるでしょう:
 
-6 + 5 = * 4 = 4 * 5 = + 6 =
+@example
+6 + 5 = * 4 =
+4 * 5 = + 6 =
+@end example
 
 Postfix notation is unambiguous because the order that the operators are
 applied is always explicit; that also means that parentheses are never
-required. The operators are @i{active} (the act of quoting the operator
-makes the operation occur) which removes the need for ``=''.
+required後置記法では演算子が適用される順序は常に明示的です。 これは、 括弧が決して必要ないことも意味します。
+演算子はアクティブです(演算子を引用する行為によって演算操作が実行されます)。 これにより、「=」が必要なくなります。
 
-The sum 6 + 5 * 4 can be written (in postfix notation) in two equivalent
-ways:
+計算 6 + 5 * 4 は、 以下の 2 つの同等の方法で(後置表記で)書くことができます:
 
 @example
-6 5 4 * +      or:
+6 5 4 * +
+または:
 5 4 * 6 +
 @end example
 
-An important thing that you should notice about this notation is that the
-@i{order} of the numbers does not change; if you want to subtract 2 from 10
-you type @code{10 2 -}.
+この表記法に関して注意すべき重要な点は、 数値の順番は変わらないことです。 10 から 2 を減算する場合は、 @code{10 2 -}
+と入力します。
 
-The reason that Forth uses postfix notation is very simple to explain: it
-makes the implementation extremely simple, and it follows naturally from
-using the stack as a mechanism for passing parameters. Another way of
-thinking about this is to realise that all Forth definitions are @i{active};
-they execute as they are encountered by the text interpreter. The result of
-this is that the syntax of Forth is trivially simple.
+Forth が後置表記を使用する理由は非常に簡単に説明できます。 これにより実装が非常に単純になり、
+パラメータを渡すためのメカニズムとしてスタックを使用することが自然な流れになります。 これについての別の考え方としては、 すべての Forth
+定義がアクティブであると認識することです。 これらは、 テキスト・インタプリタによって検出されると実行されます。 この結果、 Forth
+の構文は何の努力も必要とせずシンプルになります。
 
 
 
@@ -3922,18 +3839,14 @@ this is that the syntax of Forth is trivially simple.
 @section Your first Forth definition
 @cindex first definition
 
-Until now, the examples we've seen have been trivial; we've just been using
-Forth as a bigger-than-pocket calculator. Also, each calculation we've shown
-has been a ``one-off'' -- to repeat it we'd need to type it in
-again@footnote{That's not quite true. If you press the up-arrow key on your
-keyboard you should be able to scroll back to any earlier command, edit it
-and re-enter it.} In this section we'll see how to add new words to Forth's
-vocabulary.
+これまで私たちが見てきた例はこまごまとしたものでした。 私たちは Forth を大きめの電卓として使用してきました。 また、
+これまでに示した各計算は「1 回限り」のものです --
+それを繰り返すには、もう一度入力する必要があります@footnote{それは完全には真実ではありません。 キーボードの上矢印キーを押すと、
+以前のコマンドにスクロールして戻り、 編集して再入力できます。}。 このセクションでは、 Forth
+の語彙(vocabulary)に新しいワードを追加する方法を説明します。
 
-The easiest way to create a new word is to use a @dfn{colon
-definition}. We'll define a few and try them out before worrying too much
-about how they work. Try typing in these examples; be careful to copy the
-spaces accurately:
+新しいワードを作成する最も簡単な方法は、「コロン定義」を使用することです。 それらがどのように機能するかについて思い悩む前に、
+いくつか定義して試してみましょう。 以下の例を入力してみてください。 スペースを正確に反映するように注意してください:
 
 @example
 : add-two 2 + . ;
@@ -3942,7 +3855,7 @@ spaces accurately:
 @end example
 
 @noindent
-Now try them out:
+この例を打ち込んだら、 すぐ試してみましょう:
 
 @example
 @kbd{greet@key{RET}} Hello and welcome  ok
@@ -3952,56 +3865,42 @@ Now try them out:
 @kbd{9 greet demo add-two@key{RET}} Hello and welcome7 11  ok
 @end example
 
-The first new thing that we've introduced here is the pair of words @code{:}
-and @code{;}. These are used to start and terminate a new definition,
-respectively. The first word after the @code{:} is the name for the new
-definition.
+ここで導入した最初の新しいモノは、 @code{:} と @code{;} というワードのペアです。
+これらは、それぞれ新しい定義を開始および終了するために使用されます。  @code{:} の後の最初の単語は、 新しい定義の名前です。
 
-As you can see from the examples, a definition is built up of words that
-have already been defined; Forth makes no distinction between definitions
-that existed when you started the system up, and those that you define
-yourself.
+例からわかるように、 定義はすでに定義されているワードから構成されます。 Forth では、 システムの起動時に存在した定義と、
+ユーザーが自分で定義した定義とを区別しません。
 
-The examples also introduce the words @code{.} (dot), @code{."} (dot-quote)
-and @code{dup} (dewp). Dot takes the value from the top of the stack and
-displays it. It's like @code{.s} except that it only displays the top item
-of the stack and it is destructive; after it has executed, the number is no
-longer on the stack. There is always one space printed after the number, and
-no spaces before it. Dot-quote defines a string (a sequence of characters)
-that will be printed when the word is executed. The string can contain any
-printable characters except @code{"}. A @code{"} has a special function; it
-is not a Forth word but it acts as a delimiter (the way that delimiters work
-is described in the next section). Finally, @code{dup} duplicates the value
-at the top of the stack. Try typing @code{5 dup .s} to see what it does.
+この例では、 @code{.} (ドット) や、 @code{."} (ドット・クォート)や、 @code{dup} (デュープ)
+というワードも紹介しています。 ドットはスタック頂上から数詞を取得して表示します。 これは @code{.s} に似ていますが、
+スタック頂上の項目のみを表示する点と破壊的である点が異なります。 実行後、スタック上にその数値は最早ありません。 数値の前はスペース無しで、
+後ろには常に 1 つのスペースが表示されます。 ドット・クォートは、 ワードの実行時に出力される文字列(string)を定義します。 文字列には、
+@code{"} を除く任意の印刷可能な文字を含めることができます。 @code{"} には特別な機能があります。 これは Forth
+ワードではありませんが、 区切り文字として機能します(区切り文字の仕組みについては次のセクションで説明します)。 最後に、 @code{dup}
+はスタック頂上の値を複製します。 @code{5 dup .s} と入力して、 @code{dup} がやることを確認してください。
 
-We already know that the text interpreter searches through the dictionary to
-locate names. If you've followed the examples earlier, you will already have
-a definition called @code{add-two}. Lets try modifying it by typing in a new
-definition:
+あなたは、 既に、 テキスト・インタプリタが名前を見つけるためにディクショナリを検索することを知っています。 あなたが上記の例の通りにした場合、
+@code{add-two} という定義がすでにあるはずです。 それでは、 この定義に対して、 更に新しい定義を入力して変更してみるとしましょう:
 
 @example
 @kbd{: add-two dup . ." + 2 = " 2 + . ;@key{RET}} redefined add-two  ok
 @end example
 
-Forth recognised that we were defining a word that already exists, and
-printed a message to warn us of that fact. Let's try out the new definition:
+Forth は、私たちがすでに存在するワードを定義しようとしていることを認識し、 それを警告するメッセージを出力しました。 さて、 それでは、
+新しい定義を試してみましょう:
 
 @example
 @kbd{9 add-two@key{RET}} 9 + 2 = 11  ok
 @end example
 
 @noindent
-All that we've actually done here, though, is to create a new definition,
-with a particular name. The fact that there was already a definition with
-the same name did not make any difference to the way that the new definition
-was created (except that Forth printed a warning message). The old
-definition of add-two still exists (try @code{demo} again to see that this
-is true). Any new definition will use the new definition of @code{add-two},
-but old definitions continue to use the version that already existed at the
-time that they were @code{compiled}.
+ただし、 ここで実際に行ったことは、 特定の名前を付けて新しい定義を作成することだけです。 同一の名前の定義がすでに存在するという事実は、 (Forth
+が警告メッセージを出力することを除いて、)新しい定義の作成方法に何の違いもありません。 add-two
+の古い定義はいまだ存在します(これが正しいかどうかを確認するには、 @code{demo} をもう一度試してください)。 @code{add-two}
+の新しい定義以降に定義するワードは @code{add-two} の新しい定義を利用しますが、 @code{demo} の定義は、 古い定義は
+@code{demo} をコンパイルする時点で既に存在していた @code{add-two} の古い定義のバージョンを引き続き使用します。
 
-Before you go on to the next section, try defining and redefining some words
-of your own.
+次のセクションに進む前に、 あなた自身のワードをいくつか定義したり再定義したりしてみましょう。
 
 @comment ----------------------------------------------
 @node How does that work?, Forth is written in Forth, Your first definition, Introduction
@@ -4050,10 +3949,8 @@ of your own.
 @c defining words" leads in a completely different direction from the rest
 @c of the section).
 
-Now we're going to take another look at the definition of @code{add-two}
-from the previous section. From our knowledge of the way that the text
-interpreter works, we would have expected this result when we tried to
-define @code{add-two}:
+ここで、 前のセクションの @code{add-two} の定義をもう一度見てみましょう。 テキスト・インタプリタの動作方法に関する知識から、
+@code{add-two} を定義しようとしたとき、 私達は以下の結果を予期したかもしれません:
 
 @example
 @kbd{: add-two 2 + . ;@key{RET}}
@@ -4061,133 +3958,106 @@ define @code{add-two}:
 : >>>add-two<<< 2 + . ;
 @end example
 
-The reason that this didn't happen is bound up in the way that @code{:}
-works. The word @code{:} does two special things. The first special thing
-that it does is to prevent the text interpreter from ever seeing the
-characters @code{add-two}. The text interpreter uses a variable called
 @cindex modifying >IN
-@code{>IN} (pronounced ``to-in'') to keep track of where it is in the input
-line. When it encounters the word @code{:} it behaves in exactly the same
-way as it does for any other word; it looks it up in the name dictionary,
-finds its xt and executes it. When @code{:} executes, it looks at the input
-buffer, finds the word @code{add-two} and advances the value of @code{>IN}
-to point past it. It then does some other stuff associated with creating the
-new definition (including creating an entry for @code{add-two} in the name
-dictionary). When the execution of @code{:} completes, control returns to
-the text interpreter, which is oblivious to the fact that it has been
-tricked into ignoring part of the input line.
+しかし、 これが起こらなかった理由は、 @code{:} の動作方法に関係しています。 @code{:} というワードは 2 つの特別な働きをします。
+1つ目の特別な機能は、 テキスト・インタプリタが @code{add-two} という文字を認識できないようにすることです。 テキスト・インタプリタは、
+@code{>IN} (to-in;トゥーイン)という変数を使用して、 入力行のどこを追跡するかを保持し、 @code{:} というワードに遭遇すると、
+他のワードの場合とまったく同じように動作します。 名前ディクショナリでそれを検索し、 その xt を見つけて実行します。  実行される @code{:}
+は、 入力バッファーを調べてワード @code{add-two} を見つけ、 @code{>IN} の値をその後ろを指すように進めておきます。 次に、
+新しい定義の作成に関連するその他の処理を実行します(名前ディクショナリに @code{add-two} のエントリを作成する等)。 @code{:}
+の実行が完了すると、 制御はテキスト・インタプリタに戻ります。 テキスト・インタプリタは、
+このトリックにより入力行の一部をスキップしていることに気づきません。
 
 @cindex parsing words
-Words like @code{:} -- words that advance the value of @code{>IN} and so
-prevent the text interpreter from acting on the whole of the input line --
-are called @dfn{parsing words}.
+@code{:} のようなワード(@code{>IN} の値を進めて、 テキスト・インタプリタが入力行全体に作用するのを妨げるワード)は、
+「構文解析ワード」(parsing words)と呼ばれます。
 
 @cindex @code{state} - effect on the text interpreter
 @cindex text interpreter - effect of state
-The second special thing that @code{:} does is change the value of a
-variable called @code{state}, which affects the way that the text
-interpreter behaves. When Gforth starts up, @code{state} has the value 0,
-and the text interpreter is said to be @dfn{interpreting}. During a colon
-definition (started with @code{:}), @code{state} is set to -1 and the text
-interpreter is said to be @dfn{compiling}.
+@code{:} が行う 2 つ目の特別な処理は、 @code{state} と呼ばれる変数の値を変更することです。 これは、
+テキスト・インタプリタの振る舞いに影響します。 Gforth が起動するとき、 @code{state} の値は 0 であり、
+テキスト・インタプリタはインタプリタ中(interpreting)であると言われます。 (@code{:} で始まる)コロン定義中 、
+@code{state} は -1 に設定され、テキスト・インタプリタはコンパイル中(compiling)と言われます。
 
-In this example, the text interpreter is compiling when it processes the
-string ``@code{2 + . ;}''. It still breaks the string down into character
-sequences in the same way. However, instead of pushing the number @code{2}
-onto the stack, it lays down (@dfn{compiles}) some magic into the definition
-of @code{add-two} that will make the number @code{2} get pushed onto the
-stack when @code{add-two} is @dfn{executed}. Similarly, the behaviours of
-@code{+} and @code{.} are also compiled into the definition.
+この例では、 テキスト・インタプリタは文字列 ``@code{2 + . ;}''。引き続き同じ方法で文字列を文字シーケンスに分割します。ただし、数値
+@code{2} をスタックにプッシュする代わりに、 数値 @code{2} を取得する魔法を @code{add-two}
+の定義に組み込み(コンパイル)、 @code{add-two} が「実行」されたときスタックにプッシュされます。 同様に、 @code{+} と
+@code{.} の振る舞いも定義にコンパイルされます。
 
-Certain kinds of words do not get compiled. These so-called @dfn{immediate
-words} get executed (performed @i{now}) regardless of whether the text
-interpreter is interpreting or compiling. The word @code{;} is an immediate
-word. Rather than being compiled into the definition, it executes. Its
-effect is to terminate the current definition, which includes changing the
-value of @code{state} back to 0.
+特定の種類のワードはコンパイルされません。 これらのいわゆる「即実行ワード」(immediate word)は、
+テキスト・インタプリタがインタプリタ・モードであるかコンパイル・モードかに関係なく、 実行されます(今、 直ちに実行されます)。 @code{;}
+というワードは即実行ワードです。 定義にコンパイルされるのではなく、 実行されます。 その効果は、 @code{state} の値を 0
+に戻すことを含む、 現在の定義を終了することです。
 
-When you execute @code{add-two}, it has a @dfn{run-time effect} that is
-exactly the same as if you had typed @code{2 + . @key{RET}} outside of a
-definition.
+あなたが @code{add-two} を実行すると、 その定義の外で @code{2 + . @key{RET}}
+と入力した場合とまったく同一の「実行時効果」(run-time effect) が生じます。
 
-In Forth, every word or number can be described in terms of two properties:
+Forth では、 すべてのワードまたは数値は以下の 2 つの性質を持ちます:
 
 @itemize @bullet
 @item
 @cindex interpretation semantics
-Its @dfn{interpretation semantics} describe how it will behave when the text
-interpreter encounters it in @dfn{interpret} state. The interpretation
-semantics of a word are represented by its @dfn{execution token}
-(@pxref{Execution token}).
+その 実行時コード(interpretation semantics)は、 テキスト・インタプリタが実行時(interpret
+状態)どのように動作するかを記述します。 ワードの実行時コードは、 その「実行トークン」(execution
+token)(@pxref{Execution token})によって表されます。
 @item
 @cindex compilation semantics
-Its @dfn{compilation semantics} describe how it will behave when the text
-interpreter encounters it in @dfn{compile} state. The compilation semantics
-of a word are represented by its @dfn{compilation token} (@pxref{Compilation
-token}).
+その コンパイル時コード(compilation semantics)は、 テキスト・インタプリタがコンパイル時(compile状態)に、
+どのように動作するかを記述します。 ワードのコンパイル時コードは、 その「コンパイル・トークン」(@pxref{Compilation
+token})によって表されます。
 @end itemize
 
 @noindent
-Numbers are always treated in a fixed way:
+数値は常に決まった方法で処理されます:
 
 @itemize @bullet
 @item
-When the number is @dfn{interpreted}, its behaviour is to push the number
-onto the stack.
+その数値が解釈(interpret)される場合、 その振る舞いは、 その数値をスタックにプッシュすることです。
 @item
-When the number is @dfn{compiled}, a piece of code is appended to the
-current definition that pushes the number when it runs. (In other words, the
-compilation semantics of a number are to postpone its interpretation
-semantics until the run-time of the definition that it is being compiled
-into.)
+その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、 数値のコンパイル時コードは、
+コンパイルされる定義の実行時まで、 その数値の実行時コードの実行を延期します。)
 @end itemize
 
-Words don't always behave in such a regular way, but most have @i{default
-semantics} which means that they behave like this:
+ワードは常にこのように通常の振る舞いをするとは限りませんが、 ほとんどのワードには実行時とコンパイル時のデフォルトの振る舞い(default
+semantics)があり、 以下のように振る舞うことを意味します。
 
 @itemize @bullet
 @item
-The @dfn{interpretation semantics} of the word are to do something useful.
+ワードの実行時コード(compilation semantics)は、 何かしら役に立つことを行うことです。
 @item
-The @dfn{compilation semantics} of the word are to append its
-@dfn{interpretation semantics} to the current definition (so that its
-run-time behaviour is to do something useful).
+ワードのコンパイル時コード(compilation semantics)は、 それの実行時コード(interpretation
+semantics)を現在の定義に追加します(よって、 それは実行時に何かしら役に立つことを行います)。
 @end itemize
 
 @cindex immediate words
-The actual behaviour of any particular word can be controlled by using the
-words @code{immediate} and @code{compile-only} when the word is
-defined. These words set flags in the name dictionary entry of the most
-recently defined word, and these flags are retrieved by the text interpreter
-when it finds the word in the name dictionary.
+特定のワードの実際の、 実行時とコンパイル時の振る舞いは、 ワードの定義時に @code{immediate} や
+@code{compile-only} というワードを使用することで制御できます。 これらのワードは、
+最後に定義されたワードの名前ディクショナリ・エントリにフラグを設定します。 これらのフラグは、
+名前ディクショナリでワードが見つかったときにテキスト・インタプリタによって取得されます。
 
-A word that is marked as @dfn{immediate} has compilation semantics that are
-identical to its interpretation semantics. In other words, it behaves like
-this:
+@dfn{immediate} としてマークされたワードは、 その実行時コード(interpretation
+semantics)と同じコンパイル時コード(compilation semantics)を持ちます。 つまり、 以下のように振る舞います:
 
 @itemize @bullet
 @item
-The @dfn{interpretation semantics} of the word are to do something useful.
+ワードの実行時コード(compilation semantics)は、 何かしら役に立つことを行うことです。
 @item
-The @dfn{compilation semantics} of the word are to do something useful (and
-actually the same thing); i.e., it is executed during compilation.
+このワードのコンパイル時コード(compilation semantics)は、
+何かしら役に立つことを行うことです(実際には実行時コードと同一のことを行うことです)。 つまり、
+コンパイル時に実行(実行時コードと同一のコードを実行)を行います。
 @end itemize
 
-Marking a word as @dfn{compile-only} means that the text interpreter
-produces a warning when encountering this word in interpretation state;
-ticking the word (with @code{'} or @code{[']} also produces a warning.
+ワードを @dfn{compile-only} としてマークすると、 解釈状態(interpretation
+state)でこのワードを検出したときにテキスト・インタプリタが警告を生成することを意味します。 (@code{'} または @code{[']}
+を使用して) ワードをティックすると、 警告が生成されます。
 
-It is never necessary to use @code{compile-only} (and it is not even part of
-Standard Forth, though it is provided by many implementations)  but it is
-good etiquette to apply it to a word that will not behave correctly (and
-might have unexpected side-effects) in interpret state. For example, it is
-only legal to use the conditional word @code{IF} within a definition. If you
-forget this and try to use it elsewhere, the fact that (in Gforth) it is
-marked as @code{compile-only} allows the text interpreter to generate a
-helpful warning.
+@code{compile-only} を使用する必要はありません(多くの実装によって提供されてはいますが、 標準 Forth
+の一部でもありません)が、 解釈状態(interpret state)で正しく振る舞わないワードに @code{compile-only}
+を適用するのは良いエチケットです(そして予期しない副作用が発生する可能性があります)。 たとえば、 定義内で条件ワード @code{IF}
+を使用することのみが正当です。 これを忘れて別の場所で使用しようとすると、 (Gforth では) @code{compile-only}
+としてマークされているため、 テキスト・インタプリタが有用な警告を生成できます。
 
-This example shows the difference between an immediate and a non-immediate
-word:
+以下の例は、 即実行ワードと非即実行ワードの違いを示しています:
 
 @example
 : show-state state @@ . ;
@@ -4196,52 +4066,37 @@ word:
 : word2 show-state-now ;
 @end example
 
-The word @code{immediate} after the definition of @code{show-state-now}
-makes that word an immediate word. These definitions introduce a new word:
-@code{@@} (pronounced ``fetch''). This word fetches the value of a variable,
-and leaves it on the stack. Therefore, the behaviour of @code{show-state} is
-to print a number that represents the current value of @code{state}.
+@code{show-state-now} の定義の後にあるワード @code{immediate} は、そのワードを即実行ワードにします。
+これらの定義では、 @code{@@}(「フェッチ」と発音します) という新しいワードが導入されています。
+このワードは変数の値を取り出し(フェッチし)、 それをスタックに残します。 したがって、 @code{show-state} の振る舞いは、
+@code{state} の現在の値を表す数値を出力することです。
 
-When you execute @code{word1}, it prints the number 0, indicating that the
-system is interpreting. When the text interpreter compiled the definition of
-@code{word1}, it encountered @code{show-state} whose compilation semantics
-are to append its interpretation semantics to the current definition. When
-you execute @code{word1}, it performs the interpretation semantics of
-@code{show-state}.  At the time that @code{word1} (and therefore
-@code{show-state}) is executed, the system is interpreting.
+@code{word1} を実行すると、 システムが解釈中(interpreting)であることを示す数値 0 が出力されます。
+テキスト・インタプリタが @code{word1} の定義をコンパイルしたときに、 コンパイル時コードが現在の定義に実行時コードを追加する
+@code{show-state} に遭遇しました。 @code{word1} を実行すると、 @code{show-state}
+の実行時コードが実行されます。  @code{word1} (つまり @code{show-state})
+が実行される時点で、システムは解釈中(interpreting)です。
 
-When you pressed @key{RET} after entering the definition of @code{word2},
-you should have seen the number -1 printed, followed by ``@code{ ok}''. When
-the text interpreter compiled the definition of @code{word2}, it encountered
-@code{show-state-now}, an immediate word, whose compilation semantics are
-therefore to perform its interpretation semantics. It is executed straight
-away (even before the text interpreter has moved on to process another group
-of characters; the @code{;} in this example). The effect of executing it is
-to display the value of @code{state} @i{at the time that the definition of}
-@code{word2} @i{is being defined}. Printing -1 demonstrates that the system
-is compiling at this time. If you execute @code{word2} it does nothing at
-all.
+@code{word2} の定義を入力した後に @key{RET} を押すと、 数値 -1 が出力され、 その後に @code{ ok}
+が表示されるはずです。 テキスト・インタプリタが @code{word2} の定義をコンパイルすると、 即実行ワードである
+@code{show-state-now} が検出されたため、 そのコンパイル時コードは実行時コードを実行します。
+これは直ちにに実行されます(テキスト・インタプリタが次の文字グループ(この例では @code{;})の処理に移る前に)。 これを実行すると、
+@code{word2} の定義途中の @code{state} の値が表示されます。 -1 を出力するので、
+システムがその時点でコンパイル時であることがわかります。 もし あなたが @code{word2} を「実行」しても何も行いません。
 
 @cindex @code{."}, how it works
-Before leaving the subject of immediate words, consider the behaviour of
-@code{."} in the definition of @code{greet}, in the previous section. This
-word is both a parsing word and an immediate word. Notice that there is a
-space between @code{."} and the start of the text @code{Hello and welcome},
-but that there is no space between the last letter of @code{welcome} and the
-@code{"} character. The reason for this is that @code{."} is a Forth word;
-it must have a space after it so that the text interpreter can identify
-it. The @code{"} is not a Forth word; it is a @dfn{delimiter}. The examples
-earlier show that, when the string is displayed, there is neither a space
-before the @code{H} nor after the @code{e}. Since @code{."} is an immediate
-word, it executes at the time that @code{greet} is defined. When it
-executes, its behaviour is to search forward in the input line looking for
-the delimiter. When it finds the delimiter, it updates @code{>IN} to point
-past the delimiter. It also compiles some magic code into the definition of
-@code{greet}; the xt of a run-time routine that prints a text string. It
-compiles the string @code{Hello and welcome} into memory so that it is
-available to be printed later. When the text interpreter gains control, the
-next word it finds in the input stream is @code{;} and so it terminates the
-definition of @code{greet}.
+即実行ワードの話題を離れる前に、 前のセクションの @code{greet} の定義における @code{."} の振る舞いについて検討してみましょう。
+このワードは構文解析ワード(parsing word)でもあり、 かつ、 即実行ワードでもあります。  @code{."} とそのテキストの先頭
+@code{Hello and welcome} の間にはスペースがありますが、 @code{welcome} の最後の文字と @code{"}
+文字の間にはスペースがありません。 これは、@code{."} が Forth ワードであるということです。 テキスト・インタプリタがその Forth
+ワード @code{."} を識別できるように、 @code{."} の後ろにスペースが必要です。 @code{"} は Forth ワードではなく、
+区切り文字(delimiter)です。 先の例では、 文字列が表示されるときに、 @code{H} の前にも @code{e}
+の後ろにもスペースがないことを示しています。 @code{."} は即実行ワードなので、 @code{greet} の定義中に実行されます。
+実行されると、 入力行内を前方に走査して区切り文字を探します。 区切り文字が見つかると、 区切り文字の後ろを指すように @code{>IN}
+を更新します。 また、 いくつかのマジック・コード、 つまりテキスト文字列を出力する実行時コード xtを @code{greet}
+の定義にコンパイルします。 文字列 @code{Hello and welcome} をメモリにコンパイルして、 後で出力できるようにします。 その後、
+テキスト・インタプリタが制御を取得すると、 入力ストリーム内で次に検出されるワードは @code{;} であるため、 @code{greet}
+の定義を終了します。
 
 
 @comment ----------------------------------------------
@@ -4383,9 +4238,8 @@ whole of this manual and find out what you've missed.
 @section Exercises
 @cindex exercises
 
-TODO: provide a set of programming excercises linked into the stuff done
-already and into other sections of the manual. Provide solutions to all the
-exercises in a .fs file in the distribution.
+TODO: すでに完了した内容やマニュアルの他のセクションにリンクされた一連のプログラミング演習を提供したい。 すべての演習に対する回答を、
+ディストリビューション内の .fs ファイルで提供するようにしたいです。
 
 @c Get some inspiration from Starting Forth and Kelly&Spies.
 
@@ -12906,10 +12760,9 @@ it is Evil and How to Exorcise it}}, EuroForth '98.}!
 This section describes the creation and use of tokens that represent words.
 
 @menu
-* Execution token::          実行(execution)/インタプリタ(interpretation) 
-                               セマンティクス
+* Execution token::          実行時(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル・セマンティクス
+* Compilation token::        コンパイル時(compilation semantics)
 @end menu
 
 @node Execution token, Name token, Tokens for Words, Tokens for Words
@@ -24525,11 +24378,10 @@ Definitions in Standard Forth for these assertion words are provided in
 @cindex singlestep Debugger
 @cindex debugging Singlestep
 
-The singlestep debugger works only with the engine @code{gforth-itc}.
+シングルステップ・デバッガーは、 @code{gforth-itc} エンジンでのみ動作します。
 
-When you create a new word there's often the need to check whether it
-behaves correctly or not. You can do this by typing @code{dbg badword}. A
-debug session might look like this:
+新しいワードを作成するとき、 それが正しく動作するかどうかを確認する必要があることがよくあります。 これを行うには、@code{dbg badword}
+と入力します。 デバッグ・セッションは以下のようになります:
 
 @example
 : badword 0 DO i . LOOP ;  ok
@@ -24550,43 +24402,38 @@ Nesting debugger ready!
 400D4758  804B384 ;              ->  ok
 @end example
 
-Each line displayed is one step. You always have to hit return to execute
-the next word that is displayed. If you don't want to execute the next word
-in a whole, you have to type @kbd{n} for @code{nest}. Here is an overview
-what keys are available:
+各行が 1 ステップです。 次のワードを実行して表示するには、 常に Return キーを押す必要があります。 次のワード全体を実行したくない場合は、
+@code{nest} に対して @kbd{n} と入力する必要があります。 利用可能なキーの概要は以下のとおりです:
 
 @table @i
 
 @item @key{RET}
-Next; Execute the next word.
+Next; 次のワードを実行する(execute)。
 
 @item n
-Nest; Single step through next word.
+Nest; 次のワードまで 1 ステップずつ辿る。
 
 @item u
-Unnest; Stop debugging and execute rest of word. If we got to this word with
-nest, continue debugging with the calling word.
+Unnest; デバッグを停止し(stop)、残りのワードを実行します(execute)。 ネスト(nest)機能でこのワードに到達した場合、
+それを呼び出したワードでデバッグを続行します。
 
 @item d
-Done; Stop debugging and execute rest.
+Done; デバッグを停止し(stop)、 残りを実行します(execute)。
 
 @item s
-Stop; Abort immediately.
+Stop; 直ちに終了(abort)します。
 
 @end table
 
-Debugging large application with this mechanism is very difficult, because
-you have to nest very deeply into the program before the interesting part
-begins. This takes a lot of time. 
+このメカニズムを使用して大規模なアプリケーションをデバッグすることは、
+あなたが関心のある部分が始まる前にプログラム内に非常に深くネストする必要があるため、 非常に困難です。 これにはとても時間がかかります。 
 
-To do it more directly put a @code{BREAK:} command into your source code.
-When program execution reaches @code{BREAK:} the single step debugger is
-invoked and you have all the features described above.
+これをより直接的に行うには、 @code{BREAK:} コマンドをあなたのソース・コードに追加します。 プログラムの実行が @code{BREAK:}
+に達すると、 シングル・ステップ・デバッガーが呼び出され、 上記すべての機能が利用できるようになります。
 
-If you have more than one part to debug it is useful to know where the
-program has stopped at the moment. You can do this by the @code{BREAK"
-string"} command. This behaves like @code{BREAK:} except that string is
-typed out when the ``breakpoint'' is reached.
+デバッグする部分が複数ある場合、 プログラムが現在どこで停止しているかを把握できると便利です。 これを行うには、 @code{BREAK"
+string"} コマンドを使用します。 これは @code{BREAK:} と同様に動作しますが、
+「ブレークポイント」に到達したときに文字列が出力される点が異なります。
 
 
 @findex dbg ( @var{ "name" --   } ) gforth-0.2
@@ -24775,11 +24622,10 @@ Load coverage counters.
 * Cilk::                     Cilk風の spawn+sync 実装
 @end menu
 
-Gforth offers two multitaskers: a traditional, cooperative round-robin
-multitasker, and a pthread-based multitasker which allows to run several
-threads concurrently on multi-core machines.  The pthread-based is now
-marked as experimental feature, as standardization of Forth multitaskers
-will likely change the names of words without changing their semantics.
+Gforth は 2 つのマルチタスカーを提供します。 1 つは従来の協調的なラウンドロビン・マルチタスカー(cooperative
+round-robin multitasker)で、 もう 1 つはマルチコア・マシン上で複数のスレッドを同時に実行できる pthread
+ベースのマルチタスカーです。  将来、 Forth マルチタスカーの標準化により、 その意味は変更せずにワードの名前が変更される可能性が高いため、
+pthread ベースのマルチタスカーは現在、 実験的な機能としてマークされています。
 
 @node Pthreads, Cilk, Multitasker, Multitasker
 @subsection Pthreads

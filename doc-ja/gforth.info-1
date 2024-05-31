@@ -70,7 +70,7 @@ Software Foundation, Inc.
 * Integrating Gforth::       アプリのスクリプト言語としてのForth
 * Emacs and Gforth::         The Gforth Mode
 * Image Files::              ‘.fi’
-                               ファイルはコンパイル済のコードです
+                               ファイルはコンパイル済のコード
 * Engine::                   内部インタプリタとプリミティブ・ワード
 * Cross Compiler::           The Cross Compiler
 * MINOS2::                   The GUI library
@@ -299,10 +299,9 @@ Tokens for Words
 
 
 
-* Execution token::          実行(execution)/インタプリタ(interpretation)
-                               セマンティクス
+* Execution token::          実行時(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル・セマンティクス
+* Compilation token::        コンパイル時(compilation semantics)
 
 Compiling words
 
@@ -2739,16 +2738,17 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
      1 2 + .
      : foo + ;
 
-   これらの 2 つの振る舞いは、 コンパイルと解釈(interpret)のセマンティク
-スとして知られています。 通常のワード(例: ‘+’)の場合、 コンパイル・セマ
-ンティクスは、 現在定義されているワード(上記の例では ‘foo’)に解釈セマン
-ティクスを追加します。 つまり、 後で ‘foo’ が実行されると、 ‘+’ の解釈
-(interret)セマンティクス(つまり、2 つの数値の加算)が実行されます。
+   これらの 2 つの振る舞いは、 コンパイル時compilation semantics)と実行
+時(interpretation semantics)として知られています。 通常のワード(例:
+‘+’)の場合、 コンパイル時は、 現在定義されているワード(上記の例では
+‘foo’)に実行時コードを追加します。 つまり、 後で ‘foo’ が実行されると、
+‘+’ のj実行時コード(interpretation semantics)(つまり、2 つの数値の加算
+)が実行されます。
 
    ただし、 ‘if’ のような制御フロー・ワードなど、 デフォルト以外のコンパ
-イル・セマンティクスを持つワードが存在します。 ‘immediate’ を使用すると
-、最後に定義されたワードのコンパイル・セマンティクスを解釈(interpret)セ
-マンティクスと等しくなるように変更できます:
+イル時動作を持つワードが存在します。 ‘immediate’ を使用すると、 最後に定
+義されたワードのコンパイル時コードを実行時コードと等しくなるように変更で
+きます:
 
      : [FOO] ( -- )
       5 . ; immediate
@@ -2759,13 +2759,13 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
      bar
      see bar
 
-   デフォルト以外のコンパイル・セマンティクスのワードだと知らしめる 2 つ
-の慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、 名前をすべて大
-文字で記述する(あまり使用されない)ことです。
+   デフォルト以外のコンパイル時ワードだと知らしめる 2 つの慣習は、 名前
+を括弧で囲む(より頻繁に使用される)ことと、 名前をすべて大文字で記述する
+(あまり使用されない)ことです。
 
-   ‘if’ などの一部のワードについては、 その解釈(interpret)セマンティクス
-を使用するのは通常間違いであるため、 それらを ‘compile-only’ としてマー
-クし、 解釈(interpret)すると警告が表示されます。
+   ‘if’ などの一部のワードについては、 実行時に使用するのは通常間違いで
+あるため、 それらを ‘compile-only’ としてマークし、 実行時に使用すると警
+告が表示されます。
 
      : flip ( -- )
       6 . ; compile-only \ but not immediate
@@ -2775,16 +2775,15 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
       flip ;
      flop
 
-   この例では、 最初に ‘flip’ の解釈(interpret)セマンティクスが使用され
-ます(警告が表示されます)。 ‘flip’ の 2 番目の使用では、 コンパイル・セマ
-ンティクスが使用されます(警告は表示されません)。 この例では、
-compile-only が実行時(run-time)ではなくテキスト解釈時(text
-interpretation time)に評価されるプロパティであることもわかります。
+   この例では、 最初に ‘flip’ の実行時コードが使用されます(警告が表示さ
+れます)。 ‘flip’ の 2 番目の使用では、 コンパイル時コードが使用されます
+(警告は表示されません)。 この例では、 compile-only が実行時(run-time)で
+はなくテキスト解釈時(text interpretation time)に評価される属性であること
+もわかります。
 
-   テキスト・インタプリタには 2 つの状態があります。 解釈(interpret)状態
-では、 遭遇したワードの解釈(interpret)セマンティクスを実行します。 コン
-パイル状態では、これらのワードのコンパイル・セマンティクスが実行されます
-。
+   テキスト・インタプリタには 2 つの状態があります。 実行時(interpret)は
+、 遭遇したワードの実行時コードを実行します。 コンパイル時では、 これら
+のワードのコンパイル時コードが実行されます。
 
    特に、 ‘:’ はコンパイル状態に切り替え、 ‘;’ は解釈(interpret)状態に戻
 ります。 これらには、 状態を切り替えるだけがその効果である ‘]’ (コンパイ
@@ -2810,8 +2809,8 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
 =====================
 
 ‘' word’ は、 ワードの実行トークン(execution token)(XT)を提供します。 XT
-は、 ワードの解釈(interpret)セマンティクスを表すセルです。 このセマンテ
-ィクスは ‘execute’ で実行できます:
+は、 ワードの実行時コードを表すセルです。 これは ‘execute’ で実行できま
+す:
 
      ' + .s
      1 2 rot execute .
@@ -2846,9 +2845,9 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
         [ ' + compile, ] ;
      see foo1
 
-   ‘compile,’ は標準ではコンパイル・セマンティクスがないため、 上記は標
-準ではないけれども、 良い Forth システムでは動作します。 うまくいかなか
-ったモノついては、 以下を使用してください
+   ‘compile,’ は標準ではコンパイル時コードがないため、 上記は標準ではな
+いけれども、 良い Forth システムでは動作します。 うまくいかなかったモノ
+ついては、 以下を使用してください
 
      : [compile,] compile, ; immediate
 
@@ -2856,9 +2855,9 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
         [ ' + ] [compile,] ;
      see foo1
 
-   ‘'’ は、 デフォルトでコンパイル・セマンティクスを持つワードです。 コ
-ンパイル中ではなく、 解釈(interpret)セマンティクスの実行時、 その次のワ
-ードを解析(parse)します。
+   ‘'’ は、 デフォルトでコンパイル時コードを持つワードです。 コンパイル
+中ではなく、 実行時コードの実行時、 その次のワードを構文解析(parse)しま
+す。
 
      : foo ( -- xt )
        ' ;
@@ -2887,10 +2886,10 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
 (https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz))。
 
    XT の作成および実行は、 インタプリタの状態には影響を受けないことに注
-意してください。 つまり、 コンパイル状態で ‘'’ を実行した場合でも、 解釈
-(interpret)セマンティクスが得られます。 そして、 そこでの状態が何であれ
-、 ‘execute’ は XT によって表されるセマンティクス(つまり、‘'’ で生成され
-た XT の場合は解釈(interpret)セマンティクス)を実行します。
+意してください。 つまり、 コンパイル状態で ‘'’ を実行した場合でも、 実行
+時コードが得られます。 そして、 そこでの状態が何であれ、 ‘execute’ は XT
+によって表されるコード(つまり、‘'’ で生成された XT の場合は実行時コード
+)を実行します。
 
    こちらも参照ください: *note Tokens for Words::
 
@@ -3082,8 +3081,9 @@ File: gforth.info,  Node: POSTPONE Tutorial,  Next: Literal Tutorial,  Prev: Arr
 3.33 ‘POSTPONE’
 ===============
 
-‘POSTPONE’ を使用すると、 (解釈(interpret)セマンティクスをコンパイルする
-代わりに、) ワードのコンパイル・セマンティクスをコンパイルできます:
+‘POSTPONE’ を使用すると、 (そのワードの実行時コード(interpretation
+semantics)をコンパイルする代わりに、) そのワードのコンパイル時コード
+(compilation semantics)をコンパイルできます:
 
      : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
       POSTPONE + ; immediate
@@ -3092,20 +3092,21 @@ File: gforth.info,  Node: POSTPONE Tutorial,  Next: Literal Tutorial,  Prev: Arr
      1 2 foo .
      see foo
 
-   ‘foo’ の定義中に、 テキスト・インタプリタは ‘MY-+’ のコンパイル・セマ
-ンティクスを実行し、 それが ‘+’ のコンパイル・セマンティクスを実行します
-。 つまり、 ‘+’ を ‘foo’ 内にコンパイルします。
+   ‘foo’ の定義中に、 テキスト・インタプリタは ‘MY-+’ のコンパイル時コー
+ドを実行し、 そのコンパイル時コードが ‘+’ のコンパイル時コードを実行しま
+す。 つまり、 ‘+’ を ‘foo’ 内にコンパイルします。
 
-   この例では、 コンパイル・セマンティクスとコンパイルされたコードのスタ
-ック効果について個別のスタック・コメントも表示します。 デフォルトのコン
-パイル・セマンティクスを持つワードの場合、 通常、 これらのスタック効果は
-表示されません。 これらのワードのコンパイル・セマンティクスのスタック効
-果は常に ‘( -- )’ であり、 コンパイルされたコードのスタック効果は解釈
-(interpret)セマンティクスのスタック効果です。
+   この例では、 コンパイル時コードとコンパイルされたコードのスタック効果
+について個別のスタック・コメントも表示します。 デフォルトのコンパイル時
+コード(compilation semantics)を持つワードの場合、 通常、 これらのスタッ
+ク効果は表示されません。 これらのワードのコンパイル時コード(compilation
+semantics)のスタック効果は常に ‘( -- )’ であり、 コンパイルされたコード
+のスタック効果は実行時コード(interpretation semantics)のスタック効果です
+。
 
-   注意: この方法でコンパイル・セマンティクスを実行する場合、 インタプリ
-タの状態には影響を受けないことに注意してください。 あなたは解釈的
-(interpretively)に実行することもできます。 例:
+   注意: この方法でコンパイル時コード(compilation semantics)を実行する場
+合、 インタプリタの状態には影響を受けないことに注意してください。 あなた
+は解釈的(interpretively)に実行することもできます。 例:
 
      : foo2 ( n1 n2 -- n )
       [ MY-+ ] ;
@@ -3129,9 +3130,9 @@ File: gforth.info,  Node: POSTPONE Tutorial,  Next: Literal Tutorial,  Prev: Arr
      : ENDIF ( Compilation: orig -- )
        POSTPONE then ; immediate
 
-     研究課題(assignment): ‘2dup’ と同等のコンパイル・セマンティクスを持
-     つ ‘MY-2DUP’ を作成しますが、 コンパイルされるのは ‘over over’ にな
-     るようにしてみましょう。
+     研究課題(assignment): ‘2dup’ と同等のコンパイル時コードを持つ
+     ‘MY-2DUP’ を作成しますが、 コンパイルされるのは ‘over over’ になる
+     ようにしてみましょう。
 
 
 File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Prev: POSTPONE Tutorial,  Up: Tutorial
@@ -3152,10 +3153,10 @@ File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Pr
      flip .
      see flip
 
-   ‘LITERAL’ は、 コンパイル時(コンパイル・セマンティクスが実行されると
-き)に数値を消費し、 実行時(コンパイルされたコードが実行されるとき)にそれ
-をプッシュします。 ‘LITERAL’ のよくある使用法は、 コンパイル時に計算され
-た数値を現在のワードにコンパイルすることです:
+   ‘LITERAL’ は、 コンパイル時(コンパイル時コードが実行されるとき)に数値
+を消費し、 実行時(コンパイルされたコードが実行されるとき)にそれをプッシ
+ュします。 ‘LITERAL’ のよくある使用法は、 コンパイル時に計算された数値を
+現在のワードにコンパイルすることです:
 
      : bar ( -- n )
        [ 2 2 + ] literal ;
@@ -3228,27 +3229,27 @@ File: gforth.info,  Node: Compilation Tokens Tutorial,  Next: Wordlists and Sear
 
 このセクションは Gforth 固有です。 スキップしても構いません。
 
-   ‘' word compile,’ は解釈(interpret)セマンティクスをコンパイルします。
-デフォルトのコンパイル・セマンティクスを持つワードの場合、 これはコンパ
-イル・セマンティクスを実行するのと同じです。 他のワードのコンパイル・セ
-マンティクス(解釈(interpret)セマンティクスを持たない ‘if’ などのワード
-)を表すために、 Gforth にはコンパイル・トークン(CTと略します。 2つのセル
-で構成)と、 ワード ‘comp'’ と、 ‘[comp']’ の概念があります。 ‘execute’ を
-使用して、 CT によって表されるコンパイル・セマンティクスを実行できます:
+   ‘' word compile,’ は実行時コード(interpretation semantics)をコンパイ
+ルします。 デフォルトのコンパイル時コード(compilation semantics)を持つワ
+ードの場合、 これはコンパイル時コードを実行するのと同じです。 他のワード
+のコンパイル時コード(実行時に使えない ‘if’ などのワード)を表すために、
+Gforth にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワー
+ド ‘comp'’ と、 ワード ‘[comp']’ の概念があります。 ‘execute’ を使用して
+、 CT によって表されるコンパイル時コードを実行できます:
 
      : foo2 ( n1 n2 -- n )
         [ comp' + execute ] ;
      see foo2
 
-   ‘postpone,’ を使用して、 CT によって表されるコンパイル・セマンティク
-スをコンパイルできます:
+   ‘postpone,’ を使用して、 CT によって表されるコンパイル時コードをコン
+パイルできます:
 
      : foo3 ( -- )
        [ comp' + postpone, ] ;
      see foo3
 
    ‘[ comp' word postpone, ]’ ‘POSTPONE word’ と同等です。 ‘comp'’ は、
-解釈(interpret)セマンティクスを持たないワードに対して特に役立ちます:
+実行時コードを持たないワードに対して特に役立ちます:
 
      ' if
      comp' if .s 2drop
@@ -3329,35 +3330,33 @@ File: gforth.info,  Node: Introduction,  Next: Literals in source code,  Prev: T
 4 An Introduction to Standard Forth
 ***********************************
 
-The difference of this chapter from the Tutorial (*note Tutorial::) is
-that it is slower-paced in its examples, but uses them to dive deep into
-explaining Forth internals (not covered by the Tutorial).  Apart from
-that, this chapter covers far less material.  It is suitable for reading
-without using a computer.
+この章とチュートリアル(*note Tutorial::)との違いは、 急ぎ足のチュートリ
+アルと違ってじっくり腰を据えて、 チュートリアルではカバーしきれていない
+、 Forth の内部を詳しく説明していることです。 それはさておき、 この章で
+取り上げる内容はチュートリアルに比べはるかに少ないので、 パソコンを使わ
+ずに読むのに適しています。
 
-   The primary purpose of this manual is to document Gforth.  However,
-since Forth is not a widely-known language and there is a lack of
-up-to-date teaching material, it seems worthwhile to provide some
-introductory material.  For other sources of Forth-related information,
-see *note Forth-related information::.
+   このマニュアルの主な目的は、 Gforth を文書化することです。 ただし、
+Forth は広く知られている言語ではなく、 最新の教材が不足しているため、 入
+門用の教材を提供する価値があると思われます。 巷の Forth 関連情報その他の
+情報源については *note Forth-related information:: を参照下さい。
 
-   The examples in this section should work on any Standard Forth; the
-output shown was produced using Gforth.  Each example attempts to
-reproduce the exact output that Gforth produces.  If you try out the
-examples (and you should), what you should type is shown ‘like this’ and
-Gforth’s response is shown ‘like this’.  The single exception is that,
-where the example shows <RET> it means that you should press the
-“carriage return” key.  Unfortunately, some output formats for this
-manual cannot show the difference between ‘this’ and ‘this’ which will
-make trying out the examples harder (but not impossible).
+   このセクションの例は、 どの標準 Forth でも動作するはずです。 示されて
+いる出力は Gforth を使用して生成されました。 各例では、 Gforth が生成す
+る正確な出力を再現しようとしています。 あなたが例を試してみれば(そして、
+あなたはそうするべきです)、 入力すべき内容は ‘like this’ と示され、
+Gforth の応答は ‘like this’ で示されます。 唯一の例外は、 例で <RET> が
+示されている場合、 これは「Enter」キー(機種によりReturnキー)を押す必要が
+あることを意味します。 残念ながら、 このマニュアルの一部の出力形式では
+‘this’ と ‘this’ の違いを表示できないため、 例を試してみるのが困難かもし
+れません(ただし、 不可能ではありません)。
 
-   Forth is an unusual language.  It provides an interactive development
-environment which includes both an interpreter and compiler.  Forth
-programming style encourages you to break a problem down into many small
-fragments (“factoring”), and then to develop and test each fragment
-interactively.  Forth advocates assert that breaking the
-edit-compile-test cycle used by conventional programming languages can
-lead to great productivity improvements.
+   Forth は珍しい言語です。 インタプリタとコンパイラの両方を含む対話型開
+発環境を提供します。 Forth のプログラミング・スタイルでは、 問題をいくつ
+かの要素に分割することが推奨されます 小さな断片を作成し(ファクタリング
+)、 各断片を対話的に開発・テストします。 Forth の支持者は、 従来のプログ
+ラミング言語で使用されている編集・コンパイル・テストのサイクルを打ち破る
+ことで、 生産性の大幅な向上につながる可能性があると主張しています。
 
 * Menu:
 
@@ -3376,24 +3375,25 @@ File: gforth.info,  Node: Introducing the Text Interpreter,  Next: Stacks and Po
 4.1 Introducing the Text Interpreter
 ====================================
 
-When you invoke the Forth image, you will see a startup banner printed
-and nothing else (if you have Gforth installed on your system, try
-invoking it now, by typing ‘gforth<RET>’).  Forth is now running its
-command line interpreter, which is called the “Text Interpreter” (also
-known as the “Outer Interpreter”).  (You will learn a lot about the text
-interpreter as you read through this chapter, for more detail *note The
-Text Interpreter::).
+Forth イメージを呼び出すと、 起動バナーが出力されますが、 他には何も表示
+されません (システムに Gforth がインストールされている場合は、
+‘gforth<RET>’ と入力して今すぐ呼び出してみてください)。 今、 Forth は、
+テキスト・インタプリタ(Text Interpreter)と呼ばれるコマンド・ライン・イン
+タプリタを実行しています(外部インタプリタとも呼ばれます;訳注: 別途存在す
+る 内部インタプリタ(inner interpreter)に対してこう呼ばれる)。 (この章を
+読み進ればテキスト・インタプリタについて多くのことを学ぶことができます。
+詳細については *note The Text Interpreter:: を参照してください)。
 
-   Although it’s not obvious, Forth is actually waiting for your input.
-Type a number and press the <RET> key:
+   明白ではなくて分かりにくいですが、 今や Forth はユーザーの入力を待っ
+ています。 数字の 4 と 5 を入力し <RET> キーを押します:
 
      45<RET>  ok
 
-   Rather than give you a prompt to invite you to input something, the
-text interpreter prints a status message after it has processed a line
-of input.  The status message in this case (“‘ ok’” followed by
-carriage-return) indicates that the text interpreter was able to process
-all of your input successfully.  Now type something illegal:
+   テキスト・インタプリタは、 次の入力を促すプロンプトを表示するのではな
+く、 入力行を処理した後に(改行無しで)ステータス・メッセージを出力します
+。 この場合のステータス・メッセージ(<RET> (「エンター」(リターン)キー押
+下)の後の ‘ ok’ )は、 テキスト・インタプリタがすべての入力を正常に処理で
+きたことを示します。 それでは次に、 不正な文字列を入力してみましょう:
 
      qwer341<RET>
      *the terminal*:2: Undefined word
@@ -3402,46 +3402,46 @@ all of your input successfully.  Now type something illegal:
      $2A95B42A20 throw
      $2A95B57FB8 no.extensions
 
-   The exact text, other than the “Undefined word” may differ slightly
-on your system, but the effect is the same; when the text interpreter
-detects an error, it discards any remaining text on a line, resets
-certain internal state and prints an error message.  For a detailed
-description of error messages see *note Error messages::.
+   ‘Undefined word‘ 以外の文章はシステムによって若干異なる場合があります
+が、 意味は同じです。 テキスト・インタプリタがエラーを検出すると、 行に
+残っているテキストを破棄し、 特定の内部状態をリセットして、 エラー・メッ
+セージを出力します。 エラー・メッセージの詳細な説明については、 *note
+Error messages:: を参照してください。
 
-   The text interpreter waits for you to press carriage-return, and then
-processes your input line.  Starting at the beginning of the line, it
-breaks the line into groups of characters separated by spaces.  For each
-group of characters in turn, it makes two attempts to do something:
+   テキスト・インタプリタは、エンター・キー(リターン・キー)が押されるの
+を待ち、 その後入力行を処理します。 行頭から開始して、 行をスペースで区
+切られた文字のグループに分割します。 文字のグループごとに、 以下の順番で
+、 何かするために計 2 回の試みを行います:
 
-   • It tries to treat it as a command.  It does this by searching a
-     “name dictionary”.  If the group of characters matches an entry in
-     the name dictionary, the name dictionary provides the text
-     interpreter with information that allows the text interpreter to
-     perform some actions.  In Forth jargon, we say that the group of
-     characters names a “word”, that the dictionary search returns an
-     “execution token (xt)” corresponding to the “definition” of the
-     word, and that the text interpreter executes the xt.  Often, the
-     terms “word” and “definition” are used interchangeably.
-   • If the text interpreter fails to find a match in the name
-     dictionary, it tries to treat the group of characters as a number
-     in the current number base (when you start up Forth, the current
-     number base is base 10).  If the group of characters legitimately
-     represents a number, the text interpreter pushes the number onto a
-     stack (we’ll learn more about that in the next section).
+   • その文字のグループをコマンドとして扱おうとします。 これは、 名前デ
+     ィクショナリ(name dictionary)を検索することによって行われます。 そ
+     の文字のグループが名前ディクショナリのエントリと一致する場合、 名前
+     ディクショナリは、 いくつかのアクションを実行できるようにする情報を
+     テキスト・インタプリタに提供します。 Forth 流に言うと、文字のグルー
+     プを「ワードの名前」といい、 ディクショナリ検索でワードの定義
+     (definition)に対応する実行トークン(execution token;xt)が返され、 テ
+     キスト・インタプリタは xt を実行します。 多くの場合、「ワード」
+     (word)と「定義」(definition)という用語は同じ意味で使用されます。
+   • テキスト・インタプリタが名前ディクショナリ内で一致するものを見つけ
+     られなかった場合、 文字のグループを現在の基数の数値として処理しよう
+     とします(Forth を起動したときの、 現在の基数は 10 です)。 文字のグ
+     ループが正当な数値を表す場合、 テキスト・インタプリタはその数値をス
+     タックにプッシュします(これについては次のセクションで詳しく説明しま
+     す)。
 
-   If the text interpreter is unable to do either of these things with
-any group of characters, it discards the group of characters and the
-rest of the line, then prints an error message.  If the text interpreter
-reaches the end of the line without error, it prints the status message
-“‘ ok’” followed by carriage-return.
+   テキスト・インタプリタが文字グループに対して上記のいずれも実行不可能
+な場合、 その文字グループと行の残りの部分が破棄され、 エラー・メッセージ
+が出力されます。 テキスト・インタプリタがエラーなく行末に到達すると、 ス
+テータス・メッセージ ‘ ok’ に続いて改行を出力します。
 
-   This is the simplest command we can give to the text interpreter:
+   以下は、 テキスト・インタプリタに与えることができる最もシンプルなコマ
+ンドです:
 
      <RET>  ok
 
-   The text interpreter did everything we asked it to do (nothing)
-without an error, so it said that everything is “‘ ok’”.  Try a slightly
-longer command:
+   ここで、 テキスト・インタプリタは、 私たちが要求したことをすべて(何も
+せずに)エラーなしで実行したため、 すべてが ‘ ok’ であると表示しました。
+今度は少し長いコマンドを試して見ましょう:
 
      12 dup fred dup<RET>
      *the terminal*:3: Undefined word
@@ -3450,36 +3450,36 @@ longer command:
      $2A95B42A20 throw
      $2A95B57FB8 no.extensions
 
-   When you press the carriage-return key, the text interpreter starts
-to work its way along the line:
+   エンター・キー(リターン・キー)を押すと、 テキスト・インタプリタが行に
+沿って動作を開始します:
 
-   • When it gets to the space after the ‘2’, it takes the group of
-     characters ‘12’ and looks them up in the name dictionary(1).  There
-     is no match for this group of characters in the name dictionary, so
-     it tries to treat them as a number.  It is able to do this
-     successfully, so it puts the number, 12, “on the stack” (whatever
-     that means).
-   • The text interpreter resumes scanning the line and gets the next
-     group of characters, ‘dup’.  It looks it up in the name dictionary
-     and (you’ll have to take my word for this) finds it, and executes
-     the word ‘dup’ (whatever that means).
-   • Once again, the text interpreter resumes scanning the line and gets
-     the group of characters ‘fred’.  It looks them up in the name
-     dictionary, but can’t find them.  It tries to treat them as a
-     number, but they don’t represent any legal number.
+   • ‘2’ の後のスペースに到達すると、 文字グループ ‘12’ を取得し、 それ
+     らを名前ディクショナリで検索します(1)。 名前ディクショナリにはこの
+     文字グループに一致するものがないため、それらを数値として処理しよう
+     とし、 そして、 数値として処理するのは正常に実行できたので、 (それ
+     が何を意味するにせよ) 数値 12 を「スタック上」に置きます。
+   • テキスト・インタプリタは行のスキャンを再開し、 次の文字グループ
+     ‘dup’ を取得します。 それを名前ディクショナリで検索し、 (これについ
+     ては私の言葉(my word)を信じてください、)それを見つけて、 ワード
+     ‘dup’ を実行します(それが何を意味していても)。
+   • 更に再び、 テキスト・インタプリタは行のスキャンを再開し、 文字グル
+     ープ ‘fred’ を取得します。 名前ディクショナリで調べますが、見つかり
+     ません。 それらを数値として扱おうとしますが、 正当な数値を表すもの
+     ではありませんでした。
 
-   At this point, the text interpreter gives up and prints an error
-message.  The error message shows exactly how far the text interpreter
-got in processing the line.  In particular, it shows that the text
-interpreter made no attempt to do anything with the final character
-group, ‘dup’, even though we have good reason to believe that the text
-interpreter would have no problem looking that word up and executing it
-a second time.
+   この時点で、 テキスト・インタプリタは諦めてエラー・メッセージを出力し
+ます。 エラー・メッセージには、 テキスト・インタプリタが行の処理でどこま
+で到達したかが正確に示されます。 これは、 特に、 テキスト・インタプリタ
+が最後の文字グループ ‘dup’ に対して何も行おうとしなかったことを示してい
+ます。 テキスト・インタプリタがそのワード ‘dup’ を検索して、 一度はちゃ
+んと実行されたのですから、 もう一度実行することに何の問題はないはずなの
+に、 です。
 
    ---------- Footnotes ----------
 
-   (1) We can’t tell if it found them or not, but assume for now that it
-did not
+   (1) 見つかったかどうかはわかりませんが、いまのところ、 見つからなかっ
+たと仮定します。 訳注: 12 というワードを定義することもでき、その場合はワ
+ード 12 の方が数値 12 より優先される
 
 
 File: gforth.info,  Node: Stacks and Postfix notation,  Next: Your first definition,  Prev: Introducing the Text Interpreter,  Up: Introduction
@@ -3487,187 +3487,193 @@ File: gforth.info,  Node: Stacks and Postfix notation,  Next: Your first definit
 4.2 Stacks, postfix notation and parameter passing
 ==================================================
 
-In procedural programming languages (like C and Pascal), the
-building-block of programs is the “function” or “procedure”.  These
-functions or procedures are called with “explicit parameters”.  For
-example, in C we might write:
+手続き型プログラミング言語(C や Pascal など)では、 プログラムの構成要素
+は関数(function)やプロシージャ(procedure)です。 これらの関数またはプロシ
+ージャは、 明示的なパラメータを使用して呼び出されます。 たとえば、 C で
+は以下のように記述できます:
 
      total = total + new_volume(length,height,depth);
 
-where new_volume is a function-call to another piece of code, and total,
-length, height and depth are all variables.  length, height and depth
-are parameters to the function-call.
+ここで、 new_volume は別のコード片への関数呼び出し(function-call)であり
+、 total, length, height, depth はすべて変数です。 length, height, depth
+は関数呼び出しのパラメータです。
 
-   In Forth, the equivalent of the function or procedure is the
-“definition” and parameters are implicitly passed between definitions
-using a shared stack that is visible to the programmer.  Although Forth
-does support variables, the existence of the stack means that they are
-used far less often than in most other programming languages.  When the
-text interpreter encounters a number, it will place (“push”) it on the
-stack.  There are several stacks (the actual number is
-implementation-dependent ...)  and the particular stack used for any
-operation is implied unambiguously by the operation being performed.
-The stack used for all integer operations is called the “data stack”
-and, since this is the stack used most commonly, references to “the data
-stack” are often abbreviated to “the stack”.
+   Forth では、 関数またはプロシージャに相当するのは「定義」
+(definition)であり、 パラメータはプログラマから見える共有スタックを使用
+して定義間で暗黙的に渡されます。 Forth は変数をサポートしていますが、 ス
+タックの存在は、 他のほとんどのプログラミング言語よりも変数が使用される
+頻度がはるかに低いことを意味します。 テキスト・インタプリタは数値を検出
+すると、 それをスタックに置きます(プッシュ)。 何種類かのスタックがあり
+(いくつあるかは実装依存です)、 操作に使用されるスタックは、 実行される操
+作によって明確に示されます。 すべての整数演算に使用されるスタックは「デ
+ータ・スタック」と呼ばれ、 これが最も一般的に使用されるスタックであるた
+め、 「データ・スタック」への参照は多くの場合「スタック」と省略されます
+。
 
-   The stacks have a last-in, first-out (LIFO) organisation.  If you
-type:
+   スタックには後入れ先出し(last-in, first-out;LIFO)構成が採用されていま
+す。 以下のように打ち込むと:
 
      1 2 3<RET>  ok
+   これはテキスト・インタプリタに 3 つの数値を (データ)スタック に配置す
+るように指示します。 スタックの振る舞いはトランプの扱いに例えられます。
+トランプの箱から、 (スートは何でもいいですが、) エース(1)のカードと2のカ
+ードと3のカードをテーブルの上の山に配ります。 3のカードは山の最後のカー
+ド (last-in)であり、 山からカードを 1 枚取ると、 あなたがシャッフルとか
+何もいじってない限り、 取り出すカードは 3のカードになります(first-out)。
+スタックから最初に取り出されるであろう(スタック上の)数値はスタック頂上
+(スタック・トップ;top of stack)と呼ばれ、 多くの場合「TOS」と省略されま
+す。
 
-   Then this instructs the text interpreter to placed three numbers on
-the (data) stack.  An analogy for the behaviour of the stack is to take
-a pack of playing cards and deal out the ace (1), 2 and 3 into a pile on
-the table.  The 3 was the last card onto the pile (“last-in”) and if you
-take a card off the pile then, unless you’re prepared to fiddle a bit,
-the card that you take off will be the 3 (“first-out”).  The number that
-will be first-out of the stack is called the “top of stack”, which is
-often abbreviated to “TOS”.
+   Forth でパラメーターがどのように渡されるかを理解するために、 定義 ‘+’
+(「プラス」と発音します) の振る舞いを見てみましょう。 あなたは、 この定
+義が加算を実行することを知っても驚かないでしょう。 より正確には、 これは
+2 つの数値を加算して結果を生成します。 さて、 その 2 つの数値はどこから
+取得されるのでしょうか？ これはスタック頂上から上位 2 つの数値を取り除き
+ます。 その結果はどこに配置されるのでしょうか？ それはスタックです。 あ
+なたは以下のように、 トランプを使って ‘+’ の振る舞いを演ずることができま
+す。
 
-   To understand how parameters are passed in Forth, consider the
-behaviour of the definition ‘+’ (pronounced “plus”).  You will not be
-surprised to learn that this definition performs addition.  More
-precisely, it adds two numbers together and produces a result.  Where
-does it get the two numbers from?  It takes the top two numbers off the
-stack.  Where does it place the result?  On the stack.  You can act out
-the behaviour of ‘+’ with your playing cards like this:
+   • テーブル上の山(the steck)カードを 2 枚取り出します
+   • あなたは、 それらをじっと見つめて、 「これら 2 つの数字の合計は何で
+     あるか」を自問してください。
+   • 答えは 5 であると判明しました
+   • 2 枚のカードをシャッフルしてトランプの箱に戻し、 トランプの箱の中か
+     ら 5のカード を見つけます
+   • テーブル上にある残りのエース(1)のカードの上に 5のカードを置きます。
 
-   • Pick up two cards from the stack on the table
-   • Stare at them intently and ask yourself “what is the sum of these
-     two numbers”
-   • Decide that the answer is 5
-   • Shuffle the two cards back into the pack and find a 5
-   • Put a 5 on the remaining ace that’s on the table.
-
-   If you don’t have a pack of cards handy but you do have Forth
-running, you can use the definition ‘.s’ to show the current state of
-the stack, without affecting the stack.  Type:
+   トランプの箱はないですが、 Forth の実行中は、 定義 ‘.s’ を使用して、
+スタックに影響を与えることなく、 スタックの現在の状態を表示できます。 以
+下の様に打ち込みます:
 
      clearstacks 1 2 3<RET> ok
      .s<RET> <3> 1 2 3  ok
 
-   The text interpreter looks up the word ‘clearstacks’ and executes it;
-it tidies up the stacks (data and floating point stack) and removes any
-entries that may have been left on them by earlier examples.  The text
-interpreter pushes each of the three numbers in turn onto the stack.
-Finally, the text interpreter looks up the word ‘.s’ and executes it.
-The effect of executing ‘.s’ is to print the “<3>” (the total number of
-items on the stack) followed by a list of all the items on the stack;
-the item on the far right-hand side is the TOS.
+   テキスト・インタプリタはワード ‘clearstacks’ を検索して実行します。 ス
+タック(データおよび浮動小数点スタック)を整理し、 以前の例の実行によって
+スタックに残された可能性のあるエントリをすべて削除します。 続けてテキス
+ト・インタプリタは、 3 つの数値をそれぞれ順番にスタックにプッシュします
+。 最後に、 テキスト・インタプリタはワード ‘.s’ を検索して実行します。
+‘.s’ を実行すると、「<3>」 (スタック上の項目の合計数) に続いて、スタック
+上のすべての項目のリストが出力されます。 一番右側の項目が TOS です。
 
-   You can now type:
+   あなたは今や以下のように打ち込めます:
 
      + .s<RET> <2> 1 5  ok
 
-which is correct; there are now 2 items on the stack and the result of
-the addition is 5.
+現在スタックには 2 つの項目があり、 (そのうちの項目の1つである)加算の結
+果は 5 となっていれば正解です。
 
-   If you’re playing with cards, try doing a second addition: pick up
-the two cards, work out that their sum is 6, shuffle them into the pack,
-look for a 6 and place that on the table.  You now have just one item on
-the stack.  What happens if you try to do a third addition?  Pick up the
-first card, pick up the second card – ah!  There is no second card.
-This is called a “stack underflow” and consitutes an error.  If you try
-to do the same thing with Forth it often reports an error (probably a
-Stack Underflow or an Invalid Memory Address error).
+   あなたが引き続きトランプで遊んでいるなら、 この結果に対して 2 回目の
+足し算を行ってみましょう。 2 枚のカードを手に取り、 その合計が 6 である
+ことを計算し、手に取った2枚のカードをシャッフルして箱に入れ、 箱から 6の
+カード を探してテーブルに置きます。 これで、 スタックにはアイテムが 1 つ
+だけになりました。 あなたが 3 回目の足し算を実行しようとするとどうなるで
+しょうか？ あなたは、 1枚目のカードを手に取り、 2枚目のカードを手に取ろ
+うとします – ああ!  でも 2枚目のカードはありません。 これは「スタック・
+アンダーフロー」と呼ばれ、エラーとなります。 Forth で同じことを行おうと
+すると、 多くの場合、 エラーが報告されます(おそらく、 スタック・アンダー
+フロー(Stack Underflow)エラー、 または、 無効なメモリアクセス(Invalid
+Memory Address)エラー)。
 
-   The opposite situation to a stack underflow is a “stack overflow”,
-which simply accepts that there is a finite amount of storage space
-reserved for the stack.  To stretch the playing card analogy, if you had
-enough packs of cards and you piled the cards up on the table, you would
-eventually be unable to add another card; you’d hit the ceiling.  Gforth
-allows you to set the maximum size of the stacks.  In general, the only
-time that you will get a stack overflow is because a definition has a
-bug in it and is generating data on the stack uncontrollably.
+   スタック・アンダーフローの逆の状況が「スタック・オーバーフロー」です
+。 これは、 あなたがたが、 スタック用に予約されている有限量のストレージ
+・スペースがあることを単に受け入れるだけで済みます。 トランプの例えを拡
+張すると、 沢山の数のトランプのカードがあり、 それらのカードをテーブルに
+積み上げた場合、 天井にぶつかってしまい、 最終的には別のカードを追加でき
+なくなります。 Gforth を使用すると、 スタックの最大サイズを設定できます
+。 一般に、 スタック・オーバーフローが発生するのは、 定義にバグがあり、
+制御不能にスタック上にデータを生成している場合のみです。
 
-   There’s one final use for the playing card analogy.  If you model
-your stack using a pack of playing cards, the maximum number of items on
-your stack will be 52 (I assume you didn’t use the Joker).  The maximum
-value of any item on the stack is 13 (the King).  In fact, the only
-possible numbers are positive integer numbers 1 through 13; you can’t
-have (for example) 0 or 27 or 3.52 or -2.  If you change the way you
-think about some of the cards, you can accommodate different numbers.
-For example, you could think of the Jack as representing 0, the Queen as
-representing -1 and the King as representing -2.  Your range remains
-unchanged (you can still only represent a total of 13 numbers) but the
-numbers that you can represent are -2 through 10.
+   トランプの例えには、 最後にもう 1 つ適用例があります。 トランプを使用
+してスタックをモデル化した場合、 スタック上のアイテムの最大数は 52 にな
+ります(ジョーカーを使用しなかったと仮定して)。 スタック上のアイテムの最
+大値は13(キング)です。 実際は、 使用できる数値は 1 ～ 13 の正の整数のみ
+(つまり、 13個の数)です。 (たとえば) 0や27や3.52や-2は使用できません。 そ
+こで、 一部のカードについて考え方を変え、 さまざまな数値に対応できるよう
+にします。 たとえば、ジャックは 0 を表し、 クイーンは -1 を表し、 キング
+は -2 を表すと見なします。 すると、 表現できる数値の幅は変更されません
+(合計 13 個の数値のみを表すことができます)が、 -2 から 10 の数値を表す事
+ができるようになりました。
 
-   In that analogy, the limit was the amount of information that a
-single stack entry could hold, and Forth has a similar limit.  In Forth,
-the size of a stack entry is called a “cell”.  The actual size of a cell
-is implementation dependent and affects the maximum value that a stack
-entry can hold.  A Standard Forth provides a cell size of at least
-16-bits, and most desktop systems use a cell size of 32-bits.
+   この例えでは、 制限は 1 つのスタック・エントリが保持できる情報の量で
+あり、 Forth にも同様の制限があります。 Forth では、 スタック・エントリ
+のサイズは「セル」(cell)と呼ばれます。 セルの実際のサイズは実装に依存し
+、 スタック・エントリが保持できる最大値に影響します。 標準 Forth は少な
+くとも 16 ビットのセル・サイズを提供し、 ほとんどのデスクトップ・システ
+ムは 32 ビットのセル・サイズを使用します。
 
-   Forth does not do any type checking for you, so you are free to
-manipulate and combine stack items in any way you wish.  A convenient
-way of treating stack items is as 2’s complement signed integers, and
-that is what Standard words like ‘+’ do.  Therefore you can type:
+   Forth は型チェックを一切行わないため、 スタック項目を自由に操作したり
+組み合わせたりできます。 スタック項目を 2 の補数の符号付き整数として扱う
+便利な方法は、 ‘+’ などの標準ワードもやっています。 それゆえ、 以下のよ
+うに入力できます:
 
      -5 12 + .s<RET> <1> 7  ok
 
-   If you use numbers and definitions like ‘+’ in order to turn Forth
-into a great big pocket calculator, you will realise that it’s rather
-different from a normal calculator.  Rather than typing 2 + 3 = you had
-to type 2 3 + (ignore the fact that you had to use ‘.s’ to see the
-result).  The terminology used to describe this difference is to say
-that your calculator uses “Infix Notation” (parameters and operators are
-mixed) whilst Forth uses “Postfix Notation” (parameters and operators
-are separate), also called “Reverse Polish Notation”.
+   あなたが、 Forth を電卓にするために、 数値や ‘+’ のような定義を使用す
+ると、 それが通常の電卓とはかなり異なることがわかるでしょう。 あなたは 2
++ 3 = と入力するのではなく、 2 3 + と入力する必要があります(ここでは、 結
+果を確認するには ‘.s’ を使用する必要があるという事実は無視してください
+)。 この違いを説明するために使用される用語は、 電卓は「中置記法」(Infix
+Notation;パラメーターと演算子が混合されている)を使用するのに対し、 Forth
+は「後置記法」(Postfix Notation;パラメーターと演算子が分かれている)、 ま
+たの名を「逆ポーランド記法」(Reverse Polish Notation)と呼ばれるものを使
+用します。
 
-   Whilst postfix notation might look confusing to begin with, it has
-several important advantages:
+   後置記法は最初はわかりにくいように見えるかもしれませんが、 いくつかの
+重要な利点があります:
 
-   • it is unambiguous
-   • it is more concise
-   • it fits naturally with a stack-based system
+   • 明白です
+   • より簡潔です
+   • スタックベースのシステムに自然に適合します
 
-   To examine these claims in more detail, consider these sums:
+   これらの主張をさらに詳しく調べるために、 以下の計算について見てみまし
+ょう:
 
      6 + 5 * 4 =
      4 * 5 + 6 =
 
-   If you’re just learning maths or your maths is very rusty, you will
-probably come up with the answer 44 for the first and 26 for the second.
-If you are a bit of a whizz at maths you will remember the convention
-that multiplication takes precendence over addition, and you’d come up
-with the answer 26 both times.  To explain the answer 26 to someone who
-got the answer 44, you’d probably rewrite the first sum like this:
+   あなたが、算数を勉強中の場合、 または算数が非常に苦手な場合は、 最初
+の答えは 44、 2 番目の答えは 26 になるでしょう。 あなたが算数に少し詳し
+い人なら、 乗算は加算よりも優先されるという法則を覚えているでしょう。 そ
+して、 どちらの場合も答えは 26 になるでしょう。 答え 44 だと言った人に、
+なぜ答えが 26 かを説明するには、 最初の計算を以下のように書き換えること
+になるでしょう:
 
      6 + (5 * 4) =
 
-   If what you really wanted was to perform the addition before the
-multiplication, you would have to use parentheses to force it.
+   あなたが、 もし、 乗算より優先して加算を実行したい場合は、 かっこを使
+用して強制的に加算させる必要があります。
 
-   If you did the first two sums on a pocket calculator you would
-probably get the right answers, unless you were very cautious and
-entered them using these keystroke sequences:
+   上記 2 つの計算を電卓で計算する場合、 以下のキーストローク・シーケン
+スを使用して、 入力ミスしない限り、 おそらく正しい答えが得られるでしょう
+:
 
-   6 + 5 = * 4 = 4 * 5 = + 6 =
+     6 + 5 = * 4 =
+     4 * 5 = + 6 =
 
    Postfix notation is unambiguous because the order that the operators
 are applied is always explicit; that also means that parentheses are
-never required.  The operators are active (the act of quoting the
-operator makes the operation occur) which removes the need for “=”.
+never required後置記法では演算子が適用される順序は常に明示的です。 これ
+は、 括弧が決して必要ないことも意味します。 演算子はアクティブです(演算
+子を引用する行為によって演算操作が実行されます)。 これにより、「=」が必
+要なくなります。
 
-   The sum 6 + 5 * 4 can be written (in postfix notation) in two
-equivalent ways:
+   計算 6 + 5 * 4 は、 以下の 2 つの同等の方法で(後置表記で)書くことがで
+きます:
 
-     6 5 4 * +      or:
+     6 5 4 * +
+     または:
      5 4 * 6 +
 
-   An important thing that you should notice about this notation is that
-the order of the numbers does not change; if you want to subtract 2 from
-10 you type ‘10 2 -’.
+   この表記法に関して注意すべき重要な点は、 数値の順番は変わらないことで
+す。 10 から 2 を減算する場合は、 ‘10 2 -’ と入力します。
 
-   The reason that Forth uses postfix notation is very simple to
-explain: it makes the implementation extremely simple, and it follows
-naturally from using the stack as a mechanism for passing parameters.
-Another way of thinking about this is to realise that all Forth
-definitions are active; they execute as they are encountered by the text
-interpreter.  The result of this is that the syntax of Forth is
-trivially simple.
+   Forth が後置表記を使用する理由は非常に簡単に説明できます。 これにより
+実装が非常に単純になり、 パラメータを渡すためのメカニズムとしてスタック
+を使用することが自然な流れになります。 これについての別の考え方としては
+、 すべての Forth 定義がアクティブであると認識することです。 これらは、
+テキスト・インタプリタによって検出されると実行されます。 この結果、
+Forth の構文は何の努力も必要とせずシンプルになります。
 
 
 File: gforth.info,  Node: Your first definition,  Next: How does that work?,  Prev: Stacks and Postfix notation,  Up: Introduction
@@ -3675,22 +3681,22 @@ File: gforth.info,  Node: Your first definition,  Next: How does that work?,  Pr
 4.3 Your first Forth definition
 ===============================
 
-Until now, the examples we’ve seen have been trivial; we’ve just been
-using Forth as a bigger-than-pocket calculator.  Also, each calculation
-we’ve shown has been a “one-off” – to repeat it we’d need to type it in
-again(1) In this section we’ll see how to add new words to Forth’s
-vocabulary.
+これまで私たちが見てきた例はこまごまとしたものでした。 私たちは Forth を
+大きめの電卓として使用してきました。 また、 これまでに示した各計算は「1
+回限り」のものです – それを繰り返すには、もう一度入力する必要があります
+(1)。 このセクションでは、 Forth の語彙(vocabulary)に新しいワードを追加
+する方法を説明します。
 
-   The easiest way to create a new word is to use a “colon definition”.
-We’ll define a few and try them out before worrying too much about how
-they work.  Try typing in these examples; be careful to copy the spaces
-accurately:
+   新しいワードを作成する最も簡単な方法は、「コロン定義」を使用すること
+です。 それらがどのように機能するかについて思い悩む前に、 いくつか定義し
+て試してみましょう。 以下の例を入力してみてください。 スペースを正確に反
+映するように注意してください:
 
      : add-two 2 + . ;
      : greet ." Hello and welcome" ;
      : demo 5 add-two ;
 
-Now try them out:
+この例を打ち込んだら、 すぐ試してみましょう:
 
      greet<RET> Hello and welcome  ok
      greet greet<RET> Hello and welcomeHello and welcome  ok
@@ -3698,59 +3704,55 @@ Now try them out:
      demo<RET> 7  ok
      9 greet demo add-two<RET> Hello and welcome7 11  ok
 
-   The first new thing that we’ve introduced here is the pair of words
-‘:’ and ‘;’.  These are used to start and terminate a new definition,
-respectively.  The first word after the ‘:’ is the name for the new
-definition.
+   ここで導入した最初の新しいモノは、 ‘:’ と ‘;’ というワードのペアです
+。 これらは、それぞれ新しい定義を開始および終了するために使用されます。
+‘:’ の後の最初の単語は、 新しい定義の名前です。
 
-   As you can see from the examples, a definition is built up of words
-that have already been defined; Forth makes no distinction between
-definitions that existed when you started the system up, and those that
-you define yourself.
+   例からわかるように、 定義はすでに定義されているワードから構成されます
+。 Forth では、 システムの起動時に存在した定義と、 ユーザーが自分で定義
+した定義とを区別しません。
 
-   The examples also introduce the words ‘.’ (dot), ‘."’ (dot-quote) and
-‘dup’ (dewp).  Dot takes the value from the top of the stack and
-displays it.  It’s like ‘.s’ except that it only displays the top item
-of the stack and it is destructive; after it has executed, the number is
-no longer on the stack.  There is always one space printed after the
-number, and no spaces before it.  Dot-quote defines a string (a sequence
-of characters) that will be printed when the word is executed.  The
-string can contain any printable characters except ‘"’.  A ‘"’ has a
-special function; it is not a Forth word but it acts as a delimiter (the
-way that delimiters work is described in the next section).  Finally,
-‘dup’ duplicates the value at the top of the stack.  Try typing ‘5 dup
-.s’ to see what it does.
+   この例では、 ‘.’ (ドット) や、 ‘."’ (ドット・クォート)や、 ‘dup’ (デ
+ュープ) というワードも紹介しています。 ドットはスタック頂上から数詞を取
+得して表示します。 これは ‘.s’ に似ていますが、 スタック頂上の項目のみを
+表示する点と破壊的である点が異なります。 実行後、スタック上にその数値は
+最早ありません。 数値の前はスペース無しで、 後ろには常に 1 つのスペース
+が表示されます。 ドット・クォートは、 ワードの実行時に出力される文字列
+(string)を定義します。 文字列には、 ‘"’ を除く任意の印刷可能な文字を含め
+ることができます。 ‘"’ には特別な機能があります。 これは Forth ワードで
+はありませんが、 区切り文字として機能します(区切り文字の仕組みについては
+次のセクションで説明します)。 最後に、 ‘dup’ はスタック頂上の値を複製し
+ます。 ‘5 dup .s’ と入力して、 ‘dup’ がやることを確認してください。
 
-   We already know that the text interpreter searches through the
-dictionary to locate names.  If you’ve followed the examples earlier,
-you will already have a definition called ‘add-two’.  Lets try modifying
-it by typing in a new definition:
+   あなたは、 既に、 テキスト・インタプリタが名前を見つけるためにディク
+ショナリを検索することを知っています。 あなたが上記の例の通りにした場合
+、 ‘add-two’ という定義がすでにあるはずです。 それでは、 この定義に対し
+て、 更に新しい定義を入力して変更してみるとしましょう:
 
      : add-two dup . ." + 2 = " 2 + . ;<RET> redefined add-two  ok
 
-   Forth recognised that we were defining a word that already exists,
-and printed a message to warn us of that fact.  Let’s try out the new
-definition:
+   Forth は、私たちがすでに存在するワードを定義しようとしていることを認
+識し、 それを警告するメッセージを出力しました。 さて、 それでは、 新しい
+定義を試してみましょう:
 
      9 add-two<RET> 9 + 2 = 11  ok
 
-All that we’ve actually done here, though, is to create a new
-definition, with a particular name.  The fact that there was already a
-definition with the same name did not make any difference to the way
-that the new definition was created (except that Forth printed a warning
-message).  The old definition of add-two still exists (try ‘demo’ again
-to see that this is true).  Any new definition will use the new
-definition of ‘add-two’, but old definitions continue to use the version
-that already existed at the time that they were ‘compiled’.
+ただし、 ここで実際に行ったことは、 特定の名前を付けて新しい定義を作成す
+ることだけです。 同一の名前の定義がすでに存在するという事実は、 (Forth が
+警告メッセージを出力することを除いて、)新しい定義の作成方法に何の違いも
+ありません。 add-two の古い定義はいまだ存在します(これが正しいかどうかを
+確認するには、 ‘demo’ をもう一度試してください)。 ‘add-two’ の新しい定義
+以降に定義するワードは ‘add-two’ の新しい定義を利用しますが、 ‘demo’ の
+定義は、 古い定義は ‘demo’ をコンパイルする時点で既に存在していた
+‘add-two’ の古い定義のバージョンを引き続き使用します。
 
-   Before you go on to the next section, try defining and redefining
-some words of your own.
+   次のセクションに進む前に、 あなた自身のワードをいくつか定義したり再定
+義したりしてみましょう。
 
    ---------- Footnotes ----------
 
-   (1) That’s not quite true.  If you press the up-arrow key on your
-keyboard you should be able to scroll back to any earlier command, edit
-it and re-enter it.
+   (1) それは完全には真実ではありません。 キーボードの上矢印キーを押すと
+、 以前のコマンドにスクロールして戻り、 編集して再入力できます。
 
 
 File: gforth.info,  Node: How does that work?,  Next: Forth is written in Forth,  Prev: Your first definition,  Up: Introduction
@@ -3758,173 +3760,162 @@ File: gforth.info,  Node: How does that work?,  Next: Forth is written in Forth,
 4.4 How does that work?
 =======================
 
-Now we’re going to take another look at the definition of ‘add-two’ from
-the previous section.  From our knowledge of the way that the text
-interpreter works, we would have expected this result when we tried to
-define ‘add-two’:
+ここで、 前のセクションの ‘add-two’ の定義をもう一度見てみましょう。 テ
+キスト・インタプリタの動作方法に関する知識から、 ‘add-two’ を定義しよう
+としたとき、 私達は以下の結果を予期したかもしれません:
 
      : add-two 2 + . ;<RET>
      *the terminal*:4: Undefined word
      : >>>add-two<<< 2 + . ;
 
-   The reason that this didn’t happen is bound up in the way that ‘:’
-works.  The word ‘:’ does two special things.  The first special thing
-that it does is to prevent the text interpreter from ever seeing the
-characters ‘add-two’.  The text interpreter uses a variable called ‘>IN’
-(pronounced “to-in”) to keep track of where it is in the input line.
-When it encounters the word ‘:’ it behaves in exactly the same way as it
-does for any other word; it looks it up in the name dictionary, finds
-its xt and executes it.  When ‘:’ executes, it looks at the input
-buffer, finds the word ‘add-two’ and advances the value of ‘>IN’ to
-point past it.  It then does some other stuff associated with creating
-the new definition (including creating an entry for ‘add-two’ in the
-name dictionary).  When the execution of ‘:’ completes, control returns
-to the text interpreter, which is oblivious to the fact that it has been
-tricked into ignoring part of the input line.
+   しかし、 これが起こらなかった理由は、 ‘:’ の動作方法に関係しています
+。 ‘:’ というワードは 2 つの特別な働きをします。 1つ目の特別な機能は、 テ
+キスト・インタプリタが ‘add-two’ という文字を認識できないようにすること
+です。 テキスト・インタプリタは、 ‘>IN’ (to-in;トゥーイン)という変数を使
+用して、 入力行のどこを追跡するかを保持し、 ‘:’ というワードに遭遇すると
+、 他のワードの場合とまったく同じように動作します。 名前ディクショナリで
+それを検索し、 その xt を見つけて実行します。 実行される ‘:’ は、 入力バ
+ッファーを調べてワード ‘add-two’ を見つけ、 ‘>IN’ の値をその後ろを指すよ
+うに進めておきます。 次に、 新しい定義の作成に関連するその他の処理を実行
+します(名前ディクショナリに ‘add-two’ のエントリを作成する等)。 ‘:’ の実
+行が完了すると、 制御はテキスト・インタプリタに戻ります。 テキスト・イン
+タプリタは、 このトリックにより入力行の一部をスキップしていることに気づ
+きません。
 
-   Words like ‘:’ – words that advance the value of ‘>IN’ and so prevent
-the text interpreter from acting on the whole of the input line – are
-called “parsing words”.
+   ‘:’ のようなワード(‘>IN’ の値を進めて、 テキスト・インタプリタが入力
+行全体に作用するのを妨げるワード)は、 「構文解析ワード」(parsing words)と
+呼ばれます。
 
-   The second special thing that ‘:’ does is change the value of a
-variable called ‘state’, which affects the way that the text interpreter
-behaves.  When Gforth starts up, ‘state’ has the value 0, and the text
-interpreter is said to be “interpreting”.  During a colon definition
-(started with ‘:’), ‘state’ is set to -1 and the text interpreter is
-said to be “compiling”.
+   ‘:’ が行う 2 つ目の特別な処理は、 ‘state’ と呼ばれる変数の値を変更す
+ることです。 これは、 テキスト・インタプリタの振る舞いに影響します。
+Gforth が起動するとき、 ‘state’ の値は 0 であり、 テキスト・インタプリタ
+はインタプリタ中(interpreting)であると言われます。 (‘:’ で始まる)コロン
+定義中 、 ‘state’ は -1 に設定され、テキスト・インタプリタはコンパイル中
+(compiling)と言われます。
 
-   In this example, the text interpreter is compiling when it processes
-the string “‘2 + . ;’”.  It still breaks the string down into character
-sequences in the same way.  However, instead of pushing the number ‘2’
-onto the stack, it lays down (“compiles”) some magic into the definition
-of ‘add-two’ that will make the number ‘2’ get pushed onto the stack
-when ‘add-two’ is “executed”.  Similarly, the behaviours of ‘+’ and ‘.’
-are also compiled into the definition.
+   この例では、 テキスト・インタプリタは文字列 “‘2 + . ;’”。引き続き同じ
+方法で文字列を文字シーケンスに分割します。ただし、数値 ‘2’ をスタックに
+プッシュする代わりに、 数値 ‘2’ を取得する魔法を ‘add-two’ の定義に組み
+込み(コンパイル)、 ‘add-two’ が「実行」されたときスタックにプッシュされ
+ます。 同様に、 ‘+’ と ‘.’ の振る舞いも定義にコンパイルされます。
 
-   Certain kinds of words do not get compiled.  These so-called
-“immediate words” get executed (performed now) regardless of whether the
-text interpreter is interpreting or compiling.  The word ‘;’ is an
-immediate word.  Rather than being compiled into the definition, it
-executes.  Its effect is to terminate the current definition, which
-includes changing the value of ‘state’ back to 0.
+   特定の種類のワードはコンパイルされません。 これらのいわゆる「即実行ワ
+ード」(immediate word)は、 テキスト・インタプリタがインタプリタ・モード
+であるかコンパイル・モードかに関係なく、 実行されます(今、 直ちに実行さ
+れます)。 ‘;’ というワードは即実行ワードです。 定義にコンパイルされるの
+ではなく、 実行されます。 その効果は、 ‘state’ の値を 0 に戻すことを含む
+、 現在の定義を終了することです。
 
-   When you execute ‘add-two’, it has a “run-time effect” that is
-exactly the same as if you had typed ‘2 + . <RET>’ outside of a
-definition.
+   あなたが ‘add-two’ を実行すると、 その定義の外で ‘2 + . <RET>’ と入力
+した場合とまったく同一の「実行時効果」(run-time effect) が生じます。
 
-   In Forth, every word or number can be described in terms of two
-properties:
+   Forth では、 すべてのワードまたは数値は以下の 2 つの性質を持ちます:
 
-   • Its “interpretation semantics” describe how it will behave when the
-     text interpreter encounters it in “interpret” state.  The
-     interpretation semantics of a word are represented by its
-     “execution token” (*note Execution token::).
-   • Its “compilation semantics” describe how it will behave when the
-     text interpreter encounters it in “compile” state.  The compilation
-     semantics of a word are represented by its “compilation token”
-     (*note Compilation token::).
+   • その 実行時コード(interpretation semantics)は、 テキスト・インタプ
+     リタが実行時(interpret 状態)どのように動作するかを記述します。 ワー
+     ドの実行時コードは、 その「実行トークン」(execution token)(*note
+     Execution token::)によって表されます。
+   • その コンパイル時コード(compilation semantics)は、 テキスト・インタ
+     プリタがコンパイル時(compile状態)に、 どのように動作するかを記述し
+     ます。 ワードのコンパイル時コードは、 その「コンパイル・トークン」
+     (*note Compilation token::)によって表されます。
 
-Numbers are always treated in a fixed way:
+数値は常に決まった方法で処理されます:
 
-   • When the number is “interpreted”, its behaviour is to push the
-     number onto the stack.
-   • When the number is “compiled”, a piece of code is appended to the
-     current definition that pushes the number when it runs.  (In other
-     words, the compilation semantics of a number are to postpone its
-     interpretation semantics until the run-time of the definition that
-     it is being compiled into.)
+   • その数値が解釈(interpret)される場合、 その振る舞いは、 その数値をス
+     タックにプッシュすることです。
+   • その数値がコンパイルされる場合、 実行時にその数値をプッシュするコー
+     ドが現在の定義に追加されます。 (言い換えれば、 数値のコンパイル時コ
+     ードは、 コンパイルされる定義の実行時まで、 その数値の実行時コード
+     の実行を延期します。)
 
-   Words don’t always behave in such a regular way, but most have
-default semantics which means that they behave like this:
+   ワードは常にこのように通常の振る舞いをするとは限りませんが、 ほとんど
+のワードには実行時とコンパイル時のデフォルトの振る舞い(default
+semantics)があり、 以下のように振る舞うことを意味します。
 
-   • The “interpretation semantics” of the word are to do something
-     useful.
-   • The “compilation semantics” of the word are to append its
-     “interpretation semantics” to the current definition (so that its
-     run-time behaviour is to do something useful).
+   • ワードの実行時コード(compilation semantics)は、 何かしら役に立つこ
+     とを行うことです。
+   • ワードのコンパイル時コード(compilation semantics)は、 それの実行時
+     コード(interpretation semantics)を現在の定義に追加します(よって、 そ
+     れは実行時に何かしら役に立つことを行います)。
 
-   The actual behaviour of any particular word can be controlled by
-using the words ‘immediate’ and ‘compile-only’ when the word is defined.
-These words set flags in the name dictionary entry of the most recently
-defined word, and these flags are retrieved by the text interpreter when
-it finds the word in the name dictionary.
+   特定のワードの実際の、 実行時とコンパイル時の振る舞いは、 ワードの定
+義時に ‘immediate’ や ‘compile-only’ というワードを使用することで制御で
+きます。 これらのワードは、 最後に定義されたワードの名前ディクショナリ・
+エントリにフラグを設定します。 これらのフラグは、 名前ディクショナリでワ
+ードが見つかったときにテキスト・インタプリタによって取得されます。
 
-   A word that is marked as “immediate” has compilation semantics that
-are identical to its interpretation semantics.  In other words, it
-behaves like this:
+   “immediate” としてマークされたワードは、 その実行時コード
+(interpretation semantics)と同じコンパイル時コード(compilation
+semantics)を持ちます。 つまり、 以下のように振る舞います:
 
-   • The “interpretation semantics” of the word are to do something
-     useful.
-   • The “compilation semantics” of the word are to do something useful
-     (and actually the same thing); i.e., it is executed during
-     compilation.
+   • ワードの実行時コード(compilation semantics)は、 何かしら役に立つこ
+     とを行うことです。
+   • このワードのコンパイル時コード(compilation semantics)は、 何かしら
+     役に立つことを行うことです(実際には実行時コードと同一のことを行うこ
+     とです)。 つまり、 コンパイル時に実行(実行時コードと同一のコードを
+     実行)を行います。
 
-   Marking a word as “compile-only” means that the text interpreter
-produces a warning when encountering this word in interpretation state;
-ticking the word (with ‘'’ or ‘[']’ also produces a warning.
+   ワードを “compile-only” としてマークすると、 解釈状態(interpretation
+state)でこのワードを検出したときにテキスト・インタプリタが警告を生成する
+ことを意味します。 (‘'’ または ‘[']’ を使用して) ワードをティックすると
+、 警告が生成されます。
 
-   It is never necessary to use ‘compile-only’ (and it is not even part
-of Standard Forth, though it is provided by many implementations) but it
-is good etiquette to apply it to a word that will not behave correctly
-(and might have unexpected side-effects) in interpret state.  For
-example, it is only legal to use the conditional word ‘IF’ within a
-definition.  If you forget this and try to use it elsewhere, the fact
-that (in Gforth) it is marked as ‘compile-only’ allows the text
-interpreter to generate a helpful warning.
+   ‘compile-only’ を使用する必要はありません(多くの実装によって提供され
+てはいますが、 標準 Forth の一部でもありません)が、 解釈状態(interpret
+state)で正しく振る舞わないワードに ‘compile-only’ を適用するのは良いエチ
+ケットです(そして予期しない副作用が発生する可能性があります)。 たとえば
+、 定義内で条件ワード ‘IF’ を使用することのみが正当です。 これを忘れて別
+の場所で使用しようとすると、 (Gforth では) ‘compile-only’ としてマークさ
+れているため、 テキスト・インタプリタが有用な警告を生成できます。
 
-   This example shows the difference between an immediate and a
-non-immediate word:
+   以下の例は、 即実行ワードと非即実行ワードの違いを示しています:
 
      : show-state state @ . ;
      : show-state-now show-state ; immediate
      : word1 show-state ;
      : word2 show-state-now ;
 
-   The word ‘immediate’ after the definition of ‘show-state-now’ makes
-that word an immediate word.  These definitions introduce a new word:
-‘@’ (pronounced “fetch”).  This word fetches the value of a variable,
-and leaves it on the stack.  Therefore, the behaviour of ‘show-state’ is
-to print a number that represents the current value of ‘state’.
+   ‘show-state-now’ の定義の後にあるワード ‘immediate’ は、そのワードを
+即実行ワードにします。 これらの定義では、 ‘@’(「フェッチ」と発音します)
+という新しいワードが導入されています。 このワードは変数の値を取り出し(フ
+ェッチし)、 それをスタックに残します。 したがって、 ‘show-state’ の振る
+舞いは、 ‘state’ の現在の値を表す数値を出力することです。
 
-   When you execute ‘word1’, it prints the number 0, indicating that the
-system is interpreting.  When the text interpreter compiled the
-definition of ‘word1’, it encountered ‘show-state’ whose compilation
-semantics are to append its interpretation semantics to the current
-definition.  When you execute ‘word1’, it performs the interpretation
-semantics of ‘show-state’.  At the time that ‘word1’ (and therefore
-‘show-state’) is executed, the system is interpreting.
+   ‘word1’ を実行すると、 システムが解釈中(interpreting)であることを示す
+数値 0 が出力されます。 テキスト・インタプリタが ‘word1’ の定義をコンパ
+イルしたときに、 コンパイル時コードが現在の定義に実行時コードを追加する
+‘show-state’ に遭遇しました。 ‘word1’ を実行すると、 ‘show-state’ の実行
+時コードが実行されます。 ‘word1’ (つまり ‘show-state’) が実行される時点
+で、システムは解釈中(interpreting)です。
 
-   When you pressed <RET> after entering the definition of ‘word2’, you
-should have seen the number -1 printed, followed by “‘ ok’”.  When the
-text interpreter compiled the definition of ‘word2’, it encountered
-‘show-state-now’, an immediate word, whose compilation semantics are
-therefore to perform its interpretation semantics.  It is executed
-straight away (even before the text interpreter has moved on to process
-another group of characters; the ‘;’ in this example).  The effect of
-executing it is to display the value of ‘state’ at the time that the
-definition of ‘word2’ is being defined.  Printing -1 demonstrates that
-the system is compiling at this time.  If you execute ‘word2’ it does
-nothing at all.
+   ‘word2’ の定義を入力した後に <RET> を押すと、 数値 -1 が出力され、 そ
+の後に ‘ ok’ が表示されるはずです。 テキスト・インタプリタが ‘word2’ の
+定義をコンパイルすると、 即実行ワードである ‘show-state-now’ が検出され
+たため、 そのコンパイル時コードは実行時コードを実行します。 これは直ちに
+に実行されます(テキスト・インタプリタが次の文字グループ(この例では ‘;’)の
+処理に移る前に)。 これを実行すると、 ‘word2’ の定義途中の ‘state’ の値が
+表示されます。 -1 を出力するので、 システムがその時点でコンパイル時であ
+ることがわかります。 もし あなたが ‘word2’ を「実行」しても何も行いませ
+ん。
 
-   Before leaving the subject of immediate words, consider the behaviour
-of ‘."’ in the definition of ‘greet’, in the previous section.  This
-word is both a parsing word and an immediate word.  Notice that there is
-a space between ‘."’ and the start of the text ‘Hello and welcome’, but
-that there is no space between the last letter of ‘welcome’ and the ‘"’
-character.  The reason for this is that ‘."’ is a Forth word; it must
-have a space after it so that the text interpreter can identify it.  The
-‘"’ is not a Forth word; it is a “delimiter”.  The examples earlier show
-that, when the string is displayed, there is neither a space before the
-‘H’ nor after the ‘e’.  Since ‘."’ is an immediate word, it executes at
-the time that ‘greet’ is defined.  When it executes, its behaviour is to
-search forward in the input line looking for the delimiter.  When it
-finds the delimiter, it updates ‘>IN’ to point past the delimiter.  It
-also compiles some magic code into the definition of ‘greet’; the xt of
-a run-time routine that prints a text string.  It compiles the string
-‘Hello and welcome’ into memory so that it is available to be printed
-later.  When the text interpreter gains control, the next word it finds
-in the input stream is ‘;’ and so it terminates the definition of
-‘greet’.
+   即実行ワードの話題を離れる前に、 前のセクションの ‘greet’ の定義にお
+ける ‘."’ の振る舞いについて検討してみましょう。 このワードは構文解析ワ
+ード(parsing word)でもあり、 かつ、 即実行ワードでもあります。 ‘."’ とそ
+のテキストの先頭 ‘Hello and welcome’ の間にはスペースがありますが、
+‘welcome’ の最後の文字と ‘"’ 文字の間にはスペースがありません。 これは、
+‘."’ が Forth ワードであるということです。 テキスト・インタプリタがその
+Forth ワード ‘."’ を識別できるように、 ‘."’ の後ろにスペースが必要です。
+‘"’ は Forth ワードではなく、 区切り文字(delimiter)です。 先の例では、 文
+字列が表示されるときに、 ‘H’ の前にも ‘e’ の後ろにもスペースがないことを
+示しています。 ‘."’ は即実行ワードなので、 ‘greet’ の定義中に実行されま
+す。 実行されると、 入力行内を前方に走査して区切り文字を探します。 区切
+り文字が見つかると、 区切り文字の後ろを指すように ‘>IN’ を更新します。 ま
+た、 いくつかのマジック・コード、 つまりテキスト文字列を出力する実行時コ
+ード xtを ‘greet’ の定義にコンパイルします。 文字列 ‘Hello and welcome’
+をメモリにコンパイルして、 後で出力できるようにします。 その後、 テキス
+ト・インタプリタが制御を取得すると、 入力ストリーム内で次に検出されるワ
+ードは ‘;’ であるため、 ‘greet’ の定義を終了します。
 
 
 File: gforth.info,  Node: Forth is written in Forth,  Next: Review - elements of a Forth system,  Prev: How does that work?,  Up: Introduction
@@ -4049,9 +4040,9 @@ File: gforth.info,  Node: Exercises,  Prev: Where to go next,  Up: Introduction
 4.8 Exercises
 =============
 
-TODO: provide a set of programming excercises linked into the stuff done
-already and into other sections of the manual.  Provide solutions to all
-the exercises in a .fs file in the distribution.
+TODO: すでに完了した内容やマニュアルの他のセクションにリンクされた一連の
+プログラミング演習を提供したい。 すべての演習に対する回答を、 ディストリ
+ビューション内の .fs ファイルで提供するようにしたいです。
 
 
 File: gforth.info,  Node: Literals in source code,  Next: Words,  Prev: Introduction,  Up: Top
@@ -6942,236 +6933,4 @@ these different exit-codes, as follows:
    This is relatively hard to comprehend, because the exit-codes are
 relatively far from the exit conditions (it does not help that we are
 not used to such control structures, either).
-
-
-File: gforth.info,  Node: General control structures with CASE,  Next: Arbitrary control structures,  Prev: BEGIN loops with multiple exits,  Up: Control Structures
-
-6.9.5 General control structures with ‘case’
---------------------------------------------
-
-Gforth provides an extended ‘case’ that solves the problems of the
-multi-exit loops discussed above, and offers additional options.  You
-can find a portable implementation of this extended ‘case’ in
-‘compat/caseext.fs’.
-
-   There are three additional words in the extension.  The first is
-‘?of’ which allows general tests (rather than just testing for equality)
-in a ‘case’; e.g.,
-
-     : sgn ( n -- -1|0|1 )
-       ( n ) case
-         dup 0 < ?of drop -1 endof
-         dup 0 > ?of drop 1  endof
-         \ otherwise leave the 0 on the stack
-       0 endcase ;
-
-   Note that ‘endcase’ drops a value, which works fine much of the time
-with ‘of’, but usually not with ‘?of’, so we leave a 0 on the stack for
-‘endcase’ to drop.  The n that is passed into ‘sgn’ is also 0 if neither
-‘?of’ triggers, and that is then passed out.
-
-   The second additional word is ‘next-case’, which allows turning
-‘case’ into a loop.  Our triple-exit loop becomes:
-
-     case
-       condition1 ?of exit-code1 endof
-       condition2 ?of exit-code2 endof
-       condition3 ?of exit-code3 endof
-       ...
-     next-case
-     common code afterwards
-
-   As you can see, this solves both problems of the variants discussed
-above (*note BEGIN loops with multiple exits::).  Note that ‘next-case’
-does not drop a value, unlike ‘endcase’.(1)
-
-   The last additional word is ‘contof’, which is used instead of
-‘endof’ and starts the next iteration instead of leaving the loop.  This
-can be used in ways similar to Dijkstra’s guarded command do, e.g.:
-
-     : gcd ( n1 n2 -- n )
-         case
-             2dup > ?of tuck - contof
-             2dup < ?of over - contof
-         endcase ;
-
-   Here the two ‘?of’s have different ways of continuing the loop; when
-neither ‘?of’ triggers, the two numbers are equal and are the gcd.
-‘Endcase’ drops one of them, leaving the other as n.
-
-   You can also combine these words.  Here’s an example that uses each
-of the ‘case’ words once, except ‘endcase’:
-
-     : collatz ( u -- )
-         \ print the 3n+1 sequence starting at u until we reach 1
-         case
-             dup .
-             1 of endof
-             dup 1 and ?of 3 * 1+ contof
-             2/
-         next-case ;
-
-   This example keeps the current value of the sequence on the stack.
-If it is 1, the ‘of’ triggers, drops the value, and leaves the ‘case’
-structure.  For odd numbers, the ‘?of’ triggers, computes 3n+1, and
-starts the next iteration with ‘contof’.  Otherwise, if the number is
-even, it is divided by 2, and the loop is restarted with ‘next-case’.
-
-   ---------- Footnotes ----------
-
-   (1) ‘Next-case’ has a ‘-’, unlike the other ‘case’ words, because VFX
-Forth contains a ‘nextcase’ that drops a value.
-
-
-File: gforth.info,  Node: Arbitrary control structures,  Next: Calls and returns,  Prev: General control structures with CASE,  Up: Control Structures
-
-6.9.6 Arbitrary control structures
-----------------------------------
-
-Standard Forth permits and supports using control structures in a
-non-nested way.  Information about incomplete control structures is
-stored on the control-flow stack.  This stack may be implemented on the
-Forth data stack, and this is what we have done in Gforth.
-
-   An orig entry represents an unresolved forward branch, a dest entry
-represents a backward branch target.  A few words are the basis for
-building any control structure possible (except control structures that
-need storage, like calls, coroutines, and backtracking).
-
-‘IF’ ( compilation – orig ; run-time f –  ) core “IF”
-   At run-time, if f=0, execution continues after the ‘THEN’ (or ‘ELSE’)
-that consumes the orig, otherwise right after the ‘IF’ (*note
-Selection::).
-
-‘AHEAD’ ( compilation – orig ; run-time –  ) tools-ext “AHEAD”
-   At run-time, execution continues after the ‘THEN’ that consumes the
-orig.
-
-‘THEN’ ( compilation orig – ; run-time –  ) core “THEN”
-   The ‘IF’, ‘AHEAD’, ‘ELSE’ or ‘WHILE’ that pushed orig jumps right
-after the ‘THEN’ (*note Selection::).
-
-‘BEGIN’ ( compilation – dest ; run-time –  ) core “BEGIN”
-   The ‘UNTIL’, ‘AGAIN’ or ‘REPEAT’ that consumes the dest jumps right
-behind the ‘BEGIN’ (*note Simple Loops::).
-
-‘UNTIL’ ( compilation dest – ; run-time f –  ) core “UNTIL”
-   At run-time, if f=0, execution continues after the ‘BEGIN’ that
-produced dest, otherwise right after the ‘UNTIL’ (*note Simple Loops::).
-
-‘AGAIN’ ( compilation dest – ; run-time –  ) core-ext “AGAIN”
-   At run-time, execution continues after the ‘BEGIN’ that produced the
-dest (*note Simple Loops::).
-
-‘CS-PICK’ ( orig0/dest0 orig1/dest1 ... origu/destu u – ... orig0/dest0  ) tools-ext “c-s-pick”
-
-‘CS-ROLL’ ( destu/origu .. dest0/orig0 u – .. dest0/orig0 destu/origu  ) tools-ext “c-s-roll”
-
-‘CS-DROP’ ( dest –  ) gforth-1.0 “CS-DROP”
-
-   The Standard words ‘CS-PICK’ and ‘CS-ROLL’ allow you to manipulate
-the control-flow stack in a portable way.  Without them, you would need
-to know how many stack items are occupied by a control-flow entry (many
-systems use one cell.  In Gforth they currently take three, but this may
-change in the future).
-
-   ‘CS-PICK’ can only pick a dest and ‘CS-DROP’ can only drop a dest,
-because an orig must be resolved exactly once.
-
-   Some standard control structure words are built from these words:
-
-‘ELSE’ ( compilation orig1 – orig2 ; run-time –  ) core “ELSE”
-   At run-time, execution continues after the ‘THEN’ that consumes the
-orig; the ‘IF’, ‘AHEAD’, ‘ELSE’ or ‘WHILE’ that pushed orig1 jumps right
-after the ‘ELSE’.  (*note Selection::).
-
-‘WHILE’ ( compilation dest – orig dest ; run-time f –  ) core “WHILE”
-   At run-time, if f=0, execution continues after the ‘REPEAT’ (or
-‘THEN’ or ‘ELSE’) that consumes the orig, otherwise right after the
-‘WHILE’ (*note Simple Loops::).
-
-‘REPEAT’ ( compilation orig dest – ; run-time –  ) core “REPEAT”
-   At run-time, execution continues after the ‘BEGIN’ that produced the
-dest; the ‘WHILE’, ‘IF’, ‘AHEAD’ or ‘ELSE’ that pushed orig jumps right
-after the ‘REPEAT’.  (*note Simple Loops::).
-
-Gforth adds some more control-structure words:
-
-‘ENDIF’ ( compilation orig – ; run-time –  ) gforth-0.2 “ENDIF”
-   Same as ‘THEN’.
-
-‘?dup-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-if”
-   This is the preferred alternative to the idiom "‘?DUP IF’", since it
-can be better handled by tools like stack checkers.  Besides, it’s
-faster.
-
-‘?DUP-0=-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-zero-equals-if”
-
-Another group of control structure words are:
-
-‘case’ ( compilation  – case-sys ; run-time  –  ) core-ext “case”
-   Start a ‘case’ structure.
-
-‘endcase’ ( compilation case-sys – ; run-time x –  ) core-ext “end-case”
-   Finish the ‘case’ structure; drop x, and continue behind the
-‘endcase’.  Dropping x is useful in the original ‘case’ construct (with
-only ‘of’s), but you may have to supply an x in other cases (especially
-when using ‘?of’).
-
-‘next-case’ ( compilation case-sys – ; run-time –  ) gforth-1.0 “next-case”
-   Restart the ‘case’ loop by jumping to the matching ‘case’.  Note that
-‘next-case’ does not drop a cell, unlike ‘endcase’.
-
-‘of’ ( compilation  – of-sys ; run-time x1 x2 – |x1  ) core-ext “of”
-   If x1=x2, continue (dropping both); otherwise, leave x1 on the stack
-and jump behind ‘endof’ or ‘contof’.
-
-‘?of’ ( compilation  – of-sys ; run-time  f –  ) gforth-1.0 “question-of”
-   If f is true, continue; otherwise, jump behind ‘endof’ or ‘contof’.
-
-‘endof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) core-ext “end-of”
-   Exit the enclosing ‘case’ structure by jumping behind
-‘endcase’/‘next-case’.
-
-‘contof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) gforth-1.0 “cont-of”
-   Restart the ‘case’ loop by jumping to the enclosing ‘case’.
-
-   Internally, of-sys is an ‘orig’; and case-sys is a cell and some
-stack-depth information, 0 or more ‘orig’s, and a ‘dest’.
-
-6.9.6.1 Programming Style
-.........................
-
-In order to ensure readability we recommend that you do not create
-arbitrary control structures directly, but define new control structure
-words for the control structure you want and use these words in your
-program.  For example, instead of writing:
-
-     BEGIN
-       ...
-     IF [ 1 CS-ROLL ]
-       ...
-     AGAIN THEN
-
-we recommend defining control structure words, e.g.,
-
-     : WHILE ( DEST -- ORIG DEST )
-      POSTPONE IF
-      1 CS-ROLL ; immediate
-
-     : REPEAT ( orig dest -- )
-      POSTPONE AGAIN
-      POSTPONE THEN ; immediate
-
-and then using these to create the control structure:
-
-     BEGIN
-       ...
-     WHILE
-       ...
-     REPEAT
-
-   That’s much easier to read, isn’t it?  Of course, ‘REPEAT’ and
-‘WHILE’ are predefined, so in this example it would not be necessary to
-define them.
 
