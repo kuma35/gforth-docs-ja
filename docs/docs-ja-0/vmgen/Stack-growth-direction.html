@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Stack growth direction (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Stack growth direction (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Stack growth direction (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Simple-instructions.html" rel="up" title="Simple instructions">
+<link href="C-Code-restrictions.html" rel="prev" title="C Code restrictions">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Stack-growth-direction">
+<div class="header">
+<p>
+Previous: <a href="C-Code-restrictions.html" accesskey="p" rel="prev">C Code restrictions</a>, Up: <a href="Simple-instructions.html" accesskey="u" rel="up">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Stack-growth-direction-1"></span><h4 class="subsection">6.2.4 Stack growth direction</h4>
+<span id="index-stack-growth-direction"></span>
+
+<span id="index-stack_002daccess_002dtransform"></span>
+<p>By default, the stacks grow towards lower addresses.  You can change this
+for a stack by setting the <code>stack-access-transform</code> field of the stack
+to an xt <code>( itemnum -- index )</code> that performs the appropriate index
+transformation.
+</p>
+<p>E.g., if you want to let <code>data-stack</code> grow towards higher addresses,
+with the stack pointer always pointing just beyond the top-of-stack, use
+this right after defining <code>data-stack</code>:
+</p>
+<div class="example">
+<pre class="example">\E : sp-access-transform ( itemnum -- index ) negate 1- ;
+\E ' sp-access-transform ' data-stack &gt;body stack-access-transform !
+</pre></div>
+
+<p>This means that <code>sp-access-transform</code> will be used to generate indexes
+for accessing <code>data-stack</code>.  The definition of
+<code>sp-access-transform</code> above transforms n into -n-1, e.g, 1 into -2.
+This will access the 0th data-stack element (top-of-stack) at sp[-1], the
+1st at sp[-2], etc., which is the typical way upward-growing stacks are
+used.  If you need a different transform and do not know enough Forth to
+program it, let me know.
+</p>
+</div>
+
+
+
+</body>
+</html>

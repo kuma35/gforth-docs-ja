@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Eval escapes (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Eval escapes (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Eval escapes (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Input-File-Grammar.html" rel="up" title="Input File Grammar">
+<link href="Input-File-Grammar.html" rel="prev" title="Input File Grammar">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Eval-escapes">
+<div class="header">
+<p>
+Previous: <a href="Input-File-Grammar.html" accesskey="p" rel="prev">Input File Grammar</a>, Up: <a href="Input-File-Grammar.html" accesskey="u" rel="up">Input File Grammar</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Eval-escapes-1"></span><h4 class="subsection">6.1.1 Eval escapes</h4>
+<span id="index-escape-to-Forth"></span>
+<span id="index-eval-escape"></span>
+<span id="index-_005cE"></span>
+
+<p>The text in <code>eval-escape</code> is Forth code that is evaluated when Vmgen
+reads the line.  You will normally use this feature to define stacks and
+types.
+</p>
+<p>If you do not know (and do not want to learn) Forth, you can build the text
+according to the following grammar; these rules are normally all Forth you
+need for using Vmgen:
+</p>
+<div class="example">
+<pre class="example">text: stack-decl|type-prefix-decl|stack-prefix-decl|set-flag
+
+stack-decl: 'stack ' ident ident ident
+type-prefix-decl: 
+    's&quot; ' string '&quot; ' ('single'|'double') ident 'type-prefix' ident
+stack-prefix-decl:  ident 'stack-prefix' string
+set-flag: ('store-optimization'|'include-skipped-insts') ('on'|'off')
+</pre></div>
+
+<p>Note that the syntax of this code is not checked thoroughly (there are many
+other Forth program fragments that could be written in an eval-escape).
+</p>
+<p>A stack prefix can contain letters, digits, or &lsquo;<samp>:</samp>&rsquo;, and may start with
+an &lsquo;<samp>#</samp>&rsquo;; e.g., in Gforth the return stack has the stack prefix
+&lsquo;<samp>R:</samp>&rsquo;.  This restriction is not checked during the stack prefix
+definition, but it is enforced by the parsing rules for stack items later.
+</p>
+<p>If you know Forth, the stack effects of the non-standard words involved are:
+<span id="index-stack"></span>
+<span id="index-type_002dprefix"></span>
+<span id="index-single"></span>
+<span id="index-double"></span>
+<span id="index-stack_002dprefix"></span>
+<span id="index-store_002doptimization"></span>
+</p><div class="example">
+<pre class="example">stack                 ( &quot;name&quot; &quot;pointer&quot; &quot;type&quot; -- )
+                      ( name execution: -- stack )
+type-prefix           ( addr u item-size stack &quot;prefix&quot; -- )
+single                ( -- item-size )
+double                ( -- item-size )
+stack-prefix          ( stack &quot;prefix&quot; -- )
+store-optimization    ( -- addr )
+include-skipped-insts ( -- addr )
+</pre></div>
+
+<p>An <var>item-size</var> takes three cells on the stack.
+</p>
+</div>
+
+
+
+</body>
+</html>

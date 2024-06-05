@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Store Optimization (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Store Optimization (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Store Optimization (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Input-File-Format.html" rel="up" title="Input File Format">
+<link href="Register-Machines.html" rel="next" title="Register Machines">
+<link href="Superinstructions.html" rel="prev" title="Superinstructions">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Store-Optimization">
+<div class="header">
+<p>
+Next: <a href="Register-Machines.html" accesskey="n" rel="next">Register Machines</a>, Previous: <a href="Superinstructions.html" accesskey="p" rel="prev">Superinstructions</a>, Up: <a href="Input-File-Format.html" accesskey="u" rel="up">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Store-Optimization-1"></span><h3 class="section">6.4 Store Optimization</h3>
+<span id="index-store-optimization"></span>
+<span id="index-optimization_002c-stack-stores"></span>
+<span id="index-stack-stores_002c-optimization"></span>
+<span id="index-eliminating-stack-stores"></span>
+
+<p>This minor optimization (0.6%&ndash;0.8% reduction in executed instructions for
+Gforth) puts additional requirements on the instruction descriptions and is
+therefore disabled by default.
+</p>
+<p>What does it do? Consider an instruction like
+</p>
+<div class="example">
+<pre class="example">dup ( n -- n n )
+</pre></div>
+
+<p>For simplicity, also assume that we are not caching the top-of-stack in a
+register.  Now, the C code for dup first loads <code>n</code> from the stack, and
+then stores it twice to the stack, one time to the address where it came
+from; that time is unnecessary, but gcc does not optimize it away, so vmgen
+can do it instead (if you turn on the store optimization).
+</p>
+<p>Vmgen uses the stack item&rsquo;s name to determine if the stack item contains the
+same value as it did at the start.  Therefore, if you use the store
+optimization, you have to ensure that stack items that have the same name on
+input and output also have the same value, and are not changed in the C code
+you supply.  I.e., the following code could fail if you turn on the store
+optimization:
+</p>
+<div class="example">
+<pre class="example">add1 ( n -- n )
+n++;
+</pre></div>
+
+<p>Instead, you have to use different names, i.e.:
+</p>
+<div class="example">
+<pre class="example">add1 ( n1 -- n2 )
+n2=n1+1;
+</pre></div>
+
+<p>Similarly, the store optimization assumes that the stack pointer is only
+changed by Vmgen-erated code.  If your C code changes the stack pointer, use
+different names in input and output stack items to avoid a (probably wrong)
+store optimization, or turn the store optimization off for this VM
+instruction.
+</p>
+<p>To turn on the store optimization, write
+</p>
+<div class="example">
+<pre class="example">\E store-optimization on
+</pre></div>
+
+<p>at the start of the file.  You can turn this optimization on or off between
+any two VM instruction descriptions.  For turning it off again, you can use
+</p>
+<div class="example">
+<pre class="example">\E store-optimization off
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Register-Machines.html">Register Machines</a>, Previous: <a href="Superinstructions.html">Superinstructions</a>, Up: <a href="Input-File-Format.html">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

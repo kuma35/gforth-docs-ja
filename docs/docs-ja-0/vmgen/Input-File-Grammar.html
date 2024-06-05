@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Input File Grammar (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Input File Grammar (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Input File Grammar (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Input-File-Format.html" rel="up" title="Input File Format">
+<link href="Simple-instructions.html" rel="next" title="Simple instructions">
+<link href="Input-File-Format.html" rel="prev" title="Input File Format">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Input-File-Grammar">
+<div class="header">
+<p>
+Next: <a href="Simple-instructions.html" accesskey="n" rel="next">Simple instructions</a>, Previous: <a href="Input-File-Format.html" accesskey="p" rel="prev">Input File Format</a>, Up: <a href="Input-File-Format.html" accesskey="u" rel="up">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Input-File-Grammar-1"></span><h3 class="section">6.1 Input File Grammar</h3>
+<span id="index-grammar_002c-input-file"></span>
+<span id="index-input-file-grammar"></span>
+
+<p>The grammar is in EBNF format, with <code><var>a</var>|<var>b</var></code> meaning &ldquo;<var>a</var>
+or <var>b</var>&rdquo;, <code>{<var>c</var>}</code> meaning 0 or more repetitions of <var>c</var>
+and <code>[<var>d</var>]</code> meaning 0 or 1 repetitions of <var>d</var>.
+</p>
+<span id="index-free_002dformat_002c-not"></span>
+<span id="index-newlines_002c-significance-in-syntax"></span>
+<p>Vmgen input is not free-format, so you have to take care where you put
+newlines (and, in a few cases, white space).
+</p>
+<div class="example">
+<pre class="example">description: {instruction|comment|eval-escape|c-escape}
+
+instruction: simple-inst|superinst
+
+simple-inst: ident '(' stack-effect ')' newline c-code newline newline
+
+stack-effect: {ident} '--' {ident}
+
+super-inst: ident '=' ident {ident}  
+
+comment:      '\ '  text newline
+
+eval-escape:  '\E ' text newline
+
+c-escape:     '\C ' text newline
+</pre></div>
+
+<p>Note that the <code>\</code>s in this grammar are meant literally, not as C-style
+encodings for non-printable characters.
+</p>
+<p>There are two ways to delimit the C code in <code>simple-inst</code>:
+</p>
+<ul>
+<li> If you start it with a &lsquo;<samp>{</samp>&rsquo; at the start of a line (i.e., not even
+white space before it), you have to end it with a &lsquo;<samp>}</samp>&rsquo; at the start of
+a line (followed by a newline).  In this case you may have empty lines
+within the C code (typically used between variable definitions and
+statements).
+
+</li><li> You do not start it with &lsquo;<samp>{</samp>&rsquo;.  Then the C code ends at the first empty
+line, so you cannot have empty lines within this code.
+
+</li></ul>
+
+<p>The text in <code>comment</code>, <code>eval-escape</code> and <code>c-escape</code> must not
+contain a newline.  <code>Ident</code> must conform to the usual conventions of C
+identifiers (otherwise the C compiler would choke on the Vmgen output),
+except that idents in <code>stack-effect</code> may have a stack prefix (for stack
+prefix syntax, see <a href="Eval-escapes.html">Eval escapes</a>).
+</p>
+<span id="index-C-escape"></span>
+<span id="index-_005cC"></span>
+<span id="index-conditional-compilation-of-Vmgen-output"></span>
+<p>The <code>c-escape</code> passes the text through to each output file (without the
+&lsquo;<samp>\C</samp>&rsquo;).  This is useful mainly for conditional compilation (i.e., you
+write &lsquo;<samp>\C #if ...</samp>&rsquo; etc.).
+</p>
+<span id="index-sync-lines"></span>
+<span id="index-_0023line"></span>
+<p>In addition to the syntax given in the grammer, Vmgen also processes sync
+lines (lines starting with &lsquo;<samp>#line</samp>&rsquo;), as produced by &lsquo;<samp>m4 -s</samp>&rsquo;
+(see <a data-manual="m4.info" href="https://www.gnu.org/software/m4/manual/html_node/Invoking-m4.html#Invoking-m4">Invoking m4</a> in <cite>GNU m4</cite>) and similar tools.
+This allows associating C compiler error messages with the original source
+of the C code.
+</p>
+<p>Vmgen understands a few extensions beyond the grammar given here, but these
+extensions are only useful for building Gforth.  You can find a description
+of the format used for Gforth in <samp>prim</samp>.
+</p>
+
+<ul class="section-toc">
+<li><a href="Eval-escapes.html" accesskey="1">Eval escapes</a></li>
+</ul>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Simple-instructions.html">Simple instructions</a>, Previous: <a href="Input-File-Format.html">Input File Format</a>, Up: <a href="Input-File-Format.html">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

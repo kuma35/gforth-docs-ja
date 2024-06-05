@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Simple instructions (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Simple instructions (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Simple instructions (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Input-File-Format.html" rel="up" title="Input File Format">
+<link href="Superinstructions.html" rel="next" title="Superinstructions">
+<link href="Input-File-Grammar.html" rel="prev" title="Input File Grammar">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Simple-instructions">
+<div class="header">
+<p>
+Next: <a href="Superinstructions.html" accesskey="n" rel="next">Superinstructions</a>, Previous: <a href="Input-File-Grammar.html" accesskey="p" rel="prev">Input File Grammar</a>, Up: <a href="Input-File-Format.html" accesskey="u" rel="up">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Simple-instructions-1"></span><h3 class="section">6.2 Simple instructions</h3>
+<span id="index-simple-VM-instruction"></span>
+<span id="index-instruction_002c-simple-VM"></span>
+
+<p>We will use the following simple VM instruction description as example:
+</p>
+<div class="example">
+<pre class="example">sub ( i1 i2 -- i )
+i = i1-i2;
+</pre></div>
+
+<p>The first line specifies the name of the VM instruction (<code>sub</code>) and its
+stack effect (<code>i1 i2 -- i</code>).  The rest of the description is just plain
+C code.
+</p>
+<span id="index-stack-effect"></span>
+<span id="index-effect_002c-stack"></span>
+<p>The stack effect specifies that <code>sub</code> pulls two integers from the data
+stack and puts them in the C variables <code>i1</code> and <code>i2</code> (with the
+rightmost item (<code>i2</code>) taken from the top of stack; intuition: if you
+push <code>i1</code>, then <code>i2</code> on the stack, the resulting stack picture is
+<code>i1 i2</code>) and later pushes one integer (<code>i</code>) on the data stack (the
+rightmost item is on the top afterwards).
+</p>
+<span id="index-prefix_002c-type"></span>
+<span id="index-type-prefix"></span>
+<span id="index-default-stack-of-a-type-prefix"></span>
+<p>How do we know the type and stack of the stack items? Vmgen uses prefixes,
+similar to Fortran; in contrast to Fortran, you have to define the prefix
+first:
+</p>
+<div class="example">
+<pre class="example">\E s&quot; Cell&quot;   single data-stack type-prefix i
+</pre></div>
+
+<p>This defines the prefix <code>i</code> to refer to the type <code>Cell</code> (defined
+as <code>long</code> in <samp>mini.h</samp>) and, by default, to the <code>data-stack</code>.
+It also specifies that this type takes one stack item (<code>single</code>).  The
+type prefix is part of the variable name.
+</p>
+<span id="index-stack-definition"></span>
+<span id="index-defining-a-stack"></span>
+<p>Before we can use <code>data-stack</code> in this way, we have to define it:
+</p>
+<div class="example">
+<pre class="example">\E stack data-stack sp Cell
+</pre></div>
+
+<span id="index-stack-basic-type"></span>
+<span id="index-basic-type-of-a-stack"></span>
+<span id="index-type-of-a-stack_002c-basic"></span>
+<p>This line defines the stack <code>data-stack</code>, which uses the stack pointer
+<code>sp</code>, and each item has the basic type <code>Cell</code>; other types have to
+fit into one or two <code>Cell</code>s (depending on whether the type is
+<code>single</code> or <code>double</code> wide), and are cast from and to Cells on
+accessing the <code>data-stack</code> with type cast macros (see <a href="VM-engine.html">VM engine</a>).
+By default, stacks grow towards lower addresses in Vmgen-erated interpreters
+(see <a href="Stack-growth-direction.html">Stack growth direction</a>).
+</p>
+<span id="index-stack-prefix"></span>
+<span id="index-prefix_002c-stack"></span>
+<p>We can override the default stack of a stack item by using a stack prefix.
+E.g., consider the following instruction:
+</p>
+<div class="example">
+<pre class="example">lit ( #i -- i )
+</pre></div>
+
+<p>The VM instruction <code>lit</code> takes the item <code>i</code> from the instruction
+stream (indicated by the prefix <code>#</code>), and pushes it on the (default)
+data stack.  The stack prefix is not part of the variable name.  Stack
+prefixes are defined like this:
+</p>
+<div class="example">
+<pre class="example">\E inst-stream stack-prefix #
+\E data-stack  stack-prefix S:
+</pre></div>
+
+<p>This definition defines that the stack prefix <code>#</code> specifies the
+&ldquo;stack&rdquo; <code>inst-stream</code>.  Since the instruction stream behaves a little
+differently than an ordinary stack, it is predefined, and you do not need to
+define it.
+</p>
+<span id="index-instruction-stream-1"></span>
+<p>The instruction stream contains instructions and their immediate arguments,
+so specifying that an argument comes from the instruction stream indicates
+an immediate argument.  Of course, instruction stream arguments can only
+appear to the left of <code>--</code> in the stack effect.  If there are multiple
+instruction stream arguments, the leftmost is the first one (just as the
+intuition suggests).
+</p>
+
+<ul class="section-toc">
+<li><a href="Explicit-stack-access.html" accesskey="1">Explicit stack access</a></li>
+<li><a href="C-Code-Macros.html" accesskey="2">C Code Macros</a></li>
+<li><a href="C-Code-restrictions.html" accesskey="3">C Code restrictions</a></li>
+<li><a href="Stack-growth-direction.html" accesskey="4">Stack growth direction</a></li>
+</ul>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Superinstructions.html">Superinstructions</a>, Previous: <a href="Input-File-Grammar.html">Input File Grammar</a>, Up: <a href="Input-File-Format.html">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

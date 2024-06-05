@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Example overview (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Example overview (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Example overview (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Example.html" rel="up" title="Example">
+<link href="Using-profiling-to-create-superinstructions.html" rel="next" title="Using profiling to create superinstructions">
+<link href="Example.html" rel="prev" title="Example">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Example-overview">
+<div class="header">
+<p>
+Next: <a href="Using-profiling-to-create-superinstructions.html" accesskey="n" rel="next">Using profiling to create superinstructions</a>, Previous: <a href="Example.html" accesskey="p" rel="prev">Example</a>, Up: <a href="Example.html" accesskey="u" rel="up">Example</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Example-overview-1"></span><h3 class="section">5.1 Example overview</h3>
+<span id="index-example-overview"></span>
+<span id="index-vmgen_002dex"></span>
+<span id="index-vmgen_002dex2"></span>
+
+<p>There are two versions of the same example for using Vmgen: <samp>vmgen-ex</samp>
+and <samp>vmgen-ex2</samp> (you can also see Gforth as example, but it uses
+additional (undocumented) features, and also differs in some other
+respects).  The example implements <em>mini</em>, a tiny Modula-2-like
+language with a small JavaVM-like virtual machine.
+</p>
+<p>The difference between the examples is that <samp>vmgen-ex</samp> uses many casts,
+and <samp>vmgen-ex2</samp> tries to avoids most casts and uses unions instead.  In
+the rest of this manual we usually mention just files in <samp>vmgen-ex</samp>; if
+you want to use unions, use the equivalent file in <samp>vmgen-ex2</samp>.
+<span id="index-unions-example"></span>
+<span id="index-casts-example"></span>
+</p>
+<p>The files provided with each example are:
+<span id="index-example-files"></span>
+</p>
+<div class="example">
+<pre class="example">Makefile
+README
+disasm.c           wrapper file
+engine.c           wrapper file
+peephole.c         wrapper file
+profile.c          wrapper file
+mini-inst.vmg      simple VM instructions
+mini-super.vmg     superinstructions (empty at first)
+mini.h             common declarations
+mini.l             scanner
+mini.y             front end (parser, VM code generator)
+support.c          main() and other support functions
+fib.mini           example mini program
+simple.mini        example mini program
+test.mini          example mini program (tests everything)
+test.out           test.mini output
+stat.awk           script for aggregating profile information
+peephole-blacklist list of instructions not allowed in superinstructions
+seq2rule.awk       script for creating superinstructions
+</pre></div>
+
+<p>For your own interpreter, you would typically copy the following files and
+change little, if anything:
+<span id="index-wrapper-files"></span>
+</p>
+<div class="example">
+<pre class="example">disasm.c           wrapper file
+engine.c           wrapper file
+peephole.c         wrapper file
+profile.c          wrapper file
+stat.awk           script for aggregating profile information
+seq2rule.awk       script for creating superinstructions
+</pre></div>
+
+<p>You would typically change much in or replace the following files:
+</p>
+<div class="example">
+<pre class="example">Makefile
+mini-inst.vmg      simple VM instructions
+mini.h             common declarations
+mini.l             scanner
+mini.y             front end (parser, VM code generator)
+support.c          main() and other support functions
+peephole-blacklist list of instructions not allowed in superinstructions
+</pre></div>
+
+<p>You can build the example by <code>cd</code>ing into the example&rsquo;s directory, and
+then typing <code>make</code>; you can check that it works with <code>make
+check</code>.  You can run run mini programs like this:
+</p>
+<div class="example">
+<pre class="example">./mini fib.mini
+</pre></div>
+
+<p>To learn about the options, type <code>./mini -h</code>.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Using-profiling-to-create-superinstructions.html">Using profiling to create superinstructions</a>, Previous: <a href="Example.html">Example</a>, Up: <a href="Example.html">Example</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

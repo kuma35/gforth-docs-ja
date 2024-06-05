@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>C Code Macros (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="C Code Macros (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="C Code Macros (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Simple-instructions.html" rel="up" title="Simple instructions">
+<link href="C-Code-restrictions.html" rel="next" title="C Code restrictions">
+<link href="Explicit-stack-access.html" rel="prev" title="Explicit stack access">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="C-Code-Macros">
+<div class="header">
+<p>
+Next: <a href="C-Code-restrictions.html" accesskey="n" rel="next">C Code restrictions</a>, Previous: <a href="Explicit-stack-access.html" accesskey="p" rel="prev">Explicit stack access</a>, Up: <a href="Simple-instructions.html" accesskey="u" rel="up">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="C-Code-Macros-1"></span><h4 class="subsection">6.2.2 C Code Macros</h4>
+<span id="index-macros-recognized-by-Vmgen"></span>
+<span id="index-basic-block_002c-VM-level"></span>
+
+<p>Vmgen recognizes the following strings in the C code part of simple
+instructions:
+</p>
+<dl compact="compact">
+<dt id='index-SET_005fIP'><span><code>SET_IP</code><a href='#index-SET_005fIP' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>As far as Vmgen is concerned, a VM instruction containing this ends a VM
+basic block (used in profiling to delimit profiled sequences).  On the C
+level, this also sets the instruction pointer.
+</p>
+</dd>
+<dt id='index-SUPER_005fEND'><span><code>SUPER_END</code><a href='#index-SUPER_005fEND' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>This ends a basic block (for profiling), even if the instruction contains no
+<code>SET_IP</code>.
+</p>
+</dd>
+<dt id='index-INST_005fTAIL_003b'><span><code>INST_TAIL;</code><a href='#index-INST_005fTAIL_003b' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>Vmgen replaces &lsquo;<samp>INST_TAIL;</samp>&rsquo; with code for ending a VM instruction and
+dispatching the next VM instruction.  Even without a &lsquo;<samp>INST_TAIL;</samp>&rsquo; this
+happens automatically when control reaches the end of the C code.  If you
+want to have this in the middle of the C code, you need to use
+&lsquo;<samp>INST_TAIL;</samp>&rsquo;.  A typical example is a conditional VM branch:
+</p>
+<div class="example">
+<pre class="example">if (branch_condition) {
+  SET_IP(target); INST_TAIL;
+}
+/* implicit tail follows here */
+</pre></div>
+
+<p>In this example, &lsquo;<samp>INST_TAIL;</samp>&rsquo; is not strictly necessary, because there
+is another one implicitly after the if-statement, but using it improves
+branch prediction accuracy slightly and allows other optimizations.
+</p>
+</dd>
+<dt id='index-SUPER_005fCONTINUE'><span><code>SUPER_CONTINUE</code><a href='#index-SUPER_005fCONTINUE' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>This indicates that the implicit tail at the end of the VM instruction
+dispatches the sequentially next VM instruction even if there is a
+<code>SET_IP</code> in the VM instruction.  This enables an optimization that is
+not yet implemented in the vmgen-ex code (but in Gforth).  The typical
+application is in conditional VM branches:
+</p>
+<div class="example">
+<pre class="example">if (branch_condition) {
+  SET_IP(target); INST_TAIL; /* now this INST_TAIL is necessary */
+}
+SUPER_CONTINUE;
+</pre></div>
+
+
+</dd>
+</dl>
+
+<p>Note that Vmgen is not smart about C-level tokenization, comments, strings,
+or conditional compilation, so it will interpret even a commented-out
+SUPER_END as ending a basic block (or, e.g., &lsquo;<samp>RESET_IP;</samp>&rsquo; as
+&lsquo;<samp>SET_IP;</samp>&rsquo;).  Conversely, Vmgen requires the literal presence of these
+strings; Vmgen will not see them if they are hiding in a C preprocessor
+macro.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="C-Code-restrictions.html">C Code restrictions</a>, Previous: <a href="Explicit-stack-access.html">Explicit stack access</a>, Up: <a href="Simple-instructions.html">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Floating point (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Floating point (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Floating point (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Hints.html" rel="up" title="Hints">
+<link href="Hints.html" rel="prev" title="Hints">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Floating-point">
+<div class="header">
+<p>
+Previous: <a href="Hints.html" accesskey="p" rel="prev">Hints</a>, Up: <a href="Hints.html" accesskey="u" rel="up">Hints</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Floating-point-1"></span><h3 class="section">9.1 Floating point</h3>
+
+<p>How should you deal with floating point values? Should you use the same
+stack as for integers/pointers, or a different one? This section discusses
+this issue with a view on execution speed.
+</p>
+<p>The simpler approach is to use a separate floating-point stack.  This allows
+you to choose FP value size without considering the size of the
+integers/pointers, and you avoid a number of performance problems.  The main
+downside is that this needs an FP stack pointer (and that may not fit in the
+register file on the 386 arhitecture, costing some performance, but
+comparatively little if you take the other option into account).  If you use
+a separate FP stack (with stack pointer <code>fp</code>), using an fpTOS is
+helpful on most machines, but some spill the fpTOS register into memory, and
+fpTOS should not be used there.
+</p>
+<p>The other approach is to share one stack (pointed to by, say, <code>sp</code>)
+between integer/pointer and floating-point values.  This is ok if you do not
+use <code>spTOS</code>.  If you do use <code>spTOS</code>, the compiler has to decide
+whether to put that variable into an integer or a floating point register,
+and the other type of operation becomes quite expensive on most machines
+(because moving values between integer and FP registers is quite
+expensive).  If a value of one type has to be synthesized out of two values
+of the other type (<code>double</code> types), things are even more interesting.
+</p>
+<p>One way around this problem would be to not use the <code>spTOS</code> supported
+by Vmgen, but to use explicit top-of-stack variables (one for integers, one
+for FP values), and having a kind of accumulator+stack architecture (e.g.,
+Ocaml bytecode uses this approach); however, this is a major change, and its
+ramifications are not completely clear.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Hints.html">Hints</a>, Up: <a href="Hints.html">Hints</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

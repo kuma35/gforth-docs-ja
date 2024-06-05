@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Explicit stack access (Vmgen (Gforth 0.7.9_20240418))</title>
+
+<meta name="description" content="Explicit stack access (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="keywords" content="Explicit stack access (Vmgen (Gforth 0.7.9_20240418))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Simple-instructions.html" rel="up" title="Simple instructions">
+<link href="C-Code-Macros.html" rel="next" title="C Code Macros">
+<link href="Simple-instructions.html" rel="prev" title="Simple instructions">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Explicit-stack-access">
+<div class="header">
+<p>
+Next: <a href="C-Code-Macros.html" accesskey="n" rel="next">C Code Macros</a>, Previous: <a href="Simple-instructions.html" accesskey="p" rel="prev">Simple instructions</a>, Up: <a href="Simple-instructions.html" accesskey="u" rel="up">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Explicit-stack-access-1"></span><h4 class="subsection">6.2.1 Explicit stack access</h4>
+<span id="index-stack-access_002c-explicit"></span>
+<span id="index-Stack-pointer-access"></span>
+<span id="index-explicit-stack-access"></span>
+
+<p>This feature is not needed and not supported in the 0.6.2 version of vmgen
+that is documented here (and that is invoked by default).
+</p>
+<p>Not all stack effects can be specified using the stack effect specifications
+above.  For VM instructions that have other stack effects, you can specify
+them explicitly by accessing the stack pointer in the C code; however, you
+have to notify Vmgen of such explicit stack accesses, otherwise Vmgens
+optimizations could conflict with your explicit stack accesses.
+</p>
+<p>You notify Vmgen by putting <code>...</code> with the appropriate stack prefix
+into the stack comment.  Then the VM instruction will first take the other
+stack items specified in the stack effect into C variables, then make sure
+that all other stack items for that stack are in memory, and that the stack
+pointer for the stack points to the top-of-stack (by default, unless you
+change the stack access transformation: see <a href="Stack-growth-direction.html">Stack growth direction</a>).
+</p>
+<p>The general rule is: If you mention a stack pointer in the C code of a VM
+instruction, you should put a <code>...</code> for that stack in the stack effect.
+</p>
+<p>Consider this example:
+</p>
+<div class="example">
+<pre class="example">return ( #iadjust S:... target afp i1 -- i2 )
+SET_IP(target);
+sp = (Cell *)(((char *)sp)+iadjust);
+fp = afp;
+i2=i1;
+</pre></div>
+
+<p>First the variables <code>target afp i1</code> are popped off the stack, then the
+stack pointer <code>sp</code> is set correctly for the new stack depth, then the C
+code changes the stack depth and does other things, and finally <code>i2</code> is
+pushed on the stack with the new depth.
+</p>
+<p>The position of the <code>...</code> within the stack effect does not matter.  You
+can use several <code>...</code>s, for different stacks, and also several for the
+same stack (that has no additional effect).  If you use <code>...</code> without a
+stack prefix, this specifies all the stacks except the instruction stream.
+</p>
+<p>You cannot use <code>...</code> for the instruction stream, but that is not
+necessary: At the start of the C code, <code>IP</code> points to the start of the
+next VM instruction (i.e., right beyond the end of the current VM
+instruction), and you can change the instruction pointer with <code>SET_IP</code>
+(see <a href="VM-engine.html">VM engine</a>).
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="C-Code-Macros.html">C Code Macros</a>, Previous: <a href="Simple-instructions.html">Simple instructions</a>, Up: <a href="Simple-instructions.html">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>
