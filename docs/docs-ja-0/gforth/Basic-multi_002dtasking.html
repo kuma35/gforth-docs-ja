@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Basic multi-tasking (Gforth マニュアル)</title>
+
+<meta name="description" content="Basic multi-tasking (Gforth マニュアル)">
+<meta name="keywords" content="Basic multi-tasking (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Pthreads.html" rel="up" title="Pthreads">
+<link href="Task_002dlocal-data.html" rel="next" title="Task-local data">
+<link href="Pthreads.html" rel="prev" title="Pthreads">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Basic-multi_002dtasking">
+<div class="header">
+<p>
+Next: <a href="Task_002dlocal-data.html" accesskey="n" rel="next">Task-local data</a>, Previous: <a href="Pthreads.html" accesskey="p" rel="prev">Pthreads</a>, Up: <a href="Pthreads.html" accesskey="u" rel="up">Pthreads</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Basic-multi_002dtasking-1"></span><h4 class="subsubsection">6.27.1.1 Basic multi-tasking</h4>
+
+<p>Tasks can be created with <code>newtask</code> or <code>newtask4</code> with a given
+amount of stack space (either all the same or each stack&rsquo;s size specified).
+</p>
+<span id="index-newtask-_0028--stacksize-_002d_002d-task--_0029-gforth_002dexperimental"></span>
+<span id="index-newtask"></span>
+<span id="index-newtask-1"></span>
+<div class="format">
+<pre class="format"><code>newtask</code> ( <i>stacksize &ndash; task  </i>) gforth-experimental &ldquo;newtask&rdquo;
+</pre></div>
+<p>creates <i>task</i>; each stack (data, return, FP, locals) has size
+<i>stacksize</i>.
+</p>
+
+<span id="index-task-_0028--ustacksize-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-task"></span>
+<span id="index-task-1"></span>
+<div class="format">
+<pre class="format"><code>task</code> ( <i>ustacksize &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;task&rdquo;
+</pre></div>
+<p>creates a task <i>name</i>; each stack (data, return, FP, locals)  has size
+<i>ustacksize</i>.<br> <i>name</i> execution: ( &ndash; <i>task</i> )
+</p>
+
+<span id="index-newtask4-_0028--u_002ddata-u_002dreturn-u_002dfp-u_002dlocals-_002d_002d-task--_0029-gforth_002dexperimental"></span>
+<span id="index-newtask4"></span>
+<span id="index-newtask4-1"></span>
+<div class="format">
+<pre class="format"><code>newtask4</code> ( <i>u-data u-return u-fp u-locals &ndash; task  </i>) gforth-experimental &ldquo;newtask4&rdquo;
+</pre></div>
+<p>creates <i>task</i> with data stack size <i>u-data</i>, return stack size
+<i>u-return</i>, FP stack size <i>u-fp</i> and locals stack size <i>u-locals</i>.
+</p>
+
+
+<p>If you don&rsquo;t know which stack sizes to use for the task, you can use the
+size(s) of the main task:
+</p>
+<span id="index-stacksize-_0028--_002d_002d-u--_0029-gforth_002dexperimental"></span>
+<span id="index-stacksize"></span>
+<span id="index-stacksize-1"></span>
+<div class="format">
+<pre class="format"><code>stacksize</code> ( <i>&ndash; u  </i>) gforth-experimental &ldquo;stacksize&rdquo;
+</pre></div>
+<p><i>u</i> is the data stack size of the main task.
+</p>
+
+<span id="index-stacksize4-_0028--_002d_002d-u_002ddata-u_002dreturn-u_002dfp-u_002dlocals--_0029-gforth_002dexperimental"></span>
+<span id="index-stacksize4"></span>
+<span id="index-stacksize4-1"></span>
+<div class="format">
+<pre class="format"><code>stacksize4</code> ( <i>&ndash; u-data u-return u-fp u-locals  </i>) gforth-experimental &ldquo;stacksize4&rdquo;
+</pre></div>
+<p>Pushes the data, return, FP, and locals stack sizes of the main task.
+</p>
+
+
+<p>A task is created in an inactive state.  To let it run, you have to activate
+it with one of the following words:
+</p>
+<span id="index-initiate-_0028--xt-task-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-initiate"></span>
+<span id="index-initiate-1"></span>
+<div class="format">
+<pre class="format"><code>initiate</code> ( <i>xt task &ndash;  </i>) gforth-experimental &ldquo;initiate&rdquo;
+</pre></div>
+<p>Let <i>task</i> execute <i>xt</i>.  Upon return from the <i>xt</i>, the task
+terminates itself (VFX compatible).  Use one-time executable closures to
+pass arbitrary paramenters to a task.
+</p>
+
+
+<p>The following legacy words provide the same functionality as
+<code>initiate</code>, but with a different interface: Like <code>does&gt;</code>, they
+split their containing colon definition in two parts: The part before
+<code>activate</code>/<code>pass</code> runs in the activating task, and returns to its
+caller after activating the task.  The part behind
+<code>activate</code>/<code>pass</code> is executed in the activated target task.
+</p>
+<span id="index-activate-_0028--run_002dtime-nest_002dsys1-task-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-activate"></span>
+<span id="index-activate-1"></span>
+<div class="format">
+<pre class="format"><code>activate</code> ( <i>run-time nest-sys1 task &ndash;  </i>) gforth-experimental &ldquo;activate&rdquo;
+</pre></div>
+<p>Let <i>task</i> perform the code behind <code>activate</code>, and return to the
+caller of the word containing <code>activate</code>.  When the task returns from
+the code behind <code>activate</code>, it terminates itself.
+</p>
+
+<span id="index-pass-_0028--x1-_002e_002e-xn-n-task-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-pass"></span>
+<span id="index-pass-1"></span>
+<div class="format">
+<pre class="format"><code>pass</code> ( <i>x1 .. xn n task &ndash;  </i>) gforth-experimental &ldquo;pass&rdquo;
+</pre></div>
+<p>Pull <i>x1 .. xn n</i> from the current task&rsquo;s data stack and push <i>x1 .. xn</i>
+on <i>task</i>&rsquo;s data stack.  Let <i>task</i> perform the code behind <code>pass</code>,
+and return to the caller of the word containing <code>pass</code>.  When the task
+returns from the code behind <code>pass</code>, it terminates itself.
+</p>
+
+
+<p>You can also do creation and activation in one step:
+</p>
+<span id="index-execute_002dtask-_0028--xt-_002d_002d-task--_0029-gforth_002dexperimental"></span>
+<span id="index-execute_002dtask"></span>
+<span id="index-execute_002dtask-1"></span>
+<div class="format">
+<pre class="format"><code>execute-task</code> ( <i>xt &ndash; task  </i>) gforth-experimental &ldquo;execute-task&rdquo;
+</pre></div>
+<p>Create a new task <var>task</var> with the same stack sizes as the main task. Let
+<i>task</i> execute <i>xt</i>.  Upon return from the <i>xt</i>, the task terminates
+itself.
+</p>
+
+
+<p>Apart from terminating by running to the end, a task can terminate itself
+with <code>kill-task</code>.  Other tasks can terminate it with <code>kill</code>.
+</p>
+<span id="index-kill_002dtask-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-kill_002dtask"></span>
+<span id="index-kill_002dtask-1"></span>
+<div class="format">
+<pre class="format"><code>kill-task</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;kill-task&rdquo;
+</pre></div>
+<p>Terminate the current task.
+</p>
+
+<span id="index-kill-_0028--task-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-kill"></span>
+<span id="index-kill-1"></span>
+<div class="format">
+<pre class="format"><code>kill</code> ( <i>task &ndash;  </i>) gforth-experimental &ldquo;kill&rdquo;
+</pre></div>
+<p>Terminate <i>task</i>.
+</p>
+
+
+<p>Tasks can also temporarily stop themselves or be stopped:
+</p>
+<span id="index-halt-_0028--task-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-halt"></span>
+<span id="index-halt-1"></span>
+<div class="format">
+<pre class="format"><code>halt</code> ( <i>task &ndash;  </i>) gforth-experimental &ldquo;halt&rdquo;
+</pre></div>
+<p>Stop a task
+</p>
+
+<span id="index-stop-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-stop"></span>
+<span id="index-stop-1"></span>
+<div class="format">
+<pre class="format"><code>stop</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;stop&rdquo;
+</pre></div>
+<p>stops the current task, and waits for events (which may restart it)
+</p>
+
+<span id="index-stop_002dns-_0028--timeout-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-stop_002dns"></span>
+<span id="index-stop_002dns-1"></span>
+<div class="format">
+<pre class="format"><code>stop-ns</code> ( <i>timeout &ndash;  </i>) gforth-experimental &ldquo;stop-ns&rdquo;
+</pre></div>
+<p>Stop with timeout (in nanoseconds), better replacement for ms
+</p>
+
+
+<p>A task restarts when the timeout is over or when another task wakes it with:
+</p>
+<span id="index-restart-_0028--task-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-restart"></span>
+<span id="index-restart-1"></span>
+<div class="format">
+<pre class="format"><code>restart</code> ( <i>task &ndash;  </i>) gforth-experimental &ldquo;restart&rdquo;
+</pre></div>
+<p>Wake a task
+</p>
+
+
+<p>There is also:
+</p>
+<span id="index-pause-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-pause"></span>
+<span id="index-pause-1"></span>
+<div class="format">
+<pre class="format"><code>pause</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;pause&rdquo;
+</pre></div>
+<p>voluntarily switch to the next waiting task (<code>pause</code> is the traditional
+cooperative task switcher; in the pthread multitasker, you don&rsquo;t need
+<code>pause</code> for cooperation, but you still can use it e.g. when you have to
+resort to polling for some reason).  This also checks for events in the
+queue.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Task_002dlocal-data.html">Task-local data</a>, Previous: <a href="Pthreads.html">Pthreads</a>, Up: <a href="Pthreads.html">Pthreads</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

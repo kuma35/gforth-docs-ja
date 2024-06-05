@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Locating source code definitions (Gforth マニュアル)</title>
+
+<meta name="description" content="Locating source code definitions (Gforth マニュアル)">
+<meta name="keywords" content="Locating source code definitions (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Programming-Tools.html" rel="up" title="Programming Tools">
+<link href="Locating-uses-of-a-word.html" rel="next" title="Locating uses of a word">
+<link href="Programming-Tools.html" rel="prev" title="Programming Tools">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Locating-source-code-definitions">
+<div class="header">
+<p>
+Next: <a href="Locating-uses-of-a-word.html" accesskey="n" rel="next">Locating uses of a word</a>, Previous: <a href="Programming-Tools.html" accesskey="p" rel="prev">Programming Tools</a>, Up: <a href="Programming-Tools.html" accesskey="u" rel="up">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Locating-source-code-definitions-1"></span><h4 class="subsection">6.26.1 Locating source code definitions</h4>
+<span id="index-source-code-of-a-word"></span>
+<span id="index-view-_0028called-locate-in-Gforth_0029"></span>
+<span id="index-integrated-development-environment"></span>
+<span id="index-IDE-_0028integrated-development-environment_0029"></span>
+
+<p>Many programming systems are organized as an integrated development
+environment (IDE) where the editor is the hub of the system, and allows
+building and running programs.  If you want that, Gforth has it, too
+(see <a href="Emacs-and-Gforth.html">Emacs and Gforth</a>).
+</p>
+<p>However, several Forth systems have a different kind of IDE: The Forth
+command line is the hub of the environment; you can view the source from
+there in various ways, and call an editor if needed.
+</p>
+<p>Gforth also implements such an IDE.  It mostly follows the conventions of
+SwiftForth where they exist, but implements features beyond them.
+</p>
+<p>An advantage of this approach is that it allows you to use your favourite
+editor: set the environment variable <code>EDITOR</code> to your favourite editor,
+and the editing commands will call that editor; Gforth invokes some GUI
+editors in the background (so you do not need to finish editing to continue
+with your Forth session), terminal editors in the foreground (default for
+editors not known to Gforth is foreground).  If you have not set
+<code>EDITOR</code>, the default editor is <samp>vi</samp>.
+</p>
+<span id="index-locate-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-locate"></span>
+<span id="index-locate-1"></span>
+<div class="format">
+<pre class="format"><code>locate</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;locate&rdquo;
+</pre></div>
+<p>Show the source code of the word <i>name</i> and set the current location
+there.
+</p>
+
+<p>doc-xt-locate
+</p>
+<p>The <em>current location</em> is set by a number of other words in addition to
+<code>locate</code>.  Also, when an error happens while loading a file, the
+location of the error becomes the current location.
+</p>
+<p>A number of words work with the current location:
+</p>
+<span id="index-l-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-l"></span>
+<span id="index-l-1"></span>
+<div class="format">
+<pre class="format"><code>l</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;l&rdquo;
+</pre></div>
+<p>Display source code lines at the current location.
+</p>
+
+<span id="index-n-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-n"></span>
+<span id="index-n-1"></span>
+<div class="format">
+<pre class="format"><code>n</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;n&rdquo;
+</pre></div>
+<p>Display lines behind the current location, or behind the last <code>n</code> or
+<code>b</code> output (whichever was later).
+</p>
+
+<span id="index-b-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-b"></span>
+<span id="index-b-1"></span>
+<div class="format">
+<pre class="format"><code>b</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;b&rdquo;
+</pre></div>
+<p>Display lines before the current location, or before the last <code>n</code> or
+<code>b</code> output (whichever was later).
+</p>
+
+<span id="index-g-_0028--_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-g"></span>
+<span id="index-g-1"></span>
+<div class="format">
+<pre class="format"><code>g</code> ( <i>&ndash;  </i>) gforth-0.7 &ldquo;g&rdquo;
+</pre></div>
+<p>Enter the editor at the current location, or at the start of the last
+<code>n</code> or <code>b</code> output (whichever was later).
+</p>
+
+
+<p>You can control how many lines <code>l</code>, <code>n</code> and <code>b</code> show by
+changing the values:
+</p>
+<span id="index-before_002dlocate-_0028--_002d_002d-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-before_002dlocate"></span>
+<span id="index-before_002dlocate-1"></span>
+<div class="format">
+<pre class="format"><code>before-locate</code> ( <i>&ndash; u  </i>) gforth-1.0 &ldquo;before-locate&rdquo;
+</pre></div>
+<p>number of lines shown before current location (default 3).
+</p>
+
+<span id="index-after_002dlocate-_0028--_002d_002d-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-after_002dlocate"></span>
+<span id="index-after_002dlocate-1"></span>
+<div class="format">
+<pre class="format"><code>after-locate</code> ( <i>&ndash; u  </i>) gforth-1.0 &ldquo;after-locate&rdquo;
+</pre></div>
+<p>number of lines shown after current location (default 12).
+</p>
+
+
+<p>Finally, you can directly go to the source code of a word in the editor with
+</p>
+<span id="index-edit-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-edit"></span>
+<span id="index-edit-1"></span>
+<div class="format">
+<pre class="format"><code>edit</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;edit&rdquo;
+</pre></div>
+<p>Enter the editor at the location of &quot;name&quot;
+</p>
+
+
+<p>You can see the definitions of similarly-named words with
+</p>
+<span id="index-browse-_0028--_0022subname_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-browse"></span>
+<span id="index-browse-1"></span>
+<div class="format">
+<pre class="format"><code>browse</code> ( <i>&quot;subname&quot; &ndash;  </i>) gforth-1.0 &ldquo;browse&rdquo;
+</pre></div>
+<p>Show all places where a word with a name that contains <i>subname</i> is
+defined (<code>mwords</code>-like, see <a href="Word-Lists.html">Word Lists</a>).  You can then use
+<code>ww</code>, <code>nw</code> or <code>bw</code> (see <a href="Locating-uses-of-a-word.html">Locating uses of a word</a>) to
+inspect specific occurences more closely.
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Locating-uses-of-a-word.html">Locating uses of a word</a>, Previous: <a href="Programming-Tools.html">Programming Tools</a>, Up: <a href="Programming-Tools.html">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Common Disassembler (Gforth マニュアル)</title>
+
+<meta name="description" content="Common Disassembler (Gforth マニュアル)">
+<meta name="keywords" content="Common Disassembler (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Assembler-and-Code-Words.html" rel="up" title="Assembler and Code Words">
+<link href="386-Assembler.html" rel="next" title="386 Assembler">
+<link href="Common-Assembler.html" rel="prev" title="Common Assembler">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Common-Disassembler">
+<div class="header">
+<p>
+Next: <a href="386-Assembler.html" accesskey="n" rel="next">386 Assembler</a>, Previous: <a href="Common-Assembler.html" accesskey="p" rel="prev">Common Assembler</a>, Up: <a href="Assembler-and-Code-Words.html" accesskey="u" rel="up">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Common-Disassembler-1"></span><h4 class="subsection">6.29.3 Common Disassembler</h4>
+<span id="index-disassembler_002c-general"></span>
+<span id="index-gdb-disassembler"></span>
+
+<p>You can disassemble a <code>code</code> word with <code>see</code> (see <a href="Debugging.html">Debugging</a>).
+You can disassemble a section of memory with
+</p>
+<span id="index-discode-_0028--addr-u-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-discode"></span>
+<span id="index-discode-1"></span>
+<div class="format">
+<pre class="format"><code>discode</code> ( <i>addr u &ndash;  </i>) gforth-0.2 &ldquo;discode&rdquo;
+</pre></div>
+<p>hook for the disassembler: disassemble u bytes of code at addr
+</p>
+
+
+<p>There are two kinds of disassembler for Gforth: The Forth disassembler
+(available on some CPUs) and the gdb disassembler (available on platforms
+with <code>gdb</code> and <code>mktemp</code>).  If both are available, the Forth
+disassembler is used by default.  If you prefer the gdb disassembler, say
+</p>
+<div class="example">
+<pre class="example">' disasm-gdb is discode
+</pre></div>
+
+<p>If neither is available, <code>discode</code> performs <code>dump</code>.
+</p>
+<p>The Forth disassembler generally produces output that can be fed into the
+assembler (i.e., same syntax, etc.).  It also includes additional
+information in comments.  In particular, the address of the instruction is
+given in a comment before the instruction.
+</p>
+<p>The gdb disassembler produces output in the same format as the gdb
+<code>disassemble</code> command (see <a data-manual="gdb" href="https://sourceware.org/gdb/current/onlinedocs/gdb/Machine-Code.html#Machine-Code">Source and machine
+code</a> in <cite>Debugging with GDB</cite>), in the default flavour (AT&amp;T syntax for the
+386 and AMD64 architectures).
+</p>
+<p><code>See</code> may display more or less than the actual code of the word,
+because the recognition of the end of the code is unreliable.  You can use
+<code>discode</code> if it did not display enough.  It may display more, if the
+code word is not immediately followed by a named word.  If you have
+something else there, you can follow the word with <code>align latest ,</code> to
+ensure that the end is recognized.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="386-Assembler.html">386 Assembler</a>, Previous: <a href="Common-Assembler.html">Common Assembler</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

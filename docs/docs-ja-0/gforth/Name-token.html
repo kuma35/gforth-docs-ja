@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Name token (Gforth マニュアル)</title>
+
+<meta name="description" content="Name token (Gforth マニュアル)">
+<meta name="keywords" content="Name token (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tokens-for-Words.html" rel="up" title="Tokens for Words">
+<link href="Compilation-token.html" rel="next" title="Compilation token">
+<link href="Execution-token.html" rel="prev" title="Execution token">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Name-token">
+<div class="header">
+<p>
+Next: <a href="Compilation-token.html" accesskey="n" rel="next">Compilation token</a>, Previous: <a href="Execution-token.html" accesskey="p" rel="prev">Execution token</a>, Up: <a href="Tokens-for-Words.html" accesskey="u" rel="up">Tokens for Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Name-token-1"></span><h4 class="subsection">6.12.2 Name token</h4>
+
+<span id="index-name-token"></span>
+<span id="index-nt-_0028name-token_0029"></span>
+<p>Gforth represents named words by the <em>name token</em>, (<i>nt</i>).  The name
+token is a cell-sized abstract data type that occurs as argument or result
+of the words below.
+</p>
+<p>Since Gforth 1.0, for most words the concrete implementation of their nt is
+the same address as its xt (this is the primary nt for the xt).  However,
+synonyms, aliases, and words defined with <code>interpret/compile:</code> get
+their xt from another word, but still have an nt of their own (that is
+different from the xt).  Therefore, you cannot use xts and nts
+interchangeably, even if you are prepared to write code specific to Gforth
+1.0.  You do not get these alternate nts for the xt with <code>&gt;name</code>.
+</p>
+<p>You get the nt of a word <i>x</i> with <code>``<i>x</i></code> (since Gforth 1.0)  or
+with
+</p>
+<span id="index-find_002dname-_0028--c_002daddr-u-_002d_002d-nt-_007c-0--_0029-gforth_002d0_002e2"></span>
+<span id="index-find_002dname"></span>
+<span id="index-find_002dname-1"></span>
+<div class="format">
+<pre class="format"><code>find-name</code> ( <i>c-addr u &ndash; nt | 0  </i>) gforth-0.2 &ldquo;find-name&rdquo;
+</pre></div>
+<p>Find the name <i>c-addr u</i> in the current search order. Return its <i>nt</i>,
+if found, otherwise 0.
+</p>
+
+<span id="index-find_002dname_002din-_0028--c_002daddr-u-wid-_002d_002d-nt-_007c-0--_0029-gforth_002d1_002e0"></span>
+<span id="index-find_002dname_002din"></span>
+<span id="index-find_002dname_002din-1"></span>
+<div class="format">
+<pre class="format"><code>find-name-in</code> ( <i>c-addr u wid &ndash; nt | 0  </i>) gforth-1.0 &ldquo;find-name-in&rdquo;
+</pre></div>
+<p>search the word list identified by <i>wid</i> for the definition named by the
+string at <i>c-addr u</i>. Return its <i>nt</i>, if found, otherwise 0.
+</p>
+
+<span id="index-latest-_0028--_002d_002d-nt--_0029-gforth_002d0_002e6"></span>
+<span id="index-latest"></span>
+<span id="index-latest-1"></span>
+<div class="format">
+<pre class="format"><code>latest</code> ( <i>&ndash; nt  </i>) gforth-0.6 &ldquo;latest&rdquo;
+</pre></div>
+<p><var>nt</var> is the name token of the last word defined; it is 0 if the last
+word has no name.
+</p>
+
+<span id="index-latestnt-_0028--_002d_002d-nt--_0029-gforth_002d1_002e0"></span>
+<span id="index-latestnt"></span>
+<span id="index-latestnt-1"></span>
+<div class="format">
+<pre class="format"><code>latestnt</code> ( <i>&ndash; nt  </i>) gforth-1.0 &ldquo;latestnt&rdquo;
+</pre></div>
+<p><i>nt</i> is the name token of the last word defined.
+</p>
+
+<span id="index-_003ename-_0028--xt-_002d_002d-nt_007c0--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003ename"></span>
+<span id="index-_003ename-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;name</code> ( <i>xt &ndash; nt|0  </i>) gforth-0.2 &ldquo;to-name&rdquo;
+</pre></div>
+<p>The primary name token <i>nt</i> of the word represented by <i>xt</i>.  Returns 0
+if <i>xt</i> is not an xt (using a heuristic check that has a small chance of
+misidentifying a non-xt as xt), or if the primary nt is of an unnamed word.
+As of Gforth 1.0, every xt has a primary nt, but other named words may have
+the same interpretation sematics xt.
+</p>
+
+<span id="index-xt_003ename-_0028--xt-_002d_002d-nt--_0029-gforth_002d1_002e0"></span>
+<span id="index-xt_003ename"></span>
+<span id="index-xt_003ename-1"></span>
+<div class="format">
+<pre class="format"><code>xt&gt;name</code> ( <i>xt &ndash; nt  </i>) gforth-1.0 &ldquo;xt-to-name&rdquo;
+</pre></div>
+<p>Produces the primary nt for an xt.  If <i>xt</i> is not an xt, <i>nt</i> is not
+guaranteed to be an nt.
+</p>
+
+
+<p>You can get all the nts in a wordlist with
+</p>
+<span id="index-traverse_002dwordlist-_0028--_002e_002e_002e-xt-wid-_002d_002d-_002e_002e_002e--_0029-tools_002dext"></span>
+<span id="index-traverse_002dwordlist"></span>
+<span id="index-traverse_002dwordlist-1"></span>
+<div class="format">
+<pre class="format"><code>traverse-wordlist</code> ( <i>... xt wid &ndash; ...  </i>) tools-ext &ldquo;traverse-wordlist&rdquo;
+</pre></div>
+<p>perform <i>xt</i> ( ... nt &ndash; f ... ) once for every word <i>nt</i> in the
+wordlist <i>wid</i>, until <i>f</i> is false or the wordlist is exhausted.  <i>xt</i>
+is free to use the stack underneath.
+</p>
+
+
+<p>You can use the nt to access the interpretation and compilation semantics of
+a word, its name, and the next word in the wordlist:
+</p>
+<span id="index-name_003einterpret-_0028--nt-_002d_002d-xt--_0029-tools_002dext"></span>
+<span id="index-name_003einterpret"></span>
+<span id="index-name_003einterpret-1"></span>
+<div class="format">
+<pre class="format"><code>name&gt;interpret</code> ( <i>nt &ndash; xt  </i>) tools-ext &ldquo;name-to-interpret&rdquo;
+</pre></div>
+<p><i>xt</i> represents the interpretation semantics of the word <i>nt</i>.
+</p>
+
+<span id="index-name_003ecompile-_0028--nt-_002d_002d-w-xt--_0029-tools_002dext"></span>
+<span id="index-name_003ecompile"></span>
+<span id="index-name_003ecompile-1"></span>
+<div class="format">
+<pre class="format"><code>name&gt;compile</code> ( <i>nt &ndash; w xt  </i>) tools-ext &ldquo;name-to-compile&rdquo;
+</pre></div>
+<p><i>w xt</i> is the compilation token for the word <i>nt</i>.
+</p>
+
+<span id="index-name_003estring-_0028--nt-_002d_002d-addr-u--_0029-tools_002dext"></span>
+<span id="index-name_003estring"></span>
+<span id="index-name_003estring-1"></span>
+<div class="format">
+<pre class="format"><code>name&gt;string</code> ( <i>nt &ndash; addr u  </i>) tools-ext &ldquo;name-to-string&rdquo;
+</pre></div>
+<p><i>addr count</i> is the name of the word represented by <i>nt</i>.
+</p>
+
+<span id="index-id_002e-_0028--nt-_002d_002d--_0029-gforth_002d0_002e6"></span>
+<span id="index-id_002e"></span>
+<span id="index-id_002e-1"></span>
+<div class="format">
+<pre class="format"><code>id.</code> ( <i>nt &ndash;  </i>) gforth-0.6 &ldquo;i-d-dot&rdquo;
+</pre></div>
+<p>Print the name of the word represented by <var>nt</var>.
+</p>
+
+<span id="index-_002eid-_0028--nt-_002d_002d--_0029-gforth_002d0_002e6"></span>
+<span id="index-_002eid"></span>
+<span id="index-_002eid-1"></span>
+<div class="format">
+<pre class="format"><code>.id</code> ( <i>nt &ndash;  </i>) gforth-0.6 &ldquo;dot-i-d&rdquo;
+</pre></div>
+<p>F83 name for <code>id.</code>.
+</p>
+
+<span id="index-name_003elink-_0028--nt1-_002d_002d-nt2-_002f-0--_0029-gforth_002d1_002e0"></span>
+<span id="index-name_003elink"></span>
+<span id="index-name_003elink-1"></span>
+<div class="format">
+<pre class="format"><code>name&gt;link</code> ( <i>nt1 &ndash; nt2 / 0  </i>) gforth-1.0 &ldquo;name-to-link&rdquo;
+</pre></div>
+<p>For a word <i>nt1</i>, returns the previous word <i>nt2</i> in the same wordlist,
+or 0 if there is no previous word.
+</p>
+
+
+<p>A nameless word usually has no interpretation nor compilation semantics, no
+name, and it&rsquo;s not in a wordlist.  But in Gforth (since 1.0) all words are
+equal, so even nameless words have an nt (but they are in no wordlist).  You
+can get that nt with <code>latestnt</code>, and the words above that consume nts
+do something reasonable for these nts.
+</p>
+<p>As a usage example, the following code lists all the words in
+<code>forth-wordlist</code> with non-default compilation semantics:
+</p>
+<div class="example">
+<pre class="example">: ndcs-words ( wid -- )
+  [: dup name&gt;compile ['] compile, &lt;&gt; if over id. then 2drop true ;]
+  swap traverse-wordlist ;
+
+forth-wordlist ndcs-words
+</pre></div>
+
+<p>This code assumes that a word has default compilation semantics if the xt
+part of its compilation token is the xt of <code>compile,</code>.
+</p>
+
+<span id="index-name-field-address"></span>
+<span id="index-NFA"></span>
+<p>The closest thing to the nt in older Forth systems is the name field address
+(NFA), but there are significant differences: in older Forth systems each
+word had a unique NFA, LFA, CFA and PFA (in this order, or LFA, NFA, CFA,
+PFA) and there were words for getting from one to the next.  In contrast, in
+Gforth several nts can get the same xt from <code>name&gt;interpret</code> xt; there
+is a link field in the structure identified by the name token, but searching
+usually uses a hash table external to these structures; the name in Gforth
+has a cell-wide count-and-flags field, and the nt is not implemented as the
+address of that count field.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Compilation-token.html">Compilation token</a>, Previous: <a href="Execution-token.html">Execution token</a>, Up: <a href="Tokens-for-Words.html">Tokens for Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

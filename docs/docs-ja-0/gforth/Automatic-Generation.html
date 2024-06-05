@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Automatic Generation (Gforth マニュアル)</title>
+
+<meta name="description" content="Automatic Generation (Gforth マニュアル)">
+<meta name="keywords" content="Automatic Generation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Primitives.html" rel="up" title="Primitives">
+<link href="TOS-Optimization.html" rel="next" title="TOS Optimization">
+<link href="Primitives.html" rel="prev" title="Primitives">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Automatic-Generation">
+<div class="header">
+<p>
+Next: <a href="TOS-Optimization.html" accesskey="n" rel="next">TOS Optimization</a>, Previous: <a href="Primitives.html" accesskey="p" rel="prev">Primitives</a>, Up: <a href="Primitives.html" accesskey="u" rel="up">Primitives</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Automatic-Generation-1"></span><h4 class="subsection">15.3.1 Automatic Generation</h4>
+<span id="index-primitives_002c-automatic-generation"></span>
+
+<span id="index-prims2x_002efs"></span>
+
+<p>Since the primitives are implemented in a portable language, there is no
+longer any need to minimize the number of primitives. On the contrary,
+having many primitives has an advantage: speed. In order to reduce the
+number of errors in primitives and to make programming them easier, we
+provide a tool, the primitive generator (<samp>prims2x.fs</samp> aka Vmgen,
+see <a data-manual="vmgen" href="../vmgen/index.html#Top">Introduction</a> in <cite>Vmgen</cite>), that automatically
+generates most (and sometimes all) of the C code for a primitive from the
+stack effect notation.  The source for a primitive has the following form:
+</p>
+<span id="index-primitive-source-format"></span>
+<div class="format">
+<pre class="format"><i>Forth-name</i>  ( <i>stack-effect</i> )        <i>category</i>    [<i>pronounc.</i>]
+[<code>&quot;&quot;</code><i>glossary entry</i><code>&quot;&quot;</code>]
+<i>C code</i>
+[<code>:</code>
+<i>Forth code</i>]
+</pre></div>
+
+<p>The items in brackets are optional. The category and glossary fields are
+there for generating the documentation, the Forth code is there for manual
+implementations on machines without GNU C. E.g., the source for the
+primitive <code>+</code> is:
+</p><div class="example">
+<pre class="example">+    ( n1 n2 -- n )   core    plus
+n = n1+n2;
+</pre></div>
+
+<p>This looks like a specification, but in fact <code>n = n1+n2</code> is C code. Our
+primitive generation tool extracts a lot of information from the stack
+effect notations<a id="DOCF38" href="#FOOT38"><sup>38</sup></a>: The number of items popped
+from and pushed on the stack, their type, and by what name they are referred
+to in the C code. It then generates a C code prelude and postlude for each
+primitive. The final C code for <code>+</code> looks like this:
+</p>
+<div class="example">
+<pre class="example">I_plus: /* + ( n1 n2 -- n ) */  /* label, stack effect */
+/*  */                          /* documentation */
+NAME(&quot;+&quot;)                       /* debugging output (with -DDEBUG) */
+{
+DEF_CA                          /* definition of variable ca (indirect threading) */
+Cell n1;                        /* definitions of variables */
+Cell n2;
+Cell n;
+NEXT_P0;                        /* NEXT part 0 */
+n1 = (Cell) sp[1];              /* input */
+n2 = (Cell) TOS;
+sp += 1;                        /* stack adjustment */
+{
+n = n1+n2;                      /* C code taken from the source */
+}
+NEXT_P1;                        /* NEXT part 1 */
+TOS = (Cell)n;                  /* output */
+NEXT_P2;                        /* NEXT part 2 */
+}
+</pre></div>
+
+<p>This looks long and inefficient, but the GNU C compiler optimizes quite well
+and produces optimal code for <code>+</code> on, e.g., the R3000 and the HP RISC
+machines: Defining the <code>n</code>s does not produce any code, and using them
+as intermediate storage also adds no cost.
+</p>
+<p>There are also other optimizations that are not illustrated by this example:
+assignments between simple variables are usually for free (copy
+propagation). If one of the stack items is not used by the primitive (e.g.
+in <code>drop</code>), the compiler eliminates the load from the stack (dead code
+elimination). On the other hand, there are some things that the compiler
+does not do, therefore they are performed by <samp>prims2x.fs</samp>: The compiler
+does not optimize code away that stores a stack item to the place where it
+just came from (e.g., <code>over</code>).
+</p>
+<p>While programming a primitive is usually easy, there are a few cases where
+the programmer has to take the actions of the generator into account, most
+notably <code>?dup</code>, but also words that do not (always)  fall through to
+<code>NEXT</code>.
+</p>
+<p>For more information
+</p>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT38" href="#DOCF38">(38)</a></h5>
+<p>We use a one-stack notation, even though we have
+separate data and floating-point stacks; The separate notation can be
+generated easily from the unified notation.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="TOS-Optimization.html">TOS Optimization</a>, Previous: <a href="Primitives.html">Primitives</a>, Up: <a href="Primitives.html">Primitives</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

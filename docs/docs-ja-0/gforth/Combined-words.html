@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Combined words (Gforth マニュアル)</title>
+
+<meta name="description" content="Combined words (Gforth マニュアル)">
+<meta name="keywords" content="Combined words (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Interpretation-and-Compilation-Semantics.html" rel="up" title="Interpretation and Compilation Semantics">
+<link href="Interpretation-and-Compilation-Semantics.html" rel="prev" title="Interpretation and Compilation Semantics">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Combined-words">
+<div class="header">
+<p>
+Previous: <a href="Interpretation-and-Compilation-Semantics.html" accesskey="p" rel="prev">Interpretation and Compilation Semantics</a>, Up: <a href="Interpretation-and-Compilation-Semantics.html" accesskey="u" rel="up">Interpretation and Compilation Semantics</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Combined-Words"></span><h4 class="subsection">6.11.1 Combined Words</h4>
+<span id="index-combined-words"></span>
+
+<p>Gforth allows you to define <em>combined words</em> &ndash; words that have an
+arbitrary combination of interpretation and compilation semantics.
+</p>
+<span id="index-interpret_002fcompile_003a-_0028--interp_002dxt-comp_002dxt-_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-interpret_002fcompile_003a"></span>
+<span id="index-interpret_002fcompile_003a-1"></span>
+<div class="format">
+<pre class="format"><code>interpret/compile:</code> ( <i>interp-xt comp-xt &quot;name&quot; &ndash;  </i>) gforth-0.2 &ldquo;interpret/compile:&rdquo;
+</pre></div>
+
+
+<p>This feature was introduced for implementing <code>TO</code> and <code>S&quot;</code>. I
+recommend that you do not define such words, as cute as they may be: they
+make it hard to get at both parts of the word in some contexts.  E.g.,
+assume you want to get an execution token for the compilation part. Instead,
+define two words, one that embodies the interpretation part, and one that
+embodies the compilation part.  Once you have done that, you can define a
+combined word with <code>interpret/compile:</code> for the convenience of your
+users.
+</p>
+<p>You might try to use this feature to provide an optimizing implementation of
+the default compilation semantics of a word. For example, by defining:
+</p><div class="example">
+<pre class="example">:noname
+   foo bar ;
+:noname
+   POSTPONE foo POSTPONE bar ;
+interpret/compile: opti-foobar
+</pre></div>
+
+<p>as an optimizing version of:
+</p>
+<div class="example">
+<pre class="example">: foobar
+    foo bar ;
+</pre></div>
+
+<p>Unfortunately, this does not work correctly with <code>[compile]</code>, because
+<code>[compile]</code> assumes that the compilation semantics of all
+<code>interpret/compile:</code> words are non-default. I.e., <code>[compile]
+opti-foobar</code> would compile compilation semantics, whereas <code>[compile]
+foobar</code> would compile interpretation semantics.
+</p>
+<span id="index-state_002dsmart-words-_0028are-a-bad-idea_0029"></span>
+<span id="state_002dsmartness"></span><p>Some people try to use <em>state-smart</em> words to emulate the feature
+provided by <code>interpret/compile:</code> (words are state-smart if they check
+<code>STATE</code> during execution). E.g., they would try to code <code>foobar</code>
+like this:
+</p>
+<div class="example">
+<pre class="example">: foobar
+  STATE @
+  IF ( compilation state )
+    POSTPONE foo POSTPONE bar
+  ELSE
+    foo bar
+  ENDIF ; immediate
+</pre></div>
+
+<p>Although this works if <code>foobar</code> is only processed by the text
+interpreter, it does not work in other contexts (like <code>'</code> or
+<code>POSTPONE</code>). E.g., <code>' foobar</code> will produce an execution token for
+a state-smart word, not for the interpretation semantics of the original
+<code>foobar</code>; when you execute this execution token (directly with
+<code>EXECUTE</code> or indirectly through <code>COMPILE,</code>) in compile state, the
+result will not be what you expected (i.e., it will not perform <code>foo
+bar</code>). State-smart words are a bad idea. Simply don&rsquo;t write
+them<a id="DOCF20" href="#FOOT20"><sup>20</sup></a>!
+</p>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT20" href="#DOCF20">(20)</a></h5>
+<p>For a more detailed discussion of this topic, see M. Anton
+Ertl,
+<cite><a href="https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz"><code>State</code>-smartness&mdash;Why
+it is Evil and How to Exorcise it</a></cite>, EuroForth &rsquo;98.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Interpretation-and-Compilation-Semantics.html">Interpretation and Compilation Semantics</a>, Up: <a href="Interpretation-and-Compilation-Semantics.html">Interpretation and Compilation Semantics</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

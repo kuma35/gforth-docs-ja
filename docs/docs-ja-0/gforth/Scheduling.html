@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Scheduling (Gforth マニュアル)</title>
+
+<meta name="description" content="Scheduling (Gforth マニュアル)">
+<meta name="keywords" content="Scheduling (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Threading.html" rel="up" title="Threading">
+<link href="Direct-or-Indirect-Threaded_003f.html" rel="next" title="Direct or Indirect Threaded?">
+<link href="Threading.html" rel="prev" title="Threading">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Scheduling">
+<div class="header">
+<p>
+Next: <a href="Direct-or-Indirect-Threaded_003f.html" accesskey="n" rel="next">Direct or Indirect Threaded?</a>, Previous: <a href="Threading.html" accesskey="p" rel="prev">Threading</a>, Up: <a href="Threading.html" accesskey="u" rel="up">Threading</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Scheduling-1"></span><h4 class="subsection">15.2.1 Scheduling</h4>
+<span id="index-inner-interpreter-optimization"></span>
+
+<p>There is a little complication: Pipelined and superscalar processors, i.e.,
+RISC and some modern CISC machines can process independent instructions
+while waiting for the results of an instruction. The compiler usually
+reorders (schedules) the instructions in a way that achieves good usage of
+these delay slots. However, on our first tries the compiler did not do well
+on scheduling primitives. E.g., for <code>+</code> implemented as
+</p><div class="example">
+<pre class="example">n=sp[0]+sp[1];
+sp++;
+sp[0]=n;
+NEXT;
+</pre></div>
+<p>the <code>NEXT</code> comes strictly after the other code, i.e., there is nearly
+no scheduling. After a little thought the problem becomes clear: The
+compiler cannot know that <code>sp</code> and <code>ip</code> point to different
+addresses (and the version of <code>gcc</code> we used would not know it even if
+it was possible), so it could not move the load of the cfa above the store
+to the TOS. Indeed the pointers could be the same, if code on or very near
+the top of stack were executed. In the interest of speed we chose to forbid
+this probably unused &ldquo;feature&rdquo; and helped the compiler in scheduling:
+<code>NEXT</code> is divided into several parts: <code>NEXT_P0</code>, <code>NEXT_P1</code>
+and <code>NEXT_P2</code>). <code>+</code> now looks like:
+</p><div class="example">
+<pre class="example">NEXT_P0;
+n=sp[0]+sp[1];
+sp++;
+NEXT_P1;
+sp[0]=n;
+NEXT_P2;
+</pre></div>
+
+<p>There are various schemes that distribute the different operations of NEXT
+between these parts in several ways; in general, different schemes perform
+best on different processors.  We use a scheme for most architectures that
+performs well for most processors of this architecture; in the future we may
+switch to benchmarking and chosing the scheme on installation time.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Direct-or-Indirect-Threaded_003f.html">Direct or Indirect Threaded?</a>, Previous: <a href="Threading.html">Threading</a>, Up: <a href="Threading.html">Threading</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

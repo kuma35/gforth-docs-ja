@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Code Coverage (Gforth マニュアル)</title>
+
+<meta name="description" content="Code Coverage (Gforth マニュアル)">
+<meta name="keywords" content="Code Coverage (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Programming-Tools.html" rel="up" title="Programming Tools">
+<link href="Singlestep-Debugger.html" rel="prev" title="Singlestep Debugger">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Code-Coverage">
+<div class="header">
+<p>
+Previous: <a href="Singlestep-Debugger.html" accesskey="p" rel="prev">Singlestep Debugger</a>, Up: <a href="Programming-Tools.html" accesskey="u" rel="up">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Code-Coverage-and-Execution-Frequency"></span><h4 class="subsection">6.26.10 Code Coverage and Execution Frequency</h4>
+<span id="index-code-coverage"></span>
+<span id="index-execution-frequency"></span>
+
+<p>If you run extensive tests on your code, you often want to figure out if the
+tests exercise all parts of the code.  This is called (test)  coverage.  The
+file <samp>coverage.fs</samp> contains tools for measuring the coverage as well as
+execution frequency.
+</p>
+<p>Code coverage inserts counting code in every basic block (straight-line code
+sequence) loaded after <samp>coverage.fs</samp>.  Each time that code is run, it
+increments the counter for that basic block.  Later you can show the source
+file with the counts inserted in these basic blocks.
+</p>
+<span id="index-nocov_005b-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-nocov_005b"></span>
+<span id="index-nocov_005b-1"></span>
+<div class="format">
+<pre class="format"><code>nocov[</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;nocov-bracket&rdquo;
+</pre></div>
+<p>(Immediate) Turn coverage off temporarily.
+</p>
+
+<span id="index-_005dnocov-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_005dnocov"></span>
+<span id="index-_005dnocov-1"></span>
+<div class="format">
+<pre class="format"><code>]nocov</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;bracket-nocov&rdquo;
+</pre></div>
+<p>(Immediate) End of temporary turned off coverage.
+</p>
+
+<span id="index-coverage_003f-_0028--_002d_002d-f--_0029-gforth_002dinternal"></span>
+<span id="index-coverage_003f"></span>
+<span id="index-coverage_003f-1"></span>
+<div class="format">
+<pre class="format"><code>coverage?</code> ( <i>&ndash; f  </i>) gforth-internal &ldquo;coverage?&rdquo;
+</pre></div>
+<p>Value: Coverage check on/off
+</p>
+
+<span id="index-cov_002b-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-cov_002b"></span>
+<span id="index-cov_002b-1"></span>
+<div class="format">
+<pre class="format"><code>cov+</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;cov+&rdquo;
+</pre></div>
+<p>(Immediate) Place a coverage counter here.
+</p>
+
+<span id="index-_003fcov_002b-_0028--flag-_002d_002d-flag--_0029-gforth_002dexperimental"></span>
+<span id="index-_003fcov_002b"></span>
+<span id="index-_003fcov_002b-1"></span>
+<div class="format">
+<pre class="format"><code>?cov+</code> ( <i>flag &ndash; flag  </i>) gforth-experimental &ldquo;?cov+&rdquo;
+</pre></div>
+<p>(Immediate) A coverage counter for a flag; in the coverage output you see
+three numbers behind <code>?cov</code>: The first is the number of executions
+where the top-of-stack was non-zero; the second is the number of executions
+where it was zero; the third is the total number of executions.
+</p>
+
+<span id="index-_002ecoverage-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_002ecoverage"></span>
+<span id="index-_002ecoverage-1"></span>
+<div class="format">
+<pre class="format"><code>.coverage</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;.coverage&rdquo;
+</pre></div>
+<p>Show code with execution frequencies.
+</p>
+
+<span id="index-annotate_002dcov-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-annotate_002dcov"></span>
+<span id="index-annotate_002dcov-1"></span>
+<div class="format">
+<pre class="format"><code>annotate-cov</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;annotate-cov&rdquo;
+</pre></div>
+<p>For every file with coverage information, produce a <code>.cov</code> file that
+has the execution frequencies inserted.  We recommend to use <code>bw-cover</code>
+first (with the default <code>color-cover</code> you get escape sequences in the
+files).
+</p>
+
+<span id="index-cov_0025-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-cov_0025"></span>
+<span id="index-cov_0025-1"></span>
+<div class="format">
+<pre class="format"><code>cov%</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;cov-percent&rdquo;
+</pre></div>
+<p>Print the percentage of basic blocks loaded after <samp>coverage.fs</samp> that
+are executed at least once.
+</p>
+
+<span id="index-_002ecover_002draw-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_002ecover_002draw"></span>
+<span id="index-_002ecover_002draw-1"></span>
+<div class="format">
+<pre class="format"><code>.cover-raw</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;.cover-raw&rdquo;
+</pre></div>
+<p>Print raw execution counts.
+</p>
+
+
+<p>By default, the counts are shown in colour (using ANSI escape sequences),
+but you can use <code>bw-cover</code> to show them in parenthesized form without
+escape sequences.
+</p>
+<span id="index-bw_002dcover-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-bw_002dcover"></span>
+<span id="index-bw_002dcover-1"></span>
+<div class="format">
+<pre class="format"><code>bw-cover</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;bw-cover&rdquo;
+</pre></div>
+<p>Print execution counts in parentheses (source-code compatible).
+</p>
+
+<span id="index-color_002dcover-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-color_002dcover"></span>
+<span id="index-color_002dcover-1"></span>
+<div class="format">
+<pre class="format"><code>color-cover</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;color-cover&rdquo;
+</pre></div>
+<p>Print execution counts in colours (default).
+</p>
+
+
+<p>You can save and reload the coverage counters in binary format, to aggregate
+coverage counters across several test runs.
+</p>
+<span id="index-save_002dcov-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-save_002dcov"></span>
+<span id="index-save_002dcov-1"></span>
+<div class="format">
+<pre class="format"><code>save-cov</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;save-cov&rdquo;
+</pre></div>
+<p>Save coverage counters.
+</p>
+
+<span id="index-load_002dcov-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-load_002dcov"></span>
+<span id="index-load_002dcov-1"></span>
+<div class="format">
+<pre class="format"><code>load-cov</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;load-cov&rdquo;
+</pre></div>
+<p>Load coverage counters.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Singlestep-Debugger.html">Singlestep Debugger</a>, Up: <a href="Programming-Tools.html">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

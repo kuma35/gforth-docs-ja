@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Class Binding (Gforth マニュアル)</title>
+
+<meta name="description" content="Class Binding (Gforth マニュアル)">
+<meta name="keywords" content="Class Binding (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Objects.html" rel="up" title="Objects">
+<link href="Method-conveniences.html" rel="next" title="Method conveniences">
+<link href="Object_002dOriented-Programming-Style.html" rel="prev" title="Object-Oriented Programming Style">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Class-Binding">
+<div class="header">
+<p>
+Next: <a href="Method-conveniences.html" accesskey="n" rel="next">Method conveniences</a>, Previous: <a href="Object_002dOriented-Programming-Style.html" accesskey="p" rel="prev">Object-Oriented Programming Style</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Class-Binding-1"></span><h4 class="subsubsection">6.24.3.6 Class Binding</h4>
+<span id="index-class-binding"></span>
+<span id="index-early-binding"></span>
+
+<span id="index-late-binding"></span>
+<p>Normal selector invocations determine the method at run-time depending on
+the class of the receiving object. This run-time selection is called <i>late
+binding</i>.
+</p>
+<p>Sometimes it&rsquo;s preferable to invoke a different method. For example, you
+might want to use the simple method for <code>print</code>ing <code>object</code>s
+instead of the possibly long-winded <code>print</code> method of the receiver
+class. You can achieve this by replacing the invocation of <code>print</code>
+with:
+</p>
+<span id="index-_005bbind_005d-usage"></span>
+<div class="example">
+<pre class="example">[bind] object print
+</pre></div>
+
+<p>in compiled code or:
+</p>
+<span id="index-bind-usage"></span>
+<div class="example">
+<pre class="example">bind object print
+</pre></div>
+
+<span id="index-class-binding_002c-alternative-to"></span>
+<p>in interpreted code. Alternatively, you can define the method with a name
+(e.g., <code>print-object</code>), and then invoke it through the name. Class
+binding is just a (often more convenient) way to achieve the same effect; it
+avoids name clutter and allows you to invoke methods directly without naming
+them first.
+</p>
+<span id="index-superclass-binding"></span>
+<span id="index-parent-class-binding"></span>
+<p>A frequent use of class binding is this: When we define a method for a
+selector, we often want the method to do what the selector does in the
+parent class, and a little more. There is a special word for this purpose:
+<code>[parent]</code>; <code>[parent] <em>selector</em></code> is equivalent to
+<code>[bind] <em>parent selector</em></code>, where <code><em>parent</em></code> is the
+parent class of the current class. E.g., a method definition might look
+like:
+</p>
+<span id="index-_005bparent_005d-usage"></span>
+<div class="example">
+<pre class="example">:noname
+  dup [parent] foo \ do parent's foo on the receiving object
+  ... \ do some more
+; overrides foo
+</pre></div>
+
+<span id="index-class-binding-as-optimization"></span>
+<p>In <cite>Object-oriented programming in ANS Forth</cite> (Forth Dimensions, March
+1997), Andrew McKewan presents class binding as an optimization technique. I
+recommend not using it for this purpose unless you are in an emergency. Late
+binding is pretty fast with this model anyway, so the benefit of using class
+binding is small; the cost of using class binding where it is not
+appropriate is reduced maintainability.
+</p>
+<p>While we are at programming style questions: You should bind selectors only
+to ancestor classes of the receiving object. E.g., say, you know that the
+receiving object is of class <code>foo</code> or its descendents; then you should
+bind only to <code>foo</code> and its ancestors.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Method-conveniences.html">Method conveniences</a>, Previous: <a href="Object_002dOriented-Programming-Style.html">Object-Oriented Programming Style</a>, Up: <a href="Objects.html">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

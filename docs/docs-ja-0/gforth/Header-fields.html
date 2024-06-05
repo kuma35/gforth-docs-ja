@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Header fields (Gforth マニュアル)</title>
+
+<meta name="description" content="Header fields (Gforth マニュアル)">
+<meta name="keywords" content="Header fields (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Carnal-words.html" rel="up" title="Carnal words">
+<link href="Header-methods.html" rel="next" title="Header methods">
+<link href="Carnal-words.html" rel="prev" title="Carnal words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Header-fields">
+<div class="header">
+<p>
+Next: <a href="Header-methods.html" accesskey="n" rel="next">Header methods</a>, Previous: <a href="Carnal-words.html" accesskey="p" rel="prev">Carnal words</a>, Up: <a href="Carnal-words.html" accesskey="u" rel="up">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Header-fields-1"></span><h4 class="subsection">6.30.1 Header fields</h4>
+<span id="index-header-fields"></span>
+
+<p>In Gforth 1.0 we switched to a new word header layout.  For a detailed
+description, read: Bernd Paysan and M. Anton Ertl.
+<cite><a href="http://www.euroforth.org/ef19/papers/paysan.pdf">The new Gforth
+header</a></cite>. In 35th EuroForth Conference, pages 5-20, 2019.  Since this paper
+was published, xt and nt have been changed to point to the parameter field,
+like the body, but otherwise it is still up-to-date.
+</p>
+<p>This section explains just the data structure and the words used to access
+it.  A header has the following fields:
+</p>
+<div class="example">
+<pre class="example">name
+&gt;f+c
+&gt;link
+&gt;cfa
+&gt;namehm
+&gt;body
+</pre></div>
+
+<p>Currently Gforth has the names shown above for getting from the xt/nt/body
+to the field, but apart from the standard <code>&gt;body</code> they are not stable
+Gforth words.  Instead, we provide access words.  Note that the documented
+access words have survived the reorganization of the header layout.
+</p>
+<p>Some of the words expect an nt, some expect an xt.  Given that both nt and
+xt point to the body of a word, what is the difference? For most words, the
+xt and nt use the same header, and with nt=xt, they point to the same
+place.  However, for a synonym (see <a href="Aliases.html">Aliases</a>) there is a difference;
+consider the example
+</p>
+<div class="example">
+<pre class="example">create x
+synonym y x
+synonym z y
+</pre></div>
+
+<p>In this case the nt of <code>z</code> points to the body of <code>z</code>, while the xt
+of <code>z</code> points to the body of <code>x</code>.  Words defined with <code>alias</code>
+or <code>forward</code> (see <a href="Forward.html">Forward</a>) also have different nts and xts.
+</p>
+<p>The name field is variable-length and is accessed with <code>name&gt;string</code>
+(see <a href="Name-token.html">Name token</a>).
+</p>
+<p>The <code>&gt;f+c</code> field contains flags and the name length (count).  You read
+the count with <code>name&gt;string</code>, and the flags with
+</p>
+<span id="index-compile_002donly_003f-_0028--nt-_002d_002d-flag--_0029-gforth_002d1_002e0"></span>
+<span id="index-compile_002donly_003f"></span>
+<span id="index-compile_002donly_003f-1"></span>
+<div class="format">
+<pre class="format"><code>compile-only?</code> ( <i>nt &ndash; flag  </i>) gforth-1.0 &ldquo;compile-only?&rdquo;
+</pre></div>
+<p>true if <i>nt</i> is marked as compile-only.
+</p>
+
+
+<p>The <code>&gt;link</code> field contains a link to the previous word in the same word
+list.  You can read it with <code>name&gt;link</code> (see <a href="Name-token.html">Name token</a>).
+</p>
+<p>The name, <code>&gt;f+c</code> and <code>&gt;link</code> fields are not present for
+<code>noname</code> words, but <code>name&gt;string</code> and <code>name&gt;link</code> work
+nevertheless, producing 0 0 and 0, respectively.
+</p>
+<p>The <code>&gt;cfa</code> field (aka code field) contains the code address used for
+<code>execute</code>ing the word; you can read it with <code>&gt;code-address</code> and
+write it with <code>code-address!</code> (see <a href="Threading-Words.html">Threading Words</a>).
+</p>
+<p>The <code>&gt;namehm</code> field contains the address of the header methods table,
+described below.  You access it by performing or accessing header methods
+(see <a href="Header-methods.html">Header methods</a>).
+</p>
+<p>The <code>&gt;body</code> (aka parameter) field contains data or threaded code
+specific to the word type; its length depends on the word type.  E.g., for a
+<code>constant</code> it contains a cell with the value of the constant.  You can
+access it through <code>&gt;body</code> (see <a href="CREATE_002e_002eDOES_003e-details.html">The gory details of <code>CREATE..DOES&gt;</code></a>), but this is
+only standard for words you defined with <code>create</code>.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Header-methods.html">Header methods</a>, Previous: <a href="Carnal-words.html">Carnal words</a>, Up: <a href="Carnal-words.html">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

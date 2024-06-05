@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Using the Cross Compiler (Gforth マニュアル)</title>
+
+<meta name="description" content="Using the Cross Compiler (Gforth マニュアル)">
+<meta name="keywords" content="Using the Cross Compiler (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Cross-Compiler.html" rel="up" title="Cross Compiler">
+<link href="How-the-Cross-Compiler-Works.html" rel="next" title="How the Cross Compiler Works">
+<link href="Cross-Compiler.html" rel="prev" title="Cross Compiler">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Using-the-Cross-Compiler">
+<div class="header">
+<p>
+Next: <a href="How-the-Cross-Compiler-Works.html" accesskey="n" rel="next">How the Cross Compiler Works</a>, Previous: <a href="Cross-Compiler.html" accesskey="p" rel="prev">Cross Compiler</a>, Up: <a href="Cross-Compiler.html" accesskey="u" rel="up">Cross Compiler</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Using-the-Cross-Compiler-1"></span><h3 class="section">16.1 Using the Cross Compiler</h3>
+
+<p>The cross compiler uses a language that resembles Forth, but isn&rsquo;t. The main
+difference is that you can execute Forth code after definition, while you
+usually can&rsquo;t execute the code compiled by cross, because the code you are
+compiling is typically for a different computer than the one you are
+compiling on.
+</p>
+
+<p>The Makefile is already set up to allow you to create kernels for new
+architectures with a simple make command. The generic kernels using the GCC
+compiled virtual machine are created in the normal build process with
+<code>make</code>. To create a embedded Gforth executable for e.g. the 8086
+processor (running on a DOS machine), type
+</p>
+<div class="example">
+<pre class="example">make kernl-8086.fi
+</pre></div>
+
+<p>This will use the machine description from the <samp>arch/8086</samp> directory to
+create a new kernel. A machine file may look like that:
+</p>
+<div class="example">
+<pre class="example">\ Parameter for target systems                         06oct92py
+
+    4 Constant cell             \ cell size in bytes
+    2 Constant cell&lt;&lt;           \ cell shift to bytes
+    5 Constant cell&gt;bit         \ cell shift to bits
+    8 Constant bits/char        \ bits per character
+    8 Constant bits/byte        \ bits per byte [default: 8]
+    8 Constant float            \ bytes per float
+    8 Constant /maxalign        \ maximum alignment in bytes
+false Constant bigendian        \ byte order
+( true=big, false=little )
+
+include machpc.fs               \ feature list
+</pre></div>
+
+<p>This part is obligatory for the cross compiler itself, the feature list is
+used by the kernel to conditionally compile some features in and out,
+depending on whether the target supports these features.
+</p>
+<p>There are some optional features, if you define your own primitives, have an
+assembler, or need special, nonstandard preparation to make the boot process
+work. <code>asm-include</code> includes an assembler, <code>prims-include</code>
+includes primitives, and <code>&gt;boot</code> prepares for booting.
+</p>
+<div class="example">
+<pre class="example">: asm-include    .&quot; Include assembler&quot; cr
+  s&quot; arch/8086/asm.fs&quot; included ;
+
+: prims-include  .&quot; Include primitives&quot; cr
+  s&quot; arch/8086/prim.fs&quot; included ;
+
+: &gt;boot          .&quot; Prepare booting&quot; cr
+  s&quot; ' boot &gt;body into-forth 1+ !&quot; evaluate ;
+</pre></div>
+
+<p>These words are used as sort of macro during the cross compilation in the
+file <samp>kernel/main.fs</samp>. Instead of using these macros, it would be
+possible &mdash; but more complicated &mdash; to write a new kernel project file,
+too.
+</p>
+<p><samp>kernel/main.fs</samp> expects the machine description file name on the
+stack; the cross compiler itself (<samp>cross.fs</samp>) assumes that either
+<code>mach-file</code> leaves a counted string on the stack, or
+<code>machine-file</code> leaves an address, count pair of the filename on the
+stack.
+</p>
+<p>The feature list is typically controlled using <code>SetValue</code>, generic
+files that are used by several projects can use <code>DefaultValue</code>
+instead. Both functions work like <code>Value</code>, when the value isn&rsquo;t
+defined, but <code>SetValue</code> works like <code>to</code> if the value is defined,
+and <code>DefaultValue</code> doesn&rsquo;t set anything, if the value is defined.
+</p>
+<div class="example">
+<pre class="example">\ generic mach file for pc gforth                       03sep97jaw
+
+true DefaultValue NIL  \ relocating
+
+&gt;ENVIRON
+
+true DefaultValue file          \ controls the presence of the
+                                \ file access wordset
+true DefaultValue OS            \ flag to indicate a operating system
+
+true DefaultValue prims         \ true: primitives are c-code
+
+true DefaultValue floating      \ floating point wordset is present
+
+true DefaultValue glocals       \ gforth locals are present
+                                \ will be loaded
+true DefaultValue dcomps        \ double number comparisons
+
+true DefaultValue hash          \ hashing primitives are loaded/present
+
+true DefaultValue xconds        \ used together with glocals,
+                                \ special conditionals supporting gforths'
+                                \ local variables
+true DefaultValue header        \ save a header information
+
+true DefaultValue backtrace     \ enables backtrace code
+
+false DefaultValue ec
+false DefaultValue crlf
+
+cell 2 = [IF] &amp;32 [ELSE] &amp;256 [THEN] KB DefaultValue kernel-size
+
+&amp;16 KB          DefaultValue stack-size
+&amp;15 KB &amp;512 +   DefaultValue fstack-size
+&amp;15 KB          DefaultValue rstack-size
+&amp;14 KB &amp;512 +   DefaultValue lstack-size
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="How-the-Cross-Compiler-Works.html">How the Cross Compiler Works</a>, Previous: <a href="Cross-Compiler.html">Cross Compiler</a>, Up: <a href="Cross-Compiler.html">Cross Compiler</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

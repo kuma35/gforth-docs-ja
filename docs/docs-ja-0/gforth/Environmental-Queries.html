@@ -1,0 +1,461 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Environmental Queries (Gforth マニュアル)</title>
+
+<meta name="description" content="Environmental Queries (Gforth マニュアル)">
+<meta name="keywords" content="Environmental Queries (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Words.html" rel="up" title="Words">
+<link href="Files.html" rel="next" title="Files">
+<link href="Word-Lists.html" rel="prev" title="Word Lists">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Environmental-Queries">
+<div class="header">
+<p>
+Next: <a href="Files.html" accesskey="n" rel="next">Files</a>, Previous: <a href="Word-Lists.html" accesskey="p" rel="prev">Word Lists</a>, Up: <a href="Words.html" accesskey="u" rel="up">Forth Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Environmental-Queries-1"></span><h3 class="section">6.17 Environmental Queries</h3>
+<span id="index-environmental-queries"></span>
+
+<p>Forth-94 introduced the idea of &ldquo;environmental queries&rdquo; as a way for a
+program running on a system to determine certain characteristics of the
+system.  The Standard specifies a number of strings that might be recognised
+by a system, and a way of querying them:
+</p>
+<span id="index-environment_003f-_0028--c_002daddr-u-_002d_002d-false-_002f-_002e_002e_002e-true--_0029-core"></span>
+<span id="index-environment_003f"></span>
+<span id="index-environment_003f-1"></span>
+<div class="format">
+<pre class="format"><code>environment?</code> ( <i>c-addr u &ndash; false / ... true  </i>) core &ldquo;environment-query&rdquo;
+</pre></div>
+<p><i>c-addr, u</i> specify a counted string. If the string is not recognised,
+return a <code>false</code> flag. Otherwise return a <code>true</code> flag and some
+(string-specific) information about the queried string.
+</p>
+
+
+<p>Note that, whilst the documentation for (e.g.)  <code>ADDRESS-UNIT-BITS</code>
+shows it returning one cell on the stack, querying it using
+<code>environment?</code> will return an additional item; the <code>true</code> flag
+that shows that the string was recognised; so for querying
+<code>ADDRESS-UNIT-BITS</code> the stack effect of <code>environment?</code> is <code>(
+c-addr u -- n true )</code>.
+</p>
+
+<p>Several environmental queries deal with the system&rsquo;s limits:
+</p>
+<span id="index-ADDRESS_002dUNIT_002dBITS-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-ADDRESS_002dUNIT_002dBITS"></span>
+<span id="index-ADDRESS_002dUNIT_002dBITS-1"></span>
+<div class="format">
+<pre class="format"><code>ADDRESS-UNIT-BITS</code> ( <i>&ndash; n  </i>) environment &ldquo;ADDRESS-UNIT-BITS&rdquo;
+</pre></div>
+<p>Size of one address unit, in bits.
+</p>
+
+<span id="index-MAX_002dCHAR-_0028--_002d_002d-u--_0029-environment"></span>
+<span id="index-MAX_002dCHAR"></span>
+<span id="index-MAX_002dCHAR-1"></span>
+<div class="format">
+<pre class="format"><code>MAX-CHAR</code> ( <i>&ndash; u  </i>) environment &ldquo;MAX-CHAR&rdquo;
+</pre></div>
+<p>Maximum value of any character in the character set
+</p>
+
+<span id="index-_002fCOUNTED_002dSTRING-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-_002fCOUNTED_002dSTRING"></span>
+<span id="index-_002fCOUNTED_002dSTRING-1"></span>
+<div class="format">
+<pre class="format"><code>/COUNTED-STRING</code> ( <i>&ndash; n  </i>) environment &ldquo;slash-counted-string&rdquo;
+</pre></div>
+<p>Maximum size of a counted string, in characters.
+</p>
+
+<span id="index-_002fHOLD-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-_002fHOLD"></span>
+<span id="index-_002fHOLD-1"></span>
+<div class="format">
+<pre class="format"><code>/HOLD</code> ( <i>&ndash; n  </i>) environment &ldquo;slash-hold&rdquo;
+</pre></div>
+<p>Size of the pictured numeric string output buffer, in characters.
+</p>
+
+<span id="index-_002fPAD-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-_002fPAD"></span>
+<span id="index-_002fPAD-1"></span>
+<div class="format">
+<pre class="format"><code>/PAD</code> ( <i>&ndash; n  </i>) environment &ldquo;slash-pad&rdquo;
+</pre></div>
+<p>Size of the scratch area pointed to by <code>PAD</code>, in characters.
+</p>
+
+<span id="index-CORE-_0028--_002d_002d-f--_0029-environment"></span>
+<span id="index-CORE"></span>
+<span id="index-CORE-1"></span>
+<div class="format">
+<pre class="format"><code>CORE</code> ( <i>&ndash; f  </i>) environment &ldquo;CORE&rdquo;
+</pre></div>
+<p>True if the complete core word set is present. Always true for Gforth.
+</p>
+
+<span id="index-CORE_002dEXT-_0028--_002d_002d-f--_0029-environment"></span>
+<span id="index-CORE_002dEXT"></span>
+<span id="index-CORE_002dEXT-1"></span>
+<div class="format">
+<pre class="format"><code>CORE-EXT</code> ( <i>&ndash; f  </i>) environment &ldquo;CORE-EXT&rdquo;
+</pre></div>
+<p>True if the complete core extension word set is present. Always true for
+Gforth.
+</p>
+
+<span id="index-FLOORED-_0028--_002d_002d-f--_0029-environment"></span>
+<span id="index-FLOORED"></span>
+<span id="index-FLOORED-1"></span>
+<div class="format">
+<pre class="format"><code>FLOORED</code> ( <i>&ndash; f  </i>) environment &ldquo;FLOORED&rdquo;
+</pre></div>
+<p>True if <code>/</code> etc. perform floored division
+</p>
+
+<span id="index-MAX_002dN-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-MAX_002dN"></span>
+<span id="index-MAX_002dN-1"></span>
+<div class="format">
+<pre class="format"><code>MAX-N</code> ( <i>&ndash; n  </i>) environment &ldquo;MAX-N&rdquo;
+</pre></div>
+<p>Largest usable signed integer.
+</p>
+
+<span id="index-MAX_002dU-_0028--_002d_002d-u--_0029-environment"></span>
+<span id="index-MAX_002dU"></span>
+<span id="index-MAX_002dU-1"></span>
+<div class="format">
+<pre class="format"><code>MAX-U</code> ( <i>&ndash; u  </i>) environment &ldquo;MAX-U&rdquo;
+</pre></div>
+<p>Largest usable unsigned integer.
+</p>
+
+<span id="index-MAX_002dD-_0028--_002d_002d-d--_0029-environment"></span>
+<span id="index-MAX_002dD"></span>
+<span id="index-MAX_002dD-1"></span>
+<div class="format">
+<pre class="format"><code>MAX-D</code> ( <i>&ndash; d  </i>) environment &ldquo;MAX-D&rdquo;
+</pre></div>
+<p>Largest usable signed double.
+</p>
+
+<span id="index-MAX_002dUD-_0028--_002d_002d-ud--_0029-environment"></span>
+<span id="index-MAX_002dUD"></span>
+<span id="index-MAX_002dUD-1"></span>
+<div class="format">
+<pre class="format"><code>MAX-UD</code> ( <i>&ndash; ud  </i>) environment &ldquo;MAX-UD&rdquo;
+</pre></div>
+<p>Largest usable unsigned double.
+</p>
+
+<span id="index-return_002dstack_002dcells-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-return_002dstack_002dcells"></span>
+<span id="index-return_002dstack_002dcells-1"></span>
+<div class="format">
+<pre class="format"><code>return-stack-cells</code> ( <i>&ndash; n  </i>) environment &ldquo;return-stack-cells&rdquo;
+</pre></div>
+<p>Maximum size of the return stack, in cells.
+</p>
+
+<span id="index-stack_002dcells-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-stack_002dcells"></span>
+<span id="index-stack_002dcells-1"></span>
+<div class="format">
+<pre class="format"><code>stack-cells</code> ( <i>&ndash; n  </i>) environment &ldquo;stack-cells&rdquo;
+</pre></div>
+<p>Maximum size of the data stack, in cells.
+</p>
+
+<span id="index-floating_002dstack-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-floating_002dstack"></span>
+<span id="index-floating_002dstack-1"></span>
+<div class="format">
+<pre class="format"><code>floating-stack</code> ( <i>&ndash; n  </i>) environment &ldquo;floating-stack&rdquo;
+</pre></div>
+<p><var>n</var> is non-zero, showing that Gforth maintains a separate floating-point
+stack of depth <var>n</var>.
+</p>
+
+<span id="index-_0023locals-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-_0023locals"></span>
+<span id="index-_0023locals-1"></span>
+<div class="format">
+<pre class="format"><code>#locals</code> ( <i>&ndash; n  </i>) environment &ldquo;number-locals&rdquo;
+</pre></div>
+<p>The maximum number of locals in a definition
+</p>
+
+<span id="index-wordlists-_0028--_002d_002d-n--_0029-environment"></span>
+<span id="index-wordlists"></span>
+<span id="index-wordlists-1"></span>
+<div class="format">
+<pre class="format"><code>wordlists</code> ( <i>&ndash; n  </i>) environment &ldquo;wordlists&rdquo;
+</pre></div>
+<p>the maximum number of wordlists usable in the search order
+</p>
+
+<span id="index-max_002dfloat-_0028--_002d_002d-r--_0029-environment"></span>
+<span id="index-max_002dfloat"></span>
+<span id="index-max_002dfloat-1"></span>
+<div class="format">
+<pre class="format"><code>max-float</code> ( <i>&ndash; r  </i>) environment &ldquo;max-float&rdquo;
+</pre></div>
+<p>The largest usable floating-point number (implemented as largest finite
+number in Gforth)
+</p>
+
+<span id="index-XCHAR_002dENCODING-_0028--_002d_002d-addr-u--_0029-environment"></span>
+<span id="index-XCHAR_002dENCODING"></span>
+<span id="index-XCHAR_002dENCODING-1"></span>
+<div class="format">
+<pre class="format"><code>XCHAR-ENCODING</code> ( <i>&ndash; addr u  </i>) environment &ldquo;XCHAR-ENCODING&rdquo;
+</pre></div>
+<p>Returns a printable ASCII string that reperesents the encoding, and use the
+preferred MIME name (if any) or the name in
+<a href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a> like &ldquo;ISO-LATIN-1&rdquo; or
+&ldquo;UTF-8&rdquo;, with the exception of &ldquo;ASCII&rdquo;, where we prefer the alias
+&ldquo;ASCII&rdquo;.
+</p>
+
+<span id="index-MAX_002dXCHAR-_0028--_002d_002d-xchar--_0029-environment"></span>
+<span id="index-MAX_002dXCHAR"></span>
+<span id="index-MAX_002dXCHAR-1"></span>
+<div class="format">
+<pre class="format"><code>MAX-XCHAR</code> ( <i>&ndash; xchar  </i>) environment &ldquo;MAX-XCHAR&rdquo;
+</pre></div>
+<p>Maximal value for xchar.  This depends on the encoding.
+</p>
+
+<span id="index-XCHAR_002dMAXMEM-_0028--_002d_002d-u--_0029-environment"></span>
+<span id="index-XCHAR_002dMAXMEM"></span>
+<span id="index-XCHAR_002dMAXMEM-1"></span>
+<div class="format">
+<pre class="format"><code>XCHAR-MAXMEM</code> ( <i>&ndash; u  </i>) environment &ldquo;XCHAR-MAXMEM&rdquo;
+</pre></div>
+<p>Maximal memory consumed by an xchar in address units
+</p>
+
+
+<p>Several environemtal queries are there for determining the presence of the
+Forth-94 version of a wordset; they all have the stack effect <code>( -- f
+)</code> if the string is present (so the <code>environment?</code> stack effect for
+these queries is <code>( c-addr u -- false / f true )</code>.
+</p>
+<p><code>block block-ext double double-ext exception exception-ext facility
+facility-ext file file-ext floating floating-ext locals locals-ext
+memory-alloc memory-alloc-ext tools tools-ext search-order search-order-ext
+string string-ext</code>
+</p>
+<p>These wordset queries were rarely used and implemented, so Forth-2012 did
+not introduce a way to query for the Forth-2012 variants of the wordsets.
+Instead, the idea is that you use <code>[defined]</code> (see <a href="Interpreter-Directives.html">Interpreter Directives</a>) instead.
+</p>
+<p>Forth-200x (a group that works on the next standard; the documents that they
+produce are also called Forth-200x) defines extension queries for the
+extension proposals once they finish changing (CfV stage), so programs using
+these proposals can check whether a system has them, and maybe load the
+reference implementation (if one exists).  If <code>environment?</code> finds such
+a query, then the corresponding proposal on <a href="www.forth200x.org">www.forth200x.org</a> is
+implemented on the system (but the absence tells you nothing, as usual with
+<code>environment?</code>).  These queries have the stack effect <code>( -- )</code>,
+which means that for them <code>environment?</code> has the stack effect <code>(
+c-addr u -- false / true )</code>, which is more convenient than that of wordset
+queries.  A number of these proposals have been incorporated into
+Forth-2012.  The extension queries are also not particularly popular among
+Forth system implementors, so going for <code>[defined]</code> may be the better
+approach.  Anyway, Gforth implements the following extension queries:
+</p>
+<p><code>X:2value X:buffer X:deferred X:defined X:ekeys X:escaped-strings
+X:extension-query X:fp-stack X:ftrunc X:fvalue X:locals X:n-to-r
+X:number-prefixes X:parse-name X:required X:s-escape-quote X:s-to-f
+X:structures X:synonym X:text-substitution X:throw-iors X:traverse-wordlist
+X:xchar</code>
+</p>
+<p>In addition, Gforth implements the following Gforth-specific queries:
+</p>
+<span id="index-gforth-_0028--_002d_002d-c_002daddr-u--_0029-gforth_002denvironment"></span>
+<span id="index-gforth"></span>
+<span id="index-gforth-1"></span>
+<div class="format">
+<pre class="format"><code>gforth</code> ( <i>&ndash; c-addr u  </i>) gforth-environment &ldquo;gforth&rdquo;
+</pre></div>
+<p>Counted string representing a version string for this version of Gforth (for
+versions&gt;0.3.0).  The version strings of the various versions are guaranteed
+to be ordered lexicographically.
+</p>
+
+<span id="index-os_002dclass-_0028--_002d_002d-c_002daddr-u--_0029-gforth_002denvironment"></span>
+<span id="index-os_002dclass"></span>
+<span id="index-os_002dclass-1"></span>
+<div class="format">
+<pre class="format"><code>os-class</code> ( <i>&ndash; c-addr u  </i>) gforth-environment &ldquo;os-class&rdquo;
+</pre></div>
+<p>Counted string representing a description of the host operating system.
+</p>
+
+<span id="index-os_002dtype-_0028--_002d_002d-c_002daddr-u--_0029-gforth_002denvironment"></span>
+<span id="index-os_002dtype"></span>
+<span id="index-os_002dtype-1"></span>
+<div class="format">
+<pre class="format"><code>os-type</code> ( <i>&ndash; c-addr u  </i>) gforth-environment &ldquo;os-type&rdquo;
+</pre></div>
+<p>Counted string equal to &quot;$host_os&quot;
+</p>
+
+
+<p>The Standard requires that the header space used for environmental queries
+be distinct from the header space used for definitions.
+</p>
+<p>Typically, a Forth system supports environmental queries by creating a set
+of definitions in a wordlist that is <i>only</i> used for environmental
+queries; that is what Gforth does. There is no Standard way of adding
+definitions to the set of recognised environmental queries, but in Gforth
+and other systems that use the wordlist mechanism, the wordlist used to
+honour environmental queries can be manipulated just like any other word
+list.
+</p>
+<span id="index-environment_002dwordlist-_0028--_002d_002d-wid--_0029-gforth_002d0_002e2"></span>
+<span id="index-environment_002dwordlist"></span>
+<span id="index-environment_002dwordlist-1"></span>
+<div class="format">
+<pre class="format"><code>environment-wordlist</code> ( <i>&ndash; wid  </i>) gforth-0.2 &ldquo;environment-wordlist&rdquo;
+</pre></div>
+<p><i>wid</i> identifies the word list that is searched by environmental queries
+(present in SwiftForth and VFX).
+</p>
+
+<span id="index-environment-_0028--_002d_002d--_0029-gforth_002d0_002e6"></span>
+<span id="index-environment"></span>
+<span id="index-environment-1"></span>
+<div class="format">
+<pre class="format"><code>environment</code> ( <i>&ndash;  </i>) gforth-0.6 &ldquo;environment&rdquo;
+</pre></div>
+<p>A vocabulary for <code>environment-wordlist</code> (present in Win32Forth and
+VFX).
+</p>
+
+
+
+<p>Here are some examples of using environmental queries:
+</p>
+<div class="example">
+<pre class="example">s&quot; address-unit-bits&quot; environment? 0=
+[IF]
+     cr .( environmental attribute address-units-bits unknown... ) cr
+[ELSE]
+     drop \ ensure balanced stack effect
+[THEN]
+
+\ this might occur in the prelude of a standard program that uses THROW
+s&quot; exception&quot; environment? [IF]
+   0= [IF]
+      : throw abort&quot; exception thrown&quot; ;
+   [THEN]
+[ELSE] \ we don't know, so make sure
+   : throw abort&quot; exception thrown&quot; ;
+[THEN]
+
+s&quot; gforth&quot; environment? [IF] .( Gforth version ) TYPE
+                        [ELSE] .( Not Gforth..) [THEN]
+
+\ a program using v*
+s&quot; gforth&quot; environment? [IF]
+  s&quot; 0.5.0&quot; compare 0&lt; [IF] \ v* is a primitive since 0.5.0
+   : v* ( f_addr1 nstride1 f_addr2 nstride2 ucount -- r )
+     &gt;r swap 2swap swap 0e r&gt; 0 ?DO
+       dup f@ over + 2swap dup f@ f* f+ over + 2swap
+     LOOP
+     2drop 2drop ; 
+  [THEN]
+[ELSE] \ 
+  : v* ( f_addr1 nstride1 f_addr2 nstride2 ucount -- r )
+  ...
+[THEN]
+</pre></div>
+
+<p>Here is an example of adding a definition to the environment word list:
+</p>
+<div class="example">
+<pre class="example">get-current environment-wordlist set-current
+true constant block
+true constant block-ext
+set-current
+</pre></div>
+
+<p>You can see what definitions are in the environment word list like this:
+</p>
+<div class="example">
+<pre class="example">environment-wordlist wordlist-words
+</pre></div>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Files.html">Files</a>, Previous: <a href="Word-Lists.html">Word Lists</a>, Up: <a href="Words.html">Forth Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

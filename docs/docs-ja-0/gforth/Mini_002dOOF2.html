@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Mini-OOF2 (Gforth マニュアル)</title>
+
+<meta name="description" content="Mini-OOF2 (Gforth マニュアル)">
+<meta name="keywords" content="Mini-OOF2 (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Object_002doriented-Forth.html" rel="up" title="Object-oriented Forth">
+<link href="Comparison-with-other-object-models.html" rel="next" title="Comparison with other object models">
+<link href="Mini_002dOOF.html" rel="prev" title="Mini-OOF">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Mini_002dOOF2">
+<div class="header">
+<p>
+Next: <a href="Comparison-with-other-object-models.html" accesskey="n" rel="next">Comparison with other object models</a>, Previous: <a href="Mini_002dOOF.html" accesskey="p" rel="prev">The <samp>mini-oof.fs</samp> model</a>, Up: <a href="Object_002doriented-Forth.html" accesskey="u" rel="up">Object-oriented Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Mini_002dOOF2-1"></span><h4 class="subsection">6.24.6 Mini-OOF2</h4>
+
+<p>Mini-OOF2 is very similar to Mini-OOF in many respects, but differs
+significantly in a few aspects.  In particular, Mini-OOF2 has a current
+object variable, and uses the primitives <code>&gt;o</code> and <code>o&gt;</code> to
+manipulate that object stack.  All method invocations and instance variable
+accesses refer to the current object.
+</p>
+<span id="index-_003eo-_0028--c_002daddr-_002d_002d-r_003ac_002dold--_0029-new"></span>
+<span id="index-_003eo"></span>
+<span id="index-_003eo-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;o</code> ( <i>c-addr &ndash; r:c-old </i>) new &ldquo;to-o&rdquo;
+</pre></div>
+<p>Set the current object to <var>c_addr</var>, the previous current object is
+pushed to the return stack
+</p>
+<span id="index-o_003e-_0028--r_003ac_002daddr-_002d_002d--_0029-new"></span>
+<span id="index-o_003e"></span>
+<span id="index-o_003e-1"></span>
+<div class="format">
+<pre class="format"><code>o&gt;</code> ( <i>r:c-addr &ndash; </i>) new &ldquo;o-restore&rdquo;
+</pre></div>
+<p>Restore the previous current object from the return stack
+</p>
+
+<p>To ease passing an object pointer to method invocation or instance variable
+accesses, the additional recognizer <code>rec-moof2</code> is activated.
+</p>
+<span id="index-rec_002dmoof2-_0028--addr-u-_002d_002d-xt-translate_002dmoof2-_007c-notfound--_0029-mini_002doof2"></span>
+<span id="index-rec_002dmoof2"></span>
+<span id="index-rec_002dmoof2-1"></span>
+<div class="format">
+<pre class="format"><code>rec-moof2</code> ( <i>addr u &ndash; xt translate-moof2 | notfound  </i>) mini-oof2 &ldquo;rec-moof2&rdquo;
+</pre></div>
+<p>Very simplistic dot-parser, transforms <code>.</code><var>selector/ivar</var> to
+<code>&gt;o</code> <var>selector/ivar</var> <code>o&gt;</code>.
+</p>
+
+
+<p>To assign methods to selectors, use <var>xt class</var> <code>is</code> <var>selector</var>,
+so no <code>defines</code> necessary.  For early binding of methods, <code>[</code>
+<var>class</var> <code>] defers</code> <var>selector</var> is used, no need for <code>::</code>.
+</p>
+</div>
+
+
+
+</body>
+</html>

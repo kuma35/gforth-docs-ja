@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Singlestep Debugger (Gforth マニュアル)</title>
+
+<meta name="description" content="Singlestep Debugger (Gforth マニュアル)">
+<meta name="keywords" content="Singlestep Debugger (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Programming-Tools.html" rel="up" title="Programming Tools">
+<link href="Code-Coverage.html" rel="next" title="Code Coverage">
+<link href="Assertions.html" rel="prev" title="Assertions">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Singlestep-Debugger">
+<div class="header">
+<p>
+Next: <a href="Code-Coverage.html" accesskey="n" rel="next">Code Coverage and Execution Frequency</a>, Previous: <a href="Assertions.html" accesskey="p" rel="prev">Assertions</a>, Up: <a href="Programming-Tools.html" accesskey="u" rel="up">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Singlestep-Debugger-1"></span><h4 class="subsection">6.26.9 Singlestep Debugger</h4>
+<span id="index-singlestep-Debugger"></span>
+<span id="index-debugging-Singlestep"></span>
+
+<p>シングルステップ・デバッガーは、 <code>gforth-itc</code> エンジンでのみ動作します。
+</p>
+<p>新しいワードを作成するとき、 それが正しく動作するかどうかを確認する必要があることがよくあります。 これを行うには、<code>dbg badword</code>
+と入力します。 デバッグ・セッションは以下のようになります:
+</p>
+<div class="example">
+<pre class="example">: badword 0 DO i . LOOP ;  ok
+2 dbg badword 
+: badword  
+Scanning code...
+
+Nesting debugger ready!
+
+400D4738  8049BC4 0              -&gt; [ 2 ] 00002 00000 
+400D4740  8049F68 DO             -&gt; [ 0 ] 
+400D4744  804A0C8 i              -&gt; [ 1 ] 00000 
+400D4748 400C5E60 .              -&gt; 0 [ 0 ] 
+400D474C  8049D0C LOOP           -&gt; [ 0 ] 
+400D4744  804A0C8 i              -&gt; [ 1 ] 00001 
+400D4748 400C5E60 .              -&gt; 1 [ 0 ] 
+400D474C  8049D0C LOOP           -&gt; [ 0 ] 
+400D4758  804B384 ;              -&gt;  ok
+</pre></div>
+
+<p>各行が 1 ステップです。 次のワードを実行して表示するには、 常に Return キーを押す必要があります。 次のワード全体を実行したくない場合は、
+<code>nest</code> に対して <kbd>n</kbd> と入力する必要があります。 利用可能なキーの概要は以下のとおりです:
+</p>
+<dl compact="compact">
+<dt><span><i><tt class="key">RET</tt></i></span></dt>
+<dd><p>Next; 次のワードを実行する(execute)。
+</p>
+</dd>
+<dt><span><i>n</i></span></dt>
+<dd><p>Nest; 次のワードまで 1 ステップずつ辿る。
+</p>
+</dd>
+<dt><span><i>u</i></span></dt>
+<dd><p>Unnest; デバッグを停止し(stop)、残りのワードを実行します(execute)。 ネスト(nest)機能でこのワードに到達した場合、
+それを呼び出したワードでデバッグを続行します。
+</p>
+</dd>
+<dt><span><i>d</i></span></dt>
+<dd><p>Done; デバッグを停止し(stop)、 残りを実行します(execute)。
+</p>
+</dd>
+<dt><span><i>s</i></span></dt>
+<dd><p>Stop; 直ちに終了(abort)します。
+</p>
+</dd>
+</dl>
+
+<p>このメカニズムを使用して大規模なアプリケーションをデバッグすることは、
+あなたが関心のある部分が始まる前にプログラム内に非常に深くネストする必要があるため、 非常に困難です。 これにはとても時間がかかります。 
+</p>
+<p>これをより直接的に行うには、 <code>BREAK:</code> コマンドをあなたのソース・コードに追加します。 プログラムの実行が <code>BREAK:</code>
+に達すると、 シングル・ステップ・デバッガーが呼び出され、 上記すべての機能が利用できるようになります。
+</p>
+<p>デバッグする部分が複数ある場合、 プログラムが現在どこで停止しているかを把握できると便利です。 これを行うには、 <code>BREAK&quot;
+string&quot;</code> コマンドを使用します。 これは <code>BREAK:</code> と同様に動作しますが、
+「ブレークポイント」に到達したときに文字列が出力される点が異なります。
+</p>
+
+<span id="index-dbg-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-dbg"></span>
+<span id="index-dbg-1"></span>
+<div class="format">
+<pre class="format"><code>dbg</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-0.2 &ldquo;dbg&rdquo;
+</pre></div>
+
+<span id="index-break_003a-_0028--_002d_002d--_0029-gforth_002d0_002e4"></span>
+<span id="index-break_003a"></span>
+<span id="index-break_003a-1"></span>
+<div class="format">
+<pre class="format"><code>break:</code> ( <i>&ndash;  </i>) gforth-0.4 &ldquo;break:&rdquo;
+</pre></div>
+
+<span id="index-break_0022-_0028--_0027ccc_0022_0027-_002d_002d--_0029-gforth_002d0_002e4"></span>
+<span id="index-break_0022"></span>
+<span id="index-break_0022-1"></span>
+<div class="format">
+<pre class="format"><code>break&quot;</code> ( <i>&rsquo;ccc&quot;&rsquo; &ndash;  </i>) gforth-0.4 &ldquo;break&quot;&rdquo;
+</pre></div>
+
+
+</div>
+
+
+
+</body>
+</html>

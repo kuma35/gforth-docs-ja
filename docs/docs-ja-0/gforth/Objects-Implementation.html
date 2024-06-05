@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Objects Implementation (Gforth マニュアル)</title>
+
+<meta name="description" content="Objects Implementation (Gforth マニュアル)">
+<meta name="keywords" content="Objects Implementation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Objects.html" rel="up" title="Objects">
+<link href="Objects-Glossary.html" rel="next" title="Objects Glossary">
+<link href="Object-Interfaces.html" rel="prev" title="Object Interfaces">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Objects-Implementation">
+<div class="header">
+<p>
+Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs</samp> Glossary</a>, Previous: <a href="Object-Interfaces.html" accesskey="p" rel="prev">Object Interfaces</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="objects_002efs-Implementation"></span><h4 class="subsubsection">6.24.3.11 <samp>objects.fs</samp> Implementation</h4>
+<span id="index-objects_002efs-implementation"></span>
+
+<span id="index-object_002dmap-discussion"></span>
+<p>An object is a piece of memory, like one of the data structures described
+with <code>struct...end-struct</code>. It has a field <code>object-map</code> that
+points to the method map for the object&rsquo;s class.
+</p>
+<span id="index-method-map"></span>
+<span id="index-virtual-function-table"></span>
+<p>The <em>method map</em><a id="DOCF33" href="#FOOT33"><sup>33</sup></a> is an array that contains the execution tokens
+(<i>xt</i>s) of the methods for the object&rsquo;s class. Each selector contains an
+offset into a method map.
+</p>
+<span id="index-selector-implementation_002c-class"></span>
+<p><code>selector</code> is a defining word that uses <code>CREATE</code> and
+<code>DOES&gt;</code>. The body of the selector contains the offset; the <code>DOES&gt;</code>
+action for a class selector is, basically:
+</p>
+<div class="example">
+<pre class="example">( object addr ) @ over object-map @ + @ execute
+</pre></div>
+
+<p>Since <code>object-map</code> is the first field of the object, it does not
+generate any code. As you can see, calling a selector has a small, constant
+cost.
+</p>
+<span id="index-current_002dinterface-discussion"></span>
+<span id="index-class-implementation-and-representation"></span>
+<p>A class is basically a <code>struct</code> combined with a method map. During the
+class definition the alignment and size of the class are passed on the
+stack, just as with <code>struct</code>s, so <code>field</code> can also be used for
+defining class fields. However, passing more items on the stack would be
+inconvenient, so <code>class</code> builds a data structure in memory, which is
+accessed through the variable <code>current-interface</code>. After its definition
+is complete, the class is represented on the stack by a pointer (e.g., as
+parameter for a child class definition).
+</p>
+<p>A new class starts off with the alignment and size of its parent, and a copy
+of the parent&rsquo;s method map. Defining new fields extends the size and
+alignment; likewise, defining new selectors extends the method
+map. <code>overrides</code> just stores a new <i>xt</i> in the method map at the
+offset given by the selector.
+</p>
+<span id="index-class-binding_002c-implementation"></span>
+<p>Class binding just gets the <i>xt</i> at the offset given by the selector from
+the class&rsquo;s method map and <code>compile,</code>s (in the case of <code>[bind]</code>)
+it.
+</p>
+<span id="index-this-implementation"></span>
+<span id="index-catch-and-this"></span>
+<span id="index-this-and-catch"></span>
+<p>I implemented <code>this</code> as a <code>value</code>. At the start of an
+<code>m:...;m</code> method the old <code>this</code> is stored to the return stack and
+restored at the end; and the object on the TOS is stored <code>TO
+this</code>. This technique has one disadvantage: If the user does not leave the
+method via <code>;m</code>, but via <code>throw</code> or <code>exit</code>, <code>this</code> is
+not restored (and <code>exit</code> may crash). To deal with the <code>throw</code>
+problem, I have redefined <code>catch</code> to save and restore <code>this</code>; the
+same should be done with any word that can catch an exception. As for
+<code>exit</code>, I simply forbid it (as a replacement, there is <code>exitm</code>).
+</p>
+<span id="index-inst_002dvar-implementation"></span>
+<p><code>inst-var</code> is just the same as <code>field</code>, with a different
+<code>DOES&gt;</code> action:
+</p><div class="example">
+<pre class="example">@ this +
+</pre></div>
+<p>Similar for <code>inst-value</code>.
+</p>
+<span id="index-class-scoping-implementation"></span>
+<p>Each class also has a word list that contains the words defined with
+<code>inst-var</code> and <code>inst-value</code>, and its protected words. It also has
+a pointer to its parent. <code>class</code> pushes the word lists of the class and
+all its ancestors onto the search order stack, and <code>end-class</code> drops
+them.
+</p>
+<span id="index-interface-implementation"></span>
+<p>An interface is like a class without fields, parent and protected words;
+i.e., it just has a method map. If a class implements an interface, its
+method map contains a pointer to the method map of the interface. The
+positive offsets in the map are reserved for class methods, therefore
+interface map pointers have negative offsets. Interfaces have offsets that
+are unique throughout the system, unlike class selectors, whose offsets are
+only unique for the classes where the selector is available (invokable).
+</p>
+<p>This structure means that interface selectors have to perform one
+indirection more than class selectors to find their method. Their body
+contains the interface map pointer offset in the class method map, and the
+method offset in the interface method map. The <code>does&gt;</code> action for an
+interface selector is, basically:
+</p>
+<div class="example">
+<pre class="example">( object selector-body )
+2dup selector-interface @ ( object selector-body object interface-offset )
+swap object-map @ + @ ( object selector-body map )
+swap selector-offset @ + @ execute
+</pre></div>
+
+<p>where <code>object-map</code> and <code>selector-offset</code> are first fields and
+generate no code.
+</p>
+<p>As a concrete example, consider the following code:
+</p>
+<div class="example">
+<pre class="example">interface
+  selector if1sel1
+  selector if1sel2
+end-interface if1
+
+object class
+  if1 implementation
+  selector cl1sel1
+  cell% inst-var cl1iv1
+
+' m1 overrides construct
+' m2 overrides if1sel1
+' m3 overrides if1sel2
+' m4 overrides cl1sel2
+end-class cl1
+
+create obj1 object dict-new drop
+create obj2 cl1    dict-new drop
+</pre></div>
+
+<p>The data structure created by this code (including the data structure for
+<code>object</code>) is shown in the <a href="objects-implementation.eps">figure</a>,
+assuming a cell size of 4.
+</p>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT33" href="#DOCF33">(33)</a></h5>
+<p>This is Self terminology; in C++ terminology:
+virtual function table.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Objects-Glossary.html"><samp>objects.fs</samp> Glossary</a>, Previous: <a href="Object-Interfaces.html">Object Interfaces</a>, Up: <a href="Objects.html">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Assembler Definitions (Gforth マニュアル)</title>
+
+<meta name="description" content="Assembler Definitions (Gforth マニュアル)">
+<meta name="keywords" content="Assembler Definitions (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Assembler-and-Code-Words.html" rel="up" title="Assembler and Code Words">
+<link href="Common-Assembler.html" rel="next" title="Common Assembler">
+<link href="Assembler-and-Code-Words.html" rel="prev" title="Assembler and Code Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Assembler-Definitions">
+<div class="header">
+<p>
+Next: <a href="Common-Assembler.html" accesskey="n" rel="next">Common Assembler</a>, Previous: <a href="Assembler-and-Code-Words.html" accesskey="p" rel="prev">Assembler and Code Words</a>, Up: <a href="Assembler-and-Code-Words.html" accesskey="u" rel="up">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Definitions-in-assembly-language"></span><h4 class="subsection">6.29.1 Definitions in assembly language</h4>
+
+<p>Gforth provides ways to implement words in assembly language (using
+<code>abi-code</code>...<code>end-code</code>), and also ways to define defining words
+with arbitrary run-time behaviour (like <code>does&gt;</code>), where (unlike
+<code>does&gt;</code>) the behaviour is not defined in Forth, but in assembly
+language (with <code>;code</code>).
+</p>
+<p>However, the machine-independent nature of Gforth poses a few problems:
+First of all, Gforth runs on several architectures, so it can provide no
+standard assembler. It does provide assemblers for several of the
+architectures it runs on, though.  Moreover, you can use a
+system-independent assembler in Gforth, or compile machine code directly
+with <code>,</code> and <code>c,</code>.
+</p>
+<p>Another problem is that the virtual machine registers of Gforth (the stack
+pointers and the virtual machine instruction pointer) depend on the
+installation and engine.  Also, which registers are free to use also depend
+on the installation and engine.  So any code written to run in the context
+of the Gforth virtual machine is essentially limited to the installation and
+engine it was developed for (it may run elsewhere, but you cannot rely on
+that).
+</p>
+<p>Fortunately, you can define <code>abi-code</code> words in Gforth that are
+portable to any Gforth running on a platform with the same calling
+convention (ABI); typically this means portability to the same
+architecture/OS combination, sometimes crossing OS boundaries).
+</p>
+<span id="index-assembler-_0028--_002d_002d--_0029-tools_002dext"></span>
+<span id="index-assembler-1"></span>
+<span id="index-assembler-2"></span>
+<div class="format">
+<pre class="format"><code>assembler</code> ( <i>&ndash;  </i>) tools-ext &ldquo;assembler&rdquo;
+</pre></div>
+<p>A vocubulary: Replaces the wordlist at the top of the search order with the
+assembler wordlist.
+</p>
+
+<span id="index-init_002dasm-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-init_002dasm"></span>
+<span id="index-init_002dasm-1"></span>
+<div class="format">
+<pre class="format"><code>init-asm</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;init-asm&rdquo;
+</pre></div>
+<p>Pushes the assembler wordlist on the search order.
+</p>
+
+<span id="index-abi_002dcode-_0028--_0022name_0022-_002d_002d-colon_002dsys--_0029-gforth_002d1_002e0"></span>
+<span id="index-abi_002dcode"></span>
+<span id="index-abi_002dcode-1"></span>
+<div class="format">
+<pre class="format"><code>abi-code</code> ( <i>&quot;name&quot; &ndash; colon-sys  </i>) gforth-1.0 &ldquo;abi-code&rdquo;
+</pre></div>
+<p>Start a native code definition that is called using the platform&rsquo;s ABI
+conventions corresponding to the C-prototype:
+</p><div class="example">
+<pre class="example">Cell *function(Cell *sp, Float **fpp);
+</pre></div>
+<p>The FP stack pointer is passed in by providing a reference to a memory
+location containing the FP stack pointer and is passed out by storing the
+changed FP stack pointer there (if necessary).
+</p>
+
+<span id="index-_003babi_002dcode-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003babi_002dcode"></span>
+<span id="index-_003babi_002dcode-1"></span>
+<div class="format">
+<pre class="format"><code>;abi-code</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;semicolon-abi-code&rdquo;
+</pre></div>
+<p>Ends the colon definition, but at run-time also changes the last defined
+word <i>X</i> (which must be a <code>create</code>d word) to call the following
+native code using the platform&rsquo;s ABI convention corresponding to the C
+prototype:
+</p><div class="example">
+<pre class="example"> Cell *function(Cell *sp, Float **fpp, Address body);
+</pre></div>
+<p>The FP stack pointer is passed in by providing a reference to a memory
+location containing the FP stack pointer and is passed out by storing the
+changed FP stack pointer there (if necessary).  The parameter <i>body</i> is
+the body of <i>X</i>.
+</p>
+
+<span id="index-end_002dcode-_0028--colon_002dsys-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-end_002dcode"></span>
+<span id="index-end_002dcode-1"></span>
+<div class="format">
+<pre class="format"><code>end-code</code> ( <i>colon-sys &ndash;  </i>) gforth-0.2 &ldquo;end-code&rdquo;
+</pre></div>
+<p>End a code definition.  Note that you have to assemble the return from the
+ABI call (for <code>abi-code</code>) or the dispatch to the next VM instruction
+(for <code>code</code> and <code>;code</code>)  yourself.
+</p>
+
+<span id="index-code-_0028--_0022name_0022-_002d_002d-colon_002dsys--_0029-tools_002dext"></span>
+<span id="index-code"></span>
+<span id="index-code-1"></span>
+<div class="format">
+<pre class="format"><code>code</code> ( <i>&quot;name&quot; &ndash; colon-sys  </i>) tools-ext &ldquo;code&rdquo;
+</pre></div>
+<p>Start a native code definition that runs in the context of the Gforth
+virtual machine (engine).  Such a definition is not portable between Gforth
+installations, so we recommend using <code>abi-code</code> instead of
+<code>code</code>.  You have to end a <code>code</code> definition with a dispatch to
+the next virtual machine instruction.
+</p>
+
+<span id="index-_003bcode-_0028--compilation_002e-colon_002dsys1-_002d_002d-colon_002dsys2--_0029-tools_002dext"></span>
+<span id="index-_003bcode"></span>
+<span id="index-_003bcode-1"></span>
+<div class="format">
+<pre class="format"><code>;code</code> ( <i>compilation. colon-sys1 &ndash; colon-sys2  </i>) tools-ext &ldquo;semicolon-code&rdquo;
+</pre></div>
+<p>The code after <code>;code</code> becomes the behaviour of the last defined word
+(which must be a <code>create</code>d word).  The same caveats apply as for
+<code>code</code>, so we recommend using <code>;abi-code</code> instead.
+</p>
+
+<span id="index-flush_002dicache-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-flush_002dicache"></span>
+<span id="index-flush_002dicache-1"></span>
+<div class="format">
+<pre class="format"><code>flush-icache</code> ( <i>c-addr u &ndash; </i>) gforth-0.2 &ldquo;flush-icache&rdquo;
+</pre></div>
+<p>Make sure that the instruction cache of the processor (if there is one) does
+not contain stale data at <i>c-addr</i> and <i>u</i> bytes
+afterwards. <code>END-CODE</code> performs a <code>flush-icache</code>
+automatically. Caveat: <code>flush-icache</code> might not work on your
+installation; this is usually the case if direct threading is not supported
+on your machine (take a look at your <samp>machine.h</samp>) and your machine has
+a separate instruction cache. In such cases, <code>flush-icache</code> does
+nothing instead of flushing the instruction cache.
+</p>
+
+
+<p>If <code>flush-icache</code> does not work correctly, <code>abi-code</code> words
+etc. will not work (reliably), either.
+</p>
+<p>The typical usage of these words can be shown most easily by analogy to the
+equivalent high-level defining words:
+</p>
+<div class="example">
+<pre class="example">: foo                              abi-code foo
+   &lt;high-level Forth words&gt;              &lt;assembler&gt;
+;                                  end-code
+                                
+: bar                              : bar
+   &lt;high-level Forth words&gt;           &lt;high-level Forth words&gt;
+   CREATE                             CREATE
+      &lt;high-level Forth words&gt;           &lt;high-level Forth words&gt;
+   DOES&gt;                              ;code
+      &lt;high-level Forth words&gt;           &lt;assembler&gt;
+;                                  end-code
+</pre></div>
+
+<p>For using <code>abi-code</code>, take a look at the ABI documentation of your
+platform to see how the parameters are passed (so you know where you get the
+stack pointers) and how the return value is passed (so you know where the
+data stack pointer is returned).  The ABI documentation also tells you which
+registers are saved by the caller (caller-saved), so you are free to destroy
+them in your code, and which registers have to be preserved by the called
+word (callee-saved), so you have to save them before using them, and restore
+them afterwards.  For some architectures and OSs we give short summaries of
+the parts of the calling convention in the appropriate sections.  More
+reverse-engineering oriented people can also find out about the passing and
+returning of the stack pointers through <code>see abi-call</code>.
+</p>
+<p>Most ABIs pass the parameters through registers, but some (in particular the
+most common 386 (aka IA-32) calling conventions) pass them on the
+architectural stack.  The common ABIs all pass the return value in a
+register.
+</p>
+<p>Other things you need to know for using <code>abi-code</code> is that both the
+data and the FP stack grow downwards (towards lower addresses) in Gforth,
+with <code>1 cells</code> size per cell, and <code>1 floats</code> size per FP value.
+</p>
+<p>Here&rsquo;s an example of using <code>abi-code</code> on the 386 architecture:
+</p>
+<div class="example">
+<pre class="example">abi-code my+ ( n1 n2 -- n )
+4 sp d) ax mov \ sp into return reg
+ax )    cx mov \ tos
+4 #     ax add \ update sp (pop)
+cx    ax ) add \ sec = sec+tos
+ret            \ return from my+
+end-code
+</pre></div>
+
+<p>An AMD64 variant of this example can be found in <a href="AMD64-Assembler.html">AMD64 (x86_64) Assembler</a>.
+</p>
+<p>Here&rsquo;s a 386 example that deals with FP values:
+</p>
+<div class="example">
+<pre class="example">abi-code my-f+ ( r1 r2 -- r )
+8 sp d) cx mov  \ load address of fp
+cx )    dx mov  \ load fp
+.fl dx )   fld  \ r2
+8 #     dx add  \ update fp
+.fl dx )   fadd \ r1+r2
+.fl dx )   fstp \ store r
+dx    cx ) mov  \ store new fp
+4 sp d) ax mov  \ sp into return reg
+ret             \ return from my-f+
+end-code
+</pre></div>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Common-Assembler.html">Common Assembler</a>, Previous: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

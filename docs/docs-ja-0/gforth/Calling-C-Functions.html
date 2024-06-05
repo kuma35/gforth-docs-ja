@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Calling C Functions (Gforth マニュアル)</title>
+
+<meta name="description" content="Calling C Functions (Gforth マニュアル)">
+<meta name="keywords" content="Calling C Functions (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="C-Interface.html" rel="up" title="C Interface">
+<link href="Declaring-C-Functions.html" rel="next" title="Declaring C Functions">
+<link href="C-Interface.html" rel="prev" title="C Interface">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Calling-C-Functions">
+<div class="header">
+<p>
+Next: <a href="Declaring-C-Functions.html" accesskey="n" rel="next">Declaring C Functions</a>, Previous: <a href="C-Interface.html" accesskey="p" rel="prev">C Interface</a>, Up: <a href="C-Interface.html" accesskey="u" rel="up">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Calling-C-functions"></span><h4 class="subsection">6.28.1 Calling C functions</h4>
+<span id="index-C-functions_002c-calls-to"></span>
+<span id="index-calling-C-functions"></span>
+
+<p>Once a C function is declared (see see <a href="Declaring-C-Functions.html">Declaring C Functions</a>), you can
+call it as follows: You push the arguments on the stack(s), and then call
+the word for the C function.  The arguments have to be pushed in the same
+order as the arguments appear in the C documentation (i.e., the first
+argument is deepest on the stack).  Integer and pointer arguments have to be
+pushed on the data stack, floating-point arguments on the FP stack; these
+arguments are consumed by the called C function.
+</p>
+<p>On returning from the C function, the return value, if any, resides on the
+appropriate stack: an integer return value is pushed on the data stack, an
+FP return value on the FP stack, and a void return value results in not
+pushing anything.  Note that most C functions have a return value, even if
+that is often not used in C; in Forth, you have to <code>drop</code> this return
+value explicitly if you do not use it.
+</p>
+<p>The C interface automatically converts between the C type and the Forth type
+as necessary, on a best-effort basis (in some cases, there may be some
+loss).
+</p>
+<p>As an example, consider the POSIX function <code>lseek()</code>:
+</p>
+<div class="example">
+<pre class="example">off_t lseek(int fd, off_t offset, int whence);
+</pre></div>
+
+<p>This function takes three integer arguments, and returns an integer
+argument, so a Forth call for setting the current file offset to the start
+of the file could look like this:
+</p>
+<div class="example">
+<pre class="example">fd @ 0 SEEK_SET lseek -1 = if
+  ... \ error handling
+then
+</pre></div>
+
+<p>You might be worried that an <code>off_t</code> does not fit into a cell, so you
+could not pass larger offsets to lseek, and might get only a part of the
+return values.  In that case, in your declaration of the function
+(see <a href="Declaring-C-Functions.html">Declaring C Functions</a>) you should declare it to use double-cells
+for the off_t argument and return value, and maybe give the resulting Forth
+word a different name, like <code>dlseek</code>; the result could be called like
+this:
+</p>
+<div class="example">
+<pre class="example">fd @ 0. SEEK_SET dlseek -1. d= if
+  ... \ error handling
+then
+</pre></div>
+
+<p>Passing and returning structs or unions is currently not supported by our
+interface<a id="DOCF35" href="#FOOT35"><sup>35</sup></a>.
+</p>
+<p>Calling functions with a variable number of arguments (<em>variadic</em>
+functions, e.g., <code>printf()</code>) is only supported by having you declare
+one function-calling word for each argument pattern, and calling the
+appropriate word for the desired pattern.
+</p>
+
+
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT35" href="#DOCF35">(35)</a></h5>
+<p>If you know the calling convention of your C compiler,
+you usually can call such functions in some way, but that way is usually not
+portable between platforms, and sometimes not even between C compilers.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Declaring-C-Functions.html">Declaring C Functions</a>, Previous: <a href="C-Interface.html">C Interface</a>, Up: <a href="C-Interface.html">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

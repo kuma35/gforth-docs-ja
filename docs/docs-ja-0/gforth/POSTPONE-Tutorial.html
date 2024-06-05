@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>POSTPONE Tutorial (Gforth マニュアル)</title>
+
+<meta name="description" content="POSTPONE Tutorial (Gforth マニュアル)">
+<meta name="keywords" content="POSTPONE Tutorial (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tutorial.html" rel="up" title="Tutorial">
+<link href="Literal-Tutorial.html" rel="next" title="Literal Tutorial">
+<link href="Arrays-and-Records-Tutorial.html" rel="prev" title="Arrays and Records Tutorial">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="POSTPONE-Tutorial">
+<div class="header">
+<p>
+Next: <a href="Literal-Tutorial.html" accesskey="n" rel="next"><code>Literal</code></a>, Previous: <a href="Arrays-and-Records-Tutorial.html" accesskey="p" rel="prev">Arrays and Records</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="POSTPONE"></span><h3 class="section">3.33 <code>POSTPONE</code></h3>
+<span id="index-postpone-tutorial"></span>
+
+<p><code>POSTPONE</code> を使用すると、 (そのワードの実行時コード(interpretation
+semantics)をコンパイルする代わりに、) そのワードのコンパイル時コード(compilation semantics)をコンパイルできます:
+</p>
+<div class="example">
+<pre class="example">: MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
+ POSTPONE + ; immediate
+: foo ( n1 n2 -- n )
+ MY-+ ;
+1 2 foo .
+see foo
+</pre></div>
+
+<p><code>foo</code> の定義中に、 テキスト・インタプリタは <code>MY-+</code> のコンパイル時コードを実行し、 そのコンパイル時コードが
+<code>+</code> のコンパイル時コードを実行します。 つまり、 <code>+</code> を <code>foo</code> 内にコンパイルします。
+</p>
+<p>この例では、 コンパイル時コードとコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。
+デフォルトのコンパイル時コード(compilation semantics)を持つワードの場合、 通常、 これらのスタック効果は表示されません。
+これらのワードのコンパイル時コード(compilation semantics)のスタック効果は常に <code>( -- )</code> であり、
+コンパイルされたコードのスタック効果は実行時コード(interpretation semantics)のスタック効果です。
+</p>
+<p>注意: この方法でコンパイル時コード(compilation semantics)を実行する場合、
+インタプリタの状態には影響を受けないことに注意してください。 あなたは解釈的(interpretively)に実行することもできます。 例:
+</p>
+<div class="example">
+<pre class="example">: foo2 ( n1 n2 -- n )
+ [ MY-+ ] ;
+1 2 foo2 .
+see foo2
+</pre></div>
+
+<p>ただし、 これが常に機能するとは限らない、良くない Forth システムがいくつかあるため、 この方法は 1999 年に非標準となりました。
+</p>
+<p><code>POSTPONE</code> を使用する別の例を以下に示します:
+</p>
+<div class="example">
+<pre class="example">: MY-- ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
+ POSTPONE negate POSTPONE + ; immediate compile-only
+: bar ( n1 n2 -- n )
+  MY-- ;
+2 1 bar .
+see bar
+</pre></div>
+
+<p><code>ENDIF</code> は以下の方法で定義できます:
+</p>
+<div class="example">
+<pre class="example">: ENDIF ( Compilation: orig -- )
+  POSTPONE then ; immediate
+</pre></div>
+
+<blockquote>
+<p><b>研究課題(assignment):</b> <code>2dup</code> と同等のコンパイル時コードを持つ <code>MY-2DUP</code> を作成しますが、 コンパイルされるのは <code>over
+over</code> になるようにしてみましょう。
+</p></blockquote>
+
+
+
+</div>
+
+
+
+</body>
+</html>

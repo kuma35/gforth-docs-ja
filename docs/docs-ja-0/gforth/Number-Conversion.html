@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Number Conversion (Gforth マニュアル)</title>
+
+<meta name="description" content="Number Conversion (Gforth マニュアル)">
+<meta name="keywords" content="Number Conversion (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="The-Text-Interpreter.html" rel="up" title="The Text Interpreter">
+<link href="Interpret_002fCompile-states.html" rel="next" title="Interpret/Compile states">
+<link href="Input-Sources.html" rel="prev" title="Input Sources">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Number-Conversion">
+<div class="header">
+<p>
+Next: <a href="Interpret_002fCompile-states.html" accesskey="n" rel="next">Interpret/Compile states</a>, Previous: <a href="Input-Sources.html" accesskey="p" rel="prev">Input Sources</a>, Up: <a href="The-Text-Interpreter.html" accesskey="u" rel="up">The Text Interpreter</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Number-Conversion-1"></span><h4 class="subsection">6.14.2 Number Conversion</h4>
+<span id="index-number-conversion"></span>
+
+<p>You get an overview of how the text interpreter converts its numeric input
+in <a href="Literals-in-source-code.html">Literals in source code</a>.  This section describes some related
+words.
+</p>
+<p>By default, the number base used for integer number conversion is given by
+the contents of the variable <code>base</code>.  Note that a lot of confusion can
+result from unexpected values of <code>base</code>.  If you change <code>base</code>
+anywhere, make sure to save the old value and restore it afterwards; better
+yet, use <code>base-execute</code>, which does this for you.  In general I
+recommend keeping <code>base</code> decimal, and using the prefixes described in
+<a href="Literals-in-source-code.html">Literals in source code</a> for the popular non-decimal bases.
+</p>
+<span id="index-base_002dexecute-_0028--i_002ax-xt-u-_002d_002d-j_002ax--_0029-gforth_002d0_002e7"></span>
+<span id="index-base_002dexecute"></span>
+<span id="index-base_002dexecute-1"></span>
+<div class="format">
+<pre class="format"><code>base-execute</code> ( <i>i*x xt u &ndash; j*x  </i>) gforth-0.7 &ldquo;base-execute&rdquo;
+</pre></div>
+<p>execute <i>xt</i> with the content of <code>BASE</code> being <i>u</i>, and restoring
+the original <code>BASE</code> afterwards.
+</p>
+
+<span id="index-base-_0028--_002d_002d-a_002daddr--_0029-core"></span>
+<span id="index-base"></span>
+<span id="index-base-1"></span>
+<div class="format">
+<pre class="format"><code>base</code> ( <i>&ndash; a-addr  </i>) core &ldquo;base&rdquo;
+</pre></div>
+<p><code>User</code> variable &ndash; <i>a-addr</i> is the address of a cell that stores the
+number base used by default for number conversion during input and output.
+Don&rsquo;t store to <code>base</code>, use <code>base-execute</code> instead.
+</p>
+
+<span id="index-hex-_0028--_002d_002d--_0029-core_002dext"></span>
+<span id="index-hex"></span>
+<span id="index-hex-1"></span>
+<div class="format">
+<pre class="format"><code>hex</code> ( <i>&ndash;  </i>) core-ext &ldquo;hex&rdquo;
+</pre></div>
+<p>Set <code>base</code> to &amp;16 (hexadecimal).  Don&rsquo;t use <code>hex</code>, use
+<code>base-execute</code> instead.
+</p>
+
+<span id="index-decimal-_0028--_002d_002d--_0029-core"></span>
+<span id="index-decimal"></span>
+<span id="index-decimal-1"></span>
+<div class="format">
+<pre class="format"><code>decimal</code> ( <i>&ndash;  </i>) core &ldquo;decimal&rdquo;
+</pre></div>
+<p>Set <code>base</code> to &amp;10 (decimal).  Don&rsquo;t use <code>decimal</code>, use
+<code>base-execute</code> instead.
+</p>
+
+<span id="index-dpl-_0028--_002d_002d-a_002daddr--_0029-gforth_002d0_002e2"></span>
+<span id="index-dpl"></span>
+<span id="index-dpl-1"></span>
+<div class="format">
+<pre class="format"><code>dpl</code> ( <i>&ndash; a-addr  </i>) gforth-0.2 &ldquo;Decimal-PLace&rdquo;
+</pre></div>
+<p><code>User</code> variable &ndash; <i>a-addr</i> is the address of a cell that stores the
+		 position of the decimal point in the most recent numeric conversion.
+Initialised to -1. After the conversion of a number containing no decimal
+point, <code>dpl</code> is -1. After the conversion of <code>2.</code> it holds 0. After
+the conversion of 234123.9 it contains 1, and so forth.
+</p>
+
+
+<span id="index-number-conversion-_002d-traps-for-the-unwary"></span>
+<p>Number conversion has a number of traps for the unwary:
+</p>
+<ul>
+<li> You cannot determine the current number base using the code sequence
+<code>base @ .</code> &ndash; the number base is always 10 in the current number
+base. Instead, use something like <code>base @ dec.</code>
+</li><li> There is a word <code>bin</code> but it does <i>not</i> set the number base!
+(see <a href="General-files.html">General files</a>).
+</li><li> Standard Forth requires the <code>.</code> of a double-precision number to be the
+final character in the string.  Gforth allows the <code>.</code> to be anywhere.
+</li><li> The number conversion process does not check for overflow.
+</li></ul>
+
+<p>You can read numbers into your programs with the words described in
+<a href="Line-input-and-conversion.html">Line input and conversion</a>.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Interpret_002fCompile-states.html">Interpret/Compile states</a>, Previous: <a href="Input-Sources.html">Input Sources</a>, Up: <a href="The-Text-Interpreter.html">The Text Interpreter</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

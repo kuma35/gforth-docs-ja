@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>386 Assembler (Gforth マニュアル)</title>
+
+<meta name="description" content="386 Assembler (Gforth マニュアル)">
+<meta name="keywords" content="386 Assembler (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Assembler-and-Code-Words.html" rel="up" title="Assembler and Code Words">
+<link href="AMD64-Assembler.html" rel="next" title="AMD64 Assembler">
+<link href="Common-Disassembler.html" rel="prev" title="Common Disassembler">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="g_t386-Assembler">
+<div class="header">
+<p>
+Next: <a href="AMD64-Assembler.html" accesskey="n" rel="next">AMD64 (x86_64) Assembler</a>, Previous: <a href="Common-Disassembler.html" accesskey="p" rel="prev">Common Disassembler</a>, Up: <a href="Assembler-and-Code-Words.html" accesskey="u" rel="up">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="g_t386-Assembler-1"></span><h4 class="subsection">6.29.4 386 Assembler</h4>
+
+<p>The 386 assembler included in Gforth was written by Bernd Paysan, it&rsquo;s
+available under GPL, and originally part of bigFORTH.
+</p>
+<p>The 386 disassembler included in Gforth was written by Andrew McKewan and is
+in the public domain.
+</p>
+<p>The disassembler displays code in an Intel-like prefix syntax.
+</p>
+<p>The assembler uses a postfix syntax with AT&amp;T-style parameter order (i.e.,
+destination last).
+</p>
+<p>The assembler includes all instruction of the Athlon, i.e. 486 core
+instructions, Pentium and PPro extensions, floating point, MMX, 3Dnow!, but
+not ISSE. It&rsquo;s an integrated 16- and 32-bit assembler. Default is 32 bit,
+you can switch to 16 bit with .86 and back to 32 bit with .386.
+</p>
+<p>There are several prefixes to switch between different operation sizes,
+<code>.b</code> for byte accesses, <code>.w</code> for word accesses, <code>.d</code> for
+double-word accesses. Addressing modes can be switched with <code>.wa</code> for
+16 bit addresses, and <code>.da</code> for 32 bit addresses. You don&rsquo;t need a
+prefix for byte register names (<code>AL</code> et al).
+</p>
+<p>For floating point operations, the prefixes are <code>.fs</code> (IEEE single),
+<code>.fl</code> (IEEE double), <code>.fx</code> (extended), <code>.fw</code> (word),
+<code>.fd</code> (double-word), and <code>.fq</code> (quad-word).  The default is
+<code>.fx</code>, so you need to specify <code>.fl</code> explicitly when dealing with
+Gforth FP values.
+</p>
+<p>The MMX opcodes don&rsquo;t have size prefixes, they are spelled out like in the
+Intel assembler. Instead of move from and to memory, there are PLDQ/PLDD and
+PSTQ/PSTD.
+</p>
+<p>The registers lack the &rsquo;e&rsquo; prefix; even in 32 bit mode, eax is called ax.
+Immediate values are indicated by postfixing them with <code>#</code>, e.g.,
+<code>3 #</code>.  Here are some examples of addressing modes in various syntaxes:
+</p>
+<div class="example">
+<pre class="example">Gforth          Intel (NASM)   AT&amp;T (gas)      Name
+.w ax           ax             %ax             register (16 bit)
+ax              eax            %eax            register (32 bit)
+3 #             offset 3       $3              immediate
+1000 #)         byte ptr 1000  1000            displacement
+bx )            [ebx]          (%ebx)          base
+100 di d)       100[edi]       100(%edi)       base+displacement
+20 ax *4 i#)    20[eax*4]      20(,%eax,4)     (index*scale)+displacement
+di ax *4 i)     [edi][eax*4]   (%edi,%eax,4)   base+(index*scale)
+4 bx cx di)     4[ebx][ecx]    4(%ebx,%ecx)    base+index+displacement
+12 sp ax *2 di) 12[esp][eax*2] 12(%esp,%eax,2) base+(index*scale)+displacement
+</pre></div>
+
+<p>You can use <code>L)</code> and <code>LI)</code> instead of <code>D)</code> and <code>DI)</code> to
+enforce 32-bit displacement fields (useful for later patching).
+</p>
+<p>Some example of instructions are:
+</p>
+<div class="example">
+<pre class="example">ax bx mov             \ move ebx,eax
+3 # ax mov            \ mov eax,3
+100 di d) ax mov      \ mov eax,100[edi]
+4 bx cx di) ax mov    \ mov eax,4[ebx][ecx]
+.w ax bx mov          \ mov bx,ax
+</pre></div>
+
+<p>The following forms are supported for binary instructions:
+</p>
+<div class="example">
+<pre class="example">&lt;reg&gt; &lt;reg&gt; &lt;inst&gt;
+&lt;n&gt; # &lt;reg&gt; &lt;inst&gt;
+&lt;mem&gt; &lt;reg&gt; &lt;inst&gt;
+&lt;reg&gt; &lt;mem&gt; &lt;inst&gt;
+&lt;n&gt; # &lt;mem&gt; &lt;inst&gt;
+</pre></div>
+
+<p>The shift/rotate syntax is:
+</p>
+<div class="example">
+<pre class="example">&lt;reg/mem&gt; 1 # shl \ shortens to shift without immediate
+&lt;reg/mem&gt; 4 # shl
+&lt;reg/mem&gt; cl shl
+</pre></div>
+
+<p>Precede string instructions (<code>movs</code> etc.) with <code>.b</code> to get the
+byte version.
+</p>
+<p>The control structure words <code>IF</code> <code>UNTIL</code> etc. must be preceded by
+one of these conditions: <code>vs vc u&lt; u&gt;= 0= 0&lt;&gt; u&lt;= u&gt; 0&lt; 0&gt;= ps pc &lt; &gt;=
+&lt;= &gt;</code>. (Note that most of these words shadow some Forth words when
+<code>assembler</code> is in front of <code>forth</code> in the search path, e.g., in
+<code>code</code> words).  Currently the control structure words use one stack
+item, so you have to use <code>roll</code> instead of <code>cs-roll</code> to shuffle
+them (you can also use <code>swap</code> etc.).
+</p>
+<p>Based on the Intel ABI (used in Linux), <code>abi-code</code> words can find the
+data stack pointer at <code>4 sp d)</code>, and the address of the FP stack
+pointer at <code>8 sp d)</code>; the data stack pointer is returned in <code>ax</code>;
+<code>Ax</code>, <code>cx</code>, and <code>dx</code> are caller-saved, so you do not need to
+preserve their values inside the word.  You can return from the word with
+<code>ret</code>, the parameters are cleaned up by the caller.
+</p>
+<p>For examples of 386 <code>abi-code</code> words, see <a href="Assembler-Definitions.html">Definitions in assembly language</a>.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="AMD64-Assembler.html">AMD64 (x86_64) Assembler</a>, Previous: <a href="Common-Disassembler.html">Common Disassembler</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

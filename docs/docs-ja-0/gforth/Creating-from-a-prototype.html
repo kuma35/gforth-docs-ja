@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Creating from a prototype (Gforth マニュアル)</title>
+
+<meta name="description" content="Creating from a prototype (Gforth マニュアル)">
+<meta name="keywords" content="Creating from a prototype (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="User_002ddefined-Defining-Words.html" rel="up" title="User-defined Defining Words">
+<link href="Making-a-word-current.html" rel="next" title="Making a word current">
+<link href="User_002ddefined-compile_002dcomma.html" rel="prev" title="User-defined compile-comma">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Creating-from-a-prototype">
+<div class="header">
+<p>
+Next: <a href="Making-a-word-current.html" accesskey="n" rel="next">Making a word current</a>, Previous: <a href="User_002ddefined-compile_002dcomma.html" accesskey="p" rel="prev">User-defined <code>compile,</code></a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Creating-from-a-prototype-1"></span><h4 class="subsubsection">6.10.10.8 Creating from a prototype</h4>
+
+<p>In the above we show how to define a word by first using <code>create</code>, and
+then modifying it with <code>set-does&gt;</code>, <code>set-to</code>, <code>set-optimizer</code>
+etc.
+</p>
+<p>An alternative way is to create a prototype using these words, and then
+create a new word from that prototype.  This kind of copying does not cover
+the body, so that has to be allocated and initialized explicitly.  Taking
+<code>fvalue</code> above, we could instead define it as:
+</p>
+<div class="example">
+<pre class="example">create fvalue-prototype ( -- r )
+['] f@ set-does&gt;
+[: &gt;body ]] literal f@ [[ ;] set-optimizer
+['] fvalue-to set-to
+
+: fvalue ( r &quot;name&quot; -- ; name: -- r )
+  ``fvalue-prototype create-from f, reveal ;
+</pre></div>
+
+<p>An advantage of this approach is that creating <code>fvalue</code> words is now
+faster, because it does not need to first duplicate the header methods of
+<code>create</code>, modify them, and eventually deduplicate them.  But this
+advantage is only relevant if the number of words created with this defining
+word is huge.
+</p>
+<span id="index-create_002dfrom-_0028--nt-_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-create_002dfrom"></span>
+<span id="index-create_002dfrom-1"></span>
+<div class="format">
+<pre class="format"><code>create-from</code> ( <i>nt &quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;create-from&rdquo;
+</pre></div>
+<p>Create a word <i>name</i> that behaves like <i>nt</i>, but with an empty body.
+<i>nt</i> must be the nt of a named word.  The resulting header is not yet
+revealed.  Creating a word with <code>create-from</code> without using any
+<code>set-</code> words is faster than if you create a word using <code>set-</code>
+words, <code>immediate</code>, or <code>does&gt;</code>.  You can use <code>noname</code> with
+<code>create-from</code>.
+</p>
+
+<span id="index-reveal-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-reveal"></span>
+<span id="index-reveal-1"></span>
+<div class="format">
+<pre class="format"><code>reveal</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;reveal&rdquo;
+</pre></div>
+<p>Put the current word in the wordlist current at the time of the header
+definition.
+</p>
+
+
+<p>The performance advantage does not extend to using <code>noname</code> with the
+defining word.  Therefore we also have
+</p>
+<span id="index-noname_002dfrom-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-noname_002dfrom"></span>
+<span id="index-noname_002dfrom-1"></span>
+<div class="format">
+<pre class="format"><code>noname-from</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;noname-from&rdquo;
+</pre></div>
+<p>Create a nameless word that behaves like <i>xt</i>, but with an empty body.
+<i>xt</i> must be the nt of a nameless word.
+</p>
+
+
+<p>Here&rsquo;s a usage example:
+</p>
+<div class="example">
+<pre class="example">``fvalue-prototype noname create-from
+latestnt constant noname-fvalue-prototype
+
+: noname-fvalue ( r -- xt ; xt execution: -- r )
+  noname-fvalue-prototype noname-from f,
+  latestxt ;
+</pre></div>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Making-a-word-current.html">Making a word current</a>, Previous: <a href="User_002ddefined-compile_002dcomma.html">User-defined <code>compile,</code></a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Assertions (Gforth マニュアル)</title>
+
+<meta name="description" content="Assertions (Gforth マニュアル)">
+<meta name="keywords" content="Assertions (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Programming-Tools.html" rel="up" title="Programming Tools">
+<link href="Singlestep-Debugger.html" rel="next" title="Singlestep Debugger">
+<link href="Debugging.html" rel="prev" title="Debugging">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Assertions">
+<div class="header">
+<p>
+Next: <a href="Singlestep-Debugger.html" accesskey="n" rel="next">Singlestep Debugger</a>, Previous: <a href="Debugging.html" accesskey="p" rel="prev">Debugging</a>, Up: <a href="Programming-Tools.html" accesskey="u" rel="up">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Assertions-1"></span><h4 class="subsection">6.26.8 Assertions</h4>
+<span id="index-assertions"></span>
+
+<p>It is a good idea to make your programs self-checking, especially if you
+make an assumption that may become invalid during maintenance (for example,
+that a certain field of a data structure is never zero). Gforth supports
+<em>assertions</em> for this purpose. They are used like this:
+</p>
+<div class="example">
+<pre class="example">assert( <i>flag</i> )
+</pre></div>
+
+<p>The code between <code>assert(</code> and <code>)</code> should compute a flag, that
+should be true if everything is alright and false otherwise. It should not
+change anything else on the stack. The overall stack effect of the assertion
+is <code>( -- )</code>. E.g.
+</p>
+<div class="example">
+<pre class="example">assert( 1 1 + 2 = ) \ what we learn in school
+assert( dup 0&lt;&gt; ) \ assert that the top of stack is not zero
+assert( false ) \ this code should not be reached
+</pre></div>
+
+<p>The need for assertions is different at different times. During debugging,
+we want more checking, in production we sometimes care more for
+speed. Therefore, assertions can be turned off, i.e., the assertion becomes
+a comment. Depending on the importance of an assertion and the time it takes
+to check it, you may want to turn off some assertions and keep others turned
+on. Gforth provides several levels of assertions for this purpose:
+</p>
+
+<span id="index-assert0_0028-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-assert0_0028"></span>
+<span id="index-assert0_0028-1"></span>
+<div class="format">
+<pre class="format"><code>assert0(</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;assert-zero&rdquo;
+</pre></div>
+<p>Important assertions that should always be turned on.
+</p>
+
+<span id="index-assert1_0028-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-assert1_0028"></span>
+<span id="index-assert1_0028-1"></span>
+<div class="format">
+<pre class="format"><code>assert1(</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;assert-one&rdquo;
+</pre></div>
+<p>Normal assertions; turned on by default.
+</p>
+
+<span id="index-assert2_0028-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-assert2_0028"></span>
+<span id="index-assert2_0028-1"></span>
+<div class="format">
+<pre class="format"><code>assert2(</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;assert-two&rdquo;
+</pre></div>
+<p>Debugging assertions.
+</p>
+
+<span id="index-assert3_0028-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-assert3_0028"></span>
+<span id="index-assert3_0028-1"></span>
+<div class="format">
+<pre class="format"><code>assert3(</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;assert-three&rdquo;
+</pre></div>
+<p>Slow assertions that you may not want to turn on in normal debugging; you
+would turn them on mainly for thorough checking.
+</p>
+
+<span id="index-assert_0028-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-assert_0028"></span>
+<span id="index-assert_0028-1"></span>
+<div class="format">
+<pre class="format"><code>assert(</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;assert(&rdquo;
+</pre></div>
+<p>Equivalent to <code>assert1(</code>
+</p>
+
+<span id="index-_0029-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-_0029"></span>
+<span id="index-_0029-1"></span>
+<div class="format">
+<pre class="format"><code>)</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;close-paren&rdquo;
+</pre></div>
+<p>End an assertion. Generic end, can be used for other similar purposes
+</p>
+
+
+
+<p>The variable <code>assert-level</code> specifies the highest assertions that are
+turned on. I.e., at the default <code>assert-level</code> of one, <code>assert0(</code>
+and <code>assert1(</code> assertions perform checking, while <code>assert2(</code> and
+<code>assert3(</code> assertions are treated as comments.
+</p>
+<p>The value of <code>assert-level</code> is evaluated at compile-time, not at
+run-time. Therefore you cannot turn assertions on or off at run-time; you
+have to set the <code>assert-level</code> appropriately before compiling a piece
+of code. You can compile different pieces of code at different
+<code>assert-level</code>s (e.g., a trusted library at level 1 and newly-written
+code at level 3).
+</p>
+
+<span id="index-assert_002dlevel-_0028--_002d_002d-a_002daddr--_0029-gforth_002d0_002e2"></span>
+<span id="index-assert_002dlevel"></span>
+<span id="index-assert_002dlevel-1"></span>
+<div class="format">
+<pre class="format"><code>assert-level</code> ( <i>&ndash; a-addr  </i>) gforth-0.2 &ldquo;assert-level&rdquo;
+</pre></div>
+<p>All assertions above this level are turned off.
+</p>
+
+
+
+<p>If an assertion fails, a message compatible with Emacs&rsquo; compilation mode is
+produced and the execution is aborted (currently with <code>ABORT&quot;</code>.  If
+there is interest, we will introduce a special throw code. But if you intend
+to <code>catch</code> a specific condition, using <code>throw</code> is probably more
+appropriate than an assertion).
+</p>
+<span id="index-filenames-in-assertion-output"></span>
+<p>Assertions (and <code>~~</code>) will usually print the wrong file name if a
+marker is executed in the same file after their occurance.  They will print
+&lsquo;<samp>*somewhere*</samp>&rsquo; as file name if a marker is executed in the same file
+before their occurance.
+</p>
+<p>Definitions in Standard Forth for these assertion words are provided in
+<samp>compat/assert.fs</samp>.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Singlestep-Debugger.html">Singlestep Debugger</a>, Previous: <a href="Debugging.html">Debugging</a>, Up: <a href="Programming-Tools.html">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

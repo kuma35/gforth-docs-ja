@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Debugging (Gforth マニュアル)</title>
+
+<meta name="description" content="Debugging (Gforth マニュアル)">
+<meta name="keywords" content="Debugging (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Programming-Tools.html" rel="up" title="Programming Tools">
+<link href="Assertions.html" rel="next" title="Assertions">
+<link href="Forgetting-words.html" rel="prev" title="Forgetting words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Debugging">
+<div class="header">
+<p>
+Next: <a href="Assertions.html" accesskey="n" rel="next">Assertions</a>, Previous: <a href="Forgetting-words.html" accesskey="p" rel="prev">Forgetting words</a>, Up: <a href="Programming-Tools.html" accesskey="u" rel="up">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Debugging-1"></span><h4 class="subsection">6.26.7 Debugging</h4>
+<span id="index-debugging"></span>
+
+<p>Languages with a slow edit/compile/link/test development loop tend to
+require sophisticated tracing/stepping debuggers to facilate debugging.
+</p>
+<p>A much better (faster) way in fast-compiling languages is to add printing
+code at well-selected places, let the program run, look at the output, see
+where things went wrong, add more printing code, etc., until the bug is
+found.
+</p>
+<p>The simple debugging aids provided in <samp>debugs.fs</samp> are meant to support
+this style of debugging.
+</p>
+<p>The word <code>~~</code> prints debugging information (by default the source
+location and the stack contents). It is easy to insert. If you use Emacs it
+is also easy to remove (<kbd>C-x ~</kbd> in the Emacs Forth mode to query-replace
+them with nothing). The deferred words <code>printdebugdata</code> and
+<code>.debugline</code> control the output of <code>~~</code>. The default source
+location output format works well with Emacs&rsquo; compilation mode, so you can
+step through the program at the source level using <kbd>C-x `</kbd> (the
+advantage over a stepping debugger is that you can step in any direction and
+you know where the crash has happened or where the strange data has
+occurred).
+</p>
+<span id="index-_007e_007e-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-_007e_007e"></span>
+<span id="index-_007e_007e-1"></span>
+<div class="format">
+<pre class="format"><code>~~</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;tilde-tilde&rdquo;
+</pre></div>
+<p>Prints the source code location of the <code>~~</code> and the stack contents with
+<code>.debugline</code>.
+</p>
+
+<span id="index-printdebugdata-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-printdebugdata"></span>
+<span id="index-printdebugdata-1"></span>
+<div class="format">
+<pre class="format"><code>printdebugdata</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;print-debug-data&rdquo;
+</pre></div>
+
+<span id="index-_002edebugline-_0028--nfile-nline-_002d_002d--_0029-gforth_002d0_002e6"></span>
+<span id="index-_002edebugline"></span>
+<span id="index-_002edebugline-1"></span>
+<div class="format">
+<pre class="format"><code>.debugline</code> ( <i>nfile nline &ndash;  </i>) gforth-0.6 &ldquo;print-debug-line&rdquo;
+</pre></div>
+<p>Print the source code location indicated by <var>nfile nline</var>, and
+additional debugging information; the default <code>.debugline</code> prints the
+additional information with <code>printdebugdata</code>.
+</p>
+
+<span id="index-debug_002dfid-_0028--_002d_002d-file_002did--_0029-gforth_002d1_002e0"></span>
+<span id="index-debug_002dfid"></span>
+<span id="index-debug_002dfid-1"></span>
+<div class="format">
+<pre class="format"><code>debug-fid</code> ( <i>&ndash; file-id  </i>) gforth-1.0 &ldquo;<i>File-id</i>&rdquo;
+</pre></div>
+<p>debugging words for output.  By default it is the process&rsquo;s <code>stderr</code>.
+</p>
+
+
+<span id="index-filenames-in-_007e_007e-output"></span>
+<p><code>~~</code> (and assertions) will usually print the wrong file name if a
+marker is executed in the same file after their occurance.  They will print
+&lsquo;<samp>*somewhere*</samp>&rsquo; as file name if a marker is executed in the same file
+before their occurance.
+</p>
+<span id="index-once-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-once"></span>
+<span id="index-once-1"></span>
+<div class="format">
+<pre class="format"><code>once</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;once&rdquo;
+</pre></div>
+<p>do the following up to THEN only once
+</p>
+
+<span id="index-_007e_007ebt-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_007e_007ebt"></span>
+<span id="index-_007e_007ebt-1"></span>
+<div class="format">
+<pre class="format"><code>~~bt</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;~~bt&rdquo;
+</pre></div>
+<p>print stackdump and backtrace
+</p>
+
+<span id="index-_007e_007e1bt-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_007e_007e1bt"></span>
+<span id="index-_007e_007e1bt-1"></span>
+<div class="format">
+<pre class="format"><code>~~1bt</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;~~1bt&rdquo;
+</pre></div>
+<p>print stackdump and backtrace once
+</p>
+
+<span id="index-_003f_003f_003f-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003f_003f_003f"></span>
+<span id="index-_003f_003f_003f-1"></span>
+<div class="format">
+<pre class="format"><code>???</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;???&rdquo;
+</pre></div>
+<p>Open a debuging shell
+</p>
+
+<span id="index-WTF_003f_003f-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-WTF_003f_003f"></span>
+<span id="index-WTF_003f_003f-1"></span>
+<div class="format">
+<pre class="format"><code>WTF??</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;WTF??&rdquo;
+</pre></div>
+<p>Open a debugging shell with backtrace and stack dump
+</p>
+
+<span id="index-_0021_0021FIXME_0021_0021-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0021_0021FIXME_0021_0021"></span>
+<span id="index-_0021_0021FIXME_0021_0021-1"></span>
+<div class="format">
+<pre class="format"><code>!!FIXME!!</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;!!FIXME!!&rdquo;
+</pre></div>
+<p>word that should never be reached
+</p>
+
+<span id="index-replace_002dword-_0028--xt1-xt2-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-replace_002dword"></span>
+<span id="index-replace_002dword-1"></span>
+<div class="format">
+<pre class="format"><code>replace-word</code> ( <i>xt1 xt2 &ndash;  </i>) gforth-1.0 &ldquo;replace-word&rdquo;
+</pre></div>
+<p>make xt2 do xt1, both need to be colon definitions
+</p>
+
+<span id="index-_007e_007eVariable-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_007e_007eVariable"></span>
+<span id="index-_007e_007eVariable-1"></span>
+<div class="format">
+<pre class="format"><code>~~Variable</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;~~Variable&rdquo;
+</pre></div>
+<p>Variable that will be watched on every access
+</p>
+
+<span id="index-_007e_007eValue-_0028--n-_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_007e_007eValue"></span>
+<span id="index-_007e_007eValue-1"></span>
+<div class="format">
+<pre class="format"><code>~~Value</code> ( <i>n &quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;~~Value&rdquo;
+</pre></div>
+<p>Value that will be watched on every access
+</p>
+
+<span id="index-_002bltrace-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002bltrace"></span>
+<span id="index-_002bltrace-1"></span>
+<div class="format">
+<pre class="format"><code>+ltrace</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;+ltrace&rdquo;
+</pre></div>
+<p>turn on line tracing
+</p>
+
+<span id="index-_002dltrace-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002dltrace"></span>
+<span id="index-_002dltrace-1"></span>
+<div class="format">
+<pre class="format"><code>-ltrace</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;-ltrace&rdquo;
+</pre></div>
+<p>turn off line tracing
+</p>
+
+<span id="index-_0023loc-_0028--nline-nchar-_0022file_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0023loc"></span>
+<span id="index-_0023loc-1"></span>
+<div class="format">
+<pre class="format"><code>#loc</code> ( <i>nline nchar &quot;file&quot; &ndash;  </i>) gforth-1.0 &ldquo;#loc&rdquo;
+</pre></div>
+<p>set next word&rsquo;s location to <var>nline nchar</var> in <var>&quot;file&quot;</var>
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Assertions.html">Assertions</a>, Previous: <a href="Forgetting-words.html">Forgetting words</a>, Up: <a href="Programming-Tools.html">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

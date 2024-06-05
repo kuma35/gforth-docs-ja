@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Locals programming style (Gforth マニュアル)</title>
+
+<meta name="description" content="Locals programming style (Gforth マニュアル)">
+<meta name="keywords" content="Locals programming style (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Gforth-locals.html" rel="up" title="Gforth locals">
+<link href="Locals-implementation.html" rel="next" title="Locals implementation">
+<link href="How-long-do-locals-live_003f.html" rel="prev" title="How long do locals live?">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Locals-programming-style">
+<div class="header">
+<p>
+Next: <a href="Locals-implementation.html" accesskey="n" rel="next">Locals implementation</a>, Previous: <a href="How-long-do-locals-live_003f.html" accesskey="p" rel="prev">How long do locals live?</a>, Up: <a href="Gforth-locals.html" accesskey="u" rel="up">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Locals-programming-style-1"></span><h4 class="subsubsection">6.22.1.4 Locals programming style</h4>
+<span id="index-locals-programming-style"></span>
+<span id="index-programming-style_002c-locals"></span>
+
+<p>The freedom to define locals anywhere has the potential to change
+programming styles dramatically. In particular, the need to use the return
+stack for intermediate storage vanishes. Moreover, all stack manipulations
+(except <code>PICK</code>s and <code>ROLL</code>s with run-time determined arguments)
+can be eliminated: If the stack items are in the wrong order, just write a
+locals definition for all of them; then write the items in the order you
+want.
+</p>
+<p>This seems a little far-fetched and eliminating stack manipulations is
+unlikely to become a conscious programming objective. Still, the number of
+stack manipulations will be reduced dramatically if local variables are used
+liberally (e.g., compare <code>max</code> (see <a href="Gforth-locals.html">Gforth locals</a>) with a
+traditional implementation of <code>max</code>).
+</p>
+<p>This shows one potential benefit of locals: making Forth programs more
+readable. Of course, this benefit will only be realized if the programmers
+continue to honour the principle of factoring instead of using the added
+latitude to make the words longer.
+</p>
+<span id="index-single_002dassignment-style-for-locals"></span>
+<p>Using <code>TO</code> can and should be avoided.  Without <code>TO</code>, every
+value-flavoured local has only a single assignment and many advantages of
+functional languages apply to Forth. I.e., programs are easier to analyse,
+to optimize and to read: It is clear from the definition what the local
+stands for, it does not turn into something different later.
+</p>
+<p>E.g., a definition using <code>TO</code> might look like this:
+</p><div class="example">
+<pre class="example">: strcmp {: addr1 u1 addr2 u2 -- n :}
+ u1 u2 min 0
+ ?do
+   addr1 c@ addr2 c@ -
+   ?dup-if
+     unloop exit
+   then
+   addr1 char+ TO addr1
+   addr2 char+ TO addr2
+ loop
+ u1 u2 - ;
+</pre></div>
+<p>Here, <code>TO</code> is used to update <code>addr1</code> and <code>addr2</code> at every
+loop iteration. <code>strcmp</code> is a typical example of the readability
+problems of using <code>TO</code>. When you start reading <code>strcmp</code>, you think
+that <code>addr1</code> refers to the start of the string. Only near the end of
+the loop you realize that it is something else.
+</p>
+<p>This can be avoided by defining two locals at the start of the loop that are
+initialized with the right value for the current iteration.
+</p><div class="example">
+<pre class="example">: strcmp {: addr1 u1 addr2 u2 -- n :}
+ addr1 addr2
+ u1 u2 min 0 
+ ?do {: s1 s2 :}
+   s1 c@ s2 c@ -
+   ?dup-if
+     unloop exit
+   then
+   s1 char+ s2 char+
+ loop
+ 2drop
+ u1 u2 - ;
+</pre></div>
+<p>Here it is clear from the start that <code>s1</code> has a different value in
+every loop iteration.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Locals-implementation.html">Locals implementation</a>, Previous: <a href="How-long-do-locals-live_003f.html">How long do locals live?</a>, Up: <a href="Gforth-locals.html">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

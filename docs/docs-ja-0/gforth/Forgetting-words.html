@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Forgetting words (Gforth マニュアル)</title>
+
+<meta name="description" content="Forgetting words (Gforth マニュアル)">
+<meta name="keywords" content="Forgetting words (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Programming-Tools.html" rel="up" title="Programming Tools">
+<link href="Debugging.html" rel="next" title="Debugging">
+<link href="Examining-data.html" rel="prev" title="Examining data">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Forgetting-words">
+<div class="header">
+<p>
+Next: <a href="Debugging.html" accesskey="n" rel="next">Debugging</a>, Previous: <a href="Examining-data.html" accesskey="p" rel="prev">Examining data and code</a>, Up: <a href="Programming-Tools.html" accesskey="u" rel="up">Programming Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Forgetting-words-1"></span><h4 class="subsection">6.26.6 Forgetting words</h4>
+<span id="index-words_002c-forgetting"></span>
+<span id="index-forgeting-words"></span>
+
+
+<p>Forth allows you to forget words (and everything that was alloted in the
+dictonary after them) in a LIFO manner.
+</p>
+<span id="index-marker-_0028--_0022_003cspaces_003e-name_0022-_002d_002d--_0029-core_002dext"></span>
+<span id="index-marker"></span>
+<span id="index-marker-1"></span>
+<div class="format">
+<pre class="format"><code>marker</code> ( <i>&quot;&lt;spaces&gt; name&quot; &ndash;  </i>) core-ext &ldquo;marker&rdquo;
+</pre></div>
+<p>Create a definition, <i>name</i> (called a <i>mark</i>) whose execution semantics
+are to remove itself and everything defined after it.
+</p>
+
+
+<p>The most common use of this feature is during progam development: when you
+change a source file, forget all the words it defined and load it again
+(since you also forget everything defined after the source file was loaded,
+you have to reload that, too).  Note that effects like storing to variables
+and destroyed system words are not undone when you forget words.  With a
+system like Gforth, that is fast enough at starting up and compiling, I find
+it more convenient to exit and restart Gforth, as this gives me a clean
+slate.
+</p>
+<p>Here&rsquo;s an example of using <code>marker</code> at the start of a source file that
+you are debugging; it ensures that you only ever have one copy of the file&rsquo;s
+definitions compiled at any time:
+</p>
+<div class="example">
+<pre class="example">[IFDEF] my-code
+    my-code
+[ENDIF]
+
+marker my-code
+init-included-files
+
+\ .. definitions start here
+\ .
+\ .
+\ end
+</pre></div>
+
+
+</div>
+
+
+
+</body>
+</html>

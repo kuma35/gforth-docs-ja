@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>User-defined defining words with colon definitions (Gforth マニュアル)</title>
+
+<meta name="description" content="User-defined defining words with colon definitions (Gforth マニュアル)">
+<meta name="keywords" content="User-defined defining words with colon definitions (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="User_002ddefined-Defining-Words.html" rel="up" title="User-defined Defining Words">
+<link href="User_002ddefined-defining-words-using-CREATE.html" rel="next" title="User-defined defining words using CREATE">
+<link href="User_002ddefined-Defining-Words.html" rel="prev" title="User-defined Defining Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="User_002ddefined-defining-words-with-colon-definitions">
+<div class="header">
+<p>
+Next: <a href="User_002ddefined-defining-words-using-CREATE.html" accesskey="n" rel="next">User-defined defining words using create</a>, Previous: <a href="User_002ddefined-Defining-Words.html" accesskey="p" rel="prev">User-defined Defining Words</a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="User_002ddefined-defining-words-with-colon-definitions-1"></span><h4 class="subsubsection">6.10.10.1 User-defined defining words with colon definitions</h4>
+
+<p>You can create a new defining word by wrapping defining-time code around an
+existing defining word and putting the sequence in a colon definition. 
+</p>
+
+<p>For example, suppose that you have a word <code>stats</code> that gathers
+statistics about colon definitions given the <i>xt</i> of the definition, and
+you want every colon definition in your application to make a call to
+<code>stats</code>. You can define and use a new version of <code>:</code> like this:
+</p>
+<div class="example">
+<pre class="example">: stats
+  ( xt -- ) DUP .&quot; (Gathering statistics for &quot; . .&quot; )&quot;
+  ... ;  \ other code
+
+: my: : latestxt postpone literal ['] stats compile, ;
+
+my: foo + - ;
+</pre></div>
+
+<p>When <code>foo</code> is defined using <code>my:</code> these steps occur:
+</p>
+<ul>
+<li> <code>my:</code> is executed.
+</li><li> The <code>:</code> within the definition (the one between <code>my:</code> and
+<code>latestxt</code>) is executed, and does just what it always does; it parses
+the input stream for a name, builds a dictionary header for the name
+<code>foo</code> and switches <code>state</code> from interpret to compile.
+</li><li> The word <code>latestxt</code> is executed. It puts the <i>xt</i> for the word that
+is being defined &ndash; <code>foo</code> &ndash; onto the stack.
+</li><li> The code that was produced by <code>postpone literal</code> is executed; this
+causes the value on the stack to be compiled as a literal in the code area
+of <code>foo</code>.
+</li><li> The code <code>['] stats</code> compiles a literal into the definition of
+<code>my:</code>. When <code>compile,</code> is executed, that literal &ndash; the execution
+token for <code>stats</code> &ndash; is layed down in the code area of <code>foo</code> ,
+following the literal<a id="DOCF15" href="#FOOT15"><sup>15</sup></a>.
+</li><li> At this point, the execution of <code>my:</code> is complete, and control returns
+to the text interpreter. The text interpreter is in compile state, so
+subsequent text <code>+ -</code> is compiled into the definition of <code>foo</code> and
+the <code>;</code> terminates the definition as always.
+</li></ul>
+
+<p>You can use <code>see</code> to decompile a word that was defined using <code>my:</code>
+and see how it is different from a normal <code>:</code> definition. For example:
+</p>
+<div class="example">
+<pre class="example">: bar + - ;  \ like foo but using : rather than my:
+see bar
+: bar
+  + - ;
+see foo
+: foo
+  `foo stats + - ;
+</pre></div>
+
+<p><code>`foo</code> is another way of writing <code>['] foo</code>.
+</p>
+
+
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT15" href="#DOCF15">(15)</a></h5>
+<p>Strictly speaking, the mechanism that
+<code>compile,</code> uses to convert an <i>xt</i> into something in the code area is
+implementation-dependent. A threaded implementation might spit out the
+execution token directly whilst another implementation might spit out a
+native code sequence.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="User_002ddefined-defining-words-using-CREATE.html">User-defined defining words using create</a>, Previous: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

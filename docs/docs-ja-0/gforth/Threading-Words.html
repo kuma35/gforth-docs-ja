@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Threading Words (Gforth マニュアル)</title>
+
+<meta name="description" content="Threading Words (Gforth マニュアル)">
+<meta name="keywords" content="Threading Words (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Carnal-words.html" rel="up" title="Carnal words">
+<link href="Header-methods.html" rel="prev" title="Header methods">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Threading-Words">
+<div class="header">
+<p>
+Previous: <a href="Header-methods.html" accesskey="p" rel="prev">Header methods</a>, Up: <a href="Carnal-words.html" accesskey="u" rel="up">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Threading-Words-1"></span><h4 class="subsection">6.30.3 Threading Words</h4>
+<span id="index-threading-words"></span>
+
+<span id="index-code-field"></span>
+<span id="index-CFA"></span>
+<span id="index-code-address"></span>
+<p>The terminology used here stems from indirect threaded Forth systems; in
+such a system, the XT of a word is represented by the CFA (code field
+address) of a word; the CFA points to a cell that contains the code
+address.  The code address is the address of some machine code that performs
+the run-time action of invoking the word (e.g., the <code>dovar:</code> routine
+pushes the address of the body of the word (a variable) on the stack).
+</p>
+<p>These words provide access to code fields, code addresses and other
+threading stuff in Gforth. It more or less abstracts away the differences
+between direct and indirect threading.
+</p>
+<p>Up to and including Gforth 0.7, the code address (plus, for
+<code>does&gt;</code>-defined words, the address returned by <code>&gt;does-code</code>)  was
+sufficient to know the type of the word.  However, since Gforth-1.0 the
+behaviour or at least implementation of words like <code>compile,</code> and
+<code>name&gt;compile</code> can be determined independently as described in
+<a href="Header-methods.html">Header methods</a>.
+</p>
+<p>The following words for create a code field and at the same time initialize
+the header methods:
+</p>
+<span id="index-hmcopy_002c-_0028--xt-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-hmcopy_002c"></span>
+<span id="index-hmcopy_002c-1"></span>
+<div class="format">
+<pre class="format"><code>hmcopy,</code> ( <i>xt &ndash;  </i>) gforth-experimental &ldquo;hmcopy-comma&rdquo;
+</pre></div>
+<p>While constructing a header, allocate the code field, and use <i>xt</i> as
+prototype for setting the code field and the header methods.
+</p>
+
+<span id="index-docol_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-docol_002c"></span>
+<span id="index-docol_002c-1"></span>
+<div class="format">
+<pre class="format"><code>docol,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;docol,&rdquo;
+</pre></div>
+<p>The code address of a colon definition.
+</p>
+
+<span id="index-docon_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-docon_002c"></span>
+<span id="index-docon_002c-1"></span>
+<div class="format">
+<pre class="format"><code>docon,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;docon,&rdquo;
+</pre></div>
+<p>The code address of a <code>CONSTANT</code>.
+</p>
+
+<span id="index-dovar_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-dovar_002c"></span>
+<span id="index-dovar_002c-1"></span>
+<div class="format">
+<pre class="format"><code>dovar,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dovar,&rdquo;
+</pre></div>
+<p>The code address of a <code>CREATE</code>d word.
+</p>
+
+<span id="index-douser_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-douser_002c"></span>
+<span id="index-douser_002c-1"></span>
+<div class="format">
+<pre class="format"><code>douser,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;douser,&rdquo;
+</pre></div>
+<p>The code address of a <code>USER</code> variable.
+</p>
+
+<span id="index-dodefer_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-dodefer_002c"></span>
+<span id="index-dodefer_002c-1"></span>
+<div class="format">
+<pre class="format"><code>dodefer,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dodefer,&rdquo;
+</pre></div>
+<p>The code address of a <code>defer</code>ed word.
+</p>
+
+<span id="index-dofield_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-dofield_002c"></span>
+<span id="index-dofield_002c-1"></span>
+<div class="format">
+<pre class="format"><code>dofield,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dofield,&rdquo;
+</pre></div>
+<p>The code address of a <code>field</code>.
+</p>
+
+<span id="index-dovalue_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-dovalue_002c"></span>
+<span id="index-dovalue_002c-1"></span>
+<div class="format">
+<pre class="format"><code>dovalue,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dovalue,&rdquo;
+</pre></div>
+<p>The code address of a <code>CONSTANT</code>.
+</p>
+
+<span id="index-doabicode_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-doabicode_002c"></span>
+<span id="index-doabicode_002c-1"></span>
+<div class="format">
+<pre class="format"><code>doabicode,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;doabicode,&rdquo;
+</pre></div>
+<p>The code address of a <code>ABI-CODE</code> definition.
+</p>
+
+
+<p>For <code>does&gt;</code>-defined words, use <code>hmcopy,</code>.
+</p>
+<p>Or you use a higher-level word like <code>create-from</code> (see <a href="Creating-from-a-prototype.html">Creating from a prototype</a>).
+</p>
+<p>The following words were designed before the introduction of header methods,
+and are therefore not the best (and recommended) way to deal with different
+word types in Gforth.
+</p>
+<p>In an indirect threaded Forth, you can get the code address of <i>name</i> with
+<code>' <i>name</i> @</code>; in Gforth you can get it with <code>' <i>name</i>
+&gt;code-address</code>, independent of the threading method.
+</p>
+<span id="index-threading_002dmethod-_0028--_002d_002d-n--_0029-gforth_002d0_002e2"></span>
+<span id="index-threading_002dmethod"></span>
+<span id="index-threading_002dmethod-1"></span>
+<div class="format">
+<pre class="format"><code>threading-method</code> ( <i>&ndash; n </i>) gforth-0.2 &ldquo;threading-method&rdquo;
+</pre></div>
+<p>0 if the engine is direct threaded. Note that this may change during the
+lifetime of an image.
+</p>
+<span id="index-_003ecode_002daddress-_0028--xt-_002d_002d-c_005faddr--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003ecode_002daddress"></span>
+<span id="index-_003ecode_002daddress-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;code-address</code> ( <i>xt &ndash; c_addr  </i>) gforth-0.2 &ldquo;&gt;code-address&rdquo;
+</pre></div>
+<p><i>c-addr</i> is the code address of the word <i>xt</i>.
+</p>
+
+<span id="index-code_002daddress_0021-_0028--c_005faddr-xt-_002d_002d--_0029-gforth_002dobsolete"></span>
+<span id="index-code_002daddress_0021"></span>
+<span id="index-code_002daddress_0021-1"></span>
+<div class="format">
+<pre class="format"><code>code-address!</code> ( <i>c_addr xt &ndash;  </i>) gforth-obsolete &ldquo;code-address!&rdquo;
+</pre></div>
+<p>Change a code field with code address <i>c-addr</i> at <i>xt</i>.
+</p>
+
+
+<p>The code addresses produced by various defining words are produced by the
+following words:
+</p>
+<span id="index-docol_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
+<span id="index-docol_003a"></span>
+<span id="index-docol_003a-1"></span>
+<div class="format">
+<pre class="format"><code>docol:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;docol:&rdquo;
+</pre></div>
+<p>The code address of a colon definition.
+</p>
+
+<span id="index-docon_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
+<span id="index-docon_003a"></span>
+<span id="index-docon_003a-1"></span>
+<div class="format">
+<pre class="format"><code>docon:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;docon:&rdquo;
+</pre></div>
+<p>The code address of a <code>CONSTANT</code>.
+</p>
+
+<span id="index-dovar_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
+<span id="index-dovar_003a"></span>
+<span id="index-dovar_003a-1"></span>
+<div class="format">
+<pre class="format"><code>dovar:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;dovar:&rdquo;
+</pre></div>
+<p>The code address of a <code>CREATE</code>d word.
+</p>
+
+<span id="index-douser_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
+<span id="index-douser_003a"></span>
+<span id="index-douser_003a-1"></span>
+<div class="format">
+<pre class="format"><code>douser:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;douser:&rdquo;
+</pre></div>
+<p>The code address of a <code>USER</code> variable.
+</p>
+
+<span id="index-dodefer_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
+<span id="index-dodefer_003a"></span>
+<span id="index-dodefer_003a-1"></span>
+<div class="format">
+<pre class="format"><code>dodefer:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;dodefer:&rdquo;
+</pre></div>
+<p>The code address of a <code>defer</code>ed word.
+</p>
+
+<span id="index-dofield_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
+<span id="index-dofield_003a"></span>
+<span id="index-dofield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>dofield:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;dofield:&rdquo;
+</pre></div>
+<p>The code address of a <code>field</code>.
+</p>
+
+<span id="index-dovalue_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e7"></span>
+<span id="index-dovalue_003a"></span>
+<span id="index-dovalue_003a-1"></span>
+<div class="format">
+<pre class="format"><code>dovalue:</code> ( <i>&ndash; addr  </i>) gforth-0.7 &ldquo;dovalue:&rdquo;
+</pre></div>
+<p>The code address of a <code>CONSTANT</code>.
+</p>
+
+<span id="index-dodoes_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e6"></span>
+<span id="index-dodoes_003a"></span>
+<span id="index-dodoes_003a-1"></span>
+<div class="format">
+<pre class="format"><code>dodoes:</code> ( <i>&ndash; addr  </i>) gforth-0.6 &ldquo;dodoes:&rdquo;
+</pre></div>
+<p>The code address of a <code>DOES&gt;</code>-defined word.
+</p>
+
+<span id="index-doabicode_003a-_0028--_002d_002d-addr--_0029-gforth_002d1_002e0"></span>
+<span id="index-doabicode_003a"></span>
+<span id="index-doabicode_003a-1"></span>
+<div class="format">
+<pre class="format"><code>doabicode:</code> ( <i>&ndash; addr  </i>) gforth-1.0 &ldquo;doabicode:&rdquo;
+</pre></div>
+<p>The code address of a <code>ABI-CODE</code> definition.
+</p>
+
+
+<span id="index-does_003e_002dcode"></span>
+<p>For a word <i>X</i> defined with <code>set-does&gt;</code>, the code address points to
+<code>dodoes:</code>, and the <code>&gt;hmextra</code> field of the header methods contains
+the xt of the word that is called after pushing the body addres of <i>X</i>.
+</p>
+<p>If you want to know whether a word is a <code>DOES&gt;</code>-defined word, and what
+Forth code it executes, <code>&gt;does-code</code> tells you that:
+</p>
+<span id="index-_003edoes_002dcode-_0028--xt1-_002d_002d-xt2--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003edoes_002dcode"></span>
+<span id="index-_003edoes_002dcode-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;does-code</code> ( <i>xt1 &ndash; xt2  </i>) gforth-0.2 &ldquo;&gt;does-code&rdquo;
+</pre></div>
+<p>If <i>xt1</i> is the execution token of a child of a <code>set-does&gt;</code>-defined
+word, <i>xt2</i> is the xt passed to <code>set-does&gt;</code>, i.e, the xt of the word
+that is executed when executing <i>xt1</i> (but first the body address of
+<i>xt1</i> is pushed).  If <i>xt1</i> does not belong to a
+<code>set-does&gt;</code>-defined word, <i>xt2</i> is 0.
+</p>
+
+
+<p>You can use the resulting <i>xt2</i> with <code>set-does&gt;</code> (preferred) to
+change the latest word or with
+</p>
+<span id="index-does_002dcode_0021-_0028--xt2-xt1-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-does_002dcode_0021"></span>
+<span id="index-does_002dcode_0021-1"></span>
+<div class="format">
+<pre class="format"><code>does-code!</code> ( <i>xt2 xt1 &ndash;  </i>) gforth-0.2 &ldquo;does-code!&rdquo;
+</pre></div>
+<p>Change <i>xt1</i> to be a <code><i>xt2</i> set-does&gt;</code>-defined word.
+</p>
+
+
+<p>to change an arbitrary word.
+</p>
+<span id="index-definer"></span>
+<p>The following two words generalize <code>&gt;code-address</code>, <code>&gt;does-code</code>,
+<code>code-address!</code>, and <code>does-code!</code>:
+</p>
+<span id="index-_003edefiner-_0028--xt-_002d_002d-definer--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003edefiner"></span>
+<span id="index-_003edefiner-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;definer</code> ( <i>xt &ndash; definer  </i>) gforth-0.2 &ldquo;&gt;definer&rdquo;
+</pre></div>
+<p><var>Definer</var> is a unique identifier for the way the <var>xt</var> was defined.
+Words defined with different <code>does&gt;</code>-codes have different definers.
+The definer can be used for comparison and in <code>definer!</code>.
+</p>
+
+<span id="index-definer_0021-_0028--definer-xt-_002d_002d--_0029-gforth_002dobsolete"></span>
+<span id="index-definer_0021"></span>
+<span id="index-definer_0021-1"></span>
+<div class="format">
+<pre class="format"><code>definer!</code> ( <i>definer xt &ndash;  </i>) gforth-obsolete &ldquo;definer!&rdquo;
+</pre></div>
+<p>The word represented by <var>xt</var> changes its behaviour to the behaviour
+associated with <var>definer</var>.
+</p>
+
+
+<p><code>Code-address!</code>, <code>does-code!</code>, and <code>definer!</code> update the
+<code>opt-compile,</code> method to a somewhat generic compiler for that word type
+(in particular, primitives get the slow <code>general-compile,</code> method
+rather than the primitive-specific <code>peephole-compile,</code>).
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Header-methods.html">Header methods</a>, Up: <a href="Carnal-words.html">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Stacks and Postfix notation (Gforth マニュアル)</title>
+
+<meta name="description" content="Stacks and Postfix notation (Gforth マニュアル)">
+<meta name="keywords" content="Stacks and Postfix notation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Introduction.html" rel="up" title="Introduction">
+<link href="Your-first-definition.html" rel="next" title="Your first definition">
+<link href="Introducing-the-Text-Interpreter.html" rel="prev" title="Introducing the Text Interpreter">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Stacks-and-Postfix-notation">
+<div class="header">
+<p>
+Next: <a href="Your-first-definition.html" accesskey="n" rel="next">Your first Forth definition</a>, Previous: <a href="Introducing-the-Text-Interpreter.html" accesskey="p" rel="prev">Introducing the Text Interpreter</a>, Up: <a href="Introduction.html" accesskey="u" rel="up">An Introduction to Standard Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Stacks_002c-postfix-notation-and-parameter-passing"></span><h3 class="section">4.2 Stacks, postfix notation and parameter passing</h3>
+<span id="index-text-interpreter-1"></span>
+<span id="index-outer-interpreter-1"></span>
+
+<p>手続き型プログラミング言語(C や Pascal など)では、 プログラムの構成要素は関数(function)やプロシージャ(procedure)です。
+これらの関数またはプロシージャは、 明示的なパラメータを使用して呼び出されます。 たとえば、 C では以下のように記述できます:
+</p>
+<div class="example">
+<pre class="example">total = total + new_volume(length,height,depth);
+</pre></div>
+
+<p>ここで、  new_volume は別のコード片への関数呼び出し(function-call)であり、 total, length, height,
+depth はすべて変数です。 length, height, depth は関数呼び出しのパラメータです。
+</p>
+<p>Forth では、 関数またはプロシージャに相当するのは「定義」(definition)であり、
+パラメータはプログラマから見える共有スタックを使用して定義間で暗黙的に渡されます。  Forth は変数をサポートしていますが、 スタックの存在は、
+他のほとんどのプログラミング言語よりも変数が使用される頻度がはるかに低いことを意味します。 テキスト・インタプリタは数値を検出すると、
+それをスタックに置きます(プッシュ)。 何種類かのスタックがあり(いくつあるかは実装依存です)、 操作に使用されるスタックは、
+実行される操作によって明確に示されます。 すべての整数演算に使用されるスタックは「データ・スタック」と呼ばれ、
+これが最も一般的に使用されるスタックであるため、 「データ・スタック」への参照は多くの場合「スタック」と省略されます。
+</p>
+<p>スタックには後入れ先出し(last-in, first-out;LIFO)構成が採用されています。 以下のように打ち込むと:
+</p>
+<div class="example">
+<pre class="example"><kbd>1 2 3<span class="key">RET</span></kbd>  ok
+</pre></div>
+<span id="index-TOS-definition"></span>
+<p>これはテキスト・インタプリタに 3 つの数値を (データ)スタック に配置するように指示します。 スタックの振る舞いはトランプの扱いに例えられます。
+トランプの箱から、 (スートは何でもいいですが、) エース(1)のカードと2のカードと3のカードをテーブルの上の山に配ります。
+3のカードは山の最後のカード (last-in)であり、 山からカードを 1 枚取ると、 あなたがシャッフルとか何もいじってない限り、 取り出すカードは
+3のカードになります(first-out)。 スタックから最初に取り出されるであろう(スタック上の)数値はスタック頂上(スタック・トップ;top of
+stack)と呼ばれ、 多くの場合「TOS」と省略されます。
+</p>
+<p>Forth でパラメーターがどのように渡されるかを理解するために、 定義 <code>+</code> (「プラス」と発音します) の振る舞いを見てみましょう。
+あなたは、 この定義が加算を実行することを知っても驚かないでしょう。 より正確には、 これは 2 つの数値を加算して結果を生成します。 さて、 その 2
+つの数値はどこから取得されるのでしょうか？ これはスタック頂上から上位 2 つの数値を取り除きます。 その結果はどこに配置されるのでしょうか？
+それはスタックです。 あなたは以下のように、 トランプを使って <code>+</code> の振る舞いを演ずることができます。
+</p>
+<ul>
+<li> テーブル上の山(the steck)カードを 2 枚取り出します
+</li><li> あなたは、 それらをじっと見つめて、 「これら 2 つの数字の合計は何であるか」を自問してください。
+</li><li> 答えは 5 であると判明しました
+</li><li> 2 枚のカードをシャッフルしてトランプの箱に戻し、 トランプの箱の中から 5のカード を見つけます
+</li><li> テーブル上にある残りのエース(1)のカードの上に 5のカードを置きます。
+</li></ul>
+
+<p>トランプの箱はないですが、 Forth の実行中は、 定義 <code>.s</code> を使用して、 スタックに影響を与えることなく、
+スタックの現在の状態を表示できます。 以下の様に打ち込みます:
+</p>
+<div class="example">
+<pre class="example"><kbd>clearstacks 1 2 3<span class="key">RET</span></kbd> ok
+<kbd>.s<span class="key">RET</span></kbd> &lt;3&gt; 1 2 3  ok
+</pre></div>
+
+<p>テキスト・インタプリタはワード <code>clearstacks</code> を検索して実行します。 スタック(データおよび浮動小数点スタック)を整理し、
+以前の例の実行によってスタックに残された可能性のあるエントリをすべて削除します。 続けてテキスト・インタプリタは、 3
+つの数値をそれぞれ順番にスタックにプッシュします。 最後に、 テキスト・インタプリタはワード <code>.s</code> を検索して実行します。
+<code>.s</code> を実行すると、「&lt;3&gt;」 (スタック上の項目の合計数) に続いて、スタック上のすべての項目のリストが出力されます。 一番右側の項目が
+TOS です。
+</p>
+<p>あなたは今や以下のように打ち込めます:
+</p>
+<div class="example">
+<pre class="example"><kbd>+ .s<span class="key">RET</span></kbd> &lt;2&gt; 1 5  ok
+</pre></div>
+
+<p>現在スタックには 2 つの項目があり、 (そのうちの項目の1つである)加算の結果は 5 となっていれば正解です。
+</p>
+<p>あなたが引き続きトランプで遊んでいるなら、 この結果に対して 2 回目の足し算を行ってみましょう。 2 枚のカードを手に取り、 その合計が 6
+であることを計算し、手に取った2枚のカードをシャッフルして箱に入れ、 箱から 6のカード を探してテーブルに置きます。 これで、 スタックにはアイテムが
+1 つだけになりました。 あなたが 3 回目の足し算を実行しようとするとどうなるでしょうか？ あなたは、 1枚目のカードを手に取り、
+2枚目のカードを手に取ろうとします &ndash; ああ! でも 2枚目のカードはありません。 これは「スタック・アンダーフロー」と呼ばれ、エラーとなります。
+Forth で同じことを行おうとすると、 多くの場合、 エラーが報告されます(おそらく、 スタック・アンダーフロー(Stack
+Underflow)エラー、 または、 無効なメモリアクセス(Invalid Memory Address)エラー)。
+</p>
+<p>スタック・アンダーフローの逆の状況が「スタック・オーバーフロー」です。 これは、 あなたがたが、
+スタック用に予約されている有限量のストレージ・スペースがあることを単に受け入れるだけで済みます。 トランプの例えを拡張すると、
+沢山の数のトランプのカードがあり、 それらのカードをテーブルに積み上げた場合、 天井にぶつかってしまい、 最終的には別のカードを追加できなくなります。
+Gforth を使用すると、 スタックの最大サイズを設定できます。 一般に、 スタック・オーバーフローが発生するのは、 定義にバグがあり、
+制御不能にスタック上にデータを生成している場合のみです。
+</p>
+<p>トランプの例えには、 最後にもう 1 つ適用例があります。 トランプを使用してスタックをモデル化した場合、 スタック上のアイテムの最大数は 52
+になります(ジョーカーを使用しなかったと仮定して)。 スタック上のアイテムの最大値は13(キング)です。 実際は、 使用できる数値は 1 ～ 13
+の正の整数のみ(つまり、 13個の数)です。 (たとえば) 0や27や3.52や-2は使用できません。 そこで、 一部のカードについて考え方を変え、
+さまざまな数値に対応できるようにします。 たとえば、ジャックは 0 を表し、 クイーンは -1 を表し、 キングは -2 を表すと見なします。 すると、
+表現できる数値の幅は変更されません(合計 13 個の数値のみを表すことができます)が、 -2 から 10 の数値を表す事ができるようになりました。
+</p>
+<p>この例えでは、 制限は 1 つのスタック・エントリが保持できる情報の量であり、 Forth にも同様の制限があります。 Forth では、
+スタック・エントリのサイズは「セル」(cell)と呼ばれます。 セルの実際のサイズは実装に依存し、 スタック・エントリが保持できる最大値に影響します。
+標準 Forth は少なくとも 16 ビットのセル・サイズを提供し、 ほとんどのデスクトップ・システムは 32 ビットのセル・サイズを使用します。
+</p>
+<p>Forth は型チェックを一切行わないため、 スタック項目を自由に操作したり組み合わせたりできます。 スタック項目を 2
+の補数の符号付き整数として扱う便利な方法は、 <code>+</code> などの標準ワードもやっています。 それゆえ、 以下のように入力できます:
+</p>
+<div class="example">
+<pre class="example"><kbd>-5 12 + .s<span class="key">RET</span></kbd> &lt;1&gt; 7  ok
+</pre></div>
+
+<p>あなたが、 Forth を電卓にするために、 数値や <code>+</code> のような定義を使用すると、
+それが通常の電卓とはかなり異なることがわかるでしょう。 あなたは 2 + 3 = と入力するのではなく、 2 3 +
+と入力する必要があります(ここでは、 結果を確認するには <code>.s</code> を使用する必要があるという事実は無視してください)。
+この違いを説明するために使用される用語は、 電卓は「中置記法」(Infix Notation;パラメーターと演算子が混合されている)を使用するのに対し、
+Forth は「後置記法」(Postfix Notation;パラメーターと演算子が分かれている)、 またの名を「逆ポーランド記法」(Reverse
+Polish Notation)と呼ばれるものを使用します。
+</p>
+<p>後置記法は最初はわかりにくいように見えるかもしれませんが、 いくつかの重要な利点があります:
+</p>
+<ul>
+<li> 明白です
+</li><li> より簡潔です
+</li><li> スタックベースのシステムに自然に適合します
+</li></ul>
+
+<p>これらの主張をさらに詳しく調べるために、 以下の計算について見てみましょう:
+</p>
+<div class="example">
+<pre class="example">6 + 5 * 4 =
+4 * 5 + 6 =
+</pre></div>
+
+<p>あなたが、算数を勉強中の場合、 または算数が非常に苦手な場合は、 最初の答えは 44、 2 番目の答えは 26 になるでしょう。
+あなたが算数に少し詳しい人なら、 乗算は加算よりも優先されるという法則を覚えているでしょう。 そして、 どちらの場合も答えは 26 になるでしょう。
+答え 44 だと言った人に、 なぜ答えが 26 かを説明するには、 最初の計算を以下のように書き換えることになるでしょう:
+</p>
+<div class="example">
+<pre class="example">6 + (5 * 4) =
+</pre></div>
+
+<p>あなたが、 もし、 乗算より優先して加算を実行したい場合は、 かっこを使用して強制的に加算させる必要があります。
+</p>
+<p>上記 2 つの計算を電卓で計算する場合、 以下のキーストローク・シーケンスを使用して、 入力ミスしない限り、 おそらく正しい答えが得られるでしょう:
+</p>
+<div class="example">
+<pre class="example">6 + 5 = * 4 =
+4 * 5 = + 6 =
+</pre></div>
+
+<p>Postfix notation is unambiguous because the order that the operators are
+applied is always explicit; that also means that parentheses are never
+required後置記法では演算子が適用される順序は常に明示的です。 これは、 括弧が決して必要ないことも意味します。
+演算子はアクティブです(演算子を引用する行為によって演算操作が実行されます)。 これにより、「=」が必要なくなります。
+</p>
+<p>計算 6 + 5 * 4 は、 以下の 2 つの同等の方法で(後置表記で)書くことができます:
+</p>
+<div class="example">
+<pre class="example">6 5 4 * +
+または:
+5 4 * 6 +
+</pre></div>
+
+<p>この表記法に関して注意すべき重要な点は、 数値の順番は変わらないことです。 10 から 2 を減算する場合は、 <code>10 2 -</code>
+と入力します。
+</p>
+<p>Forth が後置表記を使用する理由は非常に簡単に説明できます。 これにより実装が非常に単純になり、
+パラメータを渡すためのメカニズムとしてスタックを使用することが自然な流れになります。 これについての別の考え方としては、 すべての Forth
+定義がアクティブであると認識することです。 これらは、 テキスト・インタプリタによって検出されると実行されます。 この結果、 Forth
+の構文は何の努力も必要とせずシンプルになります。
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Your-first-definition.html">Your first Forth definition</a>, Previous: <a href="Introducing-the-Text-Interpreter.html">Introducing the Text Interpreter</a>, Up: <a href="Introduction.html">An Introduction to Standard Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

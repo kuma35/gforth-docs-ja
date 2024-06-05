@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Task-local data (Gforth マニュアル)</title>
+
+<meta name="description" content="Task-local data (Gforth マニュアル)">
+<meta name="keywords" content="Task-local data (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Pthreads.html" rel="up" title="Pthreads">
+<link href="Semaphores.html" rel="next" title="Semaphores">
+<link href="Basic-multi_002dtasking.html" rel="prev" title="Basic multi-tasking">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Task_002dlocal-data">
+<div class="header">
+<p>
+Next: <a href="Semaphores.html" accesskey="n" rel="next">Semaphores</a>, Previous: <a href="Basic-multi_002dtasking.html" accesskey="p" rel="prev">Basic multi-tasking</a>, Up: <a href="Pthreads.html" accesskey="u" rel="up">Pthreads</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Task_002dlocal-data-1"></span><h4 class="subsubsection">6.27.1.2 Task-local data</h4>
+<span id="index-user-variables"></span>
+<span id="index-user-space"></span>
+<span id="index-task_002dlocal-data"></span>
+
+<p>In Forth every task has essentially the same task-local data, called
+&ldquo;user&rdquo; area (early Forth systems were multi-user systems and there often
+was one user per task).  The <i>task</i> result of, e.g. <code>newtask</code> is the
+start address of its user area.  Each task gets the user data defined by the
+system (e.g., <code>base</code>).  You can define additional user data with:
+</p>
+<span id="index-User-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-User"></span>
+<span id="index-User-1"></span>
+<div class="format">
+<pre class="format"><code>User</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-0.2 &ldquo;User&rdquo;
+</pre></div>
+<p><i>Name</i> is a user variable (1 cell).<br> <i>Name</i> execution: ( &ndash; <i>addr</i>
+)<br> <i>Addr</i> is the address of the user variable in the current task.
+</p>
+
+<span id="index-AUser-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-AUser"></span>
+<span id="index-AUser-1"></span>
+<div class="format">
+<pre class="format"><code>AUser</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-0.2 &ldquo;AUser&rdquo;
+</pre></div>
+<p><i>Name</i> is a user variable containing an address (this only makes a
+difference in the cross-compiler).
+</p>
+
+<span id="index-uallot-_0028--n1-_002d_002d-n2--_0029-gforth_002d0_002e3"></span>
+<span id="index-uallot"></span>
+<span id="index-uallot-1"></span>
+<div class="format">
+<pre class="format"><code>uallot</code> ( <i>n1 &ndash; n2  </i>) gforth-0.3 &ldquo;uallot&rdquo;
+</pre></div>
+<p>Reserve <i>n1</i> bytes of user data.  <i>n2</i> is the offset of the start of the
+reserved area within the user area.
+</p>
+
+<span id="index-UValue-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-UValue"></span>
+<span id="index-UValue-1"></span>
+<div class="format">
+<pre class="format"><code>UValue</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;UValue&rdquo;
+</pre></div>
+<p><i>Name</i> is a user value.<br> <i>Name</i> execution: ( &ndash; <i>x</i> )
+</p>
+
+<span id="index-UDefer-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-UDefer"></span>
+<span id="index-UDefer-1"></span>
+<div class="format">
+<pre class="format"><code>UDefer</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;UDefer&rdquo;
+</pre></div>
+<p><i>Name</i> is a task-local deferred word.<br> <i>Name</i> execution: ( ... &ndash; ... )
+</p>
+
+
+<p>There are also the following words for dealing with user data.
+</p>
+<span id="index-up_0040-_0028--_002d_002d-a_002daddr--_0029-new"></span>
+<span id="index-up_0040"></span>
+<span id="index-up_0040-1"></span>
+<div class="format">
+<pre class="format"><code>up@</code> ( <i>&ndash; a-addr </i>) new &ldquo;up-fetch&rdquo;
+</pre></div>
+<p><i>Addr</i> is the start of the user area of the current task (<i>addr</i> also
+serves as the <i>task</i> identifier of the current task).
+</p>
+<span id="index-user_0027-_0028--_0022name_0022-_002d_002d-u--_0029-gforth_002dexperimental"></span>
+<span id="index-user_0027"></span>
+<span id="index-user_0027-1"></span>
+<div class="format">
+<pre class="format"><code>user'</code> ( <i>&quot;name&quot; &ndash; u  </i>) gforth-experimental &ldquo;user&rdquo;&rsquo;
+</pre></div>
+<p><i>U</i> is the offset of the user variable <i>name</i> in the user area of each
+task.
+</p>
+
+<span id="index-_0027s-_0028--addr1-task-_002d_002d-addr2--_0029-gforth_002dexperimental"></span>
+<span id="index-_0027s"></span>
+<span id="index-_0027s-1"></span>
+<div class="format">
+<pre class="format"><code>'s</code> ( <i>addr1 task &ndash; addr2  </i>) gforth-experimental &ldquo;&rsquo;s&rdquo;
+</pre></div>
+<p>With <i>addr1</i> being an address in the user data of the current task,
+<i>addr2</i> is the corresponding address in <i>task</i>&rsquo;s user data.
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Semaphores.html">Semaphores</a>, Previous: <a href="Basic-multi_002dtasking.html">Basic multi-tasking</a>, Up: <a href="Pthreads.html">Pthreads</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

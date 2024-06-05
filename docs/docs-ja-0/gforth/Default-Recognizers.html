@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Default Recognizers (Gforth マニュアル)</title>
+
+<meta name="description" content="Default Recognizers (Gforth マニュアル)">
+<meta name="keywords" content="Default Recognizers (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Recognizers.html" rel="up" title="Recognizers">
+<link href="Dealing-with-existing-Recognizers.html" rel="next" title="Dealing with existing Recognizers">
+<link href="Recognizers.html" rel="prev" title="Recognizers">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Default-Recognizers">
+<div class="header">
+<p>
+Next: <a href="Dealing-with-existing-Recognizers.html" accesskey="n" rel="next">Dealing with existing Recognizers</a>, Previous: <a href="Recognizers.html" accesskey="p" rel="prev">Recognizers</a>, Up: <a href="Recognizers.html" accesskey="u" rel="up">Recognizers</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Default-Recognizers-1"></span><h4 class="subsubsection">6.14.5.1 Default Recognizers</h4>
+<span id="index-Recognizers-normal-usage"></span>
+
+<p>The standard Forth text interpreter recognizes words in the search order
+(<code>rec-nt</code>), integer numbers (<code>rec-num</code>), and floating point
+numbers (<code>rec-float</code>).  By default Gforth also recognizes syntaxes for
+</p>
+<ul>
+<li> strings, e.g., <code>&quot;mystring&quot;</code>, with <code>rec-string</code>
+
+</li><li> complex numbers, e.g., <code>0e+1ei</code>, with <code>rec-complex</code>
+
+</li><li> storing a value or changing a defered word, e.g., <code>-&gt;myvalue</code>, with
+<code>rec-to</code>
+
+</li><li> the xt representing the interpretation semantics of a word, e.g.,
+<code>`dup</code>, with <code>rec-tick</code>
+
+</li><li> the nt of a word, e.g., <code>``mysynonym</code>, with <code>rec-dtick</code>
+
+</li><li> an address in the body of a word, e.g., <code>&lt;myarray+8&gt;</code>, with
+<code>rec-body</code>
+
+</li><li> an access to an environment variable of the operating system, e.g.,
+<code>${HOME}</code>, with <code>rec-env</code>
+
+</li><li> a word in a vocabulary, e.g., <code>myvoc1:myvoc2:myword</code>, with
+<code>rec-scope</code>
+
+</li><li> using a specific recognizer to recognize something, e.g., <code>float?1.</code>, ,
+with <code>rec-meta</code>
+
+</li></ul>
+
+<p>You can use <code>locate</code> (see <a href="Locating-source-code-definitions.html">Locating source code definitions</a>) to
+determine which recognizer recognizes a piece of source code.  E.g.:
+</p>
+<div class="example">
+<pre class="example">defer mydefer
+locate -&gt;mydefer
+</pre></div>
+
+<p>will show that <code>rec-to</code> recognizes <code>-&gt;mydefer</code>.  However, if the
+recognizer recognizes a dictionary word (e.g., the scope recognizer), locate
+will show that word.
+</p>
+<p>You can see which recognizers are used and the order of recognizers with
+</p>
+<span id="index-_002erecognizers-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_002erecognizers"></span>
+<span id="index-_002erecognizers-1"></span>
+<div class="format">
+<pre class="format"><code>.recognizers</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;dot-recognizers&rdquo;
+</pre></div>
+<p>Print the current recognizer order, with the first-searched recognizer
+leftmost (unlike .order).  The inverted <code>~</code> is displayed instead of
+<code>rec-</code>, which is the common prefix of all recognizers.
+</p>
+
+
+<p>Recognizers are typically designed to avoid matching the same strings as
+other recognizers.  E.g., <code>rec-env</code> (the environment variable
+recognizer) requires braces to avoid a conflict with the number recognizer
+for input strings like <code>$ADD</code>.  There are a few exceptions to this
+policy, however:
+</p>
+<ul>
+<li> Word names can be anything, so they can conflict with any other recognizer
+(and the search order is searched before other recognizers).
+
+<p>However, they tend not to start with <code>0</code> (and if they do, they contain
+special characters), so if your base is <code>hex</code>, it is a good practice to
+let your numbers start with <code>0</code>.
+</p>
+<p>In the code bases we have looked at, starting words with <code>'</code> (quote aka
+tick) is much more common than starting them with <code>`</code> (backquote aka
+backtick), so the recognizers for the xt and the nt use <code>`</code> to reduce
+the number of conflicts.
+</p>
+</li><li> Both the integer recognizer <code>rec-num</code> and the floating-point recognizer
+<code>rec-float</code> recognize, e.g., <code>1.</code>.  Because <code>rec-num</code> is (by
+default) first, <code>1.</code> is recognized as a double-cell integer.  If you
+change the recognizer order to use <code>rec-float</code> first, <code>1.</code> is
+recognized as a floating-point number, but loading code written in standard
+Forth may behave in a non-standard way.
+
+<p>In any case, it&rsquo;s a good practice to avoid that conflict in your own code as
+follows: Always write double-cell integers with a number prefix, e.g.,
+<code>#1.</code>; and always write floating-point numbers with an <code>e</code>, e.g.,
+<code>1e</code>.
+</p>
+</li><li> We have seen a few word names that start with <code>-&gt;</code>.  You can avoid a
+conflict by using <code>to myvalue</code> or <code>to?-&gt;myvalue</code> (the latter works
+with <code>postpone</code>).
+
+</li></ul>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Dealing-with-existing-Recognizers.html">Dealing with existing Recognizers</a>, Previous: <a href="Recognizers.html">Recognizers</a>, Up: <a href="Recognizers.html">Recognizers</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

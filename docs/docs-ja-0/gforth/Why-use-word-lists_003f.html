@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Why use word lists? (Gforth マニュアル)</title>
+
+<meta name="description" content="Why use word lists? (Gforth マニュアル)">
+<meta name="keywords" content="Why use word lists? (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Word-Lists.html" rel="up" title="Word Lists">
+<link href="Word-list-example.html" rel="next" title="Word list example">
+<link href="Vocabularies.html" rel="prev" title="Vocabularies">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Why-use-word-lists_003f">
+<div class="header">
+<p>
+Next: <a href="Word-list-example.html" accesskey="n" rel="next">Word list example</a>, Previous: <a href="Vocabularies.html" accesskey="p" rel="prev">Vocabularies</a>, Up: <a href="Word-Lists.html" accesskey="u" rel="up">Word Lists</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Why-use-word-lists_003f-1"></span><h4 class="subsection">6.16.2 Why use word lists?</h4>
+<span id="index-word-lists-_002d-why-use-them_003f"></span>
+
+<p>Here are some reasons why people use wordlists:
+</p>
+<ul>
+<li> To prevent a set of words from being used outside the context in which they
+are valid. Two classic examples of this are an integrated editor (all of the
+edit commands are defined in a separate word list; the search order is set
+to the editor word list when the editor is invoked; the old search order is
+restored when the editor is terminated) and an integrated assembler (the
+op-codes for the machine are defined in a separate word list which is used
+when a <code>CODE</code> word is defined).
+
+</li><li> To organize the words of an application or library into a user-visible set
+(in <code>forth-wordlist</code> or some other common wordlist) and a set of helper
+words used just for the implementation (hidden in a separate wordlist).
+This keeps <code>words</code>&rsquo; output smaller, separates implementation and
+interface, and reduces the chance of name conflicts within the common
+wordlist.
+
+</li><li> To prevent a name-space clash between multiple definitions with the same
+name. For example, when building a cross-compiler you might have a word
+<code>IF</code> that generates conditional code for your target system. By placing
+this definition in a different word list you can control whether the host
+system&rsquo;s <code>IF</code> or the target system&rsquo;s <code>IF</code> get used in any
+particular context by controlling the order of the word lists on the search
+order stack.
+
+</li></ul>
+
+<p>The downsides of using wordlists are:
+</p>
+<ul>
+<li> Debugging becomes more cumbersome.
+
+</li><li> Name conflicts worked around with wordlists are still there, and you have to
+arrange the search order carefully to get the desired results; if you forget
+to do that, you get hard-to-find errors (as in any case where you read the
+code differently from the compiler; <code>see</code> can help seeing which of
+several possible words the name resolves to in such cases).  <code>See</code>
+displays just the name of the words, not what wordlist they belong to, so it
+might be misleading.  Using unique names is a better approach to avoid name
+conflicts.
+
+</li><li> You have to explicitly undo any changes to the search order.  In many cases
+it would be more convenient if this happened implicitly.  Gforth currently
+does not provide such a feature, but it may do so in the future.
+</li></ul>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Word-list-example.html">Word list example</a>, Previous: <a href="Vocabularies.html">Vocabularies</a>, Up: <a href="Word-Lists.html">Word Lists</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

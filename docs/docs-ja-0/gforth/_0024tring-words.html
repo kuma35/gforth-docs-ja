@@ -1,0 +1,482 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>$tring words (Gforth マニュアル)</title>
+
+<meta name="description" content="$tring words (Gforth マニュアル)">
+<meta name="keywords" content="$tring words (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings-and-Characters.html" rel="up" title="Strings and Characters">
+<link href="Counted-string-words.html" rel="next" title="Counted string words">
+<link href="String-words.html" rel="prev" title="String words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="g_t_0024tring-words">
+<div class="header">
+<p>
+Next: <a href="Counted-string-words.html" accesskey="n" rel="next">Counted string words</a>, Previous: <a href="String-words.html" accesskey="p" rel="prev">String words</a>, Up: <a href="Strings-and-Characters.html" accesskey="u" rel="up">Strings and Characters</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="g_t_0024tring-words-1"></span><h4 class="subsection">6.8.5 $tring words</h4>
+<span id="index-string-words-with-_0024"></span>
+
+<p>The following string library stores strings in ordinary cell-size variables
+(string handles).  These handles contain a pointer to a cell-counted string
+allocated from the heap.  The string library originates from bigFORTH.
+</p>
+<p>Because there is only one permanent reference to the contents (the one in
+the handle), the string can be relocated or deleted without worrying about
+dangling references; this requires that the programmer uses references
+produced by, e.g., <code>$@</code> only for temporary purposes, i.e., these
+references are not passed out, e.g., as return values or stored in global
+memory, and words that may change the handle are not called while these
+references exist.
+</p>
+<p>This library is complemented by the cell-pair representation: You use the
+$tring words for variable strings which are cumbersome with the c-addr u
+representation.  You use the cell-pair representation for processing (e.g.,
+inspecting) strings while they do not change.
+</p>
+<span id="index-_0024_0021-_0028--addr1-u-_0024addr-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024_0021"></span>
+<span id="index-_0024_0021-1"></span>
+<div class="format">
+<pre class="format"><code>$!</code> ( <i>addr1 u $addr &ndash;  </i>) gforth-0.7 &ldquo;string-store&rdquo;
+</pre></div>
+<p>stores a newly allocated string buffer at an address, frees the previous
+buffer if necessary.
+</p>
+
+<span id="index-_0024_0040-_0028--_0024addr-_002d_002d-addr2-u--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024_0040"></span>
+<span id="index-_0024_0040-1"></span>
+<div class="format">
+<pre class="format"><code>$@</code> ( <i>$addr &ndash; addr2 u  </i>) gforth-0.7 &ldquo;string-fetch&rdquo;
+</pre></div>
+<p>returns the stored string.
+</p>
+
+<span id="index-_0024_0040len-_0028--_0024addr-_002d_002d-u--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024_0040len"></span>
+<span id="index-_0024_0040len-1"></span>
+<div class="format">
+<pre class="format"><code>$@len</code> ( <i>$addr &ndash; u  </i>) gforth-0.7 &ldquo;string-fetch-len&rdquo;
+</pre></div>
+<p>returns the length of the stored string.
+</p>
+
+<span id="index-_0024_0021len-_0028--u-_0024addr-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024_0021len"></span>
+<span id="index-_0024_0021len-1"></span>
+<div class="format">
+<pre class="format"><code>$!len</code> ( <i>u $addr &ndash;  </i>) gforth-0.7 &ldquo;string-store-len&rdquo;
+</pre></div>
+<p>changes the length of the stored string.  Therefore we must change the
+memory area and adjust address and count cell as well.
+</p>
+
+<span id="index-_0024_002b_0021len-_0028--u-_0024addr-_002d_002d-addr--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_002b_0021len"></span>
+<span id="index-_0024_002b_0021len-1"></span>
+<div class="format">
+<pre class="format"><code>$+!len</code> ( <i>u $addr &ndash; addr  </i>) gforth-1.0 &ldquo;string-plus-store-len&rdquo;
+</pre></div>
+<p>make room for u bytes at the end of the memory area referenced by $addr;
+addr is the address of the first of these bytes.
+</p>
+
+<span id="index-_0024del-_0028--addr-off-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024del"></span>
+<span id="index-_0024del-1"></span>
+<div class="format">
+<pre class="format"><code>$del</code> ( <i>addr off u &ndash;  </i>) gforth-0.7 &ldquo;string-del&rdquo;
+</pre></div>
+<p>deletes <var>u</var> bytes from a string with offset <var>off</var>.
+</p>
+
+<span id="index-_0024ins-_0028--addr1-u-_0024addr-off-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024ins"></span>
+<span id="index-_0024ins-1"></span>
+<div class="format">
+<pre class="format"><code>$ins</code> ( <i>addr1 u $addr off &ndash;  </i>) gforth-0.7 &ldquo;string-ins&rdquo;
+</pre></div>
+<p>inserts a string at offset <var>off</var>.
+</p>
+
+<span id="index-_0024_002b_0021-_0028--addr1-u-_0024addr-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024_002b_0021"></span>
+<span id="index-_0024_002b_0021-1"></span>
+<div class="format">
+<pre class="format"><code>$+!</code> ( <i>addr1 u $addr &ndash;  </i>) gforth-0.7 &ldquo;string-plus-store&rdquo;
+</pre></div>
+<p>appends a string to another.
+</p>
+
+<span id="index-c_0024_002b_0021-_0028--char-_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-c_0024_002b_0021"></span>
+<span id="index-c_0024_002b_0021-1"></span>
+<div class="format">
+<pre class="format"><code>c$+!</code> ( <i>char $addr &ndash;  </i>) gforth-1.0 &ldquo;c-string-plus-store&rdquo;
+</pre></div>
+<p>append a character to a string.
+</p>
+
+<span id="index-_0024free-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024free"></span>
+<span id="index-_0024free-1"></span>
+<div class="format">
+<pre class="format"><code>$free</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-free&rdquo;
+</pre></div>
+<p>free the string pointed to by addr, and set addr to 0
+</p>
+
+<span id="index-_0024init-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024init"></span>
+<span id="index-_0024init-1"></span>
+<div class="format">
+<pre class="format"><code>$init</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-init&rdquo;
+</pre></div>
+<p>store an empty string there, regardless of what was in before
+</p>
+
+<span id="index-_0024split-_0028--addr-u-char-_002d_002d-addr1-u1-addr2-u2--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024split"></span>
+<span id="index-_0024split-1"></span>
+<div class="format">
+<pre class="format"><code>$split</code> ( <i>addr u char &ndash; addr1 u1 addr2 u2  </i>) gforth-0.7 &ldquo;string-split&rdquo;
+</pre></div>
+<p>divides a string into two, with one char as separator (e.g. &rsquo;?&rsquo; for
+arguments in an HTML query)
+</p>
+
+<span id="index-_0024iter-_0028--_002e_002e-_0024addr-char-xt-_002d_002d-_002e_002e--_0029-gforth_002d0_002e7"></span>
+<span id="index-_0024iter"></span>
+<span id="index-_0024iter-1"></span>
+<div class="format">
+<pre class="format"><code>$iter</code> ( <i>.. $addr char xt &ndash; ..  </i>) gforth-0.7 &ldquo;string-iter&rdquo;
+</pre></div>
+<p>takes a string apart piece for piece, also with a character as
+separator. For each part a passed token will be called. With this you can
+take apart arguments &ndash; separated with &rsquo;&amp;&rsquo; &ndash; at ease.
+</p>
+
+<span id="index-_0024over-_0028--addr-u-_0024addr-off-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024over"></span>
+<span id="index-_0024over-1"></span>
+<div class="format">
+<pre class="format"><code>$over</code> ( <i>addr u $addr off &ndash;  </i>) gforth-1.0 &ldquo;string-over&rdquo;
+</pre></div>
+<p>overwrite string at offset off with addr u
+</p>
+
+<span id="index-_0024exec-_0028--xt-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024exec"></span>
+<span id="index-_0024exec-1"></span>
+<div class="format">
+<pre class="format"><code>$exec</code> ( <i>xt addr &ndash;  </i>) gforth-1.0 &ldquo;string-exec&rdquo;
+</pre></div>
+<p>execute xt while the standard output (TYPE, EMIT, and everything that uses
+them) is appended to the string variable addr.
+</p>
+
+<span id="index-_0024tmp-_0028--xt-_002d_002d-addr-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024tmp"></span>
+<span id="index-_0024tmp-1"></span>
+<div class="format">
+<pre class="format"><code>$tmp</code> ( <i>xt &ndash; addr u  </i>) gforth-1.0 &ldquo;string-t-m-p&rdquo;
+</pre></div>
+<p>generate a temporary string from the output of a word
+</p>
+
+<span id="index-_0024_002e-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_002e"></span>
+<span id="index-_0024_002e-1"></span>
+<div class="format">
+<pre class="format"><code>$.</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-dot&rdquo;
+</pre></div>
+<p>print a string, shortcut
+</p>
+
+<span id="index-_0024slurp-_0028--fid-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024slurp"></span>
+<span id="index-_0024slurp-1"></span>
+<div class="format">
+<pre class="format"><code>$slurp</code> ( <i>fid addr &ndash;  </i>) gforth-1.0 &ldquo;string-slurp&rdquo;
+</pre></div>
+<p>Read the file <i>fid</i> until the end (without closing it) and put the read
+data into the string at <i>addr</i>.
+</p>
+
+<span id="index-_0024slurp_002dfile-_0028--c_002daddr-u-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024slurp_002dfile"></span>
+<span id="index-_0024slurp_002dfile-1"></span>
+<div class="format">
+<pre class="format"><code>$slurp-file</code> ( <i>c-addr u addr &ndash;  </i>) gforth-1.0 &ldquo;string-slurp-file&rdquo;
+</pre></div>
+<p>Put all the data in the file named <i>c-addr u</i> into the string at <i>addr</i>.
+</p>
+
+<span id="index-_0024_002bslurp-_0028--fid-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_002bslurp"></span>
+<span id="index-_0024_002bslurp-1"></span>
+<div class="format">
+<pre class="format"><code>$+slurp</code> ( <i>fid addr &ndash;  </i>) gforth-1.0 &ldquo;string-plus-slurp&rdquo;
+</pre></div>
+<p>Read the file <i>fid</i> until the end (without closing it) and append the read
+data to the string at <i>addr</i>.
+</p>
+
+<span id="index-_0024_002bslurp_002dfile-_0028--c_002daddr-u-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_002bslurp_002dfile"></span>
+<span id="index-_0024_002bslurp_002dfile-1"></span>
+<div class="format">
+<pre class="format"><code>$+slurp-file</code> ( <i>c-addr u addr &ndash;  </i>) gforth-1.0 &ldquo;string-plus+slurp-file&rdquo;
+</pre></div>
+<p>Append all the data in the file named <i>c-addr u</i> to the string at
+<i>addr</i>.
+</p>
+
+<span id="index-_0024_005b_005d-_0028--u-_0024_005b_005daddr-_002d_002d-addr_0027--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005d"></span>
+<span id="index-_0024_005b_005d-1"></span>
+<div class="format">
+<pre class="format"><code>$[]</code> ( <i>u $[]addr &ndash; addr&rsquo;  </i>) gforth-1.0 &ldquo;string-array&rdquo;
+</pre></div>
+<p><i>Addr&rsquo;</i> is the address of the <i>u</i>th element of the string array
+<i>$[]addr</i>.  The array is resized if needed.
+</p>
+
+<span id="index-_0024_005b_005d_0021-_0028--c_002daddr-u-n-_0024_005b_005daddr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005d_0021"></span>
+<span id="index-_0024_005b_005d_0021-1"></span>
+<div class="format">
+<pre class="format"><code>$[]!</code> ( <i>c-addr u n $[]addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-store&rdquo;
+</pre></div>
+<p>Store string <i>c-addr y</i> into the string array <i>$[]addr</i> at index <i>n</i>.
+The array is resized if needed.
+</p>
+
+<span id="index-_0024_005b_005d_002b_0021-_0028--c_002daddr-u-n-_0024_005b_005daddr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005d_002b_0021"></span>
+<span id="index-_0024_005b_005d_002b_0021-1"></span>
+<div class="format">
+<pre class="format"><code>$[]+!</code> ( <i>c-addr u n $[]addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-plus-store&rdquo;
+</pre></div>
+<p>Append the string <i>c-addr u</i> to the string at index <i>n</i>.  The array is
+resized if needed.  Don&rsquo;t confuse this with <code>$+[]!</code>.
+</p>
+
+<span id="index-_0024_002b_005b_005d_0021-_0028--c_002daddr-u-_0024_005b_005daddr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_002b_005b_005d_0021"></span>
+<span id="index-_0024_002b_005b_005d_0021-1"></span>
+<div class="format">
+<pre class="format"><code>$+[]!</code> ( <i>c-addr u $[]addr &ndash;  </i>) gforth-1.0 &ldquo;string-append-array&rdquo;
+</pre></div>
+<p>Store the string <i>c-addr u</i> as the new last element of string array
+<i>$[]addr</i>.  The array is resized if needed.
+</p>
+
+<span id="index-_0024_005b_005d_0040-_0028--n-_0024_005b_005daddr-_002d_002d-addr-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005d_0040"></span>
+<span id="index-_0024_005b_005d_0040-1"></span>
+<div class="format">
+<pre class="format"><code>$[]@</code> ( <i>n $[]addr &ndash; addr u  </i>) gforth-1.0 &ldquo;string-array-fetch&rdquo;
+</pre></div>
+<p>fetch a string from array index <i>n</i> &mdash; return the zero string if empty,
+and don&rsquo;t accidentally grow the array.
+</p>
+
+<span id="index-_0024_005b_005d_0023-_0028--addr-_002d_002d-len--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005d_0023"></span>
+<span id="index-_0024_005b_005d_0023-1"></span>
+<div class="format">
+<pre class="format"><code>$[]#</code> ( <i>addr &ndash; len  </i>) gforth-1.0 &ldquo;string-array-num&rdquo;
+</pre></div>
+<p>return the number of elements in an array
+</p>
+
+<span id="index-_0024_005b_005dmap-_0028--addr-xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dmap"></span>
+<span id="index-_0024_005b_005dmap-1"></span>
+<div class="format">
+<pre class="format"><code>$[]map</code> ( <i>addr xt &ndash;  </i>) gforth-1.0 &ldquo;string-array-map&rdquo;
+</pre></div>
+<p>execute <var>xt</var> for all elements of the string array <var>addr</var>.  xt is
+<var>( addr u &ndash; )</var>, getting one string at a time
+</p>
+
+<span id="index-_0024_005b_005dslurp-_0028--fid-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dslurp"></span>
+<span id="index-_0024_005b_005dslurp-1"></span>
+<div class="format">
+<pre class="format"><code>$[]slurp</code> ( <i>fid addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-slurp&rdquo;
+</pre></div>
+<p>slurp a file <var>fid</var> line by line into a string array <var>addr</var>
+</p>
+
+<span id="index-_0024_005b_005dslurp_002dfile-_0028--addr-u-_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dslurp_002dfile"></span>
+<span id="index-_0024_005b_005dslurp_002dfile-1"></span>
+<div class="format">
+<pre class="format"><code>$[]slurp-file</code> ( <i>addr u $addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-slurp-file&rdquo;
+</pre></div>
+<p>slurp a named file <var>addr u</var> line by line into a string array <var>$addr</var>
+</p>
+
+<span id="index-_0024_005b_005d_002e-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005d_002e"></span>
+<span id="index-_0024_005b_005d_002e-1"></span>
+<div class="format">
+<pre class="format"><code>$[].</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-dot&rdquo;
+</pre></div>
+<p>print all array entries
+</p>
+
+<span id="index-_0024_005b_005dfree-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dfree"></span>
+<span id="index-_0024_005b_005dfree-1"></span>
+<div class="format">
+<pre class="format"><code>$[]free</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-free&rdquo;
+</pre></div>
+<p>addr contains the address of a cell-counted string that contains the
+addresses of a number of cell-counted strings; $[]free frees these strings,
+frees the array, and sets addr to 0
+</p>
+
+<span id="index-_0024save-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024save"></span>
+<span id="index-_0024save-1"></span>
+<div class="format">
+<pre class="format"><code>$save</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-save&rdquo;
+</pre></div>
+<p>push string to dictionary for savesys
+</p>
+
+<span id="index-_0024_005b_005dsave-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dsave"></span>
+<span id="index-_0024_005b_005dsave-1"></span>
+<div class="format">
+<pre class="format"><code>$[]save</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-save&rdquo;
+</pre></div>
+<p>push string array to dictionary for savesys
+</p>
+
+<span id="index-_0024boot-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024boot"></span>
+<span id="index-_0024boot-1"></span>
+<div class="format">
+<pre class="format"><code>$boot</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-boot&rdquo;
+</pre></div>
+<p>take string from dictionary to allocated memory.  clean dictionary
+afterwards.
+</p>
+
+<span id="index-_0024_005b_005dboot-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dboot"></span>
+<span id="index-_0024_005b_005dboot-1"></span>
+<div class="format">
+<pre class="format"><code>$[]boot</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-boot&rdquo;
+</pre></div>
+<p>take string array from dictionary to allocated memory
+</p>
+
+<span id="index-_0024saved-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024saved"></span>
+<span id="index-_0024saved-1"></span>
+<div class="format">
+<pre class="format"><code>$saved</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-saved&rdquo;
+</pre></div>
+<p>mark an address as booted/saved
+</p>
+
+<span id="index-_0024_005b_005dsaved-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dsaved"></span>
+<span id="index-_0024_005b_005dsaved-1"></span>
+<div class="format">
+<pre class="format"><code>$[]saved</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-saved&rdquo;
+</pre></div>
+<p>mark an address as booted/saved
+</p>
+
+<span id="index-_0024Variable-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024Variable"></span>
+<span id="index-_0024Variable-1"></span>
+<div class="format">
+<pre class="format"><code>$Variable</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;string-variable&rdquo;
+</pre></div>
+<p>A string variable which is preserved across savesystem
+</p>
+
+<span id="index-_0024_005b_005dVariable-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0024_005b_005dVariable"></span>
+<span id="index-_0024_005b_005dVariable-1"></span>
+<div class="format">
+<pre class="format"><code>$[]Variable</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;string-array-variable&rdquo;
+</pre></div>
+<p>A string variable which is preserved across savesystem
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Counted-string-words.html">Counted string words</a>, Previous: <a href="String-words.html">String words</a>, Up: <a href="Strings-and-Characters.html">Strings and Characters</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

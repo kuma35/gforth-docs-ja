@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Floating Point Tutorial (Gforth マニュアル)</title>
+
+<meta name="description" content="Floating Point Tutorial (Gforth マニュアル)">
+<meta name="keywords" content="Floating Point Tutorial (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tutorial.html" rel="up" title="Tutorial">
+<link href="Files-Tutorial.html" rel="next" title="Files Tutorial">
+<link href="Alignment-Tutorial.html" rel="prev" title="Alignment Tutorial">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Floating-Point-Tutorial">
+<div class="header">
+<p>
+Next: <a href="Files-Tutorial.html" accesskey="n" rel="next">Files</a>, Previous: <a href="Alignment-Tutorial.html" accesskey="p" rel="prev">Alignment</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Floating-Point-1"></span><h3 class="section">3.26 Floating Point</h3>
+<span id="index-floating-point-tutorial"></span>
+<span id="index-FP-tutorial"></span>
+
+<p>Forth の浮動小数点(floating-point)(FP)の、 数値と算術演算は、 ほぼ期待された通りに機能しますが、
+特筆すべき点がいくつかあります:
+</p>
+<p>最初の点は Forth に固有のものではありませんが、 非常に重要で、 まだ広く知られていないため、 ここで言及します。
+浮動小数点数は実数(real)ではありません。 実数(real)が持ち、 あらゆる種類の数値に期待される多くの性質(算術法則など)は、
+浮動小数点数には当てはまりません。 浮動小数点演算したい場合、 浮動小数点演算の問題とその回避方法について学ぶ必要があります。 良い出発点は
+<cite>David Goldberg,
+<a href="https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html">What
+Every Computer Scientist Should Know About Floating-Point Arithmetic</a>, ACM
+Computing Surveys 23(1):5-48, March 1991</cite> です。
+</p>
+<p>Forth ソース・コードでは、リテラル浮動小数点数には指数が必要です(例: <code>1e0</code>)。これは、 <code>1e</code>
+のように短く書くことも、 <code>+1.0e+0</code> のように長く書くこともでき、 その間にはさまざまなバリエーションがあります。 その理由は、
+歴史的な理由により、 Forth は小数点のみ(例: <code>1.</code>) の数を 2 セル整数を示すものとして解釈(interpret)するためです。
+例:
+</p>
+<div class="example">
+<pre class="example">2e 2e f+ f.
+</pre></div>
+
+<p>リテラル浮動小数点数のもう 1 つの要件は、 現在の基数が 10 進数であることです。 16 進数の <code>1e</code>
+は整数として解釈(interpret)されます:
+</p>
+<p>Forth には、Forth-2012 に準拠した浮動小数点数用の別個のスタックがあります。 このモデルの利点の 1 つは、
+浮動小数点数にアクセスするときにセルが邪魔にならないこと、 またその逆も同様であることです。 Forth には、 浮動小数点スタック(FP
+スタック)を操作するためのワードのセットがあります:  <code>fdup fswap fdrop fover frot</code> や (非標準の、)
+<code>fnip ftuck fpick</code>
+</p>
+<p>FP 算術ワードには <code>F</code> という接頭辞が付きます。 通常の <code>f+ f- f* f/ f** fnegate</code> のほか、 他の、
+関数用の多数のワード (例: <code>fsqrt fsin fln fmin</code>) があります。 期待されるワードの 1 つが <code>f=</code>
+ですが、 <code>f=</code> は標準にはありません。 浮動小数点数の計算結果は通常不正確であるため、 正確な比較は通常間違いであり、
+近似的な比較を使用する必要があります。 残念ながら、この目的のための標準のワードである <code>f~</code> は適切に設計されていないため、 Gforth
+では <code>f~abs</code> と <code>f~rel</code> も提供しています。
+</p>
+<p>そしてもちろん、 メモリ内の浮動小数点数にアクセスするためのワード(<code>f@ f!</code>)や、 アドレス演算用のワード(<code>floats
+float+ faligned</code>)もあります。 メモリ内の IEEE 書式の単精度および倍精度数値にアクセスするために、 <code>sf</code> および
+<code>df</code> プレフィックスを付けた、 これらのワードのバリエーションもあります。 その主な目的は、
+外部浮動小数点数データ(ファイルから読み取られた、 またはファイルに書き込まれるデータなど)にアクセスすることです。
+</p>
+<p>以下は、 ドット出力ワード(dot-product word)とその使用例です:
+</p>
+<div class="example">
+<pre class="example">: v* ( f_addr1 nstride1 f_addr2 nstride2 ucount -- r )
+  &gt;r swap 2swap swap 0e r&gt; 0 ?DO
+    dup f@ over + 2swap dup f@ f* f+ over + 2swap
+  LOOP
+  2drop 2drop ;
+
+create v 1.23e f, 4.56e f, 7.89e f,
+
+v 1 floats  v 1 floats  3  v* f.
+</pre></div>
+
+<blockquote>
+<p><b>研究課題(assignment):</b> 二次方程式を解くプログラムを作成してみましょう。 次に、 <cite>Henry G. Baker,
+<a href="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.4448&amp;rep=rep1&amp;type=pdf">You
+Could Learn a Lot from a Quadratic</a>, ACM SIGPLAN Notices,
+33(1):30-39, January 1998</cite> を読んで、 そのプログラムを改善できるかどうか確認してください。 最後に、
+元のバージョンと改良されたバージョンで異なる結果が生成されるテスト・ケースを探しましょう。
+</p></blockquote>
+
+<p>こちらも参照ください: <a href="Floating-Point.html">Floating Point</a>; <a href="Floating-point-stack.html">Floating point stack</a>; <a href="Number-Conversion.html">Number Conversion</a>; <a href="Memory-Access.html">Memory Access</a>; <a href="Address-arithmetic.html">Address arithmetic</a>.
+</p>
+</div>
+
+
+
+</body>
+</html>

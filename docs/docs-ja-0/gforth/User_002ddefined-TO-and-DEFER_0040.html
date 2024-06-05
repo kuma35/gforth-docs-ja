@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>User-defined TO and DEFER@ (Gforth マニュアル)</title>
+
+<meta name="description" content="User-defined TO and DEFER@ (Gforth マニュアル)">
+<meta name="keywords" content="User-defined TO and DEFER@ (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="User_002ddefined-Defining-Words.html" rel="up" title="User-defined Defining Words">
+<link href="User_002ddefined-compile_002dcomma.html" rel="next" title="User-defined compile-comma">
+<link href="Advanced-does_003e-usage-example.html" rel="prev" title="Advanced does&gt; usage example">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="User_002ddefined-TO-and-DEFER_0040">
+<div class="header">
+<p>
+Next: <a href="User_002ddefined-compile_002dcomma.html" accesskey="n" rel="next">User-defined <code>compile,</code></a>, Previous: <a href="Advanced-does_003e-usage-example.html" accesskey="p" rel="prev">Advanced does&gt; usage example</a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="User_002ddefined-to-and-defer_0040"></span><h4 class="subsubsection">6.10.10.6 User-defined <code>to</code> and <code>defer@</code></h4>
+
+<p>Gforth&rsquo;s values have several operators: <code>to</code> (to which <code>is</code> is an
+alias, and <code>defer!</code> takes an xt instead of a name in the input stream),
+<code>+to</code>, <code>addr</code>, and <code>action-of</code> (where <code>defer@</code> takes an
+xt instead of a name in the input stream).
+</p>
+<p>Gforth allows you to change the <code>(to)</code> action of a word.
+</p>
+<span id="index-_0028to_0029-_0028--val-operation-xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_0028to_0029"></span>
+<span id="index-_0028to_0029-1"></span>
+<div class="format">
+<pre class="format"><code>(to)</code> ( <i>val operation xt &ndash;  </i>) gforth-1.0 &ldquo;paren-to&rdquo;
+</pre></div>
+<p><i>xt</i> is of a value like word <i>name</i>.  Stores <i>val</i> <code>to</code>
+<i>name</i>.  <i>operation</i> selects between <code>to</code>, <code>+to</code>, <code>addr</code>,
+and <code>action-of</code>.
+</p>
+
+<span id="index-to_002dtable_003a-_0028--_0022name_0022-_0022xt1_0022-_002e_002e-_0022xtn_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-to_002dtable_003a"></span>
+<span id="index-to_002dtable_003a-1"></span>
+<div class="format">
+<pre class="format"><code>to-table:</code> ( <i>&quot;name&quot; &quot;xt1&quot; .. &quot;xtn&quot; &ndash;  </i>) gforth-experimental &ldquo;to-table-colon&rdquo;
+</pre></div>
+<p>create a table with entries for <code>TO</code>, <code>+TO</code>, <code>ADDR</code>, and
+<code>ACTION-OF</code>.  Use <code>n/a</code> to mark unsupported operations.
+</p>
+
+<span id="index-to_002dmethod_003a-_0028--xt-table-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-to_002dmethod_003a"></span>
+<span id="index-to_002dmethod_003a-1"></span>
+<div class="format">
+<pre class="format"><code>to-method:</code> ( <i>xt table &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;to-method-colon&rdquo;
+</pre></div>
+<p>create a to-method, where <var>xt</var> computes the address to access the field,
+and <var>table</var> contains the operators to store to it.
+</p>
+
+<span id="index-set_002dto-_0028--to_002dxt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002dto"></span>
+<span id="index-set_002dto-1"></span>
+<div class="format">
+<pre class="format"><code>set-to</code> ( <i>to-xt &ndash;  </i>) gforth-1.0 &ldquo;set-to&rdquo;
+</pre></div>
+<p>Sets the implementation of the <code>(to) ( val xt -- )</code> method of the
+current word to <i>to-xt</i>.
+</p>
+
+<span id="index-n_002fa-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-n_002fa"></span>
+<span id="index-n_002fa-1"></span>
+<div class="format">
+<pre class="format"><code>n/a</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;not-available&rdquo;
+</pre></div>
+<p>this word can be ticked, but throws an &ldquo;Operation not supported&rdquo; exception
+on interpretation and compilation.  Use this for methods and alike that
+aren&rsquo;t supported.
+</p>
+
+
+<p><code>(to)</code> is a word used inside <code>to</code>: it stores the value at
+run-time.  The general stack effect of <code>(to)</code> method is <code>( val
+operation xt -- )</code>, where <i>xt</i> identifies the word stored into,
+<i>operation</i> the actual variant of <code>to</code>-like operations, and <i>val</i>
+is the value (of appropriate type) stored there.
+</p>
+<p>You shall implement the <code>to</code>-method using <code>to-table:</code> to create a
+type-specific table of operations (not specified slots at the end of the
+table are filled up with <code>n/a</code>), and using <code>to-method:</code> together
+with the operation to get from the <i>xt</i> of the value to its data field
+(usually <code>&gt;body</code> for values in the dictionary, but value-style data can
+also reside in structures or user areas).
+</p>
+<p>E.g., one can implement <code>fvalue</code> as follows:
+</p>
+<div class="example">
+<pre class="example">to-table: f!-table f! f+!
+' &gt;body f!-table to-method: fvalue-to
+
+: fvalue ( r &quot;name&quot; -- ; name: -- r )
+  create f,
+  ['] f@ set-does&gt;
+  ['] fvalue-to set-to ;
+
+5e fvalue foo
+: bar foo 1e f+ to foo ;
+see bar
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="User_002ddefined-compile_002dcomma.html">User-defined <code>compile,</code></a>, Previous: <a href="Advanced-does_003e-usage-example.html">Advanced does&gt; usage example</a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Why explicit structure support? (Gforth マニュアル)</title>
+
+<meta name="description" content="Why explicit structure support? (Gforth マニュアル)">
+<meta name="keywords" content="Why explicit structure support? (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Structures.html" rel="up" title="Structures">
+<link href="Structure-Usage.html" rel="next" title="Structure Usage">
+<link href="Structures.html" rel="prev" title="Structures">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Why-explicit-structure-support_003f">
+<div class="header">
+<p>
+Next: <a href="Structure-Usage.html" accesskey="n" rel="next">Structure Usage</a>, Previous: <a href="Structures.html" accesskey="p" rel="prev">Structures</a>, Up: <a href="Structures.html" accesskey="u" rel="up">Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Why-explicit-structure-support_003f-1"></span><h4 class="subsection">6.23.1 Why explicit structure support?</h4>
+
+<span id="index-address-arithmetic-for-structures"></span>
+<span id="index-structures-using-address-arithmetic"></span>
+<p>If we want to use a structure containing several fields, we could simply
+reserve memory for it, and access the fields using address arithmetic
+(see <a href="Address-arithmetic.html">Address arithmetic</a>). As an example, consider a structure with the
+following fields
+</p>
+<dl compact="compact">
+<dt><span><code>a</code></span></dt>
+<dd><p>is a float
+</p></dd>
+<dt><span><code>b</code></span></dt>
+<dd><p>is a cell
+</p></dd>
+<dt><span><code>c</code></span></dt>
+<dd><p>is a float
+</p></dd>
+</dl>
+
+<p>Given the (float-aligned) base address of the structure we get the address
+of the field
+</p>
+<dl compact="compact">
+<dt><span><code>a</code></span></dt>
+<dd><p>without doing anything further.
+</p></dd>
+<dt><span><code>b</code></span></dt>
+<dd><p>with <code>float+</code>
+</p></dd>
+<dt><span><code>c</code></span></dt>
+<dd><p>with <code>float+ cell+ faligned</code>
+</p></dd>
+</dl>
+
+<p>It is easy to see that this can become quite tiring. 
+</p>
+<p>Moreover, it is not very readable, because seeing a <code>cell+</code> tells us
+neither which kind of structure is accessed nor what field is accessed; we
+have to somehow infer the kind of structure, and then look up in the
+documentation, which field of that structure corresponds to that offset.
+</p>
+<p>Finally, this kind of address arithmetic also causes maintenance troubles:
+If you add or delete a field somewhere in the middle of the structure, you
+have to find and change all computations for the fields afterwards.
+</p>
+<p>So, instead of using <code>cell+</code> and friends directly, how about storing
+the offsets in constants:
+</p>
+<div class="example">
+<pre class="example">0 constant a-offset
+0 float+ constant b-offset
+0 float+ cell+ faligned c-offset
+</pre></div>
+
+<p>Now we can get the address of field <code>x</code> with <code>x-offset +</code>. This is
+much better in all respects. Of course, you still have to change all later
+offset definitions if you add a field. You can fix this by declaring the
+offsets in the following way:
+</p>
+<div class="example">
+<pre class="example">0 constant a-offset
+a-offset float+ constant b-offset
+b-offset cell+ faligned constant c-offset
+</pre></div>
+
+<p>Since we always use the offsets with <code>+</code>, we could use a defining word
+<code>cfield</code> that includes the <code>+</code> in the action of the defined word:
+</p>
+<div class="example">
+<pre class="example">: cfield ( n &quot;name&quot; -- )
+    create ,
+does&gt; ( name execution: addr1 -- addr2 )
+    @ + ;
+
+0 cfield a
+0 a float+ cfield b
+0 b cell+ faligned cfield c
+</pre></div>
+
+<p>Instead of <code>x-offset +</code>, we now simply write <code>x</code>.
+</p>
+<p>The structure field words now can be used quite nicely. However, their
+definition is still a bit cumbersome: We have to repeat the name, the
+information about size and alignment is distributed before and after the
+field definitions etc.  The structure package presented here addresses these
+problems.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Structure-Usage.html">Structure Usage</a>, Previous: <a href="Structures.html">Structures</a>, Up: <a href="Structures.html">Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

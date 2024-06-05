@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Two-stage integer division (Gforth マニュアル)</title>
+
+<meta name="description" content="Two-stage integer division (Gforth マニュアル)">
+<meta name="keywords" content="Two-stage integer division (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Arithmetic.html" rel="up" title="Arithmetic">
+<link href="Bitwise-operations.html" rel="next" title="Bitwise operations">
+<link href="Integer-division.html" rel="prev" title="Integer division">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Two_002dstage-integer-division">
+<div class="header">
+<p>
+Next: <a href="Bitwise-operations.html" accesskey="n" rel="next">Bitwise operations</a>, Previous: <a href="Integer-division.html" accesskey="p" rel="prev">Integer division</a>, Up: <a href="Arithmetic.html" accesskey="u" rel="up">Arithmetic</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Two_002dstage-integer-division-1"></span><h4 class="subsection">6.5.5 Two-stage integer division</h4>
+<span id="index-dividing-many-integers-with-the-same-divisor"></span>
+<span id="index-reciprocal-of-integer"></span>
+
+<p>ほとんどのハードウェアでは、 乗算は除算よりも大幅に高速です。 したがって、 多くの数値を同じ約数で除算する必要がある場合は、 通常、
+約数の逆数を一度求めて、 その逆数を数値に乗算する方が高速です。  整数の場合、 これは技巧的になってしまうため、 Gforth
+ではこの作業をこのセクションで説明するワード群にパッケージ化しています。
+</p>
+<p>以下の例から始めまるとしましょう。 あなたがセルの配列のすべての要素を同じ数値 n で除算したいとします。 これを素直に実装すると以下のようになります:
+</p>
+<div class="example">
+<pre class="example">: array/ ( addr u n -- )
+  -rot cells bounds u+do
+    i @ over / i !
+  1 cells +loop
+  drop ;
+</pre></div>
+
+<p>より効率的なバージョンは以下のようになります:
+</p>
+<div class="example">
+<pre class="example">: array/ ( addr u n -- )
+  {: | reci[ staged/-size ] :}
+  reci[ /f-stage1m
+  cells bounds u+do
+    i @ reci[ /f-stage2m i !
+  1 cells +loop ;
+</pre></div>
+
+<p>この例では、 まず、 逆数データを格納するためのサイズ <code>staged/-size</code> のローカル・バッファ <code>reci[</code>
+を作成します。 次に、 <code>/f-stage1m</code> は <i>n</i> の逆数を計算し、 <code>reci[</code> に格納します。 最後に、
+ループ内で <code>/f-stage2m</code> が <code>reci[</code> のデータを使用して除算の商を計算します。
+</p>
+<p>There are some limitations: Only positive divisors are supported for
+<code>/f-stage1m</code>; for <code>u/-stage1m</code> you can use a divisor of 2 or
+higher.  You get an error if you try to use an unsupported divisor.  You
+must initalize the reciprocal buffer for the floored second-stage words with
+<code>/f-stage1m</code> and for the unsigned second-stage words with
+<code>u/-stage1m</code>.  You must not modify the reciprocal buffer between the
+first stage and the second stage; basically, don&rsquo;t treat it as a memory
+buffer, but as something that is only mutable by the first stage; the point
+of this rule is that future versions of Gforth will not consider aliasing of
+this buffer.
+</p>
+<p>The words are:
+</p>
+<span id="index-staged_002f_002dsize-_0028--_002d_002d-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-staged_002f_002dsize"></span>
+<span id="index-staged_002f_002dsize-1"></span>
+<div class="format">
+<pre class="format"><code>staged/-size</code> ( <i>&ndash; u  </i>) gforth-1.0 &ldquo;staged-slash-size&rdquo;
+</pre></div>
+<p>Size of buffer for <code>u/-stage1m</code> or <code>/f-stage1m</code>.
+</p>
+
+<span id="index-_002ff_002dstage1m-_0028--n-addr_002dreci-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002ff_002dstage1m"></span>
+<span id="index-_002ff_002dstage1m-1"></span>
+<div class="format">
+<pre class="format"><code>/f-stage1m</code> ( <i>n addr-reci &ndash;  </i>) gforth-1.0 &ldquo;slash-f-stage1m&rdquo;
+</pre></div>
+<p>Compute the reciprocal of <i>n</i> and store it in the buffer <i>addr-reci</i> of
+size <code>staged/-size</code>.  Throws an error if <i>n</i>&lt;1.
+</p>
+
+<span id="index-_002ff_002dstage2m-_0028--n1-a_002dreci-_002d_002d-nquotient--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002ff_002dstage2m"></span>
+<span id="index-_002ff_002dstage2m-1"></span>
+<div class="format">
+<pre class="format"><code>/f-stage2m</code> ( <i>n1 a-reci &ndash; nquotient </i>) gforth-1.0 &ldquo;slash-f-stage2m&rdquo;
+</pre></div>
+<p><i>Nquotient</i> is the result of dividing <i>n1</i> by the divisor represented by
+<i>a-reci</i>, which was computed by <code>/f-stage1m</code>.
+</p>
+<span id="index-modf_002dstage2m-_0028--n1-a_002dreci-_002d_002d-umodulus--_0029-gforth_002d1_002e0"></span>
+<span id="index-modf_002dstage2m"></span>
+<span id="index-modf_002dstage2m-1"></span>
+<div class="format">
+<pre class="format"><code>modf-stage2m</code> ( <i>n1 a-reci &ndash; umodulus </i>) gforth-1.0 &ldquo;mod-f-stage2m&rdquo;
+</pre></div>
+<p><i>Umodulus</i> is the remainder of dividing <i>n1</i> by the divisor represented
+by <i>a-reci</i>, which was computed by <code>/f-stage1m</code>.
+</p>
+<span id="index-_002fmodf_002dstage2m-_0028--n1-a_002dreci-_002d_002d-umodulus-nquotient--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002fmodf_002dstage2m"></span>
+<span id="index-_002fmodf_002dstage2m-1"></span>
+<div class="format">
+<pre class="format"><code>/modf-stage2m</code> ( <i>n1 a-reci &ndash; umodulus nquotient </i>) gforth-1.0 &ldquo;slash-mod-f-stage2m&rdquo;
+</pre></div>
+<p><i>Nquotient</i> is the quotient and <i>umodulus</i> is the remainder of dividing
+<i>n1</i> by the divisor represented by <i>a-reci</i>, which was computed by
+<code>/f-stage1m</code>.
+</p>
+<span id="index-u_002f_002dstage1m-_0028--u-addr_002dreci-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002f_002dstage1m"></span>
+<span id="index-u_002f_002dstage1m-1"></span>
+<div class="format">
+<pre class="format"><code>u/-stage1m</code> ( <i>u addr-reci &ndash;  </i>) gforth-1.0 &ldquo;u-slash-stage1m&rdquo;
+</pre></div>
+<p>Compute the reciprocal of <i>u</i> and store it in the buffer <i>addr-reci</i> of
+size <code>staged/-size</code>.  Throws an error if <i>u</i>&lt;2.
+</p>
+
+<span id="index-u_002f_002dstage2m-_0028--u1-a_002dreci-_002d_002d-uquotient--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002f_002dstage2m"></span>
+<span id="index-u_002f_002dstage2m-1"></span>
+<div class="format">
+<pre class="format"><code>u/-stage2m</code> ( <i>u1 a-reci &ndash; uquotient </i>) gforth-1.0 &ldquo;u-slash-stage2m&rdquo;
+</pre></div>
+<p><i>Uquotient</i> is the result of dividing <i>u1</i> by the divisor represented by
+<i>a-reci</i>, which was computed by <code>u/-stage1m</code>.
+</p>
+<span id="index-umod_002dstage2m-_0028--u1-a_002dreci-_002d_002d-umodulus--_0029-gforth_002d1_002e0"></span>
+<span id="index-umod_002dstage2m"></span>
+<span id="index-umod_002dstage2m-1"></span>
+<div class="format">
+<pre class="format"><code>umod-stage2m</code> ( <i>u1 a-reci &ndash; umodulus </i>) gforth-1.0 &ldquo;u-mod-stage2m&rdquo;
+</pre></div>
+<p><i>Umodulus</i> is the remainder of dividing <i>u1</i> by the divisor represented
+by <i>a-reci</i>, which was computed by <code>u/-stage1m</code>.
+</p>
+<span id="index-u_002fmod_002dstage2m-_0028--u1-a_002dreci-_002d_002d-umodulus-uquotient--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002fmod_002dstage2m"></span>
+<span id="index-u_002fmod_002dstage2m-1"></span>
+<div class="format">
+<pre class="format"><code>u/mod-stage2m</code> ( <i>u1 a-reci &ndash; umodulus uquotient </i>) gforth-1.0 &ldquo;u-slash-mod-stage2m&rdquo;
+</pre></div>
+<p><i>Uquotient</i> is the quotient and <i>umodulus</i> is the remainder of dividing
+<i>u1</i> by the divisor represented by <i>a-reci</i>, which was computed by
+<code>u/-stage1m</code>.
+</p>
+
+<p>Gforth currently does not support staged symmetrical division.
+</p>
+<p>You can recover the divisor from (the address of) a reciprocal with
+<code>staged/-divisor @</code>:
+</p>
+<span id="index-staged_002f_002ddivisor-_0028--addr1-_002d_002d-addr2--_0029-gforth_002d1_002e0"></span>
+<span id="index-staged_002f_002ddivisor"></span>
+<span id="index-staged_002f_002ddivisor-1"></span>
+<div class="format">
+<pre class="format"><code>staged/-divisor</code> ( <i>addr1 &ndash; addr2  </i>) gforth-1.0 &ldquo;staged-slash-divisor&rdquo;
+</pre></div>
+<p><i>Addr1</i> is the address of a reciprocal, <i>addr2</i> is the address
+containing the divisor from which the reciprocal was computed.
+</p>
+
+
+<p>This can be useful when looking at the decompiler output of Gforth: a
+division by a constant is often compiled to a literal containing the address
+of a reciprocal followed by a second-stage word.
+</p>
+<p>The performance impact of using these words strongly depends on the
+architecture (does it have hardware division?) and the specific
+implementation (how fast is hardware division?), but just to give you an
+idea about the relative performance of these words, here are the cycles per
+iteration of a microbenchmark (which performs the mentioned word once per
+iteration) on two AMD64 implementations; the <i>norm</i> column shows the
+normal division word (e.g., <code>u/</code>), while the <i>stg2</i> column shows the
+corresponding stage2 word (e.g., <code>u/-stage2m</code>):
+</p>
+<div class="example">
+<pre class="example"> Skylake              Zen2
+norm stg2           norm stg2
+41.3 15.8 u/	    35.2 21.4 u/	   
+39.8 19.7 umod	    36.9 25.8 umod	   
+44.0 25.3 u/mod	    43.0 33.9 u/mod	   
+48.7 16.9 /f	    36.2 22.5 /f	   
+47.9 20.5 modf	    37.9 27.1 modf	   
+53.0 24.6 /modf	    45.8 35.4 /modf	   
+    227.2 u/stage1      101.9 u/stage1
+    159.8 /fstage1       97.7 /fstage1
+</pre></div>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Bitwise-operations.html">Bitwise operations</a>, Previous: <a href="Integer-division.html">Integer division</a>, Up: <a href="Arithmetic.html">Arithmetic</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

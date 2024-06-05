@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Interpretation and Compilation Semantics and Immediacy Tutorial (Gforth マニュアル)</title>
+
+<meta name="description" content="Interpretation and Compilation Semantics and Immediacy Tutorial (Gforth マニュアル)">
+<meta name="keywords" content="Interpretation and Compilation Semantics and Immediacy Tutorial (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tutorial.html" rel="up" title="Tutorial">
+<link href="Execution-Tokens-Tutorial.html" rel="next" title="Execution Tokens Tutorial">
+<link href="Files-Tutorial.html" rel="prev" title="Files Tutorial">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Interpretation-and-Compilation-Semantics-and-Immediacy-Tutorial">
+<div class="header">
+<p>
+Next: <a href="Execution-Tokens-Tutorial.html" accesskey="n" rel="next">Execution Tokens</a>, Previous: <a href="Files-Tutorial.html" accesskey="p" rel="prev">Files</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Interpretation-and-Compilation-Semantics-and-Immediacy"></span><h3 class="section">3.28 Interpretation and Compilation Semantics and Immediacy</h3>
+<span id="index-semantics-tutorial"></span>
+<span id="index-interpretation-semantics-tutorial"></span>
+<span id="index-compilation-semantics-tutorial"></span>
+<span id="index-immediate_002c-tutorial"></span>
+
+<p>ワードがコンパイルされるときと、 解釈(interpret)されるときでは異なる動作をします。 たとえば、 <code>+</code> について考えてみましょう:
+</p>
+<div class="example">
+<pre class="example">1 2 + .
+: foo + ;
+</pre></div>
+
+<p>これらの 2 つの振る舞いは、 コンパイル時compilation semantics)と実行時(interpretation
+semantics)として知られています。 通常のワード(例: <code>+</code>)の場合、 コンパイル時は、 現在定義されているワード(上記の例では
+<code>foo</code>)に実行時コードを追加します。 つまり、 後で <code>foo</code> が実行されると、 <code>+</code>
+のj実行時コード(interpretation semantics)(つまり、2 つの数値の加算)が実行されます。
+</p>
+<p>ただし、 <code>if</code> のような制御フロー・ワードなど、 デフォルト以外のコンパイル時動作を持つワードが存在します。
+<code>immediate</code> を使用すると、 最後に定義されたワードのコンパイル時コードを実行時コードと等しくなるように変更できます:
+</p>
+<div class="example">
+<pre class="example">: [FOO] ( -- )
+ 5 . ; immediate
+
+[FOO]
+: bar ( -- )
+  [FOO] ;
+bar
+see bar
+</pre></div>
+
+<p>デフォルト以外のコンパイル時ワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、
+名前をすべて大文字で記述する(あまり使用されない)ことです。
+</p>
+<p><code>if</code> などの一部のワードについては、 実行時に使用するのは通常間違いであるため、 それらを <code>compile-only</code>
+としてマークし、 実行時に使用すると警告が表示されます。
+</p>
+<div class="example">
+<pre class="example">: flip ( -- )
+ 6 . ; compile-only \ but not immediate
+flip
+
+: flop ( -- )
+ flip ;
+flop
+</pre></div>
+
+<p>この例では、 最初に <code>flip</code> の実行時コードが使用されます(警告が表示されます)。 <code>flip</code> の 2 番目の使用では、
+コンパイル時コードが使用されます(警告は表示されません)。 この例では、 compile-only
+が実行時(run-time)ではなくテキスト解釈時(text interpretation time)に評価される属性であることもわかります。
+</p>
+<p>テキスト・インタプリタには 2 つの状態があります。 実行時(interpret)は、 遭遇したワードの実行時コードを実行します。 コンパイル時では、
+これらのワードのコンパイル時コードが実行されます。
+</p>
+<p>特に、 <code>:</code> はコンパイル状態に切り替え、 <code>;</code> は解釈(interpret)状態に戻ります。 これらには、
+状態を切り替えるだけがその効果である <code>]</code> (コンパイル状態に切り替える) と <code>[</code>
+(解釈(interpret)状態に切り替える) が含まれています。
+</p>
+<div class="example">
+<pre class="example">: xxx ( -- )
+  [ 5 . ]
+;
+
+xxx
+see xxx
+</pre></div>
+
+<p>これらの角括弧(brackets)は、 上記の命名慣習の源でもあります。
+</p>
+<p>こちらも参照ください: <a href="Interpretation-and-Compilation-Semantics.html">Interpretation and Compilation Semantics</a>
+</p>
+
+</div>
+
+
+
+</body>
+</html>

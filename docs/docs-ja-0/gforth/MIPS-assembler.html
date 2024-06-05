@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>MIPS assembler (Gforth マニュアル)</title>
+
+<meta name="description" content="MIPS assembler (Gforth マニュアル)">
+<meta name="keywords" content="MIPS assembler (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Assembler-and-Code-Words.html" rel="up" title="Assembler and Code Words">
+<link href="PowerPC-assembler.html" rel="next" title="PowerPC assembler">
+<link href="Alpha-Assembler.html" rel="prev" title="Alpha Assembler">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="MIPS-assembler">
+<div class="header">
+<p>
+Next: <a href="PowerPC-assembler.html" accesskey="n" rel="next">PowerPC assembler</a>, Previous: <a href="Alpha-Assembler.html" accesskey="p" rel="prev">Alpha Assembler</a>, Up: <a href="Assembler-and-Code-Words.html" accesskey="u" rel="up">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="MIPS-assembler-1"></span><h4 class="subsection">6.29.7 MIPS assembler</h4>
+
+<p>The MIPS assembler was originally written by Christian Pirker.
+</p>
+<p>Currently the assembler and disassembler covers most of the MIPS32
+architecture and doesn&rsquo;t support FP instructions.
+</p>
+<p>The register names <code>$a0</code>&ndash;<code>$a3</code> are not available to avoid
+shadowing hex numbers.  Use register numbers <code>$4</code>&ndash;<code>$7</code> instead.
+</p>
+<p>Nothing distinguishes registers from immediate values.  Use explicit opcode
+names with the <code>i</code> suffix for instructions with immediate argument.
+E.g. <code>addiu,</code> in place of <code>addu,</code>.
+</p>
+<p>Where the architecture manual specifies several formats for the instruction
+(e.g., for <code>jalr,</code>),use the one with more arguments (i.e. two for
+<code>jalr,</code>).  When in doubt, see <code>arch/mips/testasm.fs</code> for an
+example of correct use.
+</p>
+<p>Branches and jumps in the MIPS architecture have a delay slot.  You have to
+fill it manually (the simplest way is to use <code>nop,</code>), the assembler
+does not do it for you (unlike <code>as</code>).  Even <code>if,</code>,
+<code>ahead,</code>, <code>until,</code>, <code>again,</code>, <code>while,</code>, <code>else,</code> and
+<code>repeat,</code> need a delay slot.  Since <code>begin,</code> and <code>then,</code> just
+specify branch targets, they are not affected.  For branches the argument
+specifying the target is a relative address.  Add the address of the delay
+slot to get the absolute address.
+</p>
+<p>Note that you must not put branches nor jumps (nor control-flow
+instructions) into the delay slot.  Also it is a bad idea to put pseudo-ops
+such as <code>li,</code> into a delay slot, as these may expand to several
+instructions.  The MIPS I architecture also had load delay slots, and newer
+MIPSes still have restrictions on using <code>mfhi,</code> and <code>mflo,</code>.  Be
+careful to satisfy these restrictions, the assembler does not do it for you.
+</p>
+<p>Some example of instructions are:
+</p>
+<div class="example">
+<pre class="example">$ra  12 $sp  sw,         \ sw    ra,12(sp)
+$4    8 $s0  lw,         \ lw    a0,8(s0)
+$v0  $0  lui,            \ lui   v0,0x0
+$s0  $s4  $12  addiu,    \ addiu s0,s4,0x12
+$s0  $s4  $4  addu,      \ addu  s0,s4,$a0
+$ra  $t9  jalr,          \ jalr  t9
+</pre></div>
+
+<p>You can specify the conditions for <code>if,</code> etc. by taking a conditional
+branch and leaving away the <code>b</code> at the start and the <code>,</code> at the
+end.  E.g.,
+</p>
+<div class="example">
+<pre class="example">4 5 eq if,
+  ... \ do something if $4 equals $5
+then,
+</pre></div>
+
+<p>The calling conventions for 32-bit MIPS machines is to pass the first 4
+arguments in registers <code>$4</code>..<code>$7</code>, and to use
+<code>$v0</code>-<code>$v1</code> for return values.  In addition to these registers, it
+is ok to clobber registers <code>$t0</code>-<code>$t8</code> without saving and
+restoring them.
+</p>
+<p>If you use <code>jalr,</code> to call into dynamic library routines, you must
+first load the called function&rsquo;s address into <code>$t9</code>, which is used by
+position-indirect code to do relative memory accesses.
+</p>
+<p>Here is an example of a MIPS32 <code>abi-code</code> word:
+</p>
+<div class="example">
+<pre class="example">abi-code my+  ( n1 n2 -- n3 )
+  \ SP passed in $4, returned in $v0
+  $t0  4 $4  lw,         \ load n1, n2 from stack
+  $t1  0 $4  lw,    
+  $t0  $t0  $t1  addu,   \ add n1+n2, result in $t0
+  $t0  4 $4  sw,         \ store result (overwriting n1)
+  $ra  jr,               \ return to caller
+  $v0  $4  4  addiu,     \ (delay slot) return uptated SP in $v0
+end-code
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="PowerPC-assembler.html">PowerPC assembler</a>, Previous: <a href="Alpha-Assembler.html">Alpha Assembler</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

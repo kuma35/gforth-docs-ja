@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>CREATE..DOES&gt; details (Gforth マニュアル)</title>
+
+<meta name="description" content="CREATE..DOES&gt; details (Gforth マニュアル)">
+<meta name="keywords" content="CREATE..DOES&gt; details (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="User_002ddefined-Defining-Words.html" rel="up" title="User-defined Defining Words">
+<link href="Advanced-does_003e-usage-example.html" rel="next" title="Advanced does&gt; usage example">
+<link href="CREATE_002e_002eDOES_003e-applications.html" rel="prev" title="CREATE..DOES&gt; applications">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="CREATE_002e_002eDOES_003e-details">
+<div class="header">
+<p>
+Next: <a href="Advanced-does_003e-usage-example.html" accesskey="n" rel="next">Advanced does&gt; usage example</a>, Previous: <a href="CREATE_002e_002eDOES_003e-applications.html" accesskey="p" rel="prev">Applications of <code>CREATE..DOES&gt;</code></a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="The-gory-details-of-CREATE_002e_002eDOES_003e"></span><h4 class="subsubsection">6.10.10.4 The gory details of <code>CREATE..DOES&gt;</code></h4>
+<span id="index-CREATE-_002e_002e_002e-DOES_003e_002c-details"></span>
+
+<span id="index-DOES_003e-_0028--compilation-colon_002dsys1-_002d_002d-colon_002dsys2--_0029-core"></span>
+<span id="index-DOES_003e"></span>
+<span id="index-DOES_003e-1"></span>
+<div class="format">
+<pre class="format"><code>DOES&gt;</code> ( <i>compilation colon-sys1 &ndash; colon-sys2  </i>) core &ldquo;does&rdquo;
+</pre></div>
+
+
+<span id="index-DOES_003e-in-a-separate-definition"></span>
+<p>This means that you need not use <code>CREATE</code> and <code>DOES&gt;</code> in the same
+definition; you can put the <code>DOES&gt;</code>-part in a separate definition. This
+allows us to, e.g., select among different <code>DOES&gt;</code>-parts:
+</p><div class="example">
+<pre class="example">: does1 
+DOES&gt; ( ... -- ... )
+    code1 ;
+
+: does2
+DOES&gt; ( ... -- ... )
+    code2 ;
+
+: def-word ( ... -- ... )
+    create ...
+    IF
+       does1
+    ELSE
+       does2
+    ENDIF ;
+</pre></div>
+
+<p>In this example, the selection of whether to use <code>does1</code> or
+<code>does2</code> is made at definition-time; at the time that the child word is
+<code>CREATE</code>d.
+</p>
+<p>Note that the property of <code>does&gt;</code> to end the definition makes it
+necessary to introduce extra definitions <code>does1</code> and <code>does2</code>.  You
+can avoid that with <code>set-does&gt;</code>:
+</p>
+<div class="example">
+<pre class="example">: def-word ( ... -- ... )
+    create ...
+    IF
+       [: code1 ;] set-does&gt;
+    ELSE
+       [: code2 ;] set-does&gt;
+    ENDIF ;
+</pre></div>
+
+<span id="index-DOES_003e-in-interpretation-state"></span>
+<p>In a standard program you can apply a <code>DOES&gt;</code>-part only if the last
+word was defined with <code>CREATE</code>. In Gforth, the <code>DOES&gt;</code>-part will
+override the behaviour of the last word defined in any case. In a standard
+program, you can use <code>DOES&gt;</code> only in a colon definition. In Gforth, you
+can also use it in interpretation state, in a kind of one-shot mode; for
+example:
+</p><div class="example">
+<pre class="example">CREATE name ( ... -- ... )
+  <i>initialization</i>
+DOES&gt;
+  <i>code</i> ;
+</pre></div>
+
+<p>is equivalent to the standard:
+</p><div class="example">
+<pre class="example">:noname
+DOES&gt;
+    <i>code</i> ;
+CREATE name EXECUTE ( ... -- ... )
+    <i>initialization</i>
+</pre></div>
+
+<p>Gforth also supports quotations in interpreted code, and quotations save and
+restore the current definition, so you can also write the example above also
+as:
+</p>
+<div class="example">
+<pre class="example">CREATE name ( ... -- ... )
+  <i>initialization</i>
+[: <i>code</i> ;] set-does&gt;
+</pre></div>
+
+<span id="index-set_002ddoes_003e-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002ddoes_003e"></span>
+<span id="index-set_002ddoes_003e-1"></span>
+<div class="format">
+<pre class="format"><code>set-does&gt;</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-does&gt;&rdquo;
+</pre></div>
+<p>Changes the current word such that it pushes its body address and then
+executes <i>xt</i>.  Also changes the <code>compile,</code> implementation
+accordingly.  Call <code>set-optimizer</code> afterwards if you want a more
+efficient implementation.
+</p>
+
+<span id="index-_003ebody-_0028--xt-_002d_002d-a_005faddr--_0029-core"></span>
+<span id="index-_003ebody"></span>
+<span id="index-_003ebody-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;body</code> ( <i>xt &ndash; a_addr  </i>) core &ldquo;to-body&rdquo;
+</pre></div>
+<p>Get the address of the body of the word represented by <i>xt</i> (the address
+of the word&rsquo;s data field).
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Advanced-does_003e-usage-example.html">Advanced does&gt; usage example</a>, Previous: <a href="CREATE_002e_002eDOES_003e-applications.html">Applications of <code>CREATE..DOES&gt;</code></a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

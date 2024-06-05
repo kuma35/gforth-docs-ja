@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Variables (Gforth マニュアル)</title>
+
+<meta name="description" content="Variables (Gforth マニュアル)">
+<meta name="keywords" content="Variables (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Defining-Words.html" rel="up" title="Defining Words">
+<link href="Constants.html" rel="next" title="Constants">
+<link href="CREATE.html" rel="prev" title="CREATE">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Variables">
+<div class="header">
+<p>
+Next: <a href="Constants.html" accesskey="n" rel="next">Constants</a>, Previous: <a href="CREATE.html" accesskey="p" rel="prev"><code>CREATE</code></a>, Up: <a href="Defining-Words.html" accesskey="u" rel="up">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Variables-1"></span><h4 class="subsection">6.10.2 Variables</h4>
+<span id="index-variables"></span>
+
+<p>The previous section showed how a sequence of commands could be used to
+generate a variable.  As a final refinement, the whole code sequence can be
+wrapped up in a defining word (pre-empting the subject of the next section),
+making it easier to create new variables:
+</p>
+<div class="example">
+<pre class="example">: myvariableX ( &quot;name&quot; -- a-addr ) CREATE 1 cells allot ;
+: myvariable0 ( &quot;name&quot; -- a-addr ) CREATE 0 , ;
+
+myvariableX foo \ variable foo starts off with an unknown value
+myvariable0 joe \ whilst joe is initialised to 0
+
+45 3 * foo !   \ set foo to 135
+1234 joe !     \ set joe to 1234
+3 joe +!       \ increment joe by 3.. to 1237
+</pre></div>
+
+<p>Not surprisingly, there is no need to define <code>myvariable</code>, since Forth
+already has a definition <code>Variable</code>. Standard Forth does not guarantee
+that a <code>Variable</code> is initialised when it is created (i.e., it may
+behave like <code>myvariableX</code>). In contrast, Gforth&rsquo;s <code>Variable</code>
+initialises the variable to 0 (i.e., it behaves exactly like
+<code>myvariable0</code>). Forth also provides <code>2Variable</code> and
+<code>fvariable</code> for double and floating-point variables, respectively &ndash;
+they are initialised to 0. and 0e in Gforth. If you use a <code>Variable</code> to
+store a boolean, you can use <code>on</code> and <code>off</code> to toggle its state.
+</p>
+<span id="index-Variable-_0028--_0022name_0022-_002d_002d--_0029-core"></span>
+<span id="index-Variable"></span>
+<span id="index-Variable-1"></span>
+<div class="format">
+<pre class="format"><code>Variable</code> ( <i>&quot;name&quot; &ndash;  </i>) core &ldquo;Variable&rdquo;
+</pre></div>
+<p>Define <i>name</i> and reserve a cell starting at <i>addr</i>.  <i>name</i> run-time:
+<code>( -- addr )</code>.
+</p>
+
+<span id="index-AVariable-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-AVariable"></span>
+<span id="index-AVariable-1"></span>
+<div class="format">
+<pre class="format"><code>AVariable</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-0.2 &ldquo;AVariable&rdquo;
+</pre></div>
+<p>Works like <code>variable</code>, but (when used in cross-compiled code) tells the
+cross-compiler that the cell stored in the variable is an address.
+</p>
+
+<span id="index-2Variable-_0028--_0022name_0022-_002d_002d--_0029-double"></span>
+<span id="index-2Variable"></span>
+<span id="index-2Variable-1"></span>
+<div class="format">
+<pre class="format"><code>2Variable</code> ( <i>&quot;name&quot; &ndash;  </i>) double &ldquo;two-variable&rdquo;
+</pre></div>
+
+<span id="index-fvariable-_0028--_0022name_0022-_002d_002d--_0029-floating"></span>
+<span id="index-fvariable"></span>
+<span id="index-fvariable-1"></span>
+<div class="format">
+<pre class="format"><code>fvariable</code> ( <i>&quot;name&quot; &ndash;  </i>) floating &ldquo;f-variable&rdquo;
+</pre></div>
+
+
+<p>Finally, for buffers of arbitrary length there is
+</p>
+<span id="index-buffer_003a-_0028--u-_0022name_0022-_002d_002d--_0029-core_002dext"></span>
+<span id="index-buffer_003a"></span>
+<span id="index-buffer_003a-1"></span>
+<div class="format">
+<pre class="format"><code>buffer:</code> ( <i>u &quot;name&quot; &ndash;  </i>) core-ext &ldquo;buffer-colon&rdquo;
+</pre></div>
+<p>Define <i>name</i> and reserve <i>u</i> bytes starting at <i>addr</i>.  <i>name</i>
+run-time: <code>( -- addr )</code>.  Gforth initializes the reserved bytes to 0,
+but the standard does not guarantee this.
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Constants.html">Constants</a>, Previous: <a href="CREATE.html"><code>CREATE</code></a>, Up: <a href="Defining-Words.html">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

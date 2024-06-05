@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Execution token (Gforth マニュアル)</title>
+
+<meta name="description" content="Execution token (Gforth マニュアル)">
+<meta name="keywords" content="Execution token (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tokens-for-Words.html" rel="up" title="Tokens for Words">
+<link href="Name-token.html" rel="next" title="Name token">
+<link href="Tokens-for-Words.html" rel="prev" title="Tokens for Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Execution-token">
+<div class="header">
+<p>
+Next: <a href="Name-token.html" accesskey="n" rel="next">Name token</a>, Previous: <a href="Tokens-for-Words.html" accesskey="p" rel="prev">Tokens for Words</a>, Up: <a href="Tokens-for-Words.html" accesskey="u" rel="up">Tokens for Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Execution-token-1"></span><h4 class="subsection">6.12.1 Execution token</h4>
+
+<span id="index-xt-1"></span>
+<span id="index-execution-token-1"></span>
+<p>An <em>execution token</em> (<em>xt</em>) represents some behaviour of a word.
+You can use <code>execute</code> to invoke the behaviour represented by the xt and
+<code>compile,</code> (see <a href="Macros.html">Macros</a>) to compile it into the current definition.
+Other uses include deferred words (see <a href="Deferred-Words.html">Deferred Words</a>).
+</p>
+<p>In particular, there is <em>the</em> execution token of a word that represents
+its interpretation semantics aka execution semantics.<a id="DOCF21" href="#FOOT21"><sup>21</sup></a>
+</p>
+<span id="index-prefix-_0060"></span>
+<span id="index-_0060-prefix"></span>
+<p>For a named word <i>x</i>, you can use <code>`<i>x</i></code> to get its execution
+token:
+</p>
+<div class="example">
+<pre class="example">5 `. ( n xt )
+execute ( )      \ execute the xt (i.e., &quot;.&quot;)
+: foo `. execute ;
+5 foo
+</pre></div>
+
+<span id="index-tick-_0028_0027_0029"></span>
+<p>However, the <code>`</code> prefix is a Gforth extension, so you may prefer to use
+the standard Forth words:
+</p>
+<span id="index-_0027-_0028--_0022name_0022-_002d_002d-xt--_0029-core"></span>
+<span id="index-_0027"></span>
+<span id="index-_0027-1"></span>
+<div class="format">
+<pre class="format"><code>'</code> ( <i>&quot;name&quot; &ndash; xt  </i>) core &ldquo;tick&rdquo;
+</pre></div>
+<p><i>xt</i> represents <i>name</i>&rsquo;s interpretation semantics. Perform <code>-14
+throw</code> if the word has no interpretation semantics.
+</p>
+
+<span id="index-_005b_0027_005d-_0028--compilation_002e-_0022name_0022-_002d_002d-_003b-run_002dtime_002e-_002d_002d-xt--_0029-core"></span>
+<span id="index-_005b_0027_005d"></span>
+<span id="index-_005b_0027_005d-1"></span>
+<div class="format">
+<pre class="format"><code>[']</code> ( <i>compilation. &quot;name&quot; &ndash; ; run-time. &ndash; xt  </i>) core &ldquo;bracket-tick&rdquo;
+</pre></div>
+<p><i>xt</i> represents <i>name</i>&rsquo;s interpretation semantics. Perform <code>-14
+throw</code> if the word has no interpretation semantics.
+</p>
+
+
+<p>These are parsing words (whereas <code>`<i>x</i></code> is treated as a literal by a
+recognizer), and you may find the behaviour in interpreted and compiled code
+unintuitive:
+</p>
+<div class="example">
+<pre class="example">5 ' .   ( n xt ) 
+execute ( )      \ execute the xt of .
+\ does not work as intended:
+\ : foo ' . ;
+\ 5 foo execute
+\ instead:
+: foo ['] . ;
+5 foo execute    \ execute the xt of .
+\ Usage of ' in colon definition:
+: bar ' execute ;
+5 bar .          \ execute the xt of .
+</pre></div>
+
+<p><code>'</code> parses at run-time, so if you put it in a colon definition, as in
+<code>bar</code>, it does not consume the next word in the colon definition, but
+the next word at run-time (i.e., the <code>.</code> in the invocation of
+<code>bar</code>).  If you want to put a literal xt in a colon definition without
+writing <code>`<i>x</i></code>, write <code>['] <i>x</i></code>.
+</p>
+<p>Gforth&rsquo;s <code>`<i>x</i></code>, <code>'</code> and <code>[']</code> warn when you use them on
+compile-only words, because such usage may be non-portable between different
+Forth systems.
+</p>
+<p>You can avoid that warning as well as the portability problems by defining
+an immediate variant of the word, e.g.:
+</p>
+<div class="example">
+<pre class="example">: if postpone if ; immediate
+: test [ ' if execute ] .&quot; test&quot; then ;
+</pre></div>
+
+<p>The resulting execution token performs the compilation semantics of
+<code>if</code> when <code>execute</code>d.
+</p>
+<p>Another way to get an xt is <code>:noname</code> or <code>latestxt</code>
+(see <a href="Anonymous-Definitions.html">Anonymous Definitions</a>).  For anonymous words this gives an xt for
+the only behaviour the word has (the execution semantics), but you can also
+use it after defining a named word to get its xt.
+</p>
+<div class="example">
+<pre class="example">:noname .&quot; hello&quot; ;
+execute
+</pre></div>
+
+<p>An xt occupies one cell and can be manipulated like any other cell.
+</p>
+<p>In Standard Forth the xt is just an abstract data type (i.e., defined by the
+operations that produce or consume it).  The concrete implementation (since
+Gforth 1.0) is the body address (for old hands: PFA) of the word; in Gforth
+0.7 and earlier, the xt was implemented as code field addres (CFA, 2 cells
+before the PFA).
+</p>
+<span id="index-execute-_0028--xt-_002d_002d--_0029-core"></span>
+<span id="index-execute"></span>
+<span id="index-execute-1"></span>
+<div class="format">
+<pre class="format"><code>execute</code> ( <i>xt &ndash; </i>) core &ldquo;execute&rdquo;
+</pre></div>
+<p>Perform the semantics represented by the execution token, <i>xt</i>.
+</p>
+<span id="index-execute_002dexit-_0028--compilation-_002d_002d-_003b-run_002dtime-xt-nest_002dsys-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-execute_002dexit"></span>
+<span id="index-execute_002dexit-1"></span>
+<div class="format">
+<pre class="format"><code>execute-exit</code> ( <i>compilation &ndash; ; run-time xt nest-sys &ndash;  </i>) gforth-1.0 &ldquo;execute-exit&rdquo;
+</pre></div>
+<p>Execute <code>xt</code> and return from the current definition, in a
+tail-call-optimized way: The return address <code>nest-sys</code> and the locals
+are deallocated before executing <code>xt</code>.
+</p>
+
+<span id="index-perform-_0028--a_002daddr-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-perform"></span>
+<span id="index-perform-1"></span>
+<div class="format">
+<pre class="format"><code>perform</code> ( <i>a-addr &ndash; </i>) gforth-0.2 &ldquo;perform&rdquo;
+</pre></div>
+<p><code>@ execute</code>.
+</p>
+
+<p><code>Noop</code> is sometimes used to have a placeholder execution token:
+</p>
+<span id="index-noop-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-noop"></span>
+<span id="index-noop-1"></span>
+<div class="format">
+<pre class="format"><code>noop</code> ( <i>&ndash; </i>) gforth-0.2 &ldquo;noop&rdquo;
+</pre></div>
+
+
+
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT21" href="#DOCF21">(21)</a></h5>
+<p>The Forth
+standard has words with undefined interpretation semantics (e.g.,
+<code>r@</code>) and words without defined execution semantics (e.g., <code>s&quot;</code>)
+and words with neither (e.g., <code>if</code>), but in cases where both
+interpretation and execution semantics are defined, they are the same; so we
+treat them as being the same.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Name-token.html">Name token</a>, Previous: <a href="Tokens-for-Words.html">Tokens for Words</a>, Up: <a href="Tokens-for-Words.html">Tokens for Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>CREATE (Gforth マニュアル)</title>
+
+<meta name="description" content="CREATE (Gforth マニュアル)">
+<meta name="keywords" content="CREATE (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Defining-Words.html" rel="up" title="Defining Words">
+<link href="Variables.html" rel="next" title="Variables">
+<link href="Defining-Words.html" rel="prev" title="Defining Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="CREATE">
+<div class="header">
+<p>
+Next: <a href="Variables.html" accesskey="n" rel="next">Variables</a>, Previous: <a href="Defining-Words.html" accesskey="p" rel="prev">Defining Words</a>, Up: <a href="Defining-Words.html" accesskey="u" rel="up">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="CREATE-1"></span><h4 class="subsection">6.10.1 <code>CREATE</code></h4>
+<span id="index-simple-defining-words"></span>
+<span id="index-defining-words_002c-simple"></span>
+
+<p>Defining words are used to create new entries in the dictionary. The
+simplest defining word is <code>CREATE</code>. <code>CREATE</code> is used like this:
+</p>
+<div class="example">
+<pre class="example">CREATE new-word1
+</pre></div>
+
+<p><code>CREATE</code> is a parsing word, i.e., it takes an argument from the input
+stream (<code>new-word1</code> in our example).  It generates a dictionary entry
+for <code>new-word1</code>. When <code>new-word1</code> is executed, all that it does is
+leave an address on the stack. The address represents the value of the data
+space pointer (<code>HERE</code>) at the time that <code>new-word1</code> was
+defined. Therefore, <code>CREATE</code> is a way of associating a name with the
+address of a region of memory.
+</p>
+<span id="index-Create-_0028--_0022name_0022-_002d_002d--_0029-core"></span>
+<span id="index-Create"></span>
+<span id="index-Create-1"></span>
+<div class="format">
+<pre class="format"><code>Create</code> ( <i>&quot;name&quot; &ndash;  </i>) core &ldquo;Create&rdquo;
+</pre></div>
+
+
+<p>Note that Standard Forth guarantees only for <code>create</code> that its body is
+in dictionary data space (i.e., where <code>here</code>, <code>allot</code> etc. work,
+see <a href="Dictionary-allocation.html">Dictionary allocation</a>).  Also, in Standard Forth only <code>create</code>d
+words can be modified with <code>does&gt;</code> (see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>).  And in Standard Forth <code>&gt;body</code> can only be applied to
+<code>create</code>d words.
+</p>
+<p>By extending this example to reserve some memory in data space, we end up
+with something like a <i>variable</i>. Here are two different ways to do it:
+</p>
+<div class="example">
+<pre class="example">CREATE new-word2 1 cells allot  \ reserve 1 cell - initial value undefined
+CREATE new-word3 4 ,            \ reserve 1 cell and initialise it (to 4)
+</pre></div>
+
+<p>The variable can be examined and modified using <code>@</code> (&ldquo;fetch&rdquo;) and
+<code>!</code> (&ldquo;store&rdquo;) like this:
+</p>
+<div class="example">
+<pre class="example">new-word2 @ .      \ get address, fetch from it and display
+1234 new-word2 !   \ new value, get address, store to it
+</pre></div>
+
+<span id="index-arrays"></span>
+<p>A similar mechanism can be used to create arrays. For example, an
+80-character text input buffer:
+</p>
+<div class="example">
+<pre class="example">CREATE text-buf 80 chars allot
+
+text-buf 0 chars + c@ \ the 1st character (offset 0)
+text-buf 3 chars + c@ \ the 4th character (offset 3)
+</pre></div>
+
+<p>You can build arbitrarily complex data structures by allocating appropriate
+areas of memory. For further discussions of this, and to learn about some
+Gforth tools that make it easier, See <a href="Structures.html">Structures</a>.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Variables.html">Variables</a>, Previous: <a href="Defining-Words.html">Defining Words</a>, Up: <a href="Defining-Words.html">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

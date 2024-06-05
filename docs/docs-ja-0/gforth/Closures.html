@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Closures (Gforth マニュアル)</title>
+
+<meta name="description" content="Closures (Gforth マニュアル)">
+<meta name="keywords" content="Closures (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Gforth-locals.html" rel="up" title="Gforth locals">
+<link href="Locals-implementation.html" rel="prev" title="Locals implementation">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Closures">
+<div class="header">
+<p>
+Previous: <a href="Locals-implementation.html" accesskey="p" rel="prev">Locals implementation</a>, Up: <a href="Gforth-locals.html" accesskey="u" rel="up">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Closures-1"></span><h4 class="subsubsection">6.22.1.6 Closures</h4>
+<span id="index-closures"></span>
+
+<p>Gforth also provides basic closures.  A closure is a combination of a
+quotation (see <a href="Quotations.html">Quotations</a>) and locals.  Gforth&rsquo;s closures have locals
+which are filled with values at the closure&rsquo;s run-time, producing a
+trampoline xt.  When executing that trampoline xt, the closure&rsquo;s code is
+executed, with access to the closure&rsquo;s locals on the locals stack.
+Modifications of the closure&rsquo;s locals aren&rsquo;t persistent, i.e. when the
+closure <code>EXIT</code>s, the modified values are lost.
+</p>
+<span id="index-_005b_007b_003a-_0028--_002d_002d-hmaddr-u-latest-latestnt-wid-0--_0029-gforth_002dexperimental"></span>
+<span id="index-_005b_007b_003a"></span>
+<span id="index-_005b_007b_003a-1"></span>
+<div class="format">
+<pre class="format"><code>[{:</code> ( <i>&ndash; hmaddr u latest latestnt wid 0  </i>) gforth-experimental &ldquo;start-closure&rdquo;
+</pre></div>
+<p>starts a closure.  Closures first declare the locals frame they are going to
+use, and then the code that is executed with those locals.  Closures end
+like quotations with a <code>;]</code>.  The locals declaration ends depending
+where the closure&rsquo;s locals are created.  At run-time, the closure is created
+as trampolin xt, and fills the values of its local frame from the stack.  At
+execution time of the xt, the local frame is copied to the locals stack, and
+used inside the closure&rsquo;s code.  After return, those values are removed from
+the locals stack, and not updated in the closure itself.
+</p>
+
+<span id="index-_003a_007dl-_0028--hmaddr-u-latest-latestnt-wid-0-a_002daddr1-u1-_002e_002e_002e-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003a_007dl"></span>
+<div class="format">
+<pre class="format"><code>:}l</code> ( <i>hmaddr u latest latestnt wid 0 a-addr1 u1 ... &ndash;  </i>) gforth-1.0 &ldquo;close-brace-locals&rdquo;
+</pre></div>
+<p>end a closure&rsquo;s locals declaration.  The closure will be allocated on the
+local&rsquo;s stack.
+</p>
+
+<span id="index-_003a_007dd-_0028--hmaddr-u-latest-latestnt-wid-0-a_002daddr1-u1-_002e_002e_002e-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003a_007dd"></span>
+<div class="format">
+<pre class="format"><code>:}d</code> ( <i>hmaddr u latest latestnt wid 0 a-addr1 u1 ... &ndash;  </i>) gforth-1.0 &ldquo;colon-close-brace-d&rdquo;
+</pre></div>
+<p>end a closure&rsquo;s locals declaration.  The closure will be allocated in the
+dictionary.
+</p>
+
+<span id="index-_003a_007dh-_0028--hmaddr-u-latest-latestnt-wid-0-a_002daddr1-u1-_002e_002e_002e-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003a_007dh"></span>
+<div class="format">
+<pre class="format"><code>:}h</code> ( <i>hmaddr u latest latestnt wid 0 a-addr1 u1 ... &ndash;  </i>) gforth-1.0 &ldquo;colon-close-brace-h&rdquo;
+</pre></div>
+<p>end a closure&rsquo;s locals declaration.  The closure will be allocated on the
+heap.
+</p>
+
+<span id="index-_003a_007dh1-_0028--hmaddr-u-latest-latestnt-wid-0-a_002daddr1-u1-_002e_002e_002e-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003a_007dh1"></span>
+<div class="format">
+<pre class="format"><code>:}h1</code> ( <i>hmaddr u latest latestnt wid 0 a-addr1 u1 ... &ndash;  </i>) gforth-1.0 &ldquo;colon-close-brace-h&rdquo;
+</pre></div>
+<p>end a closure&rsquo;s locals declaration.  The closure will be allocated on the
+heap.
+</p>
+
+<span id="index-_003a_007dxt-_0028--hmaddr-u-latest-latestnt-wid-0-a_002daddr1-u1-_002e_002e_002e-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003a_007dxt"></span>
+<div class="format">
+<pre class="format"><code>:}xt</code> ( <i>hmaddr u latest latestnt wid 0 a-addr1 u1 ... &ndash;  </i>) gforth-1.0 &ldquo;colon-close-brace-x-t&rdquo;
+</pre></div>
+<p>end a closure&rsquo;s locals declaration.  The closure will be allocated by the xt
+on the stack, so the closure&rsquo;s run-time stack effect is <code>( xt-alloc --
+xt-closure )</code>.
+</p>
+
+<span id="index-_003eaddr-_0028--xt-_002d_002d-addr--_0029-gforth_002dexperimental"></span>
+<span id="index-_003eaddr"></span>
+<span id="index-_003eaddr-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;addr</code> ( <i>xt &ndash; addr  </i>) gforth-experimental &ldquo;to-addr&rdquo;
+</pre></div>
+<p>convert the xt of a closure on the heap to the <var>addr</var> with can be passed
+to <code>free</code> to get rid of the closure
+</p>
+
+<span id="index-free_002dclosure-_0028--xt-_002d_002d--_0029-gforth_002dinternal"></span>
+<span id="index-free_002dclosure"></span>
+<span id="index-free_002dclosure-1"></span>
+<div class="format">
+<pre class="format"><code>free-closure</code> ( <i>xt &ndash;  </i>) gforth-internal &ldquo;free-closure&rdquo;
+</pre></div>
+<p>free a heap-allocated closure
+</p>
+
+
+<div class="example">
+<pre class="example">: foo [{: a f: b d: c xt: d :}d a . b f. c d. d ;] ;
+5 3.3e #1234. ' cr foo execute
+</pre></div>
+
+<p><code>foo</code> creates a closure in the dictionary with a single cell, a
+floating point, a double, and an xt, and prints the first three values
+before executing the xt on invocation.
+</p>
+<p>This allows to implement Donald Knuth&rsquo;s &ldquo;Man or boy test&rdquo; proposed in 1964
+to test Algol compilers.
+</p>
+<div class="example">
+<pre class="example">: A {: w^ k x1 x2 x3 xt: x4 xt: x5 | w^ B :} recursive
+    k &nbsp;0&lt;= IF  x4 x5 f+  ELSE
+        B k x1 x2 x3 action-of x4 [{: B k x1 x2 x3 x4 :}L
+            -1 k +!
+            k &nbsp;B &nbsp;x1 x2 x3 x4 A ;] dup B !
+        execute  THEN ;
+: man-or-boy? ( n -- ) [: 1e ;] [: -1e ;] 2dup swap [: 0e ;] A f. ;
+</pre></div>
+
+<p>Sometimes, closures need a permanent storage to be modified; it is even
+possible that more than one closure shares that permanent storage.  In the
+example above, local variables of the outer procedure are used for this, but
+in some cases, the closure lives longer than the outer procedure; especially
+closures allocated in the dictionary or on the heap are designed to outlive
+their parent procedure.
+</p>
+<p>For those, we have home locations, which are allocated like closures, but
+their code is directly executed at creation and should provide us with the
+addresses of the home locations.
+</p>
+<div class="example">
+<pre class="example">: bar ( a b c -- aaddr baddr caddr hl-addr )
+    &lt;{: w^ a w^ b w^ c :}h a b c ;&gt; ;
+</pre></div>
+
+<p>This example creates a home location with three cells on the heap, and
+returns the addresses of the three locations and the address of the home
+location.  This address can be used to <code>free</code> the home location when it
+is no longer needed.
+</p>
+<span id="index-_003c_007b_003a-_0028--_002d_002d-hmaddr-u-latest-latestnt-wid-0--_0029-gforth_002dexperimental"></span>
+<span id="index-_003c_007b_003a"></span>
+<span id="index-_003c_007b_003a-1"></span>
+<div class="format">
+<pre class="format"><code>&lt;{:</code> ( <i>&ndash; hmaddr u latest latestnt wid 0  </i>) gforth-experimental &ldquo;start-homelocation&rdquo;
+</pre></div>
+<p>starts a home location
+</p>
+
+<span id="index-_003b_003e-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_003b_003e"></span>
+<span id="index-_003b_003e-1"></span>
+<div class="format">
+<pre class="format"><code>;&gt;</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;end-homelocation&rdquo;
+</pre></div>
+<p>end using a home location
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Locals-implementation.html">Locals implementation</a>, Up: <a href="Gforth-locals.html">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

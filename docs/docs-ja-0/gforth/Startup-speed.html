@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Startup speed (Gforth マニュアル)</title>
+
+<meta name="description" content="Startup speed (Gforth マニュアル)">
+<meta name="keywords" content="Startup speed (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Gforth-Environment.html" rel="up" title="Gforth Environment">
+<link href="Gforth-in-pipes.html" rel="prev" title="Gforth in pipes">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Startup-speed">
+<div class="header">
+<p>
+Previous: <a href="Gforth-in-pipes.html" accesskey="p" rel="prev">Gforth in pipes</a>, Up: <a href="Gforth-Environment.html" accesskey="u" rel="up">Gforth Environment</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Startup-speed-1"></span><h3 class="section">2.8 Startup speed</h3>
+<span id="index-Startup-speed"></span>
+<span id="index-speed_002c-startup"></span>
+
+<p>Gforth を CGI スクリプトやシェルスクリプトで使用する場合、 起動速度が問題になる場合があります。 libc-2.7 を搭載した 64 ビット
+Linux 2.6.27.8 上の 3GHz Core 2 Duo E8400 では、 <code>gforth-fast -e bye</code>
+でユーザー時間は 13.1 ミリ秒、システム時間は 1.2 ミリ秒かかります(<code>gforth -e bye</code> は、
+下記で説明するオプションの一部を組み込んでいるため、 ユーザー時間は約 3.4 ミリ秒、 システム時間は 1.2 ミリ秒で起動がより高速になります)。
+</p>
+<p>起動速度が問題になる場合は、 以下の改善方法を検討してください。 または、 起動の数を減らす方法(Fast-CGI
+の使用など)を検討することもできます。 以下の最初の手順では、 (コンパイル時間を含む)実行時間を犠牲にして起動時間を短縮するため、
+それで利益が得られるかどうかはあなたのアプリケーションでのこれらの時間のバランスによって決まることに注意してください。
+</p>
+<p>Gforth の起動速度に影響を及ぼす簡単な手順は、 実行時間(run-time)を増加させながらイメージの読み込み時間(image-loading
+time)を短縮する多数のオプションを使用してみることです。
+</p>
+<p>最初に試す必要があるのは <code>--ss-number=0 --ss-states=1</code> です。
+このオプションは実行時の高速化が比較的わずかなのに、 起動時にかなりの時間がかかるためです。 <code>gforth-fast
+--ss-number=0 --ss-states=1 -e bye</code> には、 ユーザー時間が約 2.8 ミリ秒、 システム時間が約 1.5
+ミリ秒かかります。
+</p>
+<p>次のオプションは <code>--no-dynamic</code> です。 これは実行時間に大きな影響を及ぼします(いくつかのプラットフォームでは約 2
+倍です)が、 それでも起動速度が若干速くなります。 <code>gforth-fast -- ss-number=0 --ss-states=1
+--no-dynamic -e bye</code> は、 約 2.6 ミリ秒のユーザー時間と 1.2 ミリ秒のシステム時間を消費します。
+</p>
+<p>起動速度を向上させるための次のステップは、 データ再配置可能イメージ(data-relocatable
+image)を使用することです(see <a href="Data_002dRelocatable-Image-Files.html">Data-Relocatable Image Files</a>)。 これにより、
+イメージ内のコードの再配置コストが回避されます(ただし、 データの再配置コストは回避されません)。 イメージは、 使用している特定のバイナリ(つまり、
+<code>gforth</code>、 <code>gforth-fast</code>、さらには特定のビルド)に固有であることに注意してください。
+<code>./gforth-fast</code> で動作するデータ再配置可能イメージを作成するには、 <code>GFORTHD=&quot;./gforth-fast
+--no-dynamic&quot; gforthmi gforthdr.fi</code> とします(これには <code>--no-dynamic</code>
+が必要です。そうしないとこのイメージは機能しません)。 そして、 <code>gforth-fast -i gforthdr.fi ... -e
+bye</code> で実行します(上記で説明したフラグは、 再配置可能なコードでのみ機能するため、ここでは重要ではありません)。
+<code>gforth-fast -i gforthdr.fi -e bye</code> では、 ユーザー時間は約 1.1 ミリ秒、 システム時間は約 1.2
+ミリ秒かかります。
+</p>
+<p>さらにもう 1 つのステップは、 再配置不可イメージ(non-relocatable image)を使用することで、
+すべての再配置コストと書き換え時コピー(copy-on-write;COW)コストの一部を回避することです(see <a href="Non_002dRelocatable-Image-Files.html">Non-Relocatable Image Files</a>)。ただし、 アドレス空間のランダム化が行われているオペレーティング・システム(最近の Linux 等ではこれがデフォルト)や、
+その他の理由でディクショナリが移動した場合(OS カーネルの変更や、 ライブラリ更新などの場合)には機能しないという欠点があるため、
+あまりお勧めできません。再配置不可イメージ(non-relocatable image)を作成するために <code>gforth-fast
+--no-dynamic -e &quot;savesystem gforthnr.fi bye&quot;</code> とします(ここでも <code>--no-dynamic</code>
+が必要です)。  そして、  <code>gforth-fast -i gforthnr.fi ... -e bye</code> として実行します(ここでも、
+上記で説明したフラグは重要ではありません)。  <code>gforth-fast -i gforthdr.fi -e bye</code> はユーザー時間は約
+0.9 ミリ秒、 システム時間は約 0.9 ミリ秒かかります。
+</p>
+<p>実行するスクリプトに大量のコードが含まれている場合は、 起動時のコンパイルのコストを避けるために、
+それをイメージにコンパイルすると有益な場合があります。
+</p>
+</div>
+
+
+
+</body>
+</html>

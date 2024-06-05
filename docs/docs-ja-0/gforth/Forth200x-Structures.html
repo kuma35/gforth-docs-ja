@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Forth200x Structures (Gforth マニュアル)</title>
+
+<meta name="description" content="Forth200x Structures (Gforth マニュアル)">
+<meta name="keywords" content="Forth200x Structures (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Structures.html" rel="up" title="Structures">
+<link href="Structure-Glossary.html" rel="prev" title="Structure Glossary">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Forth200x-Structures">
+<div class="header">
+<p>
+Previous: <a href="Structure-Glossary.html" accesskey="p" rel="prev">Structure Glossary</a>, Up: <a href="Structures.html" accesskey="u" rel="up">Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Forth200x-Structures-1"></span><h4 class="subsection">6.23.6 Forth200x Structures</h4>
+<span id="index-Structures-in-Forth200x"></span>
+
+<p>The Forth 2012 standard defines a slightly less convenient form of
+structures.  In general (when using <code>field+</code>, you have to perform the
+alignment yourself, but there are a number of convenience words (e.g.,
+<code>field:</code>) that include alignment.
+</p>
+<p>A typical usage example is:
+</p>
+<div class="example">
+<pre class="example">0
+  field:                   s-a
+  faligned 2 floats +field s-b
+constant s-struct
+</pre></div>
+
+<p>An alternative way of writing this structure is:
+</p>
+<div class="example">
+<pre class="example">begin-structure s-struct
+  field:                   s-a
+  faligned 2 floats +field s-b
+end-structure
+</pre></div>
+
+<p>You can define a structure that has the same fields and additional fields as
+follows:
+</p>
+<div class="example">
+<pre class="example">s-struct
+  cfield: t-c
+  cfield: t-d
+constant t-struct
+</pre></div>
+
+<p>or alternatively
+</p>
+<div class="example">
+<pre class="example">s-struct extend-structure t-struct
+  cfield: t-c
+  cfield: t-d
+end-structure
+</pre></div>
+
+<span id="index-begin_002dstructure-_0028--_0022name_0022-_002d_002d-struct_002dsys-0--_0029-facility_002dext"></span>
+<span id="index-begin_002dstructure"></span>
+<span id="index-begin_002dstructure-1"></span>
+<div class="format">
+<pre class="format"><code>begin-structure</code> ( <i>&quot;name&quot; &ndash; struct-sys 0  </i>) facility-ext &ldquo;begin-structure&rdquo;
+</pre></div>
+
+<span id="index-extend_002dstructure-_0028--n-_0022name_0022-_002d_002d-struct_002dsys-n--_0029-gforth_002d1_002e0"></span>
+<span id="index-extend_002dstructure"></span>
+<span id="index-extend_002dstructure-1"></span>
+<div class="format">
+<pre class="format"><code>extend-structure</code> ( <i>n &quot;name&quot; &ndash; struct-sys n  </i>) gforth-1.0 &ldquo;extend-structure&rdquo;
+</pre></div>
+<p>Start a new structure <i>name</i> as extension of an existing structure with
+size <i>n</i>.
+</p>
+
+<span id="index-end_002dstructure-_0028--struct_002dsys-_002bn-_002d_002d--_0029-facility_002dext"></span>
+<span id="index-end_002dstructure"></span>
+<span id="index-end_002dstructure-1"></span>
+<div class="format">
+<pre class="format"><code>end-structure</code> ( <i>struct-sys +n &ndash;  </i>) facility-ext &ldquo;end-structure&rdquo;
+</pre></div>
+<p>end a structure started wioth <code>begin-structure</code>
+</p>
+
+<span id="index-_002bfield-_0028--noffset1-nsize-_0022name_0022-_002d_002d-noffset2--_0029-facility_002dext"></span>
+<span id="index-_002bfield"></span>
+<span id="index-_002bfield-1"></span>
+<div class="format">
+<pre class="format"><code>+field</code> ( <i>noffset1 nsize &quot;name&quot; &ndash; noffset2  </i>) facility-ext &ldquo;plus-field&rdquo;
+</pre></div>
+<p>Defining word; defines <i>name</i> <code>( addr1 -- addr2 )</code>, where <i>addr2</i>
+is <i>addr1+noffset1</i>.  <i>noffset2</i> is <i>noffset1+nsize</i>.
+</p>
+
+<span id="index-cfield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-facility_002dext"></span>
+<span id="index-cfield_003a"></span>
+<span id="index-cfield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>cfield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) facility-ext &ldquo;c-field-colon&rdquo;
+</pre></div>
+<p>Define a char-sized field
+</p>
+
+<span id="index-field_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-facility_002dext"></span>
+<span id="index-field_003a"></span>
+<span id="index-field_003a-1"></span>
+<div class="format">
+<pre class="format"><code>field:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) facility-ext &ldquo;field-colon&rdquo;
+</pre></div>
+<p>Define an aligned cell-sized field
+</p>
+
+<span id="index-2field_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-gforth_002d0_002e7"></span>
+<span id="index-2field_003a"></span>
+<span id="index-2field_003a-1"></span>
+<div class="format">
+<pre class="format"><code>2field:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) gforth-0.7 &ldquo;two-field-colon&rdquo;
+</pre></div>
+<p>Define an aligned double-cell-sized field
+</p>
+
+<span id="index-ffield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-floating_002dext"></span>
+<span id="index-ffield_003a"></span>
+<span id="index-ffield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>ffield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) floating-ext &ldquo;f-field-colon&rdquo;
+</pre></div>
+<p>Define a faligned float-sized field
+</p>
+
+<span id="index-sffield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-floating_002dext"></span>
+<span id="index-sffield_003a"></span>
+<span id="index-sffield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>sffield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) floating-ext &ldquo;s-f-field-colon&rdquo;
+</pre></div>
+<p>Define a sfaligned sfloat-sized field
+</p>
+
+<span id="index-dffield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-floating_002dext"></span>
+<span id="index-dffield_003a"></span>
+<span id="index-dffield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>dffield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) floating-ext &ldquo;d-f-field-colon&rdquo;
+</pre></div>
+<p>Define a dfaligned dfloat-sized field
+</p>
+
+<span id="index-wfield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-gforth_002d1_002e0"></span>
+<span id="index-wfield_003a"></span>
+<span id="index-wfield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>wfield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) gforth-1.0 &ldquo;w-field-colon&rdquo;
+</pre></div>
+<p>Define a naturally aligned field for a 16-bit value.
+</p>
+
+<span id="index-lfield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-gforth_002d1_002e0"></span>
+<span id="index-lfield_003a"></span>
+<span id="index-lfield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>lfield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) gforth-1.0 &ldquo;l-field-colon&rdquo;
+</pre></div>
+<p>Define a naturally aligned field for a 32-bit value.
+</p>
+
+<span id="index-xfield_003a-_0028--u1-_0022name_0022-_002d_002d-u2--_0029-gforth_002d1_002e0"></span>
+<span id="index-xfield_003a"></span>
+<span id="index-xfield_003a-1"></span>
+<div class="format">
+<pre class="format"><code>xfield:</code> ( <i>u1 &quot;name&quot; &ndash; u2  </i>) gforth-1.0 &ldquo;x-field-colon&rdquo;
+</pre></div>
+<p>Define a naturally aligned field for a 64-bit-value.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Structure-Glossary.html">Structure Glossary</a>, Up: <a href="Structures.html">Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

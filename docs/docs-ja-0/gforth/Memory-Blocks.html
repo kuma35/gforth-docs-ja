@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Memory Blocks (Gforth マニュアル)</title>
+
+<meta name="description" content="Memory Blocks (Gforth マニュアル)">
+<meta name="keywords" content="Memory Blocks (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Memory.html" rel="up" title="Memory">
+<link href="Address-arithmetic.html" rel="prev" title="Address arithmetic">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Memory-Blocks">
+<div class="header">
+<p>
+Previous: <a href="Address-arithmetic.html" accesskey="p" rel="prev">Address arithmetic</a>, Up: <a href="Memory.html" accesskey="u" rel="up">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Memory-Blocks-1"></span><h4 class="subsection">6.7.7 Memory Blocks</h4>
+<span id="index-memory-block-words"></span>
+<span id="index-character-strings-_002d-moving-and-copying"></span>
+
+<p>Memory blocks often represent character strings; For ways of storing
+character strings in memory see <a href="String-representations.html">String representations</a>.  For other
+string-processing words see <a href="Displaying-characters-and-strings.html">Displaying characters and strings</a>.
+</p>
+<p>A few of these words work on address unit blocks.  In that case, you usually
+have to insert <code>CHARS</code> before the word when working on character
+strings.  Most words work on character blocks, and expect a char-aligned
+address.
+</p>
+<p>When copying characters between overlapping memory regions, use
+<code>move</code>.  <code>Cmove</code> and <code>cmove&gt;</code> tend to be slower than a
+well-implemented <code>move</code>.
+</p>
+<span id="index-move-_0028--c_002dfrom-c_002dto-ucount-_002d_002d--_0029-core"></span>
+<span id="index-move"></span>
+<span id="index-move-1"></span>
+<div class="format">
+<pre class="format"><code>move</code> ( <i>c-from c-to ucount &ndash; </i>) core &ldquo;move&rdquo;
+</pre></div>
+<p>Copy the contents of <i>ucount</i> aus at <i>c-from</i> to <i>c-to</i>. <code>move</code>
+works correctly even if the two areas overlap.
+</p>
+<span id="index-cmove-_0028--c_002dfrom-c_002dto-u-_002d_002d--_0029-string"></span>
+<span id="index-cmove"></span>
+<span id="index-cmove-1"></span>
+<div class="format">
+<pre class="format"><code>cmove</code> ( <i>c-from c-to u &ndash; </i>) string &ldquo;c-move&rdquo;
+</pre></div>
+<p>Copy the contents of <i>ucount</i> characters from data space at <i>c-from</i> to
+<i>c-to</i>. The copy proceeds <code>char</code>-by-<code>char</code> from low address to
+high address; i.e., for overlapping areas it is safe if
+<i>c-to</i>&lt;=<i>c-from</i>.
+</p>
+<span id="index-cmove_003e-_0028--c_002dfrom-c_002dto-u-_002d_002d--_0029-string"></span>
+<span id="index-cmove_003e"></span>
+<span id="index-cmove_003e-1"></span>
+<div class="format">
+<pre class="format"><code>cmove&gt;</code> ( <i>c-from c-to u &ndash; </i>) string &ldquo;c-move-up&rdquo;
+</pre></div>
+<p>Copy the contents of <i>ucount</i> characters from data space at <i>c-from</i> to
+<i>c-to</i>. The copy proceeds <code>char</code>-by-<code>char</code> from high address to
+low address; i.e., for overlapping areas it is safe if <i>c-to</i>&gt;=<i>c-from</i>.
+</p>
+<span id="index-fill-_0028--c_002daddr-u-c-_002d_002d--_0029-core"></span>
+<span id="index-fill"></span>
+<span id="index-fill-1"></span>
+<div class="format">
+<pre class="format"><code>fill</code> ( <i>c-addr u c &ndash; </i>) core &ldquo;fill&rdquo;
+</pre></div>
+<p>Store <i>c</i> in <i>u</i> chars starting at <i>c-addr</i>.
+</p>
+<span id="index-erase-_0028--addr-u-_002d_002d--_0029-core_002dext"></span>
+<span id="index-erase"></span>
+<span id="index-erase-1"></span>
+<div class="format">
+<pre class="format"><code>erase</code> ( <i>addr u &ndash;  </i>) core-ext &ldquo;erase&rdquo;
+</pre></div>
+<p>Clear all bits in <i>u</i> aus starting at <i>addr</i>.
+</p>
+
+<span id="index-blank-_0028--c_002daddr-u-_002d_002d--_0029-string"></span>
+<span id="index-blank"></span>
+<span id="index-blank-1"></span>
+<div class="format">
+<pre class="format"><code>blank</code> ( <i>c-addr u &ndash;  </i>) string &ldquo;blank&rdquo;
+</pre></div>
+<p>Store the space character into <i>u</i> chars starting at <i>c-addr</i>.
+</p>
+
+<span id="index-insert-_0028--string-length-buffer-size-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-insert"></span>
+<span id="index-insert-1"></span>
+<div class="format">
+<pre class="format"><code>insert</code> ( <i>string length buffer size &ndash;  </i>) gforth-0.7 &ldquo;insert&rdquo;
+</pre></div>
+<p>inserts a string at the front of a buffer. The remaining bytes are moved on.
+</p>
+
+<span id="index-delete-_0028--buffer-size-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-delete"></span>
+<span id="index-delete-1"></span>
+<div class="format">
+<pre class="format"><code>delete</code> ( <i>buffer size u &ndash;  </i>) gforth-0.7 &ldquo;delete&rdquo;
+</pre></div>
+<p>deletes the first <var>u</var> bytes from a buffer and fills the rest at the end
+with blanks.
+</p>
+
+<span id="index-compare-_0028--c_002daddr1-u1-c_002daddr2-u2-_002d_002d-n--_0029-string"></span>
+<span id="index-compare"></span>
+<span id="index-compare-1"></span>
+<div class="format">
+<pre class="format"><code>compare</code> ( <i>c-addr1 u1 c-addr2 u2 &ndash; n </i>) string &ldquo;compare&rdquo;
+</pre></div>
+<p>Compare two strings lexicographically, based on the values of the bytes in
+the strings (i.e., case-sensitive and without locale-specific collation
+order orderings). If they are equal, <i>n</i> is 0; if the first string is
+smaller, <i>n</i> is -1; if the first string is larger, <i>n</i> is 1.
+</p>
+<span id="index-pad-_0028--_002d_002d-c_002daddr--_0029-core_002dext"></span>
+<span id="index-pad"></span>
+<span id="index-pad-1"></span>
+<div class="format">
+<pre class="format"><code>pad</code> ( <i>&ndash; c-addr  </i>) core-ext &ldquo;pad&rdquo;
+</pre></div>
+<p><var>c-addr</var> is the address of a transient region that can be used as
+temporary data storage. At least 84 characters of space is available.
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Address-arithmetic.html">Address arithmetic</a>, Up: <a href="Memory.html">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

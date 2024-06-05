@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Directories (Gforth マニュアル)</title>
+
+<meta name="description" content="Directories (Gforth マニュアル)">
+<meta name="keywords" content="Directories (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Files.html" rel="up" title="Files">
+<link href="Search-Paths.html" rel="next" title="Search Paths">
+<link href="Redirection.html" rel="prev" title="Redirection">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Directories">
+<div class="header">
+<p>
+Next: <a href="Search-Paths.html" accesskey="n" rel="next">Search Paths</a>, Previous: <a href="Redirection.html" accesskey="p" rel="prev">Redirection</a>, Up: <a href="Files.html" accesskey="u" rel="up">Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Directories-1"></span><h4 class="subsection">6.18.4 Directories</h4>
+<span id="index-Directories"></span>
+
+<p>You can split a file name into a directory and base component:
+</p>
+<span id="index-basename-_0028--c_002daddr1-u1-_002d_002d-c_002daddr2-u2--_0029-gforth_002d0_002e7"></span>
+<span id="index-basename"></span>
+<span id="index-basename-1"></span>
+<div class="format">
+<pre class="format"><code>basename</code> ( <i>c-addr1 u1 &ndash; c-addr2 u2  </i>) gforth-0.7 &ldquo;basename&rdquo;
+</pre></div>
+<p>Given a file name <i>c-addr1 u1</i>, <i>c-addr2 u2</i> is the part of it with any
+leading directory components removed.
+</p>
+
+<span id="index-dirname-_0028--c_002daddr1-u1-_002d_002d-c_002daddr1-u2--_0029-gforth_002d0_002e7"></span>
+<span id="index-dirname"></span>
+<span id="index-dirname-1"></span>
+<div class="format">
+<pre class="format"><code>dirname</code> ( <i>c-addr1 u1 &ndash; c-addr1 u2  </i>) gforth-0.7 &ldquo;dirname&rdquo;
+</pre></div>
+<p><i>C-addr1 u2</i> is the directory name of the file name <i>c-addr1 u1</i>,
+including the final <code>/</code>.  If <i>caddr1 u1</i> does not contain a <code>/</code>,
+<i>u2</i>=0.
+</p>
+
+
+<p>You can open and read directories similar to files.  Reading gives you one
+directory entry at a time; you can match that to a filename (with
+wildcards).
+</p>
+<span id="index-open_002ddir-_0028--c_002daddr-u-_002d_002d-wdirid-wior--_0029-gforth_002d0_002e5"></span>
+<span id="index-open_002ddir"></span>
+<span id="index-open_002ddir-1"></span>
+<div class="format">
+<pre class="format"><code>open-dir</code> ( <i>c-addr u &ndash; wdirid wior </i>) gforth-0.5 &ldquo;open-dir&rdquo;
+</pre></div>
+<p>Open the directory specified by <i>c-addr, u</i> and return <i>dir-id</i> for
+futher access to it.
+</p>
+<span id="index-read_002ddir-_0028--c_002daddr-u1-wdirid-_002d_002d-u2-flag-wior--_0029-gforth_002d0_002e5"></span>
+<span id="index-read_002ddir"></span>
+<span id="index-read_002ddir-1"></span>
+<div class="format">
+<pre class="format"><code>read-dir</code> ( <i>c-addr u1 wdirid &ndash; u2 flag wior </i>) gforth-0.5 &ldquo;read-dir&rdquo;
+</pre></div>
+<p>Attempt to read the next entry from the directory specified by <i>dir-id</i> to
+the buffer of length <i>u1</i> at address <i>c-addr</i>.  If the attempt fails
+because there is no more entries, <i>ior</i>=0, <i>flag</i>=0, <i>u2</i>=0, and the
+buffer is unmodified.  If the attempt to read the next entry fails because
+of any other reason, return <i>ior</i>&lt;&gt;0.  If the attempt succeeds, store file
+name to the buffer at <i>c-addr</i> and return <i>ior</i>=0, <i>flag</i>=true and
+<i>u2</i> equal to the size of the file name.  If the length of the file name
+is greater than <i>u1</i>, store first <i>u1</i> characters from file name into
+the buffer and indicate &quot;name too long&quot; with <i>ior</i>, <i>flag</i>=true, and
+<i>u2</i>=<i>u1</i>.
+</p>
+<span id="index-close_002ddir-_0028--wdirid-_002d_002d-wior--_0029-gforth_002d0_002e5"></span>
+<span id="index-close_002ddir"></span>
+<span id="index-close_002ddir-1"></span>
+<div class="format">
+<pre class="format"><code>close-dir</code> ( <i>wdirid &ndash; wior </i>) gforth-0.5 &ldquo;close-dir&rdquo;
+</pre></div>
+<p>Close the directory specified by <i>dir-id</i>.
+</p>
+<span id="index-filename_002dmatch-_0028--c_002daddr1-u1-c_002daddr2-u2-_002d_002d-flag--_0029-gforth_002d0_002e5"></span>
+<span id="index-filename_002dmatch"></span>
+<span id="index-filename_002dmatch-1"></span>
+<div class="format">
+<pre class="format"><code>filename-match</code> ( <i>c-addr1 u1 c-addr2 u2 &ndash; flag </i>) gforth-0.5 &ldquo;match-file&rdquo;
+</pre></div>
+<p>match the file name <var>c_addr1 u1</var> with the pattern <var>c_addr2 u2</var>.
+Patterns match char by char except for the special characters &rsquo;*&rsquo; and &rsquo;?&rsquo;,
+which are wildcards for several (&rsquo;*&rsquo;) or one (&rsquo;?&rsquo;) character.
+</p>
+<span id="index-get_002ddir-_0028--c_002daddr1-u1-_002d_002d-c_002daddr2-u2--_0029-gforth_002d0_002e7"></span>
+<span id="index-get_002ddir"></span>
+<span id="index-get_002ddir-1"></span>
+<div class="format">
+<pre class="format"><code>get-dir</code> ( <i>c-addr1 u1 &ndash; c-addr2 u2 </i>) gforth-0.7 &ldquo;get-dir&rdquo;
+</pre></div>
+<p>Store the current directory in the buffer specified by <i>c-addr1, u1</i>.  If
+the buffer size is not sufficient, return 0 0
+</p>
+<span id="index-set_002ddir-_0028--c_002daddr-u-_002d_002d-wior--_0029-gforth_002d0_002e7"></span>
+<span id="index-set_002ddir"></span>
+<span id="index-set_002ddir-1"></span>
+<div class="format">
+<pre class="format"><code>set-dir</code> ( <i>c-addr u &ndash; wior </i>) gforth-0.7 &ldquo;set-dir&rdquo;
+</pre></div>
+<p>Change the current directory to <i>c-addr, u</i>.  Return an error if this is
+not possible
+</p>
+<span id="index-_003dmkdir-_0028--c_002daddr-u-wmode-_002d_002d-wior--_0029-gforth_002d0_002e7"></span>
+<span id="index-_003dmkdir"></span>
+<span id="index-_003dmkdir-1"></span>
+<div class="format">
+<pre class="format"><code>=mkdir</code> ( <i>c-addr u wmode &ndash; wior </i>) gforth-0.7 &ldquo;equals-mkdir&rdquo;
+</pre></div>
+<p>Create directory <i>c-addr u</i> with mode <i>wmode</i>.
+</p>
+<span id="index-mkdir_002dparents-_0028--c_002daddr-u-mode-_002d_002d-ior--_0029-gforth_002d0_002e7"></span>
+<span id="index-mkdir_002dparents"></span>
+<span id="index-mkdir_002dparents-1"></span>
+<div class="format">
+<pre class="format"><code>mkdir-parents</code> ( <i>c-addr u mode &ndash; ior  </i>) gforth-0.7 &ldquo;mkdir-parents&rdquo;
+</pre></div>
+<p>create the directory <i>c-addr u</i> and all its parents with mode <i>mode</i>
+(modified by umask)
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Search-Paths.html">Search Paths</a>, Previous: <a href="Redirection.html">Redirection</a>, Up: <a href="Files.html">Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

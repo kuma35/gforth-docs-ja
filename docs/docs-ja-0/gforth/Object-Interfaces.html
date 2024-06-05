@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Object Interfaces (Gforth マニュアル)</title>
+
+<meta name="description" content="Object Interfaces (Gforth マニュアル)">
+<meta name="keywords" content="Object Interfaces (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Objects.html" rel="up" title="Objects">
+<link href="Objects-Implementation.html" rel="next" title="Objects Implementation">
+<link href="Dividing-classes.html" rel="prev" title="Dividing classes">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Object-Interfaces">
+<div class="header">
+<p>
+Next: <a href="Objects-Implementation.html" accesskey="n" rel="next"><samp>objects.fs</samp> Implementation</a>, Previous: <a href="Dividing-classes.html" accesskey="p" rel="prev">Dividing classes</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Object-Interfaces-1"></span><h4 class="subsubsection">6.24.3.10 Object Interfaces</h4>
+<span id="index-object-interfaces"></span>
+<span id="index-interfaces-for-objects"></span>
+
+<p>In this model you can only call selectors defined in the class of the
+receiving objects or in one of its ancestors. If you call a selector with a
+receiving object that is not in one of these classes, the result is
+undefined; if you are lucky, the program crashes immediately.
+</p>
+<span id="index-selectors-common-to-hardly_002drelated-classes"></span>
+<p>Now consider the case when you want to have a selector (or several)
+available in two classes: You would have to add the selector to a common
+ancestor class, in the worst case to <code>object</code>. You may not want to do
+this, e.g., because someone else is responsible for this ancestor class.
+</p>
+<p>The solution for this problem is interfaces. An interface is a collection of
+selectors. If a class implements an interface, the selectors become
+available to the class and its descendents. A class can implement an
+unlimited number of interfaces. For the problem discussed above, we would
+define an interface for the selector(s), and both classes would implement
+the interface.
+</p>
+<p>As an example, consider an interface <code>storage</code> for writing objects to
+disk and getting them back, and a class <code>foo</code> that implements it. The
+code would look like this:
+</p>
+<span id="index-interface-usage"></span>
+<span id="index-end_002dinterface-usage"></span>
+<span id="index-implementation-usage"></span>
+<div class="example">
+<pre class="example">interface
+  selector write ( file object -- )
+  selector read1 ( file object -- )
+end-interface storage
+
+bar class
+  storage implementation
+
+... overrides write
+... overrides read1
+...
+end-class foo
+</pre></div>
+
+<p>(I would add a word <code>read</code> <i>( file &ndash; object )</i> that uses
+<code>read1</code> internally, but that&rsquo;s beyond the point illustrated here.)
+</p>
+<p>Note that you cannot use <code>protected</code> in an interface; and of course you
+cannot define fields.
+</p>
+<p>In the Neon model, all selectors are available for all classes; therefore it
+does not need interfaces. The price you pay in this model is slower late
+binding, and therefore, added complexity to avoid late binding.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Objects-Implementation.html"><samp>objects.fs</samp> Implementation</a>, Previous: <a href="Dividing-classes.html">Dividing classes</a>, Up: <a href="Objects.html">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

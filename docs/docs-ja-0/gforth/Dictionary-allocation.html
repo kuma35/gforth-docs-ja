@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Dictionary allocation (Gforth マニュアル)</title>
+
+<meta name="description" content="Dictionary allocation (Gforth マニュアル)">
+<meta name="keywords" content="Dictionary allocation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Memory.html" rel="up" title="Memory">
+<link href="Heap-Allocation.html" rel="next" title="Heap Allocation">
+<link href="Memory-model.html" rel="prev" title="Memory model">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Dictionary-allocation">
+<div class="header">
+<p>
+Next: <a href="Heap-Allocation.html" accesskey="n" rel="next">Heap allocation</a>, Previous: <a href="Memory-model.html" accesskey="p" rel="prev">Memory model</a>, Up: <a href="Memory.html" accesskey="u" rel="up">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Dictionary-allocation-1"></span><h4 class="subsection">6.7.2 Dictionary allocation</h4>
+<span id="index-reserving-data-space"></span>
+<span id="index-data-space-_002d-reserving-some"></span>
+
+<p>Dictionary allocation is a stack-oriented allocation scheme, i.e., if you
+want to deallocate X, you also deallocate everything allocated after X.
+</p>
+<span id="index-contiguous-regions-in-dictionary-allocation"></span>
+<p>The allocations using the words below are contiguous and grow the region
+towards increasing addresses.  Other words that allocate dictionary memory
+of any kind (i.e., defining words including <code>:noname</code>) end the
+contiguous region and start a new one.
+</p>
+<p>In Standard Forth only <code>create</code>d words are guaranteed to produce an
+address that is the start of the following contiguous region.  In
+particular, the cell allocated by <code>variable</code> is not guaranteed to be
+contiguous with following <code>allot</code>ed memory.
+</p>
+<p>You can deallocate memory by using <code>allot</code> with a negative argument
+(with some restrictions, see <code>allot</code>). For larger deallocations use
+<code>marker</code>.
+</p>
+
+<span id="index-here-_0028--_002d_002d-addr--_0029-core"></span>
+<span id="index-here"></span>
+<span id="index-here-1"></span>
+<div class="format">
+<pre class="format"><code>here</code> ( <i>&ndash; addr  </i>) core &ldquo;here&rdquo;
+</pre></div>
+<p>Return the address of the next free location in data space.
+</p>
+
+<span id="index-unused-_0028--_002d_002d-u--_0029-core_002dext"></span>
+<span id="index-unused"></span>
+<span id="index-unused-1"></span>
+<div class="format">
+<pre class="format"><code>unused</code> ( <i>&ndash; u  </i>) core-ext &ldquo;unused&rdquo;
+</pre></div>
+<p>Return the amount of free space remaining (in address units) in the region
+addressed by <code>here</code>.
+</p>
+
+<span id="index-allot-_0028--n-_002d_002d--_0029-core"></span>
+<span id="index-allot"></span>
+<span id="index-allot-1"></span>
+<div class="format">
+<pre class="format"><code>allot</code> ( <i>n &ndash;  </i>) core &ldquo;allot&rdquo;
+</pre></div>
+<p>Reserve <i>n</i> address units of data space without initialization. <i>n</i> is a
+signed number, passing a negative <i>n</i> releases memory.  In ANS Forth you
+can only deallocate memory from the current contiguous region in this way.
+In Gforth you can deallocate anything in this way but named words.  The
+system does not check this restriction.
+</p>
+
+<span id="index-_002d_003ehere-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002d_003ehere"></span>
+<span id="index-_002d_003ehere-1"></span>
+<div class="format">
+<pre class="format"><code>-&gt;here</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;to-here&rdquo;
+</pre></div>
+<p>Change the value of <code>here</code> to <i>addr</i>.
+</p>
+
+<span id="index-c_002c-_0028--c-_002d_002d--_0029-core"></span>
+<span id="index-c_002c"></span>
+<span id="index-c_002c-1"></span>
+<div class="format">
+<pre class="format"><code>c,</code> ( <i>c &ndash;  </i>) core &ldquo;c-comma&rdquo;
+</pre></div>
+<p>Reserve data space for one char and store <i>c</i> in the space.
+</p>
+
+<span id="index-f_002c-_0028--f-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-f_002c"></span>
+<span id="index-f_002c-1"></span>
+<div class="format">
+<pre class="format"><code>f,</code> ( <i>f &ndash;  </i>) gforth-0.2 &ldquo;f,&rdquo;
+</pre></div>
+<p>Reserve data space for one floating-point number and store <i>f</i> in the
+space.
+</p>
+
+<span id="index-_002c-_0028--w-_002d_002d--_0029-core"></span>
+<span id="index-_002c"></span>
+<span id="index-_002c-1"></span>
+<div class="format">
+<pre class="format"><code>,</code> ( <i>w &ndash;  </i>) core &ldquo;comma&rdquo;
+</pre></div>
+<p>Reserve data space for one cell and store <i>w</i> in the space.
+</p>
+
+<span id="index-2_002c-_0028--w1-w2-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-2_002c"></span>
+<span id="index-2_002c-1"></span>
+<div class="format">
+<pre class="format"><code>2,</code> ( <i>w1 w2 &ndash;  </i>) gforth-0.2 &ldquo;2,&rdquo;
+</pre></div>
+<p>Reserve data space for two cells and store the double <i>w1 w2</i> there,
+<i>w2</i> first (lower address).
+</p>
+
+<span id="index-w_002c-_0028--w-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-w_002c"></span>
+<span id="index-w_002c-1"></span>
+<div class="format">
+<pre class="format"><code>w,</code> ( <i>w &ndash;  </i>) gforth-1.0 &ldquo;w-comma&rdquo;
+</pre></div>
+
+<span id="index-l_002c-_0028--l-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-l_002c"></span>
+<span id="index-l_002c-1"></span>
+<div class="format">
+<pre class="format"><code>l,</code> ( <i>l &ndash;  </i>) gforth-1.0 &ldquo;l-comma&rdquo;
+</pre></div>
+
+<span id="index-x_002c-_0028--x-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-x_002c"></span>
+<span id="index-x_002c-1"></span>
+<div class="format">
+<pre class="format"><code>x,</code> ( <i>x &ndash;  </i>) gforth-1.0 &ldquo;x-comma&rdquo;
+</pre></div>
+
+<span id="index-xd_002c-_0028--xd-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-xd_002c"></span>
+<span id="index-xd_002c-1"></span>
+<div class="format">
+<pre class="format"><code>xd,</code> ( <i>xd &ndash;  </i>) gforth-1.0 &ldquo;x-d-comma&rdquo;
+</pre></div>
+
+<span id="index-A_002c-_0028--addr-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-A_002c"></span>
+<span id="index-A_002c-1"></span>
+<div class="format">
+<pre class="format"><code>A,</code> ( <i>addr &ndash;  </i>) gforth-0.2 &ldquo;A,&rdquo;
+</pre></div>
+<p>Reserve data space for one cell, and store <i>addr</i> there.  For our
+cross-compiler this provides the type information necessary for a
+relocatable image; normally, though, this is equivalent to <code>,</code>.
+</p>
+
+<span id="index-mem_002c-_0028--addr-u-_002d_002d--_0029-gforth_002d0_002e6"></span>
+<span id="index-mem_002c"></span>
+<span id="index-mem_002c-1"></span>
+<div class="format">
+<pre class="format"><code>mem,</code> ( <i>addr u &ndash;  </i>) gforth-0.6 &ldquo;mem,&rdquo;
+</pre></div>
+
+<p>doc-save-mem-dict
+</p>
+<p>Memory accesses have to be aligned (see <a href="Address-arithmetic.html">Address arithmetic</a>). So of
+course you should allocate memory in an aligned way, too. I.e., before
+allocating allocating a cell, <code>here</code> must be cell-aligned, etc.  The
+words below align <code>here</code> if it is not already.  Basically it is only
+already aligned for a type, if the last allocation was a multiple of the
+size of this type and if <code>here</code> was aligned for this type before.
+</p>
+<p>After freshly <code>create</code>ing a word, <code>here</code> is <code>align</code>ed in
+Standard Forth (<code>maxalign</code>ed in Gforth).
+</p>
+<span id="index-align-_0028--_002d_002d--_0029-core"></span>
+<span id="index-align"></span>
+<span id="index-align-1"></span>
+<div class="format">
+<pre class="format"><code>align</code> ( <i>&ndash;  </i>) core &ldquo;align&rdquo;
+</pre></div>
+<p>If the data-space pointer is not aligned, reserve enough space to align it.
+</p>
+
+<span id="index-falign-_0028--_002d_002d--_0029-floating"></span>
+<span id="index-falign"></span>
+<span id="index-falign-1"></span>
+<div class="format">
+<pre class="format"><code>falign</code> ( <i>&ndash;  </i>) floating &ldquo;f-align&rdquo;
+</pre></div>
+<p>If the data-space pointer is not float-aligned, reserve enough space to
+align it.
+</p>
+
+<span id="index-sfalign-_0028--_002d_002d--_0029-floating_002dext"></span>
+<span id="index-sfalign"></span>
+<span id="index-sfalign-1"></span>
+<div class="format">
+<pre class="format"><code>sfalign</code> ( <i>&ndash;  </i>) floating-ext &ldquo;s-f-align&rdquo;
+</pre></div>
+<p>If the data-space pointer is not single-float-aligned, reserve enough space
+to align it.
+</p>
+
+<span id="index-dfalign-_0028--_002d_002d--_0029-floating_002dext"></span>
+<span id="index-dfalign"></span>
+<span id="index-dfalign-1"></span>
+<div class="format">
+<pre class="format"><code>dfalign</code> ( <i>&ndash;  </i>) floating-ext &ldquo;d-f-align&rdquo;
+</pre></div>
+<p>If the data-space pointer is not double-float-aligned, reserve enough space
+to align it.
+</p>
+
+<span id="index-maxalign-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-maxalign"></span>
+<span id="index-maxalign-1"></span>
+<div class="format">
+<pre class="format"><code>maxalign</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;maxalign&rdquo;
+</pre></div>
+<p>Align data-space pointer for all alignment requirements.
+</p>
+
+<span id="index-cfalign-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-cfalign"></span>
+<span id="index-cfalign-1"></span>
+<div class="format">
+<pre class="format"><code>cfalign</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;cfalign&rdquo;
+</pre></div>
+<p>Align data-space pointer for code field requirements (i.e., such that the
+corresponding body is maxaligned).
+</p>
+
+
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Heap-Allocation.html">Heap allocation</a>, Previous: <a href="Memory-model.html">Memory model</a>, Up: <a href="Memory.html">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

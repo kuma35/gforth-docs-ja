@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Deferred Words (Gforth マニュアル)</title>
+
+<meta name="description" content="Deferred Words (Gforth マニュアル)">
+<meta name="keywords" content="Deferred Words (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Defining-Words.html" rel="up" title="Defining Words">
+<link href="Forward.html" rel="next" title="Forward">
+<link href="User_002ddefined-Defining-Words.html" rel="prev" title="User-defined Defining Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Deferred-Words">
+<div class="header">
+<p>
+Next: <a href="Forward.html" accesskey="n" rel="next">Forward</a>, Previous: <a href="User_002ddefined-Defining-Words.html" accesskey="p" rel="prev">User-defined Defining Words</a>, Up: <a href="Defining-Words.html" accesskey="u" rel="up">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Deferred-Words-1"></span><h4 class="subsection">6.10.11 Deferred Words</h4>
+<span id="index-deferred-words"></span>
+
+<p>The defining word <code>Defer</code> allows you to define a word by name without
+defining its behaviour; the definition of its behaviour is deferred. Here
+are two situation where this can be useful:
+</p>
+<ul>
+<li> Where you want to allow the behaviour of a word to be altered later, and for
+all precompiled references to the word to change when its behaviour is
+changed.
+</li><li> For mutual recursion; See <a href="Calls-and-returns.html">Calls and returns</a>.
+</li></ul>
+
+<p>In the following example, <code>foo</code> always invokes the version of
+<code>greet</code> that prints &ldquo;<code>Good morning</code>&rdquo; whilst <code>bar</code> always
+invokes the version that prints &ldquo;<code>Hello</code>&rdquo;. There is no way of getting
+<code>foo</code> to use the later version without re-ordering the source code and
+recompiling it.
+</p>
+<div class="example">
+<pre class="example">: greet .&quot; Good morning&quot; ;
+: foo ... greet ... ;
+: greet .&quot; Hello&quot; ;
+: bar ... greet ... ;
+</pre></div>
+
+<p>This problem can be solved by defining <code>greet</code> as a <code>Defer</code>red
+word. The behaviour of a <code>Defer</code>red word can be defined and redefined
+at any time by using <code>IS</code> to associate the xt of a previously-defined
+word with it. The previous example becomes:
+</p>
+<div class="example">
+<pre class="example">Defer greet ( -- )
+: foo ... greet ... ;
+: bar ... greet ... ;
+: greet1 ( -- ) .&quot; Good morning&quot; ;
+: greet2 ( -- ) .&quot; Hello&quot; ;
+' greet2 IS greet  \ make greet behave like greet2
+</pre></div>
+
+<p>Programming style note:
+ You should write a stack comment for every deferred word, and put
+only XTs into deferred words that conform to this stack effect.  Otherwise
+it&rsquo;s too difficult to use the deferred word.
+</p>
+<p>A deferred word can be used to improve the statistics-gathering example from
+<a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>; rather than edit the application&rsquo;s source
+code to change every <code>:</code> to a <code>my:</code>, do this:
+</p>
+<div class="example">
+<pre class="example">: real: : ;     \ retain access to the original
+defer :         \ redefine as a deferred word
+' my: IS :      \ use special version of :
+\
+\ load application here
+\
+' real: IS :    \ go back to the original
+</pre></div>
+
+
+<p>One thing to note is that <code>IS</code> has special compilation semantics, such
+that it parses the name at compile time (like <code>TO</code>):
+</p>
+<div class="example">
+<pre class="example">: set-greet ( xt -- )
+  IS greet ;
+
+' greet1 set-greet
+</pre></div>
+
+<p>In situations where <code>IS</code> does not fit, use <code>defer!</code> instead.
+</p>
+<p>A deferred word can only inherit execution semantics from the xt (because
+that is all that an xt can represent &ndash; for more discussion of this
+see <a href="Tokens-for-Words.html">Tokens for Words</a>); by default it will have default interpretation
+and compilation semantics deriving from this execution semantics.  However,
+you can change the interpretation and compilation semantics of the deferred
+word in the usual ways:
+</p>
+<div class="example">
+<pre class="example">: bar .... ; immediate
+Defer fred immediate
+Defer jim
+
+' bar IS jim  \ jim has default semantics
+' bar IS fred \ fred is immediate
+</pre></div>
+
+<span id="index-Defer-_0028--_0022name_0022-_002d_002d--_0029-core_002dext"></span>
+<span id="index-Defer"></span>
+<span id="index-Defer-1"></span>
+<div class="format">
+<pre class="format"><code>Defer</code> ( <i>&quot;name&quot; &ndash;  </i>) core-ext &ldquo;Defer&rdquo;
+</pre></div>
+<p>Define a deferred word <i>name</i>; its execution semantics can be set with
+<code>defer!</code> or <code>is</code> (and they have to, before first executing
+<i>name</i>.
+</p>
+
+<span id="index-defer_0021-_0028--xt-xt_002ddeferred-_002d_002d--_0029-core_002dext"></span>
+<span id="index-defer_0021"></span>
+<span id="index-defer_0021-1"></span>
+<div class="format">
+<pre class="format"><code>defer!</code> ( <i>xt xt-deferred &ndash;  </i>) core-ext &ldquo;defer-store&rdquo;
+</pre></div>
+<p>Changes the <code>defer</code>red word <var>xt-deferred</var> to execute <var>xt</var>.
+</p>
+
+<span id="index-IS-_0028--value-_0022name_0022-_002d_002d--_0029-core_002dext"></span>
+<span id="index-IS"></span>
+<span id="index-IS-1"></span>
+<div class="format">
+<pre class="format"><code>IS</code> ( <i>value &quot;name&quot; &ndash;  </i>) core-ext &ldquo;IS&rdquo;
+</pre></div>
+<p>changes the <code>defer</code>red word <var>name</var> to execute <var>value</var>
+</p>
+
+<span id="index-defer_0040-_0028--xt_002ddeferred-_002d_002d-xt--_0029-core_002dext"></span>
+<span id="index-defer_0040"></span>
+<span id="index-defer_0040-1"></span>
+<div class="format">
+<pre class="format"><code>defer@</code> ( <i>xt-deferred &ndash; xt  </i>) core-ext &ldquo;new-defer-fetch&rdquo;
+</pre></div>
+<p><i>xt</i> represents the word currently associated with the deferred word
+<i>xt-deferred</i>.
+</p>
+
+<span id="index-action_002dof-_0028--interpretation-_0022name_0022-_002d_002d-xt_003b-compilation-_0022name_0022-_002d_002d-_003b-run_002dtime-_002d_002d-xt--_0029-core_002dext"></span>
+<span id="index-action_002dof"></span>
+<span id="index-action_002dof-1"></span>
+<div class="format">
+<pre class="format"><code>action-of</code> ( <i>interpretation &quot;name&quot; &ndash; xt; compilation &quot;name&quot; &ndash; ; run-time &ndash; xt  </i>) core-ext &ldquo;action-of&rdquo;
+</pre></div>
+<p><i>Xt</i> is the XT that is currently assigned to <i>name</i>.
+</p>
+
+
+
+<p>Definitions of these Forth-2012 words in Forth-94 are provided in
+<samp>compat/defer.fs</samp>.  In addition, Gforth provides:
+</p>
+<span id="index-defers-_0028--compilation-_0022name_0022-_002d_002d-_003b-run_002dtime-_002e_002e_002e-_002d_002d-_002e_002e_002e--_0029-gforth_002d0_002e2"></span>
+<span id="index-defers"></span>
+<span id="index-defers-1"></span>
+<div class="format">
+<pre class="format"><code>defers</code> ( <i>compilation &quot;name&quot; &ndash; ; run-time ... &ndash; ...  </i>) gforth-0.2 &ldquo;defers&rdquo;
+</pre></div>
+<p>Compiles the present contents of the deferred word <i>name</i> into the current
+definition.  I.e., this produces static binding as if <i>name</i> was not
+deferred.
+</p>
+
+<span id="index-wrap_002dxt-_0028--xt1-xt2-xt_003a-xt3-_002d_002d-_002e_002e_002e--_0029-gforth_002d1_002e0"></span>
+<span id="index-wrap_002dxt"></span>
+<span id="index-wrap_002dxt-1"></span>
+<div class="format">
+<pre class="format"><code>wrap-xt</code> ( <i>xt1 xt2 xt: xt3 &ndash; ...  </i>) gforth-1.0 &ldquo;wrap-xt&rdquo;
+</pre></div>
+<p>Set deferred word xt2 to xt1 and execute xt3.  Restore afterwards.
+</p>
+
+<span id="index-preserve-_0028--_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-preserve"></span>
+<span id="index-preserve-1"></span>
+<div class="format">
+<pre class="format"><code>preserve</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;preserve&rdquo;
+</pre></div>
+<p>emit code that reverts a deferred word to the state at compilation
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Forward.html">Forward</a>, Previous: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>, Up: <a href="Defining-Words.html">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

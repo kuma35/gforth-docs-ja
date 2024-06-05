@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Mini-OOF Implementation (Gforth マニュアル)</title>
+
+<meta name="description" content="Mini-OOF Implementation (Gforth マニュアル)">
+<meta name="keywords" content="Mini-OOF Implementation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Mini_002dOOF.html" rel="up" title="Mini-OOF">
+<link href="Mini_002dOOF-Example.html" rel="prev" title="Mini-OOF Example">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Mini_002dOOF-Implementation">
+<div class="header">
+<p>
+Previous: <a href="Mini_002dOOF-Example.html" accesskey="p" rel="prev">Mini-OOF Example</a>, Up: <a href="Mini_002dOOF.html" accesskey="u" rel="up">The <samp>mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="mini_002doof_002efs-Implementation"></span><h4 class="subsubsection">6.24.5.3 <samp>mini-oof.fs</samp> Implementation</h4>
+
+<p>Object-oriented systems with late binding typically use a
+&ldquo;vtable&rdquo;-approach: the first variable in each object is a pointer to a
+table, which contains the methods as function pointers. The vtable may also
+contain other information.
+</p>
+<p>So first, let&rsquo;s declare selectors:
+</p>
+<div class="example">
+<pre class="example">: method ( m v &quot;name&quot; -- m' v ) Create  over , swap cell+ swap
+  DOES&gt; ( ... o -- ... ) @ over @ + @ execute ;
+</pre></div>
+
+<p>During selector declaration, the number of selectors and instance variables
+is on the stack (in address units). <code>method</code> creates one selector and
+increments the selector number. To execute a selector, it takes the object,
+fetches the vtable pointer, adds the offset, and executes the method <i>xt</i>
+stored there. Each selector takes the object it is invoked with as top of
+stack parameter; it passes the parameters (including the object) unchanged
+to the appropriate method which should consume that object.
+</p>
+<p>Now, we also have to declare instance variables
+</p>
+<div class="example">
+<pre class="example">: var ( m v size &quot;name&quot; -- m v' ) Create  over , +
+  DOES&gt; ( o -- addr ) @ + ;
+</pre></div>
+
+<p>As before, a word is created with the current offset. Instance variables can
+have different sizes (cells, floats, doubles, chars), so all we do is take
+the size and add it to the offset. If your machine has alignment
+restrictions, put the proper <code>aligned</code> or <code>faligned</code> before the
+variable, to adjust the variable offset. That&rsquo;s why it is on the top of
+stack.
+</p>
+<p>We need a starting point (the base object) and some syntactic sugar:
+</p>
+<div class="example">
+<pre class="example">Create object  1 cells , 2 cells ,
+: class ( class -- class selectors vars ) dup 2@ ;
+</pre></div>
+
+<p>For inheritance, the vtable of the parent object has to be copied when a
+new, derived class is declared. This gives all the methods of the parent
+class, which can be overridden, though.
+</p>
+<div class="example">
+<pre class="example">: end-class  ( class selectors vars &quot;name&quot; -- )
+  Create  here &gt;r , dup , 2 cells ?DO ['] noop , 1 cells +LOOP
+  cell+ dup cell+ r&gt; rot @ 2 cells /string move ;
+</pre></div>
+
+<p>The first line creates the vtable, initialized with <code>noop</code>s. The second
+line is the inheritance mechanism, it copies the xts from the parent vtable.
+</p>
+<p>We still have no way to define new methods, let&rsquo;s do that now:
+</p>
+<div class="example">
+<pre class="example">: defines ( xt class &quot;name&quot; -- ) ' &gt;body @ + ! ;
+</pre></div>
+
+<p>To allocate a new object, we need a word, too:
+</p>
+<div class="example">
+<pre class="example">: new ( class -- o )  here over @ allot swap over ! ;
+</pre></div>
+
+<p>Sometimes derived classes want to access the method of the parent
+object. There are two ways to achieve this with Mini-OOF: first, you could
+use named words, and second, you could look up the vtable of the parent
+object.
+</p>
+<div class="example">
+<pre class="example">: :: ( class &quot;name&quot; -- ) ' &gt;body @ + @ compile, ;
+</pre></div>
+
+
+<p>Nothing can be more confusing than a good example, so here is one. First
+let&rsquo;s declare a text object (called <code>button</code>), that stores text and
+position:
+</p>
+<div class="example">
+<pre class="example">object class
+  cell var text
+  cell var len
+  cell var x
+  cell var y
+  method init
+  method draw
+end-class button
+</pre></div>
+
+<p>Now, implement the two methods, <code>draw</code> and <code>init</code>:
+</p>
+<div class="example">
+<pre class="example">:noname ( o -- )
+ &gt;r r@ x @ r@ y @ at-xy  r@ text @ r&gt; len @ type ;
+ button defines draw
+:noname ( addr u o -- )
+ &gt;r 0 r@ x ! 0 r@ y ! r@ len ! r&gt; text ! ;
+ button defines init
+</pre></div>
+
+<p>To demonstrate inheritance, we define a class <code>bold-button</code>, with no
+new data and no new selectors:
+</p>
+<div class="example">
+<pre class="example">button class
+end-class bold-button
+
+: bold   27 emit .&quot; [1m&quot; ;
+: normal 27 emit .&quot; [0m&quot; ;
+</pre></div>
+
+<p>The class <code>bold-button</code> has a different draw method to <code>button</code>,
+but the new method is defined in terms of the draw method for <code>button</code>:
+</p>
+<div class="example">
+<pre class="example">:noname bold [ button :: draw ] normal ; bold-button defines draw
+</pre></div>
+
+<p>Finally, create two objects and apply selectors:
+</p>
+<div class="example">
+<pre class="example">button new Constant foo
+s&quot; thin foo&quot; foo init
+page
+foo draw
+bold-button new Constant bar
+s&quot; fat bar&quot; bar init
+1 bar y !
+bar draw
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Mini_002dOOF-Example.html">Mini-OOF Example</a>, Up: <a href="Mini_002dOOF.html">The <samp>mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

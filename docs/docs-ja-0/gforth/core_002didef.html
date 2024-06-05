@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>core-idef (Gforth マニュアル)</title>
+
+<meta name="description" content="core-idef (Gforth マニュアル)">
+<meta name="keywords" content="core-idef (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="The-Core-Words.html" rel="up" title="The Core Words">
+<link href="core_002dambcond.html" rel="next" title="core-ambcond">
+<link href="The-Core-Words.html" rel="prev" title="The Core Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="core_002didef">
+<div class="header">
+<p>
+Next: <a href="core_002dambcond.html" accesskey="n" rel="next">Ambiguous conditions</a>, Previous: <a href="The-Core-Words.html" accesskey="p" rel="prev">The Core Words</a>, Up: <a href="The-Core-Words.html" accesskey="u" rel="up">The Core Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Implementation-Defined-Options"></span><h4 class="subsection">9.1.1 Implementation Defined Options</h4>
+<span id="index-core-words_002c-implementation_002ddefined-options"></span>
+<span id="index-implementation_002ddefined-options_002c-core-words"></span>
+
+
+<dl compact="compact">
+<dt id='index-cell_002daligned-addresses'><span><i>(Cell) aligned addresses:</i><a href='#index-cell_002daligned-addresses' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-aligned-addresses"></span>
+<p>processor-dependent. Gforth&rsquo;s alignment words perform natural alignment
+(e.g., an address aligned for a datum of size 8 is divisible by
+8). Unaligned accesses usually result in a <code>-23 THROW</code>.
+</p>
+</dd>
+<dt id='index-EMIT-and-non_002dgraphic-characters'><span><i><code>EMIT</code> and non-graphic characters:</i><a href='#index-EMIT-and-non_002dgraphic-characters' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-non_002dgraphic-characters-and-EMIT"></span>
+<p>The character is output using the C library function (actually, macro)
+<code>putc</code>.
+</p>
+</dd>
+<dt id='index-character-editing-of-ACCEPT-and-EXPECT'><span><i>character editing of <code>ACCEPT</code> and <code>EXPECT</code>:</i><a href='#index-character-editing-of-ACCEPT-and-EXPECT' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-editing-in-ACCEPT-and-EXPECT"></span>
+<span id="index-ACCEPT_002c-editing"></span>
+<span id="index-EXPECT_002c-editing"></span>
+<p>This is modeled on the GNU readline library (see <a data-manual="readline" href="https://tiswww.cwru.edu/php/chet/readline/readline.html#Readline-Interaction">Command Line Editing</a> in <cite>The GNU Readline Library</cite>) with Emacs-like
+key bindings. <kbd>Tab</kbd> deviates a little by producing a full word
+completion every time you type it (instead of producing the common prefix of
+all completions). See <a href="Command_002dline-editing.html">Command-line editing</a>.
+</p>
+</dd>
+<dt id='index-character-set'><span><i>character set:</i><a href='#index-character-set' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>The character set of your computer and display device. Gforth is 8-bit-clean
+(but some other component in your system may make trouble).
+</p>
+</dd>
+<dt id='index-character_002daligned-address-requirements'><span><i>Character-aligned address requirements:</i><a href='#index-character_002daligned-address-requirements' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>installation-dependent. Currently a character is represented by a C
+<code>unsigned char</code>; in the future we might switch to <code>wchar_t</code>
+(Comments on that requested).
+</p>
+</dd>
+<dt id='index-character_002dset-extensions-and-matching-of-names'><span><i>character-set extensions and matching of names:</i><a href='#index-character_002dset-extensions-and-matching-of-names' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-case_002dsensitivity-for-name-lookup"></span>
+<span id="index-name-lookup_002c-case_002dsensitivity"></span>
+<span id="index-locale-and-case_002dsensitivity"></span>
+<p>Any character except the ASCII NUL character can be used in a name. Matching
+is case-insensitive (except in <code>TABLE</code>s). The matching is performed
+using the C library function <code>strncasecmp</code>, whose function is probably
+influenced by the locale. E.g., the <code>C</code> locale does not know about
+accents and umlauts, so they are matched case-sensitively in that
+locale. For portability reasons it is best to write programs such that they
+work in the <code>C</code> locale. Then one can use libraries written by a Polish
+programmer (who might use words containing ISO Latin-2 encoded characters)
+and by a French programmer (ISO Latin-1) in the same program (of course,
+<code>WORDS</code> will produce funny results for some of the words (which ones,
+depends on the font you are using)). Also, the locale you prefer may not be
+available in other operating systems. Hopefully, Unicode will solve these
+problems one day.
+</p>
+</dd>
+<dt id='index-space-delimiters'><span><i>conditions under which control characters match a space delimiter:</i><a href='#index-space-delimiters' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-control-characters-as-delimiters"></span>
+<p>If <code>word</code> is called with the space character as a delimiter, all
+white-space characters (as identified by the C macro <code>isspace()</code>)  are
+delimiters. <code>Parse</code>, on the other hand, treats space like other
+delimiters.  <code>Parse-name</code>, which is used by the outer interpreter (aka
+text interpreter) by default, treats all white-space characters as
+delimiters.
+</p>
+</dd>
+<dt id='index-control_002dflow-stack_002c-format'><span><i>format of the control-flow stack:</i><a href='#index-control_002dflow-stack_002c-format' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>The data stack is used as control-flow stack. The size of a control-flow
+stack item in cells is given by the constant <code>cs-item-size</code>. At the
+time of this writing, an item consists of a (pointer to a) locals list
+(third), an address in the code (second), and a tag for identifying the item
+(TOS). The following tags are used: <code>defstart</code>, <code>live-orig</code>,
+<code>dead-orig</code>, <code>dest</code>, <code>do-dest</code>, <code>scopestart</code>.
+</p>
+</dd>
+<dt id='index-digits-_003e-35'><span><i>conversion of digits &gt; 35</i><a href='#index-digits-_003e-35' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>The characters <code>[\]^_'</code> are the digits with the decimal value
+36-41. There is no way to input many of the larger digits.
+</p>
+</dd>
+<dt id='index-EXPECT_002c-display-after-end-of-input'><span><i>display after input terminates in <code>ACCEPT</code> and <code>EXPECT</code>:</i><a href='#index-EXPECT_002c-display-after-end-of-input' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-ACCEPT_002c-display-after-end-of-input"></span>
+<p>The cursor is moved to the end of the entered string. If the input is
+terminated using the <kbd>Return</kbd> key, a space is typed.
+</p>
+</dd>
+<dt id='index-exception-abort-sequence-of-ABORT_0022'><span><i>exception abort sequence of <code>ABORT&quot;</code>:</i><a href='#index-exception-abort-sequence-of-ABORT_0022' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-ABORT_0022_002c-exception-abort-sequence"></span>
+<p>The error string is stored into the variable <code>&quot;error</code> and a <code>-2
+throw</code> is performed.
+</p>
+</dd>
+<dt id='index-input-line-terminator'><span><i>input line terminator:</i><a href='#index-input-line-terminator' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-line-terminator-on-input"></span>
+<span id="index-newline-character-on-input"></span>
+<p>For interactive input, <kbd>C-m</kbd> (CR) and <kbd>C-j</kbd> (LF) terminate
+lines. One of these characters is typically produced when you type the
+<kbd>Enter</kbd> or <kbd>Return</kbd> key.
+</p>
+</dd>
+<dt id='index-maximum-size-of-a-counted-string'><span><i>maximum size of a counted string:</i><a href='#index-maximum-size-of-a-counted-string' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-counted-string_002c-maximum-size"></span>
+<p><code>s&quot; /counted-string&quot; environment? drop .</code>. Currently 255 characters on
+all platforms, but this may change.
+</p>
+</dd>
+<dt id='index-maximum-size-of-a-parsed-string'><span><i>maximum size of a parsed string:</i><a href='#index-maximum-size-of-a-parsed-string' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-parsed-string_002c-maximum-size"></span>
+<p>Given by the constant <code>/line</code>. Currently 255 characters.
+</p>
+</dd>
+<dt id='index-maximum-size-of-a-definition-name_002c-in-characters'><span><i>maximum size of a definition name, in characters:</i><a href='#index-maximum-size-of-a-definition-name_002c-in-characters' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-name_002c-maximum-length"></span>
+<p>MAXU/8
+</p>
+</dd>
+<dt id='index-maximum-string-length-for-ENVIRONMENT_003f_002c-in-characters'><span><i>maximum string length for <code>ENVIRONMENT?</code>, in characters:</i><a href='#index-maximum-string-length-for-ENVIRONMENT_003f_002c-in-characters' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-ENVIRONMENT_003f-string-length_002c-maximum"></span>
+<p>MAXU/8
+</p>
+</dd>
+<dt id='index-user-input-device_002c-method-of-selecting'><span><i>method of selecting the user input device:</i><a href='#index-user-input-device_002c-method-of-selecting' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>The user input device is the standard input. There is currently no way to
+change it from within Gforth. However, the input can typically be redirected
+in the command line that starts Gforth.
+</p>
+</dd>
+<dt id='index-user-output-device_002c-method-of-selecting'><span><i>method of selecting the user output device:</i><a href='#index-user-output-device_002c-method-of-selecting' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p><code>EMIT</code> and <code>TYPE</code> output to the file-id stored in the value
+<code>outfile-id</code> (<code>stdout</code> by default). Gforth uses unbuffered output
+when the user output device is a terminal, otherwise the output is buffered.
+</p>
+</dd>
+<dt><span><i>methods of dictionary compilation:</i></span></dt>
+<dd><p>What are we expected to document here?
+</p>
+</dd>
+<dt id='index-number-of-bits-in-one-address-unit'><span><i>number of bits in one address unit:</i><a href='#index-number-of-bits-in-one-address-unit' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-address-unit_002c-size-in-bits"></span>
+<p><code>s&quot; address-units-bits&quot; environment? drop .</code>. 8 in all current
+platforms.
+</p>
+</dd>
+<dt id='index-number-representation-and-arithmetic'><span><i>number representation and arithmetic:</i><a href='#index-number-representation-and-arithmetic' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>Processor-dependent. Binary two&rsquo;s complement on all current platforms.
+</p>
+</dd>
+<dt id='index-ranges-for-integer-types'><span><i>ranges for integer types:</i><a href='#index-ranges-for-integer-types' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-integer-types_002c-ranges"></span>
+<p>Installation-dependent. Make environmental queries for <code>MAX-N</code>,
+<code>MAX-U</code>, <code>MAX-D</code> and <code>MAX-UD</code>. The lower bounds for unsigned
+(and positive) types is 0. The lower bound for signed types on two&rsquo;s
+complement and one&rsquo;s complement machines machines can be computed by adding
+1 to the upper bound.
+</p>
+</dd>
+<dt id='index-read_002donly-data-space-regions'><span><i>read-only data space regions:</i><a href='#index-read_002donly-data-space-regions' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-data_002dspace_002c-read_002donly-regions"></span>
+<p>The whole Forth data space is writable.
+</p>
+</dd>
+<dt id='index-size-of-buffer-at-WORD'><span><i>size of buffer at <code>WORD</code>:</i><a href='#index-size-of-buffer-at-WORD' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-WORD-buffer-size"></span>
+<p><code>PAD HERE - .</code>. 104 characters on 32-bit machines. The buffer is shared
+with the pictured numeric output string. If overwriting <code>PAD</code> is
+acceptable, it is as large as the remaining dictionary space, although only
+as much can be sensibly used as fits in a counted string.
+</p>
+</dd>
+<dt id='index-cell-size'><span><i>size of one cell in address units:</i><a href='#index-cell-size' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p><code>1 cells .</code>.
+</p>
+</dd>
+<dt id='index-char-size'><span><i>size of one character in address units:</i><a href='#index-char-size' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p><code>1 chars .</code>. 1 on all current platforms.
+</p>
+</dd>
+<dt id='index-size-of-the-keyboard-terminal-buffer'><span><i>size of the keyboard terminal buffer:</i><a href='#index-size-of-the-keyboard-terminal-buffer' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-terminal-buffer_002c-size"></span>
+<p>Varies. You can determine the size at a specific time using <code>lp@ tib -
+.</code>. It is shared with the locals stack and TIBs of files that include the
+current file. You can change the amount of space for TIBs and locals stack
+at Gforth startup with the command line option <code>-l</code>.
+</p>
+</dd>
+<dt id='index-size-of-the-pictured-numeric-output-buffer'><span><i>size of the pictured numeric output buffer:</i><a href='#index-size-of-the-pictured-numeric-output-buffer' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-pictured-numeric-output-buffer_002c-size"></span>
+<p><code>PAD HERE - .</code>. 104 characters on 32-bit machines. The buffer is shared
+with <code>WORD</code>.
+</p>
+</dd>
+<dt id='index-size-of-the-scratch-area-returned-by-PAD'><span><i>size of the scratch area returned by <code>PAD</code>:</i><a href='#index-size-of-the-scratch-area-returned-by-PAD' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-PAD-size"></span>
+<p>The remainder of dictionary space. <code>unused pad here - - .</code>.
+</p>
+</dd>
+<dt id='index-case_002dsensitivity-characteristics'><span><i>system case-sensitivity characteristics:</i><a href='#index-case_002dsensitivity-characteristics' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>Dictionary searches are case-insensitive (except in <code>TABLE</code>s). However,
+as explained above under <i>character-set extensions</i>, the matching for
+non-ASCII characters is determined by the locale you are using. In the
+default <code>C</code> locale all non-ASCII characters are matched
+case-sensitively.
+</p>
+</dd>
+<dt id='index-system-prompt'><span><i>system prompt:</i><a href='#index-system-prompt' class='copiable-anchor'> &para;</a></span></dt>
+<dd><span id="index-prompt"></span>
+<p><code> ok</code> in interpret state, <code> compiled</code> in compile state.
+</p>
+</dd>
+<dt id='index-division-rounding'><span><i>division rounding:</i><a href='#index-division-rounding' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>The ordinary division words <code>/ mod /mod */ */mod</code> perform floored
+division (with the default installation of Gforth).  You can check this with
+<code>s&quot; floored&quot; environment? drop .</code>.  If you write programs that need a
+specific division rounding, best use <code>fm/mod</code> or <code>sm/rem</code> for
+portability.
+</p>
+</dd>
+<dt id='index-STATE-values'><span><i>values of <code>STATE</code> when true:</i><a href='#index-STATE-values' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>-1.
+</p>
+</dd>
+<dt><span><i>values returned after arithmetic overflow:</i></span></dt>
+<dd><p>On two&rsquo;s complement machines, arithmetic is performed modulo
+2**bits-per-cell for single arithmetic and 4**bits-per-cell for double
+arithmetic (with appropriate mapping for signed types). Division by zero
+typically results in a <code>-55 throw</code> (Floating-point unidentified fault)
+or <code>-10 throw</code> (divide by zero).  Integer division overflow can result
+in these throws, or in <code>-11 throw</code>; in <code>gforth-fast</code> division
+overflow and divide by zero may also result in returning bogus results
+without producing an exception.
+</p>
+</dd>
+<dt id='index-DOES_003e_002c-visibility-of-current-definition'><span><i>whether the current definition can be found after <tt>DOES&gt;</tt>:</i><a href='#index-DOES_003e_002c-visibility-of-current-definition' class='copiable-anchor'> &para;</a></span></dt>
+<dd><p>No.
+</p>
+</dd>
+</dl>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="core_002dambcond.html">Ambiguous conditions</a>, Previous: <a href="The-Core-Words.html">The Core Words</a>, Up: <a href="The-Core-Words.html">The Core Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

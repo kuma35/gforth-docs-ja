@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Image File Background (Gforth マニュアル)</title>
+
+<meta name="description" content="Image File Background (Gforth マニュアル)">
+<meta name="keywords" content="Image File Background (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Image-Files.html" rel="up" title="Image Files">
+<link href="Non_002dRelocatable-Image-Files.html" rel="next" title="Non-Relocatable Image Files">
+<link href="Image-Licensing-Issues.html" rel="prev" title="Image Licensing Issues">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Image-File-Background">
+<div class="header">
+<p>
+Next: <a href="Non_002dRelocatable-Image-Files.html" accesskey="n" rel="next">Non-Relocatable Image Files</a>, Previous: <a href="Image-Licensing-Issues.html" accesskey="p" rel="prev">Image Licensing Issues</a>, Up: <a href="Image-Files.html" accesskey="u" rel="up">Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Image-File-Background-1"></span><h3 class="section">14.2 Image File Background</h3>
+<span id="index-image-file-background"></span>
+
+<p>Gforth consists not only of primitives (in the engine), but also of
+definitions written in Forth. Since the Forth compiler itself belongs to
+those definitions, it is not possible to start the system with the engine
+and the Forth source alone. Therefore we provide the Forth code as an image
+file in nearly executable form. When Gforth starts up, a C routine loads the
+image file into memory, optionally relocates the addresses, then sets up the
+memory (stacks etc.) according to information in the image file, and
+(finally) starts executing Forth code.
+</p>
+<p>The default image file is <samp>gforth.fi</samp> (in the <code>GFORTHPATH</code>).  You
+can use a different image by using the <code>-i</code>, <code>--image-file</code> or
+<code>--appl-image</code> options (see <a href="Invoking-Gforth.html">Invoking Gforth</a>), e.g.:
+</p>
+<div class="example">
+<pre class="example">gforth-fast -i myimage.fi
+</pre></div>
+
+<p>There are different variants of image files, and they represent different
+compromises between the goals of making it easy to generate image files and
+making them portable.
+</p>
+<span id="index-relocation-at-run_002dtime"></span>
+<p>Win32Forth 3.4 and Mitch Bradley&rsquo;s <code>cforth</code> use relocation at
+run-time. This avoids many of the complications discussed below (image files
+are data relocatable without further ado), but costs performance (one
+addition per memory access) and makes it difficult to pass addresses between
+Forth and library calls or other programs.
+</p>
+<span id="index-relocation-at-load_002dtime"></span>
+<p>By contrast, the Gforth loader performs relocation at image load time. The
+loader also has to replace tokens that represent primitive calls with the
+appropriate code-field addresses (or code addresses in the case of direct
+threading).
+</p>
+<p>There are three kinds of image files, with different degrees of
+relocatability: non-relocatable, data-relocatable, and fully relocatable
+image files.
+</p>
+<span id="index-image-file-loader"></span>
+<span id="index-relocating-loader"></span>
+<span id="index-loader-for-image-files"></span>
+<p>These image file variants have several restrictions in common; they are
+caused by the design of the image file loader:
+</p>
+<ul>
+<li> There is only one segment; in particular, this means, that an image file
+cannot represent <code>ALLOCATE</code>d memory chunks (and pointers to them). The
+contents of the stacks are not represented, either.
+
+</li><li> The only kinds of relocation supported are: adding the same offset to all
+cells that represent data addresses; and replacing special tokens with code
+addresses or with pieces of machine code.
+
+<p>If any complex computations involving addresses are performed, the results
+cannot be represented in the image file. Several applications that use such
+computations come to mind:
+</p>
+<ul class="no-bullet">
+<li>- Hashing addresses (or data structures which contain addresses) for table
+lookup. If you use Gforth&rsquo;s <code>table</code>s or <code>wordlist</code>s for this
+purpose, you will have no problem, because the hash tables are recomputed
+automatically when the system is started. If you use your own hash tables,
+you will have to do something similar.
+
+</li><li>- There&rsquo;s a cute implementation of doubly-linked lists that uses <code>XOR</code>ed
+addresses. You could represent such lists as singly-linked in the image
+file, and restore the doubly-linked representation on startup.<a id="DOCF36" href="#FOOT36"><sup>36</sup></a>
+
+</li><li>- The code addresses of run-time routines like <code>docol:</code> cannot be
+represented in the image file (because their tokens would be replaced by
+machine code in direct threaded implementations). As a workaround, compute
+these addresses at run-time with <code>&gt;code-address</code> from the executions
+tokens of appropriate words (see the definitions of <code>docol:</code> and
+friends in <samp>kernel/getdoers.fs</samp>).
+
+</li><li>- On many architectures addresses are represented in machine code in some
+shifted or mangled form. You cannot put <code>CODE</code> words that contain
+absolute addresses in this form in a relocatable image file. Workarounds are
+representing the address in some relative form (e.g., relative to the CFA,
+which is present in some register), or loading the address from a place
+where it is stored in a non-mangled form.
+</li></ul>
+</li></ul>
+
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT36" href="#DOCF36">(36)</a></h5>
+<p>In
+my opinion, though, you should think thrice before using a doubly-linked
+list (whatever implementation).</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Non_002dRelocatable-Image-Files.html">Non-Relocatable Image Files</a>, Previous: <a href="Image-Licensing-Issues.html">Image Licensing Issues</a>, Up: <a href="Image-Files.html">Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

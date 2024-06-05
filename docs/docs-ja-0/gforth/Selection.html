@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Selection (Gforth マニュアル)</title>
+
+<meta name="description" content="Selection (Gforth マニュアル)">
+<meta name="keywords" content="Selection (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Control-Structures.html" rel="up" title="Control Structures">
+<link href="Simple-Loops.html" rel="next" title="Simple Loops">
+<link href="Control-Structures.html" rel="prev" title="Control Structures">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Selection">
+<div class="header">
+<p>
+Next: <a href="Simple-Loops.html" accesskey="n" rel="next">Simple Loops</a>, Previous: <a href="Control-Structures.html" accesskey="p" rel="prev">Control Structures</a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Selection-1"></span><h4 class="subsection">6.9.1 Selection</h4>
+<span id="index-selection-control-structures"></span>
+<span id="index-control-structures-for-selection"></span>
+
+<span id="index-IF-control-structure"></span>
+<div class="example">
+<pre class="example"><i>flag</i>
+IF
+  <i>code</i>
+ENDIF
+</pre></div>
+
+<p>If <i>flag</i> is non-zero (as far as <code>IF</code> etc. are concerned, a cell with
+any bit set represents truth) <i>code</i> is executed.
+</p>
+<div class="example">
+<pre class="example"><i>flag</i>
+IF
+  <i>code1</i>
+ELSE
+  <i>code2</i>
+ENDIF
+</pre></div>
+
+<p>If <var>flag</var> is true, <i>code1</i> is executed, otherwise <i>code2</i> is
+executed.
+</p>
+<p>You can use <code>THEN</code> instead of <code>ENDIF</code>. Indeed, <code>THEN</code> is
+standard, and <code>ENDIF</code> is not, although it is quite popular. We
+recommend using <code>ENDIF</code>, because it is less confusing for people who
+also know other languages (and is not prone to reinforcing negative
+prejudices against Forth in these people). Adding <code>ENDIF</code> to a system
+that only supplies <code>THEN</code> is simple:
+</p><div class="example">
+<pre class="example">: ENDIF   POSTPONE then ; immediate
+</pre></div>
+
+<p>[According to <cite>Webster&rsquo;s New Encyclopedic Dictionary</cite>, <em>then
+(adv.)</em> has the following meanings:
+</p><blockquote>
+<p>... 2b: following next after in order ... 3d: as a necessary consequence (if
+you were there, then you saw them).
+</p></blockquote>
+<p>Forth&rsquo;s <code>THEN</code> has the meaning 2b, whereas <code>THEN</code> in Pascal and
+many other programming languages has the meaning 3d.]
+</p>
+<p>Gforth also provides the words <code>?DUP-IF</code> and <code>?DUP-0=-IF</code>, so you
+can avoid using <code>?dup</code>. Using these alternatives is also more efficient
+than using <code>?dup</code>. Definitions in Standard Forth for <code>ENDIF</code>,
+<code>?DUP-IF</code> and <code>?DUP-0=-IF</code> are provided in
+<samp>compat/control.fs</samp>.
+</p>
+<span id="index-CASE-control-structure"></span>
+<div class="example">
+<pre class="example"><i>x</i>
+CASE
+  <i>x1</i> OF <i>code1</i> ENDOF
+  <i>x2</i> OF <i>code2</i> ENDOF
+  &hellip;
+  ( x ) <i>default-code</i> ( x )
+ENDCASE ( )
+</pre></div>
+
+<p>Executes the first <i>codei</i>, where the <i>xi</i> is equal to <i>x</i>.  If no
+<i>xi</i> matches, the optional <i>default-code</i> is executed. The optional
+default case can be added by simply writing the code after the last
+<code>ENDOF</code>. It may use <i>x</i>, which is on top of the stack, but must not
+consume it.  The value <i>x</i> is consumed by this construction (either by an
+<code>OF</code> that matches, or by the <code>ENDCASE</code>, if no OF matches).
+Example:
+</p>
+<div class="example">
+<pre class="example">: num-name ( n -- c-addr u )
+ case
+   0 of s&quot; zero &quot; endof
+   1 of s&quot; one &quot;  endof
+   2 of s&quot; two &quot;  endof
+   \ default case:
+   s&quot; other number&quot; 
+   rot \ get n on top so ENDCASE can drop it
+ endcase ;
+</pre></div>
+
+<p>You can also use (the non-standard) <code>?of</code> to use <code>case</code> as a
+general selection structure for more than two alternatives.  <code>?Of</code>
+takes a flag.  Example:
+</p>
+<div class="example">
+<pre class="example">: sgn ( n1 -- n2 )
+    \ sign function
+    case
+	dup 0&lt; ?of drop -1 endof
+	dup 0&gt; ?of drop 1 endof
+	dup \ n1=0 -&gt; n2=0; dup an item, to be consumed by ENDCASE
+    endcase ;
+</pre></div>
+
+<p>Programming style note:
+ To keep the code understandable, you should ensure that you
+change the stack in the same way (wrt. number and types of stack items
+consumed and pushed) on all paths through a selection structure.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Simple-Loops.html">Simple Loops</a>, Previous: <a href="Control-Structures.html">Control Structures</a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

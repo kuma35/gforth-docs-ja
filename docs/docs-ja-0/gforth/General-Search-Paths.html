@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>General Search Paths (Gforth マニュアル)</title>
+
+<meta name="description" content="General Search Paths (Gforth マニュアル)">
+<meta name="keywords" content="General Search Paths (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Search-Paths.html" rel="up" title="Search Paths">
+<link href="Source-Search-Paths.html" rel="prev" title="Source Search Paths">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="General-Search-Paths">
+<div class="header">
+<p>
+Previous: <a href="Source-Search-Paths.html" accesskey="p" rel="prev">Source Search Paths</a>, Up: <a href="Search-Paths.html" accesskey="u" rel="up">Search Paths</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="General-Search-Paths-1"></span><h4 class="subsubsection">6.18.5.2 General Search Paths</h4>
+<span id="index-search-path-control_002c-source-files-1"></span>
+
+<p>Your application may need to search files in several directories, like
+<code>included</code> does. To facilitate this, Gforth allows you to define and
+use your own search paths, by providing generic equivalents of the Forth
+search path words:
+</p>
+<span id="index-open_002dpath_002dfile-_0028--addr1-u1-path_002daddr-_002d_002d-wfileid-addr2-u2-0-_007c-ior--_0029-gforth_002d0_002e2"></span>
+<span id="index-open_002dpath_002dfile"></span>
+<span id="index-open_002dpath_002dfile-1"></span>
+<div class="format">
+<pre class="format"><code>open-path-file</code> ( <i>addr1 u1 path-addr &ndash; wfileid addr2 u2 0 | ior  </i>) gforth-0.2 &ldquo;open-path-file&rdquo;
+</pre></div>
+<p>Look in path <var>path-addr</var> for the file specified by <var>addr1 u1</var>.  If
+found, the resulting path and an (read-only) open file descriptor are
+returned. If the file is not found, <var>ior</var> is what came back from the
+last attempt at opening the file (in the current implementation).
+</p>
+
+<span id="index-file_003epath-_0028--c_002daddr1-u1-path_002daddr-_002d_002d-c_002daddr2-u2--_0029-gforth_002d1_002e0"></span>
+<span id="index-file_003epath"></span>
+<span id="index-file_003epath-1"></span>
+<div class="format">
+<pre class="format"><code>file&gt;path</code> ( <i>c-addr1 u1 path-addr &ndash; c-addr2 u2  </i>) gforth-1.0 &ldquo;file&gt;path&rdquo;
+</pre></div>
+<p>Searches for a file with the name <i>c-addr1 u1</i> in path stored in
+<i>path-addr</i>.  If successful, <i>c-addr u2</i> is the absolute file name or
+the file name relative to the current working directory.  Throws an
+exception if the file cannot be opened.
+</p>
+
+<span id="index-clear_002dpath-_0028--path_002daddr-_002d_002d--_0029-gforth_002d0_002e5"></span>
+<span id="index-clear_002dpath"></span>
+<span id="index-clear_002dpath-1"></span>
+<div class="format">
+<pre class="format"><code>clear-path</code> ( <i>path-addr &ndash;  </i>) gforth-0.5 &ldquo;clear-path&rdquo;
+</pre></div>
+<p>Set the path <i>path-addr</i> to empty.
+</p>
+
+<span id="index-also_002dpath-_0028--c_002daddr-len-path_002daddr-_002d_002d--_0029-gforth_002d0_002e4"></span>
+<span id="index-also_002dpath"></span>
+<span id="index-also_002dpath-1"></span>
+<div class="format">
+<pre class="format"><code>also-path</code> ( <i>c-addr len path-addr &ndash;  </i>) gforth-0.4 &ldquo;also-path&rdquo;
+</pre></div>
+<p>add the directory <i>c-addr len</i> to <i>path-addr</i>.
+</p>
+
+<span id="index-_002epath-_0028--path_002daddr-_002d_002d--_0029-gforth_002d0_002e4"></span>
+<span id="index-_002epath"></span>
+<span id="index-_002epath-1"></span>
+<div class="format">
+<pre class="format"><code>.path</code> ( <i>path-addr &ndash;  </i>) gforth-0.4 &ldquo;.path&rdquo;
+</pre></div>
+<p>Display the contents of the search path <var>path-addr</var>.
+</p>
+
+<span id="index-path_002b-_0028--path_002daddr-_0022dir_0022-_002d_002d--_0029-gforth_002d0_002e4"></span>
+<span id="index-path_002b"></span>
+<span id="index-path_002b-1"></span>
+<div class="format">
+<pre class="format"><code>path+</code> ( <i>path-addr  &quot;dir&quot; &ndash;  </i>) gforth-0.4 &ldquo;path+&rdquo;
+</pre></div>
+<p>Add the directory <var>dir</var> to the search path <var>path-addr</var>.
+</p>
+
+<span id="index-path_003d-_0028--path_002daddr-_0022dir1_007cdir2_007cdir3_0022-_002d_002d--_0029-gforth_002d0_002e4"></span>
+<span id="index-path_003d"></span>
+<span id="index-path_003d-1"></span>
+<div class="format">
+<pre class="format"><code>path=</code> ( <i>path-addr &quot;dir1|dir2|dir3&quot; &ndash;  </i>) gforth-0.4 &ldquo;path-equals&rdquo;
+</pre></div>
+<p>Make a complete new search path; the path separator is |.
+</p>
+
+
+<p>Here&rsquo;s an example of creating a custom search path:
+</p><div class="example">
+<pre class="example">variable mypath \ no special allocation required, just a variable
+mypath path= /lib|/usr/lib \ assign initial directories
+mypath path+ /usr/local/lib \ append directory
+mypath .path \ output:&quot;/lib /usr/lib /usr/local/lib&quot;
+</pre></div>
+
+<p>Search file and show resulting path:
+</p><div class="example">
+<pre class="example">s&quot; libm.so&quot; mypath open-path-file throw type close-file \ output:&quot;/lib/libm.so&quot;
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Source-Search-Paths.html">Source Search Paths</a>, Up: <a href="Search-Paths.html">Search Paths</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Heap Allocation (Gforth マニュアル)</title>
+
+<meta name="description" content="Heap Allocation (Gforth マニュアル)">
+<meta name="keywords" content="Heap Allocation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Memory.html" rel="up" title="Memory">
+<link href="Memory-Access.html" rel="next" title="Memory Access">
+<link href="Dictionary-allocation.html" rel="prev" title="Dictionary allocation">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Heap-Allocation">
+<div class="header">
+<p>
+Next: <a href="Memory-Access.html" accesskey="n" rel="next">Memory Access</a>, Previous: <a href="Dictionary-allocation.html" accesskey="p" rel="prev">Dictionary allocation</a>, Up: <a href="Memory.html" accesskey="u" rel="up">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Heap-allocation"></span><h4 class="subsection">6.7.3 Heap allocation</h4>
+<span id="index-heap-allocation"></span>
+<span id="index-dynamic-allocation-of-memory"></span>
+<span id="index-memory_002dallocation-word-set"></span>
+
+<span id="index-contiguous-regions-and-heap-allocation"></span>
+<p>Heap allocation supports deallocation of allocated memory in any
+order. Dictionary allocation is not affected by it (i.e., it does not end a
+contiguous region). In Gforth, these words are implemented using the
+standard C library calls malloc(), free() and realloc().
+</p>
+<p>The memory region produced by one invocation of <code>allocate</code> or
+<code>resize</code> is internally contiguous.  There is no contiguity between such
+a region and any other region (including others allocated from the heap).
+</p>
+<span id="index-allocate-_0028--u-_002d_002d-a_005faddr-wior--_0029-memory"></span>
+<span id="index-allocate"></span>
+<span id="index-allocate-1"></span>
+<div class="format">
+<pre class="format"><code>allocate</code> ( <i>u &ndash; a_addr wior  </i>) memory &ldquo;allocate&rdquo;
+</pre></div>
+<p>Allocate <i>u</i> address units of contiguous data space. The initial contents
+of the data space is undefined. If the allocation is successful, <i>a-addr</i>
+is the start address of the allocated region and <i>wior</i> is 0. If the
+allocation fails, <i>a-addr</i> is undefined and <i>wior</i> is a non-zero I/O
+result code.
+</p>
+
+<span id="index-free-_0028--a_005faddr-_002d_002d-wior--_0029-memory"></span>
+<span id="index-free"></span>
+<span id="index-free-1"></span>
+<div class="format">
+<pre class="format"><code>free</code> ( <i>a_addr &ndash; wior  </i>) memory &ldquo;free&rdquo;
+</pre></div>
+<p>Return the region of data space starting at <i>a-addr</i> to the system.  The
+region must originally have been obtained using <code>allocate</code> or
+<code>resize</code>. If the operational is successful, <i>wior</i> is 0.  If the
+operation fails, <i>wior</i> is a non-zero I/O result code.
+</p>
+
+<span id="index-resize-_0028--a_005faddr1-u-_002d_002d-a_005faddr2-wior--_0029-memory"></span>
+<span id="index-resize"></span>
+<span id="index-resize-1"></span>
+<div class="format">
+<pre class="format"><code>resize</code> ( <i>a_addr1 u &ndash; a_addr2 wior  </i>) memory &ldquo;resize&rdquo;
+</pre></div>
+<p>Change the size of the allocated area at <i>a-addr1</i> to <i>u</i> address units,
+possibly moving the contents to a different area. <i>a-addr2</i> is the address
+of the resulting area.  If the operation is successful, <i>wior</i> is 0.  If
+the operation fails, <i>wior</i> is a non-zero I/O result code. If <i>a-addr1</i>
+is 0, Gforth&rsquo;s (but not the Standard) <code>resize</code> <code>allocate</code>s <i>u</i>
+address units.
+</p>
+
+
+<p>The following words are useful for dealing with memory blocks:
+</p>
+<span id="index-save_002dmem-_0028--addr1-u-_002d_002d-addr2-u--_0029-gforth_002d0_002e2"></span>
+<span id="index-save_002dmem"></span>
+<span id="index-save_002dmem-1"></span>
+<div class="format">
+<pre class="format"><code>save-mem</code> ( <i>addr1 u &ndash; addr2 u  </i>) gforth-0.2 &ldquo;save-mem&rdquo;
+</pre></div>
+<p>Copy a memory block into a newly allocated region in the heap.
+</p>
+
+<span id="index-free_002dmem_002dvar-_0028--addr-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-free_002dmem_002dvar"></span>
+<span id="index-free_002dmem_002dvar-1"></span>
+<div class="format">
+<pre class="format"><code>free-mem-var</code> ( <i>addr &ndash;  </i>) gforth-experimental &ldquo;free-mem-var&rdquo;
+</pre></div>
+<p>Addr is the address of a 2variable containing address and size of a memory
+range; frees memory and clears the 2variable.
+</p>
+
+<span id="index-extend_002dmem-_0028--addr1-u1-u-_002d_002d-addr-addr2-u2--_0029-gforth_002dexperimental"></span>
+<span id="index-extend_002dmem"></span>
+<span id="index-extend_002dmem-1"></span>
+<div class="format">
+<pre class="format"><code>extend-mem</code> ( <i>addr1 u1 u &ndash; addr addr2 u2  </i>) gforth-experimental &ldquo;extend-mem&rdquo;
+</pre></div>
+<p>Extend memory block addr1 u1 allocated from the heap by u aus.  The
+(possibly reallocated) piece is addr2 u2, the extension is at addr.
+</p>
+
+
+
+<p>The $tring words can also be used for dealing with memory blocks,
+See <a href="_0024tring-words.html">$tring words</a>.
+</p>
+<p>For growable memory buffers you can use $trings, or the following words.
+Because the allocated memory of a buffer managed with <code>adjust-buffer</code>
+does not shrink, there is no heap-management overhead when adjusting the
+buffer for a size smaller than the largest one seen yet.
+</p>
+<span id="index-buffer_0025-_0028--u1-u2-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-buffer_0025"></span>
+<span id="index-buffer_0025-1"></span>
+<div class="format">
+<pre class="format"><code>buffer%</code> ( <i>u1 u2 &ndash;  </i>) gforth-experimental &ldquo;buffer%&rdquo;
+</pre></div>
+<p><i>u1</i> is the alignment and <i>u2</i> is the size of a buffer descriptor.
+</p>
+
+<span id="index-init_002dbuffer-_0028--addr-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-init_002dbuffer"></span>
+<span id="index-init_002dbuffer-1"></span>
+<div class="format">
+<pre class="format"><code>init-buffer</code> ( <i>addr &ndash;  </i>) gforth-experimental &ldquo;init-buffer&rdquo;
+</pre></div>
+
+<span id="index-adjust_002dbuffer-_0028--u-addr-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-adjust_002dbuffer"></span>
+<span id="index-adjust_002dbuffer-1"></span>
+<div class="format">
+<pre class="format"><code>adjust-buffer</code> ( <i>u addr &ndash;  </i>) gforth-experimental &ldquo;adjust-buffer&rdquo;
+</pre></div>
+<p>Adjust buffer% at addr to length u.  This may grow the allocated area, but
+never shrinks it.
+</p>
+
+
+<p>You can get the current address and length of such a buffer with <code>2@</code>.
+</p>
+<p>Typical usage:
+</p>
+<div class="example">
+<pre class="example">create mybuf  buffer% %size allot  mybuf init-buffer
+s&quot; frobnicate&quot; mybuf adjust-buffer  mybuf 2@ move
+mybuf 2@ type
+s&quot; foo&quot;        mybuf adjust-buffer  mybuf 2@ move
+mybuf 2@ type
+</pre></div>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Memory-Access.html">Memory Access</a>, Previous: <a href="Dictionary-allocation.html">Dictionary allocation</a>, Up: <a href="Memory.html">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

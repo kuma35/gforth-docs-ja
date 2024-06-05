@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Locals implementation (Gforth マニュアル)</title>
+
+<meta name="description" content="Locals implementation (Gforth マニュアル)">
+<meta name="keywords" content="Locals implementation (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Gforth-locals.html" rel="up" title="Gforth locals">
+<link href="Closures.html" rel="next" title="Closures">
+<link href="Locals-programming-style.html" rel="prev" title="Locals programming style">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Locals-implementation">
+<div class="header">
+<p>
+Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <a href="Locals-programming-style.html" accesskey="p" rel="prev">Locals programming style</a>, Up: <a href="Gforth-locals.html" accesskey="u" rel="up">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Locals-implementation-1"></span><h4 class="subsubsection">6.22.1.5 Locals implementation</h4>
+<span id="index-locals-implementation"></span>
+<span id="index-implementation-of-locals"></span>
+
+<span id="index-locals-stack-1"></span>
+<p>Gforth uses an extra locals stack. The most compelling reason for this is
+that the return stack is not float-aligned; using an extra stack also
+eliminates the problems and restrictions of using the return stack as locals
+stack. Like the other stacks, the locals stack grows toward lower
+addresses. A few primitives allow an efficient implementation; you should
+not use them directly, but they appear in the output of <code>see</code>, so they
+are documented here:
+</p>
+<span id="index-_0040localn-_0028--noffset-_002d_002d-w--_0029-gforth_002dinternal"></span>
+<span id="index-_0040localn"></span>
+<span id="index-_0040localn-1"></span>
+<div class="format">
+<pre class="format"><code>@localn</code> ( <i>noffset &ndash; w </i>) gforth-internal &ldquo;fetch-local-n&rdquo;
+</pre></div>
+
+<span id="index-f_0040localn-_0028--noffset-_002d_002d-r--_0029-gforth_002d1_002e0"></span>
+<span id="index-f_0040localn"></span>
+<span id="index-f_0040localn-1"></span>
+<div class="format">
+<pre class="format"><code>f@localn</code> ( <i>noffset &ndash; r </i>) gforth-1.0 &ldquo;f-fetch-local-n&rdquo;
+</pre></div>
+
+<span id="index-lp_0040-_0028--_002d_002d-c_002daddr--_0029-gforth_002d0_002e2-1"></span>
+<span id="index-lp_0040-1"></span>
+<span id="index-lp_0040-3"></span>
+<div class="format">
+<pre class="format"><code>lp@</code> ( <i>&ndash; c-addr </i>) gforth-0.2 &ldquo;lp-fetch&rdquo;
+</pre></div>
+<p><i>C_addr</i> is the current value of the locals stack pointer.
+</p>
+<p>doc-lp+!#
+<span id="index-lp_0021-_0028--c_002daddr-_002d_002d--_0029-gforth_002dinternal-1"></span>
+<span id="index-lp_0021-1"></span>
+<span id="index-lp_0021-3"></span>
+</p><div class="format">
+<pre class="format"><code>lp!</code> ( <i>c-addr &ndash; </i>) gforth-internal &ldquo;lp-store&rdquo;
+</pre></div>
+
+<span id="index-_003el-_0028--w-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003el"></span>
+<span id="index-_003el-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;l</code> ( <i>w &ndash; </i>) gforth-0.2 &ldquo;to-l&rdquo;
+</pre></div>
+
+<span id="index-f_003el-_0028--r-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-f_003el"></span>
+<span id="index-f_003el-1"></span>
+<div class="format">
+<pre class="format"><code>f&gt;l</code> ( <i>r &ndash; </i>) gforth-0.2 &ldquo;f-to-l&rdquo;
+</pre></div>
+
+
+
+<p>In addition to these primitives, some specializations of these primitives
+for commonly occurring inline arguments are provided for efficiency reasons,
+e.g., <code>@local0</code> as specialization of <code>0 @localn</code>. The following
+compiling words compile the right specialized version, or the general
+version, as appropriate:
+</p>
+
+<span id="index-compile_002dlp_002b_0021-_0028--n-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-compile_002dlp_002b_0021"></span>
+<span id="index-compile_002dlp_002b_0021-1"></span>
+<div class="format">
+<pre class="format"><code>compile-lp+!</code> ( <i>n &ndash;  </i>) gforth-0.2 &ldquo;compile-l-p-plus-store&rdquo;
+</pre></div>
+
+
+
+<p>Combinations of conditional branches and <code>lp+!#</code> like
+<code>?branch-lp+!#</code> (the locals pointer is only changed if the branch is
+taken) are provided for efficiency and correctness in loops.
+</p>
+<p>A special area in the dictionary space is reserved for keeping the local
+variable names. <code>{:</code> switches the dictionary pointer to this area and
+<code>:}</code> switches it back and generates the locals initializing
+code. <code>W:</code> etc.&nbsp;are normal defining words. This special area is
+cleared at the start of every colon definition.
+</p>
+<span id="index-word-list-for-defining-locals"></span>
+<p>A special feature of Gforth&rsquo;s dictionary is used to implement the definition
+of locals without type specifiers: every word list (aka vocabulary) has its
+own methods for searching etc. (see <a href="Word-Lists.html">Word Lists</a>). For the present purpose
+we defined a word list with a special search method: When it is searched for
+a word, it actually creates that word using <code>W:</code>. <code>{:</code> changes
+the search order to first search the word list containing <code>:}</code>,
+<code>W:</code> etc., and then the word list for defining locals without type
+specifiers.
+</p>
+<p>The lifetime rules support a stack discipline within a colon definition: The
+lifetime of a local is either nested with other locals lifetimes or it does
+not overlap them.
+</p>
+<p>At <code>BEGIN</code>, <code>IF</code>, and <code>AHEAD</code> no code for locals stack
+pointer manipulation is generated. Between control structure words locals
+definitions can push locals onto the locals stack. <code>AGAIN</code> is the
+simplest of the other three control flow words. It has to restore the locals
+stack depth of the corresponding <code>BEGIN</code> before branching. The code
+looks like this:
+</p><div class="format">
+<pre class="format"><code>lp+!#</code> current-locals-size - dest-locals-size
+<code>branch</code> &lt;begin&gt;
+</pre></div>
+
+<p><code>UNTIL</code> is a little more complicated: If it branches back, it must
+adjust the stack just like <code>AGAIN</code>. But if it falls through, the locals
+stack must not be changed. The compiler generates the following code:
+</p><div class="format">
+<pre class="format"><code>?branch-lp+!#</code> &lt;begin&gt; current-locals-size - dest-locals-size
+</pre></div>
+<p>The locals stack pointer is only adjusted if the branch is taken.
+</p>
+<p><code>THEN</code> can produce somewhat inefficient code:
+</p><div class="format">
+<pre class="format"><code>lp+!#</code> current-locals-size - orig-locals-size
+&lt;orig target&gt;:
+<code>lp+!#</code> orig-locals-size - new-locals-size
+</pre></div>
+<p>The second <code>lp+!#</code> adjusts the locals stack pointer from the level at
+the <i>orig</i> point to the level after the <code>THEN</code>. The first
+<code>lp+!#</code> adjusts the locals stack pointer from the current level to the
+level at the orig point, so the complete effect is an adjustment from the
+current level to the right level after the <code>THEN</code>.
+</p>
+<span id="index-locals-information-on-the-control_002dflow-stack"></span>
+<span id="index-control_002dflow-stack-items_002c-locals-information"></span>
+<p>In a conventional Forth implementation a dest control-flow stack entry is
+just the target address and an orig entry is just the address to be
+patched. Our locals implementation adds a word list to every orig or dest
+item. It is the list of locals visible (or assumed visible) at the point
+described by the entry. Our implementation also adds a tag to identify the
+kind of entry, in particular to differentiate between live and dead
+(reachable and unreachable) orig entries.
+</p>
+<p>A few unusual operations have to be performed on locals word lists:
+</p>
+<span id="index-common_002dlist-_0028--list1-list2-_002d_002d-list3--_0029-gforth_002dinternal"></span>
+<span id="index-common_002dlist"></span>
+<span id="index-common_002dlist-1"></span>
+<div class="format">
+<pre class="format"><code>common-list</code> ( <i>list1 list2 &ndash; list3  </i>) gforth-internal &ldquo;common-list&rdquo;
+</pre></div>
+
+<span id="index-sub_002dlist_003f-_0028--list1-list2-_002d_002d-f--_0029-gforth_002dinternal"></span>
+<span id="index-sub_002dlist_003f"></span>
+<span id="index-sub_002dlist_003f-1"></span>
+<div class="format">
+<pre class="format"><code>sub-list?</code> ( <i>list1 list2 &ndash; f  </i>) gforth-internal &ldquo;sub-list?&rdquo;
+</pre></div>
+
+<span id="index-list_002dsize-_0028--list-_002d_002d-u--_0029-gforth_002dinternal"></span>
+<span id="index-list_002dsize"></span>
+<span id="index-list_002dsize-1"></span>
+<div class="format">
+<pre class="format"><code>list-size</code> ( <i>list &ndash; u  </i>) gforth-internal &ldquo;list-size&rdquo;
+</pre></div>
+
+
+
+<p>Several features of our locals word list implementation make these
+operations easy to implement: The locals word lists are organised as linked
+lists; the tails of these lists are shared, if the lists contain some of the
+same locals; and the address of a name is greater than the address of the
+names behind it in the list.
+</p>
+<p>Another important implementation detail is the variable <code>dead-code</code>. It
+is used by <code>BEGIN</code> and <code>THEN</code> to determine if they can be reached
+directly or only through the branch that they resolve. <code>dead-code</code> is
+set by <code>UNREACHABLE</code>, <code>AHEAD</code>, <code>EXIT</code> etc., and cleared at
+the start of a colon definition, by <code>BEGIN</code> and usually by <code>THEN</code>.
+</p>
+<p>Counted loops are similar to other loops in most respects, but <code>LEAVE</code>
+requires special attention: It performs basically the same service as
+<code>AHEAD</code>, but it does not create a control-flow stack entry. Therefore
+the information has to be stored elsewhere; traditionally, the information
+was stored in the target fields of the branches created by the
+<code>LEAVE</code>s, by organizing these fields into a linked list. Unfortunately,
+this clever trick does not provide enough space for storing our extended
+control flow information. Therefore, we introduce another stack, the leave
+stack. It contains the control-flow stack entries for all unresolved
+<code>LEAVE</code>s.
+</p>
+<p>Local names are kept until the end of the colon definition, even if they are
+no longer visible in any control-flow path. In a few cases this may lead to
+increased space needs for the locals name area, but usually less than
+reclaiming this space would cost in code size.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Closures.html">Closures</a>, Previous: <a href="Locals-programming-style.html">Locals programming style</a>, Up: <a href="Gforth-locals.html">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

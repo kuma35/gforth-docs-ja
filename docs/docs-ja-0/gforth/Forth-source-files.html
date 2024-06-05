@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Forth source files (Gforth マニュアル)</title>
+
+<meta name="description" content="Forth source files (Gforth マニュアル)">
+<meta name="keywords" content="Forth source files (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Files.html" rel="up" title="Files">
+<link href="General-files.html" rel="next" title="General files">
+<link href="Files.html" rel="prev" title="Files">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Forth-source-files">
+<div class="header">
+<p>
+Next: <a href="General-files.html" accesskey="n" rel="next">General files</a>, Previous: <a href="Files.html" accesskey="p" rel="prev">Files</a>, Up: <a href="Files.html" accesskey="u" rel="up">Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Forth-source-files-1"></span><h4 class="subsection">6.18.1 Forth source files</h4>
+<span id="index-including-files"></span>
+<span id="index-Forth-source-files"></span>
+
+<p>The simplest way to interpret the contents of a file is to use one of these
+two formats:
+</p>
+<div class="example">
+<pre class="example">include mysource.fs
+s&quot; mysource.fs&quot; included
+</pre></div>
+
+<p>You usually want to include a file only if it is not included already (by,
+say, another source file). In that case, you can use one of these three
+formats:
+</p>
+<div class="example">
+<pre class="example">require mysource.fs
+needs mysource.fs
+s&quot; mysource.fs&quot; required
+</pre></div>
+
+<span id="index-stack-effect-of-included-files"></span>
+<span id="index-including-files_002c-stack-effect"></span>
+<p>It is good practice to write your source files such that interpreting them
+does not change the stack. Source files designed in this way can be used
+with <code>required</code> and friends without complications. For example:
+</p>
+<div class="example">
+<pre class="example">1024 require foo.fs drop
+</pre></div>
+
+<p>Here you want to pass the argument 1024 (e.g., a buffer size) to
+<samp>foo.fs</samp>.  Interpreting <samp>foo.fs</samp> has the stack effect ( n &ndash; n ),
+which allows its use with <code>require</code>.  Of course with such parameters to
+required files, you have to ensure that the first <code>require</code> fits for
+all uses (i.e., <code>require</code> it early in the master load file).
+</p>
+<span id="index-include_002dfile-_0028--i_002ax-wfileid-_002d_002d-j_002ax--_0029-file"></span>
+<span id="index-include_002dfile"></span>
+<span id="index-include_002dfile-1"></span>
+<div class="format">
+<pre class="format"><code>include-file</code> ( <i>i*x wfileid &ndash; j*x  </i>) file &ldquo;include-file&rdquo;
+</pre></div>
+<p>Interpret (process using the text interpreter) the contents of the file
+<var>wfileid</var>.
+</p>
+
+<span id="index-included-_0028--i_002ax-c_002daddr-u-_002d_002d-j_002ax--_0029-file"></span>
+<span id="index-included"></span>
+<span id="index-included-1"></span>
+<div class="format">
+<pre class="format"><code>included</code> ( <i>i*x c-addr u &ndash; j*x  </i>) file &ldquo;included&rdquo;
+</pre></div>
+<p><code>include-file</code> the file whose name is given by the string <var>c-addr
+u</var>.
+</p>
+
+<span id="index-included_003f-_0028--c_002daddr-u-_002d_002d-f--_0029-gforth_002d0_002e2"></span>
+<span id="index-included_003f"></span>
+<span id="index-included_003f-1"></span>
+<div class="format">
+<pre class="format"><code>included?</code> ( <i>c-addr u &ndash; f  </i>) gforth-0.2 &ldquo;included?&rdquo;
+</pre></div>
+<p>True only if the file <var>c-addr u</var> is in the list of earlier included
+files. If the file has been loaded, it may have been specified as, say,
+<samp>foo.fs</samp> and found somewhere on the Forth search path. To return
+<code>true</code> from <code>included?</code>, you must specify the exact path to the
+file, even if that is <samp>./foo.fs</samp>
+</p>
+
+<span id="index-include-_0028--_002e_002e_002e-_0022file_0022-_002d_002d-_002e_002e_002e--_0029-file_002dext"></span>
+<span id="index-include"></span>
+<span id="index-include-1"></span>
+<div class="format">
+<pre class="format"><code>include</code> ( <i>... &quot;file&quot; &ndash; ...  </i>) file-ext &ldquo;include&rdquo;
+</pre></div>
+<p><code>include-file</code> the file <var>file</var>.
+</p>
+
+<span id="index-required-_0028--i_002ax-addr-u-_002d_002d-i_002ax--_0029-file_002dext"></span>
+<span id="index-required"></span>
+<span id="index-required-1"></span>
+<div class="format">
+<pre class="format"><code>required</code> ( <i>i*x addr u &ndash; i*x  </i>) file-ext &ldquo;required&rdquo;
+</pre></div>
+<p><code>include-file</code> the file with the name given by <var>addr u</var>, if it is
+not <code>included</code> (or <code>required</code>)  already. Currently this works by
+comparing the name of the file (with path) against the names of earlier
+included files.
+</p>
+
+<span id="index-require-_0028--_002e_002e_002e-_0022file_0022-_002d_002d-_002e_002e_002e--_0029-file_002dext"></span>
+<span id="index-require"></span>
+<span id="index-require-1"></span>
+<div class="format">
+<pre class="format"><code>require</code> ( <i>... &quot;file&quot; &ndash; ...  </i>) file-ext &ldquo;require&rdquo;
+</pre></div>
+<p><code>include-file</code> <var>file</var> only if it is not included already.
+</p>
+
+<span id="index-needs-_0028--_002e_002e_002e-_0022name_0022-_002d_002d-_002e_002e_002e--_0029-gforth_002d0_002e2"></span>
+<span id="index-needs"></span>
+<span id="index-needs-1"></span>
+<div class="format">
+<pre class="format"><code>needs</code> ( <i>... &quot;name&quot; &ndash; ...  </i>) gforth-0.2 &ldquo;needs&rdquo;
+</pre></div>
+<p>An alias for <code>require</code>; exists on other systems (e.g., Win32Forth).
+</p>
+
+<span id="index-_005c_005c_005c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_005c_005c_005c"></span>
+<span id="index-_005c_005c_005c-1"></span>
+<div class="format">
+<pre class="format"><code>\\\</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;\\\&rdquo;
+</pre></div>
+<p>skip remaining source file
+</p>
+
+<span id="index-_002eincluded-_0028--_002d_002d--_0029-gforth_002d0_002e5"></span>
+<span id="index-_002eincluded"></span>
+<span id="index-_002eincluded-1"></span>
+<div class="format">
+<pre class="format"><code>.included</code> ( <i>&ndash;  </i>) gforth-0.5 &ldquo;.included&rdquo;
+</pre></div>
+<p>List the names of the files that have been <code>included</code>.
+</p>
+
+<span id="index-sourcefilename-_0028--_002d_002d-c_002daddr-u--_0029-gforth_002d0_002e2"></span>
+<span id="index-sourcefilename"></span>
+<span id="index-sourcefilename-1"></span>
+<div class="format">
+<pre class="format"><code>sourcefilename</code> ( <i>&ndash; c-addr u  </i>) gforth-0.2 &ldquo;sourcefilename&rdquo;
+</pre></div>
+<p>The name of the source file which is currently the input source.  The result
+is valid only while the file is being loaded.  If the current input source
+is no (stream) file, the result is undefined.  In Gforth, the result is
+valid during the whole session (but not across <code>savesystem</code> etc.).
+</p>
+
+<span id="index-sourceline_0023-_0028--_002d_002d-u--_0029-gforth_002d0_002e2"></span>
+<span id="index-sourceline_0023"></span>
+<span id="index-sourceline_0023-1"></span>
+<div class="format">
+<pre class="format"><code>sourceline#</code> ( <i>&ndash; u  </i>) gforth-0.2 &ldquo;sourceline-number&rdquo;
+</pre></div>
+<p>The line number of the line that is currently being interpreted from a
+(stream) file. The first line has the number 1. If the current input source
+is not a (stream) file, the result is undefined.
+</p>
+
+
+<p>A definition in Standard Forth for <code>required</code> is provided in
+<samp>compat/required.fs</samp>.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="General-files.html">General files</a>, Previous: <a href="Files.html">Files</a>, Up: <a href="Files.html">Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

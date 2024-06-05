@@ -1,0 +1,359 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Integer division (Gforth マニュアル)</title>
+
+<meta name="description" content="Integer division (Gforth マニュアル)">
+<meta name="keywords" content="Integer division (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Arithmetic.html" rel="up" title="Arithmetic">
+<link href="Two_002dstage-integer-division.html" rel="next" title="Two-stage integer division">
+<link href="Mixed-precision.html" rel="prev" title="Mixed precision">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Integer-division">
+<div class="header">
+<p>
+Next: <a href="Two_002dstage-integer-division.html" accesskey="n" rel="next">Two-stage integer division</a>, Previous: <a href="Mixed-precision.html" accesskey="p" rel="prev">Mixed precision</a>, Up: <a href="Arithmetic.html" accesskey="u" rel="up">Arithmetic</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Integer-division-1"></span><h4 class="subsection">6.5.4 Integer division</h4>
+<span id="index-dividing-integers"></span>
+<span id="index-modulus"></span>
+<span id="index-remainder"></span>
+<span id="index-Floating_002dpoint-unidentified-fault"></span>
+<span id="index-Division-by-zero"></span>
+<span id="index-Result-out-of-range"></span>
+
+<p>以下にあるように、 除算を扱うために相当な数のワードがあることが分かります。 これらの主な違いは、 符号付き除算の処理にあります。
+これらのワードはどのようにして符号付き除算に対応するのでしょうか？ (<code>U</code> プレフィックスが付いたワードでは符号付き除算に対応しません)
+</p>
+<span id="index-floored-division"></span>
+<span id="index-symmetric-division"></span>
+<p>商を四捨五入して整数に丸める場合、 負の無限大に向かって丸めるのでしょうか(floored division(床除算)、 接尾辞 <code>F</code>)、
+それとも 0 に向かって丸めるのでしょうか(symmetric division、接尾辞 <code>S</code>)。  標準では、
+ほとんどの標準ワード(<code>/ mod /mod */ */mod m*/</code>)について、 問題なのは、 各々の実装依存のままであり、
+システムごとに異なる選択が行われています。  Gforth では、こ​​れらの単語をfloorとして実装します(Gforth 0.7 以降)。
+floored division と symmetric division の違いは、 割られる数と割る数の符号が異なり、 かつ、
+割られる数が割る数の倍数で無い場合のみです。 以下の表に組み合わせの結果を示します:
+</p>
+<div class="example">
+<pre class="example">                      floored          symmetric
+割られる  割る数      余り 商            余り 商
+    10      7           3   1              3   1
+   -10      7           4  -2             -3  -1
+    10     -7          -4  -2              3  -1
+   -10     -7          -3   1             -3   1
+</pre></div>
+
+<p>floored と symmetric とが違いを生む一般的なケースは、 様々な符号の被除数(割られる数) n1 が、 同一の正の除数(割る数) n2
+で除算される場合です。 同一の正の除数(割る数) n2 で除算される場合、 通常は floored division が必要で、なぜなら、
+同一の正の除数(割る数) n2 で除算される場合、 余りは常に正となり、 被除数(割られる数)に応じて符号が変化しないからです。 また、 floored
+division では、 n1 が n2 増加すると商は常に 1 増加しますが、 symmetric division では、 -n2&lt;n1&lt;n2
+の場合は商は増加しません(この範囲では商は 0 です)。
+</p>
+<p>いずれの場合でも、 floored と symmetric とで違いが生ずる数値を除算する場合は、 どのバリエーションが適切であるかを考えてから、
+適切な接尾辞を付けた Gforth ワードか、 標準ワードの <code>fm/mod</code> または <code>sm/rem</code>
+のいずれかを使用する必要があります。 
+</p>
+<p>単精度セル同士の除算:
+</p>
+<span id="index-_002f-_0028--n1-n2-_002d_002d-n--_0029-core"></span>
+<span id="index-_002f"></span>
+<span id="index-_002f-1"></span>
+<div class="format">
+<pre class="format"><code>/</code> ( <i>n1 n2 &ndash; n  </i>) core &ldquo;slash&rdquo;
+</pre></div>
+<p>n=n1/n2
+</p>
+
+<span id="index-_002fs-_0028--n1-n2-_002d_002d-n--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002fs"></span>
+<span id="index-_002fs-1"></span>
+<div class="format">
+<pre class="format"><code>/s</code> ( <i>n1 n2 &ndash; n </i>) gforth-1.0 &ldquo;slash-s&rdquo;
+</pre></div>
+
+<span id="index-_002ff-_0028--n1-n2-_002d_002d-n--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002ff"></span>
+<span id="index-_002ff-1"></span>
+<div class="format">
+<pre class="format"><code>/f</code> ( <i>n1 n2 &ndash; n </i>) gforth-1.0 &ldquo;slash-f&rdquo;
+</pre></div>
+
+<span id="index-u_002f-_0028--u1-u2-_002d_002d-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002f"></span>
+<span id="index-u_002f-1"></span>
+<div class="format">
+<pre class="format"><code>u/</code> ( <i>u1 u2 &ndash; u </i>) gforth-1.0 &ldquo;u-slash&rdquo;
+</pre></div>
+
+<span id="index-mod-_0028--n1-n2-_002d_002d-n--_0029-core"></span>
+<span id="index-mod"></span>
+<span id="index-mod-1"></span>
+<div class="format">
+<pre class="format"><code>mod</code> ( <i>n1 n2 &ndash; n  </i>) core &ldquo;mod&rdquo;
+</pre></div>
+<p>n は n1/n2 の余り(modulus)
+</p>
+
+<span id="index-mods-_0028--n1-n2-_002d_002d-n--_0029-gforth_002d1_002e0"></span>
+<span id="index-mods"></span>
+<span id="index-mods-1"></span>
+<div class="format">
+<pre class="format"><code>mods</code> ( <i>n1 n2 &ndash; n </i>) gforth-1.0 &ldquo;mod-s&rdquo;
+</pre></div>
+
+<span id="index-modf-_0028--n1-n2-_002d_002d-n--_0029-gforth_002d1_002e0"></span>
+<span id="index-modf"></span>
+<span id="index-modf-1"></span>
+<div class="format">
+<pre class="format"><code>modf</code> ( <i>n1 n2 &ndash; n </i>) gforth-1.0 &ldquo;modf&rdquo;
+</pre></div>
+
+<span id="index-umod-_0028--u1-u2-_002d_002d-u--_0029-gforth_002d1_002e0"></span>
+<span id="index-umod"></span>
+<span id="index-umod-1"></span>
+<div class="format">
+<pre class="format"><code>umod</code> ( <i>u1 u2 &ndash; u </i>) gforth-1.0 &ldquo;umod&rdquo;
+</pre></div>
+
+<span id="index-_002fmod-_0028--n1-n2-_002d_002d-n3-n4--_0029-core"></span>
+<span id="index-_002fmod"></span>
+<span id="index-_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>/mod</code> ( <i>n1 n2 &ndash; n3 n4  </i>) core &ldquo;slash-mod&rdquo;
+</pre></div>
+<p>n1/n2 を行い、 n3 が余り(modulus)、 n4 が商です(n1=n2*n4+n3)。
+</p>
+
+<span id="index-_002fmods-_0028--n1-n2-_002d_002d-n3-n4--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002fmods"></span>
+<span id="index-_002fmods-1"></span>
+<div class="format">
+<pre class="format"><code>/mods</code> ( <i>n1 n2 &ndash; n3 n4 </i>) gforth-1.0 &ldquo;slash-mod-s&rdquo;
+</pre></div>
+<p>n3 が余り(remainder)、 n4 が商
+</p>
+<span id="index-_002fmodf-_0028--n1-n2-_002d_002d-n3-n4--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002fmodf"></span>
+<span id="index-_002fmodf-1"></span>
+<div class="format">
+<pre class="format"><code>/modf</code> ( <i>n1 n2 &ndash; n3 n4 </i>) gforth-1.0 &ldquo;slash-mod-f&rdquo;
+</pre></div>
+<p>n3 が余り(modulus)、 n4 が商
+</p>
+<span id="index-u_002fmod-_0028--u1-u2-_002d_002d-u3-u4--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002fmod"></span>
+<span id="index-u_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>u/mod</code> ( <i>u1 u2 &ndash; u3 u4 </i>) gforth-1.0 &ldquo;u-slash-mod&rdquo;
+</pre></div>
+<p>u3 が余り(modulus)、 u4 が商
+</p>
+
+<p>倍精度セルを単精度セルで割って単精度セルの結果を得る; これらのワードは、 一部のアーキテクチャ(AMD64 など)では上記ワードとほぼ同じ速度ですが、
+他のアーキテクチャ(さまざまな Aarch64 CPU など)でははるかに遅くなります。
+</p>
+<span id="index-fm_002fmod-_0028--d1-n1-_002d_002d-n2-n3--_0029-core"></span>
+<span id="index-fm_002fmod"></span>
+<span id="index-fm_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>fm/mod</code> ( <i>d1 n1 &ndash; n2 n3 </i>) core &ldquo;f-m-slash-mod&rdquo;
+</pre></div>
+<p>Floored division: <i>d1</i> = <i>n3</i>*<i>n1</i>+<i>n2</i>, <i>n1</i>&gt;<i>n2</i>&gt;=0 or
+0&gt;=<i>n2</i>&gt;<i>n1</i>.
+</p>
+<span id="index-sm_002frem-_0028--d1-n1-_002d_002d-n2-n3--_0029-core"></span>
+<span id="index-sm_002frem"></span>
+<span id="index-sm_002frem-1"></span>
+<div class="format">
+<pre class="format"><code>sm/rem</code> ( <i>d1 n1 &ndash; n2 n3 </i>) core &ldquo;s-m-slash-rem&rdquo;
+</pre></div>
+<p>Symmetric division: <i>d1</i> = <i>n3</i>*<i>n1</i>+<i>n2</i>, sign(<i>n2</i>)=sign(<i>d1</i>)
+or 0.
+</p>
+<span id="index-um_002fmod-_0028--ud-u1-_002d_002d-u2-u3--_0029-core"></span>
+<span id="index-um_002fmod"></span>
+<span id="index-um_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>um/mod</code> ( <i>ud u1 &ndash; u2 u3 </i>) core &ldquo;u-m-slash-mod&rdquo;
+</pre></div>
+<p>ud=u3*u1+u2, 0&lt;=u2&lt;u1
+</p>
+<span id="index-du_002fmod-_0028--d-u-_002d_002d-n-u1--_0029-gforth_002d1_002e0"></span>
+<span id="index-du_002fmod"></span>
+<span id="index-du_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>du/mod</code> ( <i>d u &ndash; n u1 </i>) gforth-1.0 &ldquo;du-slash-mod&rdquo;
+</pre></div>
+<p>d=n*u+u1, 0&lt;=u1&lt;u; PolyForth スタイルの混合除算
+</p>
+<span id="index-_002a_002f-_0028--_0028-n1-n2-n3-_002d_002d-n4--_0029-core"></span>
+<span id="index-_002a_002f"></span>
+<span id="index-_002a_002f-1"></span>
+<div class="format">
+<pre class="format"><code>*/</code> ( <i>( n1 n2 n3 &ndash; n4  </i>) core &ldquo;star-slash&rdquo;
+</pre></div>
+<p>n4=(n1*n2)/n3 中間結果は倍精度
+</p>
+
+<span id="index-_002a_002fs-_0028--n1-n2-n3-_002d_002d-n4--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002a_002fs"></span>
+<span id="index-_002a_002fs-1"></span>
+<div class="format">
+<pre class="format"><code>*/s</code> ( <i>n1 n2 n3 &ndash; n4 </i>) gforth-1.0 &ldquo;star-slash-s&rdquo;
+</pre></div>
+<p>n4=(n1*n2)/n3 中間結果は倍精度
+</p>
+<span id="index-_002a_002ff-_0028--n1-n2-n3-_002d_002d-n4--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002a_002ff"></span>
+<span id="index-_002a_002ff-1"></span>
+<div class="format">
+<pre class="format"><code>*/f</code> ( <i>n1 n2 n3 &ndash; n4 </i>) gforth-1.0 &ldquo;star-slash-f&rdquo;
+</pre></div>
+<p>n4=(n1*n2)/n3 中間結果は倍精度
+</p>
+<span id="index-u_002a_002f-_0028--u1-u2-u3-_002d_002d-u4--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002a_002f"></span>
+<span id="index-u_002a_002f-1"></span>
+<div class="format">
+<pre class="format"><code>u*/</code> ( <i>u1 u2 u3 &ndash; u4 </i>) gforth-1.0 &ldquo;u-star-slash&rdquo;
+</pre></div>
+<p>u4=(u1*u2)/u3 中間結果は倍精度
+</p>
+<span id="index-_002a_002fmod-_0028--n1-n2-n3-_002d_002d-n4-n5--_0029-core"></span>
+<span id="index-_002a_002fmod"></span>
+<span id="index-_002a_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>*/mod</code> ( <i>n1 n2 n3 &ndash; n4 n5  </i>) core &ldquo;star-slash-mod&rdquo;
+</pre></div>
+<p>n1*n2=n3*n5+n4 中間結果(n1*n2)は倍精度、 n4 は剰余、 n5 は商。
+</p>
+
+<span id="index-_002a_002fmods-_0028--n1-n2-n3-_002d_002d-n4-n5--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002a_002fmods"></span>
+<span id="index-_002a_002fmods-1"></span>
+<div class="format">
+<pre class="format"><code>*/mods</code> ( <i>n1 n2 n3 &ndash; n4 n5 </i>) gforth-1.0 &ldquo;star-slash-mod-s&rdquo;
+</pre></div>
+<p>n1*n2=n3*n5+n4, 中間結果(n1*n2)は倍精度、 n4 は余り(remainder)、 n5 は商
+</p>
+<span id="index-_002a_002fmodf-_0028--n1-n2-n3-_002d_002d-n4-n5--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002a_002fmodf"></span>
+<span id="index-_002a_002fmodf-1"></span>
+<div class="format">
+<pre class="format"><code>*/modf</code> ( <i>n1 n2 n3 &ndash; n4 n5 </i>) gforth-1.0 &ldquo;star-slash-mod-f&rdquo;
+</pre></div>
+<p>n1*n2=n3*n5+n4 中間結果(n1*n2)は倍精度。 n4 余り(modulus)、n5 は商
+</p>
+<span id="index-u_002a_002fmod-_0028--u1-u2-u3-_002d_002d-u4-u5--_0029-gforth_002d1_002e0"></span>
+<span id="index-u_002a_002fmod"></span>
+<span id="index-u_002a_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>u*/mod</code> ( <i>u1 u2 u3 &ndash; u4 u5 </i>) gforth-1.0 &ldquo;u-star-slash-mod&rdquo;
+</pre></div>
+<p>u1*u2=u3*u5+u4 中間結果(u1*u2)は倍精度。
+</p>
+
+<p>除算結果を2倍長セル(double-cell)で得ます。 以下のワード群は上記のワード群よりもはるかに遅いです。
+</p>
+<span id="index-ud_002fmod-_0028--ud1-u2-_002d_002d-urem-udquot--_0029-gforth_002d0_002e2"></span>
+<span id="index-ud_002fmod"></span>
+<span id="index-ud_002fmod-1"></span>
+<div class="format">
+<pre class="format"><code>ud/mod</code> ( <i>ud1 u2 &ndash; urem udquot  </i>) gforth-0.2 &ldquo;ud/mod&rdquo;
+</pre></div>
+<p>符号無し倍精度 <i>ud1</i> を <i>u2</i> で割る。 結果は、符号なし倍精度の商 <i>udquot</i> と、 単精度の余り(remainder)
+<i>urem</i> です。
+</p>
+
+<span id="index-m_002a_002f-_0028--d1-n2-u3-_002d_002d-dquot--_0029-double"></span>
+<span id="index-m_002a_002f"></span>
+<span id="index-m_002a_002f-1"></span>
+<div class="format">
+<pre class="format"><code>m*/</code> ( <i>d1 n2 u3 &ndash; dquot  </i>) double &ldquo;m-star-slash&rdquo;
+</pre></div>
+<p>dquot=(d1*n2)/u3,  中間結果は3倍精度です。 ANS Forth では u3 は正の符号付き数値のみです。
+</p>
+
+
+<p>環境クエリ(environmental query) <code>floored</code> を使用すると、 <code>/ mod /mod */ */mod
+m*/</code> が floored division か symmetric division かを確認できます(see <a href="Environmental-Queries.html">Environmental Queries</a>)。
+</p>
+<span id="index-Floating_002dpoint-unidentified-fault-_0028on-integer-division_0029"></span>
+<span id="index-Division-by-zero-1"></span>
+<span id="index-Result-out-of-range-_0028on-integer-division_0029"></span>
+<p>整数除算ワードのもう 1 つの側面は、 整数除算ワードのほとんどがオーバーフローする可能性があり、 かつ、
+ゼロによる除算が数学的に定義されていないことです。  これらの条件のいずれかに該当した場合に何が起こるかは、
+エンジンやハードウェアやオペレーティング・システムによって異なります。 <code>gforth</code> エンジンは、適切なエラーである -10
+(Division by zero;ゼロ除算) または -11 (Result out of range;範囲外の結果) を throw
+しようと懸命に試みます、 が、 しかし、 一部のプラットフォームでは -55（浮動小数点未確認エラー;Floating-point
+unidentified fault）が throw されます。  <code>gforth-fast</code> エンジンでは、 不適切な throw
+コード(およびエラー・メッセージ)を生成する場合や、 エラーを生成せずに嘘の値のみを生成する場合があります。  つまり、 あなたは、 そのような条件が
+throw されることに賭けるべきではありません。 そして、 あなたが迅速なデバッグを行うためには、 <code>gforth</code> エンジンは
+<code>gforth-fast</code> エンジンよりも多くのエラーをキャッチし、 より正確なエラーを生成します。
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Two_002dstage-integer-division.html">Two-stage integer division</a>, Previous: <a href="Mixed-precision.html">Mixed precision</a>, Up: <a href="Arithmetic.html">Arithmetic</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Integrating Gforth (Gforth マニュアル)</title>
+
+<meta name="description" content="Integrating Gforth (Gforth マニュアル)">
+<meta name="keywords" content="Integrating Gforth (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html" rel="up" title="Top">
+<link href="Emacs-and-Gforth.html" rel="next" title="Emacs and Gforth">
+<link href="Model.html" rel="prev" title="Model">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="chapter" id="Integrating-Gforth">
+<div class="header">
+<p>
+Next: <a href="Emacs-and-Gforth.html" accesskey="n" rel="next">Emacs and Gforth</a>, Previous: <a href="Model.html" accesskey="p" rel="prev">Model</a>, Up: <a href="index.html" accesskey="u" rel="up">Gforth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Integrating-Gforth-into-C-programs"></span><h2 class="chapter">12 Integrating Gforth into C programs</h2>
+
+<p>Several people like to use Forth as scripting language for applications that
+are otherwise written in C, C++, or some other language.
+</p>
+<p>The Forth system ATLAST provides facilities for embedding it into
+applications; unfortunately it has several disadvantages: most importantly,
+it is not based on Standard Forth, and it is apparently dead (i.e., not
+developed further and not supported). The facilities provided by Gforth in
+this area are inspired by ATLAST&rsquo;s facilities, so making the switch should
+not be hard.
+</p>
+<p>We also tried to design the interface such that it can easily be implemented
+by other Forth systems, so that we may one day arrive at a standardized
+interface. Such a standard interface would allow you to replace the Forth
+system without having to rewrite C code.
+</p>
+<p>You embed the Gforth interpreter by linking with the library
+<code>libgforth.a</code> or <code>libgforth.so</code> (give the compiler the option
+<code>-lgforth</code>, or for one of the other engines <code>-lgforth-fast</code>,
+<code>-lgforth-itc</code>, or <code>-lgforth-ditc</code>).  All global symbols in this
+library that belong to the interface, have the prefix <code>gforth_</code>; if a
+common interface emerges, the functions may also be available through
+<code>#define</code>s with the prefix <code>forth_</code>.
+</p>
+<p>You can include the declarations of Forth types, the functions and variables
+of the interface with <code>#include &lt;gforth.h&gt;</code>.
+</p>
+<p>You can now run a Gforth session by either calling <code>gforth_main</code> or
+using the components:
+</p>
+<div class="example">
+<pre class="example">Cell gforth_main(int argc, char **argv, char **env)
+{
+  Cell retvalue=gforth_start(argc, argv);
+
+  if(retvalue == -56) { /* throw-code for quit */
+    retvalue = gforth_bootmessage();     // show boot message
+    if(retvalue == -56)
+      retvalue = gforth_quit(); // run quit loop
+  }
+  gforth_cleanup();
+  gforth_printmetrics();
+  // gforth_free_dict(); // if you want to restart, do this
+
+  return retvalue;
+}
+</pre></div>
+
+<p>To interact with the Forth interpreter, there&rsquo;s <code>Xt gforth_find(Char *
+name)</code> and <code>Cell gforth_execute(Xt xt)</code>.
+</p>
+<p>More documentation needs to be put here.
+</p>
+<ul class="section-toc">
+<li><a href="#Types-1" accesskey="1">Types</a></li>
+<li><a href="#Variables-2" accesskey="2">Variables</a></li>
+<li><a href="#Functions" accesskey="3">Functions</a></li>
+<li><a href="#Signals" accesskey="4">Signals</a></li>
+</ul>
+<div class="section" id="Types-1">
+<h3 class="section">12.1 Types</h3>
+
+<p><code>Cell</code>, <code>UCell</code>: data stack elements.
+</p>
+<p><code>Float</code>: float stack element.
+</p>
+<p><code>Address</code>, <code>Xt</code>, <code>Label</code>: pointer typies to memory, Forth
+words, and Forth instructions inside the VM.
+</p>
+</div>
+<div class="section" id="Variables-2">
+<h3 class="section">12.2 Variables</h3>
+
+<p>Data and FP Stack pointer. Area sizes. Accessing the Stacks
+</p>
+<p><code>gforth_SP</code>, <code>gforth_FP</code>.
+</p>
+</div>
+<div class="section" id="Functions">
+<h3 class="section">12.3 Functions</h3>
+
+<div class="example">
+<pre class="example">void *gforth_engine(Xt *, stackpointers *);
+Cell gforth_main(int argc, char **argv, char **env);
+int gforth_args(int argc, char **argv, char **path, char **imagename);
+ImageHeader* gforth_loader(char* imagename, char* path);
+user_area* gforth_stacks(Cell dsize, Cell rsize, Cell fsize, Cell lsize);
+void gforth_free_stacks(user_area* t);
+void gforth_setstacks(user_area * t);
+void gforth_free_dict();
+Cell gforth_go(Xt* ip0);
+Cell gforth_boot(int argc, char** argv, char* path);
+void gforth_bootmessage();
+Cell gforth_start(int argc, char ** argv);
+Cell gforth_quit();
+Xt gforth_find(Char * name);
+Cell gforth_execute(Xt xt);
+void gforth_cleanup();
+void gforth_printmetrics();
+void gforth_setwinch();
+</pre></div>
+
+</div>
+<div class="section" id="Signals">
+<h3 class="section">12.4 Signals</h3>
+
+<p>Gforth sets up signal handlers to catch exceptions and window size changes.
+This may interfere with your C program.
+</p>
+</div>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Emacs-and-Gforth.html">Emacs and Gforth</a>, Previous: <a href="Model.html">Model</a>, Up: <a href="index.html">Gforth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

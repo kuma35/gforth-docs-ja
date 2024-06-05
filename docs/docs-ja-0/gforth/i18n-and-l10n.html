@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>i18n and l10n (Gforth マニュアル)</title>
+
+<meta name="description" content="i18n and l10n (Gforth マニュアル)">
+<meta name="keywords" content="i18n and l10n (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Other-I_002fO.html" rel="up" title="Other I/O">
+<link href="Substitute.html" rel="next" title="Substitute">
+<link href="Xchars-and-Unicode.html" rel="prev" title="Xchars and Unicode">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="i18n-and-l10n">
+<div class="header">
+<p>
+Next: <a href="Substitute.html" accesskey="n" rel="next">Substitute</a>, Previous: <a href="Xchars-and-Unicode.html" accesskey="p" rel="prev">Xchars and Unicode</a>, Up: <a href="Other-I_002fO.html" accesskey="u" rel="up">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Guo-Ji-Hua-_0028I18n_0029torokaraizu"></span><h4 class="subsection">6.20.11 国際化(I18n)とローカライズ</h4>
+
+<p>Programs for end users require to address those in their native language.
+There is a decades old proposal for such a facility that has been split from
+other proposals for international character sets like Xchars (see <a href="Xchars-and-Unicode.html">Xchars and Unicode</a>) and Substitute (see <a href="Substitute.html">Substitute</a>).  Messages displayed on
+the screen need to be translated from the native language of the developers
+to the local languages of the user.
+</p>
+<p>Strings subject to translation are declared with <code>L&quot;
+</code><var>string</var><code>&quot;</code>.  This returns a locale string identifier (LSID).
+LSIDs are opaque types, taking a cell on the stack.  LSIDs can be translated
+into a locale; locales are languages and country-specific variants of that
+language.
+</p>
+<span id="index-L_0022-_0028--_0022lsid_003c_0022_003e_0022-_002d_002d-lsid--_0029-gforth_002dexperimental"></span>
+<span id="index-L_0022"></span>
+<span id="index-L_0022-1"></span>
+<div class="format">
+<pre class="format"><code>L&quot;</code> ( <i>&quot;lsid&lt;&quot;&gt;&quot; &ndash; lsid  </i>) gforth-experimental &ldquo;l-quote&rdquo;
+</pre></div>
+<p>Parse a string and define a new lsid, if the string is uniquely new.
+Identical strings result in identical lsids, which allows to refer to the
+same lsid from multiple locations using the same string.
+</p>
+
+<span id="index-LU_0022-_0028--_0022lsid_003c_0022_003e_0022-_002d_002d-lsid--_0029-gforth_002dexperimental"></span>
+<span id="index-LU_0022"></span>
+<span id="index-LU_0022-1"></span>
+<div class="format">
+<pre class="format"><code>LU&quot;</code> ( <i>&quot;lsid&lt;&quot;&gt;&quot; &ndash; lsid  </i>) gforth-experimental &ldquo;l-unique-quote&rdquo;
+</pre></div>
+<p>Parse a string and always define a new lsid, even if the string is not
+unique.
+</p>
+
+<span id="index-native_0040-_0028--lsid-_002d_002d-addr-u--_0029-gforth_002dexperimental"></span>
+<span id="index-native_0040"></span>
+<span id="index-native_0040-1"></span>
+<div class="format">
+<pre class="format"><code>native@</code> ( <i>lsid &ndash; addr u  </i>) gforth-experimental &ldquo;native-fetch&rdquo;
+</pre></div>
+<p>fetch native string from an <var>lsid</var>
+</p>
+
+<span id="index-locale_0040-_0028--lsid-_002d_002d-addr-u--_0029-gforth_002dexperimental"></span>
+<span id="index-locale_0040"></span>
+<span id="index-locale_0040-1"></span>
+<div class="format">
+<pre class="format"><code>locale@</code> ( <i>lsid &ndash; addr u  </i>) gforth-experimental &ldquo;locale-fetch&rdquo;
+</pre></div>
+<p>fetch the localized string in the current language and country
+</p>
+
+<span id="index-locale_0021-_0028--addr-u-lsid-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-locale_0021"></span>
+<span id="index-locale_0021-1"></span>
+<div class="format">
+<pre class="format"><code>locale!</code> ( <i>addr u lsid &ndash;  </i>) gforth-experimental &ldquo;locale-store&rdquo;
+</pre></div>
+<p>Store localized string <var>addr u</var> for the current locale and country in
+<var>lsid</var>.
+</p>
+
+<span id="index-Language-_0028--_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-Language"></span>
+<span id="index-Language-1"></span>
+<div class="format">
+<pre class="format"><code>Language</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;Language&rdquo;
+</pre></div>
+<p>define a locale.  Executing that locale makes it the current locale.
+</p>
+
+<span id="index-Country-_0028--_003clang_003e-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-Country"></span>
+<span id="index-Country-1"></span>
+<div class="format">
+<pre class="format"><code>Country</code> ( <i>&lt;lang&gt; &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;Country&rdquo;
+</pre></div>
+<p>define a variant (typical: country) for the current locale.  Executing that
+locale makes it the current locale.  You can create variants of variants (a
+country may have variants within, e.g. think of how many words for
+rolls/buns there are in many languages).
+</p>
+
+<span id="index-locale_002dfile-_0028--fid-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-locale_002dfile"></span>
+<span id="index-locale_002dfile-1"></span>
+<div class="format">
+<pre class="format"><code>locale-file</code> ( <i>fid &ndash;  </i>) gforth-experimental &ldquo;locale-file&rdquo;
+</pre></div>
+<p>read lines from <var>fid</var> into the current locale.
+</p>
+
+<span id="index-included_002dlocale-_0028--addr-u-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-included_002dlocale"></span>
+<span id="index-included_002dlocale-1"></span>
+<div class="format">
+<pre class="format"><code>included-locale</code> ( <i>addr u &ndash;  </i>) gforth-experimental &ldquo;included-locale&rdquo;
+</pre></div>
+<p>read lines from the file <var>addr u</var> into the current locale.
+</p>
+
+<span id="index-include_002dlocale-_0028--_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-include_002dlocale"></span>
+<span id="index-include_002dlocale-1"></span>
+<div class="format">
+<pre class="format"><code>include-locale</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;include-locale&rdquo;
+</pre></div>
+<p>read lines from the file <var>&quot;name&quot;</var> into the current locale.
+</p>
+
+<span id="index-locale_002dcsv-_0028--_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-locale_002dcsv"></span>
+<span id="index-locale_002dcsv-1"></span>
+<div class="format">
+<pre class="format"><code>locale-csv</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;locale-csv&rdquo;
+</pre></div>
+<p>import comma-separated value table into locales.  first line contains locale
+names, “program” and “default” are special entries; generic languages must
+preceed translations for specific countries.  Entries under “program” (must
+be leftmost) are used to search for the lsid; if empty, the line number-1 is
+the lsid index.
+</p>
+
+<span id="index-_002elocale_002dcsv-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_002elocale_002dcsv"></span>
+<span id="index-_002elocale_002dcsv-1"></span>
+<div class="format">
+<pre class="format"><code>.locale-csv</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;dot-locale-csv&rdquo;
+</pre></div>
+<p>write the locale database in CSV format to the terminal output.
+</p>
+
+<span id="index-locale_002dcsv_002dout-_0028--_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-locale_002dcsv_002dout"></span>
+<span id="index-locale_002dcsv_002dout-1"></span>
+<div class="format">
+<pre class="format"><code>locale-csv-out</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;locale-csv&rdquo;
+</pre></div>
+<p>Create file <var>&quot;name&quot;</var> and write the locale database out to the file
+<var>&quot;name&quot;</var> in CSV format.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Substitute.html">Substitute</a>, Previous: <a href="Xchars-and-Unicode.html">Xchars and Unicode</a>, Up: <a href="Other-I_002fO.html">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

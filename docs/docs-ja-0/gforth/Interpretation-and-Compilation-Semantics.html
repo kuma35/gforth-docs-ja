@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Interpretation and Compilation Semantics (Gforth マニュアル)</title>
+
+<meta name="description" content="Interpretation and Compilation Semantics (Gforth マニュアル)">
+<meta name="keywords" content="Interpretation and Compilation Semantics (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Words.html" rel="up" title="Words">
+<link href="Tokens-for-Words.html" rel="next" title="Tokens for Words">
+<link href="Defining-Words.html" rel="prev" title="Defining Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Interpretation-and-Compilation-Semantics">
+<div class="header">
+<p>
+Next: <a href="Tokens-for-Words.html" accesskey="n" rel="next">Tokens for Words</a>, Previous: <a href="Defining-Words.html" accesskey="p" rel="prev">Defining Words</a>, Up: <a href="Words.html" accesskey="u" rel="up">Forth Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Interpretation-and-Compilation-Semantics-1"></span><h3 class="section">6.11 Interpretation and Compilation Semantics</h3>
+<span id="index-semantics_002c-interpretation-and-compilation"></span>
+
+
+<span id="index-interpretation-semantics-1"></span>
+<p>The <em>interpretation semantics</em> of a (named) word are what the text
+interpreter does when it encounters the word in interpret state. It also
+appears in some other contexts, e.g., the execution token returned by
+<code>' <i>word</i></code> identifies the interpretation semantics of <i>word</i> (in
+other words, <code>' <i>word</i> execute</code> is equivalent to interpret-state text
+interpretation of <code><i>word</i></code>).
+</p>
+<span id="index-compilation-semantics-1"></span>
+<p>The <em>compilation semantics</em> of a (named) word are what the text
+interpreter does when it encounters the word in compile state. It also
+appears in other contexts, e.g, <code>POSTPONE <i>word</i></code>
+compiles<a id="DOCF18" href="#FOOT18"><sup>18</sup></a> the compilation semantics of <i>word</i>.
+</p>
+<p>Most words have default compilation semantics: compile the execution
+semantics (stack effect <code>( -- )</code>).  But a number of words have other
+compilation semantics, documented for the individual word (including its
+stack effect).
+</p>
+<span id="index-execution-semantics"></span>
+<p>The standard also talks about <em>execution semantics</em>.  In the standard it
+never differs from the interpretation semantics if both are defined, but one
+or both of them may not be defined.  Gforth makes no difference between
+interpretation and execution semantics, so these terms are used
+interchangeably.
+</p>
+<p>In Gforth (since 1.0) all words have defined interpretation/execution
+semantics.  For many words that have no defined interpretation nor execution
+semantics in the standard (e.g., <code>if</code>), the interpretation/execution
+semantics in Gforth are to perform the compilation semantics.
+</p>
+<p>In the standard, execution semantics are used to define interpretation and
+compilation semantics by default: By default, the interpretation semantics
+of a word are to <code>execute</code> its execution semantics, and the compilation
+semantics of a word are to <code>compile,</code> its execution
+semantics.<a id="DOCF19" href="#FOOT19"><sup>19</sup></a>
+</p>
+<p>Unnamed words (see <a href="Anonymous-Definitions.html">Anonymous Definitions</a>) cannot be encountered by the
+text interpreter, ticked, or <code>postpone</code>d.  Such a word is represented
+by its xt (see <a href="Tokens-for-Words.html">Tokens for Words</a>), and the behaviour when this xt is
+<code>execute</code>d is called its execution semantics.
+</p>
+
+<span id="index-immediate-words-1"></span>
+<span id="index-compile_002donly-words"></span>
+<p>You can change the semantics of the most-recently defined word:
+</p>
+
+<span id="index-immediate-_0028--_002d_002d--_0029-core"></span>
+<span id="index-immediate"></span>
+<span id="index-immediate-1"></span>
+<div class="format">
+<pre class="format"><code>immediate</code> ( <i>&ndash;  </i>) core &ldquo;immediate&rdquo;
+</pre></div>
+<p>Make the compilation semantics of a word be to <code>execute</code> the execution
+semantics.
+</p>
+
+<span id="index-compile_002donly-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-compile_002donly"></span>
+<span id="index-compile_002donly-1"></span>
+<div class="format">
+<pre class="format"><code>compile-only</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;compile-only&rdquo;
+</pre></div>
+<p>Mark the last definition as compile-only; as a result, the text interpreter
+and <code>'</code> will warn when they encounter such a word.
+</p>
+
+<span id="index-restrict-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-restrict"></span>
+<span id="index-restrict-1"></span>
+<div class="format">
+<pre class="format"><code>restrict</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;restrict&rdquo;
+</pre></div>
+<p>A synonym for <code>compile-only</code>
+</p>
+
+
+<p>By convention, words with non-default compilation semantics (e.g., immediate
+words) often have names surrounded with brackets (e.g., <code>[']</code>,
+see <a href="Execution-token.html">Execution token</a>).
+</p>
+<p>Note that ticking (<code>'</code>) a compile-only word gives a warning (&ldquo;&lt;word&gt;
+is compile-only&rdquo;).
+</p>
+
+
+<ul class="section-toc">
+<li><a href="Combined-words.html" accesskey="1">Combined Words</a></li>
+</ul>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT18" href="#DOCF18">(18)</a></h5>
+<p>In standard terminology, &ldquo;appends to the current
+definition&rdquo;.</p>
+<h5><a id="FOOT19" href="#DOCF19">(19)</a></h5>
+<p>In standard terminology: The default interpretation
+semantics are its execution semantics; the default compilation semantics are
+to append its execution semantics to the execution semantics of the current
+definition.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Tokens-for-Words.html">Tokens for Words</a>, Previous: <a href="Defining-Words.html">Defining Words</a>, Up: <a href="Words.html">Forth Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

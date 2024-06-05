@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Line input and conversion (Gforth マニュアル)</title>
+
+<meta name="description" content="Line input and conversion (Gforth マニュアル)">
+<meta name="keywords" content="Line input and conversion (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Other-I_002fO.html" rel="up" title="Other I/O">
+<link href="Pipes.html" rel="next" title="Pipes">
+<link href="Single_002dkey-input.html" rel="prev" title="Single-key input">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Line-input-and-conversion">
+<div class="header">
+<p>
+Next: <a href="Pipes.html" accesskey="n" rel="next">Pipes</a>, Previous: <a href="Single_002dkey-input.html" accesskey="p" rel="prev">Single-key input</a>, Up: <a href="Other-I_002fO.html" accesskey="u" rel="up">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Line-input-and-conversion-1"></span><h4 class="subsection">6.20.8 Line input and conversion</h4>
+<span id="index-line-input-from-terminal"></span>
+<span id="index-input_002c-linewise-from-terminal"></span>
+<span id="index-convertin-strings-to-numbers"></span>
+<span id="index-I_002fO-_002d-see-input"></span>
+
+<p>For ways of storing character strings in memory see <a href="String-representations.html">String representations</a>.
+</p>
+
+<p>Words for inputting one line from the keyboard:
+</p>
+<span id="index-accept-_0028--c_002daddr-_002bn1-_002d_002d-_002bn2--_0029-core"></span>
+<span id="index-accept"></span>
+<span id="index-accept-1"></span>
+<div class="format">
+<pre class="format"><code>accept</code> ( <i>c-addr +n1 &ndash; +n2  </i>) core &ldquo;accept&rdquo;
+</pre></div>
+<p>Get a string of up to <var>n1</var> characters from the user input device and
+store it at <var>c-addr</var>.  <var>n2</var> is the length of the received
+string. The user indicates the end by pressing <tt class="key">RET</tt>.  Gforth supports
+all the editing functions available on the Forth command line (including
+history and word completion) in <code>accept</code>.
+</p>
+
+<span id="index-edit_002dline-_0028--c_002daddr-n1-n2-_002d_002d-n3--_0029-gforth_002d0_002e6"></span>
+<span id="index-edit_002dline"></span>
+<span id="index-edit_002dline-1"></span>
+<div class="format">
+<pre class="format"><code>edit-line</code> ( <i>c-addr n1 n2 &ndash; n3  </i>) gforth-0.6 &ldquo;edit-line&rdquo;
+</pre></div>
+<p>edit the string with length <var>n2</var> in the buffer <var>c-addr n1</var>, like
+<code>accept</code>.
+</p>
+
+
+<p>Conversion words:
+</p>
+<span id="index-s_003enumber_003f-_0028--addr-u-_002d_002d-d-f--_0029-gforth_002d0_002e5"></span>
+<span id="index-s_003enumber_003f"></span>
+<span id="index-s_003enumber_003f-1"></span>
+<div class="format">
+<pre class="format"><code>s&gt;number?</code> ( <i>addr u &ndash; d f  </i>) gforth-0.5 &ldquo;s&gt;number?&rdquo;
+</pre></div>
+<p>converts string addr u into d, flag indicates success
+</p>
+
+<span id="index-s_003eunumber_003f-_0028--c_002daddr-u-_002d_002d-ud-flag--_0029-gforth_002d0_002e5"></span>
+<span id="index-s_003eunumber_003f"></span>
+<span id="index-s_003eunumber_003f-1"></span>
+<div class="format">
+<pre class="format"><code>s&gt;unumber?</code> ( <i>c-addr u &ndash; ud flag  </i>) gforth-0.5 &ldquo;s&gt;unumber?&rdquo;
+</pre></div>
+<p>converts string c-addr u into ud, flag indicates success
+</p>
+
+<span id="index-_003enumber-_0028--ud1-c_002daddr1-u1-_002d_002d-ud2-c_002daddr2-u2--_0029-core"></span>
+<span id="index-_003enumber"></span>
+<span id="index-_003enumber-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;number</code> ( <i>ud1 c-addr1 u1 &ndash; ud2 c-addr2 u2  </i>) core &ldquo;to-number&rdquo;
+</pre></div>
+<p>Attempt to convert the character string <var>c-addr1 u1</var> to an unsigned
+number in the current number base. The double <var>ud1</var> accumulates the
+result of the conversion to form <var>ud2</var>. Conversion continues,
+left-to-right, until the whole string is converted or a character that is
+not convertable in the current number base is encountered (including + or
+-). For each convertable character, <var>ud1</var> is first multiplied by the
+value in <code>BASE</code> and then incremented by the value represented by the
+character. <var>c-addr2</var> is the location of the first unconverted character
+(past the end of the string if the whole string was converted). <var>u2</var> is
+the number of unconverted characters in the string. Overflow is not
+detected.
+</p>
+
+<span id="index-_003efloat-_0028--c_002daddr-u-_002d_002d-f_003a_002e_002e_002e-flag--_0029-floating"></span>
+<span id="index-_003efloat"></span>
+<span id="index-_003efloat-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;float</code> ( <i>c-addr u &ndash; f:... flag </i>) floating &ldquo;to-float&rdquo;
+</pre></div>
+<p>Actual stack effect: ( c_addr u &ndash; r t | f ).  Attempt to convert the
+character string <i>c-addr u</i> to internal floating-point representation. If
+the string represents a valid floating-point number, <i>r</i> is placed on the
+floating-point stack and <i>flag</i> is true. Otherwise, <i>flag</i> is false. A
+string of blanks is a special case and represents the floating-point number
+0.
+</p>
+<span id="index-_003efloat1-_0028--c_002daddr-u-c-_002d_002d-f_003a_002e_002e_002e-flag--_0029-gforth_002d1_002e0"></span>
+<span id="index-_003efloat1"></span>
+<span id="index-_003efloat1-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;float1</code> ( <i>c-addr u c &ndash; f:... flag </i>) gforth-1.0 &ldquo;to-float1&rdquo;
+</pre></div>
+<p>Actual stack effect: ( c_addr u c &ndash; r t | f ).  Attempt to convert the
+character string <i>c-addr u</i> to internal floating-point representation,
+with <i>c</i> being the decimal separator.  If the string represents a valid
+floating-point number, <i>r</i> is placed on the floating-point stack and
+<i>flag</i> is true. Otherwise, <i>flag</i> is false. A string of blanks is a
+special case and represents the floating-point number 0.
+</p>
+
+<p>Obsolescent input and conversion words:
+</p>
+<span id="index-convert-_0028--ud1-c_002daddr1-_002d_002d-ud2-c_002daddr2--_0029-core_002dext_002dobsolescent"></span>
+<span id="index-convert"></span>
+<span id="index-convert-1"></span>
+<div class="format">
+<pre class="format"><code>convert</code> ( <i>ud1 c-addr1 &ndash; ud2 c-addr2  </i>) core-ext-obsolescent &ldquo;convert&rdquo;
+</pre></div>
+<p>Obsolescent: superseded by <code>&gt;number</code>.
+</p>
+
+<span id="index-expect-_0028--c_002daddr-_002bn-_002d_002d--_0029-core_002dext_002dobsolescent"></span>
+<span id="index-expect"></span>
+<span id="index-expect-1"></span>
+<div class="format">
+<pre class="format"><code>expect</code> ( <i>c-addr +n &ndash;  </i>) core-ext-obsolescent &ldquo;expect&rdquo;
+</pre></div>
+<p>Receive a string of at most <i>+n</i> characters, and store it in memory
+starting at <i>c-addr</i>. The string is displayed. Input terminates when the
+&lt;return&gt; key is pressed or <i>+n</i> characters have been received. The normal
+Gforth line editing capabilites are available. The length of the string is
+stored in <code>span</code>; it does not include the &lt;return&gt;
+character. OBSOLESCENT: superceeded by <code>accept</code>.
+</p>
+
+<span id="index-span-_0028--_002d_002d-c_002daddr--_0029-core_002dext_002dobsolescent"></span>
+<span id="index-span"></span>
+<span id="index-span-1"></span>
+<div class="format">
+<pre class="format"><code>span</code> ( <i>&ndash; c-addr  </i>) core-ext-obsolescent &ldquo;span&rdquo;
+</pre></div>
+<p><code>Variable</code> &ndash; <i>c-addr</i> is the address of a cell that stores the
+length of the last string received by <code>expect</code>. OBSOLESCENT.
+</p>
+
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Pipes.html">Pipes</a>, Previous: <a href="Single_002dkey-input.html">Single-key input</a>, Up: <a href="Other-I_002fO.html">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Macros (Gforth マニュアル)</title>
+
+<meta name="description" content="Macros (Gforth マニュアル)">
+<meta name="keywords" content="Macros (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Compiling-words.html" rel="up" title="Compiling words">
+<link href="Literals.html" rel="prev" title="Literals">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Macros">
+<div class="header">
+<p>
+Previous: <a href="Literals.html" accesskey="p" rel="prev">Literals</a>, Up: <a href="Compiling-words.html" accesskey="u" rel="up">Compiling words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Macros-1"></span><h4 class="subsection">6.13.2 Macros</h4>
+<span id="index-Macros"></span>
+<span id="index-compiling-compilation-semantics"></span>
+
+<p><code>Literal</code> and friends compile data values into the current definition.
+You can also write words that compile other words into the current
+definition.  E.g.,
+</p>
+<div class="example">
+<pre class="example">: compile-+ ( -- ) \ compiled code: ( n1 n2 -- n )
+  POSTPONE + ;
+
+: foo ( n1 n2 -- n )
+  [ compile-+ ] ;
+1 2 foo .
+</pre></div>
+
+<p>This is equivalent to <code>: foo + ;</code> (<code>see foo</code> to check this).  What
+happens in this example? <code>Postpone</code> compiles the compilation semantics
+of <code>+</code> into <code>compile-+</code>; later the text interpreter executes
+<code>compile-+</code> and thus the compilation semantics of +, which compile (the
+execution semantics of) <code>+</code> into <code>foo</code>.<a id="DOCF23" href="#FOOT23"><sup>23</sup></a>
+</p>
+<span id="index-postpone-_0028--_0022name_0022-_002d_002d--_0029-core"></span>
+<span id="index-postpone"></span>
+<span id="index-postpone-1"></span>
+<div class="format">
+<pre class="format"><code>postpone</code> ( <i>&quot;name&quot; &ndash;  </i>) core &ldquo;postpone&rdquo;
+</pre></div>
+<p>Compiles the compilation semantics of <i>name</i>.
+</p>
+
+
+<p>Compiling words like <code>compile-+</code> are usually immediate (or similar)  so
+you do not have to switch to interpret state to execute them; modifying the
+last example accordingly produces:
+</p>
+<div class="example">
+<pre class="example">: [compile-+] ( compilation: --; interpretation: -- )
+  \ compiled code: ( n1 n2 -- n )
+  POSTPONE + ; immediate
+
+: foo ( n1 n2 -- n )
+  [compile-+] ;
+1 2 foo .
+</pre></div>
+
+<p>You will occassionally find the need to POSTPONE several words; putting
+POSTPONE before each such word is cumbersome, so Gforth provides a more
+convenient syntax: <code>]] ... [[</code>.  This allows us to write
+<code>[compile-+]</code> as:
+</p>
+<div class="example">
+<pre class="example">: [compile-+] ( compilation: --; interpretation: -- )
+  ]] + [[ ; immediate
+</pre></div>
+
+<span id="index-_005d_005d-_0028--_002d_002d--_0029-gforth_002d0_002e6"></span>
+<span id="index-_005d_005d"></span>
+<span id="index-_005d_005d-1"></span>
+<div class="format">
+<pre class="format"><code>]]</code> ( <i>&ndash;  </i>) gforth-0.6 &ldquo;right-bracket-bracket&rdquo;
+</pre></div>
+<p>Switch into postpone state: All words and recognizers are processed as if
+they were preceded by <code>postpone</code>.  Postpone state ends when <code>[[</code>
+is recognized.
+</p>
+
+
+<p>The unusual direction of the brackets indicates their function: <code>]]</code>
+switches from compilation to postponing (i.e., compilation of compilation),
+just like <code>]</code> switches from immediate execution (interpretation) to
+compilation.  Conversely, <code>[[</code> switches from postponing to compilation,
+ananlogous to <code>[</code> which switches from compilation to immediate
+execution.
+</p>
+<p>The real advantage of <code>]] </code>...<code> [[</code> becomes apparent when there
+are many words to POSTPONE.  E.g., the word <code>compile-map-array</code>
+(see <a href="Advanced-macros-Tutorial.html">Advanced macros</a>) can be written much shorter as follows:
+</p>
+<div class="example">
+<pre class="example">: compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )
+\ at run-time, execute xt ( ... x -- ... ) for each element of the
+\ array beginning at addr and containing u elements
+  {: xt: xt :}
+  ]] cells over + swap ?do
+    i @ xt 1 cells +loop [[ ;
+
+: sum-array ( addr u -- n )
+  0 [ ' + compile-map-array ] ;
+</pre></div>
+
+<p>If you then say <code>see sum-array</code>, it shows the following code:
+</p>
+<div class="example">
+<pre class="example">: sum-array
+  #0 over + swap ?do
+    i &nbsp;+ #8 +LOOP
+;
+</pre></div>
+
+<p>In addition to <code>]]</code>...<code>[[</code>, this example shows off some other
+features:
+</p>
+<ul>
+<li> It uses a defer-flavoured (defined with <code>xt:</code> local <code>xt</code>;
+mentioning the local inside <code>]]</code>...<code>[[</code> results in
+<code>compile,</code>ing the xt in the local.
+
+</li><li> It uses the literal <code>1</code> inside <code>]]</code>...<code>[[</code>.  This results in
+<code>postpone</code>ing the <code>1</code>, i.e. compiling it when
+<code>compile-map-array</code> is run.
+
+</li><li> When <code>compile-map-array</code> is run, <code>1 cells</code> is compiled and
+optimized into <code>#8</code> by Gforth&rsquo;s constant folding.
+
+</li></ul>
+
+<p>Note that parsing words such as <code>s\&quot;</code> don&rsquo;t parse at postpone time and
+therefore not inside <code>]]</code>...<code>[[</code>.  Instead of <code>s\&quot;
+mystring\n&quot;</code> you can use the string recognizer and write
+<code>&quot;mystring\n&quot;</code>, which works inside <code>]]</code>...<code>[[</code>.  Likewise for
+the parsing word <code>[']</code> and the recognizer notation starting with
+<code>`</code>.
+</p>
+<p>But if you prefer to use <code>s\&quot;</code> (or have a parsing word that has no
+recognizer replacement), you can do it by switching back to compilation:
+</p>
+<div class="example">
+<pre class="example">]] ... [[ s\&quot; mystring\n&quot; ]] 2literal ... [[
+</pre></div>
+
+<p>Definitions of <code>]]</code> and friends in Standard Forth are provided in
+<samp>compat/macros.fs</samp>.
+</p>
+<p>Immediate compiling words are similar to macros in other languages (in
+particular, Lisp).  The important differences to macros in, e.g., C are:
+</p>
+<ul>
+<li> You use the same language for defining and processing macros, not a separate
+preprocessing language and processor.
+
+</li><li> Consequently, the full power of Forth is available in macro definitions.
+E.g., you can perform arbitrarily complex computations, or generate
+different code conditionally or in a loop (e.g., see <a href="Advanced-macros-Tutorial.html">Advanced macros</a>).  This power is very useful when writing a parser generators or
+other code-generating software.
+
+</li><li> Macros defined using <code>postpone</code> etc. deal with the language at a higher
+level than strings; name binding happens at macro definition time, so you
+can avoid the pitfalls of name collisions that can happen in C macros.  Of
+course, Forth is a liberal language and also allows to shoot yourself in the
+foot with text-interpreted macros like
+
+<div class="example">
+<pre class="example">: [compile-+] s&quot; +&quot; evaluate ; immediate
+</pre></div>
+
+<p>Apart from binding the name at macro use time, using <code>evaluate</code> also
+makes your definition <code>state</code>-smart (see <a href="Combined-words.html#state_002dsmartness">state-smartness</a>).
+</p></li></ul>
+
+<p>You may want the macro to compile a number into a word.  The word to do it
+is <code>literal</code>, but you have to <code>postpone</code> it, so its compilation
+semantics take effect when the macro is executed, not when it is compiled:
+</p>
+<div class="example">
+<pre class="example">: [compile-5] ( -- ) \ compiled code: ( -- n )
+  5 POSTPONE literal ; immediate
+
+: foo [compile-5] ;
+foo .
+</pre></div>
+
+<p>You may want to pass parameters to a macro, that the macro should compile
+into the current definition.  If the parameter is a number, then you can use
+<code>postpone literal</code> (similar for other values).
+</p>
+<p>If you want to pass a word that is to be compiled, the usual way is to pass
+an execution token and <code>compile,</code> it:
+</p>
+<div class="example">
+<pre class="example">: twice1 ( xt -- ) \ compiled code: ... -- ...
+  dup compile, compile, ;
+
+: 2+ ( n1 -- n2 )
+  [ ' 1+ twice1 ] ;
+</pre></div>
+
+<span id="index-compile_002c-_0028--xt-_002d_002d--_0029-core_002dext"></span>
+<span id="index-compile_002c"></span>
+<span id="index-compile_002c-1"></span>
+<div class="format">
+<pre class="format"><code>compile,</code> ( <i>xt &ndash;  </i>) core-ext &ldquo;compile-comma&rdquo;
+</pre></div>
+<p>Append the semantics represented by <i>xt</i> to the current definition.  When
+the resulting code fragment is run, it behaves the same as if <i>xt</i> is
+<code>execute</code>d.
+</p>
+
+
+<p>An alternative available in Gforth, that allows you to pass the compilation
+semantics as parameters is to use the compilation token (see <a href="Compilation-token.html">Compilation token</a>).  The same example in this technique:
+</p>
+<div class="example">
+<pre class="example">: twice ( ... ct -- ... ) \ compiled code: ... -- ...
+  2dup 2&gt;r execute 2r&gt; execute ;
+
+: 2+ ( n1 -- n2 )
+  [ comp' 1+ twice ] ;
+</pre></div>
+
+<p>In the example above <code>2&gt;r</code> and <code>2r&gt;</code> ensure that <code>twice</code>
+works even if the executed compilation semantics has an effect on the data
+stack.
+</p>
+<p>You can also define complete definitions with these words; this provides an
+alternative to using <code>does&gt;</code> (see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>).
+E.g., instead of
+</p>
+<div class="example">
+<pre class="example">: curry+ ( n1 &quot;name&quot; -- )
+    CREATE ,
+DOES&gt; ( n2 -- n1+n2 )
+    @ + ;
+</pre></div>
+
+<p>you could define
+</p>
+<div class="example">
+<pre class="example">: curry+ ( n1 &quot;name&quot; -- )
+  \ name execution: ( n2 -- n1+n2 )
+  &gt;r : r&gt; POSTPONE literal POSTPONE + POSTPONE ; ;
+
+-3 curry+ 3-
+see 3-
+</pre></div>
+
+<p>The sequence <code>&gt;r : r&gt;</code> is necessary, because <code>:</code> puts a colon-sys
+on the data stack that makes everything below it unaccessible.
+</p>
+<p>This way of writing defining words is sometimes more, sometimes less
+convenient than using <code>does&gt;</code> (see <a href="Advanced-does_003e-usage-example.html">Advanced does&gt; usage example</a>).
+One advantage of this method is that it can be optimized better, because the
+compiler knows that the value compiled with <code>literal</code> is fixed, whereas
+the data associated with a <code>create</code>d word can be changed.
+</p>
+<span id="index-_005bcompile_005d-_0028--compilation-_0022name_0022-_002d_002d-_003b-run_002dtime-_003f-_002d_002d-_003f--_0029-core_002dext"></span>
+<span id="index-_005bcompile_005d"></span>
+<span id="index-_005bcompile_005d-1"></span>
+<div class="format">
+<pre class="format"><code>[compile]</code> ( <i>compilation &quot;name&quot; &ndash; ; run-time ? &ndash; ?  </i>) core-ext &ldquo;bracket-compile&rdquo;
+</pre></div>
+<p>Legacy word.  Use <code>postpone</code> instead.  Works like <code>postpone</code> if
+<i>name</i> has non-default compilation semantics.  If <i>name</i> has default
+compilation semantics (i.e., is a normal word), compiling <code>[compile]
+<i>name</i></code> is equivalent to compiling <i>name</i> (i.e. <code>[compile]</code> is
+redundant in this case.
+</p>
+
+
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT23" href="#DOCF23">(23)</a></h5>
+<p>A recent RFI
+answer requires that compiling words should only be executed in compile
+state, so this example is not guaranteed to work on all standard systems,
+but on any decent system it will work.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Literals.html">Literals</a>, Up: <a href="Compiling-words.html">Compiling words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

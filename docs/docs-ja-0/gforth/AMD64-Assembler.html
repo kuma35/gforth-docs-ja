@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>AMD64 Assembler (Gforth マニュアル)</title>
+
+<meta name="description" content="AMD64 Assembler (Gforth マニュアル)">
+<meta name="keywords" content="AMD64 Assembler (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Assembler-and-Code-Words.html" rel="up" title="Assembler and Code Words">
+<link href="Alpha-Assembler.html" rel="next" title="Alpha Assembler">
+<link href="386-Assembler.html" rel="prev" title="386 Assembler">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="AMD64-Assembler">
+<div class="header">
+<p>
+Next: <a href="Alpha-Assembler.html" accesskey="n" rel="next">Alpha Assembler</a>, Previous: <a href="386-Assembler.html" accesskey="p" rel="prev">386 Assembler</a>, Up: <a href="Assembler-and-Code-Words.html" accesskey="u" rel="up">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="AMD64-_0028x86_005f64_0029-Assembler"></span><h4 class="subsection">6.29.5 AMD64 (x86_64) Assembler</h4>
+
+<p>The AMD64 assembler is a slightly modified version of the 386 assembler, and
+as such shares most of the syntax.  Two new prefixes, <code>.q</code> and
+<code>.qa</code>, are provided to select 64-bit operand and address sizes
+respectively.  64-bit sizes are the default, so normally you only have to
+use the other prefixes.  Also there are additional register operands
+<code>R8</code>-<code>R15</code>.
+</p>
+<p>The registers lack the &rsquo;e&rsquo; or &rsquo;r&rsquo; prefix; even in 64 bit mode, <code>rax</code> is
+called <code>ax</code>.  Additional register operands are available to refer to
+the lowest-significant byte of all registers: <code>R8L</code>-<code>R15L</code>,
+<code>SPL</code>, <code>BPL</code>, <code>SIL</code>, <code>DIL</code>.
+</p>
+<p>The Linux-AMD64 calling convention is to pass the first 6 integer parameters
+in rdi, rsi, rdx, rcx, r8 and r9 and to return the result in rax and rdx; to
+pass the first 8 FP parameters in xmm0&ndash;xmm7 and to return FP results in
+xmm0&ndash;xmm1.  So <code>abi-code</code> words get the data stack pointer in
+<code>di</code> and the address of the FP stack pointer in <code>si</code>, and return
+the data stack pointer in <code>ax</code>.  The other caller-saved registers are:
+r10, r11, xmm8-xmm15.  This calling convention reportedly is also used in
+other non-Microsoft OSs.
+</p>
+<p>Windows x64 passes the first four integer parameters in rcx, rdx, r8 and r9
+and return the integer result in rax.  The other caller-saved registers are
+r10 and r11.
+</p>
+<p>On the Linux platform, according to
+<a href="https://uclibc.org/docs/psABI-x86_64.pdf">https://uclibc.org/docs/psABI-x86_64.pdf</a> page 21 the registers AX CX
+DX SI DI R8 R9 R10 R11 are available for scratch.
+</p>
+<p>The addressing modes for the AMD64 are:
+</p>
+<div class="example">
+<pre class="example">\ running word A produces a memory error as the registers are not initialised ;-)
+ABI-CODE A  ( -- )
+    500        #               AX  MOV     \ immediate
+        DX              AX  MOV     \ register
+        200             AX  MOV     \ direct addressing
+        DX  )           AX  MOV     \ indirect addressing
+    40  DX  D)          AX  MOV     \ base with displacement
+        DX  CX      I)  AX  MOV     \ scaled index
+        DX  CX  *4  I)  AX  MOV     \ scaled index
+    40  DX  CX  *4  DI) AX  MOV     \ scaled index with displacement
+
+        DI              AX  MOV     \ SP Out := SP in
+                            RET
+END-CODE
+</pre></div>
+
+<p>Here are a few examples of an AMD64 <code>abi-code</code> words:
+</p>
+<div class="example">
+<pre class="example">abi-code my+  ( n1 n2 -- n3 )
+\ SP passed in di, returned in ax,  address of FP passed in si
+8 di d) ax lea        \ compute new sp in result reg
+di )    dx mov        \ get old tos
+dx    ax ) add        \ add to new tos
+ret
+end-code
+</pre></div>
+
+<div class="example">
+<pre class="example">\ Do nothing
+ABI-CODE aNOP  ( -- )
+       DI  )       AX      LEA          \ SP out := SP in  
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">\ Drop TOS
+ABI-CODE aDROP  ( n -- )
+   8   DI  D)      AX      LEA          \ SPout := SPin - 1
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">\ Push 5 on the data stack
+ABI-CODE aFIVE   ( -- 5 )
+   -8  DI  D)      AX      LEA          \ SPout := SPin + 1
+   5   #           AX  )   MOV          \ TOS := 5
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">\ Push 10 and 20 into data stack
+ABI-CODE aTOS2  ( -- n n )
+   -16 DI  D)      AX      LEA          \ SPout := SPin + 2
+   10  #       8   AX  D)  MOV          \ TOS - 1 := 10
+   20  #           AX  )   MOV          \ TOS := 20
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">\ Get Time Stamp Counter as two 32 bit integers
+\ The TSC is incremented every CPU clock pulse
+ABI-CODE aRDTSC   ( -- TSCl TSCh )
+                           RDTSC        \ DX:AX := TSC
+   $FFFFFFFF #     AX      AND          \ Clear upper 32 bit AX
+  0xFFFFFFFF #     DX      AND          \ Clear upper 32 bit DX
+       AX          R8      MOV          \ Tempory save AX
+   -16 DI  D)      AX      LEA          \ SPout := SPin + 2
+       R8      8   AX  D)  MOV          \ TOS-1 := saved AX = TSC low
+       DX          AX  )   MOV          \ TOS := Dx = TSC high
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">\ Get Time Stamp Counter as 64 bit integer
+ABI-CODE RDTSC   ( -- TSC )
+                           RDTSC        \ DX:AX := TSC
+   $FFFFFFFF #     AX      AND          \ Clear upper 32 bit AX
+   32  #           DX      SHL          \ Move lower 32 bit DX to upper 32 bit
+       AX          DX      OR           \ Combine AX wit DX in DX
+   -8  DI  D)      AX      LEA          \ SPout := SPin + 1
+       DX          AX  )   MOV          \ TOS := DX
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">VARIABLE V
+
+\ Assign 4 to variable V
+ABI-CODE V=4 ( -- )
+       BX                  PUSH         \ Save BX, used by gforth
+   V   #           BX      MOV          \ BX := address of V
+   4   #           BX )    MOV          \ Write 4 to V
+       BX                  POP          \ Restore BX
+       DI  )       AX      LEA          \ SPout := SPin
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">VARIABLE V
+
+\ Assign 5 to variable V
+ABI-CODE V=5 ( -- )
+   V   #           CX      MOV          \ CX := address of V
+   5   #           CX )    MOV          \ Write 5 to V
+   DI )            AX      LEA          \ SPout := SPin
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">ABI-CODE TEST2  ( -- n n )
+   -16 DI  D)  AX          LEA          \ SPout := SPin + 2
+   5   #       CX          MOV          \ CX := 5
+   5   #       CX          CMP
+   0= IF
+       1   #   8   AX  D)      MOV      \ If CX = 5 then TOS - 1 := 1  &lt;--
+   ELSE
+       2   #   8   AX  D)      MOV      \ else TOS - 1 := 2
+   THEN
+   6   #       CX          CMP
+   0= IF
+       3   #       AX  )       MOV      \ If CX = 6 then TOS := 3
+   ELSE
+       4   #       AX  )       MOV      \ else TOS := 4  &lt;--
+   THEN
+                           RET
+END-CODE
+</pre></div>
+
+
+<div class="example">
+<pre class="example">\ Do four loops. Expect : ( 4 3 2 1 -- )
+ABI-CODE LOOP4  ( -- n n n n )
+       DI          AX      MOV          \ SPout := SPin
+   4   #           DX      MOV          \ DX := 4  loop counter
+   BEGIN
+       8   #           AX      SUB      \ SP := SP + 1
+           DX          AX  )   MOV      \ TOS := DX
+       1   #           DX      SUB      \ DX := DX - 1
+   0= UNTIL
+                           RET
+END-CODE
+</pre></div>
+
+<p>Here&rsquo;s a AMD64 example that deals with FP values:
+</p>
+<div class="example">
+<pre class="example">abi-code my-f+  ( r1 r2 -- r )
+\ SP passed in di, returned in ax,  address of FP passed in si
+si )       dx mov         \ load fp
+8 dx d)  xmm0 movsd       \ r2
+dx )     xmm0 addsd       \ r1+r2
+xmm0  8 dx d) movsd       \ store r
+8 #      si ) add         \ update fp
+di         ax mov         \ sp into return reg
+ret
+end-code
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Alpha-Assembler.html">Alpha Assembler</a>, Previous: <a href="386-Assembler.html">386 Assembler</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

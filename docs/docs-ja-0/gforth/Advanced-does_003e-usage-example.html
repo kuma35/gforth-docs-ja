@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Advanced does&gt; usage example (Gforth マニュアル)</title>
+
+<meta name="description" content="Advanced does&gt; usage example (Gforth マニュアル)">
+<meta name="keywords" content="Advanced does&gt; usage example (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="User_002ddefined-Defining-Words.html" rel="up" title="User-defined Defining Words">
+<link href="User_002ddefined-TO-and-DEFER_0040.html" rel="next" title="User-defined TO and DEFER@">
+<link href="CREATE_002e_002eDOES_003e-details.html" rel="prev" title="CREATE..DOES&gt; details">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Advanced-does_003e-usage-example">
+<div class="header">
+<p>
+Next: <a href="User_002ddefined-TO-and-DEFER_0040.html" accesskey="n" rel="next">User-defined <code>to</code> and <code>defer@</code></a>, Previous: <a href="CREATE_002e_002eDOES_003e-details.html" accesskey="p" rel="prev">The gory details of <code>CREATE..DOES&gt;</code></a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Advanced-does_003e-usage-example-1"></span><h4 class="subsubsection">6.10.10.5 Advanced does&gt; usage example</h4>
+
+<p>The MIPS disassembler (<samp>arch/mips/disasm.fs</samp>) contains many words for
+disassembling instructions, that follow a very repetetive scheme:
+</p>
+<div class="example">
+<pre class="example">:noname <var>disasm-operands</var> s&quot; <var>inst-name</var>&quot; type ;
+<var>entry-num</var> cells <var>table</var> + !
+</pre></div>
+
+<p>Of course, this inspires the idea to factor out the commonalities to allow a
+definition like
+</p>
+<div class="example">
+<pre class="example"><var>disasm-operands</var> <var>entry-num</var> <var>table</var> define-inst <var>inst-name</var>
+</pre></div>
+
+<p>The parameters <var>disasm-operands</var> and <var>table</var> are usually
+correlated.  Moreover, before I wrote the disassembler, there already
+existed code that defines instructions like this:
+</p>
+<div class="example">
+<pre class="example"><var>entry-num</var> <var>inst-format</var> <var>inst-name</var>
+</pre></div>
+
+<p>This code comes from the assembler and resides in <samp>arch/mips/insts.fs</samp>.
+</p>
+<p>So I had to define the <var>inst-format</var> words that performed the scheme
+above when executed.  At first I chose to use run-time code-generation:
+</p>
+<div class="example">
+<pre class="example">: <var>inst-format</var> ( entry-num &quot;name&quot; -- ; compiled code: addr w -- )
+  :noname Postpone <var>disasm-operands</var>
+  name Postpone sliteral Postpone type Postpone ;
+  swap cells <var>table</var> + ! ;
+</pre></div>
+
+<p>Note that this supplies the other two parameters of the scheme above.
+</p>
+<p>An alternative would have been to write this using
+<code>create</code>/<code>does&gt;</code>:
+</p>
+<div class="example">
+<pre class="example">: <var>inst-format</var> ( entry-num &quot;name&quot; -- )
+  here name string, ( entry-num c-addr ) \ parse and save &quot;name&quot;
+  noname create , ( entry-num )
+  latestxt swap cells <var>table</var> + !
+does&gt; ( addr w -- )
+  \ disassemble instruction w at addr
+  @ &gt;r 
+  <var>disasm-operands</var>
+  r&gt; count type ;
+</pre></div>
+
+<p>Somehow the first solution is simpler, mainly because it&rsquo;s simpler to shift
+a string from definition-time to use-time with <code>sliteral</code> than with
+<code>string,</code> and friends.
+</p>
+<p>I wrote a lot of words following this scheme and soon thought about
+factoring out the commonalities among them.  Note that this uses a two-level
+defining word, i.e., a word that defines ordinary defining words.
+</p>
+<p>This time a solution involving <code>postpone</code> and friends seemed more
+difficult (try it as an exercise), so I decided to use a
+<code>create</code>/<code>does&gt;</code> word; since I was already at it, I also used
+<code>create</code>/<code>does&gt;</code> for the lower level (try using <code>postpone</code>
+etc. as an exercise), resulting in the following definition:
+</p>
+<div class="example">
+<pre class="example">: define-format ( disasm-xt table-xt -- )
+    \ define an instruction format that uses disasm-xt for
+    \ disassembling and enters the defined instructions into table
+    \ table-xt
+    create 2,
+does&gt; ( u &quot;inst&quot; -- )
+    \ defines an anonymous word for disassembling instruction inst,
+    \ and enters it as u-th entry into table-xt
+    2@ swap here name string, ( u table-xt disasm-xt c-addr ) \ remember string
+    noname create 2,      \ define anonymous word
+    execute latestxt swap ! \ enter xt of defined word into table-xt
+does&gt; ( addr w -- )
+    \ disassemble instruction w at addr
+    2@ &gt;r ( addr w disasm-xt R: c-addr )
+    execute ( R: c-addr ) \ disassemble operands
+    r&gt; count type ; \ print name 
+</pre></div>
+
+<p>Note that the tables here (in contrast to above) do the <code>cells +</code> by
+themselves (that&rsquo;s why you have to pass an xt).  This word is used in the
+following way:
+</p>
+<div class="example">
+<pre class="example">' <var>disasm-operands</var> ' <var>table</var> define-format <var>inst-format</var>
+</pre></div>
+
+<p>As shown above, the defined instruction format is then used like this:
+</p>
+<div class="example">
+<pre class="example"><var>entry-num</var> <var>inst-format</var> <var>inst-name</var>
+</pre></div>
+
+<p>In terms of currying, this kind of two-level defining word provides the
+parameters in three stages: first <var>disasm-operands</var> and <var>table</var>,
+then <var>entry-num</var> and <var>inst-name</var>, finally <code>addr w</code>, i.e., the
+instruction to be disassembled.  
+</p>
+<p>Of course this did not quite fit all the instruction format names used in
+<samp>insts.fs</samp>, so I had to define a few wrappers that conditioned the
+parameters into the right form.
+</p>
+<p>If you have trouble following this section, don&rsquo;t worry.  First, this is
+involved and takes time (and probably some playing around) to understand;
+second, this is the first two-level <code>create</code>/<code>does&gt;</code> word I have
+written in seventeen years of Forth; and if I did not have <samp>insts.fs</samp>
+to start with, I may well have elected to use just a one-level defining word
+(with some repeating of parameters when using the defining word). So it is
+not necessary to understand this, but it may improve your understanding of
+Forth.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>, Previous: <a href="CREATE_002e_002eDOES_003e-details.html">The gory details of <code>CREATE..DOES&gt;</code></a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

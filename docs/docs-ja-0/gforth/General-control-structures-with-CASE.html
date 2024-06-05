@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>General control structures with CASE (Gforth マニュアル)</title>
+
+<meta name="description" content="General control structures with CASE (Gforth マニュアル)">
+<meta name="keywords" content="General control structures with CASE (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Control-Structures.html" rel="up" title="Control Structures">
+<link href="Arbitrary-control-structures.html" rel="next" title="Arbitrary control structures">
+<link href="BEGIN-loops-with-multiple-exits.html" rel="prev" title="BEGIN loops with multiple exits">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="General-control-structures-with-CASE">
+<div class="header">
+<p>
+Next: <a href="Arbitrary-control-structures.html" accesskey="n" rel="next">Arbitrary control structures</a>, Previous: <a href="BEGIN-loops-with-multiple-exits.html" accesskey="p" rel="prev"><code>Begin</code> loops with multiple exits</a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="General-control-structures-with-case"></span><h4 class="subsection">6.9.5 General control structures with <code>case</code></h4>
+<span id="index-case-as-generalized-control-structure"></span>
+<span id="index-general-control-structures-_0028case_0029"></span>
+
+<p>Gforth provides an extended <code>case</code> that solves the problems of the
+multi-exit loops discussed above, and offers additional options.  You can
+find a portable implementation of this extended <code>case</code> in
+<samp>compat/caseext.fs</samp>.
+</p>
+<p>There are three additional words in the extension.  The first is <code>?of</code>
+which allows general tests (rather than just testing for equality) in a
+<code>case</code>; e.g.,
+</p>
+<div class="example">
+<pre class="example">: sgn ( n -- -1|0|1 )
+  ( n ) case
+    dup 0 &lt; ?of drop -1 endof
+    dup 0 &gt; ?of drop 1  endof
+    \ otherwise leave the 0 on the stack
+  0 endcase ;
+</pre></div>
+
+<p>Note that <code>endcase</code> drops a value, which works fine much of the time
+with <code>of</code>, but usually not with <code>?of</code>, so we leave a 0 on the
+stack for <code>endcase</code> to drop.  The n that is passed into <code>sgn</code> is
+also 0 if neither <code>?of</code> triggers, and that is then passed out.
+</p>
+<p>The second additional word is <code>next-case</code>, which allows turning
+<code>case</code> into a loop.  Our triple-exit loop becomes:
+</p>
+<div class="example">
+<pre class="example">case
+  condition1 ?of exit-code1 endof
+  condition2 ?of exit-code2 endof
+  condition3 ?of exit-code3 endof
+  ...
+next-case
+common code afterwards
+</pre></div>
+
+<p>As you can see, this solves both problems of the variants discussed above
+(see <a href="BEGIN-loops-with-multiple-exits.html"><code>Begin</code> loops with multiple exits</a>).  Note that <code>next-case</code> does
+not drop a value, unlike <code>endcase</code>.<a id="DOCF13" href="#FOOT13"><sup>13</sup></a>
+</p>
+<p>The last additional word is <code>contof</code>, which is used instead of
+<code>endof</code> and starts the next iteration instead of leaving the loop.
+This can be used in ways similar to Dijkstra&rsquo;s guarded command <i>do</i>, e.g.:
+</p>
+<div class="example">
+<pre class="example">: gcd ( n1 n2 -- n )
+    case
+        2dup &gt; ?of tuck - contof
+        2dup &lt; ?of over - contof
+    endcase ;
+</pre></div>
+
+<p>Here the two <code>?of</code>s have different ways of continuing the loop; when
+neither <code>?of</code> triggers, the two numbers are equal and are the gcd.
+<code>Endcase</code> drops one of them, leaving the other as n.
+</p>
+<p>You can also combine these words.  Here&rsquo;s an example that uses each of the
+<code>case</code> words once, except <code>endcase</code>:
+</p>
+<div class="example">
+<pre class="example">: collatz ( u -- )
+    \ print the 3n+1 sequence starting at u until we reach 1
+    case
+        dup .
+        1 of endof
+        dup 1 and ?of 3 * 1+ contof
+        2/
+    next-case ;
+</pre></div>
+
+<p>This example keeps the current value of the sequence on the stack.  If it is
+1, the <code>of</code> triggers, drops the value, and leaves the <code>case</code>
+structure.  For odd numbers, the <code>?of</code> triggers, computes 3n+1, and
+starts the next iteration with <code>contof</code>.  Otherwise, if the number is
+even, it is divided by 2, and the loop is restarted with <code>next-case</code>.
+</p>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT13" href="#DOCF13">(13)</a></h5>
+<p><code>Next-case</code> has a
+<code>-</code>, unlike the other <code>case</code> words, because VFX Forth contains a
+<code>nextcase</code> that drops a value.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Arbitrary-control-structures.html">Arbitrary control structures</a>, Previous: <a href="BEGIN-loops-with-multiple-exits.html"><code>Begin</code> loops with multiple exits</a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Stack depth changes (Gforth マニュアル)</title>
+
+<meta name="description" content="Stack depth changes (Gforth マニュアル)">
+<meta name="keywords" content="Stack depth changes (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tools.html" rel="up" title="Tools">
+<link href="Standard-Report.html" rel="prev" title="Standard Report">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Stack-depth-changes">
+<div class="header">
+<p>
+Previous: <a href="Standard-Report.html" accesskey="p" rel="prev"><samp>ans-report.fs</samp>: Report the words used, sorted by wordset</a>, Up: <a href="Tools.html" accesskey="u" rel="up">Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Stack-depth-changes-during-interpretation"></span><h3 class="section">8.2 Stack depth changes during interpretation</h3>
+<span id="index-depth_002dchanges_002efs"></span>
+<span id="index-depth-changes-during-interpretation"></span>
+<span id="index-stack-depth-changes-during-interpretation"></span>
+<span id="index-items-on-the-stack-after-interpretation"></span>
+
+<p>Sometimes you notice that, after loading a file, there are items left on the
+stack.  The tool <samp>depth-changes.fs</samp> helps you find out quickly where in
+the file these stack items are coming from.
+</p>
+<p>The simplest way of using <samp>depth-changes.fs</samp> is to include it before
+the file(s) you want to check, e.g.:
+</p>
+<div class="example">
+<pre class="example">gforth depth-changes.fs my-file.fs
+</pre></div>
+
+<p>This will compare the stack depths of the data and FP stack at every empty
+line (in interpretation state) against these depths at the last empty line
+(in interpretation state).  If the depths are not equal, the position in the
+file and the stack contents are printed with <code>~~</code> (see <a href="Debugging.html">Debugging</a>).
+This indicates that a stack depth change has occured in the paragraph of
+non-empty lines before the indicated line.  It is a good idea to leave an
+empty line at the end of the file, so the last paragraph is checked, too.
+</p>
+<p>Checking only at empty lines usually works well, but sometimes you have big
+blocks of non-empty lines (e.g., when building a big table), and you want to
+know where in this block the stack depth changed.  You can check all
+interpreted lines with
+</p>
+<div class="example">
+<pre class="example">gforth depth-changes.fs -e &quot;' all-lines is depth-changes-filter&quot; my-file.fs
+</pre></div>
+
+<p>This checks the stack depth at every end-of-line.  So the depth change
+occured in the line reported by the <code>~~</code> (not in the line before).
+</p>
+<p>Note that, while this offers better accuracy in indicating where the stack
+depth changes, it will often report many intentional stack depth changes
+(e.g., when an interpreted computation stretches across several lines).  You
+can suppress the checking of some lines by putting backslashes at the end of
+these lines (not followed by white space), and using
+</p>
+<div class="example">
+<pre class="example">gforth depth-changes.fs -e &quot;' most-lines is depth-changes-filter&quot; my-file.fs
+</pre></div>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Standard-Report.html"><samp>ans-report.fs</samp>: Report the words used, sorted by wordset</a>, Up: <a href="Tools.html">Tools</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Counted Loops (Gforth マニュアル)</title>
+
+<meta name="description" content="Counted Loops (Gforth マニュアル)">
+<meta name="keywords" content="Counted Loops (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Control-Structures.html" rel="up" title="Control Structures">
+<link href="BEGIN-loops-with-multiple-exits.html" rel="next" title="BEGIN loops with multiple exits">
+<link href="Simple-Loops.html" rel="prev" title="Simple Loops">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Counted-Loops">
+<div class="header">
+<p>
+Next: <a href="BEGIN-loops-with-multiple-exits.html" accesskey="n" rel="next"><code>Begin</code> loops with multiple exits</a>, Previous: <a href="Simple-Loops.html" accesskey="p" rel="prev">Simple Loops</a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Counted-Loops-1"></span><h4 class="subsection">6.9.3 Counted Loops</h4>
+<span id="index-counted-loops"></span>
+<span id="index-loops_002c-counted"></span>
+<span id="index-DO-loops"></span>
+
+<p>The basic counted loop is:
+</p><div class="example">
+<pre class="example"><i>limit</i> <i>start</i> ?DO
+  <i>body</i>
+LOOP
+</pre></div>
+
+<p>This performs one iteration for every integer, starting from <i>start</i> and
+up to, but excluding <i>limit</i>. The counter, or <i>index</i>, can be accessed
+with <code>i</code>. For example, the loop:
+</p><div class="example">
+<pre class="example">10 0 ?DO
+  i .
+LOOP
+</pre></div>
+<p>prints <code>0 1 2 3 4 5 6 7 8 9</code>
+</p>
+<p>The index of the innermost loop can be accessed with <code>i</code>, the index of
+the next loop with <code>j</code>, and the index of the third loop with <code>k</code>.
+</p>
+<p>You can access the limit of the innermost loop with <code>i'</code> and
+<code>i'</code>-<code>i</code> with <code>delta-i</code>.  E.g., running
+</p>
+<div class="example">
+<pre class="example">: foo 7 5 ?do cr i . i' . delta-i . loop ; 
+</pre></div>
+
+<p>prints
+</p>
+<div class="example">
+<pre class="example">5 7 2 
+6 7 1
+</pre></div>
+
+<p>The loop control data are kept on the return stack, so there are some
+restrictions on mixing return stack accesses and counted loop words. In
+particuler, if you put values on the return stack outside the loop, you
+cannot read them inside the loop<a id="DOCF12" href="#FOOT12"><sup>12</sup></a>. If you put values on the return stack within a loop, you have to
+remove them before the end of the loop and before accessing the index of the
+loop.
+</p>
+<p>There are several variations on the counted loop:
+</p>
+<ul>
+<li> <code>LEAVE</code> leaves the innermost counted loop immediately; execution
+continues after the associated <code>LOOP</code> or <code>NEXT</code>. For example:
+
+<div class="example">
+<pre class="example">10 0 ?DO  i DUP . 3 = IF LEAVE THEN LOOP
+</pre></div>
+<p>prints <code>0 1 2 3</code>
+</p>
+
+</li><li> <code>UNLOOP</code> prepares for an abnormal loop exit, e.g., via
+<code>EXIT</code>. <code>UNLOOP</code> removes the loop control parameters from the
+return stack so <code>EXIT</code> can get to its return address. For example:
+
+<div class="example">
+<pre class="example">: demo 10 0 ?DO i DUP . 3 = IF UNLOOP EXIT THEN LOOP .&quot; Done&quot; ;
+</pre></div>
+<p>prints <code>0 1 2 3</code>
+</p>
+
+</li><li> If <i>start</i> is greater than <i>limit</i>, a <code>?DO</code> loop is entered (and
+<code>LOOP</code> iterates until they become equal by wrap-around
+arithmetic). This behaviour is usually not what you want. Therefore, Gforth
+offers <code>+DO</code> and <code>U+DO</code> (as replacements for <code>?DO</code>), which do
+not enter the loop if <i>start</i> is greater than <i>limit</i>; <code>+DO</code> is for
+signed loop parameters, <code>U+DO</code> for unsigned loop parameters.
+
+</li><li> <code>?DO</code> can be replaced by <code>DO</code>. <code>DO</code> always enters the loop,
+independent of the loop parameters. Do not use <code>DO</code>, even if you know
+that the loop is entered in any case. Such knowledge tends to become invalid
+during maintenance of a program, and then the <code>DO</code> will make trouble.
+
+</li><li> <code>LOOP</code> can be replaced with <code><i>n</i> +LOOP</code>; this updates the index
+by <i>n</i> instead of by 1. The loop is terminated when the border between
+<i>limit-1</i> and <i>limit</i> is crossed. E.g.:
+
+<div class="example">
+<pre class="example">4 0 +DO  i .  2 +LOOP
+</pre></div>
+<p>prints <code>0 2</code>
+</p>
+<div class="example">
+<pre class="example">4 1 +DO  i .  2 +LOOP
+</pre></div>
+<p>prints <code>1 3</code>
+</p>
+</li><li> <span id="index-negative-increment-for-counted-loops"></span>
+<span id="index-counted-loops-with-negative-increment"></span>
+The behaviour of <code><i>n</i> +LOOP</code> is peculiar when <i>n</i> is negative:
+
+<div class="example">
+<pre class="example">-1 0 ?DO  i .  -1 +LOOP
+</pre></div>
+<p>prints <code>0 -1</code>
+</p>
+<div class="example">
+<pre class="example">0 0 ?DO  i .  -1 +LOOP
+</pre></div>
+<p>prints nothing.
+</p>
+<p>We recommend not combining <code>?DO</code> with <code>+LOOP</code>.  Gforth offers
+several alternatives:
+</p>
+<p>If you want <code>-1 +LOOP</code>&rsquo;s behaviour of including an iteration where
+<code>I</code>=limit, start the loop with <code>-[DO</code> or <code>U-[DO</code> (where the
+<code>[</code> is inspired by the mathematical notation for inclusive ranges,
+e.g., [1,n]):
+</p>
+<div class="example">
+<pre class="example">-1 0 -[DO  i .  -1 +LOOP
+</pre></div>
+
+<p>prints <code>0 -1</code>.
+</p>
+<div class="example">
+<pre class="example">0 0 -[DO  i .  -1 +LOOP
+</pre></div>
+
+<p>prints <code>0</code>.
+</p>
+<div class="example">
+<pre class="example">0 -1 -[DO  i .  -1 +LOOP
+</pre></div>
+
+<p>prints nothing.
+</p>
+<p>If you want to exclude the limit, you instead use <code>1 -LOOP</code> (or
+generally <code><i>u</i> -LOOP</code>) and start the loop with <code>?DO</code>, <code>-DO</code>
+or <code>U-DO</code>.  <code>-LOOP</code> terminates the loop when the border between
+<i>limit+1</i> and <i>limit</i> is crossed.  E.g.:
+</p>
+<div class="example">
+<pre class="example">-2 0 -DO  i .  1 -LOOP
+</pre></div>
+<p>prints <code>0 -1</code>
+</p>
+<div class="example">
+<pre class="example">-1 0 -DO  i .  1 -LOOP
+</pre></div>
+<p>prints <code>0</code>
+</p>
+<div class="example">
+<pre class="example">0 0 -DO  i .  1 -LOOP
+</pre></div>
+<p>prints nothing.
+</p>
+<p>Unfortunately, <code>+DO</code>, <code>U+DO</code>, <code>-DO</code>, <code>U-DO</code> and
+<code>-LOOP</code> are not defined in Standard Forth. However, an implementation
+for these words that uses only standard words is provided in
+<samp>compat/loops.fs</samp>.
+</p>
+</li><li> <span id="index-iterate-over-array"></span>
+<span id="index-array_002c-iterating-over"></span>
+A common task is to iterate over the elements of an array, forwards or
+backwards.  Iterating over the addresses of the elements has two benefits:
+It avoids the need to keep the start address of the array around, reducing
+the data stack load; and it avoids the need to perform address computations
+in every iteration.  The disadvantage is that, starting with the usual array
+representations <i>addr uelems</i> or <i>addr ubytes</i>, some processing is
+required to produce a start and limit address.  Gforth has <code>bounds</code> for
+getting there from the <i>addr ubytes</i> representation, so you can write a
+forward loop through a cell array <code>v</code> as:
+
+<div class="example">
+<pre class="example">create v 1 , 3 , 7 ,
+: foo v 3 cells bounds U+DO i &nbsp;. cell +LOOP ;
+foo
+</pre></div>
+
+<p>which prints <code>1 3 7</code>.  Preprocessing the inputs for walking backwards
+is more involved, so Gforth provide a loop construct of the form
+<code>MEM-DO</code>...<code>LOOP</code> that does it for you: It takes an array in
+<i>addr ubytes</i> representation and the element size, and iterates over the
+addresses of the elements in backwards order:
+</p>
+<div class="example">
+<pre class="example">create v 1 , 3 , 7 ,
+: foo1 v 3 cell array&gt;mem MEM-DO i &nbsp;. LOOP ;
+foo1
+</pre></div>
+
+<p>This prints <code>7 3 1</code>.  <code>ARRAY&gt;MEM</code> converts the <i>addr uelems
+uelemsize</i> representation into the <i>addr ubytes uelemsize</i> representation
+expected by <code>MEM-DO</code>.  This loop is finished with <code>LOOP</code> which
+decrements by <i>uelemsize</i> when it finishes a <code>MEM-DO</code>.
+</p>
+<p>Gforth also adds <code>MEM+DO</code> for completeness.  It takes the same
+parameters as <code>MEM-DO</code>, but walks forwards through the array:
+</p>
+<div class="example">
+<pre class="example">create v 1 , 3 , 7 ,
+: foo2 v 3 cell array&gt;mem MEM+DO i &nbsp;. LOOP ;
+foo2
+</pre></div>
+
+<p>prints <code>1 3 7</code>.
+</p>
+</li><li> <span id="index-FOR-loops"></span>
+Another counted loop is:
+<div class="example">
+<pre class="example"><i>n</i>
+FOR
+  <i>body</i>
+NEXT
+</pre></div>
+<p>This is the preferred loop of native code compiler writers who are too lazy
+to optimize <code>?DO</code> loops properly. This loop structure is not defined in
+Standard Forth. In Gforth, this loop iterates <i>n+1</i> times; <code>i</code>
+produces values starting with <i>n</i> and ending with 0. Other Forth systems
+may behave differently, even if they support <code>FOR</code> loops. To avoid
+problems, don&rsquo;t use <code>FOR</code> loops.
+</p>
+</li></ul>
+
+<p>The counted-loop words are:
+</p>
+<span id="index-_003fDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-w1-w2-_002d_002d-_007c-loop_002dsys--_0029-core_002dext"></span>
+<span id="index-_003fDO"></span>
+<span id="index-_003fDO-1"></span>
+<div class="format">
+<pre class="format"><code>?DO</code> ( <i>compilation &ndash; do-sys ; run-time w1 w2 &ndash; | loop-sys  </i>) core-ext &ldquo;question-do&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-_002bDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-n1-n2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002d0_002e2"></span>
+<span id="index-_002bDO"></span>
+<span id="index-_002bDO-1"></span>
+<div class="format">
+<pre class="format"><code>+DO</code> ( <i>compilation &ndash; do-sys ; run-time n1 n2 &ndash; | loop-sys  </i>) gforth-0.2 &ldquo;plus-do&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-U_002bDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-u1-u2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002d0_002e2"></span>
+<span id="index-U_002bDO"></span>
+<span id="index-U_002bDO-1"></span>
+<div class="format">
+<pre class="format"><code>U+DO</code> ( <i>compilation &ndash; do-sys ; run-time u1 u2 &ndash; | loop-sys  </i>) gforth-0.2 &ldquo;u-plus-do&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-bounds-_0028--u1-u2-_002d_002d-u3-u1--_0029-gforth_002d0_002e2"></span>
+<span id="index-bounds"></span>
+<span id="index-bounds-1"></span>
+<div class="format">
+<pre class="format"><code>bounds</code> ( <i>u1 u2 &ndash; u3 u1 </i>) gforth-0.2 &ldquo;bounds&rdquo;
+</pre></div>
+<p>Given a memory block represented by starting address <i>addr</i> and length
+<i>u</i> in aus, produce the end address <i>addr+u</i> and the start address in
+the right order for <code>u+do</code> or <code>?do</code>.
+</p>
+<span id="index-_002d_005bdo-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-n1-n2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002dexperimental"></span>
+<span id="index-_002d_005bdo"></span>
+<span id="index-_002d_005bdo-1"></span>
+<div class="format">
+<pre class="format"><code>-[do</code> ( <i>compilation &ndash; do-sys ; run-time n1 n2 &ndash; | loop-sys  </i>) gforth-experimental &ldquo;minus-bracket-do&rdquo;
+</pre></div>
+<p>Start of a counted loop with negative stride; Skips the loop if
+<i>n2</i>&lt;<i>n1</i>; such a counted loop ends with <code>+loop</code> where the
+increment is negative; it runs as long as <code>I</code>&gt;=<i>n1</i>.
+</p>
+
+<span id="index-u_002d_005bdo-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-u1-u2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002dexperimental"></span>
+<span id="index-u_002d_005bdo"></span>
+<span id="index-u_002d_005bdo-1"></span>
+<div class="format">
+<pre class="format"><code>u-[do</code> ( <i>compilation &ndash; do-sys ; run-time u1 u2 &ndash; | loop-sys  </i>) gforth-experimental &ldquo;u-minus-bracket-do&rdquo;
+</pre></div>
+<p>Start of a counted loop with negative stride; Skips the loop if
+<i>u2</i>&lt;<i>u1</i>; such a counted loop ends with <code>+loop</code> where the
+increment is negative; it runs as long as <code>I</code>&gt;=<i>u1</i>.
+</p>
+
+<span id="index-_002dDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-n1-n2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002d0_002e2"></span>
+<span id="index-_002dDO"></span>
+<span id="index-_002dDO-1"></span>
+<div class="format">
+<pre class="format"><code>-DO</code> ( <i>compilation &ndash; do-sys ; run-time n1 n2 &ndash; | loop-sys  </i>) gforth-0.2 &ldquo;minus-do&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-U_002dDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-u1-u2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002d0_002e2"></span>
+<span id="index-U_002dDO"></span>
+<span id="index-U_002dDO-1"></span>
+<div class="format">
+<pre class="format"><code>U-DO</code> ( <i>compilation &ndash; do-sys ; run-time u1 u2 &ndash; | loop-sys  </i>) gforth-0.2 &ldquo;u-minus-do&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<p>doc-array&gt;mem
+<span id="index-mem_002bdo-_0028--compilation-_002d_002d-w-xt-do_002dsys_003b-run_002dtime-addr-ubytes-_002bnstride-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-mem_002bdo"></span>
+<span id="index-mem_002bdo-1"></span>
+</p><div class="format">
+<pre class="format"><code>mem+do</code> ( <i>compilation &ndash; w xt do-sys; run-time addr ubytes +nstride &ndash;  </i>) gforth-experimental &ldquo;mem-plus-do&rdquo;
+</pre></div>
+<p>Starts a counted loop that starts with <code>I</code> as <i>addr</i> and then steps
+upwards through memory with <i>nstride</i> wide steps as long as
+<code>I</code>&lt;<i>addr</i>+<i>ubytes</i>.  Must be finished with <i>loop</i>.
+</p>
+
+<span id="index-mem_002ddo-_0028--compilation-_002d_002d-w-xt-do_002dsys_003b-run_002dtime-addr-ubytes-_002bnstride-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-mem_002ddo"></span>
+<span id="index-mem_002ddo-1"></span>
+<div class="format">
+<pre class="format"><code>mem-do</code> ( <i>compilation &ndash; w xt do-sys; run-time addr ubytes +nstride &ndash;  </i>) gforth-experimental &ldquo;mem-minus-do&rdquo;
+</pre></div>
+<p>Starts a counted loop that starts with <code>I</code> as
+<i>addr</i>+<i>ubytes</i>-<i>ustride</i> and then steps backwards through memory with
+-<i>nstride</i> wide steps as long as <code>I</code>&gt;=<i>addr</i>.  Must be finished
+with <i>loop</i>.
+</p>
+
+<span id="index-DO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-w1-w2-_002d_002d-loop_002dsys--_0029-core"></span>
+<span id="index-DO"></span>
+<span id="index-DO-1"></span>
+<div class="format">
+<pre class="format"><code>DO</code> ( <i>compilation &ndash; do-sys ; run-time w1 w2 &ndash; loop-sys  </i>) core &ldquo;DO&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-FOR-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-u-_002d_002d-loop_002dsys--_0029-gforth_002d0_002e2"></span>
+<span id="index-FOR"></span>
+<span id="index-FOR-1"></span>
+<div class="format">
+<pre class="format"><code>FOR</code> ( <i>compilation &ndash; do-sys ; run-time u &ndash; loop-sys  </i>) gforth-0.2 &ldquo;FOR&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-LOOP-_0028--compilation-do_002dsys-_002d_002d-_003b-run_002dtime-loop_002dsys1-_002d_002d-_007c-loop_002dsys2--_0029-core"></span>
+<span id="index-LOOP"></span>
+<span id="index-LOOP-1"></span>
+<div class="format">
+<pre class="format"><code>LOOP</code> ( <i>compilation do-sys &ndash; ; run-time loop-sys1 &ndash; | loop-sys2  </i>) core &ldquo;LOOP&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-_002bLOOP-_0028--compilation-do_002dsys-_002d_002d-_003b-run_002dtime-loop_002dsys1-n-_002d_002d-_007c-loop_002dsys2--_0029-core"></span>
+<span id="index-_002bLOOP"></span>
+<span id="index-_002bLOOP-1"></span>
+<div class="format">
+<pre class="format"><code>+LOOP</code> ( <i>compilation do-sys &ndash; ; run-time loop-sys1 n &ndash; | loop-sys2  </i>) core &ldquo;plus-loop&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-_002dLOOP-_0028--compilation-do_002dsys-_002d_002d-_003b-run_002dtime-loop_002dsys1-u-_002d_002d-_007c-loop_002dsys2--_0029-gforth_002d0_002e2"></span>
+<span id="index-_002dLOOP"></span>
+<span id="index-_002dLOOP-1"></span>
+<div class="format">
+<pre class="format"><code>-LOOP</code> ( <i>compilation do-sys &ndash; ; run-time loop-sys1 u &ndash; | loop-sys2  </i>) gforth-0.2 &ldquo;minus-loop&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-NEXT-_0028--compilation-do_002dsys-_002d_002d-_003b-run_002dtime-loop_002dsys1-_002d_002d-_007c-loop_002dsys2--_0029-gforth_002d0_002e2"></span>
+<span id="index-NEXT"></span>
+<span id="index-NEXT-1"></span>
+<div class="format">
+<pre class="format"><code>NEXT</code> ( <i>compilation do-sys &ndash; ; run-time loop-sys1 &ndash; | loop-sys2  </i>) gforth-0.2 &ldquo;NEXT&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-i-_0028--R_003an-_002d_002d-R_003an-n--_0029-core"></span>
+<span id="index-i"></span>
+<span id="index-i-1"></span>
+<div class="format">
+<pre class="format"><code>i</code> ( <i>R:n &ndash; R:n n </i>) core &ldquo;i&rdquo;
+</pre></div>
+<p><i>n</i> is the index of the innermost counted loop.
+</p>
+<span id="index-j-_0028--R_003an-R_003aw1-R_003aw2-_002d_002d-n-R_003an-R_003aw1-R_003aw2--_0029-core"></span>
+<span id="index-j"></span>
+<span id="index-j-1"></span>
+<div class="format">
+<pre class="format"><code>j</code> ( <i>R:n R:w1 R:w2 &ndash; n R:n R:w1 R:w2 </i>) core &ldquo;j&rdquo;
+</pre></div>
+<p><i>n</i> is the index of the next-to-innermost counted loop.
+</p>
+<span id="index-k-_0028--R_003an-R_003aw1-R_003aw2-R_003aw3-R_003aw4-_002d_002d-n-R_003an-R_003aw1-R_003aw2-R_003aw3-R_003aw4--_0029-gforth_002d0_002e3"></span>
+<span id="index-k"></span>
+<span id="index-k-1"></span>
+<div class="format">
+<pre class="format"><code>k</code> ( <i>R:n R:w1 R:w2 R:w3 R:w4 &ndash; n R:n R:w1 R:w2 R:w3 R:w4 </i>) gforth-0.3 &ldquo;k&rdquo;
+</pre></div>
+<p><i>n</i> is the index of the third-innermost counted loop.
+</p>
+<span id="index-i_0027-_0028--R_003aw-R_003aw2-_002d_002d-R_003aw-R_003aw2-w--_0029-gforth_002d0_002e2"></span>
+<span id="index-i_0027"></span>
+<span id="index-i_0027-1"></span>
+<div class="format">
+<pre class="format"><code>i'</code> ( <i>R:w R:w2 &ndash; R:w R:w2 w </i>) gforth-0.2 &ldquo;i-tick&rdquo;
+</pre></div>
+<p>The limit of the innermost counted loop
+</p>
+<span id="index-delta_002di-_0028--r_003aulimit-r_003au-_002d_002d-r_003aulimit-r_003au-u2--_0029-gforth_002d1_002e0"></span>
+<span id="index-delta_002di"></span>
+<span id="index-delta_002di-1"></span>
+<div class="format">
+<pre class="format"><code>delta-i</code> ( <i>r:ulimit r:u &ndash; r:ulimit r:u u2 </i>) gforth-1.0 &ldquo;delta-i&rdquo;
+</pre></div>
+<p><i>u2</i>=<code>I'</code>-<code>I</code> (difference between limit and index).
+</p>
+<span id="index-LEAVE-_0028--compilation-_002d_002d-_003b-run_002dtime-loop_002dsys-_002d_002d--_0029-core"></span>
+<span id="index-LEAVE"></span>
+<span id="index-LEAVE-1"></span>
+<div class="format">
+<pre class="format"><code>LEAVE</code> ( <i>compilation &ndash; ; run-time loop-sys &ndash;  </i>) core &ldquo;LEAVE&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-_003fLEAVE-_0028--compilation-_002d_002d-_003b-run_002dtime-f-_007c-f-loop_002dsys-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-_003fLEAVE"></span>
+<span id="index-_003fLEAVE-1"></span>
+<div class="format">
+<pre class="format"><code>?LEAVE</code> ( <i>compilation &ndash; ; run-time f | f loop-sys &ndash;  </i>) gforth-0.2 &ldquo;question-leave&rdquo;
+</pre></div>
+<p>See <a href="#Counted-Loops">Counted Loops</a>.
+</p>
+
+<span id="index-unloop-_0028--R_003aw1-R_003aw2-_002d_002d--_0029-core"></span>
+<span id="index-unloop"></span>
+<span id="index-unloop-1"></span>
+<div class="format">
+<pre class="format"><code>unloop</code> ( <i>R:w1 R:w2 &ndash; </i>) core &ldquo;unloop&rdquo;
+</pre></div>
+
+<span id="index-DONE-_0028--compilation-do_002dsys-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-DONE"></span>
+<span id="index-DONE-1"></span>
+<div class="format">
+<pre class="format"><code>DONE</code> ( <i>compilation do-sys &ndash; ; run-time &ndash;  </i>) gforth-0.2 &ldquo;DONE&rdquo;
+</pre></div>
+<p>resolves all LEAVEs up to the do-sys
+</p>
+
+
+
+<p>The standard does not allow using <code>CS-PICK</code> and <code>CS-ROLL</code> on
+<i>do-sys</i>. Gforth allows it, except for the do-sys produced by
+<code>MEM+DO</code> and <code>MEM-DO</code>, but it&rsquo;s your job to ensure that for every
+<code>?DO</code> etc. there is exactly one <code>UNLOOP</code> on any path through the
+definition (<code>LOOP</code> etc. compile an <code>UNLOOP</code> on the fall-through
+path). Also, you have to ensure that all <code>LEAVE</code>s are resolved (by
+using one of the loop-ending words or <code>DONE</code>).
+</p>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT12" href="#DOCF12">(12)</a></h5>
+<p>well, not in a way that is
+portable.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="BEGIN-loops-with-multiple-exits.html"><code>Begin</code> loops with multiple exits</a>, Previous: <a href="Simple-Loops.html">Simple Loops</a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

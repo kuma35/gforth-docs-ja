@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Comparison with other object models (Gforth マニュアル)</title>
+
+<meta name="description" content="Comparison with other object models (Gforth マニュアル)">
+<meta name="keywords" content="Comparison with other object models (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Object_002doriented-Forth.html" rel="up" title="Object-oriented Forth">
+<link href="Mini_002dOOF2.html" rel="prev" title="Mini-OOF2">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Comparison-with-other-object-models">
+<div class="header">
+<p>
+Previous: <a href="Mini_002dOOF2.html" accesskey="p" rel="prev">Mini-OOF2</a>, Up: <a href="Object_002doriented-Forth.html" accesskey="u" rel="up">Object-oriented Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Comparison-with-other-object-models-1"></span><h4 class="subsection">6.24.7 Comparison with other object models</h4>
+<span id="index-comparison-of-object-models"></span>
+<span id="index-object-models_002c-comparison"></span>
+
+<p>Many object-oriented Forth extensions have been proposed (<cite>A survey of
+object-oriented Forths</cite> (SIGPLAN Notices, April 1996) by Bradford
+J. Rodriguez and W. F. S. Poehlman lists 17). This section discusses the
+relation of the object models described here to two well-known and two
+closely-related (by the use of method maps) models.  Andras Zsoter helped us
+with this section.
+</p>
+<span id="index-Neon-model"></span>
+<p>The most popular model currently seems to be the Neon model (see
+<cite>Object-oriented programming in ANS Forth</cite> (Forth Dimensions, March
+1997) by Andrew McKewan) but this model has a number of limitations
+<a id="DOCF34" href="#FOOT34"><sup>34</sup></a>:
+</p>
+<ul>
+<li> It uses a <code><em>selector object</em></code> syntax, which makes it unnatural to
+pass objects on the stack.
+
+</li><li> It requires that the selector parses the input stream (at compile time);
+this leads to reduced extensibility and to bugs that are hard to find.
+
+</li><li> It allows using every selector on every object; this eliminates the need for
+interfaces, but makes it harder to create efficient implementations.
+</li></ul>
+
+<span id="index-Pountain_0027s-object_002doriented-model"></span>
+<p>Another well-known publication is <cite>Object-Oriented Forth</cite> (Academic
+Press, London, 1987) by Dick Pountain. However, it is not really about
+object-oriented programming, because it hardly deals with late
+binding. Instead, it focuses on features like information hiding and
+overloading that are characteristic of modular languages like Ada (83).
+</p>
+<span id="index-Zsoter_0027s-object_002doriented-model"></span>
+<p>In <a href="http://www.forth.org/oopf.html">Does late binding have to be slow?</a>
+(Forth Dimensions 18(1) 1996, pages 31-35) Andras Zsoter describes a model
+that makes heavy use of an active object (like <code>this</code> in
+<samp>objects.fs</samp>): The active object is not only used for accessing all
+fields, but also specifies the receiving object of every selector
+invocation; you have to change the active object explicitly with <code>{
+... }</code>, whereas in <samp>objects.fs</samp> it changes more or less implicitly at
+<code>m: ... ;m</code>. Such a change at the method entry point is unnecessary
+with Zsoter&rsquo;s model, because the receiving object is the active object
+already. On the other hand, the explicit change is absolutely necessary in
+that model, because otherwise no one could ever change the active object. An
+Standard Forth implementation of this model is available through
+<a href="http://www.forth.org/oopf.html">http://www.forth.org/oopf.html</a>.
+</p>
+<span id="index-oof_002efs_002c-differences-to-other-models"></span>
+<p>The <samp>oof.fs</samp> model combines information hiding and overloading
+resolution (by keeping names in various word lists) with object-oriented
+programming. It sets the active object implicitly on method entry, but also
+allows explicit changing (with <code>&gt;o...o&gt;</code> or with
+<code>with...endwith</code>). It uses parsing and state-smart objects and classes
+for resolving overloading and for early binding: the object or class parses
+the selector and determines the method from this. If the selector is not
+parsed by an object or class, it performs a call to the selector for the
+active object (late binding), like Zsoter&rsquo;s model.  Fields are always
+accessed through the active object. The big disadvantage of this model is
+the parsing and the state-smartness, which reduces extensibility and
+increases the opportunities for subtle bugs; essentially, you are only safe
+if you never tick or <code>postpone</code> an object or class (Bernd disagrees,
+but I (Anton) am not convinced).
+</p>
+<span id="index-mini_002doof_002efs_002c-differences-to-other-models"></span>
+<p>The <samp>mini-oof.fs</samp> model is quite similar to a very stripped-down
+version of the <samp>objects.fs</samp> model, but syntactically it is a mixture of
+the <samp>objects.fs</samp> and <samp>oof.fs</samp> models.
+</p>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT34" href="#DOCF34">(34)</a></h5>
+<p>A longer version of this critique can be found in <cite>On
+Standardizing Object-Oriented Forth Extensions</cite> (Forth Dimensions, May 1997)
+by Anton Ertl.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Mini_002dOOF2.html">Mini-OOF2</a>, Up: <a href="Object_002doriented-Forth.html">Object-oriented Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

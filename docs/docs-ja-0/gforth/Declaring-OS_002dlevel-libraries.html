@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Declaring OS-level libraries (Gforth マニュアル)</title>
+
+<meta name="description" content="Declaring OS-level libraries (Gforth マニュアル)">
+<meta name="keywords" content="Declaring OS-level libraries (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="C-Interface.html" rel="up" title="C Interface">
+<link href="Callbacks.html" rel="next" title="Callbacks">
+<link href="Defining-library-interfaces.html" rel="prev" title="Defining library interfaces">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Declaring-OS_002dlevel-libraries">
+<div class="header">
+<p>
+Next: <a href="Callbacks.html" accesskey="n" rel="next">Callbacks</a>, Previous: <a href="Defining-library-interfaces.html" accesskey="p" rel="prev">Defining library interfaces</a>, Up: <a href="C-Interface.html" accesskey="u" rel="up">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Declaring-OS_002dlevel-libraries-1"></span><h4 class="subsection">6.28.5 Declaring OS-level libraries</h4>
+<span id="index-Shared-libraries-in-C-interface"></span>
+<span id="index-Dynamically-linked-libraries-in-C-interface"></span>
+<span id="index-Libraries-in-C-interface"></span>
+
+<p>For calling some C functions, you need to link with a specific OS-level
+library that contains that function.  E.g., the <code>sin</code> function requires
+linking a special library by using the command line switch <code>-lm</code>.  In
+our C iterface you do the equivalent thing by calling <code>add-lib</code> as
+follows:
+</p>
+<div class="example">
+<pre class="example">clear-libs
+s&quot; m&quot; add-lib
+\c #include &lt;math.h&gt;
+c-function sin sin r -- r
+</pre></div>
+
+<p>First, you clear any libraries that may have been declared earlier (you
+don&rsquo;t need them for <code>sin</code>); then you add the <code>m</code> library (actually
+<code>libm.so</code> or somesuch) to the currently declared libraries; you can add
+as many as you need.  Finally you declare the function as shown above.
+Typically you will use the same set of library declarations for many
+function declarations; you need to write only one set for that, right at the
+beginning.
+</p>
+<p>Note that you must not call <code>clear-libs</code> inside
+<code>c-library...end-c-library</code>; however, <code>c-library</code> performs the
+function of <code>clear-libs</code>, so <code>clear-libs</code> is not necessary, and
+you usually want to put <code>add-lib</code> calls inside
+<code>c-library...end-c-library</code>.
+</p>
+<span id="index-clear_002dlibs-_0028--_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-clear_002dlibs"></span>
+<span id="index-clear_002dlibs-1"></span>
+<div class="format">
+<pre class="format"><code>clear-libs</code> ( <i>&ndash;  </i>) gforth-0.7 &ldquo;clear-libs&rdquo;
+</pre></div>
+<p>Clear the list of libs
+</p>
+
+<span id="index-add_002dlib-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-add_002dlib"></span>
+<span id="index-add_002dlib-1"></span>
+<div class="format">
+<pre class="format"><code>add-lib</code> ( <i>c-addr u &ndash;  </i>) gforth-0.7 &ldquo;add-lib&rdquo;
+</pre></div>
+<p>Add library lib<i>string</i> to the list of libraries, where <i>string</i> is
+represented by <i>c-addr u</i>.
+</p>
+
+<span id="index-add_002dlibpath-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
+<span id="index-add_002dlibpath"></span>
+<span id="index-add_002dlibpath-1"></span>
+<div class="format">
+<pre class="format"><code>add-libpath</code> ( <i>c-addr u &ndash;  </i>) gforth-0.7 &ldquo;add-libpath&rdquo;
+</pre></div>
+<p>Add path <i>string</i> to the list of library search pathes, where <i>string</i>
+is represented by <i>c-addr u</i>.
+</p>
+
+<span id="index-add_002dframework-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-add_002dframework"></span>
+<span id="index-add_002dframework-1"></span>
+<div class="format">
+<pre class="format"><code>add-framework</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-framework&rdquo;
+</pre></div>
+<p>Add framework lib<i>string</i> to the list of frameworks, where <i>string</i> is
+represented by <i>c-addr u</i>.
+</p>
+
+<span id="index-add_002dincdir-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-add_002dincdir"></span>
+<span id="index-add_002dincdir-1"></span>
+<div class="format">
+<pre class="format"><code>add-incdir</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-incdir&rdquo;
+</pre></div>
+<p>Add path <i>c-addr u</i> to the list of include search pathes
+</p>
+
+<span id="index-add_002dcflags-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-add_002dcflags"></span>
+<span id="index-add_002dcflags-1"></span>
+<div class="format">
+<pre class="format"><code>add-cflags</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-cflags&rdquo;
+</pre></div>
+<p>add any kind of cflags to compilation
+</p>
+
+<span id="index-add_002dldflags-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-add_002dldflags"></span>
+<span id="index-add_002dldflags-1"></span>
+<div class="format">
+<pre class="format"><code>add-ldflags</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-ldflags&rdquo;
+</pre></div>
+<p>add flag to linker
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Callbacks.html">Callbacks</a>, Previous: <a href="Defining-library-interfaces.html">Defining library interfaces</a>, Up: <a href="C-Interface.html">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

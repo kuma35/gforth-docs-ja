@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Types Tutorial (Gforth マニュアル)</title>
+
+<meta name="description" content="Types Tutorial (Gforth マニュアル)">
+<meta name="keywords" content="Types Tutorial (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tutorial.html" rel="up" title="Tutorial">
+<link href="Factoring-Tutorial.html" rel="next" title="Factoring Tutorial">
+<link href="Stack_002dEffect-Comments-Tutorial.html" rel="prev" title="Stack-Effect Comments Tutorial">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Types-Tutorial">
+<div class="header">
+<p>
+Next: <a href="Factoring-Tutorial.html" accesskey="n" rel="next">Factoring</a>, Previous: <a href="Stack_002dEffect-Comments-Tutorial.html" accesskey="p" rel="prev">Stack-Effect Comments</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Types"></span><h3 class="section">3.12 Types</h3>
+<span id="index-types-tutorial"></span>
+
+<p>Forth では、 演算子の名前はオーバーロードされません。 したがって、 異なる型に対する同様の演算には異なる名前が必要です。 たとえば、
+<code>+</code> は整数の加算をしますが、 浮動小数点数を加算するには <code>f+</code> を使用する必要があります。 以下のプレフィックスは、
+さまざまな型の関連する演算によく使用されます:
+</p>
+<dl compact="compact">
+<dt><span><code>(none)</code></span></dt>
+<dd><p>符号付き整数
+</p></dd>
+<dt><span><code>u</code></span></dt>
+<dd><p>符号なし整数
+</p></dd>
+<dt><span><code>c</code></span></dt>
+<dd><p>文字(character)
+</p></dd>
+<dt><span><code>d</code></span></dt>
+<dd><p>符号付き2倍長整数(signed double-cell integer)
+</p></dd>
+<dt><span><code>ud, du</code></span></dt>
+<dd><p>符号無し2倍長整数(unsigned double-cell integer)
+</p></dd>
+<dt><span><code>2</code></span></dt>
+<dd><p>2 つのセル(必ずしも 2倍長整数(double-cell numbers)とは限りません)
+</p></dd>
+<dt><span><code>m, um</code></span></dt>
+<dd><p>単一セルとダブル・セルの混合操作
+</p></dd>
+<dt><span><code>f</code></span></dt>
+<dd><p>浮動小数点(注意: スタック・コメントでは、 &lsquo;<samp>f</samp>&rsquo; はフラグを表し、 &lsquo;<samp>r</samp>&rsquo; は FP 数値を表すことに注意してください。 また、
+リテラル FP 数値には指数部分を含める必要があります see <a href="Floating-Point-Tutorial.html">Floating Point</a>)。
+</p></dd>
+</dl>
+
+<p>符号付きのバリエーションと符号なしのバリエーションに違いがない場合(例えば <code>+</code> の場合)、
+プレフィックスのないバリエーションのみが存在します。
+</p>
+<p>Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、
+データが正しく解釈(interpret)されません:
+</p>
+<div class="example">
+<pre class="example">-1 u.
+</pre></div>
+
+<p>あなたが、 これまで型チェック言語しか使用したことがなく、 型チェックがいかに重要であるかを聞いたことがある場合でも、 パニックに陥る必要はありません。
+著者の経験(および他の Forth 利用者(Forthers)の経験)では、 Forth コードの型エラーは通常(慣れてしまえば)簡単に見つかります。
+プログラマの警戒心が高まると、 ほとんどの型エラーに加えて、 より困難なエラーも発見される傾向があります。 型システムを回避する必要がまったくないため、
+ほとんどの状況では型チェックがないことが利点であるようです(Forth に型チェックを追加するプロジェクトは普及していません)。
+</p>
+
+</div>
+
+
+
+</body>
+</html>

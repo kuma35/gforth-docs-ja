@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Flags and Comparisons Tutorial (Gforth マニュアル)</title>
+
+<meta name="description" content="Flags and Comparisons Tutorial (Gforth マニュアル)">
+<meta name="keywords" content="Flags and Comparisons Tutorial (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tutorial.html" rel="up" title="Tutorial">
+<link href="General-Loops-Tutorial.html" rel="next" title="General Loops Tutorial">
+<link href="Conditional-execution-Tutorial.html" rel="prev" title="Conditional execution Tutorial">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Flags-and-Comparisons-Tutorial">
+<div class="header">
+<p>
+Next: <a href="General-Loops-Tutorial.html" accesskey="n" rel="next">General Loops</a>, Previous: <a href="Conditional-execution-Tutorial.html" accesskey="p" rel="prev">Conditional execution</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Flags-and-Comparisons"></span><h3 class="section">3.17 Flags and Comparisons</h3>
+<span id="index-flags-tutorial"></span>
+<span id="index-comparison-tutorial"></span>
+
+<p>false フラグはすべてのビットがクリアです(整数として解釈(interpret)される場合は 0)。 正規化された true フラグは、
+すべてのビットがセットされています(2の補数の符号付き整数として -1)。 多くの文脈(例: <code>if</code>)では、ゼロ以外の値はすべて true
+フラグとして扱われます。
+</p>
+<div class="example">
+<pre class="example">false .
+true .
+true hex u. decimal
+</pre></div>
+
+<p>比較ワードは正規化フラグを生成します:
+</p>
+<div class="example">
+<pre class="example">1 1 = .
+1 0= .
+0 1 &lt; .
+0 0 &lt; .
+-1 1 u&lt; . \ 型エラー。 u&lt; は -1 を 大きな符号なし数として扱ってしまいます
+-1 1 &lt; .
+</pre></div>
+
+<p>Gforth は、接頭辞 <code>0 u d d0 du f f0</code> (または「 接頭辞なし」)との比較 <code>= &lt;&gt; &lt; &gt; &lt;= &gt;=</code>
+のすべての組み合わせをサポートします。 これらの組み合わせの一部のみが標準Forthです (詳細については、標準Forth または
+<a href="Numeric-comparison.html">Numeric comparison</a> または <a href="Floating-Point.html">Floating Point</a> または <a href="Word-Index.html">Word Index</a>
+を参照してください)。
+</p>
+<p><code>and or xor invert</code> を正規化フラグ用の演算子として使用できます。 実際には、 これらはビット単位演算です:
+</p>
+<div class="example">
+<pre class="example">1 2 and .
+1 2 or .
+1 3 xor .
+1 invert .
+</pre></div>
+
+<p><code>0&lt;&gt;</code> を使用して ゼロ/非ゼロ フラグを正規化フラグに変換できます(そして、 その途中で <code>0=</code> を使用して ゼロ/非ゼロ
+フラグの余数(complement)を取ります。 実際、 正規化フラグでは <code>invert</code> の代わりに <code>0=</code>
+を使用するのが一般的です)。
+</p>
+<div class="example">
+<pre class="example">1 0= .
+1 0&lt;&gt; .
+</pre></div>
+
+<p><code>0&lt;&gt;</code> 無しでも <code>if</code> で ゼロ/非ゼロ をテストすることはできますが、 ゼロ/非ゼロ 値を <code>and or
+xor</code> と組み合わせる場合、 <code>and or xor</code> はビット単位での操作なので、 <code>0&lt;&gt;</code>
+を使用する必要がある場合があります。 最も単純で、 エラーが少なく、 おそらく最も明確な方法は、 これらすべての場合に <code>0&lt;&gt;</code>
+を使用することですが、 場合によっては、 使用する <code>0&lt;&gt;</code> の数を減らすこともできます。 以下にいくつかのスタック効果を示します。
+<i>fc</i> は正規化フラグ(canonical flag)を表し、 <i>fz</i> は ゼロ/非ゼロ を表します(すべての <i>fc</i> は
+<i>fz</i> としても機能します):
+</p>
+<div class="example">
+<pre class="example">or  ( fz1 fz2 -- fz3 )
+and ( fz1 fc  -- fz2 )
+and ( fc  fz1 -- fz2 )
+</pre></div>
+
+<p>したがって、 以下のようなコードの場合:
+</p>
+<div class="example">
+<pre class="example">( n1 n2 ) 0&lt;&gt; and if
+</pre></div>
+
+<p>これは、 n1 and n2 (n1 かつ n2)がゼロ以外であるかどうかをテストし、 イエスの場合は <code>if</code> の後のコードを実行します。
+n1 を ゼロ/非ゼロ として扱い、 <code>0&lt;&gt;</code> を使用して n2 を正規化フラグに変換します。 <code>and</code> は fz を生成し、
+それは <code>if</code> によって消費されます。
+</p>
+<p>正規化フラグの全ビットセット機能とブール演算のビット単位の演算を使用して、 <code>if</code> を回避することもできます:
+</p>
+<div class="example">
+<pre class="example">: foo ( n1 -- n2 )
+  0= if
+    14
+  else
+    0
+  endif ;
+0 foo .
+1 foo .
+
+: foo ( n1 -- n2 )
+  0= 14 and ;
+0 foo .
+1 foo .
+</pre></div>
+
+<blockquote>
+<p><b>研究課題(assignment):</b> <code>min</code> を <code>if</code> 無しで書いてみましょう。
+</p></blockquote>
+
+<p>こちらも参照下さい: <a href="Boolean-Flags.html">Boolean Flags</a>, <a href="Numeric-comparison.html">Numeric comparison</a>, <a href="Bitwise-operations.html">Bitwise operations</a>
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="General-Loops-Tutorial.html">General Loops</a>, Previous: <a href="Conditional-execution-Tutorial.html">Conditional execution</a>, Up: <a href="Tutorial.html">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

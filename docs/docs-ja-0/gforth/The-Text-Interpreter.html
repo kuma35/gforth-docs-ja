@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>The Text Interpreter (Gforth マニュアル)</title>
+
+<meta name="description" content="The Text Interpreter (Gforth マニュアル)">
+<meta name="keywords" content="The Text Interpreter (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Words.html" rel="up" title="Words">
+<link href="The-Input-Stream.html" rel="next" title="The Input Stream">
+<link href="Compiling-words.html" rel="prev" title="Compiling words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="The-Text-Interpreter">
+<div class="header">
+<p>
+Next: <a href="The-Input-Stream.html" accesskey="n" rel="next">The Input Stream</a>, Previous: <a href="Compiling-words.html" accesskey="p" rel="prev">Compiling words</a>, Up: <a href="Words.html" accesskey="u" rel="up">Forth Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="The-Text-Interpreter-1"></span><h3 class="section">6.14 The Text Interpreter</h3>
+<span id="index-interpreter-_002d-outer"></span>
+<span id="index-text-interpreter-2"></span>
+<span id="index-outer-interpreter-2"></span>
+
+
+
+<p>The text interpreter<a id="DOCF24" href="#FOOT24"><sup>24</sup></a> is an endless loop that processes
+input from the current input device. It is also called the outer
+interpreter, in contrast to the inner interpreter (see <a href="Engine.html">Engine</a>) which
+executes the compiled Forth code on interpretive implementations.
+</p>
+<span id="index-interpret-state"></span>
+<span id="index-compile-state"></span>
+<p>The text interpreter operates in one of two states: <em>interpret state</em>
+and <em>compile state</em>. The current state is defined by the aptly-named
+variable <code>state</code>.
+</p>
+<p>This section starts by describing how the text interpreter behaves when it
+is in interpret state, processing input from the user input device &ndash; the
+keyboard. This is the mode that a Forth system is in after it starts up.
+</p>
+<span id="index-input-buffer"></span>
+<span id="index-terminal-input-buffer"></span>
+<p>The text interpreter works from an area of memory called the <em>input
+buffer</em><a id="DOCF25" href="#FOOT25"><sup>25</sup></a>, which stores your keyboard input when you press the <tt class="key">RET</tt>
+key. Starting at the beginning of the input buffer, it skips leading spaces
+(called <em>delimiters</em>) then parses a string (a sequence of non-space
+characters) until it reaches either a space character or the end of the
+buffer. Having parsed a string, it makes two attempts to process it:
+</p>
+<span id="index-dictionary"></span>
+<ul>
+<li> It looks for the string in a <em>dictionary</em> of definitions. If the string
+is found, the string names a <em>definition</em> (also known as a <em>word</em>)
+and the dictionary search returns information that allows the text
+interpreter to perform the word&rsquo;s <em>interpretation semantics</em>. In most
+cases, this simply means that the word will be executed.
+</li><li> If the string is not found in the dictionary, the text interpreter attempts
+to treat it as a number, using the rules described in <a href="Number-Conversion.html">Number Conversion</a>. If the string represents a legal number in the current radix,
+the number is pushed onto a parameter stack (the data stack for integers,
+the floating-point stack for floating-point numbers).
+</li></ul>
+
+<p>If both attempts fail, the text interpreter discards the remainder of the
+input buffer, issues an error message and waits for more input. If one of
+the attempts succeeds, the text interpreter repeats the parsing process
+until the whole of the input buffer has been processed, at which point it
+prints the status message &ldquo;<code> ok</code>&rdquo; and waits for more input.
+</p>
+
+<span id="index-parse-area"></span>
+<p>The text interpreter keeps track of its position in the input buffer by
+updating a variable called <code>&gt;IN</code> (pronounced &ldquo;to-in&rdquo;). The value of
+<code>&gt;IN</code> starts out as 0, indicating an offset of 0 from the start of the
+input buffer. The region from offset <code>&gt;IN @</code> to the end of the input
+buffer is called the <em>parse area</em><a id="DOCF26" href="#FOOT26"><sup>26</sup></a>.  This example shows how
+<code>&gt;IN</code> changes as the text interpreter parses the input buffer:
+</p>
+<div class="example">
+<pre class="example">: remaining source &gt;in @ /string
+  cr .&quot; -&gt;&quot; type .&quot; &lt;-&quot; ; immediate 
+
+1 2 3 remaining + remaining . 
+
+: foo 1 2 3 remaining swap remaining ;
+</pre></div>
+
+<p>The result is:
+</p>
+<div class="example">
+<pre class="example">-&gt;+ remaining .&lt;-
+-&gt;.&lt;-5  ok
+
+-&gt;SWAP remaining ;-&lt;
+-&gt;;&lt;-  ok
+</pre></div>
+
+<span id="index-parsing-words-2"></span>
+<p>The value of <code>&gt;IN</code> can also be modified by a word in the input buffer
+that is executed by the text interpreter.  This means that a word can
+&ldquo;trick&rdquo; the text interpreter into either skipping a section of the input
+buffer<a id="DOCF27" href="#FOOT27"><sup>27</sup></a> or into parsing a section
+twice. For example:
+</p>
+<div class="example">
+<pre class="example">: lat .&quot; &lt;&lt;foo&gt;&gt;&quot; ;
+: flat .&quot; &lt;&lt;bar&gt;&gt;&quot; &gt;IN DUP @ 3 - SWAP ! ;
+</pre></div>
+
+<p>When <code>flat</code> is executed, this output is produced<a id="DOCF28" href="#FOOT28"><sup>28</sup></a>:
+</p>
+<div class="example">
+<pre class="example">&lt;&lt;bar&gt;&gt;&lt;&lt;foo&gt;&gt;
+</pre></div>
+
+<p>This technique can be used to work around some of the interoperability
+problems of parsing words.  Of course, it&rsquo;s better to avoid parsing words
+where possible.
+</p>
+<p>Two important notes about the behaviour of the text interpreter:
+</p>
+<ul>
+<li> It processes each input string to completion before parsing additional
+characters from the input buffer.
+</li><li> It treats the input buffer as a read-only region (and so must your code).
+</li></ul>
+
+<p>When the text interpreter is in compile state, its behaviour changes in
+these ways:
+</p>
+<ul>
+<li> If a parsed string is found in the dictionary, the text interpreter will
+perform the word&rsquo;s <em>compilation semantics</em>. In most cases, this simply
+means that the execution semantics of the word will be appended to the
+current definition.
+</li><li> When a number is encountered, it is compiled into the current definition (as
+a literal) rather than being pushed onto a parameter stack.
+</li><li> If an error occurs, <code>state</code> is modified to put the text interpreter
+back into interpret state.
+</li><li> Each time a line is entered from the keyboard, Gforth prints &ldquo;<code>
+compiled</code>&rdquo; rather than &ldquo; <code>ok</code>&rdquo;.
+</li></ul>
+
+<span id="index-text-interpreter-_002d-input-sources"></span>
+<p>When the text interpreter is using an input device other than the keyboard,
+its behaviour changes in these ways:
+</p>
+<ul>
+<li> When the parse area is empty, the text interpreter attempts to refill the
+input buffer from the input source. When the input source is exhausted, the
+input source is set back to the previous input source.
+</li><li> It doesn&rsquo;t print out &ldquo;<code> ok</code>&rdquo; or &ldquo;<code> compiled</code>&rdquo; messages each
+time the parse area is emptied.
+</li><li> If an error occurs, the input source is set back to the user input device.
+</li></ul>
+
+<p>You can read about this in more detail in <a href="Input-Sources.html">Input Sources</a>.
+</p>
+<span id="index-_003ein-_0028--_002d_002d-addr--_0029-core"></span>
+<span id="index-_003ein"></span>
+<span id="index-_003ein-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;in</code> ( <i>&ndash; addr  </i>) core &ldquo;to-in&rdquo;
+</pre></div>
+<p><code>uvar</code> variable &ndash; <i>a-addr</i> is the address of a cell containing the
+char offset from the start of the input buffer to the start of the parse
+area.
+</p>
+
+<span id="index-source-_0028--_002d_002d-addr-u--_0029-core"></span>
+<span id="index-source"></span>
+<span id="index-source-1"></span>
+<div class="format">
+<pre class="format"><code>source</code> ( <i>&ndash; addr u  </i>) core &ldquo;source&rdquo;
+</pre></div>
+<p>Return address <i>addr</i> and length <i>u</i> of the current input buffer
+</p>
+
+
+<span id="index-tib-_0028--_002d_002d-addr--_0029-core_002dext_002dobsolescent"></span>
+<span id="index-tib"></span>
+<span id="index-tib-1"></span>
+<div class="format">
+<pre class="format"><code>tib</code> ( <i>&ndash; addr  </i>) core-ext-obsolescent &ldquo;t-i-b&rdquo;
+</pre></div>
+
+<span id="index-_0023tib-_0028--_002d_002d-addr--_0029-core_002dext_002dobsolescent"></span>
+<span id="index-_0023tib"></span>
+<span id="index-_0023tib-1"></span>
+<div class="format">
+<pre class="format"><code>#tib</code> ( <i>&ndash; addr  </i>) core-ext-obsolescent &ldquo;number-t-i-b&rdquo;
+</pre></div>
+<p><code>uvar</code> variable &ndash; <i>a-addr</i> is the address of a cell containing the
+number of characters in the terminal input buffer. OBSOLESCENT:
+<code>source</code> superceeds the function of this word.
+</p>
+
+
+<span id="index-interpret-_0028--_002e_002e_002e-_002d_002d-_002e_002e_002e--_0029-gforth_002d0_002e2"></span>
+<span id="index-interpret"></span>
+<span id="index-interpret-1"></span>
+<div class="format">
+<pre class="format"><code>interpret</code> ( <i>... &ndash; ...  </i>) gforth-0.2 &ldquo;interpret&rdquo;
+</pre></div>
+
+
+
+<ul class="section-toc">
+<li><a href="Input-Sources.html" accesskey="1">Input Sources</a></li>
+<li><a href="Number-Conversion.html" accesskey="2">Number Conversion</a></li>
+<li><a href="Interpret_002fCompile-states.html" accesskey="3">Interpret/Compile states</a></li>
+<li><a href="Interpreter-Directives.html" accesskey="4">Interpreter Directives</a></li>
+<li><a href="Recognizers.html" accesskey="5">Recognizers</a></li>
+<li><a href="Text-Interpreter-Hooks.html" accesskey="6">Text Interpreter Hooks</a></li>
+</ul>
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT24" href="#DOCF24">(24)</a></h5>
+<p>This is an expanded version of the material in
+<a href="Introducing-the-Text-Interpreter.html">Introducing the Text Interpreter</a>.</p>
+<h5><a id="FOOT25" href="#DOCF25">(25)</a></h5>
+<p>When the text interpreter is processing input from the
+keyboard, this area of memory is called the <em>terminal input buffer</em>
+(TIB) and is addressed by the (obsolescent) words <code>TIB</code> and
+<code>#TIB</code>.</p>
+<h5><a id="FOOT26" href="#DOCF26">(26)</a></h5>
+<p>In other words, the text
+interpreter processes the contents of the input buffer by parsing strings
+from the parse area until the parse area is empty.</p>
+<h5><a id="FOOT27" href="#DOCF27">(27)</a></h5>
+<p>This is how parsing words work.</p>
+<h5><a id="FOOT28" href="#DOCF28">(28)</a></h5>
+<p>Exercise for
+the reader: what would happen if the <code>3</code> were replaced with <code>4</code>?</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="The-Input-Stream.html">The Input Stream</a>, Previous: <a href="Compiling-words.html">Compiling words</a>, Up: <a href="Words.html">Forth Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Local Variables Tutorial (Gforth マニュアル)</title>
+
+<meta name="description" content="Local Variables Tutorial (Gforth マニュアル)">
+<meta name="keywords" content="Local Variables Tutorial (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Tutorial.html" rel="up" title="Tutorial">
+<link href="Conditional-execution-Tutorial.html" rel="next" title="Conditional execution Tutorial">
+<link href="Designing-the-stack-effect-Tutorial.html" rel="prev" title="Designing the stack effect Tutorial">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Local-Variables-Tutorial">
+<div class="header">
+<p>
+Next: <a href="Conditional-execution-Tutorial.html" accesskey="n" rel="next">Conditional execution</a>, Previous: <a href="Designing-the-stack-effect-Tutorial.html" accesskey="p" rel="prev">Designing the stack effect</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Local-Variables"></span><h3 class="section">3.15 Local Variables</h3>
+<span id="index-local-variables_002c-tutorial"></span>
+
+<p>コロン定義内でローカル変数(ローカルズ(locals))を定義できます:
+</p>
+<div class="example">
+<pre class="example">: swap { a b -- b a }
+  b a ;
+1 2 swap .s 2drop
+</pre></div>
+
+<p>(あなたの Forth システムがこの構文をサポートしていない場合は、  最初に <samp>compat/anslocal.fs</samp>
+をインクルードしてください)
+</p>
+<p>この例では、 <code>{ a b -- b a }</code> がローカルズ定義です。 スタックから 2 つのセルを取得し、 スタック頂上を
+<code>b</code> に入れ、 その次のスタック要素を <code>a</code> に入れます(訳注: a b はスタック上から取り除かれる)。 <code>--</code>
+は <code>}</code> で終わるコメントを開始します。 ローカルズの定義後、 ローカルズの名前を使用すると、 その値がスタックに積まれます。
+コメント部分(<code>-- b a</code>)は省略できます:
+</p>
+<div class="example">
+<pre class="example">: swap ( x1 x2 -- x2 x1 )
+  { a b } b a ;
+</pre></div>
+
+<p>Gforth では、 コロン定義内の任意の場所に複数のローカルズ定義を含めることができます。 対照的に、 標準Forthのプログラムでは、
+コロン定義ごとにローカルズ定義を 1 つだけしか持つことができず、 そのローカルズ定義は制御構造の外側にある必要があります。
+</p>
+<p>ローカルズを使用すると、 スタックの問題に遭遇することなく、 少し長い定義を書くことができます。
+ただし、重要な、ファクタリング技能を身につけるための演習として、 ローカルズを使用せずにコロン定義を記述してみることをお勧めします。
+</p>
+<blockquote>
+<p><b>研究課題(assignment):</b> ここまでのあなたの定義をローカルズを使って書き換えてみましょう。
+</p></blockquote>
+
+<p>こちらも参照下さい: <a href="Locals.html">Locals</a>
+</p>
+
+</div>
+
+
+
+</body>
+</html>

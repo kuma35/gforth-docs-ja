@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Anonymous Definitions (Gforth マニュアル)</title>
+
+<meta name="description" content="Anonymous Definitions (Gforth マニュアル)">
+<meta name="keywords" content="Anonymous Definitions (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Defining-Words.html" rel="up" title="Defining Words">
+<link href="Quotations.html" rel="next" title="Quotations">
+<link href="Colon-Definitions.html" rel="prev" title="Colon Definitions">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Anonymous-Definitions">
+<div class="header">
+<p>
+Next: <a href="Quotations.html" accesskey="n" rel="next">Quotations</a>, Previous: <a href="Colon-Definitions.html" accesskey="p" rel="prev">Colon Definitions</a>, Up: <a href="Defining-Words.html" accesskey="u" rel="up">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Anonymous-Definitions-1"></span><h4 class="subsection">6.10.7 Anonymous Definitions</h4>
+<span id="index-colon-definitions-1"></span>
+<span id="index-defining-words-without-name"></span>
+
+<p>Sometimes you want to define an <em>anonymous word</em>; a word without a
+name. You can do this with:
+</p>
+<span id="index-_003anoname-_0028--_002d_002d-xt-colon_002dsys--_0029-core_002dext"></span>
+<span id="index-_003anoname"></span>
+<div class="format">
+<pre class="format"><code>:noname</code> ( <i>&ndash; xt colon-sys  </i>) core-ext &ldquo;colon-no-name&rdquo;
+</pre></div>
+
+
+<p>This leaves the execution token for the word on the stack after the closing
+<code>;</code>. Here&rsquo;s an example in which a deferred word is initialised with an
+<code>xt</code> from an anonymous colon definition:
+</p>
+<div class="example">
+<pre class="example">Defer deferred
+:noname ( ... -- ... )
+  ... ;
+IS deferred
+</pre></div>
+
+<p>Gforth provides an alternative way of doing this, using two separate words:
+</p>
+<span id="index-noname-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-noname"></span>
+<span id="index-noname-1"></span>
+<div class="format">
+<pre class="format"><code>noname</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;noname&rdquo;
+</pre></div>
+<p>The next defined word will be anonymous. The defining word will leave the
+input stream alone. The xt of the defined word will be given by
+<code>latestxt</code>.
+</p>
+
+<span id="index-execution-token-of-last-defined-word"></span>
+<span id="index-latestxt-_0028--_002d_002d-xt--_0029-gforth_002d0_002e6"></span>
+<span id="index-latestxt"></span>
+<span id="index-latestxt-1"></span>
+<div class="format">
+<pre class="format"><code>latestxt</code> ( <i>&ndash; xt  </i>) gforth-0.6 &ldquo;latestxt&rdquo;
+</pre></div>
+<p><i>xt</i> is the execution token of the last word defined.
+</p>
+
+
+<p>The previous example can be rewritten using <code>noname</code> and
+<code>latestxt</code>:
+</p>
+<div class="example">
+<pre class="example">Defer deferred
+noname : ( ... -- ... )
+  ... ;
+latestxt IS deferred
+</pre></div>
+
+<p><code>noname</code> works with any defining word, not just <code>:</code>.
+</p>
+<p><code>latestxt</code> also works when the last word was not defined as
+<code>noname</code>.  It does not work for combined words, though.  It also has
+the useful property that is is valid as soon as the header for a definition
+has been built. Thus:
+</p>
+<div class="example">
+<pre class="example">latestxt . : foo [ latestxt . ] ; ' foo .
+</pre></div>
+
+<p>prints 3 numbers; the last two are the same.
+</p>
+
+</div>
+
+
+
+</body>
+</html>

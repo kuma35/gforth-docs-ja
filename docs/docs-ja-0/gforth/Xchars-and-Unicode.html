@@ -1,0 +1,306 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Xchars and Unicode (Gforth マニュアル)</title>
+
+<meta name="description" content="Xchars and Unicode (Gforth マニュアル)">
+<meta name="keywords" content="Xchars and Unicode (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Other-I_002fO.html" rel="up" title="Other I/O">
+<link href="i18n-and-l10n.html" rel="next" title="i18n and l10n">
+<link href="Pipes.html" rel="prev" title="Pipes">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Xchars-and-Unicode">
+<div class="header">
+<p>
+Next: <a href="i18n-and-l10n.html" accesskey="n" rel="next">国際化(I18n)とローカライズ</a>, Previous: <a href="Pipes.html" accesskey="p" rel="prev">Pipes</a>, Up: <a href="Other-I_002fO.html" accesskey="u" rel="up">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Xchars-and-Unicode-1"></span><h4 class="subsection">6.20.10 Xchars and Unicode</h4>
+
+<p>ASCII is only appropriate for the English language. Most western languages
+however fit somewhat into the Forth frame, since a byte is sufficient to
+encode the few special characters in each (though not always the same
+encoding can be used; latin-1 is most widely used, though). For other
+languages, different char-sets have to be used, several of them
+variable-width.  To deal with this problem, characters are often represented
+as Unicode codepoints on the stack, and as UTF-8 byte strings in memory.  An
+Unicode codepoint often represents one application-level character, but
+Unicode also supports decomposed characters that consist of several code
+points, e.g., a base letter and a combining diacritical mark.
+</p>
+<p>An Unicode codepoint can consume more than one byte in memory, so we adjust
+our terminology: A char is a raw byte in memory or a value in the range
+0-255 on the stack.  An xchar (for extended char) stands for one codepoint;
+it is represented by one or more bytes in memory and may have larger values
+on the stack.  ASCII characters are the same as chars and as xchars: values
+in the range 0-127, and a single byte with that value in memory.
+</p>
+<p>When using UTF-8 encoding, all other codepoints take more than one
+byte/char.  In most cases, you can just treat such characters as strings in
+memory and don&rsquo;t need to use the following words, but if you want to deal
+with individual codepoints, the following words are useful.  We currently
+have no words for dealing with decomposed characters.
+</p>
+<p>The xchar words add a few data types:
+</p>
+<ul>
+<li> <var>xc</var> is an extended char (xchar) on the stack. It occupies one cell, and
+is a subset of unsigned cell.  On 16 bit systems, only the BMP subset of the
+Unicode character set (i.e., codepoints &lt;65536) can be represented on the
+stack.  If you represent your application characters as strings at all
+times, you can avoid this limitation.
+
+</li><li> <var>xc-addr</var> is the address of an xchar in memory. Alignment requirements
+are the same as <var>c-addr</var>. The memory representation of an xchar differs
+from the stack representation, and depends on the encoding used. An xchar
+may use a variable number of chars in memory.
+
+</li><li> <var>xc-addr</var> <var>u</var> is a buffer of xchars in memory, starting at
+<var>xc-addr</var>, <var>u</var> chars (i.e., bytes, not xchars) long.
+
+</li></ul>
+
+<span id="index-xc_002dsize-_0028--xc-_002d_002d-u--_0029-xchar"></span>
+<span id="index-xc_002dsize"></span>
+<span id="index-xc_002dsize-1"></span>
+<div class="format">
+<pre class="format"><code>xc-size</code> ( <i>xc &ndash; u  </i>) xchar &ldquo;x-c-size&rdquo;
+</pre></div>
+<p>Computes the memory size of the xchar <var>xc</var> in chars.
+</p>
+
+<span id="index-x_002dsize-_0028--xc_002daddr-u1-_002d_002d-u2--_0029-xchar"></span>
+<span id="index-x_002dsize"></span>
+<span id="index-x_002dsize-1"></span>
+<div class="format">
+<pre class="format"><code>x-size</code> ( <i>xc-addr u1 &ndash; u2  </i>) xchar &ldquo;x-size&rdquo;
+</pre></div>
+<p>Computes the memory size of the first xchar stored at <var>xc-addr</var> in
+chars.
+</p>
+
+<span id="index-xc_0040-_0028--xc_002daddr-_002d_002d-xc--_0029-xchar_002dext"></span>
+<span id="index-xc_0040"></span>
+<span id="index-xc_0040-1"></span>
+<div class="format">
+<pre class="format"><code>xc@</code> ( <i>xc-addr &ndash; xc  </i>) xchar-ext &ldquo;xc-fetch&rdquo;
+</pre></div>
+<p>Fetchs the xchar <var>xc</var> at <var>xc-addr1</var>.
+</p>
+
+<span id="index-xc_0040_002b-_0028--xc_002daddr1-_002d_002d-xc_002daddr2-xc--_0029-xchar"></span>
+<span id="index-xc_0040_002b"></span>
+<span id="index-xc_0040_002b-1"></span>
+<div class="format">
+<pre class="format"><code>xc@+</code> ( <i>xc-addr1 &ndash; xc-addr2 xc  </i>) xchar &ldquo;x-c-fetch-plus&rdquo;
+</pre></div>
+<p>Fetchs the xchar <var>xc</var> at <var>xc-addr1</var>. <var>xc-addr2</var> points to the
+first memory location after <var>xc</var>.
+</p>
+
+<span id="index-xc_0040_002b_003f-_0028--xc_002daddr1-u1-_002d_002d-xc_002daddr2-u2-xc--_0029-gforth_002dexperimental"></span>
+<span id="index-xc_0040_002b_003f"></span>
+<span id="index-xc_0040_002b_003f-1"></span>
+<div class="format">
+<pre class="format"><code>xc@+?</code> ( <i>xc-addr1 u1 &ndash; xc-addr2 u2 xc  </i>) gforth-experimental &ldquo;x-c-fetch-plus-query&rdquo;
+</pre></div>
+<p>Fetchs the first xchar <var>xc</var> of the string <var>xc-addr1
+u1</var>. <var>xc-addr2 u2</var> is the remaining string after <var>xc</var>.
+</p>
+
+<span id="index-xc_0021_002b_003f-_0028--xc-xc_002daddr1-u1-_002d_002d-xc_002daddr2-u2-f--_0029-xchar"></span>
+<span id="index-xc_0021_002b_003f"></span>
+<span id="index-xc_0021_002b_003f-1"></span>
+<div class="format">
+<pre class="format"><code>xc!+?</code> ( <i>xc xc-addr1 u1 &ndash; xc-addr2 u2 f  </i>) xchar &ldquo;x-c-store-plus-query&rdquo;
+</pre></div>
+<p>Stores the xchar <var>xc</var> into the buffer starting at address
+<var>xc-addr1</var>, <var>u1</var> chars large. <var>xc-addr2</var> points to the first
+memory location after <var>xc</var>, <var>u2</var> is the remaining size of the
+buffer. If the xchar <var>xc</var> did fit into the buffer, <var>f</var> is true,
+otherwise <var>f</var> is false, and <var>xc-addr2</var> <var>u2</var> equal <var>xc-addr1</var>
+<var>u1</var>. XC!+? is safe for buffer overflows, and therefore preferred over
+XC!+.
+</p>
+
+<span id="index-xc_0021_002b-_0028--xc-xc_002daddr1-_002d_002d-xc_002daddr2--_0029-xchar"></span>
+<span id="index-xc_0021_002b"></span>
+<span id="index-xc_0021_002b-1"></span>
+<div class="format">
+<pre class="format"><code>xc!+</code> ( <i>xc xc-addr1 &ndash; xc-addr2  </i>) xchar &ldquo;x-c-store&rdquo;
+</pre></div>
+<p>Stores the xchar <var>xc</var> at <var>xc-addr1</var>. <var>xc-addr2</var> is the next
+unused address in the buffer.  Note that this writes up to 4 bytes, so you
+need at least 3 bytes of padding after the end of the buffer to avoid
+overwriting useful data if you only check the address against the end of the
+buffer.
+</p>
+
+<span id="index-xchar_002b-_0028--xc_002daddr1-_002d_002d-xc_002daddr2--_0029-xchar"></span>
+<span id="index-xchar_002b"></span>
+<span id="index-xchar_002b-1"></span>
+<div class="format">
+<pre class="format"><code>xchar+</code> ( <i>xc-addr1 &ndash; xc-addr2  </i>) xchar &ldquo;x-char-plus&rdquo;
+</pre></div>
+<p>Adds the size of the xchar stored at <var>xc-addr1</var> to this address, giving
+<var>xc-addr2</var>.
+</p>
+
+<span id="index-xchar_002d-_0028--xc_002daddr1-_002d_002d-xc_002daddr2--_0029-xchar_002dext"></span>
+<span id="index-xchar_002d"></span>
+<span id="index-xchar_002d-1"></span>
+<div class="format">
+<pre class="format"><code>xchar-</code> ( <i>xc-addr1 &ndash; xc-addr2  </i>) xchar-ext &ldquo;x-char-minus&rdquo;
+</pre></div>
+<p>Goes backward from <var>xc_addr1</var> until it finds an xchar so that the size
+of this xchar added to <var>xc_addr2</var> gives <var>xc_addr1</var>.
+</p>
+
+<span id="index-_002bx_002fstring-_0028--xc_002daddr1-u1-_002d_002d-xc_002daddr2-u2--_0029-xchar_002dext"></span>
+<span id="index-_002bx_002fstring"></span>
+<span id="index-_002bx_002fstring-1"></span>
+<div class="format">
+<pre class="format"><code>+x/string</code> ( <i>xc-addr1 u1 &ndash; xc-addr2 u2  </i>) xchar-ext &ldquo;plus-x-slash-string&rdquo;
+</pre></div>
+<p>Step forward by one xchar in the buffer defined by address <var>xc-addr1</var>,
+size <var>u1</var> chars. <var>xc-addr2</var> is the address and u2 the size in chars
+of the remaining buffer after stepping over the first xchar in the buffer.
+</p>
+
+<span id="index-x_005cstring_002d-_0028--xc_002daddr-u1-_002d_002d-xc_002daddr-u2--_0029-xchar_002dext"></span>
+<span id="index-x_005cstring_002d"></span>
+<span id="index-x_005cstring_002d-1"></span>
+<div class="format">
+<pre class="format"><code>x\string-</code> ( <i>xc-addr u1 &ndash; xc-addr u2  </i>) xchar-ext &ldquo;x-backslash-string-minus&rdquo;
+</pre></div>
+<p>Step backward by one xchar in the buffer defined by address <var>xc-addr</var>
+and size <var>u1</var> in chars, starting at the end of the buffer. <var>xc-addr</var>
+is the address and <var>u2</var> the size in chars of the remaining buffer after
+stepping backward over the last xchar in the buffer.
+</p>
+
+<span id="index-_002dtrailing_002dgarbage-_0028--xc_002daddr-u1-_002d_002d-xc_002daddr-u2--_0029-xchar_002dext"></span>
+<span id="index-_002dtrailing_002dgarbage"></span>
+<span id="index-_002dtrailing_002dgarbage-1"></span>
+<div class="format">
+<pre class="format"><code>-trailing-garbage</code> ( <i>xc-addr u1 &ndash; xc-addr u2  </i>) xchar-ext &ldquo;minus-trailing-garbage&rdquo;
+</pre></div>
+<p>Examine the last XCHAR in the buffer <var>xc-addr</var> <var>u1</var>&mdash;if the
+encoding is correct and it repesents a full char, <var>u2</var> equals <var>u1</var>,
+otherwise, <var>u2</var> represents the string without the last (garbled) xchar.
+</p>
+
+<span id="index-x_002dwidth-_0028--xc_002daddr-u-_002d_002d-n--_0029-xchar_002dext"></span>
+<span id="index-x_002dwidth"></span>
+<span id="index-x_002dwidth-1"></span>
+<div class="format">
+<pre class="format"><code>x-width</code> ( <i>xc-addr u &ndash; n  </i>) xchar-ext &ldquo;x-width&rdquo;
+</pre></div>
+<p><var>n</var> is the number of monospace ASCII chars that take the same space to
+display as the the xchar string starting at <var>xc-addr</var>, using <var>u</var>
+chars; assuming a monospaced display font, i.e. char width is always an
+integer multiple of the width of an ASCII char.
+</p>
+
+<span id="index-xkey-_0028--_002d_002d-xc--_0029-xchar"></span>
+<span id="index-xkey"></span>
+<span id="index-xkey-1"></span>
+<div class="format">
+<pre class="format"><code>xkey</code> ( <i>&ndash; xc  </i>) xchar &ldquo;x-key&rdquo;
+</pre></div>
+<p>Reads an xchar from the terminal. This will discard all input events up to
+the completion of the xchar.
+</p>
+
+<span id="index-xc_002dwidth-_0028--xc-_002d_002d-n--_0029-xchar_002dext"></span>
+<span id="index-xc_002dwidth"></span>
+<span id="index-xc_002dwidth-1"></span>
+<div class="format">
+<pre class="format"><code>xc-width</code> ( <i>xc &ndash; n  </i>) xchar-ext &ldquo;x-c-width&rdquo;
+</pre></div>
+<p><var>xc</var> has a width of <var>n</var> times the width of a normal fixed-width
+glyph.
+</p>
+
+<span id="index-xhold-_0028--xc-_002d_002d--_0029-xchar_002dext"></span>
+<span id="index-xhold"></span>
+<span id="index-xhold-1"></span>
+<div class="format">
+<pre class="format"><code>xhold</code> ( <i>xc &ndash;  </i>) xchar-ext &ldquo;x-hold&rdquo;
+</pre></div>
+<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>. Prepend <var>xc</var> to the pictured
+numeric output string.  Alternatively, use <code>holds</code>.
+</p>
+
+<span id="index-xc_002c-_0028--xchar-_002d_002d--_0029-xchar"></span>
+<span id="index-xc_002c"></span>
+<span id="index-xc_002c-1"></span>
+<div class="format">
+<pre class="format"><code>xc,</code> ( <i>xchar &ndash;  </i>) xchar &ldquo;x-c-comma&rdquo;
+</pre></div>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="i18n-and-l10n.html">国際化(I18n)とローカライズ</a>, Previous: <a href="Pipes.html">Pipes</a>, Up: <a href="Other-I_002fO.html">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

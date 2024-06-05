@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Mini-OOF Example (Gforth マニュアル)</title>
+
+<meta name="description" content="Mini-OOF Example (Gforth マニュアル)">
+<meta name="keywords" content="Mini-OOF Example (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Mini_002dOOF.html" rel="up" title="Mini-OOF">
+<link href="Mini_002dOOF-Implementation.html" rel="next" title="Mini-OOF Implementation">
+<link href="Basic-Mini_002dOOF-Usage.html" rel="prev" title="Basic Mini-OOF Usage">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Mini_002dOOF-Example">
+<div class="header">
+<p>
+Next: <a href="Mini_002dOOF-Implementation.html" accesskey="n" rel="next"><samp>mini-oof.fs</samp> Implementation</a>, Previous: <a href="Basic-Mini_002dOOF-Usage.html" accesskey="p" rel="prev">Basic <samp>mini-oof.fs</samp> Usage</a>, Up: <a href="Mini_002dOOF.html" accesskey="u" rel="up">The <samp>mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Mini_002dOOF-Example-1"></span><h4 class="subsubsection">6.24.5.2 Mini-OOF Example</h4>
+<span id="index-mini_002doof-example"></span>
+
+<p>A short example shows how to use this package. This example, in slightly
+extended form, is supplied as <samp>moof-exm.fs</samp>
+</p>
+<div class="example">
+<pre class="example">object class
+  method init
+  method draw
+end-class graphical
+</pre></div>
+
+<p>This code defines a class <code>graphical</code> with an operation <code>draw</code>.
+We can perform the operation <code>draw</code> on any <code>graphical</code> object,
+e.g.:
+</p>
+<div class="example">
+<pre class="example">100 100 t-rex draw
+</pre></div>
+
+<p>where <code>t-rex</code> is an object or object pointer, created with e.g.
+<code>graphical new Constant t-rex</code>.
+</p>
+<p>For concrete graphical objects, we define child classes of the class
+<code>graphical</code>, e.g.:
+</p>
+<div class="example">
+<pre class="example">graphical class
+  cell var circle-radius
+end-class circle \ &quot;graphical&quot; is the parent class
+
+:noname ( x y -- )
+  circle-radius @ draw-circle ; circle defines draw
+:noname ( r -- )
+  circle-radius ! ; circle defines init
+</pre></div>
+
+<p>There is no implicit init method, so we have to define one. The creation
+code of the object now has to call init explicitely.
+</p>
+<div class="example">
+<pre class="example">circle new Constant my-circle
+50 my-circle init
+</pre></div>
+
+<p>It is also possible to add a function to create named objects with automatic
+call of <code>init</code>, given that all objects have <code>init</code> on the same
+place:
+</p>
+<div class="example">
+<pre class="example">: new: ( .. o &quot;name&quot; -- )
+    new dup Constant init ;
+80 circle new: large-circle
+</pre></div>
+
+<p>We can draw this new circle at (100,100) with:
+</p>
+<div class="example">
+<pre class="example">100 100 my-circle draw
+</pre></div>
+
+</div>
+
+
+
+</body>
+</html>

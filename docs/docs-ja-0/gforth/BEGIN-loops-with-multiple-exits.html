@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>BEGIN loops with multiple exits (Gforth マニュアル)</title>
+
+<meta name="description" content="BEGIN loops with multiple exits (Gforth マニュアル)">
+<meta name="keywords" content="BEGIN loops with multiple exits (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Control-Structures.html" rel="up" title="Control Structures">
+<link href="General-control-structures-with-CASE.html" rel="next" title="General control structures with CASE">
+<link href="Counted-Loops.html" rel="prev" title="Counted Loops">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="BEGIN-loops-with-multiple-exits">
+<div class="header">
+<p>
+Next: <a href="General-control-structures-with-CASE.html" accesskey="n" rel="next">General control structures with <code>case</code></a>, Previous: <a href="Counted-Loops.html" accesskey="p" rel="prev">Counted Loops</a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Begin-loops-with-multiple-exits"></span><h4 class="subsection">6.9.4 <code>Begin</code> loops with multiple exits</h4>
+<span id="index-Multiple-exits-from-begin"></span>
+
+<p>For counted loops, you can use <code>leave</code> in several places.  For
+<code>begin</code> loops, you have the following options:
+</p>
+<p>Use <code>exit</code> (possibly several times) in the loop to leave not just the
+loop, but the whole colon definition.  E.g.,:
+</p>
+<div class="example">
+<pre class="example">: foo
+  begin
+    condition1 while
+      condition2 if
+        exit-code2 exit then
+      condition3 if
+        exit-code3 exit then
+    ...
+  repeat
+  exit-code1 ;
+</pre></div>
+  
+<p>The disadvantage of this approach is that, if you want to have some common
+code afterwards, you either have to wrap <code>foo</code> in another word that
+contains the common code, or you have to call the common code several times,
+from each exit-code.
+</p>
+<p>Another approach is to use several <code>while</code>s in a <code>begin</code> loop.
+You have to append a <code>then</code> behind the loop for every additional
+<code>while</code>.  E.g.,;
+</p>
+<div class="example">
+<pre class="example">begin
+  condition1 while
+    condition2 while
+      condition3 while
+again then then then
+</pre></div>
+
+<p>Here I used <code>again</code> at the end of the loop so that I would have a
+<code>then</code> for each <code>while</code>; <code>repeat</code> would result in one less
+<code>then</code>, but otherwise the same behaviour.  For an explanation of why
+this works, See <a href="Arbitrary-control-structures.html">Arbitrary control structures</a>.
+</p>
+<p>We can have common code afterwards, but, as presented above, we cannot have
+different exit-codes for the different exits.  You can have these different
+exit-codes, as follows:
+</p>
+<div class="example">
+<pre class="example">begin
+  condition1 while
+    condition2 while
+      condition3 while
+again then exit-code3
+else exit-code2 then
+else exit-code1 then
+</pre></div>
+
+<p>This is relatively hard to comprehend, because the exit-codes are relatively
+far from the exit conditions (it does not help that we are not used to such
+control structures, either).
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="General-control-structures-with-CASE.html">General control structures with <code>case</code></a>, Previous: <a href="Counted-Loops.html">Counted Loops</a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

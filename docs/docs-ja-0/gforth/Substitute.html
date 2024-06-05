@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Substitute (Gforth マニュアル)</title>
+
+<meta name="description" content="Substitute (Gforth マニュアル)">
+<meta name="keywords" content="Substitute (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Other-I_002fO.html" rel="up" title="Other I/O">
+<link href="CSV-Reader.html" rel="next" title="CSV Reader">
+<link href="i18n-and-l10n.html" rel="prev" title="i18n and l10n">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Substitute">
+<div class="header">
+<p>
+Next: <a href="CSV-Reader.html" accesskey="n" rel="next">CSV Reader</a>, Previous: <a href="i18n-and-l10n.html" accesskey="p" rel="prev">国際化(I18n)とローカライズ</a>, Up: <a href="Other-I_002fO.html" accesskey="u" rel="up">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Substitute-1"></span><h4 class="subsection">6.20.12 Substitute</h4>
+
+<p>This is a simple text macro replacement facility.  Texts in the form
+<code>&quot;text %macro% text&quot;</code> are processed, and the macro variables enclosed
+in <code>'%'</code> are replaced with their associated strings.  Two consecutive
+<code>%</code> are replaced by one <code>%</code>.  Macros are defined in a specific
+wordlist, and return a string upon execution; the standard defines only one
+way to declare macros, <code>replaces</code>, which creates a macro that just
+returns a string.
+</p>
+<span id="index-macros_002dwordlist-_0028--_002d_002d-wid--_0029-gforth_002dexperimental"></span>
+<span id="index-macros_002dwordlist"></span>
+<span id="index-macros_002dwordlist-1"></span>
+<div class="format">
+<pre class="format"><code>macros-wordlist</code> ( <i>&ndash; wid  </i>) gforth-experimental &ldquo;macros-wordlist&rdquo;
+</pre></div>
+<p>wordlist for string replacement macros
+</p>
+
+<span id="index-replaces-_0028--addr1-len1-addr2-len2-_002d_002d--_0029-string_002dext"></span>
+<span id="index-replaces"></span>
+<span id="index-replaces-1"></span>
+<div class="format">
+<pre class="format"><code>replaces</code> ( <i>addr1 len1 addr2 len2 &ndash;  </i>) string-ext &ldquo;replaces&rdquo;
+</pre></div>
+<p>create a macro with name <var>addr2 len2</var> and content <var>addr1 len1</var>.  If
+the macro already exists, just change the content.
+</p>
+
+<span id="index-_002esubstitute-_0028--addr1-len1-_002d_002d-n-_002f-ior--_0029-gforth_002dexperimental"></span>
+<span id="index-_002esubstitute"></span>
+<span id="index-_002esubstitute-1"></span>
+<div class="format">
+<pre class="format"><code>.substitute</code> ( <i>addr1 len1 &ndash; n / ior  </i>) gforth-experimental &ldquo;dot-substitute&rdquo;
+</pre></div>
+<p>substitute all macros in text <var>addr1 len1</var> and print the result.
+<var>n</var> is the number of substitutions or, if negative, a throwable
+<var>ior</var>.
+</p>
+
+<span id="index-_0024substitute-_0028--addr1-len1-_002d_002d-addr2-len2-n_002fior--_0029-gforth_002dexperimental"></span>
+<span id="index-_0024substitute"></span>
+<span id="index-_0024substitute-1"></span>
+<div class="format">
+<pre class="format"><code>$substitute</code> ( <i>addr1 len1 &ndash; addr2 len2 n/ior  </i>) gforth-experimental &ldquo;string-substitute&rdquo;
+</pre></div>
+<p>substitute all macros in text <var>addr1 len1</var>.  <var>n</var> is the number of
+substitutions, if negative, it&rsquo;s a throwable <var>ior</var>, <var>addr2 len2</var> the
+result.
+</p>
+
+<span id="index-substitute-_0028--addr1-len1-addr2-len2-_002d_002d-addr2-len3-n_002fior--_0029-string_002dext"></span>
+<span id="index-substitute"></span>
+<span id="index-substitute-1"></span>
+<div class="format">
+<pre class="format"><code>substitute</code> ( <i>addr1 len1 addr2 len2 &ndash; addr2 len3 n/ior  </i>) string-ext &ldquo;substitute&rdquo;
+</pre></div>
+<p>substitute all macros in text <var>addr1 len1</var>, and copy the result to
+<var>addr2 len2</var>.  <var>n</var> is the number of substitutions or, if negative, a
+throwable <var>ior</var>, <var>addr2 len3</var> the result.
+</p>
+
+<span id="index-unescape-_0028--addr1-u1-dest-_002d_002d-dest-u2--_0029-string_002dext"></span>
+<span id="index-unescape"></span>
+<span id="index-unescape-1"></span>
+<div class="format">
+<pre class="format"><code>unescape</code> ( <i>addr1 u1 dest &ndash; dest u2  </i>) string-ext &ldquo;unescape&rdquo;
+</pre></div>
+<p>double all delimiters in <var>addr1 u1</var>, so that substitute will result in
+the original text.  Note that the buffer <var>dest</var> does not have a size, as
+in worst case, it will need just twice as many characters as
+<var>u1</var>. <var>dest u2</var> is the resulting string.
+</p>
+
+<span id="index-_0024unescape-_0028--addr1-u1-_002d_002d-addr2-u2--_0029-gforth_002dexperimental"></span>
+<span id="index-_0024unescape"></span>
+<span id="index-_0024unescape-1"></span>
+<div class="format">
+<pre class="format"><code>$unescape</code> ( <i>addr1 u1 &ndash; addr2 u2  </i>) gforth-experimental &ldquo;string-unescape&rdquo;
+</pre></div>
+<p>same as <code>unescape</code>, but creates a temporary destination string with
+<code>$tmp</code>.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="CSV-Reader.html">CSV Reader</a>, Previous: <a href="i18n-and-l10n.html">国際化(I18n)とローカライズ</a>, Up: <a href="Other-I_002fO.html">Other I/O</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

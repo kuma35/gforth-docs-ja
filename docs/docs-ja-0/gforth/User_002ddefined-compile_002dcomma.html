@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>User-defined compile-comma (Gforth マニュアル)</title>
+
+<meta name="description" content="User-defined compile-comma (Gforth マニュアル)">
+<meta name="keywords" content="User-defined compile-comma (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="User_002ddefined-Defining-Words.html" rel="up" title="User-defined Defining Words">
+<link href="Creating-from-a-prototype.html" rel="next" title="Creating from a prototype">
+<link href="User_002ddefined-TO-and-DEFER_0040.html" rel="prev" title="User-defined TO and DEFER@">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="User_002ddefined-compile_002dcomma">
+<div class="header">
+<p>
+Next: <a href="Creating-from-a-prototype.html" accesskey="n" rel="next">Creating from a prototype</a>, Previous: <a href="User_002ddefined-TO-and-DEFER_0040.html" accesskey="p" rel="prev">User-defined <code>to</code> and <code>defer@</code></a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="User_002ddefined-compile_002c"></span><h4 class="subsubsection">6.10.10.7 User-defined <code>compile,</code></h4>
+
+<p>You can also change the implementation of <code>compile,</code> for a word, with
+</p>
+<span id="index-set_002doptimizer-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002doptimizer"></span>
+<span id="index-set_002doptimizer-1"></span>
+<div class="format">
+<pre class="format"><code>set-optimizer</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-optimizer&rdquo;
+</pre></div>
+<p>Changes the current word such that <code>compile,</code>ing it executes <i>xt</i>
+(with the same stack contents as passed to <code>compile,</code>).  Note that
+<code>compile,</code> must be consistent with <code>execute</code>, so you must use
+<code>set-optimizer</code> only to install a more efficient implementation of the
+same behaviour.
+</p>
+
+<span id="index-opt_003a-_0028--compilation-_002d_002d-colon_002dsys2-_003b-run_002dtime-_002d_002d-nest_002dsys--_0029-gforth_002d1_002e0"></span>
+<span id="index-opt_003a"></span>
+<span id="index-opt_003a-1"></span>
+<div class="format">
+<pre class="format"><code>opt:</code> ( <i>compilation &ndash; colon-sys2 ; run-time &ndash; nest-sys  </i>) gforth-1.0 &ldquo;opt:&rdquo;
+</pre></div>
+<p>Starts a nameless colon definition; when it is complete, this colon
+definition will become the <code>compile,</code> implementation of the latest word
+(before the <code>opt:</code>).
+</p>
+
+
+<p>Note that the resulting <code>compile,</code> must still be equivalent to
+<code>postpone literal postpone execute</code>, so <code>set-optimizer</code> is useful
+for efficiency, not for changing the behaviour.  There is nothing that
+prevents you from shooting yourself in the foot, however.  You can check
+whether your uses of <code>set-optimizer</code> are correct by comparing the
+results when you use it with the results you get when you disable your uses
+by first defining
+</p>
+<div class="example">
+<pre class="example">: set-optimizer drop ;
+</pre></div>
+
+<p>As an example of the use of <code>set-optimizer</code>, we can enhance one of the
+definitions of <code>CONSTANT</code> above as follows.
+</p>
+<div class="example">
+<pre class="example">: CONSTANT ( n &quot;name&quot; -- ; name: -- n )
+  create ,
+  ['] @ set-does&gt;
+  [: &gt;body @ postpone literal ;] set-optimizer
+;
+</pre></div>
+
+<p>The only change is the addition of the <code>set-optimizer</code> line.  When you
+define a constant and compile it:
+</p>
+<div class="example">
+<pre class="example">5 constant five
+: foo five ;
+</pre></div>
+
+<p>the compiled <code>five</code> in <code>foo</code> is now compiled to the literal 5
+instead of a generic invocation of <code>five</code>.  The quotation has the same
+stack effect as <code>compile,</code>: <code>( xt -- )</code>.  The passed xt belongs to
+the <code>compile,</code>d word, i.e., <code>five</code> in the example.  In the example
+the xt is first converted to the body address, then the value 5 at that
+place is fetched, and that value is compiled with the <code>postpone
+literal</code> (see <a href="Literals.html">Literals</a>).
+</p>
+<p>This use of <code>set-optimizer</code> assumes that the user does not change the
+value of a constant with, e.g., <code>6 ' five &gt;body !</code>.  While <code>five</code>
+has been defined with <code>create</code>, that is an implementation detail of
+<code>CONSTANT</code>, and if you don&rsquo;t document it, the user must not rely on
+it.  And if you use <code>set-optimizer</code> in a way that assumes that the body
+does not change (like is done here), you must not document that
+<code>create</code> is used; and conversely, if you document it, you have to write
+the <code>compile,</code> implementation such that it can deal with changing
+bodies.
+</p>
+<p>Another example is a better-optimized variant of the <code>fvalue</code> example
+above:
+</p>
+<div class="example">
+<pre class="example">: compile-fvalue-to ( xt-value-to -- )
+  drop ]] &gt;body f! [[ ;
+  
+: fvalue-to ( r xt -- )
+  &gt;body f! ;
+' compile-fvalue-to set-optimizer
+
+: fvalue ( r &quot;name&quot; -- ; name: -- r )
+  create f,
+  ['] f@ set-does&gt;
+  [: &gt;body ]] literal f@ [[ ;] set-optimizer
+  ['] fvalue-to set-to ;
+
+5e fvalue foo
+: bar foo 1e f+ to foo ;
+see bar
+</pre></div>
+
+<p>Compare the code for <code>bar</code> with the one for the earlier definition.
+Here we see the optimization of both the code for reading the fvalue (coming
+from the <code>set-optimizer</code> in <code>fvalue</code>) and for writing the fvalue
+(coming from the <code>set-optimizer</code> applied to <code>fvalue-to</code>.  Because
+an fvalue can change (unlike a constant), the reading part (inside
+<code>fvalue</code>) compiles the address and a <code>f@</code> that is performed at
+run-time.
+</p>
+<p>For <code>fvalue-to</code>, the <code>compile,</code> implementation basically just
+compiles the code executed by <code>fvalue</code> inline.  The compilation
+semantics of <code>to</code> compiles the address as literal and then the
+<code>(to)</code> implementation (i.e., <code>fvalue-to</code>).  In this process the
+<code>&gt;body</code> is optimized away.
+</p>
+<p>In practice Gforth&rsquo;s <code>fvalue</code> includes a few additional twists, e.g.,
+to support <code>+TO</code>.
+</p>
+<p>Note that the call to <code>set-optimizer</code> has to be performed after the
+call to <code>set-does&gt;</code> (or <code>does&gt;</code>, because <code>set-does&gt;</code>
+overwrites the <code>compile,</code> implementation itself.
+</p>
+<p>As we can see in the <code>fvalue-to</code> example, we can also apply
+<code>set-optimizer</code> to individual words rather than inside a defining word
+like <code>constant</code> or <code>fvalue</code>.  In this case, the xt of the word
+passed to optimizer is usually unnecessary and is <code>drop</code>ped, as in
+<code>compile-fvalue-to</code>.
+</p>
+<p>The engine <code>gforth-itc</code> uses <code>,</code> for <code>compile,</code> and
+<code>set-optimizer</code> has no effect there.
+</p>
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Creating-from-a-prototype.html">Creating from a prototype</a>, Previous: <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

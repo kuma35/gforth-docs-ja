@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Running Image Files (Gforth マニュアル)</title>
+
+<meta name="description" content="Running Image Files (Gforth マニュアル)">
+<meta name="keywords" content="Running Image Files (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Image-Files.html" rel="up" title="Image Files">
+<link href="Modifying-the-Startup-Sequence.html" rel="next" title="Modifying the Startup Sequence">
+<link href="Stack-and-Dictionary-Sizes.html" rel="prev" title="Stack and Dictionary Sizes">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="section" id="Running-Image-Files">
+<div class="header">
+<p>
+Next: <a href="Modifying-the-Startup-Sequence.html" accesskey="n" rel="next">Modifying the Startup Sequence</a>, Previous: <a href="Stack-and-Dictionary-Sizes.html" accesskey="p" rel="prev">Stack and Dictionary Sizes</a>, Up: <a href="Image-Files.html" accesskey="u" rel="up">Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Running-Image-Files-1"></span><h3 class="section">14.7 Running Image Files</h3>
+<span id="index-running-image-files"></span>
+<span id="index-invoking-image-files"></span>
+<span id="index-image-file-invocation"></span>
+
+<span id="index-_002di_002c-invoke-image-file"></span>
+<span id="index-_002d_002dimage-file_002c-invoke-image-file"></span>
+<p>You can invoke Gforth with an image file <i>image</i> instead of the default
+<samp>gforth.fi</samp> with the <code>-i</code> flag (see <a href="Invoking-Gforth.html">Invoking Gforth</a>):
+</p><div class="example">
+<pre class="example">gforth -i <i>image</i>
+</pre></div>
+
+<span id="index-executable-image-file"></span>
+<span id="index-image-file_002c-executable"></span>
+<p>If your operating system supports starting scripts with a line of the form
+<code>#! ...</code>, you just have to type the image file name to start Gforth
+with this image file (note that the file extension <code>.fi</code> is just a
+convention). I.e., to run Gforth with the image file <i>image</i>, you can just
+type <i>image</i> instead of <code>gforth -i <i>image</i></code>.  This works because
+every <code>.fi</code> file starts with a line of this format:
+</p>
+<div class="example">
+<pre class="example">#! /usr/local/bin/gforth-0.4.0 -i
+</pre></div>
+
+<p>The file and pathname for the Gforth engine specified on this line is the
+specific Gforth executable that it was built against; i.e. the value of the
+environment variable <code>GFORTH</code> at the time that <samp>gforthmi</samp> was
+executed.
+</p>
+<p>You can make use of the same shell capability to make a Forth source file
+into an executable. For example, if you place this text in a file:
+</p>
+<div class="example">
+<pre class="example">#! /usr/local/bin/gforth
+
+.&quot; Hello, world&quot; CR
+bye
+</pre></div>
+
+<p>and then make the file executable (chmod +x in Unix), you can run it
+directly from the command line. The sequence <code>#!</code> is used in two ways;
+firstly, it is recognised as a &ldquo;magic sequence&rdquo; by the operating
+system<a id="DOCF37" href="#FOOT37"><sup>37</sup></a> secondly it is treated as a comment character by
+Gforth. Because of the second usage, a space is required between <code>#!</code>
+and the path to the executable (moreover, some Unixes require the sequence
+<code>#! /</code>).
+</p>
+<p>Most Unix systems (including Linux) support exactly one option after the
+binary name.  If that is not enough, you can use the following trick:
+</p>
+<div class="example">
+<pre class="example">#! /bin/sh
+: ## ; 0 [if]
+exec gforth -m 10M -d 1M $0 &quot;$@&quot;
+[then]
+.&quot; Hello, world&quot; cr
+bye \ caution: this prevents (further) processing of &quot;$@&quot;
+</pre></div>
+
+<p>First this script is interpreted as shell script, which treats the first two
+lines as (mostly) comments, then performs the third line, which invokes
+gforth with this script (<code>$0</code>) as parameter and its parameters as
+additional parameters (<code>&quot;$@&quot;</code>).  Then this script is interpreted as
+Forth script, which first defines a colon definition <code>##</code>, then ignores
+everything up to <code>[then]</code> and finally processes the following Forth
+code.  You can also use
+</p>
+<div class="example">
+<pre class="example">#0 [if]
+</pre></div>
+
+<p>in the second line, but this works only in Gforth-0.7.0 and later.
+</p>
+<p>The <samp>gforthmi</samp> approach is the fastest one, the shell-based one is
+slowest (needs to start an additional shell).  An additional advantage of
+the shell approach is that it is unnecessary to know where the Gforth binary
+resides, as long as it is in the <code>$PATH</code>.
+</p>
+<span id="index-_0023_0021-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
+<span id="index-_0023_0021"></span>
+<span id="index-_0023_0021-1"></span>
+<div class="format">
+<pre class="format"><code>#!</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;hash-bang&rdquo;
+</pre></div>
+<p>An alias for <code>\</code>
+</p>
+
+
+
+</div>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT37" href="#DOCF37">(37)</a></h5>
+<p>The Unix kernel actually recognises two types of files:
+executable files and files of data, where the data is processed by an
+interpreter that is specified on the &ldquo;interpreter line&rdquo; &ndash; the first line
+of the file, starting with the sequence #!. There may be a small limit
+(e.g., 32) on the number of characters that may be specified on the
+interpreter line.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Modifying-the-Startup-Sequence.html">Modifying the Startup Sequence</a>, Previous: <a href="Stack-and-Dictionary-Sizes.html">Stack and Dictionary Sizes</a>, Up: <a href="Image-Files.html">Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

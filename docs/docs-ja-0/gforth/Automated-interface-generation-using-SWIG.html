@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Automated interface generation using SWIG (Gforth マニュアル)</title>
+
+<meta name="description" content="Automated interface generation using SWIG (Gforth マニュアル)">
+<meta name="keywords" content="Automated interface generation using SWIG (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="C-Interface.html" rel="up" title="C Interface">
+<link href="Migrating-the-C-interface-from-earlier-Gforth.html" rel="next" title="Migrating the C interface from earlier Gforth">
+<link href="Low_002dLevel-C-Interface-Words.html" rel="prev" title="Low-Level C Interface Words">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Automated-interface-generation-using-SWIG">
+<div class="header">
+<p>
+Next: <a href="Migrating-the-C-interface-from-earlier-Gforth.html" accesskey="n" rel="next">Migrating from Gforth 0.7</a>, Previous: <a href="Low_002dLevel-C-Interface-Words.html" accesskey="p" rel="prev">Low-Level C Interface Words</a>, Up: <a href="C-Interface.html" accesskey="u" rel="up">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Automated-interface-generation-using-SWIG-1"></span><h4 class="subsection">6.28.9 Automated interface generation using SWIG</h4>
+
+<p>SWIG, the Simple Wrapper Interface Generator, is used to create C interfaces
+for a lot of programming languages.  The SWIG version extended with a Forth
+module can be found on <a href="https://github.com/GeraldWodni/swig">github</a>.
+</p>
+<ul class="section-toc">
+<li><a href="#Basic-operation" accesskey="1">Basic operation</a></li>
+<li><a href="#Detailed-operation_003a" accesskey="2">Detailed operation:</a></li>
+<li><a href="#Examples" accesskey="3">Examples</a></li>
+</ul>
+<div class="subsubsection" id="Basic-operation">
+<h4 class="subsubsection">6.28.9.1 Basic operation</h4>
+<p>C-headers are parsed and converted to Forth-Sourcecode which uses the
+previously describe C interface functions.
+</p>
+</div>
+<div class="subsubsection" id="Detailed-operation_003a">
+<h4 class="subsubsection">6.28.9.2 Detailed operation:</h4>
+<ol>
+<li> Select a target, in this example we are using <code>example.h</code>
+</li><li> Create an interface file for the header. This can be used to pass options, switches and define variables.
+    In the simplest case it just instructs to translate all of
+<code>example.h</code>:
+<div class="example">
+<pre class="example">%module example
+%insert(&quot;include&quot;)
+{
+    #include &quot;example.h&quot;
+}
+%include &quot;example.h&quot;
+</pre></div>
+</li><li> Use SWIG to create a <code>.fsi-c</code> file. <br>
+    <code>swig -forth -stackcomments -use-structs -enumcomments -o example-fsi.c
+example.i</code>. <br> FSI stands &ldquo;Forth Source Independent&rdquo; meaning it can be
+transferred to any host having a C-compiler. SWIG is not required past this
+point.
+</li><li> On the target machine compile the <code>.fsi-c</code> file to a <code>.fsx</code> (x stands for executable) <br>
+    <code>gcc -o example.fsx example-fsi.c</code> <br> The compilation will resolve all
+constants to the values on the target.
+</li><li> The last step is to run the executable and capture its output to a <code>.fs</code> &ldquo;Forth Source&rdquo; file. <br>
+    <code>./example.fsx -gforth &gt; example.fs</code> <br> This code can now be used on
+the target platform.
+</li></ol>
+
+</div>
+<div class="subsubsection" id="Examples">
+<h4 class="subsubsection">6.28.9.3 Examples</h4>
+<p>You can find some examples in SWIG&rsquo;s
+<a href="https://github.com/GeraldWodni/swig/tree/master/Examples/forth">Forth
+Example section</a>.
+</p>
+<p>A lot of interface files can be found in
+<a href="https://github.com/GeraldWodni/posix">Forth Posix C-Interface</a> and
+<a href="https://github.com/GeraldWodni/forth-c-interfaces">Forth C-Interface
+Modules</a>.
+</p>
+<p>Contribution to the <a href="https://github.com/GeraldWodni/forth-c-interfaces">Forth C-Interface Module repository</a> is always welcome.
+</p>
+</div>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Migrating-the-C-interface-from-earlier-Gforth.html">Migrating from Gforth 0.7</a>, Previous: <a href="Low_002dLevel-C-Interface-Words.html">Low-Level C Interface Words</a>, Up: <a href="C-Interface.html">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

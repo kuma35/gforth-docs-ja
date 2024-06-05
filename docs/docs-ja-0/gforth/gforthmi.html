@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>gforthmi (Gforth マニュアル)</title>
+
+<meta name="description" content="gforthmi (Gforth マニュアル)">
+<meta name="keywords" content="gforthmi (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Fully-Relocatable-Image-Files.html" rel="up" title="Fully Relocatable Image Files">
+<link href="cross_002efs.html" rel="next" title="cross.fs">
+<link href="Fully-Relocatable-Image-Files.html" rel="prev" title="Fully Relocatable Image Files">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="gforthmi">
+<div class="header">
+<p>
+Next: <a href="cross_002efs.html" accesskey="n" rel="next"><samp>cross.fs</samp></a>, Previous: <a href="Fully-Relocatable-Image-Files.html" accesskey="p" rel="prev">Fully Relocatable Image Files</a>, Up: <a href="Fully-Relocatable-Image-Files.html" accesskey="u" rel="up">Fully Relocatable Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="gforthmi-1"></span><h4 class="subsection">14.5.1 <samp>gforthmi</samp></h4>
+<span id="index-comp_002di_002efs"></span>
+<span id="index-gforthmi"></span>
+
+<p>You will usually use <samp>gforthmi</samp>. If you want to create an image
+<i>file</i> that contains everything you would load by invoking Gforth with
+<code>gforth <i>options</i></code>, you simply say:
+</p><div class="example">
+<pre class="example">gforthmi <i>file</i> <i>options</i>
+</pre></div>
+
+<p>E.g., if you want to create an image <samp>asm.fi</samp> that has the file
+<samp>asm.fs</samp> loaded in addition to the usual stuff, you could do it like
+this:
+</p>
+<div class="example">
+<pre class="example">gforthmi asm.fi asm.fs
+</pre></div>
+
+<p><samp>gforthmi</samp> is implemented as a sh script and works like this: It
+produces two non-relocatable images for different addresses and then
+compares them. Its output reflects this: first you see the output (if any)
+of the two Gforth invocations that produce the non-relocatable image files,
+then you see the output of the comparing program: It displays the offset
+used for data addresses and the offset used for code addresses; moreover,
+for each cell that cannot be represented correctly in the image files, it
+displays a line like this:
+</p>
+<div class="example">
+<pre class="example">     78DC         BFFFFA50         BFFFFA40
+</pre></div>
+
+<p>This means that at offset $78dc from <code>forthstart</code>, one input image
+contains $bffffa50, and the other contains $bffffa40. Since these cells
+cannot be represented correctly in the output image, you should examine
+these places in the dictionary and verify that these cells are dead (i.e.,
+not read before they are written).
+</p>
+<span id="index-_002d_002dapplication_002c-gforthmi-option"></span>
+<p>If you insert the option <code>--application</code> in front of the image file
+name, you will get an image that uses the <code>--appl-image</code> option instead
+of the <code>--image-file</code> option (see <a href="Invoking-Gforth.html">Invoking Gforth</a>). When you
+execute such an image on Unix (by typing the image name as command), the
+Gforth engine will pass all options to the image instead of trying to
+interpret them as engine options.
+</p>
+<p>If you type <samp>gforthmi</samp> with no arguments, it prints some usage
+instructions.
+</p>
+<span id="index-savesystem-during-gforthmi"></span>
+<span id="index-bye-during-gforthmi"></span>
+<span id="index-doubly-indirect-threaded-code"></span>
+<span id="index-environment-variables-1"></span>
+<span id="index-GFORTHD-_002d_002d-environment-variable-1"></span>
+<span id="index-GFORTH-_002d_002d-environment-variable-1"></span>
+<span id="index-gforth_002dditc"></span>
+<p>There are a few wrinkles: After processing the passed <i>options</i>, the words
+<code>savesystem</code> and <code>bye</code> must be visible. A special doubly indirect
+threaded version of the <samp>gforth</samp> executable is used for creating the
+non-relocatable images; you can pass the exact filename of this executable
+through the environment variable <code>GFORTHD</code> (default:
+<samp>gforth-ditc</samp>); if you pass a version that is not doubly indirect
+threaded, you will not get a fully relocatable image, but a data-relocatable
+image (see <a href="Data_002dRelocatable-Image-Files.html">Data-Relocatable Image Files</a>), because there is no code
+address offset). The normal <samp>gforth</samp> executable is used for creating
+the relocatable image; you can pass the exact filename of this executable
+through the environment variable <code>GFORTH</code>.
+</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="cross_002efs.html"><samp>cross.fs</samp></a>, Previous: <a href="Fully-Relocatable-Image-Files.html">Fully Relocatable Image Files</a>, Up: <a href="Fully-Relocatable-Image-Files.html">Fully Relocatable Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

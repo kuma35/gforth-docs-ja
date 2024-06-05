@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Header methods (Gforth マニュアル)</title>
+
+<meta name="description" content="Header methods (Gforth マニュアル)">
+<meta name="keywords" content="Header methods (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Carnal-words.html" rel="up" title="Carnal words">
+<link href="Threading-Words.html" rel="next" title="Threading Words">
+<link href="Header-fields.html" rel="prev" title="Header fields">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsection" id="Header-methods">
+<div class="header">
+<p>
+Next: <a href="Threading-Words.html" accesskey="n" rel="next">Threading Words</a>, Previous: <a href="Header-fields.html" accesskey="p" rel="prev">Header fields</a>, Up: <a href="Carnal-words.html" accesskey="u" rel="up">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Header-methods-1"></span><h4 class="subsection">6.30.2 Header methods</h4>
+<span id="index-header-methods"></span>
+
+<p>The new Gforth word header is object-oriented and supports the following
+methods (method selectors):
+</p>
+<div class="example">
+<pre class="example">.hm label method          overrider        field
+          execute         set-execute      &gt;cfa
+opt:      opt-compile,    set-optimizer    &gt;hmcompile,
+to:       (to)            set-to           &gt;hmto
+extra:                                     &gt;hmextra
+&gt;int:     name&gt;interpret  set-&gt;int         &gt;hm&gt;int
+&gt;comp:    name&gt;compile    set-&gt;comp        &gt;hm&gt;comp
+&gt;string:  name&gt;string     set-name&gt;string  &gt;hm&gt;string
+&gt;link:    name&gt;link       set-name&gt;link    &gt;hm&gt;link
+</pre></div>
+
+<p>Many of these words are not stable Gforth words, but Gforth has stable
+higher-level words that we mention below.
+</p>
+<p>You can look at the header methods of a word with
+</p>
+<span id="index-_002ehm-_0028--nt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-_002ehm"></span>
+<span id="index-_002ehm-1"></span>
+<div class="format">
+<pre class="format"><code>.hm</code> ( <i>nt &ndash;  </i>) gforth-1.0 &ldquo;dot-h-m&rdquo;
+</pre></div>
+<p>print the header methods of <i>nt</i>
+</p>
+
+
+<p>Overrider (setter) words change the method implementation for the most
+recent definition.  Quotations or closures restore the previous most recent
+definition when they are completed, so they are not considered most recent,
+and you can do things like:
+</p>
+<div class="example">
+<pre class="example">: my2dup over over ;
+[: drop ]] over over [[ ;] set-optimizer
+</pre></div>
+
+<p>The <code>execute</code> method is actually stored in the <code>&gt;cfa</code> field in the
+header rather than in the header-methods table for performance reasons; also
+it is implemented through a native-code address, while the other methods are
+implemented by calling an xt.  The high-level way to set this method is
+</p>
+<span id="index-set_002dexecute-_0028--ca-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002dexecute"></span>
+<span id="index-set_002dexecute-1"></span>
+<div class="format">
+<pre class="format"><code>set-execute</code> ( <i>ca &ndash;  </i>) gforth-1.0 &ldquo;set-execute&rdquo;
+</pre></div>
+<p>Changes the current word such that it jumps to the native code at <i>ca</i>.
+Also changes the <code>compile,</code> implementation to the most general (and
+slowest) one.  Call <code>set-optimizer</code> afterwards if you want a more
+efficient <code>compile,</code> implementation.
+</p>
+
+
+<p>To get a code address for use with <code>set-execute</code>, you can use words
+like <code>docol:</code> or <code>&gt;code-address</code>, See <a href="Threading-Words.html">Threading Words</a>.
+</p>
+<p>As an alternative to <code>set-execute</code>, there is also <code>set-does&gt;</code>
+(see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>), which takes an xt.
+</p>
+<p>Moreover, there are the low-level <code>code-address!</code> and <code>definer!</code>
+(see <a href="Threading-Words.html">Threading Words</a>).
+</p>
+<p>The <code>opt-compile,</code> method is what <code>compile,</code> does on most Gforth
+engines (<code>gforth-itc</code> uses <code>,</code> instead).  You can define a more
+efficient implementation of <code>compile,</code> for the current word with
+<code>set-optimizer</code> (see <a href="User_002ddefined-compile_002dcomma.html">User-defined <code>compile,</code></a>).  Note that the
+end result must be equivalent to <code>postpone literal postpone execute</code>.
+</p>
+<p>As an example of the use of <code>set-optimizer</code>, consider the following
+definition of <code>constant</code>:
+</p>
+<div class="example">
+<pre class="example">: constant ( n &quot;name&quot; -- ; name: -- n )
+  create ,
+  ['] @ set-does&gt;
+;
+
+5 constant five
+: foo five ; see foo
+</pre></div>
+
+<p>The Forth system does not know that the value of a constant must not be
+changed, and just sees a <code>create</code>d word (which can be changed with
+<code>&gt;body</code>), and <code>foo</code> first pushes the body address of <code>five</code>
+and then fetches from there.  With <code>set-optimizer</code> the definition of
+<code>constant</code> can be optimized as follows:
+</p>
+<div class="example">
+<pre class="example">: constant ( n &quot;name&quot; -- ; name: -- n )
+  create ,
+  ['] @ set-does&gt;
+  [: &gt;body @ postpone literal ;] set-optimizer
+;
+</pre></div>
+
+<p>Now <code>foo</code> contains the literal 5 rather than a call to <code>five</code>.
+</p>
+<p>Note that <code>set-execute</code> and <code>set-does&gt;</code> perform
+<code>set-optimizer</code> themselves in order to ensure that <code>execute</code> and
+<code>compile,</code> agree, so if you want to add your own optimizer, you should
+add it afterwards.
+</p>
+<p>The <code>defer!</code> (aka <code>(to)</code> method (see <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>) implements <code>defer!</code> for words defined with <code>defer</code> and
+similar words, but it is also the core of <code>to</code>.  The general stack
+effect of the <code>defer!</code>/<code>(to)</code> method is <code>( val xt -- )</code>,
+where <i>xt</i> identifies the word stored into, and <i>val</i> is the value (of
+appropriate type) stored there.
+</p>
+<p>E.g., one can implement <code>fvalue</code> as follows:
+</p>
+<div class="example">
+<pre class="example">: fvalue-to ( r xt -- ) &gt;body f! ;
+
+: fvalue ( r -- )
+  create f,
+  ['] f@ set-does&gt;
+  ['] fvalue-to set-to ;
+
+5e fvalue foo
+: bar foo 1e f+ to foo ;
+see bar
+</pre></div>
+
+<p>You can improve the generated code with <code>set-optimizer</code>:
+</p>
+<div class="example">
+<pre class="example">: compile-fvalue-to ( xt-value-to -- )
+  drop ]] &gt;body f! [[ ;
+  
+: fvalue-to ( r xt -- ) &gt;body f! ;
+' compile-fvalue-to set-optimizer
+
+: fvalue ( r -- )
+  create f,
+  ['] f@ set-does&gt;
+  [: &gt;body ]] literal f@ [[ ;] set-optimizer
+  ['] fvalue-to set-to ;
+
+5e fvalue foo
+: bar foo 1e f+ to foo ;
+see bar
+</pre></div>
+
+<p>In practice Gforth has a few additional twists to implement, e.g.,
+<code>+TO</code>.
+</p>
+<p><code>Set-defer@</code> (see <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>) allows to implement
+variants of the <code>defer@</code> (see <a href="Deferred-Words.html">Deferred Words</a>)  method for
+<code>defer</code>-like words.
+</p>
+<p>The <code>&gt;hmextra</code> field is used for cases where additional data needs to
+be stored in the header methods table.  In particular, it stores the xt
+passed to <code>set-does&gt;</code> (and <code>does&gt;</code> calls <code>set-does&gt;</code>) and the
+code address behind <code>;abi-code</code>.
+</p>
+<p>The methods above all consume an xt, not an nt, but the override words work
+on the most recent definition.  This means that if you use, e.g.,
+<code>set-optimizer</code> on a synonym, the effect will probably not be what you
+intended: When <code>compile,</code>ing the xt of the word, the
+<code>opt-compile,</code> implementation of the original word will be used, not
+the freshly-set one of the synonym.
+</p>
+<p>The following methods consume an nt.
+</p>
+<p>The <code>name&gt;interpret</code> method is implemented as noop for most words,
+except synonyms and similar words.
+</p>
+<span id="index-set_002d_003eint-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002d_003eint"></span>
+<span id="index-set_002d_003eint-1"></span>
+<div class="format">
+<pre class="format"><code>set-&gt;int</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-to-int&rdquo;
+</pre></div>
+<p>Sets the implementation of the <code>name&gt;interpret ( nt -- xt2 )</code> method of
+the current word to <i>xt</i>.
+</p>
+
+
+<p>The <code>name&gt;compile</code> method produces the compilation semantics of the
+nt.  By changing it with <code>set-&gt;comp</code>, you can change the compilation
+semantics, but it&rsquo;s not as simple as just pushing the xt of the desired
+compilation semantics, because of the stack effect of <code>name&gt;compile</code>.
+Generally you should avoid changing the compilation semantics, and if you
+do, use a higher-level word like <code>immediate</code> or
+<code>interpret/compile:</code>, See <a href="Combined-words.html">Combined Words</a>.
+</p>
+<span id="index-set_002d_003ecomp-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002d_003ecomp"></span>
+<span id="index-set_002d_003ecomp-1"></span>
+<div class="format">
+<pre class="format"><code>set-&gt;comp</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-to-comp&rdquo;
+</pre></div>
+<p>Sets the implementation of the <code>name&gt;compile ( nt -- w xt2 )</code> method of
+the current word to <i>xt</i>.
+</p>
+
+<span id="index-immediate_003f-_0028--nt-_002d_002d-flag--_0029-gforth_002d1_002e0"></span>
+<span id="index-immediate_003f"></span>
+<span id="index-immediate_003f-1"></span>
+<div class="format">
+<pre class="format"><code>immediate?</code> ( <i>nt &ndash; flag  </i>) gforth-1.0 &ldquo;immediate?&rdquo;
+</pre></div>
+<p>true if the word <i>nt</i> has non-default compilation semantics (that&rsquo;s not
+quite according to the definition of immediacy, but many people mean that
+when they call a word &ldquo;immediate&rdquo;).
+</p>
+
+
+<p><code>Name&gt;string</code> and <code>Name&gt;link</code> are methods in order to make it
+possible to eliminate the name, <code>&gt;f+c</code> and <code>link</code> fields from
+noname headers, but still produce meaningful results when using these
+words.  You will typically not change the implementations of these methods
+except with <code>noname</code>, but we still have
+</p>
+<span id="index-set_002dname_003estring-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002dname_003estring"></span>
+<span id="index-set_002dname_003estring-1"></span>
+<div class="format">
+<pre class="format"><code>set-name&gt;string</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-name-to-string&rdquo;
+</pre></div>
+<p>Sets the implementation of the <code>name&gt;string ( nt -- addr u )</code> method of
+the current word to <i>xt</i>.
+</p>
+
+<span id="index-set_002dname_003elink-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
+<span id="index-set_002dname_003elink"></span>
+<span id="index-set_002dname_003elink-1"></span>
+<div class="format">
+<pre class="format"><code>set-name&gt;link</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-name-to-link&rdquo;
+</pre></div>
+<p>Sets the implementation of the <code>name&gt;link ( nt1 -- nt2|0 )</code> method of
+the current word to <i>xt</i>.
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Threading-Words.html">Threading Words</a>, Previous: <a href="Header-fields.html">Header fields</a>, Up: <a href="Carnal-words.html">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

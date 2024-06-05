@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
+April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
+チュートリアルも含まれています。
+
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.1 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Dealing with existing Recognizers (Gforth マニュアル)</title>
+
+<meta name="description" content="Dealing with existing Recognizers (Gforth マニュアル)">
+<meta name="keywords" content="Dealing with existing Recognizers (Gforth マニュアル)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Word-Index.html" rel="index" title="Word Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Recognizers.html" rel="up" title="Recognizers">
+<link href="Defining-Recognizers.html" rel="next" title="Defining Recognizers">
+<link href="Default-Recognizers.html" rel="prev" title="Default Recognizers">
+<style type="text/css">
+<!--
+a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+span:hover a.copiable-anchor {visibility: visible}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="gforth.css">
+
+
+</head>
+
+<body lang="en">
+<div class="subsubsection" id="Dealing-with-existing-Recognizers">
+<div class="header">
+<p>
+Next: <a href="Defining-Recognizers.html" accesskey="n" rel="next">Defining Recognizers</a>, Previous: <a href="Default-Recognizers.html" accesskey="p" rel="prev">Default Recognizers</a>, Up: <a href="Recognizers.html" accesskey="u" rel="up">Recognizers</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Dealing-with-existing-Recognizers-1"></span><h4 class="subsubsection">6.14.5.2 Dealing with existing Recognizers</h4>
+<span id="index-Recognizers_002c-dealing-with"></span>
+
+<p>A recognizer is a word to which you pass a string.  If the recognizer
+recognizes the string, it typically returns some data and the xt of a word
+for processing the data; this word is called the translator.  If the
+recognizer does not recognize the string, it returns the xt of
+<code>notfound</code>.
+</p>
+<p>All recognizers have the stack effect ( c-addr u &ndash; ... xt ).
+</p>
+
+
+<p>Recognizers take a string and return some data and a translator for
+interpreting that data.  Gforth implements that translator as xt (executing
+it will perform the appropriate action to handle the token in the current
+state), but other Forth systems may implement it as actual table, with three
+xts inside.  The first xt is the interpretation/run-time xt, it performs the
+interpretation semantics on the data (usually, this means it just leaves the
+data on the stack).  The second xt performs the compilation semantics, it
+gets the data and the run-time semantics xt.  The third xt perfoms the
+postpone semantics, it also gets the data and the run-time semantics xt.
+You can use <code>&gt;postpone</code> to postpone the run-time xt.
+</p>
+<p>Recognizers are organized as stack, so you can arrange the sequence of
+recognizers in the same way as the vocabulary stack.  Recognizer stacks are
+themselves recognizers, i.e. they are executable, take a string and return a
+translator.
+</p>
+<span id="index-notfound-_0028--state-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-notfound"></span>
+<span id="index-notfound-1"></span>
+<div class="format">
+<pre class="format"><code>notfound</code> ( <i>state &ndash;  </i>) gforth-experimental &ldquo;notfound&rdquo;
+</pre></div>
+<p>If a recognizer fails, it returns <code>notfound</code>
+</p>
+
+<span id="index-rec_002dnt-_0028--addr-u-_002d_002d-nt-translate_002dnt-_007c-notfound--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dnt"></span>
+<span id="index-rec_002dnt-1"></span>
+<div class="format">
+<pre class="format"><code>rec-nt</code> ( <i>addr u &ndash; nt translate-nt | notfound  </i>) gforth-experimental &ldquo;rec-nt&rdquo;
+</pre></div>
+<p>recognize a name token
+</p>
+
+<span id="index-rec_002dnum-_0028--addr-u-_002d_002d-n_002fd-table-_007c-notfound--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dnum"></span>
+<span id="index-rec_002dnum-1"></span>
+<div class="format">
+<pre class="format"><code>rec-num</code> ( <i>addr u &ndash; n/d table | notfound  </i>) gforth-experimental &ldquo;rec-num&rdquo;
+</pre></div>
+<p>converts a number to a single/double integer
+</p>
+
+<span id="index-rec_002dfloat-_0028--addr-u-_002d_002d-r-translate_002dfloat-_007c-notfound--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dfloat"></span>
+<span id="index-rec_002dfloat-1"></span>
+<div class="format">
+<pre class="format"><code>rec-float</code> ( <i>addr u &ndash; r translate-float | notfound  </i>) gforth-experimental &ldquo;rec-float&rdquo;
+</pre></div>
+<p>recognize floating point numbers
+</p>
+
+<span id="index-rec_002dstring-_0028--addr-u-_002d_002d-addr-u_0027-r_003astring-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dstring"></span>
+<span id="index-rec_002dstring-1"></span>
+<div class="format">
+<pre class="format"><code>rec-string</code> ( <i>addr u &ndash; addr u&rsquo; r:string | rectype-null  </i>) gforth-experimental &ldquo;rec-string&rdquo;
+</pre></div>
+<p>Convert strings enclosed in double quotes into string literals, escapes are
+treated as in <code>S\&quot;</code>.
+</p>
+
+<span id="index-rec_002dto-_0028--addr-u-_002d_002d-xt-n-r_003ato-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dto"></span>
+<span id="index-rec_002dto-1"></span>
+<div class="format">
+<pre class="format"><code>rec-to</code> ( <i>addr u &ndash; xt n r:to | rectype-null  </i>) gforth-experimental &ldquo;rec-to&rdquo;
+</pre></div>
+<p>words prefixed with <code>-&gt;</code> are treated as if preceeded by <code>TO</code>, with
+<code>+&gt;</code> as <code>+TO</code>, with <code>'&gt;</code> as <code>ADDR</code>, with <code>@&gt;</code> as
+<code>ACTION-OF</code>, and with <code>=&gt;</code> as <code>IS</code>.
+</p>
+
+<span id="index-rec_002dtick-_0028--addr-u-_002d_002d-xt-rectype_002dnum-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dtick"></span>
+<span id="index-rec_002dtick-1"></span>
+<div class="format">
+<pre class="format"><code>rec-tick</code> ( <i>addr u &ndash; xt rectype-num | rectype-null  </i>) gforth-experimental &ldquo;rec-tick&rdquo;
+</pre></div>
+<p>words prefixed with <code>`</code> return their xt.  Example: <code>`dup</code> gives
+the xt of dup
+</p>
+
+<span id="index-rec_002ddtick-_0028--addr-u-_002d_002d-nt-rectype_002dnum-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002ddtick"></span>
+<span id="index-rec_002ddtick-1"></span>
+<div class="format">
+<pre class="format"><code>rec-dtick</code> ( <i>addr u &ndash; nt rectype-num | rectype-null  </i>) gforth-experimental &ldquo;rec-dtick&rdquo;
+</pre></div>
+<p>words prefixed with <code>``</code> return their nt.  Example: <code>``S&quot;</code> gives
+the nt of <code>S&quot;</code>
+</p>
+
+<span id="index-rec_002dbody-_0028--addr-u-_002d_002d-xt-translate_002dtick-_007c-translate_002dnull--_0029-gforth_002dexperimental"></span>
+<span id="index-rec_002dbody"></span>
+<span id="index-rec_002dbody-1"></span>
+<div class="format">
+<pre class="format"><code>rec-body</code> ( <i>addr u &ndash; xt translate-tick | translate-null  </i>) gforth-experimental &ldquo;rec-body&rdquo;
+</pre></div>
+<p>words bracketed with <code>'&lt;'</code> <code>'&gt;'</code> return their body.  Example:
+<code>&lt;dup&gt;</code> gives the body of dup
+</p>
+
+<span id="index-get_002drecognizers-_0028--_002d_002d-xt1-_002e_002e-xtn-n--_0029-gforth_002dexperimental"></span>
+<span id="index-get_002drecognizers"></span>
+<span id="index-get_002drecognizers-1"></span>
+<div class="format">
+<pre class="format"><code>get-recognizers</code> ( <i>&ndash; xt1 .. xtn n  </i>) gforth-experimental &ldquo;get-recognizers&rdquo;
+</pre></div>
+<p>push the content on the recognizer stack
+</p>
+
+<span id="index-set_002drecognizers-_0028--xt1-_002e_002e-xtn-n-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-set_002drecognizers"></span>
+<span id="index-set_002drecognizers-1"></span>
+<div class="format">
+<pre class="format"><code>set-recognizers</code> ( <i>xt1 .. xtn n &ndash;  </i>) gforth-experimental &ldquo;set-recognizers&rdquo;
+</pre></div>
+<p>set the recognizer stack from content on the stack
+</p>
+
+<span id="index-recognize-_0028--addr-u-rec_002daddr-_002d_002d-_002e_002e_002e-rectype--_0029-gforth_002dexperimental"></span>
+<span id="index-recognize"></span>
+<span id="index-recognize-1"></span>
+<div class="format">
+<pre class="format"><code>recognize</code> ( <i>addr u rec-addr &ndash; ... rectype  </i>) gforth-experimental &ldquo;recognize&rdquo;
+</pre></div>
+<p>apply a recognizer stack to a string, delivering a token
+</p>
+
+<span id="index-recognizer_002dsequence_003a-_0028--xt1-_002e_002e-xtn-n-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-recognizer_002dsequence_003a"></span>
+<span id="index-recognizer_002dsequence_003a-1"></span>
+<div class="format">
+<pre class="format"><code>recognizer-sequence:</code> ( <i>xt1 .. xtn n &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;recognizer-sequence:&rdquo;
+</pre></div>
+<p>concatenate a stack of recognizers to one recognizer with the name
+<i>&quot;name&quot;</i>.  <i>xtn</i> is tried first, <i>xt1</i> last, just like on the
+recognizer stack
+</p>
+
+<span id="index-forth_002drecognize-_0028--c_002daddr-u-_002d_002d-_002e_002e_002e-translate_002dxt--_0029-recognizer"></span>
+<span id="index-forth_002drecognize"></span>
+<span id="index-forth_002drecognize-1"></span>
+<div class="format">
+<pre class="format"><code>forth-recognize</code> ( <i>c-addr u &ndash; ... translate-xt  </i>) recognizer &ldquo;forth-recognize&rdquo;
+</pre></div>
+<p>The system recognizer
+</p>
+
+<span id="index-forth_002drecognizer-_0028--_002d_002d-xt--_0029-gforth_002dexperimental"></span>
+<span id="index-forth_002drecognizer"></span>
+<span id="index-forth_002drecognizer-1"></span>
+<div class="format">
+<pre class="format"><code>forth-recognizer</code> ( <i>&ndash; xt  </i>) gforth-experimental &ldquo;forth-recognizer&rdquo;
+</pre></div>
+<p>backward compatible to Matthias Trute recognizer API.  This construct turns
+a deferred word into a value-like word.
+</p>
+
+<span id="index-set_002dforth_002drecognize-_0028--xt-_002d_002d--_0029-recognizer"></span>
+<span id="index-set_002dforth_002drecognize"></span>
+<span id="index-set_002dforth_002drecognize-1"></span>
+<div class="format">
+<pre class="format"><code>set-forth-recognize</code> ( <i>xt &ndash;  </i>) recognizer &ldquo;set-forth-recognize&rdquo;
+</pre></div>
+<p>Change the system recognizer
+</p>
+
+<span id="index-translate_003a-_0028--int_002dxt-comp_002dxt-post_002dxt-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-translate_003a"></span>
+<span id="index-translate_003a-1"></span>
+<div class="format">
+<pre class="format"><code>translate:</code> ( <i>int-xt comp-xt post-xt &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;translate:&rdquo;
+</pre></div>
+<p>create a new recognizer table.  Items are in order of <var>STATE</var> value,
+which are 0 or negative.  Up to 7 slots are available for extensions.
+</p>
+
+<span id="index-translate_002dnt-_0028--i_002ax-nt-_002d_002d-j_002ax--_0029-gforth_002dexperimental"></span>
+<span id="index-translate_002dnt"></span>
+<span id="index-translate_002dnt-1"></span>
+<div class="format">
+<pre class="format"><code>translate-nt</code> ( <i>i*x nt &ndash; j*x  </i>) gforth-experimental &ldquo;translate-nt&rdquo;
+</pre></div>
+<p>translate a name token
+</p>
+
+<span id="index-translate_002dnum-_0028--x-_002d_002d-_007c-x--_0029-gforth_002dexperimental"></span>
+<span id="index-translate_002dnum"></span>
+<span id="index-translate_002dnum-1"></span>
+<div class="format">
+<pre class="format"><code>translate-num</code> ( <i>x &ndash; | x  </i>) gforth-experimental &ldquo;translate-num&rdquo;
+</pre></div>
+<p>translate a number
+</p>
+
+<span id="index-translate_002ddnum-_0028--dx-_002d_002d-_007c-dx--_0029-gforth_002dexperimental"></span>
+<span id="index-translate_002ddnum"></span>
+<span id="index-translate_002ddnum-1"></span>
+<div class="format">
+<pre class="format"><code>translate-dnum</code> ( <i>dx &ndash; | dx  </i>) gforth-experimental &ldquo;translate-dnum&rdquo;
+</pre></div>
+<p>translate a double number
+</p>
+
+<p>doc-translate-float
+<span id="index-try_002drecognize-_0028--addr-u-xt-_002d_002d-results-_007c-false--_0029-gforth_002dexperimental"></span>
+<span id="index-try_002drecognize"></span>
+<span id="index-try_002drecognize-1"></span>
+</p><div class="format">
+<pre class="format"><code>try-recognize</code> ( <i>addr u xt &ndash; results | false  </i>) gforth-experimental &ldquo;try-recognize&rdquo;
+</pre></div>
+<p>For nested recognizers: try to recognize <var>addr u</var>, and execute <var>xt</var>
+to check if the result is desired.  If <var>xt</var> returns false, clean up all
+side effects of the recognizer, and return false.  Otherwise return the
+results of the call to <var>xt</var>, of which the topmost is non-zero.
+</p>
+
+<span id="index-_003einterpret-_0028--translator-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_003einterpret"></span>
+<span id="index-_003einterpret-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;interpret</code> ( <i>translator &ndash;  </i>) gforth-experimental &ldquo;&gt;interpret&rdquo;
+</pre></div>
+<p>perform interpreter action of translator
+</p>
+
+<span id="index-_003ecompile-_0028--translator-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_003ecompile"></span>
+<span id="index-_003ecompile-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;compile</code> ( <i>translator &ndash;  </i>) gforth-experimental &ldquo;&gt;compile&rdquo;
+</pre></div>
+<p>perform compile action of translator
+</p>
+
+<span id="index-_003epostpone-_0028--translator-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-_003epostpone"></span>
+<span id="index-_003epostpone-1"></span>
+<div class="format">
+<pre class="format"><code>&gt;postpone</code> ( <i>translator &ndash;  </i>) gforth-experimental &ldquo;&gt;postpone&rdquo;
+</pre></div>
+<p>perform postpone action of translator
+</p>
+
+<span id="index-translate_002dmethod_003a-_0028--_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-translate_002dmethod_003a"></span>
+<span id="index-translate_002dmethod_003a-1"></span>
+<div class="format">
+<pre class="format"><code>translate-method:</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;translate-method:&rdquo;
+</pre></div>
+<p>create a new translate method, extending the translator table.  You can
+assign an xt to an existing rectype by using <var>xt rectype</var> <code>to</code>
+<var>translator</var>.
+</p>
+
+<span id="index-translate_002dstate-_0028--xt-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-translate_002dstate"></span>
+<span id="index-translate_002dstate-1"></span>
+<div class="format">
+<pre class="format"><code>translate-state</code> ( <i>xt &ndash;  </i>) gforth-experimental &ldquo;translate-state&rdquo;
+</pre></div>
+<p>change the current state of the system so that executing a translator
+matches the translate-method passsed as <var>xt</var>
+</p>
+
+
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Defining-Recognizers.html">Defining Recognizers</a>, Previous: <a href="Default-Recognizers.html">Default Recognizers</a>, Up: <a href="Recognizers.html">Recognizers</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>
