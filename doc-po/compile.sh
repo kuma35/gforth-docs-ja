@@ -1,5 +1,6 @@
 #!/bin/bash
 PROJ=${HOME}/work/gforth-docs-ja
+BRANCH=docs-ja-0
 cd ${PROJ}/doc-po
 make ja
 exitcode=$?
@@ -29,27 +30,12 @@ rm -f dir
 install-info --info-file=gforth.info --dir-file=dir
 install-info --info-file=vmgen.info --dir-file=dir
 
-# gen file "dir" for info. and publish to docs/info/
-#make -f ${PROJ}/doc-po/publish-info.mak
-#exitcode=$?
-#if [ ${exitcode} -ne 0 ]; then
-#    notify-send -u critical gforth-docs-ja "publish-info.mak エラー"
-#    exit ${exitcode}
-#fi
+# cp htmls
+cp -rp --update ${PROJ}/doc-ja/gforth/* ${PROJ}/docs/${BRANCH}/gforth/
+cp -rp --update ${PROJ}/doc-ja/vmgen/* ${PROJ}/docs/${BRANCH}/vmgen/
+
 # restore htmls and manpaese in Documentation-ja
 #${PROJ}/doc-po/restore-htmls.sh
-#${PROJ}/doc-po/restore-manpages.sh
-# for github pages
-# DIFF=diff ${PROJ}/doc-po/install-webdoc-only-html.sh ${PROJ}/docs/htmldocs
-#gawk -f ${PROJ}/Documentation-po/publish-index.awk TEMPLATE=${PROJ}/Documentation-po/index.html.template OUTPUT=${PROJ}/docs/index.html < ${PROJ}/../git/GIT-VERSION-FILE
-#exitcode=$?
-#if [ ${exitcode} -ne 0 ]; then
-#    notify-send -u critical git-docs-ja "publish-index.awk エラー"
-#    exit ${exitcode}
-#fi
-# restore htmls in docs
-#cd ${PROJ}/docs
-#${PROJ}/Documentation-po/restore-htmls.sh
-#
+
 notify-send -u normal gforth-docs-ja "compile完了。"
 
