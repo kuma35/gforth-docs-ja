@@ -27,6 +27,65 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: BEGIN loops with multiple exits,  Next: General control structures with CASE,  Prev: Counted Loops,  Up: Control Structures
+
+6.9.4 ‘Begin’ loops with multiple exits
+---------------------------------------
+
+For counted loops, you can use ‘leave’ in several places.  For ‘begin’
+loops, you have the following options:
+
+   Use ‘exit’ (possibly several times) in the loop to leave not just the
+loop, but the whole colon definition.  E.g.,:
+
+     : foo
+       begin
+         condition1 while
+           condition2 if
+             exit-code2 exit then
+           condition3 if
+             exit-code3 exit then
+         ...
+       repeat
+       exit-code1 ;
+
+   The disadvantage of this approach is that, if you want to have some
+common code afterwards, you either have to wrap ‘foo’ in another word
+that contains the common code, or you have to call the common code
+several times, from each exit-code.
+
+   Another approach is to use several ‘while’s in a ‘begin’ loop.  You
+have to append a ‘then’ behind the loop for every additional ‘while’.
+E.g.,;
+
+     begin
+       condition1 while
+         condition2 while
+           condition3 while
+     again then then then
+
+   Here I used ‘again’ at the end of the loop so that I would have a
+‘then’ for each ‘while’; ‘repeat’ would result in one less ‘then’, but
+otherwise the same behaviour.  For an explanation of why this works,
+*Note Arbitrary control structures::.
+
+   We can have common code afterwards, but, as presented above, we
+cannot have different exit-codes for the different exits.  You can have
+these different exit-codes, as follows:
+
+     begin
+       condition1 while
+         condition2 while
+           condition3 while
+     again then exit-code3
+     else exit-code2 then
+     else exit-code1 then
+
+   This is relatively hard to comprehend, because the exit-codes are
+relatively far from the exit conditions (it does not help that we are
+not used to such control structures, either).
+
+
 File: gforth.info,  Node: General control structures with CASE,  Next: Arbitrary control structures,  Prev: BEGIN loops with multiple exits,  Up: Control Structures
 
 6.9.5 General control structures with ‘case’
@@ -6908,312 +6967,4 @@ _child class_
      selectors, methods) from a _parent class_.  In Smalltalk
      terminology: The subclass inherits from the superclass.  In C++
      terminology: The derived class inherits from the base class.
-
-
-File: gforth.info,  Node: Objects,  Next: OOF,  Prev: Object-Oriented Terminology,  Up: Object-oriented Forth
-
-6.24.3 The ‘objects.fs’ model
------------------------------
-
-This section describes the ‘objects.fs’ package.  This material also has
-been published in M. Anton Ertl, ‘Yet Another Forth Objects Package
-(https://www.complang.tuwien.ac.at/forth/objects/objects.html)’, Forth
-Dimensions 19(2), pages 37–43.
-
-   This section assumes that you have read *note Structures::.
-
-   The techniques on which this model is based have been used to
-implement the parser generator, Gray, and have also been used in Gforth
-for implementing the various flavours of word lists (hashed or not,
-case-sensitive or not, special-purpose word lists for locals etc.).
-
-* Menu:
-
-* Properties of the Objects model::
-* Basic Objects Usage::
-* The Objects base class::
-* Creating objects::
-* Object-Oriented Programming Style::
-* Class Binding::
-* Method conveniences::
-* Classes and Scoping::
-* Dividing classes::
-* Object Interfaces::
-* Objects Implementation::
-* Objects Glossary::
-
-   Marcel Hendrix provided helpful comments on this section.
-
-
-File: gforth.info,  Node: Properties of the Objects model,  Next: Basic Objects Usage,  Prev: Objects,  Up: Objects
-
-6.24.3.1 Properties of the ‘objects.fs’ model
-.............................................
-
-   • It is straightforward to pass objects on the stack.  Passing
-     selectors on the stack is a little less convenient, but possible.
-
-   • Objects are just data structures in memory, and are referenced by
-     their address.  You can create words for objects with normal
-     defining words like ‘constant’.  Likewise, there is no difference
-     between instance variables that contain objects and those that
-     contain other data.
-
-   • Late binding is efficient and easy to use.
-
-   • It avoids parsing, and thus avoids problems with state-smartness
-     and reduced extensibility; for convenience there are a few parsing
-     words, but they have non-parsing counterparts.  There are also a
-     few defining words that parse.  This is hard to avoid, because all
-     standard defining words parse (except ‘:noname’); however, such
-     words are not as bad as many other parsing words, because they are
-     not state-smart.
-
-   • It does not try to incorporate everything.  It does a few things
-     and does them well (IMO). In particular, this model was not
-     designed to support information hiding (although it has features
-     that may help); you can use a separate package for achieving this.
-
-   • It is layered; you don’t have to learn and use all features to use
-     this model.  Only a few features are necessary (*note Basic Objects
-     Usage::, *note The Objects base class::, *note Creating
-     objects::.), the others are optional and independent of each other.
-
-   • An implementation in Standard Forth is available.
-
-
-File: gforth.info,  Node: Basic Objects Usage,  Next: The Objects base class,  Prev: Properties of the Objects model,  Up: Objects
-
-6.24.3.2 Basic ‘objects.fs’ Usage
-.................................
-
-You can define a class for graphical objects like this:
-
-     object class \ "object" is the parent class
-       selector draw ( x y graphical -- )
-     end-class graphical
-
-   This code defines a class ‘graphical’ with an operation ‘draw’.  We
-can perform the operation ‘draw’ on any ‘graphical’ object, e.g.:
-
-     100 100 t-rex draw
-
-where ‘t-rex’ is a word (say, a constant) that produces a graphical
-object.
-
-   How do we create a graphical object?  With the present definitions,
-we cannot create a useful graphical object.  The class ‘graphical’
-describes graphical objects in general, but not any concrete graphical
-object type (C++ users would call it an _abstract class_); e.g., there
-is no method for the selector ‘draw’ in the class ‘graphical’.
-
-   For concrete graphical objects, we define child classes of the class
-‘graphical’, e.g.:
-
-     graphical class \ "graphical" is the parent class
-       cell% field circle-radius
-
-     :noname ( x y circle -- )
-       circle-radius @ draw-circle ;
-     overrides draw
-
-     :noname ( n-radius circle -- )
-       circle-radius ! ;
-     overrides construct
-
-     end-class circle
-
-   Here we define a class ‘circle’ as a child of ‘graphical’, with field
-‘circle-radius’ (which behaves just like a field (*note Structures::);
-it defines (using ‘overrides’) new methods for the selectors ‘draw’ and
-‘construct’ (‘construct’ is defined in ‘object’, the parent class of
-‘graphical’).
-
-   Now we can create a circle on the heap (i.e., ‘allocate’d memory)
-with:
-
-     50 circle heap-new constant my-circle
-
-‘heap-new’ invokes ‘construct’, thus initializing the field
-‘circle-radius’ with 50.  We can draw this new circle at (100,100) with:
-
-     100 100 my-circle draw
-
-   Note: You can only invoke a selector if the object on the TOS (the
-receiving object) belongs to the class where the selector was defined or
-one of its descendents; e.g., you can invoke ‘draw’ only for objects
-belonging to ‘graphical’ or its descendents (e.g., ‘circle’).
-Immediately before ‘end-class’, the search order has to be the same as
-immediately after ‘class’.
-
-
-File: gforth.info,  Node: The Objects base class,  Next: Creating objects,  Prev: Basic Objects Usage,  Up: Objects
-
-6.24.3.3 The ‘object.fs’ base class
-...................................
-
-When you define a class, you have to specify a parent class.  So how do
-you start defining classes?  There is one class available from the
-start: ‘object’.  It is ancestor for all classes and so is the only
-class that has no parent.  It has two selectors: ‘construct’ and
-‘print’.
-
-
-File: gforth.info,  Node: Creating objects,  Next: Object-Oriented Programming Style,  Prev: The Objects base class,  Up: Objects
-
-6.24.3.4 Creating objects
-.........................
-
-You can create and initialize an object of a class on the heap with
-‘heap-new’ ( ...  class – object ) and in the dictionary (allocation
-with ‘allot’) with ‘dict-new’ ( ...  class – object ).  Both words
-invoke ‘construct’, which consumes the stack items indicated by "..."
-above.
-
-   If you want to allocate memory for an object yourself, you can get
-its alignment and size with ‘class-inst-size 2@’ ( class – align size ).
-Once you have memory for an object, you can initialize it with
-‘init-object’ ( ...  class object – ); ‘construct’ does only a part of
-the necessary work.
-
-
-File: gforth.info,  Node: Object-Oriented Programming Style,  Next: Class Binding,  Prev: Creating objects,  Up: Objects
-
-6.24.3.5 Object-Oriented Programming Style
-..........................................
-
-This section is not exhaustive.
-
-   In general, it is a good idea to ensure that all methods for the same
-selector have the same stack effect: when you invoke a selector, you
-often have no idea which method will be invoked, so, unless all methods
-have the same stack effect, you will not know the stack effect of the
-selector invocation.
-
-   One exception to this rule is methods for the selector ‘construct’.
-We know which method is invoked, because we specify the class to be
-constructed at the same place.  Actually, I defined ‘construct’ as a
-selector only to give the users a convenient way to specify
-initialization.  The way it is used, a mechanism different from selector
-invocation would be more natural (but probably would take more code and
-more space to explain).
-
-
-File: gforth.info,  Node: Class Binding,  Next: Method conveniences,  Prev: Object-Oriented Programming Style,  Up: Objects
-
-6.24.3.6 Class Binding
-......................
-
-Normal selector invocations determine the method at run-time depending
-on the class of the receiving object.  This run-time selection is called
-late binding.
-
-   Sometimes it’s preferable to invoke a different method.  For example,
-you might want to use the simple method for ‘print’ing ‘object’s instead
-of the possibly long-winded ‘print’ method of the receiver class.  You
-can achieve this by replacing the invocation of ‘print’ with:
-
-     [bind] object print
-
-in compiled code or:
-
-     bind object print
-
-in interpreted code.  Alternatively, you can define the method with a
-name (e.g., ‘print-object’), and then invoke it through the name.  Class
-binding is just a (often more convenient) way to achieve the same
-effect; it avoids name clutter and allows you to invoke methods directly
-without naming them first.
-
-   A frequent use of class binding is this: When we define a method for
-a selector, we often want the method to do what the selector does in the
-parent class, and a little more.  There is a special word for this
-purpose: ‘[parent]’; ‘[parent] _selector_’ is equivalent to ‘[bind]
-_parent selector_’, where ‘_parent_’ is the parent class of the current
-class.  E.g., a method definition might look like:
-
-     :noname
-       dup [parent] foo \ do parent's foo on the receiving object
-       ... \ do some more
-     ; overrides foo
-
-   In ‘Object-oriented programming in ANS Forth’ (Forth Dimensions,
-March 1997), Andrew McKewan presents class binding as an optimization
-technique.  I recommend not using it for this purpose unless you are in
-an emergency.  Late binding is pretty fast with this model anyway, so
-the benefit of using class binding is small; the cost of using class
-binding where it is not appropriate is reduced maintainability.
-
-   While we are at programming style questions: You should bind
-selectors only to ancestor classes of the receiving object.  E.g., say,
-you know that the receiving object is of class ‘foo’ or its descendents;
-then you should bind only to ‘foo’ and its ancestors.
-
-
-File: gforth.info,  Node: Method conveniences,  Next: Classes and Scoping,  Prev: Class Binding,  Up: Objects
-
-6.24.3.7 Method conveniences
-............................
-
-In a method you usually access the receiving object pretty often.  If
-you define the method as a plain colon definition (e.g., with
-‘:noname’), you may have to do a lot of stack gymnastics.  To avoid
-this, you can define the method with ‘m: ... ;m’.  E.g., you could
-define the method for ‘draw’ing a ‘circle’ with
-
-     m: ( x y circle -- )
-       ( x y ) this circle-radius @ draw-circle ;m
-
-   When this method is executed, the receiver object is removed from the
-stack; you can access it with ‘this’ (admittedly, in this example the
-use of ‘m: ... ;m’ offers no advantage).  Note that I specify the stack
-effect for the whole method (i.e.  including the receiver object), not
-just for the code between ‘m:’ and ‘;m’.  You cannot use ‘exit’ in
-‘m:...;m’; instead, use ‘exitm’.(1)
-
-   You will frequently use sequences of the form ‘this _field_’ (in the
-example above: ‘this circle-radius’).  If you use the field only in this
-way, you can define it with ‘inst-var’ and eliminate the ‘this’ before
-the field name.  E.g., the ‘circle’ class above could also be defined
-with:
-
-     graphical class
-       cell% inst-var radius
-
-     m: ( x y circle -- )
-       radius @ draw-circle ;m
-     overrides draw
-
-     m: ( n-radius circle -- )
-       radius ! ;m
-     overrides construct
-
-     end-class circle
-
-   ‘radius’ can only be used in ‘circle’ and its descendent classes and
-inside ‘m:...;m’.
-
-   You can also define fields with ‘inst-value’, which is to ‘inst-var’
-what ‘value’ is to ‘variable’.  You can change the value of such a field
-with ‘[to-inst]’.  E.g., we could also define the class ‘circle’ like
-this:
-
-     graphical class
-       inst-value radius
-
-     m: ( x y circle -- )
-       radius draw-circle ;m
-     overrides draw
-
-     m: ( n-radius circle -- )
-       [to-inst] radius ;m
-     overrides construct
-
-     end-class circle
-
-   ---------- Footnotes ----------
-
-   (1) Moreover, for any word that calls ‘catch’ and was defined before
-loading ‘objects.fs’, you have to redefine it like I redefined ‘catch’:
-‘: catch this >r catch r> to-this ;’
 
