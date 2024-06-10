@@ -27,6 +27,456 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Counted string words,  Prev: $tring words,  Up: Strings and Characters
+
+6.8.6 Counted string words
+--------------------------
+
+Counted strings store the length as byte at the address pointed to,
+followed by the bytes of the string.  Their possible length is severely
+limited, and you cannot create a substring in-place without destroying
+the input string.  Therefore we recommend against using counted strings.
+Nevertheless, if you have to deal with counted strings, here are some
+words for that:
+
+‘count’ ( c-addr1 – c-addr2 u ) core “count”
+   c-addr2 is the first character and u the length of the counted string
+at c-addr1.
+
+   The following word has no useful interpretation semantics (unlike
+‘s"’) and no interpretive counterpart (unlike ‘[char]’), so you should
+use it only inside colon definitions (if at all):
+
+‘C"’ ( compilation "ccc<quote>" – ; run-time  – c-addr  ) core-ext “c-quote”
+   Compilation: parse a string ccc delimited by a ‘"’ (double quote).
+At run-time, return c-addr which specifies the counted string ccc.
+Interpretation semantics are undefined.
+
+   doc-place
+‘string,’ ( c-addr u –  ) gforth-0.2 “string,”
+   puts down string as cstring
+
+
+File: gforth.info,  Node: Control Structures,  Next: Defining Words,  Prev: Strings and Characters,  Up: Words
+
+6.9 Control Structures
+======================
+
+Control structures in Forth cannot be used interpretively, only in a
+colon definition(1).  We do not like this limitation, but have not seen
+a satisfying way around it yet, although many schemes have been
+proposed.
+
+* Menu:
+
+* Selection::                IF ... ELSE ... ENDIF
+* Simple Loops::             BEGIN ...
+* Counted Loops::            DO
+* BEGIN loops with multiple exits::
+* General control structures with CASE::
+* Arbitrary control structures::
+* Calls and returns::
+* Exception Handling::
+
+   ---------- Footnotes ----------
+
+   (1) To be precise, they have no interpretation semantics (*note
+Interpretation and Compilation Semantics::).
+
+
+File: gforth.info,  Node: Selection,  Next: Simple Loops,  Prev: Control Structures,  Up: Control Structures
+
+6.9.1 Selection
+---------------
+
+     flag
+     IF
+       code
+     ENDIF
+
+   If flag is non-zero (as far as ‘IF’ etc.  are concerned, a cell with
+any bit set represents truth) code is executed.
+
+     flag
+     IF
+       code1
+     ELSE
+       code2
+     ENDIF
+
+   If FLAG is true, code1 is executed, otherwise code2 is executed.
+
+   You can use ‘THEN’ instead of ‘ENDIF’.  Indeed, ‘THEN’ is standard,
+and ‘ENDIF’ is not, although it is quite popular.  We recommend using
+‘ENDIF’, because it is less confusing for people who also know other
+languages (and is not prone to reinforcing negative prejudices against
+Forth in these people).  Adding ‘ENDIF’ to a system that only supplies
+‘THEN’ is simple:
+     : ENDIF   POSTPONE then ; immediate
+
+   [According to ‘Webster’s New Encyclopedic Dictionary’, “then (adv.)”
+has the following meanings:
+     ...  2b: following next after in order ...  3d: as a necessary
+     consequence (if you were there, then you saw them).
+   Forth’s ‘THEN’ has the meaning 2b, whereas ‘THEN’ in Pascal and many
+other programming languages has the meaning 3d.]
+
+   Gforth also provides the words ‘?DUP-IF’ and ‘?DUP-0=-IF’, so you can
+avoid using ‘?dup’.  Using these alternatives is also more efficient
+than using ‘?dup’.  Definitions in Standard Forth for ‘ENDIF’, ‘?DUP-IF’
+and ‘?DUP-0=-IF’ are provided in ‘compat/control.fs’.
+
+     x
+     CASE
+       x1 OF code1 ENDOF
+       x2 OF code2 ENDOF
+       ...
+       ( x ) default-code ( x )
+     ENDCASE ( )
+
+   Executes the first codei, where the xi is equal to x.  If no xi
+matches, the optional default-code is executed.  The optional default
+case can be added by simply writing the code after the last ‘ENDOF’.  It
+may use x, which is on top of the stack, but must not consume it.  The
+value x is consumed by this construction (either by an ‘OF’ that
+matches, or by the ‘ENDCASE’, if no OF matches).  Example:
+
+     : num-name ( n -- c-addr u )
+      case
+        0 of s" zero " endof
+        1 of s" one "  endof
+        2 of s" two "  endof
+        \ default case:
+        s" other number"
+        rot \ get n on top so ENDCASE can drop it
+      endcase ;
+
+   You can also use (the non-standard) ‘?of’ to use ‘case’ as a general
+selection structure for more than two alternatives.  ‘?Of’ takes a flag.
+Example:
+
+     : sgn ( n1 -- n2 )
+         \ sign function
+         case
+     	dup 0< ?of drop -1 endof
+     	dup 0> ?of drop 1 endof
+     	dup \ n1=0 -> n2=0; dup an item, to be consumed by ENDCASE
+         endcase ;
+
+   Programming style note: To keep the code understandable, you should
+ensure that you change the stack in the same way (wrt.  number and types
+of stack items consumed and pushed) on all paths through a selection
+structure.
+
+
+File: gforth.info,  Node: Simple Loops,  Next: Counted Loops,  Prev: Selection,  Up: Control Structures
+
+6.9.2 Simple Loops
+------------------
+
+     BEGIN
+       code1
+       flag
+     WHILE
+       code2
+     REPEAT
+
+   code1 is executed and flag is computed.  If it is true, code2 is
+executed and the loop is restarted; If flag is false, execution
+continues after the ‘REPEAT’.
+
+     BEGIN
+       code
+       flag
+     UNTIL
+
+   code is executed.  The loop is restarted if ‘flag’ is false.
+
+   Programming style note: To keep the code understandable, a complete
+iteration of the loop should not change the number and types of the
+items on the stacks.
+
+     BEGIN
+       code
+     AGAIN
+
+   This is an endless loop.
+
+
+File: gforth.info,  Node: Counted Loops,  Next: BEGIN loops with multiple exits,  Prev: Simple Loops,  Up: Control Structures
+
+6.9.3 Counted Loops
+-------------------
+
+The basic counted loop is:
+     limit start ?DO
+       body
+     LOOP
+
+   This performs one iteration for every integer, starting from start
+and up to, but excluding limit.  The counter, or index, can be accessed
+with ‘i’.  For example, the loop:
+     10 0 ?DO
+       i .
+     LOOP
+prints ‘0 1 2 3 4 5 6 7 8 9’
+
+   The index of the innermost loop can be accessed with ‘i’, the index
+of the next loop with ‘j’, and the index of the third loop with ‘k’.
+
+   You can access the limit of the innermost loop with ‘i'’ and ‘i'’-‘i’
+with ‘delta-i’.  E.g., running
+
+     : foo 7 5 ?do cr i . i' . delta-i . loop ;
+
+   prints
+
+     5 7 2
+     6 7 1
+
+   The loop control data are kept on the return stack, so there are some
+restrictions on mixing return stack accesses and counted loop words.  In
+particuler, if you put values on the return stack outside the loop, you
+cannot read them inside the loop(1).  If you put values on the return
+stack within a loop, you have to remove them before the end of the loop
+and before accessing the index of the loop.
+
+   There are several variations on the counted loop:
+
+   • ‘LEAVE’ leaves the innermost counted loop immediately; execution
+     continues after the associated ‘LOOP’ or ‘NEXT’.  For example:
+
+          10 0 ?DO  i DUP . 3 = IF LEAVE THEN LOOP
+     prints ‘0 1 2 3’
+
+   • ‘UNLOOP’ prepares for an abnormal loop exit, e.g., via ‘EXIT’.
+     ‘UNLOOP’ removes the loop control parameters from the return stack
+     so ‘EXIT’ can get to its return address.  For example:
+
+          : demo 10 0 ?DO i DUP . 3 = IF UNLOOP EXIT THEN LOOP ." Done" ;
+     prints ‘0 1 2 3’
+
+   • If start is greater than limit, a ‘?DO’ loop is entered (and ‘LOOP’
+     iterates until they become equal by wrap-around arithmetic).  This
+     behaviour is usually not what you want.  Therefore, Gforth offers
+     ‘+DO’ and ‘U+DO’ (as replacements for ‘?DO’), which do not enter
+     the loop if start is greater than limit; ‘+DO’ is for signed loop
+     parameters, ‘U+DO’ for unsigned loop parameters.
+
+   • ‘?DO’ can be replaced by ‘DO’.  ‘DO’ always enters the loop,
+     independent of the loop parameters.  Do not use ‘DO’, even if you
+     know that the loop is entered in any case.  Such knowledge tends to
+     become invalid during maintenance of a program, and then the ‘DO’
+     will make trouble.
+
+   • ‘LOOP’ can be replaced with ‘n +LOOP’; this updates the index by n
+     instead of by 1.  The loop is terminated when the border between
+     limit-1 and limit is crossed.  E.g.:
+
+          4 0 +DO  i .  2 +LOOP
+     prints ‘0 2’
+
+          4 1 +DO  i .  2 +LOOP
+     prints ‘1 3’
+
+   • The behaviour of ‘n +LOOP’ is peculiar when n is negative:
+
+          -1 0 ?DO  i .  -1 +LOOP
+     prints ‘0 -1’
+
+          0 0 ?DO  i .  -1 +LOOP
+     prints nothing.
+
+     We recommend not combining ‘?DO’ with ‘+LOOP’.  Gforth offers
+     several alternatives:
+
+     If you want ‘-1 +LOOP’’s behaviour of including an iteration where
+     ‘I’=limit, start the loop with ‘-[DO’ or ‘U-[DO’ (where the ‘[’ is
+     inspired by the mathematical notation for inclusive ranges, e.g.,
+     [1,n]):
+
+          -1 0 -[DO  i .  -1 +LOOP
+
+     prints ‘0 -1’.
+
+          0 0 -[DO  i .  -1 +LOOP
+
+     prints ‘0’.
+
+          0 -1 -[DO  i .  -1 +LOOP
+
+     prints nothing.
+
+     If you want to exclude the limit, you instead use ‘1 -LOOP’ (or
+     generally ‘u -LOOP’) and start the loop with ‘?DO’, ‘-DO’ or
+     ‘U-DO’.  ‘-LOOP’ terminates the loop when the border between
+     limit+1 and limit is crossed.  E.g.:
+
+          -2 0 -DO  i .  1 -LOOP
+     prints ‘0 -1’
+
+          -1 0 -DO  i .  1 -LOOP
+     prints ‘0’
+
+          0 0 -DO  i .  1 -LOOP
+     prints nothing.
+
+     Unfortunately, ‘+DO’, ‘U+DO’, ‘-DO’, ‘U-DO’ and ‘-LOOP’ are not
+     defined in Standard Forth.  However, an implementation for these
+     words that uses only standard words is provided in
+     ‘compat/loops.fs’.
+
+   • A common task is to iterate over the elements of an array, forwards
+     or backwards.  Iterating over the addresses of the elements has two
+     benefits: It avoids the need to keep the start address of the array
+     around, reducing the data stack load; and it avoids the need to
+     perform address computations in every iteration.  The disadvantage
+     is that, starting with the usual array representations addr uelems
+     or addr ubytes, some processing is required to produce a start and
+     limit address.  Gforth has ‘bounds’ for getting there from the addr
+     ubytes representation, so you can write a forward loop through a
+     cell array ‘v’ as:
+
+          create v 1 , 3 , 7 ,
+          : foo v 3 cells bounds U+DO i  . cell +LOOP ;
+          foo
+
+     which prints ‘1 3 7’.  Preprocessing the inputs for walking
+     backwards is more involved, so Gforth provide a loop construct of
+     the form ‘MEM-DO’...‘LOOP’ that does it for you: It takes an array
+     in addr ubytes representation and the element size, and iterates
+     over the addresses of the elements in backwards order:
+
+          create v 1 , 3 , 7 ,
+          : foo1 v 3 cell array>mem MEM-DO i  . LOOP ;
+          foo1
+
+     This prints ‘7 3 1’.  ‘ARRAY>MEM’ converts the addr uelems
+     uelemsize representation into the addr ubytes uelemsize
+     representation expected by ‘MEM-DO’.  This loop is finished with
+     ‘LOOP’ which decrements by uelemsize when it finishes a ‘MEM-DO’.
+
+     Gforth also adds ‘MEM+DO’ for completeness.  It takes the same
+     parameters as ‘MEM-DO’, but walks forwards through the array:
+
+          create v 1 , 3 , 7 ,
+          : foo2 v 3 cell array>mem MEM+DO i  . LOOP ;
+          foo2
+
+     prints ‘1 3 7’.
+
+   • Another counted loop is:
+          n
+          FOR
+            body
+          NEXT
+     This is the preferred loop of native code compiler writers who are
+     too lazy to optimize ‘?DO’ loops properly.  This loop structure is
+     not defined in Standard Forth.  In Gforth, this loop iterates n+1
+     times; ‘i’ produces values starting with n and ending with 0.
+     Other Forth systems may behave differently, even if they support
+     ‘FOR’ loops.  To avoid problems, don’t use ‘FOR’ loops.
+
+   The counted-loop words are:
+
+‘?DO’ ( compilation – do-sys ; run-time w1 w2 – | loop-sys  ) core-ext “question-do”
+   *Note Counted Loops::.
+
+‘+DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “plus-do”
+   *Note Counted Loops::.
+
+‘U+DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-plus-do”
+   *Note Counted Loops::.
+
+‘bounds’ ( u1 u2 – u3 u1 ) gforth-0.2 “bounds”
+   Given a memory block represented by starting address addr and length
+u in aus, produce the end address addr+u and the start address in the
+right order for ‘u+do’ or ‘?do’.
+
+‘-[do’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-experimental “minus-bracket-do”
+   Start of a counted loop with negative stride; Skips the loop if
+n2<n1; such a counted loop ends with ‘+loop’ where the increment is
+negative; it runs as long as ‘I’>=n1.
+
+‘u-[do’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-experimental “u-minus-bracket-do”
+   Start of a counted loop with negative stride; Skips the loop if
+u2<u1; such a counted loop ends with ‘+loop’ where the increment is
+negative; it runs as long as ‘I’>=u1.
+
+‘-DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “minus-do”
+   *Note Counted Loops::.
+
+‘U-DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-minus-do”
+   *Note Counted Loops::.
+
+   doc-array>mem
+‘mem+do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-plus-do”
+   Starts a counted loop that starts with ‘I’ as addr and then steps
+upwards through memory with nstride wide steps as long as
+‘I’<addr+ubytes.  Must be finished with loop.
+
+‘mem-do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-minus-do”
+   Starts a counted loop that starts with ‘I’ as addr+ubytes-ustride and
+then steps backwards through memory with -nstride wide steps as long as
+‘I’>=addr.  Must be finished with loop.
+
+‘DO’ ( compilation – do-sys ; run-time w1 w2 – loop-sys  ) core “DO”
+   *Note Counted Loops::.
+
+‘FOR’ ( compilation – do-sys ; run-time u – loop-sys  ) gforth-0.2 “FOR”
+   *Note Counted Loops::.
+
+‘LOOP’ ( compilation do-sys – ; run-time loop-sys1 – | loop-sys2  ) core “LOOP”
+   *Note Counted Loops::.
+
+‘+LOOP’ ( compilation do-sys – ; run-time loop-sys1 n – | loop-sys2  ) core “plus-loop”
+   *Note Counted Loops::.
+
+‘-LOOP’ ( compilation do-sys – ; run-time loop-sys1 u – | loop-sys2  ) gforth-0.2 “minus-loop”
+   *Note Counted Loops::.
+
+‘NEXT’ ( compilation do-sys – ; run-time loop-sys1 – | loop-sys2  ) gforth-0.2 “NEXT”
+   *Note Counted Loops::.
+
+‘i’ ( R:n – R:n n ) core “i”
+   n is the index of the innermost counted loop.
+
+‘j’ ( R:n R:w1 R:w2 – n R:n R:w1 R:w2 ) core “j”
+   n is the index of the next-to-innermost counted loop.
+
+‘k’ ( R:n R:w1 R:w2 R:w3 R:w4 – n R:n R:w1 R:w2 R:w3 R:w4 ) gforth-0.3 “k”
+   n is the index of the third-innermost counted loop.
+
+‘i'’ ( R:w R:w2 – R:w R:w2 w ) gforth-0.2 “i-tick”
+   The limit of the innermost counted loop
+
+‘delta-i’ ( r:ulimit r:u – r:ulimit r:u u2 ) gforth-1.0 “delta-i”
+   u2=‘I'’-‘I’ (difference between limit and index).
+
+‘LEAVE’ ( compilation – ; run-time loop-sys –  ) core “LEAVE”
+   *Note Counted Loops::.
+
+‘?LEAVE’ ( compilation – ; run-time f | f loop-sys –  ) gforth-0.2 “question-leave”
+   *Note Counted Loops::.
+
+‘unloop’ ( R:w1 R:w2 – ) core “unloop”
+
+‘DONE’ ( compilation do-sys – ; run-time –  ) gforth-0.2 “DONE”
+   resolves all LEAVEs up to the do-sys
+
+   The standard does not allow using ‘CS-PICK’ and ‘CS-ROLL’ on do-sys.
+Gforth allows it, except for the do-sys produced by ‘MEM+DO’ and
+‘MEM-DO’, but it’s your job to ensure that for every ‘?DO’ etc.  there
+is exactly one ‘UNLOOP’ on any path through the definition (‘LOOP’ etc.
+compile an ‘UNLOOP’ on the fall-through path).  Also, you have to ensure
+that all ‘LEAVE’s are resolved (by using one of the loop-ending words or
+‘DONE’).
+
+   ---------- Footnotes ----------
+
+   (1) well, not in a way that is portable.
+
+
 File: gforth.info,  Node: BEGIN loops with multiple exits,  Next: General control structures with CASE,  Prev: Counted Loops,  Up: Control Structures
 
 6.9.4 ‘Begin’ loops with multiple exits
@@ -6247,7 +6697,7 @@ you should not use them directly, but they appear in the output of
 ‘f@localn’ ( noffset – r ) gforth-1.0 “f-fetch-local-n”
 
 ‘lp@’ ( – c-addr ) gforth-0.2 “lp-fetch”
-   C_addr is the current value of the locals stack pointer.
+   C_addr は、 ローカル・スタック・ポインタの現在の値です。
 
    doc-lp+!#
 ‘lp!’ ( c-addr – ) gforth-internal “lp-store”
@@ -6674,297 +7124,4 @@ the field.
 innovation in the Oberon language; in other words, adding this feature
 to Modula-2 led Wirth to create a new language, write a new compiler
 etc.  Adding this feature to Forth just required a few lines of code.
-
-
-File: gforth.info,  Node: Structure Naming Convention,  Next: Structure Implementation,  Prev: Structure Usage,  Up: Structures
-
-6.23.3 Structure Naming Convention
-----------------------------------
-
-The field names that come to (my) mind are often quite generic, and, if
-used, would cause frequent name clashes.  E.g., many structures probably
-contain a ‘counter’ field.  The structure names that come to (my) mind
-are often also the logical choice for the names of words that create
-such a structure.
-
-   Therefore, I have adopted the following naming conventions:
-
-   • The names of fields are of the form ‘_struct_-_field_’, where
-     ‘_struct_’ is the basic name of the structure, and ‘_field_’ is the
-     basic name of the field.  You can think of field words as
-     converting the (address of the) structure into the (address of the)
-     field.
-
-   • The names of structures are of the form ‘_struct_%’, where
-     ‘_struct_’ is the basic name of the structure.
-
-   This naming convention does not work that well for fields of extended
-structures; e.g., the integer list structure has a field ‘intlist-int’,
-but has ‘list-next’, not ‘intlist-next’.
-
-
-File: gforth.info,  Node: Structure Implementation,  Next: Structure Glossary,  Prev: Structure Naming Convention,  Up: Structures
-
-6.23.4 Structure Implementation
--------------------------------
-
-The central idea in the implementation is to pass the data about the
-structure being built on the stack, not in some global variable.
-Everything else falls into place naturally once this design decision is
-made.
-
-   The type description on the stack is of the form _align size_.
-Keeping the size on the top-of-stack makes dealing with arrays very
-simple.
-
-   ‘field’ is a defining word that uses ‘Create’ and ‘DOES>’.  The body
-of the field contains the offset of the field, and the normal ‘DOES>’
-action is simply:
-
-     @ +
-
-i.e., add the offset to the address, giving the stack effect addr1 –
-addr2 for a field.
-
-   This simple structure is slightly complicated by the optimization for
-fields with offset 0, which requires a different ‘DOES>’-part (because
-we cannot rely on there being something on the stack if such a field is
-invoked during compilation).  Therefore, we put the different
-‘DOES>’-parts in separate words, and decide which one to invoke based on
-the offset.  For a zero offset, the field is basically a noop; it is
-immediate, and therefore no code is generated when it is compiled.
-
-
-File: gforth.info,  Node: Structure Glossary,  Next: Forth200x Structures,  Prev: Structure Implementation,  Up: Structures
-
-6.23.5 Structure Glossary
--------------------------
-
-‘%align’ ( align size –  ) gforth-0.4 “%align”
-   Align the data space pointer to the alignment ALIGN.
-
-‘%alignment’ ( align size – align  ) gforth-0.4 “%alignment”
-   The alignment of the structure.
-
-‘%alloc’ ( align size – addr  ) gforth-0.4 “%alloc”
-   Allocate SIZE address units with alignment ALIGN, giving a data block
-at ADDR; ‘throw’ an ior code if not successful.
-
-‘%allocate’ ( align size – addr ior  ) gforth-0.4 “%allocate”
-   Allocate SIZE address units with alignment ALIGN, similar to
-‘allocate’.
-
-‘%allot’ ( align size – addr  ) gforth-0.4 “%allot”
-   Allot SIZE address units of data space with alignment ALIGN; the
-resulting block of data is found at ADDR.
-
-‘cell%’ ( – align size  ) gforth-0.4 “cell%”
-
-‘char%’ ( – align size  ) gforth-0.4 “char%”
-
-‘dfloat%’ ( – align size  ) gforth-0.4 “dfloat%”
-
-‘double%’ ( – align size  ) gforth-0.4 “double%”
-
-‘end-struct’ ( align size "name" –  ) gforth-0.2 “end-struct”
-   Define a structure/type descriptor NAME with alignment ALIGN and size
-SIZE1 (SIZE rounded up to be a multiple of ALIGN).
-‘name’ execution: – ALIGN SIZE1
-
-‘field’ ( align1 offset1 align size "name" –  align2 offset2  ) gforth-0.2 “field”
-   Create a field NAME with offset OFFSET1, and the type given by ALIGN
-SIZE.  OFFSET2 is the offset of the next field, and ALIGN2 is the
-alignment of all fields.
-‘name’ execution: ADDR1 – ADDR2.
-ADDR2=ADDR1+OFFSET1
-
-‘float%’ ( – align size  ) gforth-0.4 “float%”
-
-‘sfloat%’ ( – align size  ) gforth-0.4 “sfloat%”
-
-‘%size’ ( align size – size  ) gforth-0.4 “%size”
-   The size of the structure.
-
-‘struct’ ( – align size  ) gforth-0.2 “struct”
-   An empty structure, used to start a structure definition.
-
-
-File: gforth.info,  Node: Forth200x Structures,  Prev: Structure Glossary,  Up: Structures
-
-6.23.6 Forth200x Structures
----------------------------
-
-The Forth 2012 standard defines a slightly less convenient form of
-structures.  In general (when using ‘field+’, you have to perform the
-alignment yourself, but there are a number of convenience words (e.g.,
-‘field:’) that include alignment.
-
-   A typical usage example is:
-
-     0
-       field:                   s-a
-       faligned 2 floats +field s-b
-     constant s-struct
-
-   An alternative way of writing this structure is:
-
-     begin-structure s-struct
-       field:                   s-a
-       faligned 2 floats +field s-b
-     end-structure
-
-   You can define a structure that has the same fields and additional
-fields as follows:
-
-     s-struct
-       cfield: t-c
-       cfield: t-d
-     constant t-struct
-
-   or alternatively
-
-     s-struct extend-structure t-struct
-       cfield: t-c
-       cfield: t-d
-     end-structure
-
-‘begin-structure’ ( "name" – struct-sys 0  ) facility-ext “begin-structure”
-
-‘extend-structure’ ( n "name" – struct-sys n  ) gforth-1.0 “extend-structure”
-   Start a new structure name as extension of an existing structure with
-size n.
-
-‘end-structure’ ( struct-sys +n –  ) facility-ext “end-structure”
-   end a structure started wioth ‘begin-structure’
-
-‘+field’ ( noffset1 nsize "name" – noffset2  ) facility-ext “plus-field”
-   Defining word; defines name ‘( addr1 -- addr2 )’, where addr2 is
-addr1+noffset1.  noffset2 is noffset1+nsize.
-
-‘cfield:’ ( u1 "name" – u2  ) facility-ext “c-field-colon”
-   Define a char-sized field
-
-‘field:’ ( u1 "name" – u2  ) facility-ext “field-colon”
-   Define an aligned cell-sized field
-
-‘2field:’ ( u1 "name" – u2  ) gforth-0.7 “two-field-colon”
-   Define an aligned double-cell-sized field
-
-‘ffield:’ ( u1 "name" – u2  ) floating-ext “f-field-colon”
-   Define a faligned float-sized field
-
-‘sffield:’ ( u1 "name" – u2  ) floating-ext “s-f-field-colon”
-   Define a sfaligned sfloat-sized field
-
-‘dffield:’ ( u1 "name" – u2  ) floating-ext “d-f-field-colon”
-   Define a dfaligned dfloat-sized field
-
-‘wfield:’ ( u1 "name" – u2  ) gforth-1.0 “w-field-colon”
-   Define a naturally aligned field for a 16-bit value.
-
-‘lfield:’ ( u1 "name" – u2  ) gforth-1.0 “l-field-colon”
-   Define a naturally aligned field for a 32-bit value.
-
-‘xfield:’ ( u1 "name" – u2  ) gforth-1.0 “x-field-colon”
-   Define a naturally aligned field for a 64-bit-value.
-
-
-File: gforth.info,  Node: Object-oriented Forth,  Next: Regular Expressions,  Prev: Structures,  Up: Words
-
-6.24 Object-oriented Forth
-==========================
-
-Gforth comes with three packages for object-oriented programming:
-‘objects.fs’, ‘oof.fs’, and ‘mini-oof.fs’; none of them is preloaded, so
-you have to ‘include’ them before use.  The most important differences
-between these packages (and others) are discussed in *note Comparison
-with other object models::.  All packages are written in Standard Forth
-and can be used with any other Standard Forth.
-
-* Menu:
-
-* Why object-oriented programming?::
-* Object-Oriented Terminology::
-* Objects::
-* OOF::
-* Mini-OOF::
-* Mini-OOF2::
-* Comparison with other object models::
-
-
-File: gforth.info,  Node: Why object-oriented programming?,  Next: Object-Oriented Terminology,  Prev: Object-oriented Forth,  Up: Object-oriented Forth
-
-6.24.1 Why object-oriented programming?
----------------------------------------
-
-Often we have to deal with several data structures (_objects_), that
-have to be treated similarly in some respects, but differently in
-others.  Graphical objects are the textbook example: circles, triangles,
-dinosaurs, icons, and others, and we may want to add more during program
-development.  We want to apply some operations to any graphical object,
-e.g., ‘draw’ for displaying it on the screen.  However, ‘draw’ has to do
-something different for every kind of object.
-
-   We could implement ‘draw’ as a big ‘CASE’ control structure that
-executes the appropriate code depending on the kind of object to be
-drawn.  This would be not be very elegant, and, moreover, we would have
-to change ‘draw’ every time we add a new kind of graphical object (say,
-a spaceship).
-
-   What we would rather do is: When defining spaceships, we would tell
-the system: “Here’s how you ‘draw’ a spaceship; you figure out the
-rest”.
-
-   This is the problem that all systems solve that (rightfully) call
-themselves object-oriented; the object-oriented packages presented here
-solve this problem (and not much else).
-
-
-File: gforth.info,  Node: Object-Oriented Terminology,  Next: Objects,  Prev: Why object-oriented programming?,  Up: Object-oriented Forth
-
-6.24.2 Object-Oriented Terminology
-----------------------------------
-
-This section is mainly for reference, so you don’t have to understand
-all of it right away.  The terminology is mainly Smalltalk-inspired.  In
-short:
-
-_class_
-     a data structure definition with some extras.
-
-_object_
-     an instance of the data structure described by the class
-     definition.
-
-_instance variables_
-     fields of the data structure.
-
-_selector_
-     (or _method selector_) a word (e.g., ‘draw’) that performs an
-     operation on a variety of data structures (classes).  A selector
-     describes _what_ operation to perform.  In C++ terminology: a
-     (pure) virtual function.
-
-_method_
-     the concrete definition that performs the operation described by
-     the selector for a specific class.  A method specifies _how_ the
-     operation is performed for a specific class.
-
-_selector invocation_
-     a call of a selector.  One argument of the call (the TOS
-     (top-of-stack)) is used for determining which method is used.  In
-     Smalltalk terminology: a message (consisting of the selector and
-     the other arguments) is sent to the object.
-
-_receiving object_
-     the object used for determining the method executed by a selector
-     invocation.  In the ‘objects.fs’ model, it is the object that is on
-     the TOS when the selector is invoked.  (_Receiving_ comes from the
-     Smalltalk _message_ terminology.)
-
-_child class_
-     a class that has (_inherits_) all properties (instance variables,
-     selectors, methods) from a _parent class_.  In Smalltalk
-     terminology: The subclass inherits from the superclass.  In C++
-     terminology: The derived class inherits from the base class.
 

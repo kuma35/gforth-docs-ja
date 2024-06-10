@@ -27,6 +27,299 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Structure Naming Convention,  Next: Structure Implementation,  Prev: Structure Usage,  Up: Structures
+
+6.23.3 Structure Naming Convention
+----------------------------------
+
+The field names that come to (my) mind are often quite generic, and, if
+used, would cause frequent name clashes.  E.g., many structures probably
+contain a ‘counter’ field.  The structure names that come to (my) mind
+are often also the logical choice for the names of words that create
+such a structure.
+
+   Therefore, I have adopted the following naming conventions:
+
+   • The names of fields are of the form ‘_struct_-_field_’, where
+     ‘_struct_’ is the basic name of the structure, and ‘_field_’ is the
+     basic name of the field.  You can think of field words as
+     converting the (address of the) structure into the (address of the)
+     field.
+
+   • The names of structures are of the form ‘_struct_%’, where
+     ‘_struct_’ is the basic name of the structure.
+
+   This naming convention does not work that well for fields of extended
+structures; e.g., the integer list structure has a field ‘intlist-int’,
+but has ‘list-next’, not ‘intlist-next’.
+
+
+File: gforth.info,  Node: Structure Implementation,  Next: Structure Glossary,  Prev: Structure Naming Convention,  Up: Structures
+
+6.23.4 Structure Implementation
+-------------------------------
+
+The central idea in the implementation is to pass the data about the
+structure being built on the stack, not in some global variable.
+Everything else falls into place naturally once this design decision is
+made.
+
+   The type description on the stack is of the form _align size_.
+Keeping the size on the top-of-stack makes dealing with arrays very
+simple.
+
+   ‘field’ is a defining word that uses ‘Create’ and ‘DOES>’.  The body
+of the field contains the offset of the field, and the normal ‘DOES>’
+action is simply:
+
+     @ +
+
+i.e., add the offset to the address, giving the stack effect addr1 –
+addr2 for a field.
+
+   This simple structure is slightly complicated by the optimization for
+fields with offset 0, which requires a different ‘DOES>’-part (because
+we cannot rely on there being something on the stack if such a field is
+invoked during compilation).  Therefore, we put the different
+‘DOES>’-parts in separate words, and decide which one to invoke based on
+the offset.  For a zero offset, the field is basically a noop; it is
+immediate, and therefore no code is generated when it is compiled.
+
+
+File: gforth.info,  Node: Structure Glossary,  Next: Forth200x Structures,  Prev: Structure Implementation,  Up: Structures
+
+6.23.5 Structure Glossary
+-------------------------
+
+‘%align’ ( align size –  ) gforth-0.4 “%align”
+   Align the data space pointer to the alignment ALIGN.
+
+‘%alignment’ ( align size – align  ) gforth-0.4 “%alignment”
+   The alignment of the structure.
+
+‘%alloc’ ( align size – addr  ) gforth-0.4 “%alloc”
+   Allocate SIZE address units with alignment ALIGN, giving a data block
+at ADDR; ‘throw’ an ior code if not successful.
+
+‘%allocate’ ( align size – addr ior  ) gforth-0.4 “%allocate”
+   Allocate SIZE address units with alignment ALIGN, similar to
+‘allocate’.
+
+‘%allot’ ( align size – addr  ) gforth-0.4 “%allot”
+   Allot SIZE address units of data space with alignment ALIGN; the
+resulting block of data is found at ADDR.
+
+‘cell%’ ( – align size  ) gforth-0.4 “cell%”
+
+‘char%’ ( – align size  ) gforth-0.4 “char%”
+
+‘dfloat%’ ( – align size  ) gforth-0.4 “dfloat%”
+
+‘double%’ ( – align size  ) gforth-0.4 “double%”
+
+‘end-struct’ ( align size "name" –  ) gforth-0.2 “end-struct”
+   Define a structure/type descriptor NAME with alignment ALIGN and size
+SIZE1 (SIZE rounded up to be a multiple of ALIGN).
+‘name’ execution: – ALIGN SIZE1
+
+‘field’ ( align1 offset1 align size "name" –  align2 offset2  ) gforth-0.2 “field”
+   Create a field NAME with offset OFFSET1, and the type given by ALIGN
+SIZE.  OFFSET2 is the offset of the next field, and ALIGN2 is the
+alignment of all fields.
+‘name’ execution: ADDR1 – ADDR2.
+ADDR2=ADDR1+OFFSET1
+
+‘float%’ ( – align size  ) gforth-0.4 “float%”
+
+‘sfloat%’ ( – align size  ) gforth-0.4 “sfloat%”
+
+‘%size’ ( align size – size  ) gforth-0.4 “%size”
+   The size of the structure.
+
+‘struct’ ( – align size  ) gforth-0.2 “struct”
+   An empty structure, used to start a structure definition.
+
+
+File: gforth.info,  Node: Forth200x Structures,  Prev: Structure Glossary,  Up: Structures
+
+6.23.6 Forth200x Structures
+---------------------------
+
+The Forth 2012 standard defines a slightly less convenient form of
+structures.  In general (when using ‘field+’, you have to perform the
+alignment yourself, but there are a number of convenience words (e.g.,
+‘field:’) that include alignment.
+
+   A typical usage example is:
+
+     0
+       field:                   s-a
+       faligned 2 floats +field s-b
+     constant s-struct
+
+   An alternative way of writing this structure is:
+
+     begin-structure s-struct
+       field:                   s-a
+       faligned 2 floats +field s-b
+     end-structure
+
+   You can define a structure that has the same fields and additional
+fields as follows:
+
+     s-struct
+       cfield: t-c
+       cfield: t-d
+     constant t-struct
+
+   or alternatively
+
+     s-struct extend-structure t-struct
+       cfield: t-c
+       cfield: t-d
+     end-structure
+
+‘begin-structure’ ( "name" – struct-sys 0  ) facility-ext “begin-structure”
+
+‘extend-structure’ ( n "name" – struct-sys n  ) gforth-1.0 “extend-structure”
+   Start a new structure name as extension of an existing structure with
+size n.
+
+‘end-structure’ ( struct-sys +n –  ) facility-ext “end-structure”
+   end a structure started wioth ‘begin-structure’
+
+‘+field’ ( noffset1 nsize "name" – noffset2  ) facility-ext “plus-field”
+   Defining word; defines name ‘( addr1 -- addr2 )’, where addr2 is
+addr1+noffset1.  noffset2 is noffset1+nsize.
+
+‘cfield:’ ( u1 "name" – u2  ) facility-ext “c-field-colon”
+   Define a char-sized field
+
+‘field:’ ( u1 "name" – u2  ) facility-ext “field-colon”
+   Define an aligned cell-sized field
+
+‘2field:’ ( u1 "name" – u2  ) gforth-0.7 “two-field-colon”
+   Define an aligned double-cell-sized field
+
+‘ffield:’ ( u1 "name" – u2  ) floating-ext “f-field-colon”
+   Define a faligned float-sized field
+
+‘sffield:’ ( u1 "name" – u2  ) floating-ext “s-f-field-colon”
+   Define a sfaligned sfloat-sized field
+
+‘dffield:’ ( u1 "name" – u2  ) floating-ext “d-f-field-colon”
+   Define a dfaligned dfloat-sized field
+
+‘wfield:’ ( u1 "name" – u2  ) gforth-1.0 “w-field-colon”
+   Define a naturally aligned field for a 16-bit value.
+
+‘lfield:’ ( u1 "name" – u2  ) gforth-1.0 “l-field-colon”
+   Define a naturally aligned field for a 32-bit value.
+
+‘xfield:’ ( u1 "name" – u2  ) gforth-1.0 “x-field-colon”
+   Define a naturally aligned field for a 64-bit-value.
+
+
+File: gforth.info,  Node: Object-oriented Forth,  Next: Regular Expressions,  Prev: Structures,  Up: Words
+
+6.24 Object-oriented Forth
+==========================
+
+Gforth comes with three packages for object-oriented programming:
+‘objects.fs’, ‘oof.fs’, and ‘mini-oof.fs’; none of them is preloaded, so
+you have to ‘include’ them before use.  The most important differences
+between these packages (and others) are discussed in *note Comparison
+with other object models::.  All packages are written in Standard Forth
+and can be used with any other Standard Forth.
+
+* Menu:
+
+* Why object-oriented programming?::
+* Object-Oriented Terminology::
+* Objects::
+* OOF::
+* Mini-OOF::
+* Mini-OOF2::
+* Comparison with other object models::
+
+
+File: gforth.info,  Node: Why object-oriented programming?,  Next: Object-Oriented Terminology,  Prev: Object-oriented Forth,  Up: Object-oriented Forth
+
+6.24.1 Why object-oriented programming?
+---------------------------------------
+
+Often we have to deal with several data structures (_objects_), that
+have to be treated similarly in some respects, but differently in
+others.  Graphical objects are the textbook example: circles, triangles,
+dinosaurs, icons, and others, and we may want to add more during program
+development.  We want to apply some operations to any graphical object,
+e.g., ‘draw’ for displaying it on the screen.  However, ‘draw’ has to do
+something different for every kind of object.
+
+   We could implement ‘draw’ as a big ‘CASE’ control structure that
+executes the appropriate code depending on the kind of object to be
+drawn.  This would be not be very elegant, and, moreover, we would have
+to change ‘draw’ every time we add a new kind of graphical object (say,
+a spaceship).
+
+   What we would rather do is: When defining spaceships, we would tell
+the system: “Here’s how you ‘draw’ a spaceship; you figure out the
+rest”.
+
+   This is the problem that all systems solve that (rightfully) call
+themselves object-oriented; the object-oriented packages presented here
+solve this problem (and not much else).
+
+
+File: gforth.info,  Node: Object-Oriented Terminology,  Next: Objects,  Prev: Why object-oriented programming?,  Up: Object-oriented Forth
+
+6.24.2 Object-Oriented Terminology
+----------------------------------
+
+This section is mainly for reference, so you don’t have to understand
+all of it right away.  The terminology is mainly Smalltalk-inspired.  In
+short:
+
+_class_
+     a data structure definition with some extras.
+
+_object_
+     an instance of the data structure described by the class
+     definition.
+
+_instance variables_
+     fields of the data structure.
+
+_selector_
+     (or _method selector_) a word (e.g., ‘draw’) that performs an
+     operation on a variety of data structures (classes).  A selector
+     describes _what_ operation to perform.  In C++ terminology: a
+     (pure) virtual function.
+
+_method_
+     the concrete definition that performs the operation described by
+     the selector for a specific class.  A method specifies _how_ the
+     operation is performed for a specific class.
+
+_selector invocation_
+     a call of a selector.  One argument of the call (the TOS
+     (top-of-stack)) is used for determining which method is used.  In
+     Smalltalk terminology: a message (consisting of the selector and
+     the other arguments) is sent to the object.
+
+_receiving object_
+     the object used for determining the method executed by a selector
+     invocation.  In the ‘objects.fs’ model, it is the object that is on
+     the TOS when the selector is invoked.  (_Receiving_ comes from the
+     Smalltalk _message_ terminology.)
+
+_child class_
+     a class that has (_inherits_) all properties (instance variables,
+     selectors, methods) from a _parent class_.  In Smalltalk
+     terminology: The subclass inherits from the superclass.  In C++
+     terminology: The derived class inherits from the base class.
+
+
 File: gforth.info,  Node: Objects,  Next: OOF,  Prev: Object-Oriented Terminology,  Up: Object-oriented Forth
 
 6.24.3 The ‘objects.fs’ model
@@ -6953,426 +7246,4 @@ Gforth is slower on a 486 than the version used here.  You can find a
 newer version of these measurements at
 <https://www.complang.tuwien.ac.at/forth/performance.html>.  You can
 find numbers for Gforth on various machines in ‘Benchres’.
-
-
-File: gforth.info,  Node: Cross Compiler,  Next: MINOS2,  Prev: Engine,  Up: Top
-
-16 Cross Compiler
-*****************
-
-The cross compiler is used to bootstrap a Forth kernel.  Since Gforth is
-mostly written in Forth, including crucial parts like the outer
-interpreter and compiler, it needs compiled Forth code to get started.
-The cross compiler allows to create new images for other architectures,
-even running under another Forth system.
-
-* Menu:
-
-* Using the Cross Compiler::
-* How the Cross Compiler Works::
-
-
-File: gforth.info,  Node: Using the Cross Compiler,  Next: How the Cross Compiler Works,  Prev: Cross Compiler,  Up: Cross Compiler
-
-16.1 Using the Cross Compiler
-=============================
-
-The cross compiler uses a language that resembles Forth, but isn’t.  The
-main difference is that you can execute Forth code after definition,
-while you usually can’t execute the code compiled by cross, because the
-code you are compiling is typically for a different computer than the
-one you are compiling on.
-
-   The Makefile is already set up to allow you to create kernels for new
-architectures with a simple make command.  The generic kernels using the
-GCC compiled virtual machine are created in the normal build process
-with ‘make’.  To create a embedded Gforth executable for e.g.  the 8086
-processor (running on a DOS machine), type
-
-     make kernl-8086.fi
-
-   This will use the machine description from the ‘arch/8086’ directory
-to create a new kernel.  A machine file may look like that:
-
-     \ Parameter for target systems                         06oct92py
-
-         4 Constant cell             \ cell size in bytes
-         2 Constant cell<<           \ cell shift to bytes
-         5 Constant cell>bit         \ cell shift to bits
-         8 Constant bits/char        \ bits per character
-         8 Constant bits/byte        \ bits per byte [default: 8]
-         8 Constant float            \ bytes per float
-         8 Constant /maxalign        \ maximum alignment in bytes
-     false Constant bigendian        \ byte order
-     ( true=big, false=little )
-
-     include machpc.fs               \ feature list
-
-   This part is obligatory for the cross compiler itself, the feature
-list is used by the kernel to conditionally compile some features in and
-out, depending on whether the target supports these features.
-
-   There are some optional features, if you define your own primitives,
-have an assembler, or need special, nonstandard preparation to make the
-boot process work.  ‘asm-include’ includes an assembler, ‘prims-include’
-includes primitives, and ‘>boot’ prepares for booting.
-
-     : asm-include    ." Include assembler" cr
-       s" arch/8086/asm.fs" included ;
-
-     : prims-include  ." Include primitives" cr
-       s" arch/8086/prim.fs" included ;
-
-     : >boot          ." Prepare booting" cr
-       s" ' boot >body into-forth 1+ !" evaluate ;
-
-   These words are used as sort of macro during the cross compilation in
-the file ‘kernel/main.fs’.  Instead of using these macros, it would be
-possible — but more complicated — to write a new kernel project file,
-too.
-
-   ‘kernel/main.fs’ expects the machine description file name on the
-stack; the cross compiler itself (‘cross.fs’) assumes that either
-‘mach-file’ leaves a counted string on the stack, or ‘machine-file’
-leaves an address, count pair of the filename on the stack.
-
-   The feature list is typically controlled using ‘SetValue’, generic
-files that are used by several projects can use ‘DefaultValue’ instead.
-Both functions work like ‘Value’, when the value isn’t defined, but
-‘SetValue’ works like ‘to’ if the value is defined, and ‘DefaultValue’
-doesn’t set anything, if the value is defined.
-
-     \ generic mach file for pc gforth                       03sep97jaw
-
-     true DefaultValue NIL  \ relocating
-
-     >ENVIRON
-
-     true DefaultValue file          \ controls the presence of the
-                                     \ file access wordset
-     true DefaultValue OS            \ flag to indicate a operating system
-
-     true DefaultValue prims         \ true: primitives are c-code
-
-     true DefaultValue floating      \ floating point wordset is present
-
-     true DefaultValue glocals       \ gforth locals are present
-                                     \ will be loaded
-     true DefaultValue dcomps        \ double number comparisons
-
-     true DefaultValue hash          \ hashing primitives are loaded/present
-
-     true DefaultValue xconds        \ used together with glocals,
-                                     \ special conditionals supporting gforths'
-                                     \ local variables
-     true DefaultValue header        \ save a header information
-
-     true DefaultValue backtrace     \ enables backtrace code
-
-     false DefaultValue ec
-     false DefaultValue crlf
-
-     cell 2 = [IF] &32 [ELSE] &256 [THEN] KB DefaultValue kernel-size
-
-     &16 KB          DefaultValue stack-size
-     &15 KB &512 +   DefaultValue fstack-size
-     &15 KB          DefaultValue rstack-size
-     &14 KB &512 +   DefaultValue lstack-size
-
-
-File: gforth.info,  Node: How the Cross Compiler Works,  Prev: Using the Cross Compiler,  Up: Cross Compiler
-
-16.2 How the Cross Compiler Works
-=================================
-
-
-File: gforth.info,  Node: MINOS2,  Next: Bugs,  Prev: Cross Compiler,  Up: Top
-
-17 MINOS2, a GUI library
-************************
-
-* Menu:
-
-* MINOS2 object framework::
-* MINOS2 tutorial::
-
-
-File: gforth.info,  Node: MINOS2 object framework,  Next: MINOS2 tutorial,  Prev: MINOS2,  Up: MINOS2
-
-17.1 MINOS2 object framework
-============================
-
-* Menu:
-
-* actor methods::
-* widget methods::
-
-MINOS2 is a GUI library, written in ‘mini-oof2.fs’’s object model.  It
-has two main class hierarchies:
-
-‘actor’ ( – class  ) minos2 “actor”
-   class for the actions bound to a component.
-
-‘widget’ ( – class  ) minos2 “widget”
-   class for visual components
-
-
-File: gforth.info,  Node: actor methods,  Next: widget methods,  Prev: MINOS2 object framework,  Up: MINOS2 object framework
-
-17.1.1 ‘actor’ methods:
------------------------
-
-‘caller-w’ ( – optr  ) minos2 “caller-w”
-   pointer back to the widget embedding the actor
-
-‘active-w’ ( – optr  ) minos2 “active-w”
-   pointer to the active subwidget embedding the actor
-
-‘act-name$’ ( – addr u  ) minos2 “act-name-string”
-   Debugging aid: name of the actor
-
-‘clicked’ ( rx ry bmask n –  ) minos2 “clicked”
-   processed clicks
-
-‘scrolled’ ( axis dir –  ) minos2 “scrolled”
-   process scrolling
-
-‘touchdown’ ( $rxy*n bmask –  ) minos2 “touchdown”
-   raw click down
-
-‘touchup’ ( $rxy*n bmask –  ) minos2 “touchup”
-   raw click up
-
-‘ukeyed’ ( addr u –  ) minos2 “ukeyed”
-   key event, string of printable unicode characters
-
-‘ekeyed’ ( ekey –  ) minos2 “ekeyed”
-   key event, non-printable key
-
-‘?inside’ ( rx ry – act / 0  ) minos2 “query-inside”
-   check if coordinates are inside the widget
-
-‘focus’ ( –  ) minos2 “focus”
-   put widget into focus
-
-‘defocus’ ( –  ) minos2 “defocus”
-   put widget out of focus
-
-‘entered’ ( –  ) minos2 “entered”
-   react on cursor entering the widget area
-
-‘left’ ( –  ) minos2 “left”
-   react on cursor leaving the widget area
-
-‘show’ ( –  ) minos2 “show”
-   widget is shown
-
-‘hide’ ( –  ) minos2 “hide”
-   widget is hidden
-
-‘get’ ( – something  ) minos2 “get”
-   getter for the value behind the widget
-
-‘set’ ( something –  ) minos2 “set”
-   setter for the value behind the widget
-
-‘show-you’ ( –  ) minos2 “show-you”
-   make widget visible
-
-
-File: gforth.info,  Node: widget methods,  Prev: actor methods,  Up: MINOS2 object framework
-
-17.1.2 ‘widget’ methods:
-------------------------
-
-‘parent-w’ ( – optr  ) minos2 “parent-w”
-   pointer to parent widget
-
-‘act’ ( – optr  ) minos2 “act”
-   pointer to actor
-
-‘name$’ ( – addr u  ) minos2 “name-string”
-   Widget name for debugging and searching
-
-‘x’ ( – r  ) minos2 “x”
-   widget x coordinate
-
-‘y’ ( – r  ) minos2 “y”
-   widget y coordinate
-
-‘w’ ( – r  ) minos2 “w”
-   widget width
-
-‘h’ ( – r  ) minos2 “h”
-   widget height above baseline
-
-‘d’ ( – r  ) minos2 “d”
-   widget depth below baseline
-
-‘gap’ ( – r  ) minos2 “gap”
-   gap between lines
-
-‘baseline’ ( – r  ) minos2 “baseline”
-   minimun skip per line
-
-‘kerning’ ( – r  ) minos2 “kerning”
-   add kerning
-
-‘raise’ ( – r  ) minos2 “raise”
-   raise/lower box
-
-‘border’ ( – r  ) minos2 “border”
-   surrounding border, all directions
-
-‘borderv’ ( – r  ) minos2 “borderv”
-   vertical border offset
-
-‘bordert’ ( – r  ) minos2 “bordert”
-   top border offset
-
-‘borderl’ ( – r  ) minos2 “borderl”
-   left border offset
-
-‘w-color’ ( – r  ) minos2 “w-color”
-   widget color index (into color map), if any
-
-‘draw-init’ ( –  ) minos2 “draw-init”
-   init draw
-
-‘draw’ ( –  ) minos2 “draw”
-   draw widget
-
-‘split’ ( firstflag rstart1 rx – o rstart2  ) minos2 “split”
-   split a widget into parts for typesetting paragraphs
-
-‘lastfit’ ( –  ) minos2 “lastfit”
-   fit last widget element in a box
-
-‘hglue’ ( – rtyp rsub radd  ) minos2 “hglue”
-   calculate horizontal glue
-
-‘dglue’ ( – rtyp rsub radd  ) minos2 “dglue”
-   calculate vertical glue below baseline
-
-‘vglue’ ( – rtyp rsub radd  ) minos2 “vglue”
-   calculate vertical glue above baseline
-
-‘hglue@’ ( – rtyp rsub radd  ) minos2 “hglue-fetch”
-   cached variant of ‘hglue’
-
-‘dglue@’ ( – rtyp rsub radd  ) minos2 “dglue-fetch”
-   cached variant of ‘dglue’
-
-‘vglue@’ ( – rtyp rsub radd  ) minos2 “vglue-fetch”
-   cached variant of ‘vglue’
-
-‘xywh’ ( – rx0 ry0 rw rh  ) minos2 “xywh”
-   widget bounding box, starting at the top left corner
-
-‘xywhd’ ( – rx ry rw rh rd  ) minos2 “xywhd”
-   widget bounding box, starting at the left baseline point
-
-‘!resize’ ( rx ry rw rh rd –  ) minos2 “store-resize”
-   resize a widget
-
-‘!size’ ( –  ) minos2 “store-size”
-   let the widget self-determine its size
-
-‘dispose-widget’ ( –  ) minos2 “dispose-widget”
-   get rid of a widget
-
-‘.widget’ ( –  ) minos2 “print-widget”
-   debugging: Print informations about the widget
-
-‘par-split’ ( rw –  ) minos2 “par-split”
-   split a paragraph by width RW
-
-‘resized’ ( –  ) minos2 “resized”
-   widget is resized
-
-   Components are composed using a boxes&glue model similar to LaTeX,
-including paragraph breaking.  For the sake of simplicity and
-portability, MINOS2 only supports a single window, and uses OpenGL for
-rendering.
-
-   MINOS2 furthermore supports animations with the ‘animation’ class.  A
-color index texture is used for different color schemes, and transition
-between neighboring schemes can also be animated.
-
-‘>animate’ ( rdelta addr xt –  ) minos2 “to-animate”
-   create a new animation, calling XT with stack effect ‘( addr r0..1 --
-)’ repeatedly, until the RDELTA timeout expired; last call is always
-with argument 1E for the time.
-
-   You can create named color indexes and assign them color values for
-the currently active color scheme.
-
-‘color:’ ( rgba "name" –  ) minos2 “color:”
-   Create a (possibly shared) color index initialized with RGBA
-
-‘new-color:’ ( rgba "name" –  ) minos2 “new-color:”
-   Create a unique color index initialized with RGBA
-
-‘text-color:’ ( rgba "name" –  ) minos2 “text-color:”
-   Create a unique text color index initialized with RGBA, the
-corresponding emoji color is set to white.
-
-‘text-emoji-color:’ ( rgbatext rgbaemoji "name" –  ) minos2 “text-emoji-color:”
-   Create a unique text color index initialized with RGBATEXT, the
-corresponding emoji color is set to RGBAEMOJI.
-
-‘fade-color:’ ( rgba1 rgba2 "name" –  ) minos2 “fade-color:”
-   Create a unique pair of text color index initialized with RGBA1 and
-RGBA2, the corresponding emoji color is set to white.  By slowly
-shifting the index from one to the next index, the object will shift its
-color using a linear interpolation when redrawn.
-
-‘text-emoji-fade-color:’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" –  ) minos2 “text-emoji-fade-color:”
-   Create a unique pair of text color index initialized with RGBATEXT1
-and ~2, the corresponding emoji color pair is set to RGBAEMOJI1 to ~2.
-By slowly shifting the index from one to the next index, the object will
-shift its color using a linear interpolation when redrawn.
-
-‘re-color’ ( rgba "name" –  ) minos2 “re-color”
-   assign the named color index "NAME" in the current color scheme with
-the value RGBA.
-
-‘re-text-color’ ( rgba "name" –  ) minos2 “re-text-color”
-   assign the named text color index "NAME" in the current color scheme
-with the value RGBA.
-
-‘re-emoji-color’ ( rgbatext rgbaemoji "name" –  ) minos2 “re-emoji-color”
-   assign the named text and emoji color index "NAME" in the current
-color scheme with the value RGBATEXT and RGBAEMOJI.
-
-‘re-fade-color’ ( rgba1 rgba2 "name" –  ) minos2 “re-fade-color”
-   assign the named color index pair "NAME" in the current color scheme
-with the value RGBA1 and RGBA2.
-
-‘re-text-emoji-fade-color’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" –  ) minos2 “re-text-emoji-fade-color”
-   assign the named color index pair "NAME" in the current color scheme
-with the value RGBATEXT1 and ~2 resp.  RGBAEMOJI1 and ~2.
-
-   For a number of specific objects, there are early bound methods, that
-only work on these objects
-
-   • Viewport
-
-     ‘vp-top’ ( o:vp –  ) minos2 “vp-top”
-     scroll viewport to top
-
-     ‘vp-bottom’ ( o:vp –  ) minos2 “vp-bottom”
-     scroll viewport to bottom
-
-     ‘vp-left’ ( o:vp –  ) minos2 “vp-left”
-     scroll viewport to left
-
-     ‘vp-right’ ( o:vp –  ) minos2 “vp-right”
-     scroll viewport to right
-
-     ‘vp-reslide’ ( o:vp –  ) minos2 “vp-reslide”
-     Adjust the sliders of a viewport after scrolling
-
-     ‘vp-needed’ ( xt –  ) minos2 “vp-needed”
-     collect needs in viewport’s vp-need
 

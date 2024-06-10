@@ -1768,10 +1768,10 @@ Tutorial.)。 ファクタリングにより、 通常はスタック・コメ�
 ‘f’
      二値フラグ(Boolean flags)。 つまり ‘false’ または ‘true’
 ‘a-addr,a-’
-     セル揃えアドレス(Cell-aligned address)
+     セル・アライメント・アドレス
 ‘c-addr,c-’
-     文字揃えアドレス(Char-aligned address)(注意: Windows NT では文字
-     (char)は 2 バイトになる場合があることに注意)
+     文字(char)アライメント・アドレス(注意: Windows NT では文字(char)は
+     2 バイトになる場合があることに注意)
 ‘xt’
      実行トークン(Execution token)。 セルと同一サイズ
 ‘w,x’
@@ -4321,16 +4321,16 @@ DESCRIPTION
 ‘r’
      浮動小数点数(Float)(FP スタック上に置かれる)
 ‘a-’
-     セル揃えアドレス(Cell-aligned address)
+     セル・アライメント・アドレス
 ‘c-’
-     文字揃えアドレス(Char-aligned address)(注意: Windows NT では文字
-     (char)は 2 バイトになる場合があることに注意)
+     文字(char)アライメント・アドレス(注意: Windows NT では文字(char)は
+     2 バイトになる場合があることに注意)
 ‘f-’
-     浮動小数点数揃えのアドレス(Float-aligned address)
+     浮動小数点数アライメントのアドレス
 ‘df-’
-     IEEE倍精度浮動小数点数揃えのアドレス
+     IEEE倍精度浮動小数点数アライメントのアドレス
 ‘sf-’
-     IEEE単精度浮動小数点数揃えのアドレス
+     IEEE単精度浮動小数点数アライメントのアドレス
 ‘xt’
      実行トークン(Execution token)。 セルと同一サイズ
 ‘wid’
@@ -4831,93 +4831,94 @@ File: gforth.info,  Node: Bitwise operations,  Next: Numeric comparison,  Prev: 
 ‘invert’ ( w1 – w2 ) core “invert”
 
 ‘mux’ ( u1 u2 u3 – u ) gforth-1.0 “mux”
-   Multiplex: For every bit in u3: for a 1 bit, select the corresponding
-bit from u1, otherwise the corresponding bit from u2.  E.g., ‘%0011
-%1100 %1010 mux’ gives ‘%0110’
+   multiplex(多重化): u3 の各ビットについて、 そのビットが 1 の場合は u1
+から対応するビットを選択し、 それ以外の場合は u2 から対応するビットを選
+択します。 たとえば、 ‘%0011 %1100 %1010 mux’ は ‘%0110’ となります。
 
 ‘lshift’ ( u1 u – u2 ) core “l-shift”
-   Shift u1 left by u bits.
+   u1 を u ビット左シフトします。
 
 ‘rshift’ ( u1 u – u2 ) core “r-shift”
-   Shift u1 (cell) right by u bits, filling the shifted-in bits with
-zero (logical/unsigned shift).
+   u1 (セル) を u ビットだけ右にシフトし、 シフトインされたビットを 0 で
+埋めます(論理/符号無しシフトです)。
 
 ‘arshift’ ( n1 u – n2 ) gforth-1.0 “ar-shift”
-   Shift n1 (cell) right by u bits, filling the shifted-in bits from the
-sign bit of n1 (arithmetic shift).
+   n1 (セル) を u ビット右にシフトし、n1 の符号ビットからシフトインされ
+たビットを埋めます (算術シフト)。
 
 ‘dlshift’ ( ud1 u – ud2 ) gforth-1.0 “dlshift”
-   Shift ud1 (double-cell) left by u bits.
+   ud1 (2倍長セル) を u ビット左にシフトします。
 
 ‘drshift’ ( ud1 u – ud2 ) gforth-1.0 “drshift”
-   Shift ud1 (double-cell) right by u bits, filling the shifted-in bits
-with zero (logical/unsigned shift).
+   ud1 (2倍長セル) を u ビットだけ右にシフトし、 シフトインされたビット
+を 0 で埋めます (論理/符号なしシフト)。
 
 ‘darshift’ ( d1 u – d2 ) gforth-1.0 “darshift”
-   Shift d1 (double-cell) right by u bits, filling the shifted-in bits
-from the sign bit of d1 (arithmetic shift).
+   d1 (2倍長セル) を u ビット右にシフトし、d1 の符号ビットからシフトイン
+されたビットで埋めます (算術シフト)。
 
 ‘2*’ ( n1 – n2 ) core “two-star”
-   Shift left by 1; also works on unsigned numbers
+   1 つ左にシフトします。符号なしの数値でも機能します
 
 ‘2/’ ( n1 – n2 ) core “two-slash”
-   Arithmetic shift right by 1.  For signed numbers this is a floored
-division by 2 (note that ‘/’ not necessarily floors).
+   1 つ右に算術シフトします。 符号付き数値の場合、 これは 2 による
+floored division になります(‘/’ は必ずしも floors ではないことに注意して
+ください)。
 
 ‘d2*’ ( d1 – d2 ) double “d-two-star”
-   Shift double-cell left by 1; also works on unsigned numbers
+   2倍長セルを左に 1 シフトします。 符号なしの数値でも機能します
 
 ‘d2/’ ( d1 – d2 ) double “d-two-slash”
-   Arithmetic shift right by 1.  For signed numbers this is a floored
-division by 2.
+   1 つ右に算術シフトします。 符号付き数値の場合、これは 2 による
+floored division になります。
 
 ‘>pow2’ ( u1 – u2 ) gforth-1.0 “to-pow2”
-   u2 is the lowest power-of-2 number with u2>=u1.
+   u2 は、u2>=u1 の最小の 2 のべき乗数です。
 
 ‘log2’ ( u – n ) gforth-1.0 “log2”
-   N is the rounded-down binary logarithm of u, i.e., the index of the
-first set bit; if u=0, n=-1.
+   N は u の切り捨て2進対数、 つまり最初に設定されたビットのインデックス
+です。 u=0 の場合は n=-1 です。
 
 ‘pow2?’ ( u – f  ) gforth-1.0 “pow-two-query”
-   f is true iff u is a power of two, i.e., there is exactly one bit set
-in u.
+   f は、 u が 2 の累乗の場合、 つまり u のビットが 1 つだけセットされて
+いる場合に true になります。
 
 ‘ctz’ ( x – u  ) gforth-1.0 “c-t-z”
-   count trailing zeros in binary representation of x
+   x の2進数表現で末尾からのゼロの数を数える
 
-   Unlike most other operations, rotation of narrower units cannot
-easily be synthesized from rotation of wider units, so using cell-wide
-and double-wide rotation operations means that the results depend on the
-cell width.  For published algorithms or cell-width-independent results,
-you usually need to use a fixed-width rotation operation.
+   他のほとんどの操作とは異なり、 幅の狭いユニットのローテートと幅の広い
+ユニットのローテートを簡単に合成することはできないため、 1倍長セル幅およ
+び 2倍幅のセル幅のローテート操作を使用すると、 結果がセル幅に依存するこ
+とになります。 公開されたアルゴリズムまたはセル幅に依存しない結果の場合
+、 通常は固定幅のローテート操作を使用する必要があります。
 
 ‘wrol’ ( u1 u – u2 ) gforth-1.0 “wrol”
-   Rotate the least significant 16 bits of u1 left by u bits, set the
-other bits to 0.
+   u1 の下位側 16 ビットを u ビットだけ左に回転し、 他のビットを 0 にセ
+ットします。
 
 ‘wror’ ( u1 u – u2 ) gforth-1.0 “wror”
-   Rotate the least significant 16 bits of u1 right by u bits, set the
-other bits to 0.
+   u1 の下位側 16 ビットを u ビットだけ右回転し、 他のビットを 0 にセッ
+トします。
 
 ‘lrol’ ( u1 u – u2 ) gforth-1.0 “lrol”
-   Rotate the least significant 32 bits of u1 left by u bits, set the
-other bits to 0.
+   u1 の下位側 32 ビットを u ビットだけ左に回転し、 他のビットを 0 にセ
+ットします。
 
 ‘lror’ ( u1 u – u2 ) gforth-1.0 “lror”
-   Rotate the least significant 32 bits of u1 right by u bits, set the
-other bits to 0.
+   u1 の下位側 32 ビットを u ビットだけ右回転し、 他のビットを 0 にセッ
+トします。
 
 ‘rol’ ( u1 u – u2 ) gforth-1.0 “rol”
-   Rotate all bits of u1 left by u bits.
+   u1 のすべてのビットを u ビットだけ左に回転します。
 
 ‘ror’ ( u1 u – u2 ) gforth-1.0 “ror”
-   Rotate all bits of u1 right by u bits.
+   u1 のすべてのビットを u ビットだけ右回転します。
 
 ‘drol’ ( ud1 u – ud2 ) gforth-1.0 “drol”
-   Rotate all bits of ud1 (double-cell) left by u bits.
+   ud1 (2倍長セル) のすべてのビットを u ビットだけ左に回転します。
 
 ‘dror’ ( ud1 u – ud2 ) gforth-1.0 “dror”
-   Rotate all bits of ud1 (double-cell) right by u bits.
+   ud1 (2倍長セル) のすべてのビットを u ビット右に回転します。
 
 
 File: gforth.info,  Node: Numeric comparison,  Next: Floating Point,  Prev: Bitwise operations,  Up: Arithmetic
@@ -4925,8 +4926,8 @@ File: gforth.info,  Node: Numeric comparison,  Next: Floating Point,  Prev: Bitw
 6.5.7 Numeric comparison
 ------------------------
 
-Note that the words that compare for equality (‘= <> 0= 0<> d= d<> d0=
-d0<>’) work for for both signed and unsigned numbers.
+注意: 等しいかどうかを比較するワード(‘= <> 0= 0<> d= d<> d0= d0<>’) は、
+符号付き数値と符号なし数値の両方に対して機能することに注意してください。
 
 ‘<’ ( n1 n2 – f ) core “less-than”
 
@@ -4961,13 +4962,15 @@ d0<>’) work for for both signed and unsigned numbers.
 ‘u>=’ ( u1 u2 – f ) gforth-0.2 “u-greater-or-equal”
 
 ‘within’ ( u1 u2 u3 – f ) core-ext “within”
-   u2<u3 and u1 in [u2,u3) or: u2>=u3 and u1 not in [u3,u2).  This works
-for unsigned and signed numbers (but not a mixture).  Another way to
-think about this word is to consider the numbers as a circle (wrapping
-around from ‘max-u’ to 0 for unsigned, and from ‘max-n’ to min-n for
-signed numbers); now consider the range from u2 towards increasing
-numbers up to and excluding u3 (giving an empty range if u2=u3); if u1
-is in this range, ‘within’ returns true.
+   u2<u3 かつ u1 が [u2,u3) にある(u2 < u3 and u2 <= u1 < u3 )、 または
+u2 >= u3 かつ u1 が [u3,u2) にない( u2 >= u3 and (u1 not in (u3 <= and <
+u2)。 これは、 符号なしの数値と符号付きの数値に対して機能します(ただし、
+混ぜてはいけません)。 このワードについて考えるもう 1 つの方法は、 数値を
+循環として考えることです(符号なしの数値の場合は ‘max-u’ から 0 まで、 符
+号付きの数値の場合は ‘max-n’ から min-n まで循環します)。ここで、 u2 か
+ら u3 までの増加する数値(u3 を除く)の範囲を検討します(u2=u3 の場合は空の
+範囲を与えます)。 u1 がこの範囲内にある場合、 ‘within’ は true を返しま
+す。
 
 ‘d<’ ( d1 d2 – f ) double “d-less-than”
 
@@ -5007,23 +5010,23 @@ File: gforth.info,  Node: Floating Point,  Prev: Numeric comparison,  Up: Arithm
 6.5.8 Floating Point
 --------------------
 
-For the rules used by the text interpreter for recognising
-floating-point numbers see *note Number Conversion::.
+浮動小数点数を認識するためにテキスト・インタプリタで使用されるルールにつ
+いては、 *note Number Conversion:: を参照してください。
 
-   Gforth has a separate floating point stack, but the documentation
-uses the unified notation.(1)
+   Gforth には別個の浮動小数点スタックがありますが、 ドキュメントでは一
+緒に統一した表記が使用されています(1)。
 
-   Floating point numbers have a number of unpleasant surprises for the
-unwary (e.g., floating point addition is not associative) and even a few
-for the wary.  You should not use them unless you know what you are
-doing or you don’t care that the results you get are totally bogus.  If
-you want to learn about the problems of floating point numbers (and how
-to avoid them), you might start with ‘David Goldberg, What Every
-Computer Scientist Should Know About Floating-Point Arithmetic
+   浮動小数点数は、 不注意な人にとっては多くの不快な驚きをもたらします
+(たとえば、浮動小数点の加算は結合的(associative)ではありません)。 また、
+用心深い人にとってもいくつかの不快な驚きさえあります。 自分が何をしてい
+るのか理解していない場合、 または得られる結果が完全に偽物であることを気
+にしない場合を除き、 これらを使用すべきではありません。 浮動小数点数の問
+題(およびその回避方法)について知りたい場合は、 ‘David Goldberg, What
+Every Computer Scientist Should Know About Floating-Point Arithmetic
 (https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html), ACM
-Computing Surveys 23(1):5−48, March 1991’.
+Computing Surveys 23(1):5−48, March 1991’ から始めると良いでしょう。
 
-   Conversion between integers and floating-point:
+   整数と浮動小数点の間の変換:
 
 ‘s>f’ ( n – r ) floating-ext “s-to-f”
 
@@ -5033,7 +5036,7 @@ Computing Surveys 23(1):5−48, March 1991’.
 
 ‘f>d’ ( r – d ) floating “f-to-d”
 
-   Arithmetics:
+   算術演算:
 
 ‘f+’ ( r1 r2 – r3 ) floating “f-plus”
 
@@ -5048,24 +5051,25 @@ Computing Surveys 23(1):5−48, March 1991’.
 ‘fabs’ ( r1 – r2 ) floating-ext “f-abs”
 
 ‘fcopysign’ ( r1 r2 – r3  ) gforth-1.0 “fcopysign”
-   r3 takes its absolute value from r1 and its sign from r2
+   r3 は r1 から絶対値を取得し r2 から符号を取得します
 
 ‘fmax’ ( r1 r2 – r3 ) floating “f-max”
 
 ‘fmin’ ( r1 r2 – r3 ) floating “f-min”
 
 ‘floor’ ( r1 – r2 ) floating “floor”
-   Round towards the next smaller integral value, i.e., round toward
-negative infinity.
+   次に小さい整数値に向かって丸めます。 つまり、 負の無限大に向かって丸
+めます。
 
 ‘fround’ ( r1 – r2 ) floating “f-round”
-   Round to the nearest integral value.
+   最も近い整数値に丸めます(訳注: 0.5e – 0, 0.50e – 0, 0.51e – 1, 1.5e –
+2, ...  ??)
 
 ‘ftrunc’ ( r1 – r2  ) floating-ext “f-trunc”
-   round towards 0
+   0 に向かって丸める(正数でも負数でも)
 
 ‘f**’ ( r1 r2 – r3 ) floating-ext “f-star-star”
-   r3 is r1 raised to the r2th power.
+   r3 は r1 の r2 乗です
 
 ‘fsqrt’ ( r1 – r2 ) floating-ext “f-square-root”
 
@@ -5080,32 +5084,32 @@ negative infinity.
    r2=ln(r1+1)
 
 ‘flog’ ( r1 – r2 ) floating-ext “f-log”
-   The decimal logarithm.
+   常用対数(decimal logarithm)
 
 ‘falog’ ( r1 – r2 ) floating-ext “f-a-log”
    r2=10**r1
 
 ‘f2*’ ( r1 – r2  ) gforth-0.2 “f2*”
-   Multiply r1 by 2.0e0
+   r1 に 2.0e0 を掛けた値
 
 ‘f2/’ ( r1 – r2  ) gforth-0.2 “f2/”
-   Multiply r1 by 0.5e0
+   r1 に 0.5e0 を掛けた値
 
 ‘1/f’ ( r1 – r2  ) gforth-0.2 “1/f”
-   Divide 1.0e0 by r1.
+   1.0e0 を r1 で割った値
 
-   Vector arithmetics:
+   ベクトル演算:
 
 ‘v*’ ( f-addr1 nstride1 f-addr2 nstride2 ucount – r ) gforth-0.5 “v-star”
-   dot-product: r=v1*v2.  The first element of v1 is at f_addr1, the
-next at f_addr1+nstride1 and so on (similar for v2).  Both vectors have
-ucount elements.
+   ドット積(dot-product): r=v1*v2 v1 の最初の要素は f_addr1 にあり、 次
+の要素は f_addr1+nstride1 というようになります(v2 も同様)。 どちらのベク
+トルにも ucount の数の要素があります。
 
 ‘faxpy’ ( ra f-x nstridex f-y nstridey ucount – ) gforth-0.5 “faxpy”
    vy=ra*vx+vy
 
-   Angles in floating point operations are given in radians (a full
-circle has 2 pi radians).
+   浮動小数点演算の角度はラジアン(radians)で指定します(完全な円は 2πラジ
+アンです)。
 
 ‘fsin’ ( r1 – r2 ) floating-ext “f-sine”
 
@@ -5123,8 +5127,9 @@ circle has 2 pi radians).
 ‘fatan’ ( r1 – r2 ) floating-ext “f-a-tan”
 
 ‘fatan2’ ( r1 r2 – r3 ) floating-ext “f-a-tan-two”
-   r1/r2=tan(r3).  ANS Forth does not require, but probably intends this
-to be the inverse of ‘fsincos’.  In gforth it is.
+   r1/r2=tan(r3) ANS Forth ではそこまで求められてはいないのですが、 おそ
+らくこれが ‘fsincos’ の逆になることを意図していて、 gforth ではそのよう
+になっています。
 
 ‘fsinh’ ( r1 – r2 ) floating-ext “f-cinch”
 
@@ -5139,24 +5144,24 @@ to be the inverse of ‘fsincos’.  In gforth it is.
 ‘fatanh’ ( r1 – r2 ) floating-ext “f-a-tan-h”
 
 ‘pi’ ( – r  ) gforth-0.2 “pi”
-   ‘Fconstant’ – r is the value pi; the ratio of a circle’s area to its
-diameter.
+   ‘Fconstant’(定数) – r は値 pi です(π)。 円の面積と直径の比率。
 
-   One particular problem with floating-point arithmetic is that
-comparison for equality often fails when you would expect it to succeed.
-For this reason approximate equality is often preferred (but you still
-have to know what you are doing).  Also note that IEEE NaNs may compare
-differently from what you might expect.  The comparison words are:
+   浮動小数点演算に関する特別な問題の 1 つは、 等価性の比較が、 成功する
+はずなのに失敗することがよくあることです。 このため、 多くの場合、 近似
+的等価性が好まれます(ただし、 自分が何をしているのかを理解しておく必要が
+あります)。 また、 IEEE NaN の比較があなたの予想とは異なる場合があること
+にも注意してください。 比較ワードは以下のとおりです:
 
 ‘f~rel’ ( r1 r2 r3 – flag  ) gforth-0.5 “f~rel”
-   Approximate equality with relative error: |r1-r2|<r3*|r1+r2|.
+   相対誤差を含む近似等価性: |r1-r2|<r3*|r1+r2|
 
 ‘f~abs’ ( r1 r2 r3 – flag  ) gforth-0.5 “f~abs”
-   Approximate equality with absolute error: |r1-r2|<r3.
+   Approximate equality with absolute error: |r1-r2|<r3.< 絶対誤差を伴う
+近似等価性: |r1-r2|<r3
 
 ‘f~’ ( r1 r2 r3 – flag  ) floating-ext “f-proximate”
-   ANS Forth medley for comparing r1 and r2 for equality: r3>0: ‘f~abs’;
-r3=0: bitwise comparison; r3<0: ‘fnegate f~rel’.
+   r1 と r2 が等しいかどうかを比較するための ANS Forth ワードごたまぜ:
+r3>0 なら ‘f~abs’; r3=0 なら ビット単位の比較; r3<0 なら ‘fnegate f~rel’
 
 ‘f=’ ( r1 r2 – f ) gforth-0.2 “f-equals”
 
@@ -5182,24 +5187,24 @@ r3=0: bitwise comparison; r3<0: ‘fnegate f~rel’.
 
 ‘f0>=’ ( r – f ) gforth-0.2 “f-zero-greater-or-equal”
 
-   Special values in IEEE754 can be derived by for example dividing by
-zero.  The most common ones are defined as floating point constants for
-easy usage.
+   IEEE754 の特別な値は、 たとえばゼロで除算することによって導出できます
+。 最も一般的なものは、使いやすいように浮動小数点定数として定義されてい
+ます。
 
 ‘infinity’ ( – r  ) gforth-1.0 “infinity”
-   floating point infinity
+   浮動小数点数 (正の)無限大(floating point infinity)
 
 ‘-infinity’ ( – r  ) gforth-1.0 “-infinity”
-   floating point -infinity
+   浮動小数点数 負の無限大(-infinity)
 
 ‘NaN’ ( – r  ) gforth-1.0 “NaN”
-   floating point Not a Number
+   浮動小数点数 NaN(Not a Number)
 
    ---------- Footnotes ----------
 
-   (1) It’s easy to generate the separate notation from that by just
-separating the floating-point numbers out: e.g.  ‘( n r1 u r2 -- r3 )’
-becomes ‘( n u -- ) ( F: r1 r2 -- r3 )’.
+   (1) この一緒にした表記から、 浮動小数点数だけを分離するだけで、 簡単
+に分離された表記にできます。 例えば: ‘( n r1 ur2 -- r3 )’ は ‘( n u -- )
+( F: r1 r2 -- r3 )’ になります
 
 
 File: gforth.info,  Node: Stack Manipulation,  Next: Memory,  Prev: Arithmetic,  Up: Words
@@ -5207,17 +5212,18 @@ File: gforth.info,  Node: Stack Manipulation,  Next: Memory,  Prev: Arithmetic, 
 6.6 Stack Manipulation
 ======================
 
-Gforth maintains a number of separate stacks:
+Gforth は、 いくつかの個別のスタックを維持します:
 
-   • A data stack (also known as the “parameter stack”) – for
-     characters, cells, addresses, and double cells.
+   • データ・スタック(「パラメータ・スタック」とも呼ばれます) – 文字
+     (characters)と、 セル(cells)と、 アドレス(addresses)と、 2倍長セル
+     (double cells) 用
 
-   • A floating point stack – for holding floating point (FP) numbers.
+   • 浮動小数点スタック – 浮動小数点 (FP) 数を保持します。
 
-   • A return stack – for holding the return addresses of colon
-     definitions and other (non-FP) data.
+   • リターン・スタック – コロン定義およびその他の(FP 以外の)データのリ
+     ターン・アドレスを保持します。
 
-   • A locals stack – for holding local variables.
+   • ローカル・スタック – ローカル変数を保持します。
 
 * Menu:
 
@@ -5250,15 +5256,15 @@ File: gforth.info,  Node: Data stack,  Next: Floating point stack,  Prev: Stack 
 ‘swap’ ( w1 w2 – w2 w1 ) core “swap”
 
 ‘pick’ ( S:... u – S:... w ) core-ext “pick”
-   Actually the stack effect is ‘ x0 ... xu u -- x0 ... xu x0 ’.
+   実際のスタック効果は ‘ x0 ... xu u -- x0 ... xu x0 ’ です。
 
 ‘rot’ ( w1 w2 w3 – w2 w3 w1 ) core “rote”
 
 ‘-rot’ ( w1 w2 w3 – w3 w1 w2 ) gforth-0.2 “not-rote”
 
 ‘?dup’ ( w – S:... w ) core “question-dupe”
-   Actually the stack effect is: ‘( w -- 0 | w w )’.  It performs a
-‘dup’ if w is nonzero.
+   実際のスタック効果は次のとおりです: ‘( w -- 0 | w w )’ つまり w がゼ
+ロ以外の場合、 ‘dup’ が実行されます。
 
 ‘roll’ ( x0 x1 .. xn n – x1 .. xn x0  ) core-ext “roll”
 
@@ -5299,7 +5305,7 @@ File: gforth.info,  Node: Floating point stack,  Next: Return stack,  Prev: Data
 ‘fswap’ ( r1 r2 – r2 r1 ) floating “f-swap”
 
 ‘fpick’ ( f:... u – f:... r ) gforth-0.4 “fpick”
-   Actually the stack effect is ‘ r0 ... ru u -- r0 ... ru r0 ’.
+   実際のスタック効果は ‘ r0 ... ru u -- r0 ... ru r0 ’
 
 ‘frot’ ( r1 r2 r3 – r2 r3 r1 ) floating “f-rote”
 
@@ -5311,12 +5317,12 @@ File: gforth.info,  Node: Return stack,  Next: Locals stack,  Prev: Floating poi
 6.6.3 Return stack
 ------------------
 
-A Forth system is allowed to keep local variables on the return stack.
-This is reasonable, as local variables usually eliminate the need to use
-the return stack explicitly.  So, if you want to produce a standard
-compliant program and you are using local variables in a word, forget
-about return stack manipulations in that word (refer to the standard
-document for the exact rules).
+Forth システムは、 リターン・スタックにローカル変数を保持することができ
+ます。 通常、 ローカル変数を使用すると、 リターン・スタックを明示的に使
+用する必要がなくなるため、 これは合理的です。 したがって、 標準に準拠し
+たプログラムを作成する場合で、 ワード内でローカル変数を使用している場合
+は、 そのワード内でのリターン・スタック操作のことは忘れてください(正確な
+ルールについては標準ドキュメントを参照してください)。
 
 ‘>r’ ( w – R:w ) core “to-r”
 
@@ -5344,8 +5350,8 @@ File: gforth.info,  Node: Locals stack,  Next: Stack pointer manipulation,  Prev
 6.6.4 Locals stack
 ------------------
 
-Gforth uses an extra locals stack.  It is described, along with the
-reasons for its existence, in *note Locals implementation::.
+Gforth で追加のローカル・スタックを使用します。 これは、 その存在理由を
+含めて *note Locals implementation:: にて説明されています。
 
 
 File: gforth.info,  Node: Stack pointer manipulation,  Prev: Locals stack,  Up: Stack Manipulation
@@ -5354,31 +5360,31 @@ File: gforth.info,  Node: Stack pointer manipulation,  Prev: Locals stack,  Up: 
 --------------------------------
 
 ‘sp0’ ( – a-addr  ) gforth-0.4 “sp0”
-   ‘User’ variable – initial value of the data stack pointer.
+   ユーザー変数 – データ・スタック・ポインタの初期値。
 
 ‘sp@’ ( S:... – a-addr ) gforth-0.2 “sp-fetch”
 
 ‘sp!’ ( a-addr – S:... ) gforth-0.2 “sp-store”
 
 ‘fp0’ ( – a-addr  ) gforth-0.4 “fp0”
-   ‘User’ variable – initial value of the floating-point stack pointer.
+   ユーザー変数 – 浮動小数点スタック・ポインタの初期値。
 
 ‘fp@’ ( f:... – f-addr ) gforth-0.2 “fp-fetch”
 
 ‘fp!’ ( f-addr – f:... ) gforth-0.2 “fp-store”
 
 ‘rp0’ ( – a-addr  ) gforth-0.4 “rp0”
-   ‘User’ variable – initial value of the return stack pointer.
+   ユーザー変数 – リターン・スタック・ポインタの初期値。
 
 ‘rp@’ ( – a-addr ) gforth-0.2 “rp-fetch”
 
 ‘rp!’ ( a-addr – ) gforth-0.2 “rp-store”
 
 ‘lp0’ ( – a-addr  ) gforth-0.4 “lp0”
-   ‘User’ variable – initial value of the locals stack pointer.
+   ユーザー変数 – ローカル・スタック・ポインタの初期値。
 
 ‘lp@’ ( – c-addr ) gforth-0.2 “lp-fetch”
-   C_addr is the current value of the locals stack pointer.
+   C_addr は、 ローカル・スタック・ポインタの現在の値です。
 
 ‘lp!’ ( c-addr – ) gforth-internal “lp-store”
 
@@ -5398,9 +5404,10 @@ File: gforth.info,  Node: Memory,  Next: Strings and Characters,  Prev: Stack Ma
 * Address arithmetic::
 * Memory Blocks::
 
-In addition to the standard Forth memory allocation words, there is also
-a garbage collector
-(https://www.complang.tuwien.ac.at/forth/garbage-collection.zip).
+標準 Forth のメモリ割り当てワードに加えて ガベージ・コレクター(garbage
+collector)
+(https://www.complang.tuwien.ac.at/forth/garbage-collection.zip) もあり
+ます。
 
 
 File: gforth.info,  Node: Memory model,  Next: Dictionary allocation,  Prev: Memory,  Up: Memory
@@ -5408,31 +5415,31 @@ File: gforth.info,  Node: Memory model,  Next: Dictionary allocation,  Prev: Mem
 6.7.1 Memory model
 ------------------
 
-Standard Forth considers a Forth system as consisting of several address
-spaces, of which only “data space” is managed and accessible with the
-memory words.  Memory not necessarily in data space includes the stacks,
-the code (called code space) and the headers (called name space).  In
-Gforth everything is in data space, but the code for the primitives is
-usually read-only.
+標準 Forth は、 Forth システムが複数のアドレス空間で構成されているとみな
+します。 そのうちの「データ空間」(data space)のみを管理し、 メモリ・ワー
+ドでアクセスできます。 メモリには、 スタックと、 コード(コード空間(code
+space))と呼ばれる)と、 ヘッダー(名前空間(name space)と呼ばれる)とが含ま
+れ、 それらは必ずしもデータ空間にある必要はありません。 Gforth ではすべ
+てがデータ空間内にありますが、 プリミティブのコードは通常読み取り専用で
+す。
 
-   Data space is divided into a number of areas: The (data space portion
-of the) dictionary(1), the heap, and a number of system-allocated
-buffers.
+   データ空間は、 いくつかの領域に分割されます。 ディクショナリ
+(dictionary)(1)と、 ヒープと、 システムによって割り当てられた多数のバッ
+ファーから成ります。
 
-   Gforth provides one big address space, and address arithmetic can be
-performed between any addresses.  However, in the dictionary headers or
-code are interleaved with data, so almost the only contiguous data space
-regions there are those described by Standard Forth as contiguous; but
-you can be sure that the dictionary is allocated towards increasing
-addresses even between contiguous regions.  The memory order of
-allocations in the heap is platform-dependent (and possibly different
-from one run to the next).
+   Gforth は 1 つの大きなアドレス空間を提供し、 その任意のアドレス間でア
+ドレス演算を実行できます。 ただし、 ディクショナリではヘッダーまたはコー
+ドがデータと代わる代わる出てくるため(interleaved)、 連続するデータ空間領
+域は、 標準 Forth で連続していると記述されているものだけがほとんどです。
+しかし、 連続する領域間であっても、 増加するアドレス方向にディクショナリ
+が確実に割り当てられます。 ヒープ内でのメモリ割り当ての順序はプラットフ
+ォームに依存します(また、実行ごとに異なる可能性もあります)。
 
    ---------- Footnotes ----------
 
-   (1) Sometimes, the term “dictionary” is used to refer to the search
-data structure embodied in word lists and headers, because it is used
-for looking up names, just as you would in a conventional dictionary.
+   (1) 「ディクショナリ」(辞書)という用語は、 従来の辞書と同じように名前
+を検索するために使用される、 ワード・リストやヘッダーに組み込まれた検索
+データ構造を指すために使用されることがあります
 
 
 File: gforth.info,  Node: Dictionary allocation,  Next: Heap Allocation,  Prev: Memory model,  Up: Memory
@@ -5440,54 +5447,54 @@ File: gforth.info,  Node: Dictionary allocation,  Next: Heap Allocation,  Prev: 
 6.7.2 Dictionary allocation
 ---------------------------
 
-Dictionary allocation is a stack-oriented allocation scheme, i.e., if
-you want to deallocate X, you also deallocate everything allocated after
-X.
+ディクショナリの割り当てはスタック指向の割り当てスキーム(stack-oriented
+allocation scheme)です。 つまり、 X の割り当てを解除したい場合は、 X の
+後に割り当てられたすべての割り当ても解除します。
 
-   The allocations using the words below are contiguous and grow the
-region towards increasing addresses.  Other words that allocate
-dictionary memory of any kind (i.e., defining words including ‘:noname’)
-end the contiguous region and start a new one.
+   以下のワード達を使用した割り当ては連続しており、 アドレスの増加方向に
+向けて領域が拡張されます。 あらゆる種類のディクショナリ・メモリを割り当
+てる他のワード(つまり、 ‘:noname’ を含む定義ワード)は、 連続領域
+(contiguous region)を終了し、 新しい領域を開始します。
 
-   In Standard Forth only ‘create’d words are guaranteed to produce an
-address that is the start of the following contiguous region.  In
-particular, the cell allocated by ‘variable’ is not guaranteed to be
-contiguous with following ‘allot’ed memory.
+   標準 Forth では、 ‘create’ されたワードのみが、 後続の連続領域の開始
+となるアドレスを生成することが保証されています。 特に、 ‘variable’ によ
+って割り当てられたセルが、 後続の ‘allot’ で割り当てられたメモリと連続し
+ていることは保証されません。
 
-   You can deallocate memory by using ‘allot’ with a negative argument
-(with some restrictions, see ‘allot’).  For larger deallocations use
-‘marker’.
+   ‘allot’ に負の引数を指定して使用すると、 メモリの割り当てを解除できま
+す(いくつかの制限があります。 ‘allot’ を参照してください)。 大規模な割り
+当て解除の場合は、 ‘marker’ を使用します。
 
 ‘here’ ( – addr  ) core “here”
-   Return the address of the next free location in data space.
+   データ空間内の次の空き位置のアドレスを返します。
 
 ‘unused’ ( – u  ) core-ext “unused”
-   Return the amount of free space remaining (in address units) in the
-region addressed by ‘here’.
+   ‘here’ でアドレス指定された領域(以降)に残っている空き領域の量をアドレ
+ス単位(address units)で返します。
 
 ‘allot’ ( n –  ) core “allot”
-   Reserve n address units of data space without initialization.  n is a
-signed number, passing a negative n releases memory.  In ANS Forth you
-can only deallocate memory from the current contiguous region in this
-way.  In Gforth you can deallocate anything in this way but named words.
-The system does not check this restriction.
+   初期化せずに、 データ空間に n アドレス単位を予約します。 n は符号付き
+の数値で、 負の n を渡すとメモリが解放されます。 ANS Forth では、この方
+法で現在の連続領域からメモリの割り当てを解除することしかできません。
+Gforth では、この方法で名前付きワード以外のあらゆるものを割り当て解除で
+きます。 システムはこの制限をチェックしません。
 
 ‘->here’ ( addr –  ) gforth-1.0 “to-here”
-   Change the value of ‘here’ to addr.
+   ‘here’ の値を addr に変更します。
 
 ‘c,’ ( c –  ) core “c-comma”
-   Reserve data space for one char and store c in the space.
+   文字(char)用に1つのデータ空間を予約し、 その空間に c を格納します。
 
 ‘f,’ ( f –  ) gforth-0.2 “f,”
-   Reserve data space for one floating-point number and store f in the
-space.
+   浮動小数点数(floating-point number)用の1つのデータ空間を予約し、 その
+空間に f を格納します。
 
 ‘,’ ( w –  ) core “comma”
-   Reserve data space for one cell and store w in the space.
+   セル(cell)用の1つのデータ空間を予約し、 その空間に w を格納します。
 
 ‘2,’ ( w1 w2 –  ) gforth-0.2 “2,”
-   Reserve data space for two cells and store the double w1 w2 there, w2
-first (lower address).
+   2つのセル用のデータ空間を予約し、 そこに w1 w2 格納します。 最初(低位
+アドレス側)に w2 を格納します。
 
 ‘w,’ ( w –  ) gforth-1.0 “w-comma”
 
@@ -5498,46 +5505,49 @@ first (lower address).
 ‘xd,’ ( xd –  ) gforth-1.0 “x-d-comma”
 
 ‘A,’ ( addr –  ) gforth-0.2 “A,”
-   Reserve data space for one cell, and store addr there.  For our
-cross-compiler this provides the type information necessary for a
-relocatable image; normally, though, this is equivalent to ‘,’.
+   1 つのセル用のデータ空間を予約し、 そこに addr を格納します。 私達の
+クロス・コンパイラの場合には、 再配置可能なイメージに必要な型情報(type
+information)を提供します。 ただし、 通常では、 これは ‘,’ と同等です。
 
 ‘mem,’ ( addr u –  ) gforth-0.6 “mem,”
 
    doc-save-mem-dict
 
-   Memory accesses have to be aligned (*note Address arithmetic::).  So
-of course you should allocate memory in an aligned way, too.  I.e.,
-before allocating allocating a cell, ‘here’ must be cell-aligned, etc.
-The words below align ‘here’ if it is not already.  Basically it is only
-already aligned for a type, if the last allocation was a multiple of the
-size of this type and if ‘here’ was aligned for this type before.
+   メモリ・アクセスはアライメントする必要があります(*note Address
+arithmetic::)。 したがって、 メモリ割り当てもアライメントされるべきです
+。 つまり、 セルを割り当てる前に、 ‘here’ をセル・アライメントする必要が
+あります。 以下のワード達は、 ‘here’ が既に指定の型のアライメントに合っ
+ている状態で無い場合は合わせます。 基本的に、 既に割り当てたのがその型の
+サイズの倍数であり、 かつ、 ‘here’ が以前にその型のアライメントに対して
+合うようにしてあった場合にのみ、 その型のアライメントに対して既にすでに
+合っているということが言えます。
 
-   After freshly ‘create’ing a word, ‘here’ is ‘align’ed in Standard
-Forth (‘maxalign’ed in Gforth).
+   新しくワードを ‘create’ した後、‘here’ は 標準 Forth では ‘align’ さ
+れます(Gforth では ‘maxalign’ されます)。
 
 ‘align’ ( –  ) core “align”
-   If the data-space pointer is not aligned, reserve enough space to
-align it.
+   データ空間ポインタがアライメントできてない場合は、 アライメントするの
+に十分な空間を予約します。
 
 ‘falign’ ( –  ) floating “f-align”
-   If the data-space pointer is not float-aligned, reserve enough space
-to align it.
+   データ空間ポインタが浮動小数点数にアライメントされていない場合は、 ア
+ライメントするのに十分な空間を予約します。
 
 ‘sfalign’ ( –  ) floating-ext “s-f-align”
-   If the data-space pointer is not single-float-aligned, reserve enough
-space to align it.
+   データ空間ポインタが単精度浮動小数点数にアライメントされていない場合
+は、 アライメントするのに十分な空間を予約します。
 
 ‘dfalign’ ( –  ) floating-ext “d-f-align”
-   If the data-space pointer is not double-float-aligned, reserve enough
-space to align it.
+   データ空間ポインタが倍精度浮動小数点数にアライメントされていない場合
+は、 アライメントするのに十分な空間を予約します。
 
 ‘maxalign’ ( –  ) gforth-0.2 “maxalign”
-   Align data-space pointer for all alignment requirements.
+   すべてのアライメント要件に合わせてデータ空間ポインタをアライメントし
+ます。
 
 ‘cfalign’ ( –  ) gforth-0.2 “cfalign”
-   Align data-space pointer for code field requirements (i.e., such that
-the corresponding body is maxaligned).
+   データ空間ポインタをコード・フィールドの要件に合わせてアライメントし
+ます(つまり、 対応する本体が maxalign された状態になるようにする)。
 
 
 File: gforth.info,  Node: Heap Allocation,  Next: Memory Access,  Prev: Dictionary allocation,  Up: Memory
@@ -5545,72 +5555,76 @@ File: gforth.info,  Node: Heap Allocation,  Next: Memory Access,  Prev: Dictiona
 6.7.3 Heap allocation
 ---------------------
 
-Heap allocation supports deallocation of allocated memory in any order.
-Dictionary allocation is not affected by it (i.e., it does not end a
-contiguous region).  In Gforth, these words are implemented using the
-standard C library calls malloc(), free() and realloc().
+ヒープ割り当ては、 割り当てられたメモリの割り当て解除を任意の順序でサポ
+ートします。 ディクショナリの割り当ては影響を受けません(つまり、 連続領
+域(contiguous region)は終了しません)。 Gforth では、 これらのワードは標
+準の C ライブラリ呼び出しである malloc() や free() や realloc() を使用し
+て実装されます。
 
-   The memory region produced by one invocation of ‘allocate’ or
-‘resize’ is internally contiguous.  There is no contiguity between such
-a region and any other region (including others allocated from the
-heap).
+   ‘allocate’ または ‘resize’ の 1 回の呼び出しによって生成されるメモリ
+領域は、 内部的に連続しています。 このような領域と他の領域(ヒープから割
+り当てられた他の領域を含む)との間には連続性はありません。
 
 ‘allocate’ ( u – a_addr wior  ) memory “allocate”
-   Allocate u address units of contiguous data space.  The initial
-contents of the data space is undefined.  If the allocation is
-successful, a-addr is the start address of the allocated region and wior
-is 0.  If the allocation fails, a-addr is undefined and wior is a
-non-zero I/O result code.
+   連続したデータ空間を u アドレス単位分割り当てます。 データ空間の初期
+内容は未定義です。 割り当てが成功した場合、 a-addr は割り当てられた領域
+の開始アドレスで、 wior は 0 になります。 割り当てが失敗した場合、
+a-addr は未定義で、 wior ゼロ以外の I/O 結果コードです。
 
 ‘free’ ( a_addr – wior  ) memory “free”
-   Return the region of data space starting at a-addr to the system.
-The region must originally have been obtained using ‘allocate’ or
-‘resize’.  If the operational is successful, wior is 0.  If the
-operation fails, wior is a non-zero I/O result code.
+   a-addr で始まるデータ空間の領域をシステムに返します。 領域は元々
+‘allocate’ または ‘resize’ を使用して取得されている必要があります。 操作
+が成功した場合、 wior は 0 になります。 操作が失敗した場合、 wior はゼロ
+以外の I/O 結果コードになります。
 
 ‘resize’ ( a_addr1 u – a_addr2 wior  ) memory “resize”
-   Change the size of the allocated area at a-addr1 to u address units,
-possibly moving the contents to a different area.  a-addr2 is the
-address of the resulting area.  If the operation is successful, wior is
-0.  If the operation fails, wior is a non-zero I/O result code.  If
-a-addr1 is 0, Gforth’s (but not the Standard) ‘resize’ ‘allocate’s u
-address units.
+   a-addr1 に割り当てられた領域のサイズを u アドレス単位に変更します。 但
+し内容を別の領域に移動する可能性があります。 a-addr2 は、 結果の領域のア
+ドレスです。 操作が成功した場合、 wior は 0 になります。 操作が失敗した
+場合、 wior はゼロ以外の I/O 結果コードになります。 a-addr1 が 0 の場合
+、 Gforth の (非標準の ) ‘resize’ は u アドレス単位の割り当てを行います
+。
 
-   The following words are useful for dealing with memory blocks:
+   以下のワード達はメモリ・ブロックを扱うのに役立ちます:
 
 ‘save-mem’ ( addr1 u – addr2 u  ) gforth-0.2 “save-mem”
-   Copy a memory block into a newly allocated region in the heap.
+   指定のメモリ・ブロックをヒープ内で新しく割り当てられた領域にコピーし
+ます。
 
 ‘free-mem-var’ ( addr –  ) gforth-experimental “free-mem-var”
-   Addr is the address of a 2variable containing address and size of a
-memory range; frees memory and clears the 2variable.
+   addr は、 メモリ範囲のアドレスとサイズを含む 2variable のアドレスです
+。 これはメモリを解放し、 2variable をクリアします。
 
 ‘extend-mem’ ( addr1 u1 u – addr addr2 u2  ) gforth-experimental “extend-mem”
-   Extend memory block addr1 u1 allocated from the heap by u aus.  The
-(possibly reallocated) piece is addr2 u2, the extension is at addr.
+   u (アドレス単位)によってヒープから割り当てられたメモリ・ブロック
+addr1 u1 を拡張します。 (おそらく再割り当てされた)開始アドレスは addr2 で
+、 その合計長さは u2 で、 拡張部分の開始アドレスは addr です(訳注: 例え
+ば元々長さ10のブロックを5拡張すると( addr1 10 5 – addr2+10 addr2 10+5))
 
-   The $tring words can also be used for dealing with memory blocks,
-*Note $tring words::.
+   $tring ワード群は、 メモリ・ブロックの処理にも使用できます。 *Note
+$tring words:: (訳注: $tring (ダラー tring)と String (エス string) とあ
+ることに注意)
 
-   For growable memory buffers you can use $trings, or the following
-words.  Because the allocated memory of a buffer managed with
-‘adjust-buffer’ does not shrink, there is no heap-management overhead
-when adjusting the buffer for a size smaller than the largest one seen
-yet.
+   拡張可能なメモリ・バッファの場合は、 $trings または以下のワード群を使
+用できます。 ‘adjust-buffer’ で管理されるバッファに割り当てられたメモリ
+は縮小できないため、 これまでに確認された最大サイズよりも小さいサイズに
+バッファを調整(adjust)するときはヒープ管理のオーバーヘッドは発生しません
+。
 
-‘buffer%’ ( u1 u2 –  ) gforth-experimental “buffer%”
-   u1 is the alignment and u2 is the size of a buffer descriptor.
+‘buffer%’ ( – u1 u2  ) gforth-experimental “buffer%”
+   u1 は アライメント(alignment)、 u2 は バッファ・デスクリプタのサイズ
+です。
 
 ‘init-buffer’ ( addr –  ) gforth-experimental “init-buffer”
 
 ‘adjust-buffer’ ( u addr –  ) gforth-experimental “adjust-buffer”
-   Adjust buffer% at addr to length u.  This may grow the allocated
-area, but never shrinks it.
+   addr の buffer% を長さ u に調整します。 これにより、 割り当てられた領
+域が拡大する可能性がありますが、 決して縮小されることはありません。
 
-   You can get the current address and length of such a buffer with
-‘2@’.
+   ‘2@’ を使用すると、 このようなバッファの現在のアドレスと長さを取得で
+きます。
 
-   Typical usage:
+   典型的な使い方:
 
      create mybuf  buffer% %size allot  mybuf init-buffer
      s" frobnicate" mybuf adjust-buffer  mybuf 2@ move
@@ -5625,48 +5639,45 @@ File: gforth.info,  Node: Memory Access,  Next: Special Memory Accesses,  Prev: 
 -------------------
 
 ‘@’ ( a-addr – w ) core “fetch”
-   w is the cell stored at a_addr.
+   a_addr に保存されているセルを w に取得します。
 
 ‘!’ ( w a-addr – ) core “store”
-   Store w into the cell at a-addr.
+   w を a-addr のセルに格納します。
 
 ‘+!’ ( n a-addr – ) core “plus-store”
-   Add n to the cell at a-addr.
+   a-addr のセルに n を加算します。
 
 ‘c@’ ( c-addr – c ) core “c-fetch”
-   c is the char stored at c_addr.
+   c_addr に保存されている文字(char) を c に取得します。
 
 ‘c!’ ( c c-addr – ) core “c-store”
-   Store c into the char at c-addr.
+   c を c-addr の char に格納します。
 
 ‘2@’ ( a-addr – w1 w2 ) core “two-fetch”
-   w2 is the content of the cell stored at a-addr, w1 is the content of
-the next cell.
+   w2 は a-addr に格納されているセルの内容、 w1 はその次のセルの内容です
+。
 
 ‘2!’ ( w1 w2 a-addr – ) core “two-store”
-   Store w2 into the cell at c-addr and w1 into the next cell.
+   w2 を c-addr のセルに格納し、 w1 をその次のセルに格納します。
 
 ‘f@’ ( f-addr – r ) floating “f-fetch”
-   r is the float at address f-addr.
+   アドレス f-addr の浮動小数点数を r に取得します。
 
 ‘f!’ ( r f-addr – ) floating “f-store”
-   Store r into the float at address f-addr.
+   r をアドレス f-addr の浮動小数点数として格納します。
 
 ‘sf@’ ( sf-addr – r ) floating-ext “s-f-fetch”
-   Fetch the single-precision IEEE floating-point value r from the
-address sf-addr.
+   アドレス sf-addr から 単精度 IEEE 浮動小数点値を r に取得します。
 
 ‘sf!’ ( r sf-addr – ) floating-ext “s-f-store”
-   Store r as single-precision IEEE floating-point value to the address
-sf-addr.
+   r を単精度 IEEE 浮動小数点値としてアドレス sf-addr に格納します。
 
 ‘df@’ ( df-addr – r ) floating-ext “d-f-fetch”
-   Fetch the double-precision IEEE floating-point value r from the
-address df-addr.
+   アドレス df-addr からの倍精度 IEEE 浮動小数点値を r に取得します。
 
 ‘df!’ ( r df-addr – ) floating-ext “d-f-store”
-   Store r as double-precision IEEE floating-point value to the address
-df-addr.
+   r を 倍精度 IEEE 浮動小数点値としてアドレス df-addr からに保存します
+。
 
 
 File: gforth.info,  Node: Special Memory Accesses,  Next: Address arithmetic,  Prev: Memory Access,  Up: Memory
@@ -5674,119 +5685,128 @@ File: gforth.info,  Node: Special Memory Accesses,  Next: Address arithmetic,  P
 6.7.5 Special Memory Accesses
 -----------------------------
 
-This section is about memory accesses useful for communicating with
-other software or other computers.  This means that the accesses are of
-a certain bit width (independent of Gforth’s cell width), are possibly
-not naturally aligned and typically have a certain byte order that may
-be different from the native byte order of the system that Gforth runs
-on.
+このセクションでは、 他のソフトウェアや他のコンピュータと通信する際に役
+立つメモリ・アクセスについて説明します。 これは、 アクセスが特定のビット
+幅であり(Gforth のセル幅とは独立)、 自然な並びでない可能性があり、 通常
+、 Gforth が実行されるシステムのネイティブなバイト順序(バイト・オーダー
+)とは異なる可能性がある特定のバイト順序を持つことを意味します。
 
-   We use the following prefixes:
+   私達は以下のプレフィックスを使います:
 
 ‘c’
-     8 bits (character)
+     8ビット(文字;character)
 ‘w’
-     16 bits
+     16ビット
 ‘l’
-     32 bits
+     32ビット
 ‘x’
-     64 bits represented as one cell
+     64 ビットを 1 つのセルとして表現
 ‘xd’
-     64 bits represented as two cells
+     64 ビットを 2 つのセルとして表現
 
-   The ‘x’-prefix words do not work properly on 32-bit systems, so for
-code that is intended to be portable to 32-bit systems you should use
-‘xd’-prefix words.  Note that ‘xd’-prefix words work on 64-bit systems:
-there the upper cell is just 0 (for unsigned values) or a sign extension
-of the lower cell.
+   ‘x’ プレフィックスのワードは 32 ビット・システムでは正しく機能しない
+ため、 32 ビット・システムに移植することを目的としたコードの場合は、
+‘xd’ プレフィックスのワードを使用する必要があります。 注意: ‘xd’ プレフ
+ィックスのワードは 64 ビット・システムでも動作することに注意してください
+。 64 ビット・システムでは、 上位のセルは単なる 0 (符号なし値の場合)、 ま
+たは下位のセルの符号拡張です。
 
-   The memory-access words below all work with arbitrarily (un)aligned
-addresses (unlike ‘@’, ‘!’, ‘f@’, ‘f!’, which require alignment on some
-hardware).
+   以下のメモリ・アクセス・ワード群はすべて、 任意の(非)アライメントされ
+たアドレスで動作します(一部のハードウェアでアライメントが必要な ‘@’ や
+‘!’ や ‘f@’ や ‘f!’ とは異なります)。
 
 ‘w@’ ( c-addr – u ) gforth-0.5 “w-fetch”
-   u is the zero-extended 16-bit value stored at c_addr.
+   u は c_addr に格納されているゼロ拡張された 16 ビット値(zero-extended
+16-bit value)です。
 
 ‘w!’ ( w c-addr – ) gforth-0.7 “w-store”
-   Store the bottom 16 bits of w at c_addr.
+   w の下位 16 ビットを c_addr に格納します。
 
 ‘l@’ ( c-addr – u ) gforth-0.7 “l-fetch”
-   u is the zero-extended 32-bit value stored at c_addr.
+   u は、 c_addr に格納されているゼロ拡張された 32 ビット値
+(zero-extended 32-bit value)です。
 
 ‘l!’ ( w c-addr – ) gforth-0.7 “l-store”
-   Store the bottom 32 bits of w at c_addr.
+   w の下位 32 ビットを c_addr に格納します。
 
 ‘x@’ ( c-addr – u ) gforth-1.0 “x-fetch”
-   u is the zero-extended 64-bit value stored at c_addr.
+   u は、 c_addr に格納されているゼロ拡張された 64 ビット値です。
 
 ‘x!’ ( w c-addr – ) gforth-1.0 “x-store”
-   Store the bottom 64 bits of w at c_addr.
+   w の下位 64 ビットを c_addr に格納します。
 
 ‘xd@’ ( c-addr – ud ) gforth-1.0 “x-d-fetch”
-   ud is the zero-extended 64-bit value stored at c_addr.
+   ud は、 c_addr に格納されているゼロ拡張された 64 ビット値です。
 
 ‘xd!’ ( ud c-addr – ) gforth-1.0 “x-d-store”
-   Store the bottom 64 bits of ud at c_addr.
+   ud の下位 64 ビットを c_addr に格納します。
 
-   For accesses with a specific byte order, you have to perform
-byte-order adjustment immediately after a fetch (before the
-sign-extension), or immediately before the store.  The results of these
-byte-order adjustment words are always zero-extended.
+   特定のバイト順序(byte order)でアクセスする場合は、 取得直後(符号拡張
+の前)、 または格納の直前にバイト順序調整を行う必要があります。 これらの
+バイト順調整ワードの結果は常にゼロ拡張(zero-extended)されます。
 
 ‘wbe’ ( u1 – u2  ) gforth-1.0 “wbe”
-   Convert 16-bit value in u1 from native byte order to big-endian or
-from big-endian to native byte order (the same operation)
+   u1 の 16 ビット値をネイティブ・バイト順からビッグ・エンディアンに、 ま
+たはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一
+の操作です)
 
 ‘wle’ ( u1 – u2  ) gforth-1.0 “wle”
-   Convert 16-bit value in u1 from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+   u1 の 16 ビット値をネイティブ・バイト順からリトル・エンディアンに、 ま
+たはリトル・エンディアンからネイティブ・バイト順に変換します(両方の操作
+は同一の操作です)
 
 ‘lbe’ ( u1 – u2  ) gforth-1.0 “lbe”
-   Convert 32-bit value in u1 from native byte order to big-endian or
-from big-endian to native byte order (the same operation)
+   u1 の 32 ビット値をネイティブ・バイト順からビッグ・エンディアンに、 ま
+たはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一
+の操作です)
 
 ‘lle’ ( u1 – u2  ) gforth-1.0 “lle”
-   Convert 32-bit value in u1 from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+   u1 の 32 ビット値をネイティブ・バイト順からリトル・エンディアンに、 ま
+たはリトル・エンディアンからネイティブ・バイト順に変換します(両方は同一
+の操作です)
 
 ‘xbe’ ( u1 – u2  ) gforth-1.0 “xbe”
-   Convert 64-bit value in u1 from native byte order to big-endian or
-from big-endian to native byte order (the same operation)
+   u1 の 64 ビット値をネイティブ・バイト順からビッグ・エンディアンに、 ま
+たはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一
+の操作です)
 
 ‘xle’ ( u1 – u2  ) gforth-1.0 “xle”
-   Convert 64-bit value in u1 from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+   u1 の 64 ビット値をネイティブ・バイト順からリトル・エンディアンに、 ま
+たはリトル・エンディアンからネイティブ・バイト順に変換します(両方は同一
+の操作です)
 
 ‘xdbe’ ( ud1 – ud2  ) gforth-1.0 “xdbe”
-   Convert 64-bit value in ud1 from native byte order to big-endian or
-from big-endian to native byte order (the same operation)
+   ud1 の 64 ビット値をネイティブ・バイト順からビッグ・エンディアンに、
+またはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同
+一の操作です)
 
 ‘xdle’ ( ud1 – ud2  ) gforth-1.0 “xdle”
-   Convert 64-bit value in ud1 from native byte order to little-endian
-or from little-endian to native byte order (the same operation)
+   ud1 の 64 ビット値をネイティブ・バイト順からリトル・エンディアンに、
+またはリトル・エンディアンからネイティブ・バイト順に変換します(両方は同
+一の操作です)
 
-   For signed fetches with a specific byte order, you have to perform a
-sign-extension word after an unsigned fetch and a byte-order correction:
+   特定のバイト順序での符号付きでの取得の場合、 符号なし取得とバイト順序
+修正の後に符号拡張ワードを実行する必要があります:
 
 ‘c>s’ ( x – n ) gforth-1.0 “c-to-s”
-   Sign-extend the 8-bit value in x to cell n.
+   x の 8 ビット値をセル n に符号拡張します。
 
 ‘w>s’ ( x – n ) gforth-1.0 “w-to-s”
-   Sign-extend the 16-bit value in x to cell n.
+   x の 16 ビット値をセル n に符号拡張します。
 
 ‘l>s’ ( x – n ) gforth-1.0 “l-to-s”
-   Sign-extend the 32-bit value in x to cell n.
+   x の 32 ビット値をセル n に符号拡張します。
 
 ‘x>s’ ( x – n  ) gforth-1.0 “x>s”
-   Sign-extend the 64-bit value in x to cell n.
+   x の 64 ビット値をセル n に符号拡張します。
 
 ‘xd>s’ ( xd – d  ) gforth-1.0 “xd>s”
-   Sign-extend the 64-bit value in XD to double-ceel D.
+   XD の 64 ビット値を 2倍長セル D に符号拡張します。
 
-   Overall, this leads to sequences like
+   これら全般を、 以下のような流れで使います:
 
-     w@ wbe w>s   \ 16-bit unaligned signed big-endian fetch
-     >r lle r> l! \ 32-bit unaligned little-endian store
+     w@ wbe w>s   \ 16ビット 非アライメント 符号付き ビッグ・エンディアン を取得し、
+     >r lle r> l!  \ 32-bit 非アライメント リトル・エンディアン として 格納
 
 
 File: gforth.info,  Node: Address arithmetic,  Next: Memory Blocks,  Prev: Special Memory Accesses,  Up: Memory
@@ -5794,43 +5814,46 @@ File: gforth.info,  Node: Address arithmetic,  Next: Memory Blocks,  Prev: Speci
 6.7.6 Address arithmetic
 ------------------------
 
-Address arithmetic is the foundation on which you can build data
-structures like arrays, records (*note Structures::) and objects (*note
-Object-oriented Forth::).
+アドレス演算は、 配列やレコード(*note Structures::)やオブジェクト(*note
+Object-oriented Forth::)のようなデータ構造を構築可能な基礎基盤です。
 
-   Standard Forth does not specify the sizes of the data types.
-Instead, it offers a number of words for computing sizes and doing
-address arithmetic.  Address arithmetic is performed in terms of address
-units (aus); on most systems the address unit is one byte.  Note that a
-character may have more than one au, so ‘chars’ is no noop (on platforms
-where it is a noop, it compiles to nothing).
+   標準 Forth では、 データ型のサイズは規定されていません。 代わりに、 サ
+イズを計算したりアドレス演算を行うための多数のワードが提供されます。 ア
+ドレス演算はアドレス単位(au;Address Unit, aus;Address UnitS)で実行されま
+す。 ほとんどのシステムでは、 1アドレス単位は 1 バイトです。 注意: 1 つ
+の文字に複数 au が含まれる可能性があるため、 ‘chars’ は何もしない
+(noop)訳ではないことに注意してください(noop であるプラットフォームでは、
+‘chars’ は何もコンパイルしません)。
 
-   The basic address arithmetic words are ‘+’ and ‘-’.  E.g., if you
-have the address of a cell, perform ‘1 cells +’, and you will have the
-address of the next cell.
+   基本的なアドレス算術ワードは ‘+’ と ‘-’ です。 たとえば、 セルのアド
+レスがわかっている場合、 ‘1 cells +’ を実行すると、 次のセルのアドレスが
+わかります。
 
-   Standard Forth also defines words for aligning addresses for specific
-types.  Many computers require that accesses to specific data types must
-only occur at specific addresses; e.g., that cells may only be accessed
-at addresses divisible by 4.  Even if a machine allows unaligned
-accesses, it can usually perform aligned accesses faster.
+   標準 Forth では、 特定の型のアドレスをアライメントするためのワードも
+定義されています。 多くのコンピュータでは、 特定のデータ型へのアクセスは
+特定のアドレスでのみ行われる必要があります。 たとえば、 セルは 4 で割り
+切れるアドレスでのみアクセスできます。 マシンが非アライメント・アクセス
+を許可する場合でも、 通常はアライメント・アクセスの方が高速に実行できま
+す。
 
-   For the performance-conscious: alignment operations are usually only
-necessary during the definition of a data structure, not during the
-(more frequent) accesses to it.
+   パフォーマンス重視で行く場合: 通常、 アライメント操作はデータ構造の定
+義中にのみ必要であり、 (より頻繁な)データ構造へのアクセス中には必要あり
+ません。
 
-   Standard Forth defines no words for character-aligning addresses; in
-Forth-2012 all addresses are character-aligned.
+   標準 Forth では、 文字のアドレス・アライメント用ワードは定義されてい
+ません。 Forth-2012 では、すべてのアドレスが文字単位でアライメントされて
+います(all addresses are character-aligned)
 
-   Standard Forth guarantees that addresses returned by ‘CREATE’d words
-are cell-aligned; in addition, Gforth guarantees that these addresses
-are aligned for all purposes.
+   標準 Forth は、 ‘CREATE’ されたワードによって返されるアドレスがセル・
+アライメントされていることを保証します。 さらに、Gforth は、 こ​​れらの
+アドレスがあらゆる目的に合わせてアライメント済みであることを保証します
+(addresses are aligned for all purposes)。
 
-   Note that the Standard Forth word ‘char’ has nothing to do with
-address arithmetic.
+   注意: 標準の Forth ワード ‘char’ はアドレス演算とは何の関係もないこと
+に注意してください。
 
 ‘chars’ ( n1 – n2  ) core “chars”
-   n2 is the number of address units of n1 chars.""
+   n1 文字(char)が何アドレス単位になるかを n2 に返します。
 
 ‘char+’ ( c-addr1 – c-addr2 ) core “char-plus”
    ‘1 chars +’.
@@ -5838,7 +5861,7 @@ address arithmetic.
 ‘char-’ ( c-addr1 – c-addr2  ) gforth-0.7 “char-minus”
 
 ‘cells’ ( n1 – n2 ) core “cells”
-   n2 is the number of address units of n1 cells.
+   n1 個のセルのアドレス単位の数を n2 に取得します。
 
 ‘cell+’ ( a-addr1 – a-addr2 ) core “cell-plus”
    ‘1 cells +’
@@ -5847,33 +5870,31 @@ address arithmetic.
    ‘1 cells -’
 
 ‘cell/’ ( n1 – n2 ) gforth-1.0 “cell-divide”
-   n2 is the number of cells that fit into n1
+   n1 個のアドレス単位の幅の中に入れられるセルの数が n2 です
 
 ‘cell’ ( – u  ) gforth-0.2 “cell”
-   ‘Constant’ – ‘1 cells’
+   定数 – ‘1 cells’
 
 ‘aligned’ ( c-addr – a-addr ) core “aligned”
-   a-addr is the first aligned address greater than or equal to c-addr.
+   a-addr は、 c-addr 以上の最初にアライメントされたアドレスです。
 
 ‘floats’ ( n1 – n2 ) floating “floats”
-   n2 is the number of address units of n1 floats.
+   n2 は n1 個の浮動小数点数(float)のアドレスユニットの数です。
 
 ‘float+’ ( f-addr1 – f-addr2 ) floating “float-plus”
    ‘1 floats +’.
 
 ‘float’ ( – u  ) gforth-0.3 “float”
-   ‘Constant’ – the number of address units corresponding to a
-floating-point number.
+   定数 – 浮動小数点数に対応するアドレスユニットの数。
 
 ‘float/’ ( n1 – n2 ) gforth-1.0 “float-divide”
 
 ‘faligned’ ( c-addr – f-addr ) floating “f-aligned”
-   f-addr is the first float-aligned address greater than or equal to
-c-addr.
+   f-addr は、c-addr 以上の、 浮動小数点数にアライメントされた最初のアド
+レスです。
 
 ‘sfloats’ ( n1 – n2 ) floating-ext “s-floats”
-   n2 is the number of address units of n1 single-precision IEEE
-floating-point numbers.
+   n2 は、 n1 個の単精度 IEEE 浮動小数点数のアドレス単位の数です。
 
 ‘sfloat+’ ( sf-addr1 – sf-addr2  ) floating-ext “s-float-plus”
    ‘1 sfloats +’.
@@ -5881,12 +5902,11 @@ floating-point numbers.
 ‘sfloat/’ ( n1 – n2 ) gforth-1.0 “dfloat-divide”
 
 ‘sfaligned’ ( c-addr – sf-addr ) floating-ext “s-f-aligned”
-   sf-addr is the first single-float-aligned address greater than or
-equal to c-addr.
+   sf-addr は、 c-addr 以上の、 最初の単精度浮動小数点数アライメント・ア
+ドレスです。
 
 ‘dfloats’ ( n1 – n2 ) floating-ext “d-floats”
-   n2 is the number of address units of n1 double-precision IEEE
-floating-point numbers.
+   n2 は、 n1 個の倍精度 IEEE 浮動小数点数のアドレス単位の数です。
 
 ‘dfloat+’ ( df-addr1 – df-addr2  ) floating-ext “d-float-plus”
    ‘1 dfloats +’.
@@ -5894,54 +5914,55 @@ floating-point numbers.
 ‘dfloat/’ ( n1 – n2 ) gforth-1.0 “sfloat-divide”
 
 ‘dfaligned’ ( c-addr – df-addr ) floating-ext “d-f-aligned”
-   df-addr is the first double-float-aligned address greater than or
-equal to c-addr.
+   df-addr は、 c-addr 以上の、 最初の倍精度浮動小数点数アライメント・ア
+ドレスです。
 
 ‘maxaligned’ ( addr1 – addr2  ) gforth-0.2 “maxaligned”
-   addr2 is the first address after addr1 that satisfies all alignment
-restrictions.  maxaligned"
+   addr2 は、 すべてのアライメント制限を満たす addr1 以上の最初のアドレ
+スです。
 
 ‘cfaligned’ ( addr1 – addr2  ) gforth-0.2 “cfaligned”
-   addr2 is the first address after addr1 that is aligned for a code
-field (i.e., such that the corresponding body is maxaligned).
+   addr2 は、 addr1 以上の最初のアドレスで、 コード・フィールド用にアラ
+イメントされています(つまり、 対応する本体(body)が maxalign されるように
+します)。
 
 ‘*aligned’ ( addr1 n – addr2  ) gforth-1.0 “*aligned”
-   ADDR2 is the aligned version of ADDR1 with respect to the alignment
-N.
+   ADDR1 以上で、 N でアライメントされた(N で割り切れる)アドレスを ADDR2
+に返します。
 
 ‘*align’ ( n –  ) gforth-1.0 “*align”
-   Align ‘here’ with respect to the alignment N.
+   ‘here’ を N で割り切れるアドレスにアライメントします。
 
 ‘waligned’ ( addr – addr’  ) gforth-1.0 “waligned”
-   Addr’ is the next even address >= addr.
+   Addr’ は、 addr 以上、かつ、次の偶数アドレスです。
 
 ‘walign’ ( –  ) gforth-1.0 “walign”
-   Align ‘here’ to even.
+   ‘here’ を 偶数アドレスにアライメントします。
 
 ‘laligned’ ( addr – addr’  ) gforth-1.0 “laligned”
-   Addr’ is the next address >= addr divisible by 4.
+   Addr’ は、 addr 以上、 かつ、 4 で割り切れるアドレスです。
 
 ‘lalign’ ( –  ) gforth-1.0 “lalign”
-   Align ‘here’ to be divisible by 4.
+   ‘here’ を 4 で割り切れるアドレスにアライメントします。
 
 ‘xaligned’ ( addr – addr’  ) gforth-1.0 “xaligned”
-   Addr’ is the next address >= addr divisible by 8.
+   Addr’ を addr 以上、 かつ、 8 で割り切れるアドレスにします。
 
 ‘xalign’ ( –  ) gforth-1.0 “xalign”
-   Align ‘here’ to be divisible by 8.
+   ‘here’ を 8 で割り切れるアドレスにアライメントします。
 
-   The environmental query ‘address-unit-bits’ (*note Environmental
-Queries::) and the following words may be useful to those who want to
-write software portable to non-byte-addressed machines.
+   環境クエリ ‘address-unit-bits’ (*note Environmental Queries::) と、 以
+下のワード群は、 バイトアドレスを持たないマシン(non-byte-addressed
+machines)に移植可能なソフトウェアを作成したい人に役立つかもしれません。
 
 ‘/w’ ( – u  ) gforth-0.7 “slash-w”
-   address units for a 16-bit value
+   16ビット値に必要なアドレス単位
 
 ‘/l’ ( – u  ) gforth-0.7 “slash-l”
-   address units for a 32-bit value
+   32ビット値に必要なアドレス単位
 
 ‘/x’ ( – u  ) gforth-1.0 “slash-x”
-   address units for a 64-bit value
+   64ビット値に必要なアドレス単位
 
 
 File: gforth.info,  Node: Memory Blocks,  Prev: Address arithmetic,  Up: Memory
@@ -5949,60 +5970,65 @@ File: gforth.info,  Node: Memory Blocks,  Prev: Address arithmetic,  Up: Memory
 6.7.7 Memory Blocks
 -------------------
 
-Memory blocks often represent character strings; For ways of storing
-character strings in memory see *note String representations::.  For
-other string-processing words see *note Displaying characters and
-strings::.
+メモリ・ブロックは多くの場合、 文字の連なり(character strings)を表します
+。 文字の連なりをメモリに保存する方法については、 *note String
+representations:: を参照してください。 他の連なり処理ワード
+(string-processing words)については、 *note Displaying characters and
+strings:: を参照してください。
 
-   A few of these words work on address unit blocks.  In that case, you
-usually have to insert ‘CHARS’ before the word when working on character
-strings.  Most words work on character blocks, and expect a char-aligned
-address.
+   これらのワードのいくつかは、 アドレス単位ブロック(address unit
+blocks)で機能します。 その場合、 文字の連なり(character strings)を扱う際
+には通常、 ワードの前に ‘CHARS’ を挿入する必要があります。 ほとんどのワ
+ードは文字ブロック(character blocks)で機能し、 文字アライメント・アドレ
+ス(char-aligned address)を期待します。
 
-   When copying characters between overlapping memory regions, use
-‘move’.  ‘Cmove’ and ‘cmove>’ tend to be slower than a well-implemented
-‘move’.
+   重複するメモリ領域間で文字達をコピーする場合は、 ‘move’ を使用します
+。 ‘cmove’ と ‘cmove>’ は、 適切に実装された ‘move’ よりも遅くなる傾向が
+あります。
 
 ‘move’ ( c-from c-to ucount – ) core “move”
-   Copy the contents of ucount aus at c-from to c-to.  ‘move’ works
-correctly even if the two areas overlap.
+   c-from アドレスにある ucount 個のcharの内容を c-to アドレスにコピーし
+ます。 ‘move’ は、 2 つの領域が重なっている場合でも正しく機能します。
 
 ‘cmove’ ( c-from c-to u – ) string “c-move”
-   Copy the contents of ucount characters from data space at c-from to
-c-to.  The copy proceeds ‘char’-by-‘char’ from low address to high
-address; i.e., for overlapping areas it is safe if c-to<=c-from.
+   データ空間で c-from アドレスから ucount 個のcharの内容を c-to アドレ
+スにコピーします。コピーは、 1 ‘char’ ずつコピーしながら下位アドレスから
+上位アドレス方向へ進めます。 つまり、 重複領域の場合、 c-to <= c-from で
+あれば安全です。
 
 ‘cmove>’ ( c-from c-to u – ) string “c-move-up”
-   Copy the contents of ucount characters from data space at c-from to
-c-to.  The copy proceeds ‘char’-by-‘char’ from high address to low
-address; i.e., for overlapping areas it is safe if c-to>=c-from.
+   データ空間で c-from アドレスから ucount 個のcharの内容を c-to アドレ
+スにコピーします。 コピーは、 1 ‘char’ ずつコピーし上位アドレスから下位
+アドレス方向に進みます。 つまり、 重複領域の場合、 c-to >= c-from であれ
+ば安全です。
 
 ‘fill’ ( c-addr u c – ) core “fill”
-   Store c in u chars starting at c-addr.
+   c を c-addr から u 個char単位で格納します。
 
 ‘erase’ ( addr u –  ) core-ext “erase”
-   Clear all bits in u aus starting at addr.
+   addr から始まる u aus のすべてのビットをクリアします。
 
 ‘blank’ ( c-addr u –  ) string “blank”
-   Store the space character into u chars starting at c-addr.
+   スペース文字を c-addr アドレスから u 個char単位で格納します。
 
 ‘insert’ ( string length buffer size –  ) gforth-0.7 “insert”
-   inserts a string at the front of a buffer.  The remaining bytes are
-moved on.
+   バッファの先頭に文字列を挿入します。 残りのバイトは後ろにずらされます
+(訳注: sizeを超えた分は捨てられます)。
 
 ‘delete’ ( buffer size u –  ) gforth-0.7 “delete”
-   deletes the first U bytes from a buffer and fills the rest at the end
-with blanks.
+   最初の U バイトをバッファから削除し、 その分前にずらして、 残りの最後
+のバイトを空白(0x20)で埋めます。
 
 ‘compare’ ( c-addr1 u1 c-addr2 u2 – n ) string “compare”
-   Compare two strings lexicographically, based on the values of the
-bytes in the strings (i.e., case-sensitive and without locale-specific
-collation order orderings).  If they are equal, n is 0; if the first
-string is smaller, n is -1; if the first string is larger, n is 1.
+   連なり(string)内のバイトの値に基づいて、 2 つの連なり(strings)を(英語
+の)辞書順(lexicographically)に比較します(つまり、 英大文字と小文字が区別
+され、 ロケール固有の照合順序は無視されます)。 2つが等しい場合、 n は 0
+です。 最初の連なり(string)が小さい場合、 n は -1 です。 最初の連なり
+(string)が大きい場合、 n は 1 です。
 
 ‘pad’ ( – c-addr  ) core-ext “pad”
-   C-ADDR is the address of a transient region that can be used as
-temporary data storage.  At least 84 characters of space is available.
+   C-ADDR は、 一時的なデータ・ストレージとして使用できる一時領域のアド
+レスです。 少なくとも 84 文字分の空間が使用可能です。
 
 
 File: gforth.info,  Node: Strings and Characters,  Next: Control Structures,  Prev: Memory,  Up: Words
@@ -6440,454 +6466,4 @@ afterwards.
 
 ‘$[]Variable’ ( –  ) gforth-1.0 “string-array-variable”
    A string variable which is preserved across savesystem
-
-
-File: gforth.info,  Node: Counted string words,  Prev: $tring words,  Up: Strings and Characters
-
-6.8.6 Counted string words
---------------------------
-
-Counted strings store the length as byte at the address pointed to,
-followed by the bytes of the string.  Their possible length is severely
-limited, and you cannot create a substring in-place without destroying
-the input string.  Therefore we recommend against using counted strings.
-Nevertheless, if you have to deal with counted strings, here are some
-words for that:
-
-‘count’ ( c-addr1 – c-addr2 u ) core “count”
-   c-addr2 is the first character and u the length of the counted string
-at c-addr1.
-
-   The following word has no useful interpretation semantics (unlike
-‘s"’) and no interpretive counterpart (unlike ‘[char]’), so you should
-use it only inside colon definitions (if at all):
-
-‘C"’ ( compilation "ccc<quote>" – ; run-time  – c-addr  ) core-ext “c-quote”
-   Compilation: parse a string ccc delimited by a ‘"’ (double quote).
-At run-time, return c-addr which specifies the counted string ccc.
-Interpretation semantics are undefined.
-
-   doc-place
-‘string,’ ( c-addr u –  ) gforth-0.2 “string,”
-   puts down string as cstring
-
-
-File: gforth.info,  Node: Control Structures,  Next: Defining Words,  Prev: Strings and Characters,  Up: Words
-
-6.9 Control Structures
-======================
-
-Control structures in Forth cannot be used interpretively, only in a
-colon definition(1).  We do not like this limitation, but have not seen
-a satisfying way around it yet, although many schemes have been
-proposed.
-
-* Menu:
-
-* Selection::                IF ... ELSE ... ENDIF
-* Simple Loops::             BEGIN ...
-* Counted Loops::            DO
-* BEGIN loops with multiple exits::
-* General control structures with CASE::
-* Arbitrary control structures::
-* Calls and returns::
-* Exception Handling::
-
-   ---------- Footnotes ----------
-
-   (1) To be precise, they have no interpretation semantics (*note
-Interpretation and Compilation Semantics::).
-
-
-File: gforth.info,  Node: Selection,  Next: Simple Loops,  Prev: Control Structures,  Up: Control Structures
-
-6.9.1 Selection
----------------
-
-     flag
-     IF
-       code
-     ENDIF
-
-   If flag is non-zero (as far as ‘IF’ etc.  are concerned, a cell with
-any bit set represents truth) code is executed.
-
-     flag
-     IF
-       code1
-     ELSE
-       code2
-     ENDIF
-
-   If FLAG is true, code1 is executed, otherwise code2 is executed.
-
-   You can use ‘THEN’ instead of ‘ENDIF’.  Indeed, ‘THEN’ is standard,
-and ‘ENDIF’ is not, although it is quite popular.  We recommend using
-‘ENDIF’, because it is less confusing for people who also know other
-languages (and is not prone to reinforcing negative prejudices against
-Forth in these people).  Adding ‘ENDIF’ to a system that only supplies
-‘THEN’ is simple:
-     : ENDIF   POSTPONE then ; immediate
-
-   [According to ‘Webster’s New Encyclopedic Dictionary’, “then (adv.)”
-has the following meanings:
-     ...  2b: following next after in order ...  3d: as a necessary
-     consequence (if you were there, then you saw them).
-   Forth’s ‘THEN’ has the meaning 2b, whereas ‘THEN’ in Pascal and many
-other programming languages has the meaning 3d.]
-
-   Gforth also provides the words ‘?DUP-IF’ and ‘?DUP-0=-IF’, so you can
-avoid using ‘?dup’.  Using these alternatives is also more efficient
-than using ‘?dup’.  Definitions in Standard Forth for ‘ENDIF’, ‘?DUP-IF’
-and ‘?DUP-0=-IF’ are provided in ‘compat/control.fs’.
-
-     x
-     CASE
-       x1 OF code1 ENDOF
-       x2 OF code2 ENDOF
-       ...
-       ( x ) default-code ( x )
-     ENDCASE ( )
-
-   Executes the first codei, where the xi is equal to x.  If no xi
-matches, the optional default-code is executed.  The optional default
-case can be added by simply writing the code after the last ‘ENDOF’.  It
-may use x, which is on top of the stack, but must not consume it.  The
-value x is consumed by this construction (either by an ‘OF’ that
-matches, or by the ‘ENDCASE’, if no OF matches).  Example:
-
-     : num-name ( n -- c-addr u )
-      case
-        0 of s" zero " endof
-        1 of s" one "  endof
-        2 of s" two "  endof
-        \ default case:
-        s" other number"
-        rot \ get n on top so ENDCASE can drop it
-      endcase ;
-
-   You can also use (the non-standard) ‘?of’ to use ‘case’ as a general
-selection structure for more than two alternatives.  ‘?Of’ takes a flag.
-Example:
-
-     : sgn ( n1 -- n2 )
-         \ sign function
-         case
-     	dup 0< ?of drop -1 endof
-     	dup 0> ?of drop 1 endof
-     	dup \ n1=0 -> n2=0; dup an item, to be consumed by ENDCASE
-         endcase ;
-
-   Programming style note: To keep the code understandable, you should
-ensure that you change the stack in the same way (wrt.  number and types
-of stack items consumed and pushed) on all paths through a selection
-structure.
-
-
-File: gforth.info,  Node: Simple Loops,  Next: Counted Loops,  Prev: Selection,  Up: Control Structures
-
-6.9.2 Simple Loops
-------------------
-
-     BEGIN
-       code1
-       flag
-     WHILE
-       code2
-     REPEAT
-
-   code1 is executed and flag is computed.  If it is true, code2 is
-executed and the loop is restarted; If flag is false, execution
-continues after the ‘REPEAT’.
-
-     BEGIN
-       code
-       flag
-     UNTIL
-
-   code is executed.  The loop is restarted if ‘flag’ is false.
-
-   Programming style note: To keep the code understandable, a complete
-iteration of the loop should not change the number and types of the
-items on the stacks.
-
-     BEGIN
-       code
-     AGAIN
-
-   This is an endless loop.
-
-
-File: gforth.info,  Node: Counted Loops,  Next: BEGIN loops with multiple exits,  Prev: Simple Loops,  Up: Control Structures
-
-6.9.3 Counted Loops
--------------------
-
-The basic counted loop is:
-     limit start ?DO
-       body
-     LOOP
-
-   This performs one iteration for every integer, starting from start
-and up to, but excluding limit.  The counter, or index, can be accessed
-with ‘i’.  For example, the loop:
-     10 0 ?DO
-       i .
-     LOOP
-prints ‘0 1 2 3 4 5 6 7 8 9’
-
-   The index of the innermost loop can be accessed with ‘i’, the index
-of the next loop with ‘j’, and the index of the third loop with ‘k’.
-
-   You can access the limit of the innermost loop with ‘i'’ and ‘i'’-‘i’
-with ‘delta-i’.  E.g., running
-
-     : foo 7 5 ?do cr i . i' . delta-i . loop ;
-
-   prints
-
-     5 7 2
-     6 7 1
-
-   The loop control data are kept on the return stack, so there are some
-restrictions on mixing return stack accesses and counted loop words.  In
-particuler, if you put values on the return stack outside the loop, you
-cannot read them inside the loop(1).  If you put values on the return
-stack within a loop, you have to remove them before the end of the loop
-and before accessing the index of the loop.
-
-   There are several variations on the counted loop:
-
-   • ‘LEAVE’ leaves the innermost counted loop immediately; execution
-     continues after the associated ‘LOOP’ or ‘NEXT’.  For example:
-
-          10 0 ?DO  i DUP . 3 = IF LEAVE THEN LOOP
-     prints ‘0 1 2 3’
-
-   • ‘UNLOOP’ prepares for an abnormal loop exit, e.g., via ‘EXIT’.
-     ‘UNLOOP’ removes the loop control parameters from the return stack
-     so ‘EXIT’ can get to its return address.  For example:
-
-          : demo 10 0 ?DO i DUP . 3 = IF UNLOOP EXIT THEN LOOP ." Done" ;
-     prints ‘0 1 2 3’
-
-   • If start is greater than limit, a ‘?DO’ loop is entered (and ‘LOOP’
-     iterates until they become equal by wrap-around arithmetic).  This
-     behaviour is usually not what you want.  Therefore, Gforth offers
-     ‘+DO’ and ‘U+DO’ (as replacements for ‘?DO’), which do not enter
-     the loop if start is greater than limit; ‘+DO’ is for signed loop
-     parameters, ‘U+DO’ for unsigned loop parameters.
-
-   • ‘?DO’ can be replaced by ‘DO’.  ‘DO’ always enters the loop,
-     independent of the loop parameters.  Do not use ‘DO’, even if you
-     know that the loop is entered in any case.  Such knowledge tends to
-     become invalid during maintenance of a program, and then the ‘DO’
-     will make trouble.
-
-   • ‘LOOP’ can be replaced with ‘n +LOOP’; this updates the index by n
-     instead of by 1.  The loop is terminated when the border between
-     limit-1 and limit is crossed.  E.g.:
-
-          4 0 +DO  i .  2 +LOOP
-     prints ‘0 2’
-
-          4 1 +DO  i .  2 +LOOP
-     prints ‘1 3’
-
-   • The behaviour of ‘n +LOOP’ is peculiar when n is negative:
-
-          -1 0 ?DO  i .  -1 +LOOP
-     prints ‘0 -1’
-
-          0 0 ?DO  i .  -1 +LOOP
-     prints nothing.
-
-     We recommend not combining ‘?DO’ with ‘+LOOP’.  Gforth offers
-     several alternatives:
-
-     If you want ‘-1 +LOOP’’s behaviour of including an iteration where
-     ‘I’=limit, start the loop with ‘-[DO’ or ‘U-[DO’ (where the ‘[’ is
-     inspired by the mathematical notation for inclusive ranges, e.g.,
-     [1,n]):
-
-          -1 0 -[DO  i .  -1 +LOOP
-
-     prints ‘0 -1’.
-
-          0 0 -[DO  i .  -1 +LOOP
-
-     prints ‘0’.
-
-          0 -1 -[DO  i .  -1 +LOOP
-
-     prints nothing.
-
-     If you want to exclude the limit, you instead use ‘1 -LOOP’ (or
-     generally ‘u -LOOP’) and start the loop with ‘?DO’, ‘-DO’ or
-     ‘U-DO’.  ‘-LOOP’ terminates the loop when the border between
-     limit+1 and limit is crossed.  E.g.:
-
-          -2 0 -DO  i .  1 -LOOP
-     prints ‘0 -1’
-
-          -1 0 -DO  i .  1 -LOOP
-     prints ‘0’
-
-          0 0 -DO  i .  1 -LOOP
-     prints nothing.
-
-     Unfortunately, ‘+DO’, ‘U+DO’, ‘-DO’, ‘U-DO’ and ‘-LOOP’ are not
-     defined in Standard Forth.  However, an implementation for these
-     words that uses only standard words is provided in
-     ‘compat/loops.fs’.
-
-   • A common task is to iterate over the elements of an array, forwards
-     or backwards.  Iterating over the addresses of the elements has two
-     benefits: It avoids the need to keep the start address of the array
-     around, reducing the data stack load; and it avoids the need to
-     perform address computations in every iteration.  The disadvantage
-     is that, starting with the usual array representations addr uelems
-     or addr ubytes, some processing is required to produce a start and
-     limit address.  Gforth has ‘bounds’ for getting there from the addr
-     ubytes representation, so you can write a forward loop through a
-     cell array ‘v’ as:
-
-          create v 1 , 3 , 7 ,
-          : foo v 3 cells bounds U+DO i  . cell +LOOP ;
-          foo
-
-     which prints ‘1 3 7’.  Preprocessing the inputs for walking
-     backwards is more involved, so Gforth provide a loop construct of
-     the form ‘MEM-DO’...‘LOOP’ that does it for you: It takes an array
-     in addr ubytes representation and the element size, and iterates
-     over the addresses of the elements in backwards order:
-
-          create v 1 , 3 , 7 ,
-          : foo1 v 3 cell array>mem MEM-DO i  . LOOP ;
-          foo1
-
-     This prints ‘7 3 1’.  ‘ARRAY>MEM’ converts the addr uelems
-     uelemsize representation into the addr ubytes uelemsize
-     representation expected by ‘MEM-DO’.  This loop is finished with
-     ‘LOOP’ which decrements by uelemsize when it finishes a ‘MEM-DO’.
-
-     Gforth also adds ‘MEM+DO’ for completeness.  It takes the same
-     parameters as ‘MEM-DO’, but walks forwards through the array:
-
-          create v 1 , 3 , 7 ,
-          : foo2 v 3 cell array>mem MEM+DO i  . LOOP ;
-          foo2
-
-     prints ‘1 3 7’.
-
-   • Another counted loop is:
-          n
-          FOR
-            body
-          NEXT
-     This is the preferred loop of native code compiler writers who are
-     too lazy to optimize ‘?DO’ loops properly.  This loop structure is
-     not defined in Standard Forth.  In Gforth, this loop iterates n+1
-     times; ‘i’ produces values starting with n and ending with 0.
-     Other Forth systems may behave differently, even if they support
-     ‘FOR’ loops.  To avoid problems, don’t use ‘FOR’ loops.
-
-   The counted-loop words are:
-
-‘?DO’ ( compilation – do-sys ; run-time w1 w2 – | loop-sys  ) core-ext “question-do”
-   *Note Counted Loops::.
-
-‘+DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “plus-do”
-   *Note Counted Loops::.
-
-‘U+DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-plus-do”
-   *Note Counted Loops::.
-
-‘bounds’ ( u1 u2 – u3 u1 ) gforth-0.2 “bounds”
-   Given a memory block represented by starting address addr and length
-u in aus, produce the end address addr+u and the start address in the
-right order for ‘u+do’ or ‘?do’.
-
-‘-[do’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-experimental “minus-bracket-do”
-   Start of a counted loop with negative stride; Skips the loop if
-n2<n1; such a counted loop ends with ‘+loop’ where the increment is
-negative; it runs as long as ‘I’>=n1.
-
-‘u-[do’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-experimental “u-minus-bracket-do”
-   Start of a counted loop with negative stride; Skips the loop if
-u2<u1; such a counted loop ends with ‘+loop’ where the increment is
-negative; it runs as long as ‘I’>=u1.
-
-‘-DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “minus-do”
-   *Note Counted Loops::.
-
-‘U-DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-minus-do”
-   *Note Counted Loops::.
-
-   doc-array>mem
-‘mem+do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-plus-do”
-   Starts a counted loop that starts with ‘I’ as addr and then steps
-upwards through memory with nstride wide steps as long as
-‘I’<addr+ubytes.  Must be finished with loop.
-
-‘mem-do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-minus-do”
-   Starts a counted loop that starts with ‘I’ as addr+ubytes-ustride and
-then steps backwards through memory with -nstride wide steps as long as
-‘I’>=addr.  Must be finished with loop.
-
-‘DO’ ( compilation – do-sys ; run-time w1 w2 – loop-sys  ) core “DO”
-   *Note Counted Loops::.
-
-‘FOR’ ( compilation – do-sys ; run-time u – loop-sys  ) gforth-0.2 “FOR”
-   *Note Counted Loops::.
-
-‘LOOP’ ( compilation do-sys – ; run-time loop-sys1 – | loop-sys2  ) core “LOOP”
-   *Note Counted Loops::.
-
-‘+LOOP’ ( compilation do-sys – ; run-time loop-sys1 n – | loop-sys2  ) core “plus-loop”
-   *Note Counted Loops::.
-
-‘-LOOP’ ( compilation do-sys – ; run-time loop-sys1 u – | loop-sys2  ) gforth-0.2 “minus-loop”
-   *Note Counted Loops::.
-
-‘NEXT’ ( compilation do-sys – ; run-time loop-sys1 – | loop-sys2  ) gforth-0.2 “NEXT”
-   *Note Counted Loops::.
-
-‘i’ ( R:n – R:n n ) core “i”
-   n is the index of the innermost counted loop.
-
-‘j’ ( R:n R:w1 R:w2 – n R:n R:w1 R:w2 ) core “j”
-   n is the index of the next-to-innermost counted loop.
-
-‘k’ ( R:n R:w1 R:w2 R:w3 R:w4 – n R:n R:w1 R:w2 R:w3 R:w4 ) gforth-0.3 “k”
-   n is the index of the third-innermost counted loop.
-
-‘i'’ ( R:w R:w2 – R:w R:w2 w ) gforth-0.2 “i-tick”
-   The limit of the innermost counted loop
-
-‘delta-i’ ( r:ulimit r:u – r:ulimit r:u u2 ) gforth-1.0 “delta-i”
-   u2=‘I'’-‘I’ (difference between limit and index).
-
-‘LEAVE’ ( compilation – ; run-time loop-sys –  ) core “LEAVE”
-   *Note Counted Loops::.
-
-‘?LEAVE’ ( compilation – ; run-time f | f loop-sys –  ) gforth-0.2 “question-leave”
-   *Note Counted Loops::.
-
-‘unloop’ ( R:w1 R:w2 – ) core “unloop”
-
-‘DONE’ ( compilation do-sys – ; run-time –  ) gforth-0.2 “DONE”
-   resolves all LEAVEs up to the do-sys
-
-   The standard does not allow using ‘CS-PICK’ and ‘CS-ROLL’ on do-sys.
-Gforth allows it, except for the do-sys produced by ‘MEM+DO’ and
-‘MEM-DO’, but it’s your job to ensure that for every ‘?DO’ etc.  there
-is exactly one ‘UNLOOP’ on any path through the definition (‘LOOP’ etc.
-compile an ‘UNLOOP’ on the fall-through path).  Also, you have to ensure
-that all ‘LEAVE’s are resolved (by using one of the loop-ending words or
-‘DONE’).
-
-   ---------- Footnotes ----------
-
-   (1) well, not in a way that is portable.
 

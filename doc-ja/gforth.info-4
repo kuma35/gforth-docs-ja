@@ -27,6 +27,428 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Cross Compiler,  Next: MINOS2,  Prev: Engine,  Up: Top
+
+16 Cross Compiler
+*****************
+
+The cross compiler is used to bootstrap a Forth kernel.  Since Gforth is
+mostly written in Forth, including crucial parts like the outer
+interpreter and compiler, it needs compiled Forth code to get started.
+The cross compiler allows to create new images for other architectures,
+even running under another Forth system.
+
+* Menu:
+
+* Using the Cross Compiler::
+* How the Cross Compiler Works::
+
+
+File: gforth.info,  Node: Using the Cross Compiler,  Next: How the Cross Compiler Works,  Prev: Cross Compiler,  Up: Cross Compiler
+
+16.1 Using the Cross Compiler
+=============================
+
+The cross compiler uses a language that resembles Forth, but isn’t.  The
+main difference is that you can execute Forth code after definition,
+while you usually can’t execute the code compiled by cross, because the
+code you are compiling is typically for a different computer than the
+one you are compiling on.
+
+   The Makefile is already set up to allow you to create kernels for new
+architectures with a simple make command.  The generic kernels using the
+GCC compiled virtual machine are created in the normal build process
+with ‘make’.  To create a embedded Gforth executable for e.g.  the 8086
+processor (running on a DOS machine), type
+
+     make kernl-8086.fi
+
+   This will use the machine description from the ‘arch/8086’ directory
+to create a new kernel.  A machine file may look like that:
+
+     \ Parameter for target systems                         06oct92py
+
+         4 Constant cell             \ cell size in bytes
+         2 Constant cell<<           \ cell shift to bytes
+         5 Constant cell>bit         \ cell shift to bits
+         8 Constant bits/char        \ bits per character
+         8 Constant bits/byte        \ bits per byte [default: 8]
+         8 Constant float            \ bytes per float
+         8 Constant /maxalign        \ maximum alignment in bytes
+     false Constant bigendian        \ byte order
+     ( true=big, false=little )
+
+     include machpc.fs               \ feature list
+
+   This part is obligatory for the cross compiler itself, the feature
+list is used by the kernel to conditionally compile some features in and
+out, depending on whether the target supports these features.
+
+   There are some optional features, if you define your own primitives,
+have an assembler, or need special, nonstandard preparation to make the
+boot process work.  ‘asm-include’ includes an assembler, ‘prims-include’
+includes primitives, and ‘>boot’ prepares for booting.
+
+     : asm-include    ." Include assembler" cr
+       s" arch/8086/asm.fs" included ;
+
+     : prims-include  ." Include primitives" cr
+       s" arch/8086/prim.fs" included ;
+
+     : >boot          ." Prepare booting" cr
+       s" ' boot >body into-forth 1+ !" evaluate ;
+
+   These words are used as sort of macro during the cross compilation in
+the file ‘kernel/main.fs’.  Instead of using these macros, it would be
+possible — but more complicated — to write a new kernel project file,
+too.
+
+   ‘kernel/main.fs’ expects the machine description file name on the
+stack; the cross compiler itself (‘cross.fs’) assumes that either
+‘mach-file’ leaves a counted string on the stack, or ‘machine-file’
+leaves an address, count pair of the filename on the stack.
+
+   The feature list is typically controlled using ‘SetValue’, generic
+files that are used by several projects can use ‘DefaultValue’ instead.
+Both functions work like ‘Value’, when the value isn’t defined, but
+‘SetValue’ works like ‘to’ if the value is defined, and ‘DefaultValue’
+doesn’t set anything, if the value is defined.
+
+     \ generic mach file for pc gforth                       03sep97jaw
+
+     true DefaultValue NIL  \ relocating
+
+     >ENVIRON
+
+     true DefaultValue file          \ controls the presence of the
+                                     \ file access wordset
+     true DefaultValue OS            \ flag to indicate a operating system
+
+     true DefaultValue prims         \ true: primitives are c-code
+
+     true DefaultValue floating      \ floating point wordset is present
+
+     true DefaultValue glocals       \ gforth locals are present
+                                     \ will be loaded
+     true DefaultValue dcomps        \ double number comparisons
+
+     true DefaultValue hash          \ hashing primitives are loaded/present
+
+     true DefaultValue xconds        \ used together with glocals,
+                                     \ special conditionals supporting gforths'
+                                     \ local variables
+     true DefaultValue header        \ save a header information
+
+     true DefaultValue backtrace     \ enables backtrace code
+
+     false DefaultValue ec
+     false DefaultValue crlf
+
+     cell 2 = [IF] &32 [ELSE] &256 [THEN] KB DefaultValue kernel-size
+
+     &16 KB          DefaultValue stack-size
+     &15 KB &512 +   DefaultValue fstack-size
+     &15 KB          DefaultValue rstack-size
+     &14 KB &512 +   DefaultValue lstack-size
+
+
+File: gforth.info,  Node: How the Cross Compiler Works,  Prev: Using the Cross Compiler,  Up: Cross Compiler
+
+16.2 How the Cross Compiler Works
+=================================
+
+
+File: gforth.info,  Node: MINOS2,  Next: Bugs,  Prev: Cross Compiler,  Up: Top
+
+17 MINOS2, a GUI library
+************************
+
+* Menu:
+
+* MINOS2 object framework::
+* MINOS2 tutorial::
+
+
+File: gforth.info,  Node: MINOS2 object framework,  Next: MINOS2 tutorial,  Prev: MINOS2,  Up: MINOS2
+
+17.1 MINOS2 object framework
+============================
+
+* Menu:
+
+* actor methods::
+* widget methods::
+
+MINOS2 is a GUI library, written in ‘mini-oof2.fs’’s object model.  It
+has two main class hierarchies:
+
+‘actor’ ( – class  ) minos2 “actor”
+   class for the actions bound to a component.
+
+‘widget’ ( – class  ) minos2 “widget”
+   class for visual components
+
+
+File: gforth.info,  Node: actor methods,  Next: widget methods,  Prev: MINOS2 object framework,  Up: MINOS2 object framework
+
+17.1.1 ‘actor’ methods:
+-----------------------
+
+‘caller-w’ ( – optr  ) minos2 “caller-w”
+   pointer back to the widget embedding the actor
+
+‘active-w’ ( – optr  ) minos2 “active-w”
+   pointer to the active subwidget embedding the actor
+
+‘act-name$’ ( – addr u  ) minos2 “act-name-string”
+   Debugging aid: name of the actor
+
+‘clicked’ ( rx ry bmask n –  ) minos2 “clicked”
+   processed clicks
+
+‘scrolled’ ( axis dir –  ) minos2 “scrolled”
+   process scrolling
+
+‘touchdown’ ( $rxy*n bmask –  ) minos2 “touchdown”
+   raw click down
+
+‘touchup’ ( $rxy*n bmask –  ) minos2 “touchup”
+   raw click up
+
+‘ukeyed’ ( addr u –  ) minos2 “ukeyed”
+   key event, string of printable unicode characters
+
+‘ekeyed’ ( ekey –  ) minos2 “ekeyed”
+   key event, non-printable key
+
+‘?inside’ ( rx ry – act / 0  ) minos2 “query-inside”
+   check if coordinates are inside the widget
+
+‘focus’ ( –  ) minos2 “focus”
+   put widget into focus
+
+‘defocus’ ( –  ) minos2 “defocus”
+   put widget out of focus
+
+‘entered’ ( –  ) minos2 “entered”
+   react on cursor entering the widget area
+
+‘left’ ( –  ) minos2 “left”
+   react on cursor leaving the widget area
+
+‘show’ ( –  ) minos2 “show”
+   widget is shown
+
+‘hide’ ( –  ) minos2 “hide”
+   widget is hidden
+
+‘get’ ( – something  ) minos2 “get”
+   getter for the value behind the widget
+
+‘set’ ( something –  ) minos2 “set”
+   setter for the value behind the widget
+
+‘show-you’ ( –  ) minos2 “show-you”
+   make widget visible
+
+
+File: gforth.info,  Node: widget methods,  Prev: actor methods,  Up: MINOS2 object framework
+
+17.1.2 ‘widget’ methods:
+------------------------
+
+‘parent-w’ ( – optr  ) minos2 “parent-w”
+   pointer to parent widget
+
+‘act’ ( – optr  ) minos2 “act”
+   pointer to actor
+
+‘name$’ ( – addr u  ) minos2 “name-string”
+   Widget name for debugging and searching
+
+‘x’ ( – r  ) minos2 “x”
+   widget x coordinate
+
+‘y’ ( – r  ) minos2 “y”
+   widget y coordinate
+
+‘w’ ( – r  ) minos2 “w”
+   widget width
+
+‘h’ ( – r  ) minos2 “h”
+   widget height above baseline
+
+‘d’ ( – r  ) minos2 “d”
+   widget depth below baseline
+
+‘gap’ ( – r  ) minos2 “gap”
+   gap between lines
+
+‘baseline’ ( – r  ) minos2 “baseline”
+   minimun skip per line
+
+‘kerning’ ( – r  ) minos2 “kerning”
+   add kerning
+
+‘raise’ ( – r  ) minos2 “raise”
+   raise/lower box
+
+‘border’ ( – r  ) minos2 “border”
+   surrounding border, all directions
+
+‘borderv’ ( – r  ) minos2 “borderv”
+   vertical border offset
+
+‘bordert’ ( – r  ) minos2 “bordert”
+   top border offset
+
+‘borderl’ ( – r  ) minos2 “borderl”
+   left border offset
+
+‘w-color’ ( – r  ) minos2 “w-color”
+   widget color index (into color map), if any
+
+‘draw-init’ ( –  ) minos2 “draw-init”
+   init draw
+
+‘draw’ ( –  ) minos2 “draw”
+   draw widget
+
+‘split’ ( firstflag rstart1 rx – o rstart2  ) minos2 “split”
+   split a widget into parts for typesetting paragraphs
+
+‘lastfit’ ( –  ) minos2 “lastfit”
+   fit last widget element in a box
+
+‘hglue’ ( – rtyp rsub radd  ) minos2 “hglue”
+   calculate horizontal glue
+
+‘dglue’ ( – rtyp rsub radd  ) minos2 “dglue”
+   calculate vertical glue below baseline
+
+‘vglue’ ( – rtyp rsub radd  ) minos2 “vglue”
+   calculate vertical glue above baseline
+
+‘hglue@’ ( – rtyp rsub radd  ) minos2 “hglue-fetch”
+   cached variant of ‘hglue’
+
+‘dglue@’ ( – rtyp rsub radd  ) minos2 “dglue-fetch”
+   cached variant of ‘dglue’
+
+‘vglue@’ ( – rtyp rsub radd  ) minos2 “vglue-fetch”
+   cached variant of ‘vglue’
+
+‘xywh’ ( – rx0 ry0 rw rh  ) minos2 “xywh”
+   widget bounding box, starting at the top left corner
+
+‘xywhd’ ( – rx ry rw rh rd  ) minos2 “xywhd”
+   widget bounding box, starting at the left baseline point
+
+‘!resize’ ( rx ry rw rh rd –  ) minos2 “store-resize”
+   resize a widget
+
+‘!size’ ( –  ) minos2 “store-size”
+   let the widget self-determine its size
+
+‘dispose-widget’ ( –  ) minos2 “dispose-widget”
+   get rid of a widget
+
+‘.widget’ ( –  ) minos2 “print-widget”
+   debugging: Print informations about the widget
+
+‘par-split’ ( rw –  ) minos2 “par-split”
+   split a paragraph by width RW
+
+‘resized’ ( –  ) minos2 “resized”
+   widget is resized
+
+   Components are composed using a boxes&glue model similar to LaTeX,
+including paragraph breaking.  For the sake of simplicity and
+portability, MINOS2 only supports a single window, and uses OpenGL for
+rendering.
+
+   MINOS2 furthermore supports animations with the ‘animation’ class.  A
+color index texture is used for different color schemes, and transition
+between neighboring schemes can also be animated.
+
+‘>animate’ ( rdelta addr xt –  ) minos2 “to-animate”
+   create a new animation, calling XT with stack effect ‘( addr r0..1 --
+)’ repeatedly, until the RDELTA timeout expired; last call is always
+with argument 1E for the time.
+
+   You can create named color indexes and assign them color values for
+the currently active color scheme.
+
+‘color:’ ( rgba "name" –  ) minos2 “color:”
+   Create a (possibly shared) color index initialized with RGBA
+
+‘new-color:’ ( rgba "name" –  ) minos2 “new-color:”
+   Create a unique color index initialized with RGBA
+
+‘text-color:’ ( rgba "name" –  ) minos2 “text-color:”
+   Create a unique text color index initialized with RGBA, the
+corresponding emoji color is set to white.
+
+‘text-emoji-color:’ ( rgbatext rgbaemoji "name" –  ) minos2 “text-emoji-color:”
+   Create a unique text color index initialized with RGBATEXT, the
+corresponding emoji color is set to RGBAEMOJI.
+
+‘fade-color:’ ( rgba1 rgba2 "name" –  ) minos2 “fade-color:”
+   Create a unique pair of text color index initialized with RGBA1 and
+RGBA2, the corresponding emoji color is set to white.  By slowly
+shifting the index from one to the next index, the object will shift its
+color using a linear interpolation when redrawn.
+
+‘text-emoji-fade-color:’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" –  ) minos2 “text-emoji-fade-color:”
+   Create a unique pair of text color index initialized with RGBATEXT1
+and ~2, the corresponding emoji color pair is set to RGBAEMOJI1 to ~2.
+By slowly shifting the index from one to the next index, the object will
+shift its color using a linear interpolation when redrawn.
+
+‘re-color’ ( rgba "name" –  ) minos2 “re-color”
+   assign the named color index "NAME" in the current color scheme with
+the value RGBA.
+
+‘re-text-color’ ( rgba "name" –  ) minos2 “re-text-color”
+   assign the named text color index "NAME" in the current color scheme
+with the value RGBA.
+
+‘re-emoji-color’ ( rgbatext rgbaemoji "name" –  ) minos2 “re-emoji-color”
+   assign the named text and emoji color index "NAME" in the current
+color scheme with the value RGBATEXT and RGBAEMOJI.
+
+‘re-fade-color’ ( rgba1 rgba2 "name" –  ) minos2 “re-fade-color”
+   assign the named color index pair "NAME" in the current color scheme
+with the value RGBA1 and RGBA2.
+
+‘re-text-emoji-fade-color’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" –  ) minos2 “re-text-emoji-fade-color”
+   assign the named color index pair "NAME" in the current color scheme
+with the value RGBATEXT1 and ~2 resp.  RGBAEMOJI1 and ~2.
+
+   For a number of specific objects, there are early bound methods, that
+only work on these objects
+
+   • Viewport
+
+     ‘vp-top’ ( o:vp –  ) minos2 “vp-top”
+     scroll viewport to top
+
+     ‘vp-bottom’ ( o:vp –  ) minos2 “vp-bottom”
+     scroll viewport to bottom
+
+     ‘vp-left’ ( o:vp –  ) minos2 “vp-left”
+     scroll viewport to left
+
+     ‘vp-right’ ( o:vp –  ) minos2 “vp-right”
+     scroll viewport to right
+
+     ‘vp-reslide’ ( o:vp –  ) minos2 “vp-reslide”
+     Adjust the sliders of a viewport after scrolling
+
+     ‘vp-needed’ ( xt –  ) minos2 “vp-needed”
+     collect needs in viewport’s vp-need
+
+
 File: gforth.info,  Node: MINOS2 tutorial,  Prev: MINOS2 object framework,  Up: MINOS2
 
 17.2 MINOS2 tutorial
@@ -1450,9 +1872,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * */modf ( N1 N2 N3 -- N4 N5 ) gforth-1.0: Integer division.  (line 110)
 * */mods ( N1 N2 N3 -- N4 N5 ) gforth-1.0: Integer division.  (line 106)
 * */s ( N1 N2 N3 -- N4 ) gforth-1.0:     Integer division.    (line  94)
-* *align ( N -- ) gforth-1.0:            Address arithmetic.  (line 121)
+* *align ( N -- ) gforth-1.0:            Address arithmetic.  (line 122)
 * *aligned ( ADDR1 N -- ADDR2 ) gforth-1.0: Address arithmetic.
-                                                              (line 117)
+                                                              (line 118)
 * *} ( ADDR ADDR' -- ADDR' ) regexp-pattern: Regular Expressions.
                                                               (line 125)
 * + ( N1 N2 -- N ) core:                 Single precision.    (line  15)
@@ -1492,7 +1914,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * -class ( CLASS -- ) regexp-cg:         Regular Expressions. (line  57)
 * -DO ( COMPILATION -- DO-SYS ; RUN-TIME N1 N2 -- | LOOP-SYS ) gforth-0.2: Counted Loops.
                                                               (line 201)
-* -infinity ( -- R ) gforth-1.0:         Floating Point.      (line 188)
+* -infinity ( -- R ) gforth-1.0:         Floating Point.      (line 190)
 * -LOOP ( COMPILATION DO-SYS -- ; RUN-TIME LOOP-SYS1 U -- | LOOP-SYS2 ) gforth-0.2: Counted Loops.
                                                               (line 230)
 * -ltrace ( -- ) gforth-1.0:             Debugging.           (line  77)
@@ -1552,7 +1974,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  57)
 * /HOLD ( -- N ) environment:            Environmental Queries.
                                                               (line  34)
-* /l ( -- U ) gforth-0.7:                Address arithmetic.  (line 149)
+* /l ( -- U ) gforth-0.7:                Address arithmetic.  (line 150)
 * /mod ( N1 N2 -- N3 N4 ) core:          Integer division.    (line  62)
 * /modf ( N1 N2 -- N3 N4 ) gforth-1.0:   Integer division.    (line  68)
 * /modf-stage2m ( N1 A-RECI -- UMODULUS NQUOTIENT ) gforth-1.0: Two-stage integer division.
@@ -1563,8 +1985,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * /s ( N1 N2 -- N ) gforth-1.0:          Integer division.    (line  47)
 * /string ( C-ADDR1 U1 N -- C-ADDR2 U2 ) string: String words.
                                                               (line  45)
-* /w ( -- U ) gforth-0.7:                Address arithmetic.  (line 146)
-* /x ( -- U ) gforth-1.0:                Address arithmetic.  (line 152)
+* /w ( -- U ) gforth-0.7:                Address arithmetic.  (line 147)
+* /x ( -- U ) gforth-1.0:                Address arithmetic.  (line 153)
 * 0< ( N -- F ) core:                    Numeric comparison.  (line  21)
 * 0<= ( N -- F ) gforth-0.2:             Numeric comparison.  (line  23)
 * 0<> ( N -- F ) core-ext:               Numeric comparison.  (line  25)
@@ -1573,7 +1995,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 0>= ( N -- F ) gforth-0.2:             Numeric comparison.  (line  31)
 * 1+ ( N1 -- N2 ) core:                  Single precision.    (line  17)
 * 1- ( N1 -- N2 ) core:                  Single precision.    (line  24)
-* 1/f ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  90)
+* 1/f ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  91)
 * 2! ( W1 W2 A-ADDR -- ) core:           Memory Access.       (line  25)
 * 2* ( N1 -- N2 ) core:                  Bitwise operations.  (line  41)
 * 2, ( W1 W2 -- ) gforth-0.2:            Dictionary allocation.
@@ -1682,7 +2104,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * >order ( WID -- ) gforth-0.5:          Word Lists.          (line  70)
 * >postpone ( TRANSLATOR -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line 113)
-* >pow2 ( U1 -- U2 ) gforth-1.0:         Bitwise operations.  (line  55)
+* >pow2 ( U1 -- U2 ) gforth-1.0:         Bitwise operations.  (line  56)
 * >r ( W -- R:W ) core:                  Return stack.        (line  13)
 * >string-execute ( ... XT -- ... ADDR U ) gforth-1.0: String words.
                                                               (line  88)
@@ -1856,7 +2278,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ADDRESS-UNIT-BITS ( -- N ) environment: Environmental Queries.
                                                               (line  25)
 * adjust-buffer ( U ADDR -- ) gforth-experimental: Heap Allocation.
-                                                              (line  64)
+                                                              (line  68)
 * after-locate ( -- U ) gforth-1.0:      Locating source code definitions.
                                                               (line  59)
 * AGAIN ( COMPILATION DEST -- ; RUN-TIME -- ) core-ext: Arbitrary control structures.
@@ -1865,8 +2287,8 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  21)
 * Alias ( XT "NAME" -- ) gforth-0.2:     Aliases.             (line  27)
 * align ( -- ) core:                     Dictionary allocation.
-                                                              (line  82)
-* aligned ( C-ADDR -- A-ADDR ) core:     Address arithmetic.  (line  64)
+                                                              (line  84)
+* aligned ( C-ADDR -- A-ADDR ) core:     Address arithmetic.  (line  67)
 * ALiteral ( COMPILATION ADDR -- ; RUN-TIME -- ADDR ) gforth-0.2: Literals.
                                                               (line  47)
 * allocate ( U -- A_ADDR WIOR ) memory:  Heap Allocation.     (line  16)
@@ -1930,7 +2352,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  12)
 * bl ( -- C-CHAR ) core:                 String and character literals.
                                                               (line  76)
-* blank ( C-ADDR U -- ) string:          Memory Blocks.       (line  40)
+* blank ( C-ADDR U -- ) string:          Memory Blocks.       (line  44)
 * blk ( -- ADDR ) block:                 Input Sources.       (line  23)
 * block ( U -- A-ADDR ) block:           Blocks.              (line 146)
 * block-included ( A-ADDR U -- ) gforth-0.2: Blocks.          (line 205)
@@ -1951,7 +2373,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * bt ( -- ) gforth-1.0:                  Locating exception source.
                                                               (line  10)
 * buffer ( U -- A-ADDR ) block:          Blocks.              (line 153)
-* buffer% ( U1 U2 -- ) gforth-experimental: Heap Allocation.  (line  59)
+* buffer% ( -- U1 U2 ) gforth-experimental: Heap Allocation.  (line  62)
 * buffer: ( U "NAME" -- ) core-ext:      Variables.           (line  45)
 * bw ( -- ) gforth-1.0:                  Locating uses of a word.
                                                               (line  20)
@@ -1981,7 +2403,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * C: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME C -- ) gforth-0.2: Locals definition words.
                                                               (line  52)
 * c>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
-                                                              (line 100)
+                                                              (line 109)
 * c? ( ADDR CLASS -- ) regexp-pattern:   Regular Expressions. (line  64)
 * c@ ( C-ADDR -- C ) core:               Memory Access.       (line  15)
 * CA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME C -- ) gforth-1.0: Locals definition words.
@@ -1999,14 +2421,14 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  87)
 * catch ( X1 .. XN XT -- Y1 .. YM 0 / Z1 .. ZN ERROR ) exception: Exception Handling.
                                                               (line  83)
-* cell ( -- U ) gforth-0.2:              Address arithmetic.  (line  61)
+* cell ( -- U ) gforth-0.2:              Address arithmetic.  (line  64)
 * cell% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  24)
-* cell+ ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  52)
-* cell- ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  55)
-* cell/ ( N1 -- N2 ) gforth-1.0:         Address arithmetic.  (line  58)
-* cells ( N1 -- N2 ) core:               Address arithmetic.  (line  49)
+* cell+ ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  55)
+* cell- ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  58)
+* cell/ ( N1 -- N2 ) gforth-1.0:         Address arithmetic.  (line  61)
+* cells ( N1 -- N2 ) core:               Address arithmetic.  (line  52)
 * cfalign ( -- ) gforth-0.2:             Dictionary allocation.
-                                                              (line 101)
+                                                              (line 104)
 * cfaligned ( ADDR1 -- ADDR2 ) gforth-0.2: Address arithmetic.
                                                               (line 113)
 * cfield: ( U1 "NAME" -- U2 ) facility-ext: Forth200x Structures.
@@ -2014,11 +2436,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * char ( '<SPACES>CCC' -- C ) core,xchar-ext: String and character literals.
                                                               (line  45)
 * char% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  26)
-* char+ ( C-ADDR1 -- C-ADDR2 ) core:     Address arithmetic.  (line  44)
+* char+ ( C-ADDR1 -- C-ADDR2 ) core:     Address arithmetic.  (line  47)
 * char- ( C-ADDR1 -- C-ADDR2 ) gforth-0.7: Address arithmetic.
-                                                              (line  47)
+                                                              (line  50)
 * charclass ( -- ) regexp-cg:            Regular Expressions. (line  39)
-* chars ( N1 -- N2 ) core:               Address arithmetic.  (line  41)
+* chars ( N1 -- N2 ) core:               Address arithmetic.  (line  44)
 * cilk-bye ( -- ) cilk:                  Cilk.                (line  49)
 * cilk-init ( -- ) cilk:                 Cilk.                (line  31)
 * cilk-sync ( -- ) cilk:                 Cilk.                (line  46)
@@ -2044,8 +2466,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * close-dir ( WDIRID -- WIOR ) gforth-0.5: Directories.       (line  35)
 * close-file ( WFILEID -- WIOR ) file:   General files.       (line  29)
 * close-pipe ( WFILEID -- WRETVAL WIOR ) gforth-0.2: Pipes.   (line  12)
-* cmove ( C-FROM C-TO U -- ) string:     Memory Blocks.       (line  24)
-* cmove> ( C-FROM C-TO U -- ) string:    Memory Blocks.       (line  29)
+* cmove ( C-FROM C-TO U -- ) string:     Memory Blocks.       (line  26)
+* cmove> ( C-FROM C-TO U -- ) string:    Memory Blocks.       (line  32)
 * code ( "NAME" -- COLON-SYS ) tools-ext: Assembler Definitions.
                                                               (line  63)
 * code-address! ( C_ADDR XT -- ) gforth-obsolete: Threading Words.
@@ -2056,7 +2478,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  94)
 * COMP' ( "NAME" -- W XT ) gforth-0.2:   Compilation token.   (line  26)
 * compare ( C-ADDR1 U1 C-ADDR2 U2 -- N ) string: Memory Blocks.
-                                                              (line  51)
+                                                              (line  55)
 * compile, ( XT -- ) core-ext:           Macros.              (line 157)
 * compile-lp+! ( N -- ) gforth-0.2:      Locals implementation.
                                                               (line  34)
@@ -2105,7 +2527,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * cs-wordlist ( -- WID ) gforth-1.0:     Word Lists.          (line  64)
 * cstring>sstring ( C-ADDR -- C-ADDR U ) gforth-0.2: String words.
                                                               (line  54)
-* ctz ( X -- U ) gforth-1.0:             Bitwise operations.  (line  66)
+* ctz ( X -- U ) gforth-1.0:             Bitwise operations.  (line  67)
 * current ( -- ADDR ) gforth-0.2:        Word Lists.          (line 157)
 * current' ( "SELECTOR" -- XT ) objects: Objects Glossary.    (line  45)
 * current-interface ( -- ADDR ) objects: Objects Glossary.    (line  51)
@@ -2118,22 +2540,22 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  43)
 * d.r ( D N -- ) double:                 Simple numeric output.
                                                               (line  51)
-* d0< ( D -- F ) double:                 Numeric comparison.  (line  62)
-* d0<= ( D -- F ) gforth-0.2:            Numeric comparison.  (line  64)
-* d0<> ( D -- F ) gforth-0.2:            Numeric comparison.  (line  66)
-* d0= ( D -- F ) double:                 Numeric comparison.  (line  68)
-* d0> ( D -- F ) gforth-0.2:             Numeric comparison.  (line  70)
-* d0>= ( D -- F ) gforth-0.2:            Numeric comparison.  (line  72)
-* d2* ( D1 -- D2 ) double:               Bitwise operations.  (line  48)
-* d2/ ( D1 -- D2 ) double:               Bitwise operations.  (line  51)
+* d0< ( D -- F ) double:                 Numeric comparison.  (line  64)
+* d0<= ( D -- F ) gforth-0.2:            Numeric comparison.  (line  66)
+* d0<> ( D -- F ) gforth-0.2:            Numeric comparison.  (line  68)
+* d0= ( D -- F ) double:                 Numeric comparison.  (line  70)
+* d0> ( D -- F ) gforth-0.2:             Numeric comparison.  (line  72)
+* d0>= ( D -- F ) gforth-0.2:            Numeric comparison.  (line  74)
+* d2* ( D1 -- D2 ) double:               Bitwise operations.  (line  49)
+* d2/ ( D1 -- D2 ) double:               Bitwise operations.  (line  52)
 * D: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-0.2: Locals definition words.
                                                               (line  43)
-* d< ( D1 D2 -- F ) double:              Numeric comparison.  (line  50)
-* d<= ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  52)
-* d<> ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  54)
-* d= ( D1 D2 -- F ) double:              Numeric comparison.  (line  56)
-* d> ( D1 D2 -- F ) gforth-0.2:          Numeric comparison.  (line  58)
-* d>= ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  60)
+* d< ( D1 D2 -- F ) double:              Numeric comparison.  (line  52)
+* d<= ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  54)
+* d<> ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  56)
+* d= ( D1 D2 -- F ) double:              Numeric comparison.  (line  58)
+* d> ( D1 D2 -- F ) gforth-0.2:          Numeric comparison.  (line  60)
+* d>= ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  62)
 * d>f ( D -- R ) floating:               Floating Point.      (line  26)
 * d>s ( D -- N ) double:                 Double precision.    (line  24)
 * DA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-1.0: Locals definition words.
@@ -2163,15 +2585,15 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  26)
 * definitions ( -- ) search:             Word Lists.          (line  34)
 * defocus ( -- ) minos2:                 actor methods.       (line  39)
-* delete ( BUFFER SIZE U -- ) gforth-0.7: Memory Blocks.      (line  47)
+* delete ( BUFFER SIZE U -- ) gforth-0.7: Memory Blocks.      (line  51)
 * delete-file ( C-ADDR U -- WIOR ) file: General files.       (line  31)
 * delta-i ( R:ULIMIT R:U -- R:ULIMIT R:U U2 ) gforth-1.0: Counted Loops.
                                                               (line 248)
 * depth ( -- +N ) core:                  Examining data.      (line  35)
-* df! ( R DF-ADDR -- ) floating-ext:     Memory Access.       (line  46)
-* df@ ( DF-ADDR -- R ) floating-ext:     Memory Access.       (line  42)
+* df! ( R DF-ADDR -- ) floating-ext:     Memory Access.       (line  43)
+* df@ ( DF-ADDR -- R ) floating-ext:     Memory Access.       (line  40)
 * dfalign ( -- ) floating-ext:           Dictionary allocation.
-                                                              (line  94)
+                                                              (line  96)
 * dfaligned ( C-ADDR -- DF-ADDR ) floating-ext: Address arithmetic.
                                                               (line 105)
 * dffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
@@ -2180,7 +2602,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dfloat+ ( DF-ADDR1 -- DF-ADDR2 ) floating-ext: Address arithmetic.
                                                               (line 100)
 * dfloat/ ( N1 -- N2 ) gforth-1.0:       Address arithmetic.  (line 103)
-* dfloats ( N1 -- N2 ) floating-ext:     Address arithmetic.  (line  96)
+* dfloats ( N1 -- N2 ) floating-ext:     Address arithmetic.  (line  97)
 * dglue ( -- RTYP RSUB RADD ) minos2:    widget methods.      (line  72)
 * dglue@ ( -- RTYP RSUB RADD ) minos2:   widget methods.      (line  81)
 * dict-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  54)
@@ -2220,15 +2642,15 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dpl ( -- A-ADDR ) gforth-0.2:          Number Conversion.   (line  36)
 * draw ( -- ) minos2:                    widget methods.      (line  60)
 * draw-init ( -- ) minos2:               widget methods.      (line  57)
-* drol ( UD1 U -- UD2 ) gforth-1.0:      Bitwise operations.  (line  97)
+* drol ( UD1 U -- UD2 ) gforth-1.0:      Bitwise operations.  (line  98)
 * drop ( W -- ) core:                    Data stack.          (line   6)
-* dror ( UD1 U -- UD2 ) gforth-1.0:      Bitwise operations.  (line 100)
+* dror ( UD1 U -- UD2 ) gforth-1.0:      Bitwise operations.  (line 101)
 * drshift ( UD1 U -- UD2 ) gforth-1.0:   Bitwise operations.  (line  33)
 * du/mod ( D U -- N U1 ) gforth-1.0:     Integer division.    (line  88)
-* du< ( UD1 UD2 -- F ) double-ext:       Numeric comparison.  (line  74)
-* du<= ( UD1 UD2 -- F ) gforth-0.2:      Numeric comparison.  (line  76)
-* du> ( UD1 UD2 -- F ) gforth-0.2:       Numeric comparison.  (line  78)
-* du>= ( UD1 UD2 -- F ) gforth-0.2:      Numeric comparison.  (line  80)
+* du< ( UD1 UD2 -- F ) double-ext:       Numeric comparison.  (line  76)
+* du<= ( UD1 UD2 -- F ) gforth-0.2:      Numeric comparison.  (line  78)
+* du> ( UD1 UD2 -- F ) gforth-0.2:       Numeric comparison.  (line  80)
+* du>= ( UD1 UD2 -- F ) gforth-0.2:      Numeric comparison.  (line  82)
 * dump ( ADDR U -- ) tools:              Examining data.      (line  57)
 * dup ( W -- W W ) core:                 Data stack.          (line  10)
 * D^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-0.2: Locals definition words.
@@ -2290,7 +2712,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 158)
 * environment? ( C-ADDR U -- FALSE / ... TRUE ) core: Environmental Queries.
                                                               (line  11)
-* erase ( ADDR U -- ) core-ext:          Memory Blocks.       (line  37)
+* erase ( ADDR U -- ) core-ext:          Memory Blocks.       (line  41)
 * error-color ( -- ) gforth-1.0:         Terminal output.     (line  39)
 * error-hl-inv ( -- ) gforth-1.0:        Terminal output.     (line  42)
 * error-hl-ul ( -- ) gforth-1.0:         Terminal output.     (line  45)
@@ -2320,7 +2742,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  42)
 * f! ( R F-ADDR -- ) floating:           Memory Access.       (line  31)
 * f* ( R1 R2 -- R3 ) floating:           Floating Point.      (line  38)
-* f** ( R1 R2 -- R3 ) floating-ext:      Floating Point.      (line  63)
+* f** ( R1 R2 -- R3 ) floating-ext:      Floating Point.      (line  64)
 * f+ ( R1 R2 -- R3 ) floating:           Floating Point.      (line  34)
 * f, ( F -- ) gforth-0.2:                Dictionary allocation.
                                                               (line  44)
@@ -2334,22 +2756,22 @@ this manual.  Each word is listed with its stack effect and wordset.
 * f.s ( -- ) gforth-0.2:                 Examining data.      (line  16)
 * f.s-precision ( -- U ) gforth-1.0:     Examining data.      (line  21)
 * f/ ( R1 R2 -- R3 ) floating:           Floating Point.      (line  40)
-* f0< ( R -- F ) floating:               Floating Point.      (line 169)
-* f0<= ( R -- F ) gforth-0.2:            Floating Point.      (line 171)
-* f0<> ( R -- F ) gforth-0.2:            Floating Point.      (line 173)
-* f0= ( R -- F ) floating:               Floating Point.      (line 175)
-* f0> ( R -- F ) gforth-0.2:             Floating Point.      (line 177)
-* f0>= ( R -- F ) gforth-0.2:            Floating Point.      (line 179)
-* f2* ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  84)
-* f2/ ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  87)
+* f0< ( R -- F ) floating:               Floating Point.      (line 171)
+* f0<= ( R -- F ) gforth-0.2:            Floating Point.      (line 173)
+* f0<> ( R -- F ) gforth-0.2:            Floating Point.      (line 175)
+* f0= ( R -- F ) floating:               Floating Point.      (line 177)
+* f0> ( R -- F ) gforth-0.2:             Floating Point.      (line 179)
+* f0>= ( R -- F ) gforth-0.2:            Floating Point.      (line 181)
+* f2* ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  85)
+* f2/ ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  88)
 * F: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME R -- ) gforth-0.2: Locals definition words.
                                                               (line  61)
-* f< ( R1 R2 -- F ) floating:            Floating Point.      (line 161)
-* f<= ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 163)
-* f<> ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 159)
-* f= ( R1 R2 -- F ) gforth-0.2:          Floating Point.      (line 157)
-* f> ( R1 R2 -- F ) gforth-0.2:          Floating Point.      (line 165)
-* f>= ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 167)
+* f< ( R1 R2 -- F ) floating:            Floating Point.      (line 163)
+* f<= ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 165)
+* f<> ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 161)
+* f= ( R1 R2 -- F ) gforth-0.2:          Floating Point.      (line 159)
+* f> ( R1 R2 -- F ) gforth-0.2:          Floating Point.      (line 167)
+* f>= ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 169)
 * f>buf-rdp ( RF C-ADDR +NR +ND +NP -- ) gforth-0.6: Floating-point output.
                                                               (line  89)
 * f>d ( R -- D ) floating:               Floating Point.      (line  30)
@@ -2364,29 +2786,29 @@ this manual.  Each word is listed with its stack effect and wordset.
 * FA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME F -- ) gforth-1.0: Locals definition words.
                                                               (line  64)
 * fabs ( R1 -- R2 ) floating-ext:        Floating Point.      (line  44)
-* facos ( R1 -- R2 ) floating-ext:       Floating Point.      (line 117)
-* facosh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 133)
+* facos ( R1 -- R2 ) floating-ext:       Floating Point.      (line 118)
+* facosh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 135)
 * fade-color: ( RGBA1 RGBA2 "NAME" -- ) minos2: widget methods.
                                                               (line 142)
 * falign ( -- ) floating:                Dictionary allocation.
-                                                              (line  86)
-* faligned ( C-ADDR -- F-ADDR ) floating: Address arithmetic. (line  79)
-* falog ( R1 -- R2 ) floating-ext:       Floating Point.      (line  81)
+                                                              (line  88)
+* faligned ( C-ADDR -- F-ADDR ) floating: Address arithmetic. (line  81)
+* falog ( R1 -- R2 ) floating-ext:       Floating Point.      (line  82)
 * false ( -- F ) core-ext:               Boolean Flags.       (line  14)
-* fasin ( R1 -- R2 ) floating-ext:       Floating Point.      (line 115)
-* fasinh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 131)
+* fasin ( R1 -- R2 ) floating-ext:       Floating Point.      (line 116)
+* fasinh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 133)
 * fast-throw ( ... WBALL -- ... WBALL ) gforth-experimental: Exception Handling.
                                                               (line  15)
-* fatan ( R1 -- R2 ) floating-ext:       Floating Point.      (line 119)
-* fatan2 ( R1 R2 -- R3 ) floating-ext:   Floating Point.      (line 121)
-* fatanh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 135)
+* fatan ( R1 -- R2 ) floating-ext:       Floating Point.      (line 120)
+* fatan2 ( R1 R2 -- R3 ) floating-ext:   Floating Point.      (line 122)
+* fatanh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 137)
 * faxpy ( RA F-X NSTRIDEX F-Y NSTRIDEY UCOUNT -- ) gforth-0.5: Floating Point.
-                                                              (line 100)
+                                                              (line 101)
 * fclearstack ( R0 .. RN -- ) gforth-1.0: Examining data.     (line  46)
 * fconstant ( R "NAME" -- ) floating:    Constants.           (line  35)
 * fcopysign ( R1 R2 -- R3 ) gforth-1.0:  Floating Point.      (line  46)
-* fcos ( R1 -- R2 ) floating-ext:        Floating Point.      (line 108)
-* fcosh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 127)
+* fcos ( R1 -- R2 ) floating-ext:        Floating Point.      (line 109)
+* fcosh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 129)
 * fdepth ( -- +N ) floating:             Examining data.      (line  39)
 * fdrop ( R -- ) floating:               Floating point stack.
                                                               (line   6)
@@ -2394,8 +2816,8 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  10)
 * fe. ( R -- ) floating-ext:             Floating-point output.
                                                               (line  12)
-* fexp ( R1 -- R2 ) floating-ext:        Floating Point.      (line  68)
-* fexpm1 ( R1 -- R2 ) floating-ext:      Floating Point.      (line  70)
+* fexp ( R1 -- R2 ) floating-ext:        Floating Point.      (line  69)
+* fexpm1 ( R1 -- R2 ) floating-ext:      Floating Point.      (line  71)
 * ffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
                                                               (line  62)
 * ffourth ( R1 R2 R3 R4 -- R1 R2 R3 R4 R1 ) gforth-1.0: Floating point stack.
@@ -2415,7 +2837,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  17)
 * filename-match ( C-ADDR1 U1 C-ADDR2 U2 -- FLAG ) gforth-0.5: Directories.
                                                               (line  38)
-* fill ( C-ADDR U C -- ) core:           Memory Blocks.       (line  34)
+* fill ( C-ADDR U C -- ) core:           Memory Blocks.       (line  38)
 * find ( C-ADDR -- XT +-1 | C-ADDR 0 ) core,search: Word Lists.
                                                               (line 100)
 * find-name ( C-ADDR U -- NT | 0 ) gforth-0.2: Name token.    (line  20)
@@ -2424,16 +2846,16 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fkey. ( U -- ) gforth-1.0:             Single-key input.    (line 178)
 * FLiteral ( COMPILATION R -- ; RUN-TIME -- R ) floating: Literals.
                                                               (line  61)
-* fln ( R1 -- R2 ) floating-ext:         Floating Point.      (line  73)
-* flnp1 ( R1 -- R2 ) floating-ext:       Floating Point.      (line  75)
-* float ( -- U ) gforth-0.3:             Address arithmetic.  (line  73)
+* fln ( R1 -- R2 ) floating-ext:         Floating Point.      (line  74)
+* flnp1 ( R1 -- R2 ) floating-ext:       Floating Point.      (line  76)
+* float ( -- U ) gforth-0.3:             Address arithmetic.  (line  76)
 * float% ( -- ALIGN SIZE ) gforth-0.4:   Structure Glossary.  (line  44)
-* float+ ( F-ADDR1 -- F-ADDR2 ) floating: Address arithmetic. (line  70)
-* float/ ( N1 -- N2 ) gforth-1.0:        Address arithmetic.  (line  77)
+* float+ ( F-ADDR1 -- F-ADDR2 ) floating: Address arithmetic. (line  73)
+* float/ ( N1 -- N2 ) gforth-1.0:        Address arithmetic.  (line  79)
 * floating-stack ( -- N ) environment:   Environmental Queries.
                                                               (line  69)
-* floats ( N1 -- N2 ) floating:          Address arithmetic.  (line  67)
-* flog ( R1 -- R2 ) floating-ext:        Floating Point.      (line  78)
+* floats ( N1 -- N2 ) floating:          Address arithmetic.  (line  70)
+* flog ( R1 -- R2 ) floating-ext:        Floating Point.      (line  79)
 * floor ( R1 -- R2 ) floating:           Floating Point.      (line  53)
 * FLOORED ( -- F ) environment:          Environmental Queries.
                                                               (line  48)
@@ -2475,7 +2897,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fpath ( -- PATH-ADDR ) gforth-0.4:     Source Search Paths. (line  10)
 * fpick ( F:... U -- F:... R ) gforth-0.4: Floating point stack.
                                                               (line  22)
-* free ( A_ADDR -- WIOR ) memory:        Heap Allocation.     (line  23)
+* free ( A_ADDR -- WIOR ) memory:        Heap Allocation.     (line  22)
 * free-closure ( XT -- ) gforth-internal: Closures.           (line  50)
 * free-mem-var ( ADDR -- ) gforth-experimental: Heap Allocation.
                                                               (line  42)
@@ -2484,17 +2906,17 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fround ( R1 -- R2 ) floating:          Floating Point.      (line  57)
 * fs. ( R -- ) floating-ext:             Floating-point output.
                                                               (line  16)
-* fsin ( R1 -- R2 ) floating-ext:        Floating Point.      (line 106)
-* fsincos ( R1 -- R2 R3 ) floating-ext:  Floating Point.      (line 110)
-* fsinh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 125)
-* fsqrt ( R1 -- R2 ) floating-ext:       Floating Point.      (line  66)
+* fsin ( R1 -- R2 ) floating-ext:        Floating Point.      (line 107)
+* fsincos ( R1 -- R2 R3 ) floating-ext:  Floating Point.      (line 111)
+* fsinh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 127)
+* fsqrt ( R1 -- R2 ) floating-ext:       Floating Point.      (line  67)
 * fswap ( R1 R2 -- R2 R1 ) floating:     Floating point stack.
                                                               (line  20)
-* ftan ( R1 -- R2 ) floating-ext:        Floating Point.      (line 113)
-* ftanh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 129)
+* ftan ( R1 -- R2 ) floating-ext:        Floating Point.      (line 114)
+* ftanh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 131)
 * fthird ( R1 R2 R3 -- R1 R2 R3 R1 ) gforth-1.0: Floating point stack.
                                                               (line  14)
-* ftrunc ( R1 -- R2 ) floating-ext:      Floating Point.      (line  60)
+* ftrunc ( R1 -- R2 ) floating-ext:      Floating Point.      (line  61)
 * ftuck ( R1 R2 -- R2 R1 R2 ) gforth-0.2: Floating point stack.
                                                               (line  18)
 * fvalue ( R "NAME" -- ) floating-ext:   Values.              (line  29)
@@ -2502,9 +2924,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fvarue ( R "NAME" -- ) gforth-1.0:     Varues.              (line  19)
 * F^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME R -- ) gforth-0.2: Locals definition words.
                                                               (line  67)
-* f~ ( R1 R2 R3 -- FLAG ) floating-ext:  Floating Point.      (line 153)
-* f~abs ( R1 R2 R3 -- FLAG ) gforth-0.5: Floating Point.      (line 150)
-* f~rel ( R1 R2 R3 -- FLAG ) gforth-0.5: Floating Point.      (line 147)
+* f~ ( R1 R2 R3 -- FLAG ) floating-ext:  Floating Point.      (line 155)
+* f~abs ( R1 R2 R3 -- FLAG ) gforth-0.5: Floating Point.      (line 151)
+* f~rel ( R1 R2 R3 -- FLAG ) gforth-0.5: Floating Point.      (line 148)
 * g ( -- ) gforth-0.7:                   Locating source code definitions.
                                                               (line  49)
 * gap ( -- R ) minos2:                   widget methods.      (line  30)
@@ -2565,12 +2987,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * infile-execute ( ... XT FILE-ID -- ... ) gforth-0.7: Redirection.
                                                               (line  29)
 * infile-id ( -- FILE-ID ) gforth-0.4:   Redirection.         (line  32)
-* infinity ( -- R ) gforth-1.0:          Floating Point.      (line 185)
+* infinity ( -- R ) gforth-1.0:          Floating Point.      (line 187)
 * info-color ( -- ) gforth-1.0:          Terminal output.     (line  51)
 * init-asm ( -- ) gforth-0.2:            Assembler Definitions.
                                                               (line  36)
 * init-buffer ( ADDR -- ) gforth-experimental: Heap Allocation.
-                                                              (line  62)
+                                                              (line  66)
 * init-object ( ... CLASS OBJECT -- ) objects: Objects Glossary.
                                                               (line  85)
 * initiate ( XT TASK -- ) gforth-experimental: Basic multi-tasking.
@@ -2579,7 +3001,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  24)
 * input-color ( -- ) gforth-1.0:         Terminal output.     (line  57)
 * insert ( STRING LENGTH BUFFER SIZE -- ) gforth-0.7: Memory Blocks.
-                                                              (line  43)
+                                                              (line  47)
 * inst-value ( ALIGN1 OFFSET1 "NAME" -- ALIGN2 OFFSET2 ) objects: Objects Glossary.
                                                               (line  89)
 * inst-var ( ALIGN1 OFFSET1 ALIGN SIZE "NAME" -- ALIGN2 OFFSET2 ) objects: Objects Glossary.
@@ -2643,17 +3065,17 @@ this manual.  Each word is listed with its stack effect and wordset.
 * l ( -- ) gforth-1.0:                   Locating source code definitions.
                                                               (line  38)
 * l! ( W C-ADDR -- ) gforth-0.7:         Special Memory Accesses.
-                                                              (line  45)
+                                                              (line  47)
 * L" ( "LSID<">" -- LSID ) gforth-experimental: i18n and l10n.
                                                               (line  18)
 * l, ( L -- ) gforth-1.0:                Dictionary allocation.
                                                               (line  57)
 * l>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
-                                                              (line 106)
+                                                              (line 115)
 * l@ ( C-ADDR -- U ) gforth-0.7:         Special Memory Accesses.
-                                                              (line  42)
-* lalign ( -- ) gforth-1.0:              Address arithmetic.  (line 133)
-* laligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 130)
+                                                              (line  43)
+* lalign ( -- ) gforth-1.0:              Address arithmetic.  (line 134)
+* laligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 131)
 * Language ( "NAME" -- ) gforth-experimental: i18n and l10n.  (line  37)
 * lastfit ( -- ) minos2:                 widget methods.      (line  66)
 * latest ( -- NT ) gforth-0.6:           Name token.          (line  28)
@@ -2661,7 +3083,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * latestxt ( -- XT ) gforth-0.6:         Anonymous Definitions.
                                                               (line  28)
 * lbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
-                                                              (line  73)
+                                                              (line  76)
 * LEAVE ( COMPILATION -- ; RUN-TIME LOOP-SYS -- ) core: Counted Loops.
                                                               (line 251)
 * left ( -- ) minos2:                    actor methods.       (line  45)
@@ -2683,7 +3105,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ll ( -- ) gforth-1.0:                  Locating uses of a word.
                                                               (line  30)
 * lle ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
-                                                              (line  77)
+                                                              (line  81)
 * load ( I*X U -- J*X ) block:           Blocks.              (line 184)
 * load-cov ( -- ) gforth-experimental:   Code Coverage.       (line  68)
 * locale! ( ADDR U LSID -- ) gforth-experimental: i18n and l10n.
@@ -2698,7 +3120,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * locate ( "NAME" -- ) gforth-1.0:       Locating source code definitions.
                                                               (line  26)
 * lock ( SEMAPHORE -- ) gforth-experimental: Semaphores.      (line  18)
-* log2 ( U -- N ) gforth-1.0:            Bitwise operations.  (line  58)
+* log2 ( U -- N ) gforth-1.0:            Bitwise operations.  (line  59)
 * LOOP ( COMPILATION DO-SYS -- ; RUN-TIME LOOP-SYS1 -- | LOOP-SYS2 ) core: Counted Loops.
                                                               (line 224)
 * lp! ( C-ADDR -- ) gforth-internal:     Stack pointer manipulation.
@@ -2711,8 +3133,8 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  30)
 * lp@ ( -- C-ADDR ) gforth-0.2 <1>:      Locals implementation.
                                                               (line  18)
-* lrol ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  83)
-* lror ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  87)
+* lrol ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  84)
+* lror ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  88)
 * lshift ( U1 U -- U2 ) core:            Bitwise operations.  (line  19)
 * LU" ( "LSID<">" -- LSID ) gforth-experimental: i18n and l10n.
                                                               (line  23)
@@ -2743,7 +3165,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * MAX-XCHAR ( -- XCHAR ) environment:    Environmental Queries.
                                                               (line  90)
 * maxalign ( -- ) gforth-0.2:            Dictionary allocation.
-                                                              (line  98)
+                                                              (line 100)
 * maxaligned ( ADDR1 -- ADDR2 ) gforth-0.2: Address arithmetic.
                                                               (line 109)
 * maxdepth-.s ( -- ADDR ) gforth-0.2:    Examining data.      (line  25)
@@ -2766,7 +3188,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * modf-stage2m ( N1 A-RECI -- UMODULUS ) gforth-1.0: Two-stage integer division.
                                                               (line  61)
 * mods ( N1 N2 -- N ) gforth-1.0:        Integer division.    (line  56)
-* move ( C-FROM C-TO UCOUNT -- ) core:   Memory Blocks.       (line  20)
+* move ( C-FROM C-TO UCOUNT -- ) core:   Memory Blocks.       (line  22)
 * ms ( N -- ) facility-ext:              Keeping track of Time.
                                                               (line   6)
 * mux ( U1 U2 U3 -- U ) gforth-1.0:      Bitwise operations.  (line  14)
@@ -2782,7 +3204,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * name>interpret ( NT -- XT ) tools-ext: Name token.          (line  56)
 * name>link ( NT1 -- NT2 / 0 ) gforth-1.0: Name token.        (line  71)
 * name>string ( NT -- ADDR U ) tools-ext: Name token.         (line  62)
-* NaN ( -- R ) gforth-1.0:               Floating Point.      (line 191)
+* NaN ( -- R ) gforth-1.0:               Floating Point.      (line 193)
 * native@ ( LSID -- ADDR U ) gforth-experimental: i18n and l10n.
                                                               (line  27)
 * needs ( ... "NAME" -- ... ) gforth-0.2: Forth source files. (line  58)
@@ -2882,7 +3304,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * outfile-id ( -- FILE-ID ) gforth-0.2:  Redirection.         (line  24)
 * over ( W1 W2 -- W1 W2 W1 ) core:       Data stack.          (line  12)
 * overrides ( XT "SELECTOR" -- ) objects: Objects Glossary.   (line 122)
-* pad ( -- C-ADDR ) core-ext:            Memory Blocks.       (line  57)
+* pad ( -- C-ADDR ) core-ext:            Memory Blocks.       (line  62)
 * page ( -- ) facility:                  Terminal output.     (line  23)
 * par-split ( RW -- ) minos2:            widget methods.      (line 105)
 * parent-w ( -- OPTR ) minos2:           widget methods.      (line   6)
@@ -2900,11 +3322,11 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  35)
 * pause ( -- ) gforth-experimental:      Basic multi-tasking. (line  92)
 * perform ( A-ADDR -- ) gforth-0.2:      Execution token.     (line  91)
-* pi ( -- R ) gforth-0.2:                Floating Point.      (line 137)
+* pi ( -- R ) gforth-0.2:                Floating Point.      (line 139)
 * pick ( S:... U -- S:... W ) core-ext:  Data stack.          (line  22)
 * postpone ( "NAME" -- ) core:           Macros.              (line  23)
 * postpone, ( W XT -- ) gforth-0.2:      Compilation token.   (line  34)
-* pow2? ( U -- F ) gforth-1.0:           Bitwise operations.  (line  62)
+* pow2? ( U -- F ) gforth-1.0:           Bitwise operations.  (line  63)
 * precision ( -- U ) floating-ext:       Floating-point output.
                                                               (line  34)
 * prepend-where ( -- ) gforth-1.0:       Locating uses of a word.
@@ -2982,7 +3404,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * required ( I*X ADDR U -- I*X ) file-ext: Forth source files.
                                                               (line  49)
 * resize ( A_ADDR1 U -- A_ADDR2 WIOR ) memory: Heap Allocation.
-                                                              (line  29)
+                                                              (line  28)
 * resize-file ( UD WFILEID -- WIOR ) file: General files.     (line  86)
 * resized ( -- ) minos2:                 widget methods.      (line 108)
 * restart ( TASK -- ) gforth-experimental: Basic multi-tasking.
@@ -2997,10 +3419,10 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  63)
 * reveal ( -- ) gforth-0.2:              Creating from a prototype.
                                                               (line  35)
-* rol ( U1 U -- U2 ) gforth-1.0:         Bitwise operations.  (line  91)
+* rol ( U1 U -- U2 ) gforth-1.0:         Bitwise operations.  (line  92)
 * roll ( X0 X1 .. XN N -- X1 .. XN X0 ) core-ext: Data stack. (line  33)
 * Root ( -- ) gforth-0.2:                Word Lists.          (line 140)
-* ror ( U1 U -- U2 ) gforth-1.0:         Bitwise operations.  (line  94)
+* ror ( U1 U -- U2 ) gforth-1.0:         Bitwise operations.  (line  95)
 * rot ( W1 W2 W3 -- W2 W3 W1 ) core:     Data stack.          (line  25)
 * rp! ( A-ADDR -- ) gforth-0.2:          Stack pointer manipulation.
                                                               (line  25)
@@ -3028,7 +3450,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * save-cov ( -- ) gforth-experimental:   Code Coverage.       (line  65)
 * save-input ( -- X1 .. XN N ) core-ext: Input Sources.       (line  27)
 * save-mem ( ADDR1 U -- ADDR2 U ) gforth-0.2: Heap Allocation.
-                                                              (line  39)
+                                                              (line  38)
 * savesystem ( "IMAGE" -- ) gforth-0.2:  Non-Relocatable Image Files.
                                                               (line  20)
 * scan ( C-ADDR1 U1 C -- C-ADDR2 U2 ) gforth-0.2: String words.
@@ -3076,19 +3498,19 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  67)
 * set-to ( TO-XT -- ) gforth-1.0:        User-defined TO and DEFER@.
                                                               (line  25)
-* sf! ( R SF-ADDR -- ) floating-ext:     Memory Access.       (line  38)
+* sf! ( R SF-ADDR -- ) floating-ext:     Memory Access.       (line  37)
 * sf@ ( SF-ADDR -- R ) floating-ext:     Memory Access.       (line  34)
 * sfalign ( -- ) floating-ext:           Dictionary allocation.
-                                                              (line  90)
-* sfaligned ( C-ADDR -- SF-ADDR ) floating-ext: Address arithmetic.
                                                               (line  92)
+* sfaligned ( C-ADDR -- SF-ADDR ) floating-ext: Address arithmetic.
+                                                              (line  93)
 * sffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
                                                               (line  65)
 * sfloat% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  46)
 * sfloat+ ( SF-ADDR1 -- SF-ADDR2 ) floating-ext: Address arithmetic.
-                                                              (line  87)
-* sfloat/ ( N1 -- N2 ) gforth-1.0:       Address arithmetic.  (line  90)
-* sfloats ( N1 -- N2 ) floating-ext:     Address arithmetic.  (line  83)
+                                                              (line  88)
+* sfloat/ ( N1 -- N2 ) gforth-1.0:       Address arithmetic.  (line  91)
+* sfloats ( N1 -- N2 ) floating-ext:     Address arithmetic.  (line  85)
 * sh ( "..." -- ) gforth-0.2:            Passing Commands to the OS.
                                                               (line   9)
 * sh-get ( C-ADDR U -- C-ADDR2 U2 ) gforth-1.0: Passing Commands to the OS.
@@ -3302,7 +3724,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  19)
 * UValue ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  25)
 * v* ( F-ADDR1 NSTRIDE1 F-ADDR2 NSTRIDE2 UCOUNT -- R ) gforth-0.5: Floating Point.
-                                                              (line  95)
+                                                              (line  96)
 * Value ( W "NAME" -- ) core-ext:        Values.              (line  17)
 * var ( M V SIZE "NAME" -- M V' ) mini-oof: Basic Mini-OOF Usage.
                                                               (line  17)
@@ -3322,7 +3744,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * vp-top ( O:VP -- ) minos2:             widget methods.      (line 179)
 * w ( -- R ) minos2:                     widget methods.      (line  21)
 * w! ( W C-ADDR -- ) gforth-0.7:         Special Memory Accesses.
-                                                              (line  39)
+                                                              (line  40)
 * w, ( W -- ) gforth-1.0:                Dictionary allocation.
                                                               (line  55)
 * w-color ( -- R ) minos2:               widget methods.      (line  54)
@@ -3330,19 +3752,19 @@ this manual.  Each word is listed with its stack effect and wordset.
 * W: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X -- ) gforth-0.2: Locals definition words.
                                                               (line  34)
 * w>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
-                                                              (line 103)
+                                                              (line 112)
 * w@ ( C-ADDR -- U ) gforth-0.5:         Special Memory Accesses.
                                                               (line  36)
 * WA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X -- ) gforth-1.0: Locals definition words.
                                                               (line  37)
-* walign ( -- ) gforth-1.0:              Address arithmetic.  (line 127)
-* waligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 124)
+* walign ( -- ) gforth-1.0:              Address arithmetic.  (line 128)
+* waligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 125)
 * WARNING" ( COMPILATION 'CCC"' -- ; RUN-TIME F -- ) gforth-1.0: Exception Handling.
                                                               (line 254)
 * warning-color ( -- ) gforth-1.0:       Terminal output.     (line  48)
 * warnings ( -- ADDR ) gforth-0.2:       Exception Handling.  (line 257)
 * wbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
-                                                              (line  65)
+                                                              (line  66)
 * wfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
                                                               (line  71)
 * where ( "NAME" -- ) gforth-1.0:        Locating uses of a word.
@@ -3355,7 +3777,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  17)
 * within ( U1 U2 U3 -- F ) core-ext:     Numeric comparison.  (line  41)
 * wle ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
-                                                              (line  69)
+                                                              (line  71)
 * word ( CHAR "<CHARS>CCC<CHAR>-- C-ADDR ) core: The Input Stream.
                                                               (line  45)
 * wordlist ( -- WID ) search:            Word Lists.          (line  58)
@@ -3368,8 +3790,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * write-file ( C-ADDR U1 WFILEID -- WIOR ) file: General files.
                                                               (line  70)
 * write-line ( C-ADDR U WFILEID -- IOR ) file: General files. (line  72)
-* wrol ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  75)
-* wror ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  79)
+* wrol ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  76)
+* wror ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  80)
 * WTF?? ( -- ) gforth-1.0:               Debugging.           (line  59)
 * ww ( U -- ) gforth-1.0:                Locating uses of a word.
                                                               (line  12)
@@ -3377,19 +3799,19 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  40)
 * x ( -- R ) minos2:                     widget methods.      (line  15)
 * x! ( W C-ADDR -- ) gforth-1.0:         Special Memory Accesses.
-                                                              (line  51)
+                                                              (line  53)
 * x, ( X -- ) gforth-1.0:                Dictionary allocation.
                                                               (line  59)
 * x-size ( XC-ADDR U1 -- U2 ) xchar:     Xchars and Unicode.  (line  52)
 * x-width ( XC-ADDR U -- N ) xchar-ext:  Xchars and Unicode.  (line 106)
 * x>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
-                                                              (line 109)
+                                                              (line 118)
 * x@ ( C-ADDR -- U ) gforth-1.0:         Special Memory Accesses.
-                                                              (line  48)
-* xalign ( -- ) gforth-1.0:              Address arithmetic.  (line 139)
-* xaligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 136)
+                                                              (line  50)
+* xalign ( -- ) gforth-1.0:              Address arithmetic.  (line 140)
+* xaligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 137)
 * xbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
-                                                              (line  81)
+                                                              (line  86)
 * xc!+ ( XC XC-ADDR1 -- XC-ADDR2 ) xchar: Xchars and Unicode. (line  75)
 * xc!+? ( XC XC-ADDR1 U1 -- XC-ADDR2 U2 F ) xchar: Xchars and Unicode.
                                                               (line  67)
@@ -3408,17 +3830,17 @@ this manual.  Each word is listed with its stack effect and wordset.
 * XCHAR-MAXMEM ( -- U ) environment:     Environmental Queries.
                                                               (line  93)
 * xd! ( UD C-ADDR -- ) gforth-1.0:       Special Memory Accesses.
-                                                              (line  57)
+                                                              (line  59)
 * xd, ( XD -- ) gforth-1.0:              Dictionary allocation.
                                                               (line  61)
 * xd>s ( XD -- D ) gforth-1.0:           Special Memory Accesses.
-                                                              (line 112)
+                                                              (line 121)
 * xd@ ( C-ADDR -- UD ) gforth-1.0:       Special Memory Accesses.
-                                                              (line  54)
+                                                              (line  56)
 * xdbe ( UD1 -- UD2 ) gforth-1.0:        Special Memory Accesses.
-                                                              (line  89)
+                                                              (line  96)
 * xdle ( UD1 -- UD2 ) gforth-1.0:        Special Memory Accesses.
-                                                              (line  93)
+                                                              (line 101)
 * xemit ( XC -- ) xchar:                 Displaying characters and strings.
                                                               (line  10)
 * xfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
@@ -3427,7 +3849,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * xkey ( -- XC ) xchar:                  Xchars and Unicode.  (line 112)
 * xkey? ( -- FLAG ) xchar:               Single-key input.    (line  22)
 * xle ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
-                                                              (line  85)
+                                                              (line  91)
 * xor ( W1 W2 -- W ) core:               Bitwise operations.  (line  10)
 * xt-new ( ... CLASS XT -- OBJECT ) objects: Objects Glossary.
                                                               (line 157)
@@ -3581,8 +4003,8 @@ in the Word Index (only the names are listed for the words here).
 * */modf:                                Integer division.    (line 110)
 * */mods:                                Integer division.    (line 106)
 * */s:                                   Integer division.    (line  94)
-* *align:                                Address arithmetic.  (line 121)
-* *aligned:                              Address arithmetic.  (line 117)
+* *align:                                Address arithmetic.  (line 122)
+* *aligned:                              Address arithmetic.  (line 118)
 * *}:                                    Regular Expressions. (line 125)
 * +:                                     Single precision.    (line  15)
 * +!:                                    Memory Access.       (line  12)
@@ -3642,7 +4064,7 @@ in the Word Index (only the names are listed for the words here).
 * -i, invoke image file:                 Running Image Files. (line   6)
 * –image file, invoke image file:        Running Image Files. (line   6)
 * –image-file, command-line option:      Invoking Gforth.     (line  32)
-* -infinity:                             Floating Point.      (line 188)
+* -infinity:                             Floating Point.      (line 190)
 * -l, command-line option:               Invoking Gforth.     (line  93)
 * –locals-stack-size, command-line option: Invoking Gforth.   (line  93)
 * -LOOP:                                 Counted Loops.       (line 230)
@@ -3728,7 +4150,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  57)
 * /HOLD:                                 Environmental Queries.
                                                               (line  34)
-* /l:                                    Address arithmetic.  (line 149)
+* /l:                                    Address arithmetic.  (line 150)
 * /mod:                                  Integer division.    (line  62)
 * /modf:                                 Integer division.    (line  68)
 * /modf-stage2m:                         Two-stage integer division.
@@ -3738,8 +4160,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  37)
 * /s:                                    Integer division.    (line  47)
 * /string:                               String words.        (line  45)
-* /w:                                    Address arithmetic.  (line 146)
-* /x:                                    Address arithmetic.  (line 152)
+* /w:                                    Address arithmetic.  (line 147)
+* /x:                                    Address arithmetic.  (line 153)
 * 0<:                                    Numeric comparison.  (line  21)
 * 0<=:                                   Numeric comparison.  (line  23)
 * 0<>:                                   Numeric comparison.  (line  25)
@@ -3750,7 +4172,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  15)
 * 1+:                                    Single precision.    (line  17)
 * 1-:                                    Single precision.    (line  24)
-* 1/f:                                   Floating Point.      (line  90)
+* 1/f:                                   Floating Point.      (line  91)
 * 2!:                                    Memory Access.       (line  25)
 * 2*:                                    Bitwise operations.  (line  41)
 * 2,:                                    Dictionary allocation.
@@ -3848,7 +4270,7 @@ in the Word Index (only the names are listed for the words here).
 * >order:                                Word Lists.          (line  70)
 * >postpone:                             Dealing with existing Recognizers.
                                                               (line 113)
-* >pow2:                                 Bitwise operations.  (line  55)
+* >pow2:                                 Bitwise operations.  (line  56)
 * >r:                                    Return stack.        (line  13)
 * >string-execute:                       String words.        (line  88)
 * >time&date&tz:                         Keeping track of Time.
@@ -4017,11 +4439,11 @@ in the Word Index (only the names are listed for the words here).
 * address arithmetic for structures:     Why explicit structure support?.
                                                               (line   6)
 * address arithmetic words:              Address arithmetic.  (line   6)
-* address unit:                          Address arithmetic.  (line  10)
+* address unit:                          Address arithmetic.  (line   9)
 * address unit, size in bits:            core-idef.           (line 111)
 * ADDRESS-UNIT-BITS:                     Environmental Queries.
                                                               (line  25)
-* adjust-buffer:                         Heap Allocation.     (line  64)
+* adjust-buffer:                         Heap Allocation.     (line  68)
 * after-locate:                          Locating source code definitions.
                                                               (line  59)
 * AGAIN:                                 Arbitrary control structures.
@@ -4031,8 +4453,8 @@ in the Word Index (only the names are listed for the words here).
 * Alias:                                 Aliases.             (line  27)
 * aliases:                               Aliases.             (line   6)
 * align:                                 Dictionary allocation.
-                                                              (line  82)
-* aligned:                               Address arithmetic.  (line  64)
+                                                              (line  84)
+* aligned:                               Address arithmetic.  (line  67)
 * aligned addresses:                     core-idef.           (line   7)
 * alignment faults:                      core-ambcond.        (line 139)
 * alignment of addresses for types:      Address arithmetic.  (line  21)
@@ -4057,7 +4479,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * ambiguous conditions, search-order words: search-ambcond.   (line   6)
 * and:                                   Bitwise operations.  (line   6)
-* angles in trigonometric operations:    Floating Point.      (line 103)
+* angles in trigonometric operations:    Floating Point.      (line 104)
 * annotate-cov:                          Code Coverage.       (line  39)
 * ans-report.fs:                         Standard Report.     (line   6)
 * append:                                String words.        (line  83)
@@ -4101,7 +4523,7 @@ in the Word Index (only the names are listed for the words here).
 * AT-XY can’t be performed on user output device: facility-ambcond.
                                                               (line   7)
 * Attempt to use zero-length string as a name: core-ambcond.  (line 112)
-* au (address unit):                     Address arithmetic.  (line  10)
+* au (address unit):                     Address arithmetic.  (line   9)
 * AUser:                                 Task-local data.     (line  17)
 * authors:                               Help on Gforth.      (line  19)
 * authors of Gforth:                     Origin.              (line   9)
@@ -4146,7 +4568,7 @@ in the Word Index (only the names are listed for the words here).
 * bitwise operation words:               Bitwise operations.  (line   6)
 * bl:                                    String and character literals.
                                                               (line  76)
-* blank:                                 Memory Blocks.       (line  40)
+* blank:                                 Memory Blocks.       (line  44)
 * blk:                                   Input Sources.       (line  23)
 * BLK, altering BLK:                     block-ambcond.       (line  19)
 * block:                                 Blocks.              (line 146)
@@ -4185,7 +4607,7 @@ in the Word Index (only the names are listed for the words here).
 * bt:                                    Locating exception source.
                                                               (line  10)
 * buffer:                                Blocks.              (line 153)
-* buffer%:                               Heap Allocation.     (line  59)
+* buffer%:                               Heap Allocation.     (line  62)
 * buffer::                               Variables.           (line  45)
 * bug reporting:                         Bugs.                (line   6)
 * bw:                                    Locating uses of a word.
@@ -4226,7 +4648,7 @@ in the Word Index (only the names are listed for the words here).
 * C::                                    Locals definition words.
                                                               (line  52)
 * c>s:                                   Special Memory Accesses.
-                                                              (line 100)
+                                                              (line 109)
 * c?:                                    Regular Expressions. (line  64)
 * c@:                                    Memory Access.       (line  15)
 * CA::                                   Locals definition words.
@@ -4253,17 +4675,17 @@ in the Word Index (only the names are listed for the words here).
 * catch and this:                        Objects Implementation.
                                                               (line  43)
 * catch in m: ... ;m:                    Method conveniences. (line  15)
-* cell:                                  Address arithmetic.  (line  61)
+* cell:                                  Address arithmetic.  (line  64)
 * cell size:                             core-idef.           (line 136)
 * cell%:                                 Structure Glossary.  (line  24)
-* cell+:                                 Address arithmetic.  (line  52)
-* cell-:                                 Address arithmetic.  (line  55)
+* cell+:                                 Address arithmetic.  (line  55)
+* cell-:                                 Address arithmetic.  (line  58)
 * cell-aligned addresses:                core-idef.           (line   7)
-* cell/:                                 Address arithmetic.  (line  58)
-* cells:                                 Address arithmetic.  (line  49)
+* cell/:                                 Address arithmetic.  (line  61)
+* cells:                                 Address arithmetic.  (line  52)
 * CFA:                                   Threading Words.     (line   6)
 * cfalign:                               Dictionary allocation.
-                                                              (line 101)
+                                                              (line 104)
 * cfaligned:                             Address arithmetic.  (line 113)
 * cfield::                               Forth200x Structures.
                                                               (line  53)
@@ -4273,8 +4695,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  45)
 * char size:                             core-idef.           (line 139)
 * char%:                                 Structure Glossary.  (line  26)
-* char+:                                 Address arithmetic.  (line  44)
-* char-:                                 Address arithmetic.  (line  47)
+* char+:                                 Address arithmetic.  (line  47)
+* char-:                                 Address arithmetic.  (line  50)
 * character editing of ACCEPT and EXPECT: core-idef.          (line  17)
 * character encoding:                    Characters.          (line   6)
 * character literals:                    String and character literals.
@@ -4294,7 +4716,7 @@ in the Word Index (only the names are listed for the words here).
 * characters tutorial:                   Characters and Strings Tutorial.
                                                               (line   6)
 * charclass:                             Regular Expressions. (line  39)
-* chars:                                 Address arithmetic.  (line  41)
+* chars:                                 Address arithmetic.  (line  44)
 * child class:                           Object-Oriented Terminology.
                                                               (line  43)
 * child words:                           User-defined defining words using CREATE.
@@ -4345,8 +4767,8 @@ in the Word Index (only the names are listed for the words here).
 * close-file:                            General files.       (line  29)
 * close-pipe:                            Pipes.               (line  12)
 * closures:                              Closures.            (line   6)
-* cmove:                                 Memory Blocks.       (line  24)
-* cmove>:                                Memory Blocks.       (line  29)
+* cmove:                                 Memory Blocks.       (line  26)
+* cmove>:                                Memory Blocks.       (line  32)
 * code:                                  Assembler Definitions.
                                                               (line  63)
 * code address:                          Threading Words.     (line   6)
@@ -4381,7 +4803,7 @@ in the Word Index (only the names are listed for the words here).
 * comp-i.fs:                             gforthmi.            (line   6)
 * comp.lang.forth:                       Forth-related information.
                                                               (line   6)
-* compare:                               Memory Blocks.       (line  51)
+* compare:                               Memory Blocks.       (line  55)
 * comparison of object models:           Comparison with other object models.
                                                               (line   6)
 * comparison tutorial:                   Flags and Comparisons Tutorial.
@@ -4479,7 +4901,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * CREATE ... SET-DOES>:                  User-defined defining words using CREATE.
                                                               (line  57)
-* CREATE and alignment:                  Address arithmetic.  (line  34)
+* CREATE and alignment:                  Address arithmetic.  (line  36)
 * create-file:                           General files.       (line  27)
 * create-from:                           Creating from a prototype.
                                                               (line  28)
@@ -4507,7 +4929,7 @@ in the Word Index (only the names are listed for the words here).
 * ct (compilation token):                Compilation token.   (line   6)
 * CT, tutorial:                          Compilation Tokens Tutorial.
                                                               (line   6)
-* ctz:                                   Bitwise operations.  (line  66)
+* ctz:                                   Bitwise operations.  (line  67)
 * current:                               Word Lists.          (line 157)
 * current':                              Objects Glossary.    (line  45)
 * current-interface:                     Objects Glossary.    (line  51)
@@ -4527,22 +4949,22 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  43)
 * d.r:                                   Simple numeric output.
                                                               (line  51)
-* d0<:                                   Numeric comparison.  (line  62)
-* d0<=:                                  Numeric comparison.  (line  64)
-* d0<>:                                  Numeric comparison.  (line  66)
-* d0=:                                   Numeric comparison.  (line  68)
-* d0>:                                   Numeric comparison.  (line  70)
-* d0>=:                                  Numeric comparison.  (line  72)
-* d2*:                                   Bitwise operations.  (line  48)
-* d2/:                                   Bitwise operations.  (line  51)
+* d0<:                                   Numeric comparison.  (line  64)
+* d0<=:                                  Numeric comparison.  (line  66)
+* d0<>:                                  Numeric comparison.  (line  68)
+* d0=:                                   Numeric comparison.  (line  70)
+* d0>:                                   Numeric comparison.  (line  72)
+* d0>=:                                  Numeric comparison.  (line  74)
+* d2*:                                   Bitwise operations.  (line  49)
+* d2/:                                   Bitwise operations.  (line  52)
 * D::                                    Locals definition words.
                                                               (line  43)
-* d<:                                    Numeric comparison.  (line  50)
-* d<=:                                   Numeric comparison.  (line  52)
-* d<>:                                   Numeric comparison.  (line  54)
-* d=:                                    Numeric comparison.  (line  56)
-* d>:                                    Numeric comparison.  (line  58)
-* d>=:                                   Numeric comparison.  (line  60)
+* d<:                                    Numeric comparison.  (line  52)
+* d<=:                                   Numeric comparison.  (line  54)
+* d<>:                                   Numeric comparison.  (line  56)
+* d=:                                    Numeric comparison.  (line  58)
+* d>:                                    Numeric comparison.  (line  60)
+* d>=:                                   Numeric comparison.  (line  62)
 * d>f:                                   Floating Point.      (line  26)
 * D>F, d cannot be presented precisely as a float: floating-ambcond.
                                                               (line  38)
@@ -4615,7 +5037,7 @@ in the Word Index (only the names are listed for the words here).
 * definitions, tutorial:                 Colon Definitions Tutorial.
                                                               (line   6)
 * defocus:                               actor methods.       (line  39)
-* delete:                                Memory Blocks.       (line  47)
+* delete:                                Memory Blocks.       (line  51)
 * delete-file:                           General files.       (line  31)
 * delta-i:                               Counted Loops.       (line 248)
 * depth:                                 Examining data.      (line  35)
@@ -4625,19 +5047,19 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * dest, control-flow stack item:         Arbitrary control structures.
                                                               (line  11)
-* df!:                                   Memory Access.       (line  46)
-* df@:                                   Memory Access.       (line  42)
+* df!:                                   Memory Access.       (line  43)
+* df@:                                   Memory Access.       (line  40)
 * df@ or df! used with an address that is not double-float aligned: floating-ambcond.
                                                               (line   7)
 * dfalign:                               Dictionary allocation.
-                                                              (line  94)
+                                                              (line  96)
 * dfaligned:                             Address arithmetic.  (line 105)
 * dffield::                              Forth200x Structures.
                                                               (line  68)
 * dfloat%:                               Structure Glossary.  (line  28)
 * dfloat+:                               Address arithmetic.  (line 100)
 * dfloat/:                               Address arithmetic.  (line 103)
-* dfloats:                               Address arithmetic.  (line  96)
+* dfloats:                               Address arithmetic.  (line  97)
 * df_, stack item type:                  Notation.            (line 107)
 * dglue:                                 widget methods.      (line  72)
 * dglue@:                                widget methods.      (line  81)
@@ -4718,15 +5140,15 @@ in the Word Index (only the names are listed for the words here).
 * dpl:                                   Number Conversion.   (line  36)
 * draw:                                  widget methods.      (line  60)
 * draw-init:                             widget methods.      (line  57)
-* drol:                                  Bitwise operations.  (line  97)
+* drol:                                  Bitwise operations.  (line  98)
 * drop:                                  Data stack.          (line   6)
-* dror:                                  Bitwise operations.  (line 100)
+* dror:                                  Bitwise operations.  (line 101)
 * drshift:                               Bitwise operations.  (line  33)
 * du/mod:                                Integer division.    (line  88)
-* du<:                                   Numeric comparison.  (line  74)
-* du<=:                                  Numeric comparison.  (line  76)
-* du>:                                   Numeric comparison.  (line  78)
-* du>=:                                  Numeric comparison.  (line  80)
+* du<:                                   Numeric comparison.  (line  76)
+* du<=:                                  Numeric comparison.  (line  78)
+* du>:                                   Numeric comparison.  (line  80)
+* du>=:                                  Numeric comparison.  (line  82)
 * dump:                                  Examining data.      (line  57)
 * dup:                                   Data stack.          (line  10)
 * duration of a system clock tick:       facility-idef.       (line  14)
@@ -4815,8 +5237,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * environmental restrictions:            Standard conformance.
                                                               (line  37)
-* equality of floats:                    Floating Point.      (line 141)
-* erase:                                 Memory Blocks.       (line  37)
+* equality of floats:                    Floating Point.      (line 142)
+* erase:                                 Memory Blocks.       (line  41)
 * error messages:                        Error messages.      (line   6)
 * error output, finding the source location in Emacs: Emacs and Gforth.
                                                               (line  21)
@@ -4882,7 +5304,7 @@ in the Word Index (only the names are listed for the words here).
 * f! used with an address that is not float aligned: floating-ambcond.
                                                               (line  11)
 * f*:                                    Floating Point.      (line  38)
-* f**:                                   Floating Point.      (line  63)
+* f**:                                   Floating Point.      (line  64)
 * f+:                                    Floating Point.      (line  34)
 * f,:                                    Dictionary allocation.
                                                               (line  44)
@@ -4897,23 +5319,23 @@ in the Word Index (only the names are listed for the words here).
 * f.s:                                   Examining data.      (line  16)
 * f.s-precision:                         Examining data.      (line  21)
 * f/:                                    Floating Point.      (line  40)
-* f0<:                                   Floating Point.      (line 169)
-* f0<=:                                  Floating Point.      (line 171)
-* f0<>:                                  Floating Point.      (line 173)
-* f0=:                                   Floating Point.      (line 175)
-* f0>:                                   Floating Point.      (line 177)
-* f0>=:                                  Floating Point.      (line 179)
-* f2*:                                   Floating Point.      (line  84)
-* f2/:                                   Floating Point.      (line  87)
+* f0<:                                   Floating Point.      (line 171)
+* f0<=:                                  Floating Point.      (line 173)
+* f0<>:                                  Floating Point.      (line 175)
+* f0=:                                   Floating Point.      (line 177)
+* f0>:                                   Floating Point.      (line 179)
+* f0>=:                                  Floating Point.      (line 181)
+* f2*:                                   Floating Point.      (line  85)
+* f2/:                                   Floating Point.      (line  88)
 * f83name, stack item type:              Notation.            (line 118)
 * F::                                    Locals definition words.
                                                               (line  61)
-* f<:                                    Floating Point.      (line 161)
-* f<=:                                   Floating Point.      (line 163)
-* f<>:                                   Floating Point.      (line 159)
-* f=:                                    Floating Point.      (line 157)
-* f>:                                    Floating Point.      (line 165)
-* f>=:                                   Floating Point.      (line 167)
+* f<:                                    Floating Point.      (line 163)
+* f<=:                                   Floating Point.      (line 165)
+* f<>:                                   Floating Point.      (line 161)
+* f=:                                    Floating Point.      (line 159)
+* f>:                                    Floating Point.      (line 167)
+* f>=:                                   Floating Point.      (line 169)
 * f>buf-rdp:                             Floating-point output.
                                                               (line  89)
 * f>d:                                   Floating Point.      (line  30)
@@ -4937,9 +5359,9 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * facility words, system documentation:  The optional Facility word set.
                                                               (line   6)
-* facos:                                 Floating Point.      (line 117)
+* facos:                                 Floating Point.      (line 118)
 * FACOS, |float|>1:                      floating-ambcond.    (line  66)
-* facosh:                                Floating Point.      (line 133)
+* facosh:                                Floating Point.      (line 135)
 * FACOSH, float<1:                       floating-ambcond.    (line  50)
 * factoring:                             Introduction.        (line  29)
 * factoring similar colon definitions:   CREATE..DOES> applications.
@@ -4947,27 +5369,27 @@ in the Word Index (only the names are listed for the words here).
 * factoring tutorial:                    Factoring Tutorial.  (line   6)
 * fade-color::                           widget methods.      (line 142)
 * falign:                                Dictionary allocation.
-                                                              (line  86)
-* faligned:                              Address arithmetic.  (line  79)
-* falog:                                 Floating Point.      (line  81)
+                                                              (line  88)
+* faligned:                              Address arithmetic.  (line  81)
+* falog:                                 Floating Point.      (line  82)
 * false:                                 Boolean Flags.       (line  14)
 * fam (file access method):              General files.       (line   9)
-* fasin:                                 Floating Point.      (line 115)
+* fasin:                                 Floating Point.      (line 116)
 * FASIN, |float|>1:                      floating-ambcond.    (line  66)
-* fasinh:                                Floating Point.      (line 131)
+* fasinh:                                Floating Point.      (line 133)
 * FASINH, float<0:                       floating-ambcond.    (line  61)
 * fast-throw:                            Exception Handling.  (line  15)
-* fatan:                                 Floating Point.      (line 119)
-* fatan2:                                Floating Point.      (line 121)
+* fatan:                                 Floating Point.      (line 120)
+* fatan2:                                Floating Point.      (line 122)
 * FATAN2, both arguments are equal to zero: floating-ambcond. (line  29)
-* fatanh:                                Floating Point.      (line 135)
+* fatanh:                                Floating Point.      (line 137)
 * FATANH, |float|>1:                     floating-ambcond.    (line  66)
-* faxpy:                                 Floating Point.      (line 100)
+* faxpy:                                 Floating Point.      (line 101)
 * fclearstack:                           Examining data.      (line  46)
 * fconstant:                             Constants.           (line  35)
 * fcopysign:                             Floating Point.      (line  46)
-* fcos:                                  Floating Point.      (line 108)
-* fcosh:                                 Floating Point.      (line 127)
+* fcos:                                  Floating Point.      (line 109)
+* fcosh:                                 Floating Point.      (line 129)
 * fdepth:                                Examining data.      (line  39)
 * FDL, GNU Free Documentation License:   GNU Free Documentation License.
                                                               (line   6)
@@ -4977,8 +5399,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  10)
 * fe.:                                   Floating-point output.
                                                               (line  12)
-* fexp:                                  Floating Point.      (line  68)
-* fexpm1:                                Floating Point.      (line  70)
+* fexp:                                  Floating Point.      (line  69)
+* fexpm1:                                Floating Point.      (line  71)
 * ffield::                               Forth200x Structures.
                                                               (line  62)
 * ffourth:                               Floating point stack.
@@ -5017,7 +5439,7 @@ in the Word Index (only the names are listed for the words here).
 * files containing Forth code, tutorial: Using files for Forth code Tutorial.
                                                               (line   6)
 * files tutorial:                        Files Tutorial.      (line   6)
-* fill:                                  Memory Blocks.       (line  34)
+* fill:                                  Memory Blocks.       (line  38)
 * find:                                  Word Lists.          (line 100)
 * find-name:                             Name token.          (line  20)
 * find-name-in:                          Name token.          (line  24)
@@ -5032,14 +5454,14 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * flavours of locals:                    Gforth locals.       (line  42)
 * FLiteral:                              Literals.            (line  61)
-* fln:                                   Floating Point.      (line  73)
+* fln:                                   Floating Point.      (line  74)
 * FLN, float<=0:                         floating-ambcond.    (line  57)
-* flnp1:                                 Floating Point.      (line  75)
+* flnp1:                                 Floating Point.      (line  76)
 * FLNP1, float<=-1:                      floating-ambcond.    (line  53)
-* float:                                 Address arithmetic.  (line  73)
+* float:                                 Address arithmetic.  (line  76)
 * float%:                                Structure Glossary.  (line  44)
-* float+:                                Address arithmetic.  (line  70)
-* float/:                                Address arithmetic.  (line  77)
+* float+:                                Address arithmetic.  (line  73)
+* float/:                                Address arithmetic.  (line  79)
 * floating point arithmetic words:       Floating Point.      (line   6)
 * floating point numbers, format and range: floating-idef.    (line   7)
 * floating point tutorial:               Floating Point Tutorial.
@@ -5047,8 +5469,8 @@ in the Word Index (only the names are listed for the words here).
 * floating point unidentified fault, integer division: core-ambcond.
                                                               (line  36)
 * floating-point arithmetic, pitfalls:   Floating Point.      (line  12)
-* floating-point comparisons:            Floating Point.      (line 141)
-* floating-point constants:              Floating Point.      (line 181)
+* floating-point comparisons:            Floating Point.      (line 142)
+* floating-point constants:              Floating Point.      (line 183)
 * floating-point dividing by zero:       floating-ambcond.    (line  41)
 * floating-point numbers, input format:  Literals in source code.
                                                               (line  50)
@@ -5057,7 +5479,7 @@ in the Word Index (only the names are listed for the words here).
 * floating-point output:                 Floating-point output.
                                                               (line   6)
 * floating-point result out of range:    floating-ambcond.    (line  15)
-* floating-point stack:                  Stack Manipulation.  (line  11)
+* floating-point stack:                  Stack Manipulation.  (line  12)
 * floating-point stack in the standard:  Stack Manipulation.  (line   6)
 * floating-point stack manipulation words: Floating point stack.
                                                               (line   6)
@@ -5086,8 +5508,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * floating-stack:                        Environmental Queries.
                                                               (line  69)
-* floats:                                Address arithmetic.  (line  67)
-* flog:                                  Floating Point.      (line  78)
+* floats:                                Address arithmetic.  (line  70)
+* flog:                                  Floating Point.      (line  79)
 * FLOG, float<=0:                        floating-ambcond.    (line  57)
 * floor:                                 Floating Point.      (line  53)
 * FLOORED:                               Environmental Queries.
@@ -5150,7 +5572,7 @@ in the Word Index (only the names are listed for the words here).
 * fpath:                                 Source Search Paths. (line  10)
 * fpick:                                 Floating point stack.
                                                               (line  22)
-* free:                                  Heap Allocation.     (line  23)
+* free:                                  Heap Allocation.     (line  22)
 * free-closure:                          Closures.            (line  50)
 * free-mem-var:                          Heap Allocation.     (line  42)
 * frequently asked questions:            Forth-related information.
@@ -5160,20 +5582,20 @@ in the Word Index (only the names are listed for the words here).
 * fround:                                Floating Point.      (line  57)
 * fs.:                                   Floating-point output.
                                                               (line  16)
-* fsin:                                  Floating Point.      (line 106)
-* fsincos:                               Floating Point.      (line 110)
-* fsinh:                                 Floating Point.      (line 125)
-* fsqrt:                                 Floating Point.      (line  66)
+* fsin:                                  Floating Point.      (line 107)
+* fsincos:                               Floating Point.      (line 111)
+* fsinh:                                 Floating Point.      (line 127)
+* fsqrt:                                 Floating Point.      (line  67)
 * FSQRT, float<0:                        floating-ambcond.    (line  61)
 * fswap:                                 Floating point stack.
                                                               (line  20)
-* ftan:                                  Floating Point.      (line 113)
+* ftan:                                  Floating Point.      (line 114)
 * FTAN on an argument r1 where cos(r1) is zero: floating-ambcond.
                                                               (line  33)
-* ftanh:                                 Floating Point.      (line 129)
+* ftanh:                                 Floating Point.      (line 131)
 * fthird:                                Floating point stack.
                                                               (line  14)
-* ftrunc:                                Floating Point.      (line  60)
+* ftrunc:                                Floating Point.      (line  61)
 * ftuck:                                 Floating point stack.
                                                               (line  18)
 * fully relocatable image files:         Fully Relocatable Image Files.
@@ -5186,9 +5608,9 @@ in the Word Index (only the names are listed for the words here).
 * F^:                                    Locals definition words.
                                                               (line  67)
 * f_, stack item type:                   Notation.            (line 105)
-* f~:                                    Floating Point.      (line 153)
-* f~abs:                                 Floating Point.      (line 150)
-* f~rel:                                 Floating Point.      (line 147)
+* f~:                                    Floating Point.      (line 155)
+* f~abs:                                 Floating Point.      (line 151)
+* f~rel:                                 Floating Point.      (line 148)
 * g:                                     Locating source code definitions.
                                                               (line  49)
 * gap:                                   widget methods.      (line  30)
@@ -5373,13 +5795,13 @@ in the Word Index (only the names are listed for the words here).
 * indirect threaded inner interpreter:   Threading.           (line  12)
 * infile-execute:                        Redirection.         (line  29)
 * infile-id:                             Redirection.         (line  32)
-* infinity:                              Floating Point.      (line 185)
+* infinity:                              Floating Point.      (line 187)
 * info-color:                            Terminal output.     (line  51)
 * inheritance:                           Object-Oriented Terminology.
                                                               (line  43)
 * init-asm:                              Assembler Definitions.
                                                               (line  36)
-* init-buffer:                           Heap Allocation.     (line  62)
+* init-buffer:                           Heap Allocation.     (line  66)
 * init-object:                           Objects Glossary.    (line  85)
 * init-object discussion:                Creating objects.    (line  12)
 * initialization of locals:              Gforth locals.       (line  90)
@@ -5421,7 +5843,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * input, single-key:                     Single-key input.    (line   6)
 * input-color:                           Terminal output.     (line  57)
-* insert:                                Memory Blocks.       (line  43)
+* insert:                                Memory Blocks.       (line  47)
 * inst-value:                            Objects Glossary.    (line  89)
 * inst-value usage:                      Method conveniences. (line  44)
 * inst-value visibility:                 Classes and Scoping. (line  12)
@@ -5540,17 +5962,17 @@ in the Word Index (only the names are listed for the words here).
 * l:                                     Locating source code definitions.
                                                               (line  38)
 * l!:                                    Special Memory Accesses.
-                                                              (line  45)
+                                                              (line  47)
 * L":                                    i18n and l10n.       (line  18)
 * l,:                                    Dictionary allocation.
                                                               (line  57)
 * l>s:                                   Special Memory Accesses.
-                                                              (line 106)
+                                                              (line 115)
 * l@:                                    Special Memory Accesses.
-                                                              (line  42)
+                                                              (line  43)
 * labels as values:                      Threading.           (line   6)
-* lalign:                                Address arithmetic.  (line 133)
-* laligned:                              Address arithmetic.  (line 130)
+* lalign:                                Address arithmetic.  (line 134)
+* laligned:                              Address arithmetic.  (line 131)
 * LANG – environment variable:           Environment variables.
                                                               (line  16)
 * Language:                              i18n and l10n.       (line  37)
@@ -5562,7 +5984,7 @@ in the Word Index (only the names are listed for the words here).
 * latestxt:                              Anonymous Definitions.
                                                               (line  28)
 * lbe:                                   Special Memory Accesses.
-                                                              (line  73)
+                                                              (line  76)
 * LC_ALL – environment variable:         Environment variables.
                                                               (line  18)
 * LC_CTYPE – environment variable:       Environment variables.
@@ -5612,7 +6034,7 @@ in the Word Index (only the names are listed for the words here).
 * ll:                                    Locating uses of a word.
                                                               (line  30)
 * lle:                                   Special Memory Accesses.
-                                                              (line  77)
+                                                              (line  81)
 * load:                                  Blocks.              (line 184)
 * load-cov:                              Code Coverage.       (line  68)
 * loader for image files:                Image File Background.
@@ -5641,7 +6063,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * locals programming style:              Locals programming style.
                                                               (line   6)
-* locals stack:                          Stack Manipulation.  (line  16)
+* locals stack:                          Stack Manipulation.  (line  17)
 * locals stack <1>:                      Locals implementation.
                                                               (line   6)
 * locals types:                          Gforth locals.       (line  34)
@@ -5659,7 +6081,7 @@ in the Word Index (only the names are listed for the words here).
 * locate:                                Locating source code definitions.
                                                               (line  26)
 * lock:                                  Semaphores.          (line  18)
-* log2:                                  Bitwise operations.  (line  58)
+* log2:                                  Bitwise operations.  (line  59)
 * long long:                             Portability.         (line  23)
 * LOOP:                                  Counted Loops.       (line 224)
 * loop control parameters not available: core-ambcond.        (line 153)
@@ -5680,8 +6102,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  30)
 * lp@ <1>:                               Locals implementation.
                                                               (line  18)
-* lrol:                                  Bitwise operations.  (line  83)
-* lror:                                  Bitwise operations.  (line  87)
+* lrol:                                  Bitwise operations.  (line  84)
+* lror:                                  Bitwise operations.  (line  88)
 * lshift:                                Bitwise operations.  (line  19)
 * LSHIFT, large shift counts:            core-ambcond.        (line 182)
 * LU":                                   i18n and l10n.       (line  23)
@@ -5717,7 +6139,7 @@ in the Word Index (only the names are listed for the words here).
 * MAX-XCHAR:                             Environmental Queries.
                                                               (line  90)
 * maxalign:                              Dictionary allocation.
-                                                              (line  98)
+                                                              (line 100)
 * maxaligned:                            Address arithmetic.  (line 109)
 * maxdepth-.s:                           Examining data.      (line  25)
 * maximum depth of file input nesting:   file-idef.           (line  42)
@@ -5790,7 +6212,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line 158)
 * motivation for object-oriented programming: Why object-oriented programming?.
                                                               (line   6)
-* move:                                  Memory Blocks.       (line  20)
+* move:                                  Memory Blocks.       (line  22)
 * ms:                                    Keeping track of Time.
                                                               (line   6)
 * MS, repeatability to be expected:      facility-idef.       (line  19)
@@ -5825,7 +6247,7 @@ in the Word Index (only the names are listed for the words here).
 * name>link:                             Name token.          (line  71)
 * name>string:                           Name token.          (line  62)
 * names for defined words:               Supplying names.     (line   6)
-* NaN:                                   Floating Point.      (line 191)
+* NaN:                                   Floating Point.      (line 193)
 * native@:                               i18n and l10n.       (line  27)
 * needs:                                 Forth source files.  (line  58)
 * negate:                                Single precision.    (line  28)
@@ -6006,7 +6428,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  77)
 * overrides:                             Objects Glossary.    (line 122)
 * overrides usage:                       Basic Objects Usage. (line  29)
-* pad:                                   Memory Blocks.       (line  57)
+* pad:                                   Memory Blocks.       (line  62)
 * PAD size:                              core-idef.           (line 153)
 * PAD use by nonstandard words:          core-other.          (line   7)
 * page:                                  Terminal output.     (line  23)
@@ -6043,7 +6465,7 @@ in the Word Index (only the names are listed for the words here).
 * performance of some Forth interpreters: Performance.        (line   6)
 * persistent form of dictionary:         Image Files.         (line   6)
 * PFE performance:                       Performance.         (line  22)
-* pi:                                    Floating Point.      (line 137)
+* pi:                                    Floating Point.      (line 139)
 * pick:                                  Data stack.          (line  22)
 * pictured numeric output:               Formatted numeric output.
                                                               (line   6)
@@ -6058,7 +6480,7 @@ in the Word Index (only the names are listed for the words here).
 * postpone,:                             Compilation token.   (line  34)
 * Pountain’s object-oriented model:      Comparison with other object models.
                                                               (line  28)
-* pow2?:                                 Bitwise operations.  (line  62)
+* pow2?:                                 Bitwise operations.  (line  63)
 * precision:                             Floating-point output.
                                                               (line  34)
 * precompiled Forth code:                Image Files.         (line   6)
@@ -6200,7 +6622,7 @@ in the Word Index (only the names are listed for the words here).
 * required:                              Forth source files.  (line  49)
 * reserving data space:                  Dictionary allocation.
                                                               (line   6)
-* resize:                                Heap Allocation.     (line  29)
+* resize:                                Heap Allocation.     (line  28)
 * resize-file:                           General files.       (line  86)
 * resized:                               widget methods.      (line 108)
 * restart:                               Basic multi-tasking. (line  87)
@@ -6213,7 +6635,7 @@ in the Word Index (only the names are listed for the words here).
 * result out of range:                   core-ambcond.        (line  83)
 * Result out of range (on integer division): Integer division.
                                                               (line 131)
-* return stack:                          Stack Manipulation.  (line  13)
+* return stack:                          Stack Manipulation.  (line  14)
 * return stack and locals:               Return stack.        (line   6)
 * return stack dump with gforth-fast:    Error messages.      (line  53)
 * return stack manipulation words:       Return stack.        (line   6)
@@ -6226,10 +6648,10 @@ in the Word Index (only the names are listed for the words here).
 * returning from a definition:           Calls and returns.   (line   6)
 * reveal:                                Creating from a prototype.
                                                               (line  35)
-* rol:                                   Bitwise operations.  (line  91)
+* rol:                                   Bitwise operations.  (line  92)
 * roll:                                  Data stack.          (line  33)
 * Root:                                  Word Lists.          (line 140)
-* ror:                                   Bitwise operations.  (line  94)
+* ror:                                   Bitwise operations.  (line  95)
 * rot:                                   Data stack.          (line  25)
 * rounding of floating-point numbers:    floating-idef.       (line  14)
 * rp!:                                   Stack pointer manipulation.
@@ -6263,7 +6685,7 @@ in the Word Index (only the names are listed for the words here).
 * save-buffers:                          Blocks.              (line 175)
 * save-cov:                              Code Coverage.       (line  65)
 * save-input:                            Input Sources.       (line  27)
-* save-mem:                              Heap Allocation.     (line  39)
+* save-mem:                              Heap Allocation.     (line  38)
 * savesystem:                            Non-Relocatable Image Files.
                                                               (line  20)
 * savesystem during gforthmi:            gforthmi.            (line  44)
@@ -6345,19 +6767,19 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  67)
 * set-to:                                User-defined TO and DEFER@.
                                                               (line  25)
-* sf!:                                   Memory Access.       (line  38)
+* sf!:                                   Memory Access.       (line  37)
 * sf@:                                   Memory Access.       (line  34)
 * sf@ or sf! used with an address that is not single-float aligned: floating-ambcond.
                                                               (line  22)
 * sfalign:                               Dictionary allocation.
-                                                              (line  90)
-* sfaligned:                             Address arithmetic.  (line  92)
+                                                              (line  92)
+* sfaligned:                             Address arithmetic.  (line  93)
 * sffield::                              Forth200x Structures.
                                                               (line  65)
 * sfloat%:                               Structure Glossary.  (line  46)
-* sfloat+:                               Address arithmetic.  (line  87)
-* sfloat/:                               Address arithmetic.  (line  90)
-* sfloats:                               Address arithmetic.  (line  83)
+* sfloat+:                               Address arithmetic.  (line  88)
+* sfloat/:                               Address arithmetic.  (line  91)
+* sfloats:                               Address arithmetic.  (line  85)
 * sf_, stack item type:                  Notation.            (line 109)
 * sh:                                    Passing Commands to the OS.
                                                               (line   9)
@@ -6659,7 +7081,7 @@ in the Word Index (only the names are listed for the words here).
 * translate::                            Dealing with existing Recognizers.
                                                               (line  87)
 * traverse-wordlist:                     Name token.          (line  48)
-* trigonometric operations:              Floating Point.      (line 103)
+* trigonometric operations:              Floating Point.      (line 104)
 * true:                                  Boolean Flags.       (line  11)
 * truncation of floating-point numbers:  floating-idef.       (line  14)
 * try:                                   Exception Handling.  (line 129)
@@ -6756,7 +7178,7 @@ in the Word Index (only the names are listed for the words here).
 * utime:                                 Keeping track of Time.
                                                               (line  19)
 * UValue:                                Task-local data.     (line  25)
-* v*:                                    Floating Point.      (line  95)
+* v*:                                    Floating Point.      (line  96)
 * Value:                                 Values.              (line  17)
 * value-flavoured locals:                Gforth locals.       (line  42)
 * values:                                Values.              (line   6)
@@ -6802,7 +7224,7 @@ in the Word Index (only the names are listed for the words here).
 * vp-top:                                widget methods.      (line 179)
 * w:                                     widget methods.      (line  21)
 * w!:                                    Special Memory Accesses.
-                                                              (line  39)
+                                                              (line  40)
 * w,:                                    Dictionary allocation.
                                                               (line  55)
 * w, stack item type:                    Notation.            (line  88)
@@ -6811,18 +7233,18 @@ in the Word Index (only the names are listed for the words here).
 * W::                                    Locals definition words.
                                                               (line  34)
 * w>s:                                   Special Memory Accesses.
-                                                              (line 103)
+                                                              (line 112)
 * w@:                                    Special Memory Accesses.
                                                               (line  36)
 * WA::                                   Locals definition words.
                                                               (line  37)
-* walign:                                Address arithmetic.  (line 127)
-* waligned:                              Address arithmetic.  (line 124)
+* walign:                                Address arithmetic.  (line 128)
+* waligned:                              Address arithmetic.  (line 125)
 * WARNING":                              Exception Handling.  (line 254)
 * warning-color:                         Terminal output.     (line  48)
 * warnings:                              Exception Handling.  (line 257)
 * wbe:                                   Special Memory Accesses.
-                                                              (line  65)
+                                                              (line  66)
 * wfield::                               Forth200x Structures.
                                                               (line  71)
 * where:                                 Locating uses of a word.
@@ -6842,7 +7264,7 @@ in the Word Index (only the names are listed for the words here).
 * wior values and meaning:               file-idef.           (line  36)
 * within:                                Numeric comparison.  (line  41)
 * wle:                                   Special Memory Accesses.
-                                                              (line  69)
+                                                              (line  71)
 * word:                                  Introducing the Text Interpreter.
                                                               (line  44)
 * word <1>:                              The Input Stream.    (line  45)
@@ -6869,8 +7291,8 @@ in the Word Index (only the names are listed for the words here).
 * wrap-xt:                               Deferred Words.      (line 102)
 * write-file:                            General files.       (line  70)
 * write-line:                            General files.       (line  72)
-* wrol:                                  Bitwise operations.  (line  75)
-* wror:                                  Bitwise operations.  (line  79)
+* wrol:                                  Bitwise operations.  (line  76)
+* wror:                                  Bitwise operations.  (line  80)
 * WTF??:                                 Debugging.           (line  59)
 * ww:                                    Locating uses of a word.
                                                               (line  12)
@@ -6878,19 +7300,19 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  40)
 * x:                                     widget methods.      (line  15)
 * x!:                                    Special Memory Accesses.
-                                                              (line  51)
+                                                              (line  53)
 * x,:                                    Dictionary allocation.
                                                               (line  59)
 * x-size:                                Xchars and Unicode.  (line  52)
 * x-width:                               Xchars and Unicode.  (line 106)
 * x>s:                                   Special Memory Accesses.
-                                                              (line 109)
+                                                              (line 118)
 * x@:                                    Special Memory Accesses.
-                                                              (line  48)
-* xalign:                                Address arithmetic.  (line 139)
-* xaligned:                              Address arithmetic.  (line 136)
+                                                              (line  50)
+* xalign:                                Address arithmetic.  (line 140)
+* xaligned:                              Address arithmetic.  (line 137)
 * xbe:                                   Special Memory Accesses.
-                                                              (line  81)
+                                                              (line  86)
 * xc!+:                                  Xchars and Unicode.  (line  75)
 * xc!+?:                                 Xchars and Unicode.  (line  67)
 * xc,:                                   Xchars and Unicode.  (line 123)
@@ -6906,17 +7328,17 @@ in the Word Index (only the names are listed for the words here).
 * XCHAR-MAXMEM:                          Environmental Queries.
                                                               (line  93)
 * xd!:                                   Special Memory Accesses.
-                                                              (line  57)
+                                                              (line  59)
 * xd,:                                   Dictionary allocation.
                                                               (line  61)
 * xd>s:                                  Special Memory Accesses.
-                                                              (line 112)
+                                                              (line 121)
 * xd@:                                   Special Memory Accesses.
-                                                              (line  54)
+                                                              (line  56)
 * xdbe:                                  Special Memory Accesses.
-                                                              (line  89)
+                                                              (line  96)
 * xdle:                                  Special Memory Accesses.
-                                                              (line  93)
+                                                              (line 101)
 * xemit:                                 Displaying characters and strings.
                                                               (line  10)
 * xfield::                               Forth200x Structures.
@@ -6925,7 +7347,7 @@ in the Word Index (only the names are listed for the words here).
 * xkey:                                  Xchars and Unicode.  (line 112)
 * xkey?:                                 Single-key input.    (line  22)
 * xle:                                   Special Memory Accesses.
-                                                              (line  85)
+                                                              (line  91)
 * xor:                                   Bitwise operations.  (line  10)
 * xt:                                    Introducing the Text Interpreter.
                                                               (line  44)

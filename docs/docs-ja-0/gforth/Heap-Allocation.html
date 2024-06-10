@@ -74,14 +74,12 @@ Next: <a href="Memory-Access.html" accesskey="n" rel="next">Memory Access</a>, P
 <span id="index-memory_002dallocation-word-set"></span>
 
 <span id="index-contiguous-regions-and-heap-allocation"></span>
-<p>Heap allocation supports deallocation of allocated memory in any
-order. Dictionary allocation is not affected by it (i.e., it does not end a
-contiguous region). In Gforth, these words are implemented using the
-standard C library calls malloc(), free() and realloc().
+<p>ヒープ割り当ては、 割り当てられたメモリの割り当て解除を任意の順序でサポートします。 ディクショナリの割り当ては影響を受けません(つまり、
+連続領域(contiguous region)は終了しません)。 Gforth では、 これらのワードは標準の C ライブラリ呼び出しである
+malloc() や free() や realloc() を使用して実装されます。
 </p>
-<p>The memory region produced by one invocation of <code>allocate</code> or
-<code>resize</code> is internally contiguous.  There is no contiguity between such
-a region and any other region (including others allocated from the heap).
+<p><code>allocate</code> または <code>resize</code> の 1 回の呼び出しによって生成されるメモリ領域は、 内部的に連続しています。
+このような領域と他の領域(ヒープから割り当てられた他の領域を含む)との間には連続性はありません。
 </p>
 <span id="index-allocate-_0028--u-_002d_002d-a_005faddr-wior--_0029-memory"></span>
 <span id="index-allocate"></span>
@@ -89,11 +87,9 @@ a region and any other region (including others allocated from the heap).
 <div class="format">
 <pre class="format"><code>allocate</code> ( <i>u &ndash; a_addr wior  </i>) memory &ldquo;allocate&rdquo;
 </pre></div>
-<p>Allocate <i>u</i> address units of contiguous data space. The initial contents
-of the data space is undefined. If the allocation is successful, <i>a-addr</i>
-is the start address of the allocated region and <i>wior</i> is 0. If the
-allocation fails, <i>a-addr</i> is undefined and <i>wior</i> is a non-zero I/O
-result code.
+<p>連続したデータ空間を <i>u</i> アドレス単位分割り当てます。 データ空間の初期内容は未定義です。 割り当てが成功した場合、 <i>a-addr</i>
+は割り当てられた領域の開始アドレスで、 <i>wior</i> は 0 になります。 割り当てが失敗した場合、 <i>a-addr</i> は未定義で、
+<i>wior</i> ゼロ以外の I/O 結果コードです。
 </p>
 
 <span id="index-free-_0028--a_005faddr-_002d_002d-wior--_0029-memory"></span>
@@ -102,10 +98,9 @@ result code.
 <div class="format">
 <pre class="format"><code>free</code> ( <i>a_addr &ndash; wior  </i>) memory &ldquo;free&rdquo;
 </pre></div>
-<p>Return the region of data space starting at <i>a-addr</i> to the system.  The
-region must originally have been obtained using <code>allocate</code> or
-<code>resize</code>. If the operational is successful, <i>wior</i> is 0.  If the
-operation fails, <i>wior</i> is a non-zero I/O result code.
+<p><i>a-addr</i> で始まるデータ空間の領域をシステムに返します。  領域は元々 <code>allocate</code> または <code>resize</code>
+を使用して取得されている必要があります。 操作が成功した場合、 <i>wior</i> は 0 になります。 操作が失敗した場合、 <i>wior</i>
+はゼロ以外の I/O 結果コードになります。
 </p>
 
 <span id="index-resize-_0028--a_005faddr1-u-_002d_002d-a_005faddr2-wior--_0029-memory"></span>
@@ -114,16 +109,14 @@ operation fails, <i>wior</i> is a non-zero I/O result code.
 <div class="format">
 <pre class="format"><code>resize</code> ( <i>a_addr1 u &ndash; a_addr2 wior  </i>) memory &ldquo;resize&rdquo;
 </pre></div>
-<p>Change the size of the allocated area at <i>a-addr1</i> to <i>u</i> address units,
-possibly moving the contents to a different area. <i>a-addr2</i> is the address
-of the resulting area.  If the operation is successful, <i>wior</i> is 0.  If
-the operation fails, <i>wior</i> is a non-zero I/O result code. If <i>a-addr1</i>
-is 0, Gforth&rsquo;s (but not the Standard) <code>resize</code> <code>allocate</code>s <i>u</i>
-address units.
+<p><i>a-addr1</i> に割り当てられた領域のサイズを <i>u</i> アドレス単位に変更します。 但し内容を別の領域に移動する可能性があります。
+<i>a-addr2</i> は、 結果の領域のアドレスです。  操作が成功した場合、 <i>wior</i> は 0 になります。 操作が失敗した場合、
+<i>wior</i> はゼロ以外の I/O 結果コードになります。 <i>a-addr1</i> が 0 の場合、 Gforth の (非標準の )
+<code>resize</code> は <i>u</i> アドレス単位の割り当てを行います。
 </p>
 
 
-<p>The following words are useful for dealing with memory blocks:
+<p>以下のワード達はメモリ・ブロックを扱うのに役立ちます:
 </p>
 <span id="index-save_002dmem-_0028--addr1-u-_002d_002d-addr2-u--_0029-gforth_002d0_002e2"></span>
 <span id="index-save_002dmem"></span>
@@ -131,7 +124,7 @@ address units.
 <div class="format">
 <pre class="format"><code>save-mem</code> ( <i>addr1 u &ndash; addr2 u  </i>) gforth-0.2 &ldquo;save-mem&rdquo;
 </pre></div>
-<p>Copy a memory block into a newly allocated region in the heap.
+<p>指定のメモリ・ブロックをヒープ内で新しく割り当てられた領域にコピーします。
 </p>
 
 <span id="index-free_002dmem_002dvar-_0028--addr-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -140,8 +133,7 @@ address units.
 <div class="format">
 <pre class="format"><code>free-mem-var</code> ( <i>addr &ndash;  </i>) gforth-experimental &ldquo;free-mem-var&rdquo;
 </pre></div>
-<p>Addr is the address of a 2variable containing address and size of a memory
-range; frees memory and clears the 2variable.
+<p>addr は、 メモリ範囲のアドレスとサイズを含む 2variable のアドレスです。 これはメモリを解放し、 2variable をクリアします。
 </p>
 
 <span id="index-extend_002dmem-_0028--addr1-u1-u-_002d_002d-addr-addr2-u2--_0029-gforth_002dexperimental"></span>
@@ -150,27 +142,27 @@ range; frees memory and clears the 2variable.
 <div class="format">
 <pre class="format"><code>extend-mem</code> ( <i>addr1 u1 u &ndash; addr addr2 u2  </i>) gforth-experimental &ldquo;extend-mem&rdquo;
 </pre></div>
-<p>Extend memory block addr1 u1 allocated from the heap by u aus.  The
-(possibly reallocated) piece is addr2 u2, the extension is at addr.
+<p>u (アドレス単位)によってヒープから割り当てられたメモリ・ブロック addr1 u1 を拡張します。  (おそらく再割り当てされた)開始アドレスは
+addr2 で、 その合計長さは u2 で、 拡張部分の開始アドレスは addr です(訳注: 例えば元々長さ10のブロックを5拡張すると( addr1
+10 5 &ndash; addr2+10 addr2 10+5))
 </p>
 
 
 
-<p>The $tring words can also be used for dealing with memory blocks,
-See <a href="_0024tring-words.html">$tring words</a>.
+<p>$tring ワード群は、 メモリ・ブロックの処理にも使用できます。 See <a href="_0024tring-words.html">$tring words</a> (訳注: $tring (ダラー
+tring)と String (エス string) とあることに注意)
 </p>
-<p>For growable memory buffers you can use $trings, or the following words.
-Because the allocated memory of a buffer managed with <code>adjust-buffer</code>
-does not shrink, there is no heap-management overhead when adjusting the
-buffer for a size smaller than the largest one seen yet.
+<p>拡張可能なメモリ・バッファの場合は、 $trings または以下のワード群を使用できます。  <code>adjust-buffer</code>
+で管理されるバッファに割り当てられたメモリは縮小できないため、
+これまでに確認された最大サイズよりも小さいサイズにバッファを調整(adjust)するときはヒープ管理のオーバーヘッドは発生しません。
 </p>
-<span id="index-buffer_0025-_0028--u1-u2-_002d_002d--_0029-gforth_002dexperimental"></span>
+<span id="index-buffer_0025-_0028-_002d_002d-u1-u2--_0029-gforth_002dexperimental"></span>
 <span id="index-buffer_0025"></span>
 <span id="index-buffer_0025-1"></span>
 <div class="format">
-<pre class="format"><code>buffer%</code> ( <i>u1 u2 &ndash;  </i>) gforth-experimental &ldquo;buffer%&rdquo;
+<pre class="format"><code>buffer%</code> ( <i>&ndash; u1 u2  </i>) gforth-experimental &ldquo;buffer%&rdquo;
 </pre></div>
-<p><i>u1</i> is the alignment and <i>u2</i> is the size of a buffer descriptor.
+<p><i>u1</i> は アライメント(alignment)、 <i>u2</i> は バッファ・デスクリプタのサイズです。
 </p>
 
 <span id="index-init_002dbuffer-_0028--addr-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -186,14 +178,14 @@ buffer for a size smaller than the largest one seen yet.
 <div class="format">
 <pre class="format"><code>adjust-buffer</code> ( <i>u addr &ndash;  </i>) gforth-experimental &ldquo;adjust-buffer&rdquo;
 </pre></div>
-<p>Adjust buffer% at addr to length u.  This may grow the allocated area, but
-never shrinks it.
+<p>addr の buffer% を長さ u に調整します。 これにより、 割り当てられた領域が拡大する可能性がありますが、
+決して縮小されることはありません。
 </p>
 
 
-<p>You can get the current address and length of such a buffer with <code>2@</code>.
+<p><code>2@</code> を使用すると、 このようなバッファの現在のアドレスと長さを取得できます。
 </p>
-<p>Typical usage:
+<p>典型的な使い方:
 </p>
 <div class="example">
 <pre class="example">create mybuf  buffer% %size allot  mybuf init-buffer

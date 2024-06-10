@@ -1903,10 +1903,9 @@ Factoring})。 ファクタリングにより、 通常はスタック・コメ�
 @item f
 二値フラグ(Boolean flags)。 つまり @code{false} または @code{true}
 @item a-addr,a-
-セル揃えアドレス(Cell-aligned address)
+セル・アライメント・アドレス
 @item c-addr,c-
-文字揃えアドレス(Char-aligned address)(注意: Windows NT では文字(char)は 2
-バイトになる場合があることに注意)
+文字(char)アライメント・アドレス(注意: Windows NT では文字(char)は 2 バイトになる場合があることに注意)
 @item xt
 実行トークン(Execution token)。 セルと同一サイズ
 @item w,x
@@ -4554,20 +4553,19 @@ Char
 浮動小数点数(Float)(FP スタック上に置かれる)
 @item a-
 @cindex @code{a_}, stack item type
-セル揃えアドレス(Cell-aligned address)
+セル・アライメント・アドレス
 @item c-
 @cindex @code{c_}, stack item type
-文字揃えアドレス(Char-aligned address)(注意: Windows NT では文字(char)は 2
-バイトになる場合があることに注意)
+文字(char)アライメント・アドレス(注意: Windows NT では文字(char)は 2 バイトになる場合があることに注意)
 @item f-
 @cindex @code{f_}, stack item type
-浮動小数点数揃えのアドレス(Float-aligned address)
+浮動小数点数アライメントのアドレス
 @item df-
 @cindex @code{df_}, stack item type
-IEEE倍精度浮動小数点数揃えのアドレス
+IEEE倍精度浮動小数点数アライメントのアドレス
 @item sf-
 @cindex @code{sf_}, stack item type
-IEEE単精度浮動小数点数揃えのアドレス
+IEEE単精度浮動小数点数アライメントのアドレス
 @item xt
 @cindex @code{xt}, stack item type
 実行トークン(Execution token)。 セルと同一サイズ
@@ -5418,9 +5416,9 @@ norm stg2           norm stg2
 @format
 @code{mux} ( @i{u1 u2 u3 -- u }) gforth-1.0 ``mux''
 @end format
-Multiplex: For every bit in @i{u3}: for a 1 bit, select the corresponding
-bit from @i{u1}, otherwise the corresponding bit from @i{u2}.  E.g.,
-@code{%0011 %1100 %1010 mux} gives @code{%0110}
+multiplex(多重化): @i{u3} の各ビットについて、 そのビットが 1 の場合は @i{u1} から対応するビットを選択し、
+それ以外の場合は @i{u2} から対応するビットを選択します。 たとえば、 @code{%0011 %1100 %1010 mux} は
+@code{%0110} となります。
 
 @findex lshift ( @var{ u1 u -- u2  } ) core
 @cindex @code{lshift}
@@ -5428,7 +5426,7 @@ bit from @i{u1}, otherwise the corresponding bit from @i{u2}.  E.g.,
 @format
 @code{lshift} ( @i{u1 u -- u2 }) core ``l-shift''
 @end format
-Shift @i{u1} left by @i{u} bits.
+@i{u1} を @i{u} ビット左シフトします。
 
 @findex rshift ( @var{ u1 u -- u2  } ) core
 @cindex @code{rshift}
@@ -5436,8 +5434,7 @@ Shift @i{u1} left by @i{u} bits.
 @format
 @code{rshift} ( @i{u1 u -- u2 }) core ``r-shift''
 @end format
-Shift @i{u1} (cell) right by @i{u} bits, filling the shifted-in bits with
-zero (logical/unsigned shift).
+@i{u1} (セル) を @i{u} ビットだけ右にシフトし、 シフトインされたビットを 0 で埋めます(論理/符号無しシフトです)。
 
 @findex arshift ( @var{ n1 u -- n2  } ) gforth-1.0
 @cindex @code{arshift}
@@ -5445,8 +5442,7 @@ zero (logical/unsigned shift).
 @format
 @code{arshift} ( @i{n1 u -- n2 }) gforth-1.0 ``ar-shift''
 @end format
-Shift @i{n1} (cell) right by @i{u} bits, filling the shifted-in bits from
-the sign bit of @i{n1} (arithmetic shift).
+@i{n1} (セル) を @i{u} ビット右にシフトし、@i{n1} の符号ビットからシフトインされたビットを埋めます (算術シフト)。
 
 @findex dlshift ( @var{ ud1 u -- ud2  } ) gforth-1.0
 @cindex @code{dlshift}
@@ -5454,7 +5450,7 @@ the sign bit of @i{n1} (arithmetic shift).
 @format
 @code{dlshift} ( @i{ud1 u -- ud2 }) gforth-1.0 ``dlshift''
 @end format
-Shift @i{ud1} (double-cell) left by @i{u} bits.
+@i{ud1} (2倍長セル) を @i{u} ビット左にシフトします。
 
 @findex drshift ( @var{ ud1 u -- ud2  } ) gforth-1.0
 @cindex @code{drshift}
@@ -5462,8 +5458,7 @@ Shift @i{ud1} (double-cell) left by @i{u} bits.
 @format
 @code{drshift} ( @i{ud1 u -- ud2 }) gforth-1.0 ``drshift''
 @end format
-Shift @i{ud1} (double-cell) right by @i{u} bits, filling the shifted-in bits
-with zero (logical/unsigned shift).
+@i{ud1} (2倍長セル) を @i{u} ビットだけ右にシフトし、 シフトインされたビットを 0 で埋めます (論理/符号なしシフト)。
 
 @findex darshift ( @var{ d1 u -- d2  } ) gforth-1.0
 @cindex @code{darshift}
@@ -5471,8 +5466,7 @@ with zero (logical/unsigned shift).
 @format
 @code{darshift} ( @i{d1 u -- d2 }) gforth-1.0 ``darshift''
 @end format
-Shift @i{d1} (double-cell) right by @i{u} bits, filling the shifted-in bits
-from the sign bit of @i{d1} (arithmetic shift).
+@i{d1} (2倍長セル) を @i{u} ビット右にシフトし、@i{d1} の符号ビットからシフトインされたビットで埋めます (算術シフト)。
 
 @findex 2* ( @var{ n1 -- n2  } ) core
 @cindex @code{2*}
@@ -5480,7 +5474,7 @@ from the sign bit of @i{d1} (arithmetic shift).
 @format
 @code{2*} ( @i{n1 -- n2 }) core ``two-star''
 @end format
-Shift left by 1; also works on unsigned numbers
+1 つ左にシフトします。符号なしの数値でも機能します
 
 @findex 2/ ( @var{ n1 -- n2  } ) core
 @cindex @code{2/}
@@ -5488,8 +5482,8 @@ Shift left by 1; also works on unsigned numbers
 @format
 @code{2/} ( @i{n1 -- n2 }) core ``two-slash''
 @end format
-Arithmetic shift right by 1.  For signed numbers this is a floored division
-by 2 (note that @code{/} not necessarily floors).
+1 つ右に算術シフトします。 符号付き数値の場合、 これは 2 による floored division になります(@code{/} は必ずしも
+floors ではないことに注意してください)。
 
 @findex d2* ( @var{ d1 -- d2  } ) double
 @cindex @code{d2*}
@@ -5497,7 +5491,7 @@ by 2 (note that @code{/} not necessarily floors).
 @format
 @code{d2*} ( @i{d1 -- d2 }) double ``d-two-star''
 @end format
-Shift double-cell left by 1; also works on unsigned numbers
+2倍長セルを左に 1 シフトします。 符号なしの数値でも機能します
 
 @findex d2/ ( @var{ d1 -- d2  } ) double
 @cindex @code{d2/}
@@ -5505,8 +5499,7 @@ Shift double-cell left by 1; also works on unsigned numbers
 @format
 @code{d2/} ( @i{d1 -- d2 }) double ``d-two-slash''
 @end format
-Arithmetic shift right by 1.  For signed numbers this is a floored division
-by 2.
+1 つ右に算術シフトします。 符号付き数値の場合、これは 2 による floored division になります。
 
 @findex >pow2 ( @var{ u1 -- u2  } ) gforth-1.0
 @cindex @code{>pow2}
@@ -5514,7 +5507,7 @@ by 2.
 @format
 @code{>pow2} ( @i{u1 -- u2 }) gforth-1.0 ``to-pow2''
 @end format
-@i{u2} is the lowest power-of-2 number with @i{u2>=u1}.
+@i{u2} は、@i{u2>=u1} の最小の 2 のべき乗数です。
 
 @findex log2 ( @var{ u -- n  } ) gforth-1.0
 @cindex @code{log2}
@@ -5522,8 +5515,7 @@ by 2.
 @format
 @code{log2} ( @i{u -- n }) gforth-1.0 ``log2''
 @end format
-@i{N} is the rounded-down binary logarithm of @i{u}, i.e., the index of the
-first set bit; if @i{u}=0, @i{n}=-1.
+@i{N} は @i{u} の切り捨て2進対数、 つまり最初に設定されたビットのインデックスです。 @i{u}=0 の場合は @i{n}=-1 です。
 
 @findex pow2? ( @var{ u -- f   } ) gforth-1.0
 @cindex @code{pow2?}
@@ -5531,8 +5523,7 @@ first set bit; if @i{u}=0, @i{n}=-1.
 @format
 @code{pow2?} ( @i{u -- f  }) gforth-1.0 ``pow-two-query''
 @end format
-@i{f} is true iff @i{u} is a power of two, i.e., there is exactly one bit
-set in @i{u}.
+@i{f} は、 @i{u} が 2 の累乗の場合、 つまり @i{u} のビットが 1 つだけセットされている場合に true になります。
 
 
 @findex ctz ( @var{ x -- u   } ) gforth-1.0
@@ -5541,15 +5532,13 @@ set in @i{u}.
 @format
 @code{ctz} ( @i{x -- u  }) gforth-1.0 ``c-t-z''
 @end format
-count trailing zeros in binary representation of x
+x の2進数表現で末尾からのゼロの数を数える
 
 
 
-Unlike most other operations, rotation of narrower units cannot easily be
-synthesized from rotation of wider units, so using cell-wide and double-wide
-rotation operations means that the results depend on the cell width.  For
-published algorithms or cell-width-independent results, you usually need to
-use a fixed-width rotation operation.
+他のほとんどの操作とは異なり、 幅の狭いユニットのローテートと幅の広いユニットのローテートを簡単に合成することはできないため、 1倍長セル幅および
+2倍幅のセル幅のローテート操作を使用すると、 結果がセル幅に依存することになります。  公開されたアルゴリズムまたはセル幅に依存しない結果の場合、
+通常は固定幅のローテート操作を使用する必要があります。
 
 @findex wrol ( @var{ u1 u -- u2  } ) gforth-1.0
 @cindex @code{wrol}
@@ -5557,8 +5546,7 @@ use a fixed-width rotation operation.
 @format
 @code{wrol} ( @i{u1 u -- u2 }) gforth-1.0 ``wrol''
 @end format
-Rotate the least significant 16 bits of @i{u1} left by @i{u} bits, set the
-other bits to 0.
+@i{u1} の下位側 16 ビットを @i{u} ビットだけ左に回転し、 他のビットを 0 にセットします。
 
 @findex wror ( @var{ u1 u -- u2  } ) gforth-1.0
 @cindex @code{wror}
@@ -5566,8 +5554,7 @@ other bits to 0.
 @format
 @code{wror} ( @i{u1 u -- u2 }) gforth-1.0 ``wror''
 @end format
-Rotate the least significant 16 bits of @i{u1} right by @i{u} bits, set the
-other bits to 0.
+@i{u1} の下位側 16 ビットを @i{u} ビットだけ右回転し、 他のビットを 0 にセットします。
 
 @findex lrol ( @var{ u1 u -- u2  } ) gforth-1.0
 @cindex @code{lrol}
@@ -5575,8 +5562,7 @@ other bits to 0.
 @format
 @code{lrol} ( @i{u1 u -- u2 }) gforth-1.0 ``lrol''
 @end format
-Rotate the least significant 32 bits of @i{u1} left by @i{u} bits, set the
-other bits to 0.
+@i{u1} の下位側 32 ビットを @i{u} ビットだけ左に回転し、 他のビットを 0 にセットします。
 
 @findex lror ( @var{ u1 u -- u2  } ) gforth-1.0
 @cindex @code{lror}
@@ -5584,8 +5570,7 @@ other bits to 0.
 @format
 @code{lror} ( @i{u1 u -- u2 }) gforth-1.0 ``lror''
 @end format
-Rotate the least significant 32 bits of @i{u1} right by @i{u} bits, set the
-other bits to 0.
+@i{u1} の下位側 32 ビットを @i{u} ビットだけ右回転し、 他のビットを 0 にセットします。
 
 @findex rol ( @var{ u1 u -- u2  } ) gforth-1.0
 @cindex @code{rol}
@@ -5593,7 +5578,7 @@ other bits to 0.
 @format
 @code{rol} ( @i{u1 u -- u2 }) gforth-1.0 ``rol''
 @end format
-Rotate all bits of @i{u1} left by @i{u} bits.
+@i{u1} のすべてのビットを @i{u} ビットだけ左に回転します。
 
 @findex ror ( @var{ u1 u -- u2  } ) gforth-1.0
 @cindex @code{ror}
@@ -5601,7 +5586,7 @@ Rotate all bits of @i{u1} left by @i{u} bits.
 @format
 @code{ror} ( @i{u1 u -- u2 }) gforth-1.0 ``ror''
 @end format
-Rotate all bits of @i{u1} right by @i{u} bits.
+@i{u1} のすべてのビットを @i{u} ビットだけ右回転します。
 
 @findex drol ( @var{ ud1 u -- ud2  } ) gforth-1.0
 @cindex @code{drol}
@@ -5609,7 +5594,7 @@ Rotate all bits of @i{u1} right by @i{u} bits.
 @format
 @code{drol} ( @i{ud1 u -- ud2 }) gforth-1.0 ``drol''
 @end format
-Rotate all bits of @i{ud1} (double-cell) left by @i{u} bits.
+@i{ud1} (2倍長セル) のすべてのビットを @i{u} ビットだけ左に回転します。
 
 @findex dror ( @var{ ud1 u -- ud2  } ) gforth-1.0
 @cindex @code{dror}
@@ -5617,15 +5602,15 @@ Rotate all bits of @i{ud1} (double-cell) left by @i{u} bits.
 @format
 @code{dror} ( @i{ud1 u -- ud2 }) gforth-1.0 ``dror''
 @end format
-Rotate all bits of @i{ud1} (double-cell) right by @i{u} bits.
+@i{ud1} (2倍長セル) のすべてのビットを @i{u} ビット右に回転します。
 
 
 @node Numeric comparison, Floating Point, Bitwise operations, Arithmetic
 @subsection Numeric comparison
 @cindex numeric comparison words
 
-Note that the words that compare for equality (@code{= <> 0= 0<> d= d<> d0=
-d0<>}) work for for both signed and unsigned numbers.
+注意: 等しいかどうかを比較するワード(@code{= <> 0= 0<> d= d<> d0= d0<>}) は、
+符号付き数値と符号なし数値の両方に対して機能することに注意してください。
 
 @findex < ( @var{ n1 n2 -- f  } ) core
 @cindex @code{<}
@@ -5751,13 +5736,12 @@ d0<>}) work for for both signed and unsigned numbers.
 @format
 @code{within} ( @i{u1 u2 u3 -- f }) core-ext ``within''
 @end format
-u2<u3 and u1 in [u2,u3) or: u2>=u3 and u1 not in [u3,u2).  This works for
-unsigned and signed numbers (but not a mixture).  Another way to think about
-this word is to consider the numbers as a circle (wrapping around from
-@code{max-u} to 0 for unsigned, and from @code{max-n} to min-n for signed
-numbers); now consider the range from u2 towards increasing numbers up to
-and excluding u3 (giving an empty range if u2=u3); if u1 is in this range,
-@code{within} returns true.
+u2<u3 かつ u1 が [u2,u3) にある(u2 < u3 and  u2 <= u1 < u3 )、 または u2 >= u3 かつ u1 が
+[u3,u2) にない( u2 >= u3 and (u1 not in (u3 <= and < u2)。  これは、
+符号なしの数値と符号付きの数値に対して機能します(ただし、 混ぜてはいけません)。  このワードについて考えるもう 1 つの方法は、
+数値を循環として考えることです(符号なしの数値の場合は @code{max-u} から 0 まで、 符号付きの数値の場合は @code{max-n}
+から min-n まで循環します)。ここで、 u2 から u3 までの増加する数値(u3 を除く)の範囲を検討します(u2=u3
+の場合は空の範囲を与えます)。 u1 がこの範囲内にある場合、 @code{within} は true を返します。
 
 
 @findex d< ( @var{ d1 d2 -- f  } ) double
@@ -5883,26 +5867,23 @@ and excluding u3 (giving an empty range if u2=u3); if u1 is in this range,
 @subsection Floating Point
 @cindex floating point arithmetic words
 
-For the rules used by the text interpreter for recognising floating-point
-numbers see @ref{Number Conversion}.
+浮動小数点数を認識するためにテキスト・インタプリタで使用されるルールについては、 @ref{Number Conversion} を参照してください。
 
-Gforth has a separate floating point stack, but the documentation uses the
-unified notation.@footnote{It's easy to generate the separate notation from
-that by just separating the floating-point numbers out: e.g. @code{( n r1 u
-r2 -- r3 )} becomes @code{( n u -- ) ( F: r1 r2 -- r3 )}.}
+Gforth には別個の浮動小数点スタックがありますが、
+ドキュメントでは一緒に統一した表記が使用されています@footnote{この一緒にした表記から、 浮動小数点数だけを分離するだけで、
+簡単に分離された表記にできます。 例えば: @code{( n r1 ur2 -- r3 )} は @code{( n u -- ) ( F: r1
+r2 -- r3 )} になります}。
 
 @cindex floating-point arithmetic, pitfalls
-Floating point numbers have a number of unpleasant surprises for the unwary
-(e.g., floating point addition is not associative) and even a few for the
-wary. You should not use them unless you know what you are doing or you
-don't care that the results you get are totally bogus. If you want to learn
-about the problems of floating point numbers (and how to avoid them), you
-might start with @cite{David Goldberg,
+浮動小数点数は、 不注意な人にとっては多くの不快な驚きをもたらします(たとえば、浮動小数点の加算は結合的(associative)ではありません)。
+また、 用心深い人にとってもいくつかの不快な驚きさえあります。 自分が何をしているのか理解していない場合、
+または得られる結果が完全に偽物であることを気にしない場合を除き、 これらを使用すべきではありません。
+浮動小数点数の問題(およびその回避方法)について知りたい場合は、 @cite{David Goldberg,
 @uref{https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html,What
 Every Computer Scientist Should Know About Floating-Point Arithmetic}, ACM
-Computing Surveys 23(1):5@minus{}48, March 1991}.
+Computing Surveys 23(1):5@minus{}48, March 1991} から始めると良いでしょう。
 
-Conversion between integers and floating-point:
+整数と浮動小数点の間の変換:
 
 @findex s>f ( @var{ n -- r  } ) floating-ext
 @cindex @code{s>f}
@@ -5933,7 +5914,7 @@ Conversion between integers and floating-point:
 @end format
 
 
-Arithmetics:
+算術演算:
 
 @findex f+ ( @var{ r1 r2 -- r3  } ) floating
 @cindex @code{f+}
@@ -5983,7 +5964,7 @@ Arithmetics:
 @format
 @code{fcopysign} ( @i{r1 r2 -- r3  }) gforth-1.0 ``fcopysign''
 @end format
-r3 takes its absolute value from r1 and its sign from r2
+r3 は r1 から絶対値を取得し r2 から符号を取得します
 
 
 @findex fmax ( @var{ r1 r2 -- r3  } ) floating
@@ -6006,8 +5987,7 @@ r3 takes its absolute value from r1 and its sign from r2
 @format
 @code{floor} ( @i{r1 -- r2 }) floating ``floor''
 @end format
-Round towards the next smaller integral value, i.e., round toward negative
-infinity.
+次に小さい整数値に向かって丸めます。 つまり、 負の無限大に向かって丸めます。
 
 @findex fround ( @var{ r1 -- r2  } ) floating
 @cindex @code{fround}
@@ -6015,7 +5995,7 @@ infinity.
 @format
 @code{fround} ( @i{r1 -- r2 }) floating ``f-round''
 @end format
-Round to the nearest integral value.
+最も近い整数値に丸めます(訳注: 0.5e -- 0, 0.50e -- 0, 0.51e -- 1, 1.5e -- 2, ... ??)
 
 @findex ftrunc ( @var{ r1 -- r2   } ) floating-ext
 @cindex @code{ftrunc}
@@ -6023,7 +6003,7 @@ Round to the nearest integral value.
 @format
 @code{ftrunc} ( @i{r1 -- r2  }) floating-ext ``f-trunc''
 @end format
-round towards 0
+0 に向かって丸める(正数でも負数でも)
 
 
 @findex f** ( @var{ r1 r2 -- r3  } ) floating-ext
@@ -6032,7 +6012,7 @@ round towards 0
 @format
 @code{f**} ( @i{r1 r2 -- r3 }) floating-ext ``f-star-star''
 @end format
-@i{r3} is @i{r1} raised to the @i{r2}th power.
+@i{r3} は @i{r1} の @i{r2} 乗です
 
 @findex fsqrt ( @var{ r1 -- r2  } ) floating-ext
 @cindex @code{fsqrt}
@@ -6077,7 +6057,7 @@ round towards 0
 @format
 @code{flog} ( @i{r1 -- r2 }) floating-ext ``f-log''
 @end format
-The decimal logarithm.
+常用対数(decimal logarithm)
 
 @findex falog ( @var{ r1 -- r2  } ) floating-ext
 @cindex @code{falog}
@@ -6093,7 +6073,7 @@ The decimal logarithm.
 @format
 @code{f2*} ( @i{r1 -- r2  }) gforth-0.2 ``f2*''
 @end format
-Multiply @i{r1} by 2.0e0
+@i{r1} に 2.0e0 を掛けた値
 
 
 @findex f2/ ( @var{ r1 -- r2   } ) gforth-0.2
@@ -6102,7 +6082,7 @@ Multiply @i{r1} by 2.0e0
 @format
 @code{f2/} ( @i{r1 -- r2  }) gforth-0.2 ``f2/''
 @end format
-Multiply @i{r1} by 0.5e0
+@i{r1} に 0.5e0 を掛けた値
 
 
 @findex 1/f ( @var{ r1 -- r2   } ) gforth-0.2
@@ -6111,11 +6091,11 @@ Multiply @i{r1} by 0.5e0
 @format
 @code{1/f} ( @i{r1 -- r2  }) gforth-0.2 ``1/f''
 @end format
-Divide 1.0e0 by @i{r1}.
+1.0e0 を @i{r1} で割った値
 
 
 
-Vector arithmetics:
+ベクトル演算:
 
 @findex v* ( @var{ f-addr1 nstride1 f-addr2 nstride2 ucount -- r  } ) gforth-0.5
 @cindex @code{v*}
@@ -6123,9 +6103,8 @@ Vector arithmetics:
 @format
 @code{v*} ( @i{f-addr1 nstride1 f-addr2 nstride2 ucount -- r }) gforth-0.5 ``v-star''
 @end format
-dot-product: r=v1*v2.  The first element of v1 is at f_addr1, the next at
-f_addr1+nstride1 and so on (similar for v2). Both vectors have ucount
-elements.
+ドット積(dot-product): r=v1*v2   v1 の最初の要素は f_addr1 にあり、 次の要素は f_addr1+nstride1
+というようになります(v2 も同様)。 どちらのベクトルにも ucount の数の要素があります。
 
 @findex faxpy ( @var{ ra f-x nstridex f-y nstridey ucount --  } ) gforth-0.5
 @cindex @code{faxpy}
@@ -6138,8 +6117,7 @@ vy=ra*vx+vy
 
 @cindex angles in trigonometric operations
 @cindex trigonometric operations
-Angles in floating point operations are given in radians (a full circle has
-2 pi radians).
+浮動小数点演算の角度はラジアン(radians)で指定します(完全な円は 2πラジアンです)。
 
 @findex fsin ( @var{ r1 -- r2  } ) floating-ext
 @cindex @code{fsin}
@@ -6197,8 +6175,8 @@ Angles in floating point operations are given in radians (a full circle has
 @format
 @code{fatan2} ( @i{r1 r2 -- r3 }) floating-ext ``f-a-tan-two''
 @end format
-@i{r1/r2}=tan(@i{r3}). ANS Forth does not require, but probably intends this
-to be the inverse of @code{fsincos}. In gforth it is.
+@i{r1/r2}=tan(@i{r3})  ANS Forth ではそこまで求められてはいないのですが、 おそらくこれが @code{fsincos}
+の逆になることを意図していて、 gforth ではそのようになっています。
 
 @findex fsinh ( @var{ r1 -- r2  } ) floating-ext
 @cindex @code{fsinh}
@@ -6248,18 +6226,15 @@ to be the inverse of @code{fsincos}. In gforth it is.
 @format
 @code{pi} ( @i{-- r  }) gforth-0.2 ``pi''
 @end format
-@code{Fconstant} -- @i{r} is the value pi; the ratio of a circle's area to
-its diameter.
+@code{Fconstant}(定数) -- @i{r} は値 pi です(π)。 円の面積と直径の比率。
 
 
 
 @cindex equality of floats
 @cindex floating-point comparisons
-One particular problem with floating-point arithmetic is that comparison for
-equality often fails when you would expect it to succeed.  For this reason
-approximate equality is often preferred (but you still have to know what you
-are doing).  Also note that IEEE NaNs may compare differently from what you
-might expect.  The comparison words are:
+浮動小数点演算に関する特別な問題の 1 つは、 等価性の比較が、 成功するはずなのに失敗することがよくあることです。  このため、 多くの場合、
+近似的等価性が好まれます(ただし、 自分が何をしているのかを理解しておく必要があります)。  また、 IEEE NaN
+の比較があなたの予想とは異なる場合があることにも注意してください。  比較ワードは以下のとおりです:
 
 @findex f~rel ( @var{ r1 r2 r3 -- flag   } ) gforth-0.5
 @cindex @code{f~rel}
@@ -6267,7 +6242,7 @@ might expect.  The comparison words are:
 @format
 @code{f~rel} ( @i{r1 r2 r3 -- flag  }) gforth-0.5 ``f~rel''
 @end format
-Approximate equality with relative error: |r1-r2|<r3*|r1+r2|.
+相対誤差を含む近似等価性: |r1-r2|<r3*|r1+r2|
 
 
 @findex f~abs ( @var{ r1 r2 r3 -- flag   } ) gforth-0.5
@@ -6276,7 +6251,8 @@ Approximate equality with relative error: |r1-r2|<r3*|r1+r2|.
 @format
 @code{f~abs} ( @i{r1 r2 r3 -- flag  }) gforth-0.5 ``f~abs''
 @end format
-Approximate equality with absolute error: |r1-r2|<r3.
+Approximate equality with absolute error: |r1-r2|<r3.<
+絶対誤差を伴う近似等価性: |r1-r2|<r3
 
 
 @findex f~ ( @var{ r1 r2 r3 -- flag   } ) floating-ext
@@ -6285,8 +6261,8 @@ Approximate equality with absolute error: |r1-r2|<r3.
 @format
 @code{f~} ( @i{r1 r2 r3 -- flag  }) floating-ext ``f-proximate''
 @end format
-ANS Forth medley for comparing r1 and r2 for equality: r3>0: @code{f~abs};
-r3=0: bitwise comparison; r3<0: @code{fnegate f~rel}.
+r1 と r2 が等しいかどうかを比較するための ANS Forth ワードごたまぜ: r3>0 なら @code{f~abs}; r3=0 なら
+ビット単位の比較; r3<0 なら @code{fnegate f~rel}
 
 
 @findex f= ( @var{ r1 r2 -- f  } ) gforth-0.2
@@ -6377,8 +6353,8 @@ r3=0: bitwise comparison; r3<0: @code{fnegate f~rel}.
 
 
 @cindex floating-point constants
-Special values in IEEE754 can be derived by for example dividing by zero.
-The most common ones are defined as floating point constants for easy usage.
+IEEE754 の特別な値は、 たとえばゼロで除算することによって導出できます。
+最も一般的なものは、使いやすいように浮動小数点定数として定義されています。
 
 @findex infinity ( @var{ -- r   } ) gforth-1.0
 @cindex @code{infinity}
@@ -6386,7 +6362,7 @@ The most common ones are defined as floating point constants for easy usage.
 @format
 @code{infinity} ( @i{-- r  }) gforth-1.0 ``infinity''
 @end format
-floating point infinity
+浮動小数点数 (正の)無限大(floating point infinity)
 
 
 @findex -infinity ( @var{ -- r   } ) gforth-1.0
@@ -6395,7 +6371,7 @@ floating point infinity
 @format
 @code{-infinity} ( @i{-- r  }) gforth-1.0 ``-infinity''
 @end format
-floating point -infinity
+浮動小数点数 負の無限大(-infinity)
 
 
 @findex NaN ( @var{ -- r   } ) gforth-1.0
@@ -6404,7 +6380,7 @@ floating point -infinity
 @format
 @code{NaN} ( @i{-- r  }) gforth-1.0 ``NaN''
 @end format
-floating point Not a Number
+浮動小数点数 NaN(Not a Number)
 
 
 
@@ -6413,27 +6389,26 @@ floating point Not a Number
 @cindex stack manipulation words
 
 @cindex floating-point stack in the standard
-Gforth maintains a number of separate stacks:
+Gforth は、 いくつかの個別のスタックを維持します:
 
 @cindex data stack
 @cindex parameter stack
 @itemize @bullet
 @item
-A data stack (also known as the @dfn{parameter stack}) -- for characters,
-cells, addresses, and double cells.
+データ・スタック(「パラメータ・スタック」とも呼ばれます) -- 文字(characters)と、 セル(cells)と、
+アドレス(addresses)と、 2倍長セル(double cells)  用
 
 @cindex floating-point stack
 @item
-A floating point stack -- for holding floating point (FP) numbers.
+浮動小数点スタック -- 浮動小数点 (FP) 数を保持します。
 
 @cindex return stack
 @item
-A return stack -- for holding the return addresses of colon definitions and
-other (non-FP) data.
+リターン・スタック -- コロン定義およびその他の(FP 以外の)データのリターン・アドレスを保持します。
 
 @cindex locals stack
 @item
-A locals stack -- for holding local variables.
+ローカル・スタック -- ローカル変数を保持します。
 @end itemize
 
 @menu
@@ -6512,7 +6487,7 @@ A locals stack -- for holding local variables.
 @format
 @code{pick} ( @i{S:... u -- S:... w }) core-ext ``pick''
 @end format
-Actually the stack effect is @code{ x0 ... xu u -- x0 ... xu x0 }.
+実際のスタック効果は @code{ x0 ... xu u -- x0 ... xu x0 } です。
 
 @findex rot ( @var{ w1 w2 w3 -- w2 w3 w1  } ) core
 @cindex @code{rot}
@@ -6534,8 +6509,8 @@ Actually the stack effect is @code{ x0 ... xu u -- x0 ... xu x0 }.
 @format
 @code{?dup} ( @i{w -- S:... w }) core ``question-dupe''
 @end format
-Actually the stack effect is: @code{( w -- 0 | w w )}.  It performs a
-@code{dup} if w is nonzero.
+実際のスタック効果は次のとおりです: @code{( w -- 0 | w w )} つまり w がゼロ以外の場合、 @code{dup}
+が実行されます。
 
 @findex roll ( @var{ x0 x1 .. xn n -- x1 .. xn x0   } ) core-ext
 @cindex @code{roll}
@@ -6662,7 +6637,7 @@ Actually the stack effect is: @code{( w -- 0 | w w )}.  It performs a
 @format
 @code{fpick} ( @i{f:... u -- f:... r }) gforth-0.4 ``fpick''
 @end format
-Actually the stack effect is @code{ r0 ... ru u -- r0 ... ru r0 }.
+実際のスタック効果は @code{ r0 ... ru u -- r0 ... ru r0 }
 
 @findex frot ( @var{ r1 r2 r3 -- r2 r3 r1  } ) floating
 @cindex @code{frot}
@@ -6687,12 +6662,10 @@ Actually the stack effect is @code{ r0 ... ru u -- r0 ... ru r0 }.
 
 @cindex return stack and locals
 @cindex locals and return stack
-A Forth system is allowed to keep local variables on the return stack. This
-is reasonable, as local variables usually eliminate the need to use the
-return stack explicitly. So, if you want to produce a standard compliant
-program and you are using local variables in a word, forget about return
-stack manipulations in that word (refer to the standard document for the
-exact rules).
+Forth システムは、 リターン・スタックにローカル変数を保持することができます。 通常、 ローカル変数を使用すると、
+リターン・スタックを明示的に使用する必要がなくなるため、 これは合理的です。 したがって、 標準に準拠したプログラムを作成する場合で、
+ワード内でローカル変数を使用している場合は、
+そのワード内でのリターン・スタック操作のことは忘れてください(正確なルールについては標準ドキュメントを参照してください)。
 
 @findex >r ( @var{ w -- R:w  } ) core
 @cindex @code{>r}
@@ -6768,8 +6741,8 @@ exact rules).
 @node Locals stack, Stack pointer manipulation, Return stack, Stack Manipulation
 @subsection Locals stack
 
-Gforth uses an extra locals stack.  It is described, along with the reasons
-for its existence, in @ref{Locals implementation}.
+Gforth で追加のローカル・スタックを使用します。  これは、 その存在理由を含めて @ref{Locals implementation}
+にて説明されています。
 
 @node Stack pointer manipulation, , Locals stack, Stack Manipulation
 @subsection Stack pointer manipulation
@@ -6782,7 +6755,7 @@ for its existence, in @ref{Locals implementation}.
 @format
 @code{sp0} ( @i{-- a-addr  }) gforth-0.4 ``sp0''
 @end format
-@code{User} variable -- initial value of the data stack pointer.
+ユーザー変数 -- データ・スタック・ポインタの初期値。
 
 
 @findex sp@@ ( @var{ S:... -- a-addr  } ) gforth-0.2
@@ -6805,7 +6778,7 @@ for its existence, in @ref{Locals implementation}.
 @format
 @code{fp0} ( @i{-- a-addr  }) gforth-0.4 ``fp0''
 @end format
-@code{User} variable -- initial value of the floating-point stack pointer.
+ユーザー変数 -- 浮動小数点スタック・ポインタの初期値。
 
 
 @findex fp@@ ( @var{ f:... -- f-addr  } ) gforth-0.2
@@ -6828,7 +6801,7 @@ for its existence, in @ref{Locals implementation}.
 @format
 @code{rp0} ( @i{-- a-addr  }) gforth-0.4 ``rp0''
 @end format
-@code{User} variable -- initial value of the return stack pointer.
+ユーザー変数 -- リターン・スタック・ポインタの初期値。
 
 
 @findex rp@@ ( @var{ -- a-addr  } ) gforth-0.2
@@ -6851,7 +6824,7 @@ for its existence, in @ref{Locals implementation}.
 @format
 @code{lp0} ( @i{-- a-addr  }) gforth-0.4 ``lp0''
 @end format
-@code{User} variable -- initial value of the locals stack pointer.
+ユーザー変数 -- ローカル・スタック・ポインタの初期値。
 
 
 @findex lp@@ ( @var{ -- c-addr  } ) gforth-0.2
@@ -6860,7 +6833,7 @@ for its existence, in @ref{Locals implementation}.
 @format
 @code{lp@@} ( @i{-- c-addr }) gforth-0.2 ``lp-fetch''
 @end format
-@i{C_addr} is the current value of the locals stack pointer.
+@i{C_addr} は、 ローカル・スタック・ポインタの現在の値です。
 
 @findex lp! ( @var{ c-addr --  } ) gforth-internal
 @cindex @code{lp!}
@@ -6885,9 +6858,9 @@ for its existence, in @ref{Locals implementation}.
 * Memory Blocks::            
 @end menu
 
-In addition to the standard Forth memory allocation words, there is also a
+標準 Forth のメモリ割り当てワードに加えて
 @uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip,
-garbage collector}.
+ガベージ・コレクター(garbage collector)} もあります。
 
 @node Memory model, Dictionary allocation, Memory, Memory
 @subsection Memory model
@@ -6895,26 +6868,20 @@ garbage collector}.
 @c The Standard Forth description is a mess (e.g., is the heap part of
 @c the dictionary?), so let's not stick to closely with it.
 
-Standard Forth considers a Forth system as consisting of several address
-spaces, of which only @dfn{data space} is managed and accessible with the
-memory words.  Memory not necessarily in data space includes the stacks, the
-code (called code space) and the headers (called name space). In Gforth
-everything is in data space, but the code for the primitives is usually
-read-only.
+標準 Forth は、 Forth システムが複数のアドレス空間で構成されているとみなします。 そのうちの「データ空間」(data
+space)のみを管理し、 メモリ・ワードでアクセスできます。  メモリには、 スタックと、 コード(コード空間(code
+space))と呼ばれる)と、 ヘッダー(名前空間(name space)と呼ばれる)とが含まれ、 それらは必ずしもデータ空間にある必要はありません。
+Gforth ではすべてがデータ空間内にありますが、 プリミティブのコードは通常読み取り専用です。
 
-Data space is divided into a number of areas: The (data space portion of
-the) dictionary@footnote{Sometimes, the term @dfn{dictionary} is used to
-refer to the search data structure embodied in word lists and headers,
-because it is used for looking up names, just as you would in a conventional
-dictionary.}, the heap, and a number of system-allocated buffers.
+データ空間は、 いくつかの領域に分割されます。 ディクショナリ(dictionary)@footnote{「ディクショナリ」(辞書)という用語は、
+従来の辞書と同じように名前を検索するために使用される、 ワード・リストやヘッダーに組み込まれた検索データ構造を指すために使用されることがあります}と、
+ヒープと、 システムによって割り当てられた多数のバッファーから成ります。
 
-Gforth provides one big address space, and address arithmetic can be
-performed between any addresses. However, in the dictionary headers or code
-are interleaved with data, so almost the only contiguous data space regions
-there are those described by Standard Forth as contiguous; but you can be
-sure that the dictionary is allocated towards increasing addresses even
-between contiguous regions.  The memory order of allocations in the heap is
-platform-dependent (and possibly different from one run to the next).
+Gforth は 1 つの大きなアドレス空間を提供し、 その任意のアドレス間でアドレス演算を実行できます。 ただし、
+ディクショナリではヘッダーまたはコードがデータと代わる代わる出てくるため(interleaved)、 連続するデータ空間領域は、 標準 Forth
+で連続していると記述されているものだけがほとんどです。 しかし、 連続する領域間であっても、
+増加するアドレス方向にディクショナリが確実に割り当てられます。
+ヒープ内でのメモリ割り当ての順序はプラットフォームに依存します(また、実行ごとに異なる可能性もあります)。
 
 
 @node Dictionary allocation, Heap Allocation, Memory model, Memory
@@ -6922,23 +6889,20 @@ platform-dependent (and possibly different from one run to the next).
 @cindex reserving data space
 @cindex data space - reserving some
 
-Dictionary allocation is a stack-oriented allocation scheme, i.e., if you
-want to deallocate X, you also deallocate everything allocated after X.
+ディクショナリの割り当てはスタック指向の割り当てスキーム(stack-oriented allocation scheme)です。 つまり、 X
+の割り当てを解除したい場合は、 X の後に割り当てられたすべての割り当ても解除します。
 
 @cindex contiguous regions in dictionary allocation
-The allocations using the words below are contiguous and grow the region
-towards increasing addresses.  Other words that allocate dictionary memory
-of any kind (i.e., defining words including @code{:noname}) end the
-contiguous region and start a new one.
+以下のワード達を使用した割り当ては連続しており、 アドレスの増加方向に向けて領域が拡張されます。
+あらゆる種類のディクショナリ・メモリを割り当てる他のワード(つまり、 @code{:noname} を含む定義ワード)は、
+連続領域(contiguous region)を終了し、 新しい領域を開始します。
 
-In Standard Forth only @code{create}d words are guaranteed to produce an
-address that is the start of the following contiguous region.  In
-particular, the cell allocated by @code{variable} is not guaranteed to be
-contiguous with following @code{allot}ed memory.
+標準 Forth では、 @code{create} されたワードのみが、 後続の連続領域の開始となるアドレスを生成することが保証されています。
+特に、 @code{variable} によって割り当てられたセルが、 後続の @code{allot}
+で割り当てられたメモリと連続していることは保証されません。
 
-You can deallocate memory by using @code{allot} with a negative argument
-(with some restrictions, see @code{allot}). For larger deallocations use
-@code{marker}.
+@code{allot} に負の引数を指定して使用すると、 メモリの割り当てを解除できます(いくつかの制限があります。 @code{allot}
+を参照してください)。 大規模な割り当て解除の場合は、 @code{marker} を使用します。
 
 
 @findex here ( @var{ -- addr   } ) core
@@ -6947,7 +6911,7 @@ You can deallocate memory by using @code{allot} with a negative argument
 @format
 @code{here} ( @i{-- addr  }) core ``here''
 @end format
-Return the address of the next free location in data space.
+データ空間内の次の空き位置のアドレスを返します。
 
 
 @findex unused ( @var{ -- u   } ) core-ext
@@ -6956,8 +6920,7 @@ Return the address of the next free location in data space.
 @format
 @code{unused} ( @i{-- u  }) core-ext ``unused''
 @end format
-Return the amount of free space remaining (in address units) in the region
-addressed by @code{here}.
+@code{here} でアドレス指定された領域(以降)に残っている空き領域の量をアドレス単位(address units)で返します。
 
 
 @findex allot ( @var{ n --   } ) core
@@ -6966,11 +6929,9 @@ addressed by @code{here}.
 @format
 @code{allot} ( @i{n --  }) core ``allot''
 @end format
-Reserve @i{n} address units of data space without initialization. @i{n} is a
-signed number, passing a negative @i{n} releases memory.  In ANS Forth you
-can only deallocate memory from the current contiguous region in this way.
-In Gforth you can deallocate anything in this way but named words.  The
-system does not check this restriction.
+初期化せずに、 データ空間に @i{n} アドレス単位を予約します。 @i{n} は符号付きの数値で、 負の @i{n} を渡すとメモリが解放されます。
+ANS Forth では、この方法で現在の連続領域からメモリの割り当てを解除することしかできません。  Gforth
+では、この方法で名前付きワード以外のあらゆるものを割り当て解除できます。  システムはこの制限をチェックしません。
 
 
 @findex ->here ( @var{ addr --   } ) gforth-1.0
@@ -6979,7 +6940,7 @@ system does not check this restriction.
 @format
 @code{->here} ( @i{addr --  }) gforth-1.0 ``to-here''
 @end format
-Change the value of @code{here} to @i{addr}.
+@code{here} の値を @i{addr} に変更します。
 
 
 @findex c, ( @var{ c --   } ) core
@@ -6988,7 +6949,7 @@ Change the value of @code{here} to @i{addr}.
 @format
 @code{c,} ( @i{c --  }) core ``c-comma''
 @end format
-Reserve data space for one char and store @i{c} in the space.
+文字(char)用に1つのデータ空間を予約し、 その空間に @i{c} を格納します。
 
 
 @findex f, ( @var{ f --   } ) gforth-0.2
@@ -6997,8 +6958,7 @@ Reserve data space for one char and store @i{c} in the space.
 @format
 @code{f,} ( @i{f --  }) gforth-0.2 ``f,''
 @end format
-Reserve data space for one floating-point number and store @i{f} in the
-space.
+浮動小数点数(floating-point number)用の1つのデータ空間を予約し、 その空間に @i{f} を格納します。
 
 
 @findex , ( @var{ w --   } ) core
@@ -7007,7 +6967,7 @@ space.
 @format
 @code{,} ( @i{w --  }) core ``comma''
 @end format
-Reserve data space for one cell and store @i{w} in the space.
+セル(cell)用の1つのデータ空間を予約し、 その空間に @i{w} を格納します。
 
 
 @findex 2, ( @var{ w1 w2 --   } ) gforth-0.2
@@ -7016,8 +6976,7 @@ Reserve data space for one cell and store @i{w} in the space.
 @format
 @code{2,} ( @i{w1 w2 --  }) gforth-0.2 ``2,''
 @end format
-Reserve data space for two cells and store the double @i{w1 w2} there,
-@i{w2} first (lower address).
+2つのセル用のデータ空間を予約し、 そこに @i{w1 w2} 格納します。 最初(低位アドレス側)に @i{w2} を格納します。
 
 
 @findex w, ( @var{ w --   } ) gforth-1.0
@@ -7054,9 +7013,8 @@ Reserve data space for two cells and store the double @i{w1 w2} there,
 @format
 @code{A,} ( @i{addr --  }) gforth-0.2 ``A,''
 @end format
-Reserve data space for one cell, and store @i{addr} there.  For our
-cross-compiler this provides the type information necessary for a
-relocatable image; normally, though, this is equivalent to @code{,}.
+1 つのセル用のデータ空間を予約し、 そこに @i{addr} を格納します。  私達のクロス・コンパイラの場合には、
+再配置可能なイメージに必要な型情報(type information)を提供します。 ただし、 通常では、 これは @code{,} と同等です。
 
 
 @findex mem, ( @var{ addr u --   } ) gforth-0.6
@@ -7068,15 +7026,14 @@ relocatable image; normally, though, this is equivalent to @code{,}.
 
 doc-save-mem-dict
 
-Memory accesses have to be aligned (@pxref{Address arithmetic}). So of
-course you should allocate memory in an aligned way, too. I.e., before
-allocating allocating a cell, @code{here} must be cell-aligned, etc.  The
-words below align @code{here} if it is not already.  Basically it is only
-already aligned for a type, if the last allocation was a multiple of the
-size of this type and if @code{here} was aligned for this type before.
+メモリ・アクセスはアライメントする必要があります(@pxref{Address arithmetic})。 したがって、
+メモリ割り当てもアライメントされるべきです。 つまり、 セルを割り当てる前に、 @code{here} をセル・アライメントする必要があります。
+以下のワード達は、 @code{here} が既に指定の型のアライメントに合っている状態で無い場合は合わせます。 基本的に、
+既に割り当てたのがその型のサイズの倍数であり、 かつ、 @code{here} が以前にその型のアライメントに対して合うようにしてあった場合にのみ、
+その型のアライメントに対して既にすでに合っているということが言えます。
 
-After freshly @code{create}ing a word, @code{here} is @code{align}ed in
-Standard Forth (@code{maxalign}ed in Gforth).
+新しくワードを @code{create} した後、@code{here} は 標準 Forth では @code{align} されます(Gforth
+では @code{maxalign} されます)。
 
 @findex align ( @var{ --   } ) core
 @cindex @code{align}
@@ -7084,7 +7041,7 @@ Standard Forth (@code{maxalign}ed in Gforth).
 @format
 @code{align} ( @i{--  }) core ``align''
 @end format
-If the data-space pointer is not aligned, reserve enough space to align it.
+データ空間ポインタがアライメントできてない場合は、 アライメントするのに十分な空間を予約します。
 
 
 @findex falign ( @var{ --   } ) floating
@@ -7093,8 +7050,7 @@ If the data-space pointer is not aligned, reserve enough space to align it.
 @format
 @code{falign} ( @i{--  }) floating ``f-align''
 @end format
-If the data-space pointer is not float-aligned, reserve enough space to
-align it.
+データ空間ポインタが浮動小数点数にアライメントされていない場合は、 アライメントするのに十分な空間を予約します。
 
 
 @findex sfalign ( @var{ --   } ) floating-ext
@@ -7103,8 +7059,7 @@ align it.
 @format
 @code{sfalign} ( @i{--  }) floating-ext ``s-f-align''
 @end format
-If the data-space pointer is not single-float-aligned, reserve enough space
-to align it.
+データ空間ポインタが単精度浮動小数点数にアライメントされていない場合は、 アライメントするのに十分な空間を予約します。
 
 
 @findex dfalign ( @var{ --   } ) floating-ext
@@ -7113,8 +7068,7 @@ to align it.
 @format
 @code{dfalign} ( @i{--  }) floating-ext ``d-f-align''
 @end format
-If the data-space pointer is not double-float-aligned, reserve enough space
-to align it.
+データ空間ポインタが倍精度浮動小数点数にアライメントされていない場合は、 アライメントするのに十分な空間を予約します。
 
 
 @findex maxalign ( @var{ --   } ) gforth-0.2
@@ -7123,7 +7077,7 @@ to align it.
 @format
 @code{maxalign} ( @i{--  }) gforth-0.2 ``maxalign''
 @end format
-Align data-space pointer for all alignment requirements.
+すべてのアライメント要件に合わせてデータ空間ポインタをアライメントします。
 
 
 @findex cfalign ( @var{ --   } ) gforth-0.2
@@ -7132,8 +7086,7 @@ Align data-space pointer for all alignment requirements.
 @format
 @code{cfalign} ( @i{--  }) gforth-0.2 ``cfalign''
 @end format
-Align data-space pointer for code field requirements (i.e., such that the
-corresponding body is maxaligned).
+データ空間ポインタをコード・フィールドの要件に合わせてアライメントします(つまり、 対応する本体が maxalign された状態になるようにする)。
 
 
 
@@ -7147,14 +7100,12 @@ corresponding body is maxaligned).
 @cindex memory-allocation word set
 
 @cindex contiguous regions and heap allocation
-Heap allocation supports deallocation of allocated memory in any
-order. Dictionary allocation is not affected by it (i.e., it does not end a
-contiguous region). In Gforth, these words are implemented using the
-standard C library calls malloc(), free() and realloc().
+ヒープ割り当ては、 割り当てられたメモリの割り当て解除を任意の順序でサポートします。 ディクショナリの割り当ては影響を受けません(つまり、
+連続領域(contiguous region)は終了しません)。 Gforth では、 これらのワードは標準の C ライブラリ呼び出しである
+malloc() や free() や realloc() を使用して実装されます。
 
-The memory region produced by one invocation of @code{allocate} or
-@code{resize} is internally contiguous.  There is no contiguity between such
-a region and any other region (including others allocated from the heap).
+@code{allocate} または @code{resize} の 1 回の呼び出しによって生成されるメモリ領域は、 内部的に連続しています。
+このような領域と他の領域(ヒープから割り当てられた他の領域を含む)との間には連続性はありません。
 
 @findex allocate ( @var{ u -- a_addr wior   } ) memory
 @cindex @code{allocate}
@@ -7162,11 +7113,9 @@ a region and any other region (including others allocated from the heap).
 @format
 @code{allocate} ( @i{u -- a_addr wior  }) memory ``allocate''
 @end format
-Allocate @i{u} address units of contiguous data space. The initial contents
-of the data space is undefined. If the allocation is successful, @i{a-addr}
-is the start address of the allocated region and @i{wior} is 0. If the
-allocation fails, @i{a-addr} is undefined and @i{wior} is a non-zero I/O
-result code.
+連続したデータ空間を @i{u} アドレス単位分割り当てます。 データ空間の初期内容は未定義です。 割り当てが成功した場合、 @i{a-addr}
+は割り当てられた領域の開始アドレスで、 @i{wior} は 0 になります。 割り当てが失敗した場合、 @i{a-addr} は未定義で、
+@i{wior} ゼロ以外の I/O 結果コードです。
 
 
 @findex free ( @var{ a_addr -- wior   } ) memory
@@ -7175,10 +7124,9 @@ result code.
 @format
 @code{free} ( @i{a_addr -- wior  }) memory ``free''
 @end format
-Return the region of data space starting at @i{a-addr} to the system.  The
-region must originally have been obtained using @code{allocate} or
-@code{resize}. If the operational is successful, @i{wior} is 0.  If the
-operation fails, @i{wior} is a non-zero I/O result code.
+@i{a-addr} で始まるデータ空間の領域をシステムに返します。  領域は元々 @code{allocate} または @code{resize}
+を使用して取得されている必要があります。 操作が成功した場合、 @i{wior} は 0 になります。 操作が失敗した場合、 @i{wior}
+はゼロ以外の I/O 結果コードになります。
 
 
 @findex resize ( @var{ a_addr1 u -- a_addr2 wior   } ) memory
@@ -7187,16 +7135,14 @@ operation fails, @i{wior} is a non-zero I/O result code.
 @format
 @code{resize} ( @i{a_addr1 u -- a_addr2 wior  }) memory ``resize''
 @end format
-Change the size of the allocated area at @i{a-addr1} to @i{u} address units,
-possibly moving the contents to a different area. @i{a-addr2} is the address
-of the resulting area.  If the operation is successful, @i{wior} is 0.  If
-the operation fails, @i{wior} is a non-zero I/O result code. If @i{a-addr1}
-is 0, Gforth's (but not the Standard) @code{resize} @code{allocate}s @i{u}
-address units.
+@i{a-addr1} に割り当てられた領域のサイズを @i{u} アドレス単位に変更します。 但し内容を別の領域に移動する可能性があります。
+@i{a-addr2} は、 結果の領域のアドレスです。  操作が成功した場合、 @i{wior} は 0 になります。 操作が失敗した場合、
+@i{wior} はゼロ以外の I/O 結果コードになります。 @i{a-addr1} が 0 の場合、 Gforth の (非標準の )
+@code{resize} は @i{u} アドレス単位の割り当てを行います。
 
 
 
-The following words are useful for dealing with memory blocks:
+以下のワード達はメモリ・ブロックを扱うのに役立ちます:
 
 @findex save-mem ( @var{ addr1 u -- addr2 u   } ) gforth-0.2
 @cindex @code{save-mem}
@@ -7204,7 +7150,7 @@ The following words are useful for dealing with memory blocks:
 @format
 @code{save-mem} ( @i{addr1 u -- addr2 u  }) gforth-0.2 ``save-mem''
 @end format
-Copy a memory block into a newly allocated region in the heap.
+指定のメモリ・ブロックをヒープ内で新しく割り当てられた領域にコピーします。
 
 
 @findex free-mem-var ( @var{ addr --   } ) gforth-experimental
@@ -7213,8 +7159,7 @@ Copy a memory block into a newly allocated region in the heap.
 @format
 @code{free-mem-var} ( @i{addr --  }) gforth-experimental ``free-mem-var''
 @end format
-Addr is the address of a 2variable containing address and size of a memory
-range; frees memory and clears the 2variable.
+addr は、 メモリ範囲のアドレスとサイズを含む 2variable のアドレスです。 これはメモリを解放し、 2variable をクリアします。
 
 
 @findex extend-mem ( @var{ addr1 u1 u -- addr addr2 u2   } ) gforth-experimental
@@ -7223,27 +7168,27 @@ range; frees memory and clears the 2variable.
 @format
 @code{extend-mem} ( @i{addr1 u1 u -- addr addr2 u2  }) gforth-experimental ``extend-mem''
 @end format
-Extend memory block addr1 u1 allocated from the heap by u aus.  The
-(possibly reallocated) piece is addr2 u2, the extension is at addr.
+u (アドレス単位)によってヒープから割り当てられたメモリ・ブロック addr1 u1 を拡張します。  (おそらく再割り当てされた)開始アドレスは
+addr2 で、 その合計長さは u2 で、 拡張部分の開始アドレスは addr です(訳注: 例えば元々長さ10のブロックを5拡張すると( addr1
+10 5 -- addr2+10 addr2 10+5))
 
 
 
 
-The $tring words can also be used for dealing with memory blocks,
-@xref{$tring words}.
+$tring ワード群は、 メモリ・ブロックの処理にも使用できます。 @xref{$tring words} (訳注: $tring (ダラー
+tring)と String (エス string) とあることに注意)
 
-For growable memory buffers you can use $trings, or the following words.
-Because the allocated memory of a buffer managed with @code{adjust-buffer}
-does not shrink, there is no heap-management overhead when adjusting the
-buffer for a size smaller than the largest one seen yet.
+拡張可能なメモリ・バッファの場合は、 $trings または以下のワード群を使用できます。  @code{adjust-buffer}
+で管理されるバッファに割り当てられたメモリは縮小できないため、
+これまでに確認された最大サイズよりも小さいサイズにバッファを調整(adjust)するときはヒープ管理のオーバーヘッドは発生しません。
 
-@findex buffer% ( @var{ u1 u2 --   } ) gforth-experimental
+@findex buffer% ( @var{-- u1 u2  } ) gforth-experimental
 @cindex @code{buffer%}
 @kindex buffer%
 @format
-@code{buffer%} ( @i{u1 u2 --  }) gforth-experimental ``buffer%''
+@code{buffer%} ( @i{-- u1 u2  }) gforth-experimental ``buffer%''
 @end format
-@i{u1} is the alignment and @i{u2} is the size of a buffer descriptor.
+@i{u1} は アライメント(alignment)、 @i{u2} は バッファ・デスクリプタのサイズです。
 
 
 @findex init-buffer ( @var{ addr --   } ) gforth-experimental
@@ -7259,14 +7204,14 @@ buffer for a size smaller than the largest one seen yet.
 @format
 @code{adjust-buffer} ( @i{u addr --  }) gforth-experimental ``adjust-buffer''
 @end format
-Adjust buffer% at addr to length u.  This may grow the allocated area, but
-never shrinks it.
+addr の buffer% を長さ u に調整します。 これにより、 割り当てられた領域が拡大する可能性がありますが、
+決して縮小されることはありません。
 
 
 
-You can get the current address and length of such a buffer with @code{2@@}.
+@code{2@@} を使用すると、 このようなバッファの現在のアドレスと長さを取得できます。
 
-Typical usage:
+典型的な使い方:
 
 @example
 create mybuf  buffer% %size allot  mybuf init-buffer
@@ -7287,7 +7232,7 @@ mybuf 2@@ type
 @format
 @code{@@} ( @i{a-addr -- w }) core ``fetch''
 @end format
-@i{w} is the cell stored at @i{a_addr}.
+@i{a_addr} に保存されているセルを @i{w} に取得します。
 
 @findex ! ( @var{ w a-addr --  } ) core
 @cindex @code{!}
@@ -7295,7 +7240,7 @@ mybuf 2@@ type
 @format
 @code{!} ( @i{w a-addr -- }) core ``store''
 @end format
-Store @i{w} into the cell at @i{a-addr}.
+@i{w} を @i{a-addr} のセルに格納します。
 
 @findex +! ( @var{ n a-addr --  } ) core
 @cindex @code{+!}
@@ -7303,7 +7248,7 @@ Store @i{w} into the cell at @i{a-addr}.
 @format
 @code{+!} ( @i{n a-addr -- }) core ``plus-store''
 @end format
-Add @i{n} to the cell at @i{a-addr}.
+@i{a-addr} のセルに @i{n} を加算します。
 
 @findex c@@ ( @var{ c-addr -- c  } ) core
 @cindex @code{c@@}
@@ -7311,7 +7256,7 @@ Add @i{n} to the cell at @i{a-addr}.
 @format
 @code{c@@} ( @i{c-addr -- c }) core ``c-fetch''
 @end format
-@i{c} is the char stored at @i{c_addr}.
+@i{c_addr} に保存されている文字(char) を @i{c} に取得します。
 
 @findex c! ( @var{ c c-addr --  } ) core
 @cindex @code{c!}
@@ -7319,7 +7264,7 @@ Add @i{n} to the cell at @i{a-addr}.
 @format
 @code{c!} ( @i{c c-addr -- }) core ``c-store''
 @end format
-Store @i{c} into the char at @i{c-addr}.
+@i{c} を @i{c-addr} の char に格納します。
 
 @findex 2@@ ( @var{ a-addr -- w1 w2  } ) core
 @cindex @code{2@@}
@@ -7327,8 +7272,7 @@ Store @i{c} into the char at @i{c-addr}.
 @format
 @code{2@@} ( @i{a-addr -- w1 w2 }) core ``two-fetch''
 @end format
-@i{w2} is the content of the cell stored at @i{a-addr}, @i{w1} is the
-content of the next cell.
+@i{w2} は @i{a-addr} に格納されているセルの内容、 @i{w1} はその次のセルの内容です。
 
 @findex 2! ( @var{ w1 w2 a-addr --  } ) core
 @cindex @code{2!}
@@ -7336,7 +7280,7 @@ content of the next cell.
 @format
 @code{2!} ( @i{w1 w2 a-addr -- }) core ``two-store''
 @end format
-Store @i{w2} into the cell at @i{c-addr} and @i{w1} into the next cell.
+@i{w2} を @i{c-addr} のセルに格納し、 @i{w1} をその次のセルに格納します。
 
 @findex f@@ ( @var{ f-addr -- r  } ) floating
 @cindex @code{f@@}
@@ -7344,7 +7288,7 @@ Store @i{w2} into the cell at @i{c-addr} and @i{w1} into the next cell.
 @format
 @code{f@@} ( @i{f-addr -- r }) floating ``f-fetch''
 @end format
-@i{r} is the float at address @i{f-addr}.
+アドレス @i{f-addr} の浮動小数点数を @i{r} に取得します。
 
 @findex f! ( @var{ r f-addr --  } ) floating
 @cindex @code{f!}
@@ -7352,7 +7296,7 @@ Store @i{w2} into the cell at @i{c-addr} and @i{w1} into the next cell.
 @format
 @code{f!} ( @i{r f-addr -- }) floating ``f-store''
 @end format
-Store @i{r} into the float at address @i{f-addr}.
+@i{r} をアドレス @i{f-addr} の浮動小数点数として格納します。
 
 @findex sf@@ ( @var{ sf-addr -- r  } ) floating-ext
 @cindex @code{sf@@}
@@ -7360,8 +7304,7 @@ Store @i{r} into the float at address @i{f-addr}.
 @format
 @code{sf@@} ( @i{sf-addr -- r }) floating-ext ``s-f-fetch''
 @end format
-Fetch the single-precision IEEE floating-point value @i{r} from the address
-@i{sf-addr}.
+アドレス @i{sf-addr} から 単精度 IEEE 浮動小数点値を @i{r} に取得します。
 
 @findex sf! ( @var{ r sf-addr --  } ) floating-ext
 @cindex @code{sf!}
@@ -7369,8 +7312,7 @@ Fetch the single-precision IEEE floating-point value @i{r} from the address
 @format
 @code{sf!} ( @i{r sf-addr -- }) floating-ext ``s-f-store''
 @end format
-Store @i{r} as single-precision IEEE floating-point value to the address
-@i{sf-addr}.
+@i{r} を単精度 IEEE 浮動小数点値としてアドレス @i{sf-addr} に格納します。
 
 @findex df@@ ( @var{ df-addr -- r  } ) floating-ext
 @cindex @code{df@@}
@@ -7378,8 +7320,7 @@ Store @i{r} as single-precision IEEE floating-point value to the address
 @format
 @code{df@@} ( @i{df-addr -- r }) floating-ext ``d-f-fetch''
 @end format
-Fetch the double-precision IEEE floating-point value @i{r} from the address
-@i{df-addr}.
+アドレス @i{df-addr} からの倍精度 IEEE 浮動小数点値を @i{r} に取得します。
 
 @findex df! ( @var{ r df-addr --  } ) floating-ext
 @cindex @code{df!}
@@ -7387,8 +7328,7 @@ Fetch the double-precision IEEE floating-point value @i{r} from the address
 @format
 @code{df!} ( @i{r df-addr -- }) floating-ext ``d-f-store''
 @end format
-Store @i{r} as double-precision IEEE floating-point value to the address
-@i{df-addr}.
+@i{r} を 倍精度 IEEE 浮動小数点値としてアドレス @i{df-addr} からに保存します。
 
 
 @node Special Memory Accesses, Address arithmetic, Memory Access, Memory
@@ -7399,36 +7339,32 @@ Store @i{r} as double-precision IEEE floating-point value to the address
 @cindex sign extension
 @cindex unaligned memory access
 
-This section is about memory accesses useful for communicating with other
-software or other computers.  This means that the accesses are of a certain
-bit width (independent of Gforth's cell width), are possibly not naturally
-aligned and typically have a certain byte order that may be different from
-the native byte order of the system that Gforth runs on.
+このセクションでは、 他のソフトウェアや他のコンピュータと通信する際に役立つメモリ・アクセスについて説明します。  これは、
+アクセスが特定のビット幅であり(Gforth のセル幅とは独立)、 自然な並びでない可能性があり、 通常、 Gforth
+が実行されるシステムのネイティブなバイト順序(バイト・オーダー)とは異なる可能性がある特定のバイト順序を持つことを意味します。
 
-We use the following prefixes:
+私達は以下のプレフィックスを使います:
 
 @table @code
 @item c
-8 bits (character)
+8ビット(文字;character)
 @item w
-16 bits
+16ビット
 @item l
-32 bits
+32ビット
 @item x
-64 bits represented as one cell
+64 ビットを 1 つのセルとして表現
 @item xd
-64 bits represented as two cells
+64 ビットを 2 つのセルとして表現
 @end table
 
-The @code{x}-prefix words do not work properly on 32-bit systems, so for
-code that is intended to be portable to 32-bit systems you should use
-@code{xd}-prefix words.  Note that @code{xd}-prefix words work on 64-bit
-systems: there the upper cell is just 0 (for unsigned values)  or a sign
-extension of the lower cell.
+@code{x} プレフィックスのワードは 32 ビット・システムでは正しく機能しないため、 32
+ビット・システムに移植することを目的としたコードの場合は、 @code{xd} プレフィックスのワードを使用する必要があります。  注意:
+@code{xd} プレフィックスのワードは 64 ビット・システムでも動作することに注意してください。 64 ビット・システムでは、
+上位のセルは単なる 0 (符号なし値の場合)、 または下位のセルの符号拡張です。
 
-The memory-access words below all work with arbitrarily (un)aligned
-addresses (unlike @code{@@}, @code{!}, @code{f@@}, @code{f!}, which require
-alignment on some hardware).
+以下のメモリ・アクセス・ワード群はすべて、 任意の(非)アライメントされたアドレスで動作します(一部のハードウェアでアライメントが必要な
+@code{@@} や @code{!} や @code{f@@} や @code{f!} とは異なります)。
 
 @findex w@@ ( @var{ c-addr -- u  } ) gforth-0.5
 @cindex @code{w@@}
@@ -7436,7 +7372,7 @@ alignment on some hardware).
 @format
 @code{w@@} ( @i{c-addr -- u }) gforth-0.5 ``w-fetch''
 @end format
-@i{u} is the zero-extended 16-bit value stored at @i{c_addr}.
+@i{u} は @i{c_addr} に格納されているゼロ拡張された 16 ビット値(zero-extended 16-bit value)です。
 
 @findex w! ( @var{ w c-addr --  } ) gforth-0.7
 @cindex @code{w!}
@@ -7444,7 +7380,7 @@ alignment on some hardware).
 @format
 @code{w!} ( @i{w c-addr -- }) gforth-0.7 ``w-store''
 @end format
-Store the bottom 16 bits of @i{w} at @i{c_addr}.
+@i{w} の下位 16 ビットを @i{c_addr} に格納します。
 
 @findex l@@ ( @var{ c-addr -- u  } ) gforth-0.7
 @cindex @code{l@@}
@@ -7452,7 +7388,7 @@ Store the bottom 16 bits of @i{w} at @i{c_addr}.
 @format
 @code{l@@} ( @i{c-addr -- u }) gforth-0.7 ``l-fetch''
 @end format
-@i{u} is the zero-extended 32-bit value stored at @i{c_addr}.
+@i{u} は、 @i{c_addr} に格納されているゼロ拡張された 32 ビット値(zero-extended 32-bit value)です。
 
 @findex l! ( @var{ w c-addr --  } ) gforth-0.7
 @cindex @code{l!}
@@ -7460,7 +7396,7 @@ Store the bottom 16 bits of @i{w} at @i{c_addr}.
 @format
 @code{l!} ( @i{w c-addr -- }) gforth-0.7 ``l-store''
 @end format
-Store the bottom 32 bits of @i{w} at @i{c_addr}.
+@i{w} の下位 32 ビットを @i{c_addr} に格納します。
 
 @findex x@@ ( @var{ c-addr -- u  } ) gforth-1.0
 @cindex @code{x@@}
@@ -7468,7 +7404,7 @@ Store the bottom 32 bits of @i{w} at @i{c_addr}.
 @format
 @code{x@@} ( @i{c-addr -- u }) gforth-1.0 ``x-fetch''
 @end format
-@i{u} is the zero-extended 64-bit value stored at @i{c_addr}.
+@i{u} は、 @i{c_addr} に格納されているゼロ拡張された 64 ビット値です。
 
 @findex x! ( @var{ w c-addr --  } ) gforth-1.0
 @cindex @code{x!}
@@ -7476,7 +7412,7 @@ Store the bottom 32 bits of @i{w} at @i{c_addr}.
 @format
 @code{x!} ( @i{w c-addr -- }) gforth-1.0 ``x-store''
 @end format
-Store the bottom 64 bits of @i{w} at @i{c_addr}.
+@i{w} の下位 64 ビットを @i{c_addr} に格納します。
 
 @findex xd@@ ( @var{ c-addr -- ud  } ) gforth-1.0
 @cindex @code{xd@@}
@@ -7484,7 +7420,7 @@ Store the bottom 64 bits of @i{w} at @i{c_addr}.
 @format
 @code{xd@@} ( @i{c-addr -- ud }) gforth-1.0 ``x-d-fetch''
 @end format
-@i{ud} is the zero-extended 64-bit value stored at @i{c_addr}.
+@i{ud} は、 @i{c_addr} に格納されているゼロ拡張された 64 ビット値です。
 
 @findex xd! ( @var{ ud c-addr --  } ) gforth-1.0
 @cindex @code{xd!}
@@ -7492,13 +7428,11 @@ Store the bottom 64 bits of @i{w} at @i{c_addr}.
 @format
 @code{xd!} ( @i{ud c-addr -- }) gforth-1.0 ``x-d-store''
 @end format
-Store the bottom 64 bits of @i{ud} at @i{c_addr}.
+@i{ud} の下位 64 ビットを @i{c_addr} に格納します。
 
 
-For accesses with a specific byte order, you have to perform byte-order
-adjustment immediately after a fetch (before the sign-extension), or
-immediately before the store.  The results of these byte-order adjustment
-words are always zero-extended.
+特定のバイト順序(byte order)でアクセスする場合は、 取得直後(符号拡張の前)、 または格納の直前にバイト順序調整を行う必要があります。
+これらのバイト順調整ワードの結果は常にゼロ拡張(zero-extended)されます。
 
 @findex wbe ( @var{ u1 -- u2   } ) gforth-1.0
 @cindex @code{wbe}
@@ -7506,8 +7440,8 @@ words are always zero-extended.
 @format
 @code{wbe} ( @i{u1 -- u2  }) gforth-1.0 ``wbe''
 @end format
-Convert 16-bit value in @i{u1} from native byte order to big-endian or from
-big-endian to native byte order (the same operation)
+@i{u1} の 16 ビット値をネイティブ・バイト順からビッグ・エンディアンに、
+またはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 @findex wle ( @var{ u1 -- u2   } ) gforth-1.0
@@ -7516,8 +7450,8 @@ big-endian to native byte order (the same operation)
 @format
 @code{wle} ( @i{u1 -- u2  }) gforth-1.0 ``wle''
 @end format
-Convert 16-bit value in @i{u1} from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+@i{u1} の 16 ビット値をネイティブ・バイト順からリトル・エンディアンに、
+またはリトル・エンディアンからネイティブ・バイト順に変換します(両方の操作は同一の操作です)
 
 
 @findex lbe ( @var{ u1 -- u2   } ) gforth-1.0
@@ -7526,8 +7460,8 @@ from little-endian to native byte order (the same operation)
 @format
 @code{lbe} ( @i{u1 -- u2  }) gforth-1.0 ``lbe''
 @end format
-Convert 32-bit value in @i{u1} from native byte order to big-endian or from
-big-endian to native byte order (the same operation)
+@i{u1} の 32 ビット値をネイティブ・バイト順からビッグ・エンディアンに、
+またはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 @findex lle ( @var{ u1 -- u2   } ) gforth-1.0
@@ -7536,8 +7470,8 @@ big-endian to native byte order (the same operation)
 @format
 @code{lle} ( @i{u1 -- u2  }) gforth-1.0 ``lle''
 @end format
-Convert 32-bit value in @i{u1} from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+@i{u1} の 32 ビット値をネイティブ・バイト順からリトル・エンディアンに、
+またはリトル・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 @findex xbe ( @var{ u1 -- u2   } ) gforth-1.0
@@ -7546,8 +7480,8 @@ from little-endian to native byte order (the same operation)
 @format
 @code{xbe} ( @i{u1 -- u2  }) gforth-1.0 ``xbe''
 @end format
-Convert 64-bit value in @i{u1} from native byte order to big-endian or from
-big-endian to native byte order (the same operation)
+@i{u1} の 64 ビット値をネイティブ・バイト順からビッグ・エンディアンに、
+またはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 @findex xle ( @var{ u1 -- u2   } ) gforth-1.0
@@ -7556,8 +7490,8 @@ big-endian to native byte order (the same operation)
 @format
 @code{xle} ( @i{u1 -- u2  }) gforth-1.0 ``xle''
 @end format
-Convert 64-bit value in @i{u1} from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+@i{u1} の 64 ビット値をネイティブ・バイト順からリトル・エンディアンに、
+またはリトル・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 @findex xdbe ( @var{ ud1 -- ud2   } ) gforth-1.0
@@ -7566,8 +7500,8 @@ from little-endian to native byte order (the same operation)
 @format
 @code{xdbe} ( @i{ud1 -- ud2  }) gforth-1.0 ``xdbe''
 @end format
-Convert 64-bit value in @i{ud1} from native byte order to big-endian or from
-big-endian to native byte order (the same operation)
+@i{ud1} の 64 ビット値をネイティブ・バイト順からビッグ・エンディアンに、
+またはビッグ・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 @findex xdle ( @var{ ud1 -- ud2   } ) gforth-1.0
@@ -7576,13 +7510,12 @@ big-endian to native byte order (the same operation)
 @format
 @code{xdle} ( @i{ud1 -- ud2  }) gforth-1.0 ``xdle''
 @end format
-Convert 64-bit value in @i{ud1} from native byte order to little-endian or
-from little-endian to native byte order (the same operation)
+@i{ud1} の 64 ビット値をネイティブ・バイト順からリトル・エンディアンに、
+またはリトル・エンディアンからネイティブ・バイト順に変換します(両方は同一の操作です)
 
 
 
-For signed fetches with a specific byte order, you have to perform a
-sign-extension word after an unsigned fetch and a byte-order correction:
+特定のバイト順序での符号付きでの取得の場合、 符号なし取得とバイト順序修正の後に符号拡張ワードを実行する必要があります:
 
 @findex c>s ( @var{ x -- n  } ) gforth-1.0
 @cindex @code{c>s}
@@ -7590,7 +7523,7 @@ sign-extension word after an unsigned fetch and a byte-order correction:
 @format
 @code{c>s} ( @i{x -- n }) gforth-1.0 ``c-to-s''
 @end format
-Sign-extend the 8-bit value in @i{x} to cell @i{n}.
+@i{x} の 8 ビット値をセル @i{n} に符号拡張します。
 
 @findex w>s ( @var{ x -- n  } ) gforth-1.0
 @cindex @code{w>s}
@@ -7598,7 +7531,7 @@ Sign-extend the 8-bit value in @i{x} to cell @i{n}.
 @format
 @code{w>s} ( @i{x -- n }) gforth-1.0 ``w-to-s''
 @end format
-Sign-extend the 16-bit value in @i{x} to cell @i{n}.
+@i{x} の 16 ビット値をセル @i{n} に符号拡張します。
 
 @findex l>s ( @var{ x -- n  } ) gforth-1.0
 @cindex @code{l>s}
@@ -7606,7 +7539,7 @@ Sign-extend the 16-bit value in @i{x} to cell @i{n}.
 @format
 @code{l>s} ( @i{x -- n }) gforth-1.0 ``l-to-s''
 @end format
-Sign-extend the 32-bit value in @i{x} to cell @i{n}.
+@i{x} の 32 ビット値をセル @i{n} に符号拡張します。
 
 @findex x>s ( @var{ x -- n   } ) gforth-1.0
 @cindex @code{x>s}
@@ -7614,7 +7547,7 @@ Sign-extend the 32-bit value in @i{x} to cell @i{n}.
 @format
 @code{x>s} ( @i{x -- n  }) gforth-1.0 ``x>s''
 @end format
-Sign-extend the 64-bit value in @i{x} to cell @i{n}.
+@i{x} の 64 ビット値をセル @i{n} に符号拡張します。
 
 
 @findex xd>s ( @var{ xd -- d   } ) gforth-1.0
@@ -7623,59 +7556,51 @@ Sign-extend the 64-bit value in @i{x} to cell @i{n}.
 @format
 @code{xd>s} ( @i{xd -- d  }) gforth-1.0 ``xd>s''
 @end format
-Sign-extend the 64-bit value in @var{xd} to double-ceel @var{d}.
+@var{xd} の 64 ビット値を 2倍長セル @var{d} に符号拡張します。
 
 
 
-Overall, this leads to sequences like
+これら全般を、 以下のような流れで使います:
 
 @example
-w@@ wbe w>s   \ 16-bit unaligned signed big-endian fetch
->r lle r> l! \ 32-bit unaligned little-endian store
+w@@ wbe w>s   \ 16ビット 非アライメント 符号付き ビッグ・エンディアン を取得し、
+>r lle r> l!  \ 32-bit 非アライメント リトル・エンディアン として 格納
 @end example
 
 @node Address arithmetic, Memory Blocks, Special Memory Accesses, Memory
 @subsection Address arithmetic
 @cindex address arithmetic words
 
-Address arithmetic is the foundation on which you can build data structures
-like arrays, records (@pxref{Structures}) and objects
-(@pxref{Object-oriented Forth}).
+アドレス演算は、 配列やレコード(@pxref{Structures})やオブジェクト(@pxref{Object-oriented
+Forth})のようなデータ構造を構築可能な基礎基盤です。
 
 @cindex address unit
 @cindex au (address unit)
-Standard Forth does not specify the sizes of the data types. Instead, it
-offers a number of words for computing sizes and doing address
-arithmetic. Address arithmetic is performed in terms of address units (aus);
-on most systems the address unit is one byte. Note that a character may have
-more than one au, so @code{chars} is no noop (on platforms where it is a
-noop, it compiles to nothing).
+標準 Forth では、 データ型のサイズは規定されていません。 代わりに、 サイズを計算したりアドレス演算を行うための多数のワードが提供されます。
+アドレス演算はアドレス単位(au;Address Unit, aus;Address UnitS)で実行されます。 ほとんどのシステムでは、
+1アドレス単位は 1 バイトです。 注意: 1 つの文字に複数 au が含まれる可能性があるため、 @code{chars}
+は何もしない(noop)訳ではないことに注意してください(noop であるプラットフォームでは、 @code{chars} は何もコンパイルしません)。
 
-The basic address arithmetic words are @code{+} and @code{-}.  E.g., if you
-have the address of a cell, perform @code{1 cells +}, and you will have the
-address of the next cell.
+基本的なアドレス算術ワードは @code{+} と @code{-} です。 たとえば、 セルのアドレスがわかっている場合、 @code{1 cells
++} を実行すると、 次のセルのアドレスがわかります。
 
 @cindex alignment of addresses for types
-Standard Forth also defines words for aligning addresses for specific
-types. Many computers require that accesses to specific data types must only
-occur at specific addresses; e.g., that cells may only be accessed at
-addresses divisible by 4. Even if a machine allows unaligned accesses, it
-can usually perform aligned accesses faster. 
+標準 Forth では、 特定の型のアドレスをアライメントするためのワードも定義されています。 多くのコンピュータでは、
+特定のデータ型へのアクセスは特定のアドレスでのみ行われる必要があります。 たとえば、 セルは 4 で割り切れるアドレスでのみアクセスできます。
+マシンが非アライメント・アクセスを許可する場合でも、 通常はアライメント・アクセスの方が高速に実行できます。 
 
-For the performance-conscious: alignment operations are usually only
-necessary during the definition of a data structure, not during the (more
-frequent) accesses to it.
+パフォーマンス重視で行く場合: 通常、 アライメント操作はデータ構造の定義中にのみ必要であり、
+(より頻繁な)データ構造へのアクセス中には必要ありません。
 
-Standard Forth defines no words for character-aligning addresses; in
-Forth-2012 all addresses are character-aligned.
+標準 Forth では、 文字のアドレス・アライメント用ワードは定義されていません。 Forth-2012
+では、すべてのアドレスが文字単位でアライメントされています(all addresses are character-aligned)
 
 @cindex @code{CREATE} and alignment
-Standard Forth guarantees that addresses returned by @code{CREATE}d words
-are cell-aligned; in addition, Gforth guarantees that these addresses are
-aligned for all purposes.
+標準 Forth は、 @code{CREATE} されたワードによって返されるアドレスがセル・アライメントされていることを保証します。
+さらに、Gforth は、 こ​​れらのアドレスがあらゆる目的に合わせてアライメント済みであることを保証します(addresses are
+aligned for all purposes)。
 
-Note that the Standard Forth word @code{char} has nothing to do with address
-arithmetic.
+注意: 標準の Forth ワード @code{char} はアドレス演算とは何の関係もないことに注意してください。
 
 
 @findex chars ( @var{ n1 -- n2   } ) core
@@ -7684,7 +7609,7 @@ arithmetic.
 @format
 @code{chars} ( @i{n1 -- n2  }) core ``chars''
 @end format
-@i{n2} is the number of address units of @i{n1} chars.""
+@i{n1} 文字(char)が何アドレス単位になるかを @i{n2} に返します。
 
 
 @findex char+ ( @var{ c-addr1 -- c-addr2  } ) core
@@ -7708,7 +7633,7 @@ arithmetic.
 @format
 @code{cells} ( @i{n1 -- n2 }) core ``cells''
 @end format
- @i{n2} is the number of address units of @i{n1} cells.
+ @i{n1} 個のセルのアドレス単位の数を @i{n2} に取得します。
 
 @findex cell+ ( @var{ a-addr1 -- a-addr2  } ) core
 @cindex @code{cell+}
@@ -7732,7 +7657,7 @@ arithmetic.
 @format
 @code{cell/} ( @i{n1 -- n2 }) gforth-1.0 ``cell-divide''
 @end format
-@i{n2} is the number of cells that fit into @i{n1}
+@i{n1} 個のアドレス単位の幅の中に入れられるセルの数が @i{n2} です
 
 @findex cell ( @var{ -- u   } ) gforth-0.2
 @cindex @code{cell}
@@ -7740,7 +7665,7 @@ arithmetic.
 @format
 @code{cell} ( @i{-- u  }) gforth-0.2 ``cell''
 @end format
-@code{Constant} -- @code{1 cells}
+定数 -- @code{1 cells}
 
 
 @findex aligned ( @var{ c-addr -- a-addr  } ) core
@@ -7749,7 +7674,7 @@ arithmetic.
 @format
 @code{aligned} ( @i{c-addr -- a-addr }) core ``aligned''
 @end format
- @i{a-addr} is the first aligned address greater than or equal to @i{c-addr}.
+ @i{a-addr} は、 @i{c-addr} 以上の最初にアライメントされたアドレスです。
 
 @findex floats ( @var{ n1 -- n2  } ) floating
 @cindex @code{floats}
@@ -7757,7 +7682,7 @@ arithmetic.
 @format
 @code{floats} ( @i{n1 -- n2 }) floating ``floats''
 @end format
-@i{n2} is the number of address units of @i{n1} floats.
+@i{n2} は @i{n1} 個の浮動小数点数(float)のアドレスユニットの数です。
 
 @findex float+ ( @var{ f-addr1 -- f-addr2  } ) floating
 @cindex @code{float+}
@@ -7773,8 +7698,7 @@ arithmetic.
 @format
 @code{float} ( @i{-- u  }) gforth-0.3 ``float''
 @end format
-@code{Constant} -- the number of address units corresponding to a
-floating-point number.
+定数 -- 浮動小数点数に対応するアドレスユニットの数。
 
 
 @findex float/ ( @var{ n1 -- n2  } ) gforth-1.0
@@ -7790,8 +7714,7 @@ floating-point number.
 @format
 @code{faligned} ( @i{c-addr -- f-addr }) floating ``f-aligned''
 @end format
- @i{f-addr} is the first float-aligned address greater than or equal to
-@i{c-addr}.
+ @i{f-addr} は、@i{c-addr} 以上の、 浮動小数点数にアライメントされた最初のアドレスです。
 
 @findex sfloats ( @var{ n1 -- n2  } ) floating-ext
 @cindex @code{sfloats}
@@ -7799,8 +7722,7 @@ floating-point number.
 @format
 @code{sfloats} ( @i{n1 -- n2 }) floating-ext ``s-floats''
 @end format
-@i{n2} is the number of address units of @i{n1} single-precision IEEE
-floating-point numbers.
+@i{n2} は、 @i{n1} 個の単精度 IEEE 浮動小数点数のアドレス単位の数です。
 
 @findex sfloat+ ( @var{ sf-addr1 -- sf-addr2   } ) floating-ext
 @cindex @code{sfloat+}
@@ -7824,8 +7746,7 @@ floating-point numbers.
 @format
 @code{sfaligned} ( @i{c-addr -- sf-addr }) floating-ext ``s-f-aligned''
 @end format
-@i{sf-addr} is the first single-float-aligned address greater than or equal
-to @i{c-addr}.
+@i{sf-addr} は、 @i{c-addr} 以上の、 最初の単精度浮動小数点数アライメント・アドレスです。
 
 @findex dfloats ( @var{ n1 -- n2  } ) floating-ext
 @cindex @code{dfloats}
@@ -7833,8 +7754,7 @@ to @i{c-addr}.
 @format
 @code{dfloats} ( @i{n1 -- n2 }) floating-ext ``d-floats''
 @end format
-@i{n2} is the number of address units of @i{n1} double-precision IEEE
-floating-point numbers.
+@i{n2} は、 @i{n1} 個の倍精度 IEEE 浮動小数点数のアドレス単位の数です。
 
 @findex dfloat+ ( @var{ df-addr1 -- df-addr2   } ) floating-ext
 @cindex @code{dfloat+}
@@ -7858,8 +7778,7 @@ floating-point numbers.
 @format
 @code{dfaligned} ( @i{c-addr -- df-addr }) floating-ext ``d-f-aligned''
 @end format
-@i{df-addr} is the first double-float-aligned address greater than or equal
-to @i{c-addr}.
+@i{df-addr} は、 @i{c-addr} 以上の、 最初の倍精度浮動小数点数アライメント・アドレスです。
 
 @findex maxaligned ( @var{ addr1 -- addr2   } ) gforth-0.2
 @cindex @code{maxaligned}
@@ -7867,8 +7786,7 @@ to @i{c-addr}.
 @format
 @code{maxaligned} ( @i{addr1 -- addr2  }) gforth-0.2 ``maxaligned''
 @end format
-@i{addr2} is the first address after @i{addr1} that satisfies all alignment
-restrictions.  maxaligned"
+@i{addr2} は、 すべてのアライメント制限を満たす @i{addr1} 以上の最初のアドレスです。
 
 
 @findex cfaligned ( @var{ addr1 -- addr2   } ) gforth-0.2
@@ -7877,8 +7795,8 @@ restrictions.  maxaligned"
 @format
 @code{cfaligned} ( @i{addr1 -- addr2  }) gforth-0.2 ``cfaligned''
 @end format
-@i{addr2} is the first address after @i{addr1} that is aligned for a code
-field (i.e., such that the corresponding body is maxaligned).
+@i{addr2} は、 @i{addr1} 以上の最初のアドレスで、 コード・フィールド用にアライメントされています(つまり、
+対応する本体(body)が maxalign されるようにします)。
 
 
 @findex *aligned ( @var{ addr1 n -- addr2   } ) gforth-1.0
@@ -7887,8 +7805,7 @@ field (i.e., such that the corresponding body is maxaligned).
 @format
 @code{*aligned} ( @i{addr1 n -- addr2  }) gforth-1.0 ``*aligned''
 @end format
-@var{addr2} is the aligned version of @var{addr1} with respect to the
-alignment @var{n}.
+@var{addr1} 以上で、 @var{n} でアライメントされた(@var{n} で割り切れる)アドレスを @var{addr2} に返します。
 
 
 @findex *align ( @var{ n --   } ) gforth-1.0
@@ -7897,7 +7814,7 @@ alignment @var{n}.
 @format
 @code{*align} ( @i{n --  }) gforth-1.0 ``*align''
 @end format
-Align @code{here} with respect to the alignment @var{n}.
+@code{here} を @var{n} で割り切れるアドレスにアライメントします。
 
 
 @findex waligned ( @var{ addr -- addr'   } ) gforth-1.0
@@ -7906,7 +7823,7 @@ Align @code{here} with respect to the alignment @var{n}.
 @format
 @code{waligned} ( @i{addr -- addr'  }) gforth-1.0 ``waligned''
 @end format
-@i{Addr'} is the next even address >= @i{addr}.
+@i{Addr'} は、 @i{addr} 以上、かつ、次の偶数アドレスです。
 
 
 @findex walign ( @var{ --   } ) gforth-1.0
@@ -7915,7 +7832,7 @@ Align @code{here} with respect to the alignment @var{n}.
 @format
 @code{walign} ( @i{--  }) gforth-1.0 ``walign''
 @end format
-Align @code{here} to even.
+@code{here} を 偶数アドレスにアライメントします。
 
 
 @findex laligned ( @var{ addr -- addr'   } ) gforth-1.0
@@ -7924,7 +7841,7 @@ Align @code{here} to even.
 @format
 @code{laligned} ( @i{addr -- addr'  }) gforth-1.0 ``laligned''
 @end format
-@i{Addr'} is the next address >= @i{addr} divisible by 4.
+@i{Addr'} は、 @i{addr} 以上、 かつ、 4 で割り切れるアドレスです。
 
 
 @findex lalign ( @var{ --   } ) gforth-1.0
@@ -7933,7 +7850,7 @@ Align @code{here} to even.
 @format
 @code{lalign} ( @i{--  }) gforth-1.0 ``lalign''
 @end format
-Align @code{here} to be divisible by 4.
+@code{here} を 4 で割り切れるアドレスにアライメントします。
 
 
 @findex xaligned ( @var{ addr -- addr'   } ) gforth-1.0
@@ -7942,7 +7859,7 @@ Align @code{here} to be divisible by 4.
 @format
 @code{xaligned} ( @i{addr -- addr'  }) gforth-1.0 ``xaligned''
 @end format
-@i{Addr'} is the next address >= @i{addr} divisible by 8.
+@i{Addr'} を @i{addr} 以上、 かつ、 8 で割り切れるアドレスにします。
 
 
 @findex xalign ( @var{ --   } ) gforth-1.0
@@ -7951,13 +7868,12 @@ Align @code{here} to be divisible by 4.
 @format
 @code{xalign} ( @i{--  }) gforth-1.0 ``xalign''
 @end format
-Align @code{here} to be divisible by 8.
+@code{here} を 8 で割り切れるアドレスにアライメントします。
 
 
 
-The environmental query @code{address-unit-bits} (@pxref{Environmental
-Queries}) and the following words may be useful to those who want to write
-software portable to non-byte-addressed machines.
+環境クエリ @code{address-unit-bits} (@pxref{Environmental Queries}) と、 以下のワード群は、
+バイトアドレスを持たないマシン(non-byte-addressed machines)に移植可能なソフトウェアを作成したい人に役立つかもしれません。
 
 @findex /w ( @var{ -- u   } ) gforth-0.7
 @cindex @code{/w}
@@ -7965,7 +7881,7 @@ software portable to non-byte-addressed machines.
 @format
 @code{/w} ( @i{-- u  }) gforth-0.7 ``slash-w''
 @end format
-address units for a 16-bit value
+16ビット値に必要なアドレス単位
 
 
 @findex /l ( @var{ -- u   } ) gforth-0.7
@@ -7974,7 +7890,7 @@ address units for a 16-bit value
 @format
 @code{/l} ( @i{-- u  }) gforth-0.7 ``slash-l''
 @end format
-address units for a 32-bit value
+32ビット値に必要なアドレス単位
 
 
 @findex /x ( @var{ -- u   } ) gforth-1.0
@@ -7983,7 +7899,7 @@ address units for a 32-bit value
 @format
 @code{/x} ( @i{-- u  }) gforth-1.0 ``slash-x''
 @end format
-address units for a 64-bit value
+64ビット値に必要なアドレス単位
 
 
 
@@ -7992,18 +7908,17 @@ address units for a 64-bit value
 @cindex memory block words
 @cindex character strings - moving and copying
 
-Memory blocks often represent character strings; For ways of storing
-character strings in memory see @ref{String representations}.  For other
-string-processing words see @ref{Displaying characters and strings}.
+メモリ・ブロックは多くの場合、 文字の連なり(character strings)を表します。 文字の連なりをメモリに保存する方法については、
+@ref{String representations} を参照してください。  他の連なり処理ワード(string-processing
+words)については、 @ref{Displaying characters and strings} を参照してください。
 
-A few of these words work on address unit blocks.  In that case, you usually
-have to insert @code{CHARS} before the word when working on character
-strings.  Most words work on character blocks, and expect a char-aligned
-address.
+これらのワードのいくつかは、 アドレス単位ブロック(address unit blocks)で機能します。  その場合、
+文字の連なり(character strings)を扱う際には通常、 ワードの前に @code{CHARS} を挿入する必要があります。
+ほとんどのワードは文字ブロック(character blocks)で機能し、 文字アライメント・アドレス(char-aligned
+address)を期待します。
 
-When copying characters between overlapping memory regions, use
-@code{move}.  @code{Cmove} and @code{cmove>} tend to be slower than a
-well-implemented @code{move}.
+重複するメモリ領域間で文字達をコピーする場合は、 @code{move} を使用します。  @code{cmove} と @code{cmove>}
+は、 適切に実装された @code{move} よりも遅くなる傾向があります。
 
 @findex move ( @var{ c-from c-to ucount --  } ) core
 @cindex @code{move}
@@ -8011,8 +7926,8 @@ well-implemented @code{move}.
 @format
 @code{move} ( @i{c-from c-to ucount -- }) core ``move''
 @end format
-Copy the contents of @i{ucount} aus at @i{c-from} to @i{c-to}. @code{move}
-works correctly even if the two areas overlap.
+@i{c-from} アドレスにある @i{ucount} 個のcharの内容を @i{c-to} アドレスにコピーします。 @code{move}
+は、 2 つの領域が重なっている場合でも正しく機能します。
 
 @findex cmove ( @var{ c-from c-to u --  } ) string
 @cindex @code{cmove}
@@ -8020,10 +7935,9 @@ works correctly even if the two areas overlap.
 @format
 @code{cmove} ( @i{c-from c-to u -- }) string ``c-move''
 @end format
-Copy the contents of @i{ucount} characters from data space at @i{c-from} to
-@i{c-to}. The copy proceeds @code{char}-by-@code{char} from low address to
-high address; i.e., for overlapping areas it is safe if
-@i{c-to}<=@i{c-from}.
+データ空間で @i{c-from} アドレスから @i{ucount} 個のcharの内容を @i{c-to} アドレスにコピーします。コピーは、  1
+@code{char} ずつコピーしながら下位アドレスから上位アドレス方向へ進めます。 つまり、 重複領域の場合、 @i{c-to} <=
+@i{c-from} であれば安全です。
 
 @findex cmove> ( @var{ c-from c-to u --  } ) string
 @cindex @code{cmove>}
@@ -8031,9 +7945,9 @@ high address; i.e., for overlapping areas it is safe if
 @format
 @code{cmove>} ( @i{c-from c-to u -- }) string ``c-move-up''
 @end format
-Copy the contents of @i{ucount} characters from data space at @i{c-from} to
-@i{c-to}. The copy proceeds @code{char}-by-@code{char} from high address to
-low address; i.e., for overlapping areas it is safe if @i{c-to}>=@i{c-from}.
+データ空間で @i{c-from} アドレスから @i{ucount} 個のcharの内容を @i{c-to} アドレスにコピーします。 コピーは、 1
+@code{char} ずつコピーし上位アドレスから下位アドレス方向に進みます。 つまり、 重複領域の場合、 @i{c-to} >=
+@i{c-from} であれば安全です。
 
 @findex fill ( @var{ c-addr u c --  } ) core
 @cindex @code{fill}
@@ -8041,7 +7955,7 @@ low address; i.e., for overlapping areas it is safe if @i{c-to}>=@i{c-from}.
 @format
 @code{fill} ( @i{c-addr u c -- }) core ``fill''
 @end format
-Store @i{c} in @i{u} chars starting at @i{c-addr}.
+@i{c} を @i{c-addr} から @i{u} 個char単位で格納します。
 
 @findex erase ( @var{ addr u --   } ) core-ext
 @cindex @code{erase}
@@ -8049,7 +7963,7 @@ Store @i{c} in @i{u} chars starting at @i{c-addr}.
 @format
 @code{erase} ( @i{addr u --  }) core-ext ``erase''
 @end format
-Clear all bits in @i{u} aus starting at @i{addr}.
+@i{addr} から始まる @i{u} aus のすべてのビットをクリアします。
 
 
 @findex blank ( @var{ c-addr u --   } ) string
@@ -8058,7 +7972,7 @@ Clear all bits in @i{u} aus starting at @i{addr}.
 @format
 @code{blank} ( @i{c-addr u --  }) string ``blank''
 @end format
-Store the space character into @i{u} chars starting at @i{c-addr}.
+スペース文字を @i{c-addr} アドレスから @i{u} 個char単位で格納します。
 
 
 @findex insert ( @var{ string length buffer size --   } ) gforth-0.7
@@ -8067,7 +7981,7 @@ Store the space character into @i{u} chars starting at @i{c-addr}.
 @format
 @code{insert} ( @i{string length buffer size --  }) gforth-0.7 ``insert''
 @end format
-inserts a string at the front of a buffer. The remaining bytes are moved on.
+バッファの先頭に文字列を挿入します。 残りのバイトは後ろにずらされます(訳注: sizeを超えた分は捨てられます)。
 
 
 @findex delete ( @var{ buffer size u --   } ) gforth-0.7
@@ -8076,8 +7990,7 @@ inserts a string at the front of a buffer. The remaining bytes are moved on.
 @format
 @code{delete} ( @i{buffer size u --  }) gforth-0.7 ``delete''
 @end format
-deletes the first @var{u} bytes from a buffer and fills the rest at the end
-with blanks.
+最初の @var{u} バイトをバッファから削除し、 その分前にずらして、 残りの最後のバイトを空白(0x20)で埋めます。
 
 
 @findex compare ( @var{ c-addr1 u1 c-addr2 u2 -- n  } ) string
@@ -8086,10 +7999,10 @@ with blanks.
 @format
 @code{compare} ( @i{c-addr1 u1 c-addr2 u2 -- n }) string ``compare''
 @end format
-Compare two strings lexicographically, based on the values of the bytes in
-the strings (i.e., case-sensitive and without locale-specific collation
-order orderings). If they are equal, @i{n} is 0; if the first string is
-smaller, @i{n} is -1; if the first string is larger, @i{n} is 1.
+連なり(string)内のバイトの値に基づいて、 2
+つの連なり(strings)を(英語の)辞書順(lexicographically)に比較します(つまり、 英大文字と小文字が区別され、
+ロケール固有の照合順序は無視されます)。 2つが等しい場合、 @i{n} は 0 です。 最初の連なり(string)が小さい場合、 @i{n} は
+-1 です。 最初の連なり(string)が大きい場合、 @i{n} は 1 です。
 
 @findex pad ( @var{ -- c-addr   } ) core-ext
 @cindex @code{pad}
@@ -8097,8 +8010,7 @@ smaller, @i{n} is -1; if the first string is larger, @i{n} is 1.
 @format
 @code{pad} ( @i{-- c-addr  }) core-ext ``pad''
 @end format
-@var{c-addr} is the address of a transient region that can be used as
-temporary data storage. At least 84 characters of space is available.
+@var{c-addr} は、 一時的なデータ・ストレージとして使用できる一時領域のアドレスです。 少なくとも 84 文字分の空間が使用可能です。
 
 
 
@@ -19775,7 +19687,7 @@ are documented here:
 @format
 @code{lp@@} ( @i{-- c-addr }) gforth-0.2 ``lp-fetch''
 @end format
-@i{C_addr} is the current value of the locals stack pointer.
+@i{C_addr} は、 ローカル・スタック・ポインタの現在の値です。
 
 doc-lp+!#
 @findex lp! ( @var{ c-addr --  } ) gforth-internal

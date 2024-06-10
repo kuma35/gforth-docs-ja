@@ -5,7 +5,7 @@ cd ${PROJ}/doc-po
 make ja
 exitcode=$?
 if [ ${exitcode} -ne 0 ]; then
-    notify-send -u critical gforth-docs-ja "doc-po/Makefile エラー"
+    notify-send --hint=int:resident:0 -u critical gforth-docs-ja "doc-po/Makefile エラー"
     exit ${exitcode}
 fi
 cd ${PROJ}/doc-ja
@@ -21,7 +21,7 @@ done
 make info $*
 exitcode=$?
 if [ ${exitcode} -ne 0 ]; then
-    notify-send -u critical gforth-docs-ja "doc-ja/Makefile エラー"
+    notify-send --hint=int:resident:0 -u critical gforth-docs-ja "doc-ja/Makefile エラー"
     exit ${exitcode}
 fi
 
