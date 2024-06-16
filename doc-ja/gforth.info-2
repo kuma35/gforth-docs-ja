@@ -27,34 +27,215 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: $tring words,  Next: Counted string words,  Prev: String words,  Up: Strings and Characters
+
+6.8.5 $tring words
+------------------
+
+以下の文字列ライブラリは、 文字列を通常のセル・サイズの変数(文字列ハンド
+ル;string handle)に格納します。 これらのハンドルには、 ヒープに割り当て
+られたセル・カウント文字列(cell-counted string;カウンタがセルサイズであ
+るカウンタ付き文字列)へのポインタが含まれています。 この文字列ライブラリ
+は bigFORTH 由来です。
+
+   内容への恒久的な参照は 1 つだけ(ハンドル内の参照)しかないため、 未解
+決の参照を恐れることなく文字列を再配置または削除できます。 これには、 プ
+ログラマが、 例えば ‘$@’ 等によって生成された参照を一時的な目的でのみ使
+用する必要があります。 つまり、 これらの一時的な参照は、 戻り値として渡
+されたり、 グローバル・メモリに格納されたりすることはなく、 ハンドルを変
+更する可能性のあるワードは、 これらの一時的な参照が存在する間は呼び出さ
+れません。
+
+   このライブラリを補完するものとしてセルペア表現(cell-pair
+representation)があります。 文字列変数に対して $tring ワードを使用します
+が、 これは c-addr u 表現では面倒です。 セルペア表現は、 文字列を変更し
+ないで処理(検査など)するために使用します。
+
+‘$!’ ( addr1 u $addr –  ) gforth-0.7 “string-store”
+   新しく割り当てられた文字列バッファをアドレス($addr)が指す先に格納し、
+必要に応じて以前のバッファを解放します。
+
+‘$@’ ( $addr – addr2 u  ) gforth-0.7 “string-fetch”
+   格納された文字列のアドレスと長さを返します。
+
+‘$@len’ ( $addr – u  ) gforth-0.7 “string-fetch-len”
+   格納されている文字列の長さを返します。
+
+‘$!len’ ( u $addr –  ) gforth-0.7 “string-store-len”
+   格納されている文字列(string)領域の長さを変更します(足し算ではない。 長
+さを直にいじる) それゆえ、メモリ領域を変更し、 アドレスとカウンタ・セル
+も調整(adjust)する必要があります(訳注: 元の長さより長くした場合、 領域を
+拡張するだけで初期化はしない。 そこにはゴミが入っているので自分で初期化
+する必要がある)
+
+‘$+!len’ ( u $addr – addr  ) gforth-1.0 “string-plus-store-len”
+   $addr によって参照されるメモリ領域の最後に u バイト用の空間を確保しま
+す(追加。確保するだけで初期化はしない。 $addr の「長さ」に追加もする)。
+addr は、 確保した空間の最初のアドレスです。
+
+‘$del’ ( addr off u –  ) gforth-0.7 “string-del”
+   文字列のオフセット位置 OFF から U バイト削除します。
+
+‘$ins’ ( addr1 u $addr off –  ) gforth-0.7 “string-ins”
+   オフセット位置 OFF に文字列を挿入します。
+
+‘$+!’ ( addr1 u $addr –  ) gforth-0.7 “string-plus-store”
+   文字列(addr1 u)を別の文字列($addr)に追加します。
+
+‘c$+!’ ( char $addr –  ) gforth-1.0 “c-string-plus-store”
+   文字列に文字を追加します。
+
+‘$free’ ( $addr –  ) gforth-1.0 “string-free”
+   $addr が指す文字列を解放し、 $addr のポインタを 0 にします( $ すると
+0 0 を返す)
+
+‘$init’ ( $addr –  ) gforth-1.0 “string-init”
+   以前に何があったかに関係なく、そこに空の文字列を保存します(訳注: ポイ
+ンタを 0 にする訳ではなくて、 ポインタの指す先に長さゼロの文字列がある)
+
+‘$split’ ( addr u char – addr1 u1 addr2 u2  ) gforth-0.7 “string-split”
+   文字列中で最初に現れる char を区切り文字として文字列を 2 つに分割しま
+す(例: HTML クエリの引数の ’?’)(訳注: 区切り文字 char 自体は分割後の文字
+列に含まれない)
+
+‘$iter’ ( .. $addr char xt – ..  ) gforth-0.7 “string-iter”
+   区切り文字 char で切り出した部分文字列(addr u)ごとに xt を呼び出しま
+す。 xt は (addr u – ) でなければなりません。 これにより、 例えば ’&’ で
+区切られた引数を簡単に分解できます(訳注: : my-type ( addr u – ) ."  ["
+type ."  ]"  ; variable title s" GNU gforth manual" title $!  title
+$ my-type [GNU gforth manual] title bl ’ my-type $iter
+[GNU][gforth][manual] ok)。
+
+‘$over’ ( addr u $addr off –  ) gforth-1.0 “string-over”
+   $addr の文字列のオフセット位置 off から文字列(addr u)で上書きします。
+
+‘$exec’ ( xt addr –  ) gforth-1.0 “string-exec”
+   実行トークン xt を実行し、 その標準出力(TYPE や EMIT やそれらを使用す
+るすべてのもの)を addr が指す文字列の末尾に「追加」します。
+
+‘$tmp’ ( xt – addr u  ) gforth-1.0 “string-t-m-p”
+   ワードの出力から一時的な文字列を生成します
+
+‘$.’ ( addr –  ) gforth-1.0 “string-dot”
+   文字列を出力する、 ショートカット( $ TYPE → $.  )
+
+‘$slurp’ ( fid addr –  ) gforth-1.0 “string-slurp”
+   (slurp;音を立ててすする)ファイル fid を最後まで読み取り(ファイルのク
+ローズは行いません)、 読み取ったデータを addr の指す文字列に入れます。
+
+‘$slurp-file’ ( c-addr u addr –  ) gforth-1.0 “string-slurp-file”
+   c-addr u という名前のファイル内のすべてのデータを addr の文字列に入力
+します。
+
+‘$+slurp’ ( fid addr –  ) gforth-1.0 “string-plus-slurp”
+   ファイル fid を最後まで読み取り(但しクローズはしません)、 読み取った
+データを addr の文字列に「追加」します。
+
+‘$+slurp-file’ ( c-addr u addr –  ) gforth-1.0 “string-plus+slurp-file”
+   c-addr u という名前のファイル内のすべてのデータを addr の文字列に「追
+加」します。
+
+‘$[]’ ( u $[]addr – addr’  ) gforth-1.0 “string-array”
+   addr’ は、 文字列配列 $[]addr の u 番目の要素のアドレスです。 配列の
+サイズは必要に応じて変更されます。
+
+‘$[]!’ ( c-addr u n $[]addr –  ) gforth-1.0 “string-array-store”
+   文字列 c-addr u を文字列配列 $[]addr のインデックス n に格納します。
+必要に応じて配列のサイズが変更されます。
+
+‘$[]+!’ ( c-addr u n $[]addr –  ) gforth-1.0 “string-array-plus-store”
+   文字列 c-addr u をインデックス n の文字列に「追加」します。 必要に応
+じて配列のサイズが変更されます。 これを ‘$+[]!’ と混同しないでください。
+
+‘$+[]!’ ( c-addr u $[]addr –  ) gforth-1.0 “string-append-array”
+   文字列 c-addr u を文字列配列 $[]addr の新しい最後の要素として保存しま
+す(つまり要素が1つ増える)。 必要に応じて配列のサイズが変更されます。
+
+‘$[]@’ ( n $[]addr – addr u  ) gforth-1.0 “string-array-fetch”
+   配列インデックス n から文字列を取得します — 空の場合はゼロ文字列( 0 0
+)を返し、 誤って配列が成長しないようにします(訳注:要素はあるけど空文字列
+(長さ0)の場合と、範囲外の要素を指した場合の区別は付かないので注意)
+
+‘$[]#’ ( addr – len  ) gforth-1.0 “string-array-num”
+   配列内の要素の数を返します
+
+‘$[]map’ ( addr xt –  ) gforth-1.0 “string-array-map”
+   文字列配列 ADDR のすべての要素に対して 実行トークン XT を実行します。
+xt は ( ADDR U – ) で、一度に 1 つの文字列を取得します
+
+‘$[]slurp’ ( fid addr –  ) gforth-1.0 “string-array-slurp”
+   ファイル FID の内容を 1 行ずつ文字列配列 ADDR に入れます
+
+‘$[]slurp-file’ ( addr u $addr –  ) gforth-1.0 “string-array-slurp-file”
+   名前付きファイル ADDR U を 1 行ずつ文字列配列 $ADDR に入れます。
+
+‘$[].’ ( addr –  ) gforth-1.0 “string-array-dot”
+   すべての配列エントリを出力します
+
+‘$[]free’ ( addr –  ) gforth-1.0 “string-array-free”
+   addr は沢山のセルカウント文字列(string)へのアドレス達を含む、 セル・
+カウント文字列(string)へのアドレスで、 $[]free はこれらの文字列を解放、
+つまり、 この配列を開放し、 addr の値を 0 にセットします。
+
+‘$save’ ( $addr –  ) gforth-1.0 “string-save”
+   savesys のディクショナリに文字列(string)をプッシュします
+
+‘$[]save’ ( addr –  ) gforth-1.0 “string-array-save”
+   文字列配列を savesys のディクショナリにプッシュ
+
+‘$boot’ ( $addr –  ) gforth-1.0 “string-boot”
+   ディクショナリから文字列を新しく割り当てたメモリに取り込みます。 その
+後、 ディクショナリのその文字列の領域を(0で)クリアします(長さはそのまま
+)。
+
+‘$[]boot’ ( addr –  ) gforth-1.0 “string-array-boot”
+   ディクショナリから、 文字列配列を割り当てられたメモリに取得します
+
+‘$saved’ ( addr –  ) gforth-1.0 “string-saved”
+   アドレスを ブート済み(booted)/保存済み(saved) としてマークする
+
+‘$[]saved’ ( addr –  ) gforth-1.0 “string-array-saved”
+   アドレスを ブート済み(booted)/保存済み(saved) としてマークする
+
+‘$Variable’ ( –  ) gforth-1.0 “string-variable”
+   savesystem 全体にわたって保存される文字列変数。
+
+‘$[]Variable’ ( –  ) gforth-1.0 “string-array-variable”
+   savesystem 全体にわたって保存される文字列変数。
+
+
 File: gforth.info,  Node: Counted string words,  Prev: $tring words,  Up: Strings and Characters
 
 6.8.6 Counted string words
 --------------------------
 
-Counted strings store the length as byte at the address pointed to,
-followed by the bytes of the string.  Their possible length is severely
-limited, and you cannot create a substring in-place without destroying
-the input string.  Therefore we recommend against using counted strings.
-Nevertheless, if you have to deal with counted strings, here are some
-words for that:
+カウンタ付文字列(counted string)は、 指定のアドレスのバイトとして長さを
+格納し、 その後に文字列のバイトが続きます。 可能な長さは厳しく制限されて
+おり、 入力文字列を破壊せずにその場で部分文字列を作成することはできませ
+ん。 したがって、 カウンタ付文字列を使用しないことをお勧めします。 それ
+でも、 カウンタ付文字列を処理する必要がある場合、 以下のようなワード群が
+あります:
 
 ‘count’ ( c-addr1 – c-addr2 u ) core “count”
-   c-addr2 is the first character and u the length of the counted string
-at c-addr1.
+   c-addr2 は最初の文字で、 u は c-addr1 のカウンタ付文字列の、 長さです
+。
 
-   The following word has no useful interpretation semantics (unlike
-‘s"’) and no interpretive counterpart (unlike ‘[char]’), so you should
-use it only inside colon definitions (if at all):
+   以下のワードは、 (‘s"’ とは異なり) 有用なインタプリタ機能
+(interpretation semantics)がなく、 (‘[char]’ とは異なり) 対応するインタ
+プリタ用コードがないため、 コロン定義内でのみ使用する必要があります(コロ
+ン定義がある場合):
 
 ‘C"’ ( compilation "ccc<quote>" – ; run-time  – c-addr  ) core-ext “c-quote”
-   Compilation: parse a string ccc delimited by a ‘"’ (double quote).
-At run-time, return c-addr which specifies the counted string ccc.
-Interpretation semantics are undefined.
+   コンパイル状態: ‘"’ (二重引用符) を区切り文字として文字列 ccc をパー
+スします。 その実行時コードは、 指定のカウンタ付文字列 ccc のアドレスを
+c-addr として返します。 インタプリタ機能は未定義です。
 
-   doc-place
+   ( gforth-obsolete ) ‘place’ ( c-addr1 u c-addr2 –) \ C-ADDR2 に長さ U
+のカウンタ付き文字列を作成し、 文字列 C-ADDR1 U をその場所にコピーします
+。
 ‘string,’ ( c-addr u –  ) gforth-0.2 “string,”
-   puts down string as cstring
+   文字列をカウンタ付き文字列として(here以降の)データ空間に書き込みます
+。
 
 
 File: gforth.info,  Node: Control Structures,  Next: Defining Words,  Prev: Strings and Characters,  Up: Words
@@ -62,10 +243,10 @@ File: gforth.info,  Node: Control Structures,  Next: Defining Words,  Prev: Stri
 6.9 Control Structures
 ======================
 
-Control structures in Forth cannot be used interpretively, only in a
-colon definition(1).  We do not like this limitation, but have not seen
-a satisfying way around it yet, although many schemes have been
-proposed.
+Forth の制御構造は、 コロン定義内のみで、 インタプリタ状態
+(interpretively)で使用することはできません(1)。 私たちもこのような制限を
+好まないので、 多くのスキームが提案されてはいますが、 これを回避する満足
+のいく方法はまだ見つかっていません。
 
 * Menu:
 
@@ -80,8 +261,8 @@ proposed.
 
    ---------- Footnotes ----------
 
-   (1) To be precise, they have no interpretation semantics (*note
-Interpretation and Compilation Semantics::).
+   (1) 正確には、 インタプリタ機能(interpretation semantics)(*note
+Interpretation and Compilation Semantics::)を持っていません
 
 
 File: gforth.info,  Node: Selection,  Next: Simple Loops,  Prev: Control Structures,  Up: Control Structures
@@ -94,8 +275,8 @@ File: gforth.info,  Node: Selection,  Next: Simple Loops,  Prev: Control Structu
        code
      ENDIF
 
-   If flag is non-zero (as far as ‘IF’ etc.  are concerned, a cell with
-any bit set represents truth) code is executed.
+   flag がゼロ以外の場合(‘IF’ などに関する限り、 任意のビットが設定され
+たセルは true 扱いです)、 code が実行されます。
 
      flag
      IF
@@ -104,27 +285,29 @@ any bit set represents truth) code is executed.
        code2
      ENDIF
 
-   If FLAG is true, code1 is executed, otherwise code2 is executed.
+   FLAG が true の場合は code1 が実行され、 それ以外の場合は code2 が実
+行されます。
 
-   You can use ‘THEN’ instead of ‘ENDIF’.  Indeed, ‘THEN’ is standard,
-and ‘ENDIF’ is not, although it is quite popular.  We recommend using
-‘ENDIF’, because it is less confusing for people who also know other
-languages (and is not prone to reinforcing negative prejudices against
-Forth in these people).  Adding ‘ENDIF’ to a system that only supplies
-‘THEN’ is simple:
+   ‘ENDIF’ の代わりに ‘THEN’ を使用できます。 実際 ‘THEN’ は標準です、 が
+しかし、 ‘ENDIF’ は非常に人気があるものの、 標準ではありません。 私達は
+‘ENDIF’ の使用をお勧めします。 なぜなら、 他の言語を知っている人にとって
+も混乱が少ないためです(また、 ‘ENDIF’ に対しては、 これらの人々の Forth
+に対する否定的な偏見が強化される傾向が見られません)。 なお、 ‘THEN’ のみ
+を提供するシステムに ‘ENDIF’ を追加するのは以下のように簡単です:
      : ENDIF   POSTPONE then ; immediate
 
-   [According to ‘Webster’s New Encyclopedic Dictionary’, “then (adv.)”
-has the following meanings:
-     ...  2b: following next after in order ...  3d: as a necessary
-     consequence (if you were there, then you saw them).
-   Forth’s ‘THEN’ has the meaning 2b, whereas ‘THEN’ in Pascal and many
-other programming languages has the meaning 3d.]
+   [‘Webster’s New Encyclopedic Dictionary’ によると、“then (副詞)” には
+以下の意味があります:
+     ...  2b: 順番に次の後に続く ...  3d: 必然的な結果として (if you
+     were there, then you saw them)
+   Forth の ‘THEN’ は 2b の意味を持ちますが、 Pascal や他の多くのプログ
+ラミング言語の ‘THEN’ は 3d の意味を持ちます。]
 
-   Gforth also provides the words ‘?DUP-IF’ and ‘?DUP-0=-IF’, so you can
-avoid using ‘?dup’.  Using these alternatives is also more efficient
-than using ‘?dup’.  Definitions in Standard Forth for ‘ENDIF’, ‘?DUP-IF’
-and ‘?DUP-0=-IF’ are provided in ‘compat/control.fs’.
+   Gforth には ‘?DUP-IF’ および ‘?DUP-0=-IF’ というワードも用意されてい
+るため、 ‘?dup’ の使用を避けることができます。これらの代替手段を使用する
+ことは、 ‘?dup’ を使用するよりも効率的です。 ‘ENDIF’ や ‘?DUP-IF’ や
+‘?DUP-0=-IF’ の標準 Forth での定義は、‘compat/control.fs’ で提供されます
+。
 
      x
      CASE
@@ -134,12 +317,12 @@ and ‘?DUP-0=-IF’ are provided in ‘compat/control.fs’.
        ( x ) default-code ( x )
      ENDCASE ( )
 
-   Executes the first codei, where the xi is equal to x.  If no xi
-matches, the optional default-code is executed.  The optional default
-case can be added by simply writing the code after the last ‘ENDOF’.  It
-may use x, which is on top of the stack, but must not consume it.  The
-value x is consumed by this construction (either by an ‘OF’ that
-matches, or by the ‘ENDCASE’, if no OF matches).  Example:
+   xi が x に等しいなら、 最初の codei を実行します。 x1 〜 xn のいずれ
+も一致しない場合は、 オプションの default-code が実行されます。 オプショ
+ンのデフォルト・ケースは、 最後の ‘ENDOF’ の後にコードを記述するだけで追
+加できます。 スタック頂上にある x を使用することはできますが、 それを消
+費してはなりません。 値 x は、 この構造によって(一致する ‘OF’ によって、
+または一致する OF がない場合は ‘ENDCASE’ によって) 消費されます。 例:
 
      : num-name ( n -- c-addr u )
       case
@@ -151,9 +334,8 @@ matches, or by the ‘ENDCASE’, if no OF matches).  Example:
         rot \ get n on top so ENDCASE can drop it
       endcase ;
 
-   You can also use (the non-standard) ‘?of’ to use ‘case’ as a general
-selection structure for more than two alternatives.  ‘?Of’ takes a flag.
-Example:
+   (非標準の) ‘?of’ を使用して、 ‘case’ を 3 つ以上の選択肢の一般的な選
+択構造として使用することもできます。 ‘?Of’ はフラグを受け取ります。 例:
 
      : sgn ( n1 -- n2 )
          \ sign function
@@ -163,10 +345,9 @@ Example:
      	dup \ n1=0 -> n2=0; dup an item, to be consumed by ENDCASE
          endcase ;
 
-   Programming style note: To keep the code understandable, you should
-ensure that you change the stack in the same way (wrt.  number and types
-of stack items consumed and pushed) on all paths through a selection
-structure.
+   プログラミング・スタイル・メモ: コードを理解しやすくするには、 選択構
+造を介したすべての経路で同一の方法でスタックを変更(消費およびプッシュさ
+れるスタック項目の数と型)するようにする必要があります。
 
 
 File: gforth.info,  Node: Simple Loops,  Next: Counted Loops,  Prev: Selection,  Up: Control Structures
@@ -181,26 +362,27 @@ File: gforth.info,  Node: Simple Loops,  Next: Counted Loops,  Prev: Selection, 
        code2
      REPEAT
 
-   code1 is executed and flag is computed.  If it is true, code2 is
-executed and the loop is restarted; If flag is false, execution
-continues after the ‘REPEAT’.
+   code1 が実行され、 flag が計算されます。 flag が true の場合、 code2
+が実行され、 BEGIN からループが再開されます。 flag が false の場合、
+‘REPEAT’ の後へ実行が続行されます。
 
      BEGIN
        code
        flag
      UNTIL
 
-   code is executed.  The loop is restarted if ‘flag’ is false.
+   code が実行されます。 ‘flag’ が false の場合、 BEGIN からループが再開
+されます。
 
-   Programming style note: To keep the code understandable, a complete
-iteration of the loop should not change the number and types of the
-items on the stacks.
+   プログラミング・スタイル・メモ: コードを理解しやすくするために、 ルー
+プの完全な反復(complete iteration)によってスタック上の項目の数と型が変更
+されるべきではありません。
 
      BEGIN
        code
      AGAIN
 
-   This is an endless loop.
+   これは無限ループです。
 
 
 File: gforth.info,  Node: Counted Loops,  Next: BEGIN loops with multiple exits,  Prev: Simple Loops,  Up: Control Structures
@@ -208,176 +390,176 @@ File: gforth.info,  Node: Counted Loops,  Next: BEGIN loops with multiple exits,
 6.9.3 Counted Loops
 -------------------
 
-The basic counted loop is:
+基本のカウンタ付きループ:
      limit start ?DO
        body
      LOOP
 
-   This performs one iteration for every integer, starting from start
-and up to, but excluding limit.  The counter, or index, can be accessed
-with ‘i’.  For example, the loop:
+   これは、 start から始まり limit まで(limit 自身は除く)、 各整数値に対
+して 1 回の反復を実行します。 カウンタ、 つまりインデックスには、 ‘i’ を
+使用してアクセスできます。 たとえば、 以下のループをご覧ください:
      10 0 ?DO
        i .
      LOOP
-prints ‘0 1 2 3 4 5 6 7 8 9’
+出力: ‘0 1 2 3 4 5 6 7 8 9’
 
-   The index of the innermost loop can be accessed with ‘i’, the index
-of the next loop with ‘j’, and the index of the third loop with ‘k’.
+   最も内側のループのインデックスには ‘i’ を使用してアクセスでき、 その
+一つ外側のループのインデックスには ‘j’ を使用してアクセスでき、 さらにも
+う一つ外側のループのインデックスには ‘k’ を使用してアクセスできます。
 
-   You can access the limit of the innermost loop with ‘i'’ and ‘i'’-‘i’
-with ‘delta-i’.  E.g., running
+   ‘i'’ を使用すると最も内側のループの limit にアクセスでき、 ‘delta-i’
+を使用すると ‘i'’ - ‘i’ にアクセスできます。
 
      : foo 7 5 ?do cr i . i' . delta-i . loop ;
 
-   prints
+   出力:
 
      5 7 2
      6 7 1
 
-   The loop control data are kept on the return stack, so there are some
-restrictions on mixing return stack accesses and counted loop words.  In
-particuler, if you put values on the return stack outside the loop, you
-cannot read them inside the loop(1).  If you put values on the return
-stack within a loop, you have to remove them before the end of the loop
-and before accessing the index of the loop.
+   ループ制御データはリターン・スタックに保持されるため、 リターン・スタ
+ックへのアクセスとカウント・ループ・ワードの混在にはいくつかの制限があり
+ます。 特に、ループの外側のリターン・スタックに値を置いた場合、 ループ内
+で値を読み取る事はできません(1)。 ループ内のリターン・スタックに値を置く
+場合は、 ループの終了前、 およびループのインデックスにアクセスする前に値
+を削除する必要があります。
 
-   There are several variations on the counted loop:
+   カウント・ループにはいくつかのバリエーションがあります:
 
-   • ‘LEAVE’ leaves the innermost counted loop immediately; execution
-     continues after the associated ‘LOOP’ or ‘NEXT’.  For example:
+   • ‘LEAVE’ は、 最も内側のカウント・ループを直ちに抜け出します。 それ
+     が関係する ‘LOOP’ または ‘NEXT’ の後へ実行は移ります。 例:
 
           10 0 ?DO  i DUP . 3 = IF LEAVE THEN LOOP
-     prints ‘0 1 2 3’
+     出力: ‘0 1 2 3’
 
-   • ‘UNLOOP’ prepares for an abnormal loop exit, e.g., via ‘EXIT’.
-     ‘UNLOOP’ removes the loop control parameters from the return stack
-     so ‘EXIT’ can get to its return address.  For example:
+   • ‘UNLOOP’ は、 例えば ‘EXIT’ などを介しての異常なループ終了の準備を
+     行います。 ‘UNLOOP’ は、 ‘EXIT’ がリターン・アドレスに到達できるよ
+     うに、 リターン・スタックからループ制御パラメーターを削除します(訳
+     注: 1重ループなので unloop 1つ。2重ループなら unloop 2つ)。 例:
 
           : demo 10 0 ?DO i DUP . 3 = IF UNLOOP EXIT THEN LOOP ." Done" ;
-     prints ‘0 1 2 3’
+     出力: ‘0 1 2 3’
 
-   • If start is greater than limit, a ‘?DO’ loop is entered (and ‘LOOP’
-     iterates until they become equal by wrap-around arithmetic).  This
-     behaviour is usually not what you want.  Therefore, Gforth offers
-     ‘+DO’ and ‘U+DO’ (as replacements for ‘?DO’), which do not enter
-     the loop if start is greater than limit; ‘+DO’ is for signed loop
-     parameters, ‘U+DO’ for unsigned loop parameters.
+   • start が limit より大きい場合でも、 ‘?DO’ はループを開始します(ラッ
+     プアラウンド演算(処理可能な範囲をの最後に達した後に最初に戻る事)に
+     よって両者が等しくなるまで ‘LOOP’ を反復します)。 通常、 この振る舞
+     いは望ましくないものです。 したがって、 Gforth は (‘?DO’ の代替とし
+     て、) ‘+DO’ と ‘U+DO’ を提供します。 これらは、 start が limit より
+     大きい場合にはループを開始しません。 ‘+DO’ は符号付きループ・パラメ
+     ータ用で、 ‘U+DO’ は符号なしループ・パラメータ用です。
 
-   • ‘?DO’ can be replaced by ‘DO’.  ‘DO’ always enters the loop,
-     independent of the loop parameters.  Do not use ‘DO’, even if you
-     know that the loop is entered in any case.  Such knowledge tends to
-     become invalid during maintenance of a program, and then the ‘DO’
-     will make trouble.
+   • ‘?DO’ は ‘DO’ に置き換えることはできます。 ‘DO’ は、 ループ・パラメ
+     ータ に関係なく、 常にループに入ります。 あなたが、 どの場合にもル
+     ープに入ることを知っている場合でも ‘DO’ は使用しないでください。 こ
+     のような知恵はプログラムを保守していく中で無効になる傾向があり、 そ
+     れゆえ ‘DO’ が問題を引き起こすことになります。
 
-   • ‘LOOP’ can be replaced with ‘n +LOOP’; this updates the index by n
-     instead of by 1.  The loop is terminated when the border between
-     limit-1 and limit is crossed.  E.g.:
+   • ‘LOOP’ は ‘n +LOOP’ に置き換えることができます。 これにより、インデ
+     ックスが 1 ではなく n によって更新されます。 limit-1 と limit の間
+     の境界を越えると、 ループは終了します。 例:
 
           4 0 +DO  i .  2 +LOOP
-     prints ‘0 2’
+     出力: ‘0 2’
 
           4 1 +DO  i .  2 +LOOP
-     prints ‘1 3’
+     出力: ‘1 3’
 
-   • The behaviour of ‘n +LOOP’ is peculiar when n is negative:
+   • n が負数の場合、 ‘n +LOOP’ の動作は奇妙です:
 
           -1 0 ?DO  i .  -1 +LOOP
-     prints ‘0 -1’
+     出力: ‘0 -1’
 
           0 0 ?DO  i .  -1 +LOOP
-     prints nothing.
+     出力: なし。
 
-     We recommend not combining ‘?DO’ with ‘+LOOP’.  Gforth offers
-     several alternatives:
+     私たちは ‘?DO’ と ‘+LOOP’ を組み合わせないことをお勧めします。
+     Gfors はいくつかの代替手段を提供します:
 
-     If you want ‘-1 +LOOP’’s behaviour of including an iteration where
-     ‘I’=limit, start the loop with ‘-[DO’ or ‘U-[DO’ (where the ‘[’ is
-     inspired by the mathematical notation for inclusive ranges, e.g.,
-     [1,n]):
+     ‘I’=limit の反復を含める ‘-1 +LOOP’ の振る舞いが必要な場合、 ‘-[DO’
+     または ‘U-[DO’] でループを開始します(ここで、 ‘[’ は、 包含範囲の数
+     学的表記法(例: [1,n] からインスピレーションを得ています):
 
           -1 0 -[DO  i .  -1 +LOOP
 
-     prints ‘0 -1’.
+     出力: ‘0 -1’.
 
           0 0 -[DO  i .  -1 +LOOP
 
-     prints ‘0’.
+     出力: ‘0’
 
           0 -1 -[DO  i .  -1 +LOOP
 
-     prints nothing.
+     出力: なし。
 
-     If you want to exclude the limit, you instead use ‘1 -LOOP’ (or
-     generally ‘u -LOOP’) and start the loop with ‘?DO’, ‘-DO’ or
-     ‘U-DO’.  ‘-LOOP’ terminates the loop when the border between
-     limit+1 and limit is crossed.  E.g.:
+     limit を除外したい場合、 代わりに ‘1 -LOOP’ (または一般的には ‘u
+     -LOOP’)を使用し、 ‘?DO’ または ‘-DO ’ または ‘U-DO’ でループを開始
+     します。 ‘-LOOP’ は、limit+1 と limit の間の境界を越えたときにルー
+     プを終了します。 例:
 
           -2 0 -DO  i .  1 -LOOP
-     prints ‘0 -1’
+     出力: ‘0 -1’
 
           -1 0 -DO  i .  1 -LOOP
-     prints ‘0’
+     出力: ‘0’
 
           0 0 -DO  i .  1 -LOOP
-     prints nothing.
+     出力: なし。
 
-     Unfortunately, ‘+DO’, ‘U+DO’, ‘-DO’, ‘U-DO’ and ‘-LOOP’ are not
-     defined in Standard Forth.  However, an implementation for these
-     words that uses only standard words is provided in
-     ‘compat/loops.fs’.
+     残念ながら、 ‘+DO’, ‘U+DO’, ‘-DO’, ‘U-DO’, ‘-LOOP’ は 標準 Forth で
+     は定義されていません。 ただし、 標準のワードのみを使用するこれらの
+     ワードの実装が ‘compat/loops.fs’ にて提供されています。
 
-   • A common task is to iterate over the elements of an array, forwards
-     or backwards.  Iterating over the addresses of the elements has two
-     benefits: It avoids the need to keep the start address of the array
-     around, reducing the data stack load; and it avoids the need to
-     perform address computations in every iteration.  The disadvantage
-     is that, starting with the usual array representations addr uelems
-     or addr ubytes, some processing is required to produce a start and
-     limit address.  Gforth has ‘bounds’ for getting there from the addr
-     ubytes representation, so you can write a forward loop through a
-     cell array ‘v’ as:
+   • よくある作業は、 配列の要素を前方または後方に反復処理することです。
+     要素のアドレスに対して反復処理することには 2 つの利点があります。 配
+     列の開始アドレスを保持する必要がなくなり、 データ・スタックの負荷が
+     軽減されます。 また、 反復ごとにアドレス計算を実行する必要がなくな
+     ります。 欠点は、 通常の配列表現 addr u要素 または addr uバイト か
+     ら始めて、 start アドレスと limit アドレスを生成するために何らかの
+     処理が必要なことです。 Gforth には、addr ubytes 表現からそこに到達
+     するために ‘bounds’ があるため、セル配列 ‘v’ を介した前方ループを以
+     下のように記述できます:
 
           create v 1 , 3 , 7 ,
           : foo v 3 cells bounds U+DO i  . cell +LOOP ;
           foo
 
-     which prints ‘1 3 7’.  Preprocessing the inputs for walking
-     backwards is more involved, so Gforth provide a loop construct of
-     the form ‘MEM-DO’...‘LOOP’ that does it for you: It takes an array
-     in addr ubytes representation and the element size, and iterates
-     over the addresses of the elements in backwards order:
+     これは ‘1 3 7’ を出力します。 逆方向にたどるための入力の前処理はよ
+     り複雑であるため、 Gforth はそれを行う ‘MEM-DO’ … ‘LOOP’ 形式のルー
+     プ構造を提供します。 これは addr uバイト 表現の配列と要素サイズを受
+     け取り、 要素のアドレスを逆順に反復処理します。
 
           create v 1 , 3 , 7 ,
           : foo1 v 3 cell array>mem MEM-DO i  . LOOP ;
           foo1
 
-     This prints ‘7 3 1’.  ‘ARRAY>MEM’ converts the addr uelems
-     uelemsize representation into the addr ubytes uelemsize
-     representation expected by ‘MEM-DO’.  This loop is finished with
-     ‘LOOP’ which decrements by uelemsize when it finishes a ‘MEM-DO’.
+     これは ‘7 3 1’ を出力します。‘ARRAY>MEM’ は addr uelems uelemsize を
+     ‘MEM-DO’ が期待する addr ubytes uelemsize に変換します(ubytes は
+     uelems * uelmsize です)。 このループは ‘MEM-DO’ 通過後にuelemsize ず
+     つ減算される、 ‘LOOP’ と対になるループとなります。
 
-     Gforth also adds ‘MEM+DO’ for completeness.  It takes the same
-     parameters as ‘MEM-DO’, but walks forwards through the array:
+     Gforth は、 完全を期すために ‘MEM+DO’ も追加します。 ‘MEM-DO’ と同
+     一のパラメータを受け取りますが、 配列を順(forwards)に処理します:
 
           create v 1 , 3 , 7 ,
           : foo2 v 3 cell array>mem MEM+DO i  . LOOP ;
           foo2
 
-     prints ‘1 3 7’.
+     出力: ‘1 3 7’
 
-   • Another counted loop is:
+   • 別のカウント・ループ:
           n
           FOR
             body
           NEXT
-     This is the preferred loop of native code compiler writers who are
-     too lazy to optimize ‘?DO’ loops properly.  This loop structure is
-     not defined in Standard Forth.  In Gforth, this loop iterates n+1
-     times; ‘i’ produces values starting with n and ending with 0.
-     Other Forth systems may behave differently, even if they support
-     ‘FOR’ loops.  To avoid problems, don’t use ‘FOR’ loops.
+     これは、 ‘?DO’ ループを適切に最適化するのが面倒な、 ネイティブ・コ
+     ード・コンパイラ作成者達が好むループです。 このループ構造は標準
+     Forth では定義されていません。 Gforth では、 このループは n+1 回繰
+     り返します。 ‘i’ は、 n で始まり 0 で終わる値を生成します。 他の
+     Forth システムは、‘FOR’ ループをサポートしている場合でも、 振る舞い
+     が異なる場合があります。 この問題を回避するには、 ‘FOR’ ループを使
+     用しないようにしてください。
 
-   The counted-loop words are:
+   カウント・ループ・ワード群:
 
 ‘?DO’ ( compilation – do-sys ; run-time w1 w2 – | loop-sys  ) core-ext “question-do”
    *Note Counted Loops::.
@@ -388,20 +570,20 @@ and before accessing the index of the loop.
 ‘U+DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-plus-do”
    *Note Counted Loops::.
 
-‘bounds’ ( u1 u2 – u3 u1 ) gforth-0.2 “bounds”
-   Given a memory block represented by starting address addr and length
-u in aus, produce the end address addr+u and the start address in the
-right order for ‘u+do’ or ‘?do’.
+‘bounds’ ( addr u – addr+u addr ) gforth-0.2 “bounds”
+   開始アドレス addr と長さ u で表されるメモリ・ブロックを指定すると、
+‘u+do’ または ‘?do’ の終了アドレス addr+u と開始アドレス addr を正しい順
+序で生成します。
 
 ‘-[do’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-experimental “minus-bracket-do”
-   Start of a counted loop with negative stride; Skips the loop if
-n2<n1; such a counted loop ends with ‘+loop’ where the increment is
-negative; it runs as long as ‘I’>=n1.
+   負の方向へカウントされるループを開始します。 n2<n1 の場合、 ループを
+スキップします。 このようなカウント・ループは、 増分が負である ‘+loop’ と
+対になります。 ‘I’>=n1 である限り実行されます。
 
 ‘u-[do’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-experimental “u-minus-bracket-do”
-   Start of a counted loop with negative stride; Skips the loop if
-u2<u1; such a counted loop ends with ‘+loop’ where the increment is
-negative; it runs as long as ‘I’>=u1.
+   負の方向へカウントするループを開始します。 u2<u1 の場合、ループをスキ
+ップします。 このようなカウント・ループは、 増分が負の ‘+loop’ と対にな
+ります。 ‘I’>=u1 である限り実行されます。
 
 ‘-DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “minus-do”
    *Note Counted Loops::.
@@ -409,16 +591,17 @@ negative; it runs as long as ‘I’>=u1.
 ‘U-DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-minus-do”
    *Note Counted Loops::.
 
-   doc-array>mem
+   ‘array>mem’ ( uelements uelemsize – ubytes uelemsize) \ ubytes は
+uelements * uelementsize です
 ‘mem+do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-plus-do”
-   Starts a counted loop that starts with ‘I’ as addr and then steps
-upwards through memory with nstride wide steps as long as
-‘I’<addr+ubytes.  Must be finished with loop.
+   ‘I’ を addr から開始し、 ‘I’<addr+ubytes である限り、 nstride 幅のス
+テップでメモリ内をアドレスが増える方向にカウント・アップするカウント・ル
+ープを開始します。 loop と対にする必要があります。
 
 ‘mem-do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-minus-do”
-   Starts a counted loop that starts with ‘I’ as addr+ubytes-ustride and
-then steps backwards through memory with -nstride wide steps as long as
-‘I’>=addr.  Must be finished with loop.
+   ‘I’ を addr+ubytes-ustride として開始し、 ‘I’>=addr である間 -nstride
+幅のステップでメモリをアドレス下位方向(backward)にステップするカウント・
+ループを開始します。 loop と対にしなければなりません。
 
 ‘DO’ ( compilation – do-sys ; run-time w1 w2 – loop-sys  ) core “DO”
    *Note Counted Loops::.
@@ -439,19 +622,20 @@ then steps backwards through memory with -nstride wide steps as long as
    *Note Counted Loops::.
 
 ‘i’ ( R:n – R:n n ) core “i”
-   n is the index of the innermost counted loop.
+   n は、最も内側のカウント・ループのインデックスです。
 
 ‘j’ ( R:n R:w1 R:w2 – n R:n R:w1 R:w2 ) core “j”
-   n is the index of the next-to-innermost counted loop.
+   n は、 最も内側から数えて 2 番目のカウント・ループのインデックスです
+。
 
 ‘k’ ( R:n R:w1 R:w2 R:w3 R:w4 – n R:n R:w1 R:w2 R:w3 R:w4 ) gforth-0.3 “k”
-   n is the index of the third-innermost counted loop.
+   n は、 最も内側から数えて3番目のカウント・ループのインデックスです。
 
 ‘i'’ ( R:w R:w2 – R:w R:w2 w ) gforth-0.2 “i-tick”
-   The limit of the innermost counted loop
+   最も内側のカウント・ループの limit
 
 ‘delta-i’ ( r:ulimit r:u – r:ulimit r:u u2 ) gforth-1.0 “delta-i”
-   u2=‘I'’-‘I’ (difference between limit and index).
+   u2=‘I'’-‘I’ (limit とインデックスの差)
 
 ‘LEAVE’ ( compilation – ; run-time loop-sys –  ) core “LEAVE”
    *Note Counted Loops::.
@@ -462,19 +646,21 @@ then steps backwards through memory with -nstride wide steps as long as
 ‘unloop’ ( R:w1 R:w2 – ) core “unloop”
 
 ‘DONE’ ( compilation do-sys – ; run-time –  ) gforth-0.2 “DONE”
-   resolves all LEAVEs up to the do-sys
+   do-sys までのすべての LEAVE を解決します(訳注: loop, +loop , next 等
+の中で内部的に呼び出されます)。
 
-   The standard does not allow using ‘CS-PICK’ and ‘CS-ROLL’ on do-sys.
-Gforth allows it, except for the do-sys produced by ‘MEM+DO’ and
-‘MEM-DO’, but it’s your job to ensure that for every ‘?DO’ etc.  there
-is exactly one ‘UNLOOP’ on any path through the definition (‘LOOP’ etc.
-compile an ‘UNLOOP’ on the fall-through path).  Also, you have to ensure
-that all ‘LEAVE’s are resolved (by using one of the loop-ending words or
-‘DONE’).
+   標準では、 do-sys で ‘CS-PICK’ や ‘CS-ROLL’ を使用することは許可され
+ていません。 ‘MEM+DO’ と ‘MEM-DO’ によって生成される do-sys を除いて、
+Gforth では ‘CS-PICK’ や ‘CS-ROLL’ の使用を許可しますが、 すべての ‘?DO’
+などに対して、 定義を介した任意の経路上に ‘UNLOOP’ が正確に 1 つだけ存在
+すること(‘LOOP’ などの失敗経路上で ‘UNLOOP’ コンパイルするなど)を確認す
+るのはあなたの仕事です。 また、 すべての ‘LEAVE’ が（ループ終了ワードの
+1 つまたは ‘DONE’ を使用して)解決されていることを確認する必要があります
+。
 
    ---------- Footnotes ----------
 
-   (1) well, not in a way that is portable.
+   (1) ええ、まぁ、 移植可能な方法ではできません、 ぐらいな
 
 
 File: gforth.info,  Node: BEGIN loops with multiple exits,  Next: General control structures with CASE,  Prev: Counted Loops,  Up: Control Structures
@@ -788,11 +974,11 @@ recursively.
 
 For examples of using these words, *Note Recursion Tutorial::.
 
-   Programming style note: I prefer using ‘recursive’ to ‘recurse’,
-because calling the definition by name is more descriptive (if the name
-is well-chosen) than the somewhat cryptic ‘recurse’.  E.g., in a
-quicksort implementation, it is much better to read (and think) “now
-sort the partitions” than to read “now do a recursive call”.
+   プログラミング・スタイル・メモ: I prefer using ‘recursive’ to
+‘recurse’, because calling the definition by name is more descriptive
+(if the name is well-chosen) than the somewhat cryptic ‘recurse’.  E.g.,
+in a quicksort implementation, it is much better to read (and think)
+“now sort the partitions” than to read “now do a recursive call”.
 
    For mutual recursion, use ‘Defer’red words, like this:
 
@@ -1051,8 +1237,8 @@ code outside that region (executed if there is an exception between
        ENDCASE
      THEN
 
-   Programming style note: As usual, you should ensure that the stack
-depth is statically known at the end: either after the ‘throw’ for
+   プログラミング・スタイル・メモ: As usual, you should ensure that the
+stack depth is statically known at the end: either after the ‘throw’ for
 passing on errors, or after the ‘ENDTRY’ (or, if you use ‘catch’, after
 the end of the selection construct for handling the error).
 
@@ -2313,9 +2499,10 @@ it.  The previous example becomes:
      : greet2 ( -- ) ." Hello" ;
      ' greet2 IS greet  \ make greet behave like greet2
 
-   Programming style note: You should write a stack comment for every
-deferred word, and put only XTs into deferred words that conform to this
-stack effect.  Otherwise it’s too difficult to use the deferred word.
+   プログラミング・スタイル・メモ: You should write a stack comment for
+every deferred word, and put only XTs into deferred words that conform
+to this stack effect.  Otherwise it’s too difficult to use the deferred
+word.
 
    A deferred word can be used to improve the statistics-gathering
 example from *note User-defined Defining Words::; rather than edit the
@@ -2605,9 +2792,10 @@ words.
 
 * Menu:
 
-* Execution token::          実行時(execution/interpretation semantics)
+* Execution token::          実行/インタプリタ
+                               機能(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル時(compilation semantics)
+* Compilation token::        コンパイル機能(compilation semantics)
 
 
 File: gforth.info,  Node: Execution token,  Next: Name token,  Prev: Tokens for Words,  Up: Tokens for Words
@@ -6805,323 +6993,4 @@ entries for all unresolved ‘LEAVE’s.
 they are no longer visible in any control-flow path.  In a few cases
 this may lead to increased space needs for the locals name area, but
 usually less than reclaiming this space would cost in code size.
-
-
-File: gforth.info,  Node: Closures,  Prev: Locals implementation,  Up: Gforth locals
-
-6.22.1.6 Closures
-.................
-
-Gforth also provides basic closures.  A closure is a combination of a
-quotation (*note Quotations::) and locals.  Gforth’s closures have
-locals which are filled with values at the closure’s run-time, producing
-a trampoline xt.  When executing that trampoline xt, the closure’s code
-is executed, with access to the closure’s locals on the locals stack.
-Modifications of the closure’s locals aren’t persistent, i.e.  when the
-closure ‘EXIT’s, the modified values are lost.
-
-‘[{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-closure”
-   starts a closure.  Closures first declare the locals frame they are
-going to use, and then the code that is executed with those locals.
-Closures end like quotations with a ‘;]’.  The locals declaration ends
-depending where the closure’s locals are created.  At run-time, the
-closure is created as trampolin xt, and fills the values of its local
-frame from the stack.  At execution time of the xt, the local frame is
-copied to the locals stack, and used inside the closure’s code.  After
-return, those values are removed from the locals stack, and not updated
-in the closure itself.
-
-‘:}l’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “close-brace-locals”
-   end a closure’s locals declaration.  The closure will be allocated on
-the local’s stack.
-
-‘:}d’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-d”
-   end a closure’s locals declaration.  The closure will be allocated in
-the dictionary.
-
-‘:}h’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-h”
-   end a closure’s locals declaration.  The closure will be allocated on
-the heap.
-
-‘:}h1’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-h”
-   end a closure’s locals declaration.  The closure will be allocated on
-the heap.
-
-‘:}xt’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-x-t”
-   end a closure’s locals declaration.  The closure will be allocated by
-the xt on the stack, so the closure’s run-time stack effect is ‘(
-xt-alloc -- xt-closure )’.
-
-‘>addr’ ( xt – addr  ) gforth-experimental “to-addr”
-   convert the xt of a closure on the heap to the ADDR with can be
-passed to ‘free’ to get rid of the closure
-
-‘free-closure’ ( xt –  ) gforth-internal “free-closure”
-   free a heap-allocated closure
-
-     : foo [{: a f: b d: c xt: d :}d a . b f. c d. d ;] ;
-     5 3.3e #1234. ' cr foo execute
-
-   ‘foo’ creates a closure in the dictionary with a single cell, a
-floating point, a double, and an xt, and prints the first three values
-before executing the xt on invocation.
-
-   This allows to implement Donald Knuth’s “Man or boy test” proposed in
-1964 to test Algol compilers.
-
-     : A {: w^ k x1 x2 x3 xt: x4 xt: x5 | w^ B :} recursive
-         k  0<= IF  x4 x5 f+  ELSE
-             B k x1 x2 x3 action-of x4 [{: B k x1 x2 x3 x4 :}L
-                 -1 k +!
-                 k  B  x1 x2 x3 x4 A ;] dup B !
-             execute  THEN ;
-     : man-or-boy? ( n -- ) [: 1e ;] [: -1e ;] 2dup swap [: 0e ;] A f. ;
-
-   Sometimes, closures need a permanent storage to be modified; it is
-even possible that more than one closure shares that permanent storage.
-In the example above, local variables of the outer procedure are used
-for this, but in some cases, the closure lives longer than the outer
-procedure; especially closures allocated in the dictionary or on the
-heap are designed to outlive their parent procedure.
-
-   For those, we have home locations, which are allocated like closures,
-but their code is directly executed at creation and should provide us
-with the addresses of the home locations.
-
-     : bar ( a b c -- aaddr baddr caddr hl-addr )
-         <{: w^ a w^ b w^ c :}h a b c ;> ;
-
-   This example creates a home location with three cells on the heap,
-and returns the addresses of the three locations and the address of the
-home location.  This address can be used to ‘free’ the home location
-when it is no longer needed.
-
-‘<{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-homelocation”
-   starts a home location
-
-‘;>’ ( –  ) gforth-experimental “end-homelocation”
-   end using a home location
-
-
-File: gforth.info,  Node: Standard Forth locals,  Prev: Gforth locals,  Up: Locals
-
-6.22.2 Standard Forth locals
-----------------------------
-
-The Forth-2012 standard defines a syntax for locals is restricted
-version of Gforth’s locals:
-
-   • Locals can only be cell-sized values (no type specifiers are
-     allowed).
-   • Locals can be defined only outside control structures.
-   • Only one locals definition per definition is allowed.
-   • Locals can interfere with explicit usage of the return stack.  For
-     the exact (and long) rules, see the standard.  If you don’t use
-     return stack accessing words in a definition using locals, you will
-     be all right.  The purpose of this rule is to make locals
-     implementation on the return stack easier.
-   • The whole locals definition must be in one line.
-
-   The Standard Forth locals wordset itself consists of two words: ‘{:’
-and:
-
-‘(local)’ ( addr u –  ) local “paren-local-paren”
-
-   The ANS Forth locals extension wordset defines a syntax using
-‘locals|’, but it is so awful that we strongly recommend not to use it.
-We have implemented this syntax to make porting to Gforth easy, but do
-not document it here.  The problem with this syntax is that the locals
-are defined in an order reversed with respect to the standard stack
-comment notation, making programs harder to read, and easier to misread
-and miswrite.  The only merit of this syntax is that it is easy to
-implement using the ANS Forth locals wordset, but then, so is the ‘{:’
-syntax.
-
-
-File: gforth.info,  Node: Structures,  Next: Object-oriented Forth,  Prev: Locals,  Up: Words
-
-6.23 Structures
-===============
-
-This section presents the structure package that comes with Gforth.  A
-version of the package implemented in Standard Forth is available in
-‘compat/struct.fs’.  This package was inspired by a posting on
-comp.lang.forth in 1989 (unfortunately I don’t remember, by whom;
-possibly John Hayes).  A version of this section has been published in
-M. Anton Ertl, Yet Another Forth Structures Package
-(https://www.complang.tuwien.ac.at/forth/objects/structs.html), Forth
-Dimensions 19(3), pages 13–16.  Marcel Hendrix provided helpful
-comments.
-
-* Menu:
-
-* Why explicit structure support?::
-* Structure Usage::
-* Structure Naming Convention::
-* Structure Implementation::
-* Structure Glossary::
-* Forth200x Structures::
-
-
-File: gforth.info,  Node: Why explicit structure support?,  Next: Structure Usage,  Prev: Structures,  Up: Structures
-
-6.23.1 Why explicit structure support?
---------------------------------------
-
-If we want to use a structure containing several fields, we could simply
-reserve memory for it, and access the fields using address arithmetic
-(*note Address arithmetic::).  As an example, consider a structure with
-the following fields
-
-‘a’
-     is a float
-‘b’
-     is a cell
-‘c’
-     is a float
-
-   Given the (float-aligned) base address of the structure we get the
-address of the field
-
-‘a’
-     without doing anything further.
-‘b’
-     with ‘float+’
-‘c’
-     with ‘float+ cell+ faligned’
-
-   It is easy to see that this can become quite tiring.
-
-   Moreover, it is not very readable, because seeing a ‘cell+’ tells us
-neither which kind of structure is accessed nor what field is accessed;
-we have to somehow infer the kind of structure, and then look up in the
-documentation, which field of that structure corresponds to that offset.
-
-   Finally, this kind of address arithmetic also causes maintenance
-troubles: If you add or delete a field somewhere in the middle of the
-structure, you have to find and change all computations for the fields
-afterwards.
-
-   So, instead of using ‘cell+’ and friends directly, how about storing
-the offsets in constants:
-
-     0 constant a-offset
-     0 float+ constant b-offset
-     0 float+ cell+ faligned c-offset
-
-   Now we can get the address of field ‘x’ with ‘x-offset +’.  This is
-much better in all respects.  Of course, you still have to change all
-later offset definitions if you add a field.  You can fix this by
-declaring the offsets in the following way:
-
-     0 constant a-offset
-     a-offset float+ constant b-offset
-     b-offset cell+ faligned constant c-offset
-
-   Since we always use the offsets with ‘+’, we could use a defining
-word ‘cfield’ that includes the ‘+’ in the action of the defined word:
-
-     : cfield ( n "name" -- )
-         create ,
-     does> ( name execution: addr1 -- addr2 )
-         @ + ;
-
-     0 cfield a
-     0 a float+ cfield b
-     0 b cell+ faligned cfield c
-
-   Instead of ‘x-offset +’, we now simply write ‘x’.
-
-   The structure field words now can be used quite nicely.  However,
-their definition is still a bit cumbersome: We have to repeat the name,
-the information about size and alignment is distributed before and after
-the field definitions etc.  The structure package presented here
-addresses these problems.
-
-
-File: gforth.info,  Node: Structure Usage,  Next: Structure Naming Convention,  Prev: Why explicit structure support?,  Up: Structures
-
-6.23.2 Structure Usage
-----------------------
-
-You can define a structure for a (data-less) linked list with:
-     struct
-         cell% field list-next
-     end-struct list%
-
-   With the address of the list node on the stack, you can compute the
-address of the field that contains the address of the next node with
-‘list-next’.  E.g., you can determine the length of a list with:
-
-     : list-length ( list -- n )
-     \ "list" is a pointer to the first element of a linked list
-     \ "n" is the length of the list
-         0 BEGIN ( list1 n1 )
-             over
-         WHILE ( list1 n1 )
-             1+ swap list-next @ swap
-         REPEAT
-         nip ;
-
-   You can reserve memory for a list node in the dictionary with ‘list%
-%allot’, which leaves the address of the list node on the stack.  For
-the equivalent allocation on the heap you can use ‘list% %alloc’ (or,
-for an ‘allocate’-like stack effect (i.e., with ior), use ‘list%
-%allocate’).  You can get the the size of a list node with ‘list% %size’
-and its alignment with ‘list% %alignment’.
-
-   Note that in Standard Forth the body of a ‘create’d word is ‘aligned’
-but not necessarily ‘faligned’; therefore, if you do a:
-
-     create _name_ foo% %allot drop
-
-then the memory alloted for ‘foo%’ is guaranteed to start at the body of
-‘_name_’ only if ‘foo%’ contains only character, cell and double fields.
-Therefore, if your structure contains floats, better use
-
-     foo% %allot constant _name_
-
-   You can include a structure ‘foo%’ as a field of another structure,
-like this:
-     struct
-     ...
-         foo% field ...
-     ...
-     end-struct ...
-
-   Instead of starting with an empty structure, you can extend an
-existing structure.  E.g., a plain linked list without data, as defined
-above, is hardly useful; You can extend it to a linked list of integers,
-like this:(1)
-
-     list%
-         cell% field intlist-int
-     end-struct intlist%
-
-   ‘intlist%’ is a structure with two fields: ‘list-next’ and
-‘intlist-int’.
-
-   You can specify an array type containing _n_ elements of type ‘foo%’
-like this:
-
-     foo% _n_ *
-
-   You can use this array type in any place where you can use a normal
-type, e.g., when defining a ‘field’, or with ‘%allot’.
-
-   The first field is at the base address of a structure and the word
-for this field (e.g., ‘list-next’) actually does not change the address
-on the stack.  You may be tempted to leave it away in the interest of
-run-time and space efficiency.  This is not necessary, because the
-structure package optimizes this case: If you compile a first-field
-words, no code is generated.  So, in the interest of readability and
-maintainability you should include the word for the field when accessing
-the field.
-
-   ---------- Footnotes ----------
-
-   (1) This feature is also known as _extended records_.  It is the main
-innovation in the Oberon language; in other words, adding this feature
-to Modula-2 led Wirth to create a new language, write a new compiler
-etc.  Adding this feature to Forth just required a few lines of code.
 

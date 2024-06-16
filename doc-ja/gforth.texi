@@ -52,7 +52,7 @@
 
 
 @macro progstyle {}
-Programming style note:
+プログラミング・スタイル・メモ:
 
 @end macro
 
@@ -380,9 +380,10 @@ Tokens for Words
 
 
 
-* Execution token::          実行時(execution/interpretation semantics)
+* Execution token::          実行/インタプリタ 
+                               機能(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル時(compilation semantics)
+* Compilation token::        コンパイル機能(compilation semantics)
 
 Compiling words
 
@@ -1160,7 +1161,7 @@ Gforth を起動した場合、) @kbd{Ctrl+C} を入力すると、 Gforth を�
 あなたの定義とデータはすべて破棄されます。 Gforth を終了する前にシステムの状態を保存する方法については、 @ref{Image Files}
 を参照してください。
 
-doc-bye
+@code{bye} (@i{ -- }) \ gforth を正常に終了する。
 
 @comment ----------------------------------------------
 @node Help on Gforth, Command-line editing, Leaving Gforth, Gforth Environment
@@ -1958,7 +1959,7 @@ Forth では、 演算子の名前はオーバーロードされません。 し
 符号付きのバリエーションと符号なしのバリエーションに違いがない場合(例えば @code{+} の場合)、
 プレフィックスのないバリエーションのみが存在します。
 
-Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のように間違った演算子を使うと、
+Forth は、 コンパイル・モード時もインタプリタ・モード時も型チェックを実行しません。 以下のように間違った演算子を使うと、
 データが正しく解釈(interpret)されません:
 
 @example
@@ -2710,7 +2711,9 @@ Forth の浮動小数点(floating-point)(FP)の、 数値と算術演算は、 �
 @cite{David Goldberg,
 @uref{https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html,What
 Every Computer Scientist Should Know About Floating-Point Arithmetic}, ACM
-Computing Surveys 23(1):5@minus{}48, March 1991} です。
+Computing Surveys 23(1):5@minus{}48, March 1991} です(訳注:
+@url{https://docs.oracle.com/cd/E19957-01/806-4847/ncg_goldberg.html}
+これが合ってるかどうか不明。一部文字化けあり2024/06現在)。
 
 Forth ソース・コードでは、リテラル浮動小数点数には指数が必要です(例: @code{1e0})。これは、 @code{1e}
 のように短く書くことも、 @code{+1.0e+0} のように長く書くこともでき、 その間にはさまざまなバリエーションがあります。 その理由は、
@@ -2894,13 +2897,13 @@ fd-out close-file throw
 : foo + ;
 @end example
 
-これらの 2 つの振る舞いは、 コンパイル時compilation semantics)と実行時(interpretation
-semantics)として知られています。 通常のワード(例: @code{+})の場合、 コンパイル時は、 現在定義されているワード(上記の例では
-@code{foo})に実行時コードを追加します。 つまり、 後で @code{foo} が実行されると、 @code{+}
-のj実行時コード(interpretation semantics)(つまり、2 つの数値の加算)が実行されます。
+これらの 2 つの振る舞いは、 コンパイル機能(compilation semantics)とインタプリタ機能(interpretation
+semantics)として知られています。 通常のワード(例: @code{+})の場合、 コンパイル機能は、 現在定義中のワード(上記の例では
+@code{foo})にインタプリタ機能を追加します。 つまり、 後で @code{foo} が実行されると、 @code{+}
+のインタプリタ機能(interpretation semantics)(つまり、2 つの数値の加算)が実行されます。
 
-ただし、 @code{if} のような制御フロー・ワードなど、 デフォルト以外のコンパイル時動作を持つワードが存在します。
-@code{immediate} を使用すると、 最後に定義されたワードのコンパイル時コードを実行時コードと等しくなるように変更できます:
+ただし、 @code{if} のような制御フロー・ワードなど、 デフォルト以外のコンパイル機能を持つワードが存在します。
+@code{immediate} を使用すると、 最後に定義されたワードのコンパイル機能をインタプリタ機能と等しくなるように変更できます:
 
 @example
 : [FOO] ( -- )
@@ -2913,11 +2916,11 @@ bar
 see bar
 @end example
 
-デフォルト以外のコンパイル時ワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、
+デフォルト以外のコンパイル機能をもつワードだと知らしめる 2 つの慣習は、 名前を括弧で囲む(より頻繁に使用される)ことと、
 名前をすべて大文字で記述する(あまり使用されない)ことです。
 
-@code{if} などの一部のワードについては、 実行時に使用するのは通常間違いであるため、 それらを @code{compile-only}
-としてマークし、 実行時に使用すると警告が表示されます。
+@code{if} などの一部のワードについては、 インタプリタ機能を使用するのは通常間違いであるため、 それらを
+@code{compile-only} としてマークし、 インタプリタ機能を使用すると警告が表示されます。
 
 @example
 : flip ( -- )
@@ -2929,16 +2932,16 @@ flip
 flop
 @end example
 
-この例では、 最初に @code{flip} の実行時コードが使用されます(警告が表示されます)。 @code{flip} の 2 番目の使用では、
-コンパイル時コードが使用されます(警告は表示されません)。 この例では、 compile-only
-が実行時(run-time)ではなくテキスト解釈時(text interpretation time)に評価される属性であることもわかります。
+この例では、 最初に @code{flip} のインタプリタ機能を使用します(警告が表示されます)。 @code{flip} の 2 番目の使用では、
+コンパイル機能を使用します(警告は表示されません)。 この例では、 compile-only
+が実行時(run-time)ではなくテキスト・インタプリタ時に評価される属性であることもわかります。
 
-テキスト・インタプリタには 2 つの状態があります。 実行時(interpret)は、 遭遇したワードの実行時コードを実行します。 コンパイル時では、
-これらのワードのコンパイル時コードが実行されます。
+テキスト・インタプリタには 2 つの状態があります。 インタプリタ・モード(interpret)は、
+遭遇したワードのインタプリタ機能(interpretation semantics)を実行します。 コンパイル・モードでは、
+これらのワードのコンパイル機能(compilation semantics)が実行されます。
 
-特に、 @code{:} はコンパイル状態に切り替え、 @code{;} は解釈(interpret)状態に戻ります。 これらには、
-状態を切り替えるだけがその効果である @code{]} (コンパイル状態に切り替える) と @code{[}
-(解釈(interpret)状態に切り替える) が含まれています。
+特に、 @code{:} はコンパイル状態に切り替え、 @code{;} はインタプリタ状態に戻します。 これらには、 状態を切り替えるだけの効果である
+@code{]} (コンパイル状態に切り替える) と @code{[} (インタプリタ状態に切り替える) が含まれています。
 
 @example
 : xxx ( -- )
@@ -2960,7 +2963,7 @@ see xxx
 @cindex XT tutorial
 
 @code{' word} は、 ワードの実行トークン(execution token)(XT)を提供します。 XT は、
-ワードの実行時コードを表すセルです。 これは @code{execute} で実行できます:
+ワードのインタプリタ機能(interpretation semantics)表すセルです。 これは @code{execute} で実行できます:
 
 @example
 ' + .s
@@ -2998,8 +3001,8 @@ XT はセルサイズであるため、 メモリに保存し、 他のセルと
 see foo1
 @end example
 
-@code{compile,} は標準ではコンパイル時コードがないため、 上記は標準ではないけれども、 良い Forth システムでは動作します。
-うまくいかなかったモノついては、 以下を使用してください
+@code{compile,} は標準ではコンパイル機能(compilation semantics)がないため、 上記は標準ではないけれども、 良い
+Forth システムでは動作します。 うまくいかなかったモノついては、 以下を使用してください
 
 @example
 : [compile,] compile, ; immediate
@@ -3009,8 +3012,8 @@ see foo1
 see foo1
 @end example
 
-@code{'} は、 デフォルトでコンパイル時コードを持つワードです。 コンパイル中ではなく、 実行時コードの実行時、
-その次のワードを構文解析(parse)します。
+@code{'} は、 デフォルトでコンパイル機能(compilation semantics)を持つワードです。
+そのワードのインタプリタ機能(interpretation semantics)を実行すると、 その次のワードを構文解析(parse)します。
 
 @example
 : foo ( -- xt )
@@ -3041,8 +3044,9 @@ see xt-+
 @code{State}-smartness---Why it is evil and How to Exorcise it})。
 
 XT の作成および実行は、 インタプリタの状態には影響を受けないことに注意してください。 つまり、 コンパイル状態で @code{'}
-を実行した場合でも、 実行時コードが得られます。 そして、 そこでの状態が何であれ、 @code{execute} は XT
-によって表されるコード(つまり、@code{'} で生成された XT の場合は実行時コード)を実行します。
+を実行した場合でも、 インタプリタ機能(interpretation semantics)が得られます。 そして、 そこでの状態が何であれ、
+@code{execute} は XT によって表されるコード(つまり、@code{'} で生成された XT
+の場合はインタプリタ機能(interpretation semantics))を実行します。
 
 こちらも参照ください: @ref{Tokens for Words}
 
@@ -3247,8 +3251,8 @@ Gforth で事前定義されています。 これらについては、 この�
 @section @code{POSTPONE}
 @cindex postpone tutorial
 
-@code{POSTPONE} を使用すると、 (そのワードの実行時コード(interpretation
-semantics)をコンパイルする代わりに、) そのワードのコンパイル時コード(compilation semantics)をコンパイルできます:
+@code{POSTPONE} を使用すると、 (そのワードのインタプリタ機能(interpretation
+semantics)をコンパイルする代わりに、) そのワードのコンパイル機能(compilation semantics)をコンパイルできます:
 
 @example
 : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
@@ -3259,16 +3263,18 @@ semantics)をコンパイルする代わりに、) そのワードのコンパ�
 see foo
 @end example
 
-@code{foo} の定義中に、 テキスト・インタプリタは @code{MY-+} のコンパイル時コードを実行し、 そのコンパイル時コードが
-@code{+} のコンパイル時コードを実行します。 つまり、 @code{+} を @code{foo} 内にコンパイルします。
+@code{foo} の定義中に、 テキスト・インタプリタは @code{MY-+} のコンパイル機能(compilation
+semantics)を実行し、 そのコンパイル機能が @code{+} のコンパイル機能を実行します。 つまり、 @code{+} を
+@code{foo} 内にコンパイルします。
 
-この例では、 コンパイル時コードとコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。
-デフォルトのコンパイル時コード(compilation semantics)を持つワードの場合、 通常、 これらのスタック効果は表示されません。
-これらのワードのコンパイル時コード(compilation semantics)のスタック効果は常に @code{( -- )} であり、
-コンパイルされたコードのスタック効果は実行時コード(interpretation semantics)のスタック効果です。
+この例では、 コンパイル機能(compilation
+semantics)とコンパイルされたコードのスタック効果について個別のスタック・コメントも表示します。 デフォルトのコンパイル機能を持つワードの場合、
+通常、 これらのスタック効果は表示されません。 これらのワードのコンパイル機能のスタック効果は常に @code{( -- )} であり、
+コンパイルされたコードのスタック効果はインタプリタ機能(interpretation semantics)のスタック効果です。
 
-注意: この方法でコンパイル時コード(compilation semantics)を実行する場合、
-インタプリタの状態には影響を受けないことに注意してください。 あなたは解釈的(interpretively)に実行することもできます。 例:
+注意: この方法でコンパイル機能(compilation semantics)を実行する場合、
+インタプリタの状態には影響を受けないことに注意してください。 あなたはそれをインタプリタ的(interpretively)に実行することもできます。
+例:
 
 @example
 : foo2 ( n1 n2 -- n )
@@ -3299,8 +3305,8 @@ see bar
 @end example
 
 @quotation 研究課題(assignment)
-@code{2dup} と同等のコンパイル時コードを持つ @code{MY-2DUP} を作成しますが、 コンパイルされるのは @code{over
-over} になるようにしてみましょう。
+@code{2dup} と同等のコンパイル機能(compilation semantics)を持つ @code{MY-2DUP} を作成しますが、
+コンパイルされるのは @code{over over} になるようにしてみましょう。
 @end quotation
 
 @c !! @xref{Macros} for reference
@@ -3327,7 +3333,7 @@ flip .
 see flip
 @end example
 
-@code{LITERAL} は、 コンパイル時(コンパイル時コードが実行されるとき)に数値を消費し、
+@code{LITERAL} は、 コンパイル時(コンパイル機能(compilation semantics)が実行される時)に数値を消費し、
 実行時(コンパイルされたコードが実行されるとき)にそれをプッシュします。 @code{LITERAL} のよくある使用法は、
 コンパイル時に計算された数値を現在のワードにコンパイルすることです:
 
@@ -3410,11 +3416,11 @@ a a-vmul .
 
 このセクションは Gforth 固有です。 スキップしても構いません。
 
-@code{' word compile,} は実行時コード(interpretation semantics)をコンパイルします。
-デフォルトのコンパイル時コード(compilation semantics)を持つワードの場合、 これはコンパイル時コードを実行するのと同じです。
-他のワードのコンパイル時コード(実行時に使えない @code{if} などのワード)を表すために、 Gforth
+@code{' word compile,} はインタプリタ機能(interpretation semantics)をコンパイルします。
+デフォルトのコンパイル機能(compilation semantics)を持つワードの場合、 これはコンパイル機能を実行するのと同じです。
+他のワードのコンパイル機能(インタプリタ機能を持たない @code{if} などのワード)を表すために、 Gforth
 にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワード @code{comp'} と、 ワード @code{[comp']}
-の概念があります。 @code{execute} を使用して、 CT によって表されるコンパイル時コードを実行できます:
+の概念があります。 @code{execute} を使用して、 CT によって表されるコンパイル機能を実行できます:
 
 @example
 : foo2 ( n1 n2 -- n )
@@ -3422,7 +3428,7 @@ a a-vmul .
 see foo2
 @end example
 
-@code{postpone,} を使用して、 CT によって表されるコンパイル時コードをコンパイルできます:
+@code{postpone,} を使用して、 CT によって表されるコンパイル機能をコンパイルできます:
 
 @example
 : foo3 ( -- )
@@ -3431,7 +3437,7 @@ see foo3
 @end example
 
 @code{[ comp' word postpone, ]} @code{POSTPONE word} と同等です。  @code{comp'} は、
-実行時コードを持たないワードに対して特に役立ちます:
+インタプリタ・モードコードを持たないワードに対して特に役立ちます:
 
 @example
 ' if
@@ -3975,8 +3981,8 @@ Forth は、私たちがすでに存在するワードを定義しようとし�
 @cindex text interpreter - effect of state
 @code{:} が行う 2 つ目の特別な処理は、 @code{state} と呼ばれる変数の値を変更することです。 これは、
 テキスト・インタプリタの振る舞いに影響します。 Gforth が起動するとき、 @code{state} の値は 0 であり、
-テキスト・インタプリタはインタプリタ中(interpreting)であると言われます。 (@code{:} で始まる)コロン定義中 、
-@code{state} は -1 に設定され、テキスト・インタプリタはコンパイル中(compiling)と言われます。
+テキスト・インタプリタはインタプリタ状態(@dfn{interpreting})であると言われます。 (@code{:} で始まる)コロン定義中 、
+@code{state} は -1 に設定され、テキスト・インタプリタはコンパイル状態(@dfn{compiling})と言われます。
 
 この例では、 テキスト・インタプリタは文字列 ``@code{2 + . ;}''。引き続き同じ方法で文字列を文字シーケンスに分割します。ただし、数値
 @code{2} をスタックにプッシュする代わりに、 数値 @code{2} を取得する魔法を @code{add-two}
@@ -3984,7 +3990,7 @@ Forth は、私たちがすでに存在するワードを定義しようとし�
 @code{.} の振る舞いも定義にコンパイルされます。
 
 特定の種類のワードはコンパイルされません。 これらのいわゆる「即実行ワード」(immediate word)は、
-テキスト・インタプリタがインタプリタ・モードであるかコンパイル・モードかに関係なく、 実行されます(今、 直ちに実行されます)。 @code{;}
+テキスト・インタプリタがインタプリタ状態であるかコンパイル状態であるかに関係なく、 実行されます(今、 直ちに実行されます)。 @code{;}
 というワードは即実行ワードです。 定義にコンパイルされるのではなく、 実行されます。 その効果は、 @code{state} の値を 0
 に戻すことを含む、 現在の定義を終了することです。
 
@@ -3996,14 +4002,13 @@ Forth では、 すべてのワードまたは数値は以下の 2 つの性質�
 @itemize @bullet
 @item
 @cindex interpretation semantics
-その 実行時コード(interpretation semantics)は、 テキスト・インタプリタが実行時(interpret
-状態)どのように動作するかを記述します。 ワードの実行時コードは、 その「実行トークン」(execution
+その インタプリタ機能(interpretation semantics)は、
+テキスト・インタプリタがインタプリタ状態でどのように動作するかを記述します。 ワードのインタプリタ機能は、 その「実行トークン」(execution
 token)(@pxref{Execution token})によって表されます。
 @item
 @cindex compilation semantics
-その コンパイル時コード(compilation semantics)は、 テキスト・インタプリタがコンパイル時(compile状態)に、
-どのように動作するかを記述します。 ワードのコンパイル時コードは、 その「コンパイル・トークン」(@pxref{Compilation
-token})によって表されます。
+その コンパイル機能(compilation semantics)は、 テキスト・インタプリタがコンパイル状態でどのように動作するかを記述します。
+ワードのコンパイル機能は、 その「コンパイル・トークン」(@pxref{Compilation token})によって表されます。
 @end itemize
 
 @noindent
@@ -4013,37 +4018,37 @@ token})によって表されます。
 @item
 その数値が解釈(interpret)される場合、 その振る舞いは、 その数値をスタックにプッシュすることです。
 @item
-その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、 数値のコンパイル時コードは、
-コンパイルされる定義の実行時まで、 その数値の実行時コードの実行を延期します。)
+その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、
+数値のコンパイル機能(compilation semantics)は、 コンパイルされる定義の実行時まで、
+その数値のインタプリタ機能(interpretation semantics)の実行を延期します。)
 @end itemize
 
-ワードは常にこのように通常の振る舞いをするとは限りませんが、 ほとんどのワードには実行時とコンパイル時のデフォルトの振る舞い(default
-semantics)があり、 以下のように振る舞うことを意味します。
+ワードは常にこのような通常の振る舞いをするとは限りませんが、 ほとんどのワードにはデフォルトの機能(default semantics)があり、
+以下のように振る舞うことを意味します:
 
 @itemize @bullet
 @item
-ワードの実行時コード(compilation semantics)は、 何かしら役に立つことを行うことです。
+ワードのインタプリタ機能(@dfn{interpretation semantics})は、 何かしら役に立つことを行うことです。
 @item
-ワードのコンパイル時コード(compilation semantics)は、 それの実行時コード(interpretation
+ワードのコンパイル機能(compilation semantics)は、 そのワードのインタプリタ機能(interpretation
 semantics)を現在の定義に追加します(よって、 それは実行時に何かしら役に立つことを行います)。
 @end itemize
 
 @cindex immediate words
-特定のワードの実際の、 実行時とコンパイル時の振る舞いは、 ワードの定義時に @code{immediate} や
-@code{compile-only} というワードを使用することで制御できます。 これらのワードは、
-最後に定義されたワードの名前ディクショナリ・エントリにフラグを設定します。 これらのフラグは、
-名前ディクショナリでワードが見つかったときにテキスト・インタプリタによって取得されます。
+特定のワードの実際の振る舞いは、 ワードの定義時に @code{immediate} や @code{compile-only}
+というワードを使用することで制御できます。 これらのワードは、 最後に定義されたワードの名前ディクショナリ・エントリにフラグを設定します。
+これらのフラグは、 名前ディクショナリでワードが見つかったときにテキスト・インタプリタによって取得されます。
 
-@dfn{immediate} としてマークされたワードは、 その実行時コード(interpretation
-semantics)と同じコンパイル時コード(compilation semantics)を持ちます。 つまり、 以下のように振る舞います:
+@dfn{immediate} としてマークされたワードは、 そのインタプリタ機能(interpretation
+semantics)と同じコンパイル機能(compilation semantics)を持ちます。 つまり、 以下のように振る舞います:
 
 @itemize @bullet
 @item
-ワードの実行時コード(compilation semantics)は、 何かしら役に立つことを行うことです。
+ワードのインタプリタ機能(@dfn{interpretation semantics})は、 何かしら役に立つことを行うことです。
 @item
-このワードのコンパイル時コード(compilation semantics)は、
-何かしら役に立つことを行うことです(実際には実行時コードと同一のことを行うことです)。 つまり、
-コンパイル時に実行(実行時コードと同一のコードを実行)を行います。
+このワードのコンパイル機能(compilation semantics)は、
+何かしら役に立つことを行うことです(実際にはインタプリタ機能と同一のことを行うことです)。 つまり、
+このワードのコンパイル機能はコンパイル中に実行されます。
 @end itemize
 
 ワードを @dfn{compile-only} としてマークすると、 解釈状態(interpretation
@@ -4070,18 +4075,19 @@ state)でこのワードを検出したときにテキスト・インタプリ�
 このワードは変数の値を取り出し(フェッチし)、 それをスタックに残します。 したがって、 @code{show-state} の振る舞いは、
 @code{state} の現在の値を表す数値を出力することです。
 
-@code{word1} を実行すると、 システムが解釈中(interpreting)であることを示す数値 0 が出力されます。
-テキスト・インタプリタが @code{word1} の定義をコンパイルしたときに、 コンパイル時コードが現在の定義に実行時コードを追加する
-@code{show-state} に遭遇しました。 @code{word1} を実行すると、 @code{show-state}
-の実行時コードが実行されます。  @code{word1} (つまり @code{show-state})
-が実行される時点で、システムは解釈中(interpreting)です。
+@code{word1} を実行すると、 システムがインタプリタ状態であることを示す数値 0 が出力されます。 テキスト・インタプリタが
+@code{word1} の定義をコンパイルしたときに、 コンパイル機能が現在の定義に実行時コードを追加する @code{show-state}
+に遭遇しました。 @code{word1} を実行すると、 @code{show-state} のインタプリタ機能(interpretation
+semantics)が実行されます。  @code{word1} (つまり @code{show-state}) が実行される時点で、
+システムはインタプリタ状態です。
 
 @code{word2} の定義を入力した後に @key{RET} を押すと、 数値 -1 が出力され、 その後に @code{ ok}
 が表示されるはずです。 テキスト・インタプリタが @code{word2} の定義をコンパイルすると、 即実行ワードである
-@code{show-state-now} が検出されたため、 そのコンパイル時コードは実行時コードを実行します。
+@code{show-state-now} が検出されたため、 そのコンパイル機能(compilation
+semantics)はインタプリタ機能(interpretation semantics)を実行します。
 これは直ちにに実行されます(テキスト・インタプリタが次の文字グループ(この例では @code{;})の処理に移る前に)。 これを実行すると、
 @code{word2} の定義途中の @code{state} の値が表示されます。 -1 を出力するので、
-システムがその時点でコンパイル時であることがわかります。 もし あなたが @code{word2} を「実行」しても何も行いません。
+システムがその時点でコンパイル状態であることがわかります。 もし あなたが @code{word2} を「実行」しても何も行いません。
 
 @cindex @code{."}, how it works
 即実行ワードの話題を離れる前に、 前のセクションの @code{greet} の定義における @code{."} の振る舞いについて検討してみましょう。
@@ -4150,14 +4156,14 @@ Forth はスタックを使用してワード間でパラメーターを渡し�
 @item
 以前に定義されたワードを使用するために、 テキスト・インタプリタは「名前ディクショナリ」でそのワードを探します。
 @item
-ワードは実行時コード(interpretation semantics)とコンパイル時コード(compilation
-semantics)を持っています。
+ワードはインタプリタ機能(@dfn{interpretation semantics})とコンパイル機能(@dfn{compilation
+semantics})を持っています。
 @item
-テキスト・インタプリタは、 @code{state} の値を使用して、 探し出したワードの「実行時コード」(interpretation
-semantics)を使用するかコンパイル時コード(compilation semantics)を使用するかを選択します。
+テキスト・インタプリタは、 @code{state} の値を使用して、 探し出したワードのインタプリタ機能(interpretation
+semantics)を使用するかコンパイル機能(compilation semantics)を使用するかを選択します。
 @item
-ワードの実行時コード(interpretation semantics)とコンパイル時コード(compilation semantics)の関係は、
-そのワードが定義された方法(たとえば、 それが「即実行ワード」であるかどうか)によって異なります。
+ワードのインタプリタ機能(interpretation semantics)とコンパイル機能(compilation semantics)の関係は、
+そのワードが定義された方法(たとえば、 それが「即実行ワード」(@dfn{immediate} word)であるかどうか)によって異なります。
 @item
 Forth 定義は、 Forth で実装(「高レベル定義」と呼ばれます)、 または、 その他のいくつかの方法(通常は低レベル言語で、
 「低レベル定義」、「コード定義」、「プリミティブ」と呼ばれる事もある)で実装できます。
@@ -4474,10 +4480,10 @@ Forth のワードは、 以下にあるように、 Forth テキストのデフ
 リターンスタック効果は「スタック効果」には表示されませんが、 「説明」(Description)に表示されます。 スタック項目の名前は、
 項目の型や機能を説明します。 型の説明については、 下記を参照してください。
 
-すべてのワードには、 コンパイル時のスタック効果と実行時のスタック効果という 2 つのスタック効果があります。
-ほとんどのワードのコンパイル時のスタック効果は @i{ -- } です。 ワードのコンパイル時のスタック効果がこの標準の振る舞いから逸脱している場合、
-またはワードがコンパイル時に他の通常でない振る舞いを行う場合、 両方のスタック効果が表示されます。 それ以外の場合、
-実行時のスタック効果のみが表示されます。
+すべてのワードには、 コンパイル・モードのスタック効果とインタプリタ・モードのスタック効果という 2 つのスタック効果があります。
+ほとんどのワードのコンパイル・モードのスタック効果は @i{ -- } です。
+ワードのコンパイル・モードのスタック効果がこの標準の振る舞いから逸脱している場合、 またはワードがコンパイル・モードに他の通常でない振る舞いを行う場合、
+両方のスタック効果が表示されます。 それ以外の場合、 インタプリタ・モードのスタック効果のみが表示されます。
 
 また、 コード・テンプレートまたはサンプルでは、​​ その時点でのスタックの状態表示するコメントが括弧内にある場合があることにも注意してください。
 これらのスタックの状態表示には @code{--} はありません。 なぜなら前・後という状況が無いためです。
@@ -5881,7 +5887,9 @@ r2 -- r3 )} になります}。
 浮動小数点数の問題(およびその回避方法)について知りたい場合は、 @cite{David Goldberg,
 @uref{https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html,What
 Every Computer Scientist Should Know About Floating-Point Arithmetic}, ACM
-Computing Surveys 23(1):5@minus{}48, March 1991} から始めると良いでしょう。
+Computing Surveys 23(1):5@minus{}48, March 1991} から始めると良いでしょう(訳注:
+@url{https://docs.oracle.com/cd/E19957-01/806-4847/ncg_goldberg.html}
+これが合ってるかどうか不明。一部文字化けあり2024/06現在)。
 
 整数と浮動小数点の間の変換:
 
@@ -7024,7 +7032,8 @@ ANS Forth では、この方法で現在の連続領域からメモリの割り�
 @code{mem,} ( @i{addr u --  }) gforth-0.6 ``mem,''
 @end format
 
-doc-save-mem-dict
+@code{save-mem-dict} ( @i{addr1 u -- addr2 u} ) \ 
+訳注:文字列をhereからのディクショナリに書き込み、その(ディクショナリ上の)文字列を返します
 
 メモリ・アクセスはアライメントする必要があります(@pxref{Address arithmetic})。 したがって、
 メモリ割り当てもアライメントされるべきです。 つまり、 セルを割り当てる前に、 @code{here} をセル・アライメントする必要があります。
@@ -8033,28 +8042,23 @@ address)を期待します。
 @cindex Characters - chars/bytes vs. extended characters
 @cindex character encoding
 
-Forth supports chars (aka bytes), used by words such as @code{c@@}; these
-can be used to represent an ASCII character.
+Forth は、 @code{c@@} などのワードで使用される char (別名バイト)をサポートします。 これらは ASCII
+文字を表すために使用できます。
 
-Forth also supports extended characters, which may be represented by a
-sequence of several bytes (i.e., several chars).  A common character
-encoding is the UTF-8 representation of Unicode.
+Forth は、 複数のバイト(つまり、 複数の char)のシーケンスで表現できる拡張文字(extended
+characters)もサポートしています。  一般的な文字エンコーディングは、 ユニコードの UTF-8 表現です。
 
-In general, most code does not have to worry about extended characters: In
-the string representation it does not matter whether a byte is a part of an
-extended character, or it is a character by itself, and words that consume
-chars (like @code{emit}) also work when the extended character is
-transferred as a sequence of chars.  Forth still provides words for dealing
-with extended characters (@pxref{Xchars and Unicode}).
+一般に、 ほとんどのプログラム・コードは拡張文字(extended characters)について心配する必要はありません。
+連なり(string)表現では、 当該バイトが拡張文字の一部であるか、 それ自体が1つの文字であるかは問題ではありません。 拡張文字が char
+のシーケンスとして転送される場合、 (@code{emit} のような) char を消費するワードも機能します。 Forth は未だ、
+拡張文字を処理するためのワード群を提供しています(@pxref{Xchars and Unicode})。
 
-In Unicode terms, chars are @i{code units}, whereas extended characters are
-@i{code points}.  Note that an Unicode @i{abstract character} can consist of
-a sequence of code points, but Forth (like other programming languages) has
-no data type for individual abstract characters; of course, they can be
-represented as strings.
+ユニコード用語では、 char @i{コード・ユニット}、 拡張文字は @i{コード・ポイント} です。  Unicode
+@i{抽象文字}(abstract character) はコード・ポイントのシーケンスとしで構成されますが、 (他のプログラミング言語と同様、 )
+Forth  には抽象文字個々のデータ型はないことに注意してください。 もちろん、 これらは連なり(string)として表すことができます。
 
-You can use the usual integer words on chars and Xchars on the stack, but
-Gforth also has some words for dealing with chars on the stack:
+スタック上の char および Xchar には通常の整数ワードを使用できますが、 Gforth にはスタック上の char
+を処理するためのワードもいくつかあります:
 
 @findex toupper ( @var{ c1 -- c2  } ) gforth-0.2
 @cindex @code{toupper}
@@ -8062,8 +8066,8 @@ Gforth also has some words for dealing with chars on the stack:
 @format
 @code{toupper} ( @i{c1 -- c2 }) gforth-0.2 ``toupper''
 @end format
-If @i{c1} is a lower-case ASCII character, @i{c2} is the equivalent
-upper-case character, otherwise @i{c2} is @i{c1}.
+@i{c1} が小文字の ASCII 文字である場合、 @i{c2} は同等の大文字です。 それ以外の場合、 @i{c2} と @i{c1}
+は同じです。
 
 
 @node String representations, String and character literals, Characters, Strings and Characters
@@ -8072,25 +8076,20 @@ upper-case character, otherwise @i{c2} is @i{c1}.
 @cindex character strings - representations
 @cindex counted strings
 
-Forth commonly represents strings as cell pair @i{c-addr u} on the stack;
-@i{u} is the length of the string in bytes (aka chars), and @i{c-addr} is
-the address of the first byte of the string.  Note that a code point may be
-represented by a sequence of several chars in the string (and a Unicode
-``abstract character'' may consist of several code points).  @xref{String
-words}.
+Forth は通常、 文字列(strings)をスタック上のセルのペア @i{c-addr u} として表します。  @i{u}
+はバイト単位の文字列の長さ(別名 文字数)、 @i{c-addr} は文字列の最初のバイトのアドレスです。  コード・ポイントは、
+文字列内の複数の文字(char)のシーケンスによって表される場合があることに注意してください(また、 ユニコード の「抽象文字」(abstract
+character)は複数のコード・ポイントで構成される場合があります)。 @xref{String words}
 
-Another string representation is used with the string library of words
-containing @code{$}.  It represents the string on the stack through the
-address of a cell-sized string handle, which can be located in, e.g., a
-variable.  @xref{$tring words}.
+もう一つの文字列表現が、 @code{$} を含む文字列ライブラリ・ワード群で使用されます。 それらは、
+変数などに配置できるセルサイズの文字列ハンドル(cell-sized string handle)のアドレスを通じてスタック上の文字列を表します。
+@xref{$tring words}
 
-A legacy string representation are @dfn{counted strings}, represented on the
-stack by @i{c-addr}. The char addressed by @i{c-addr} contains a
-character-count, @i{n}, of the string and the string occupies the subsequent
-@i{n} char addresses in memory.  Counted strings are limited to 255 bytes in
-length.  While counted strings may look attractive due to needing only one
-stack item, due to their limitations we recommend avoiding them, especially
-as input parameters of words.  @xref{Counted string words}.
+旧来からの文字列表現は「カウンタ付き文字列」(counted strings)で、 スタック上では @i{c-addr} と表現されます。
+@i{c-addr} によって指定される char には、 文字列の文字数 @i{n} が含まれており、 その文字列はメモリ内の後続の @i{n}
+char アドレスを占有します。 カウントされる文字列の長さは 255 バイトに制限されます。  カウンタ付き文字列は、 必要なスタック項目が 1
+つだけであるため魅力的に見えるかもしれませんが、 この制限があるため、 特にワードの入力パラメータとしては使用しないことをお勧めします。
+@xref{Counted string words}
 
 @node String and character literals, String words, String representations, Strings and Characters
 @subsection String and Character literals
@@ -8098,10 +8097,9 @@ as input parameters of words.  @xref{Counted string words}.
 @cindex string literals
 @cindex literals for characters and strings
 
-The nicest way to write a string literal is to write it as
-@code{"@i{STRING}"}.  You can use the same \-escapes inside as for
-@code{s\"}.  However, this way is non-standard, so you may want to use one
-of the following words for improved portability:
+文字列リテラル(string literal)を記述する至高の方法は、 @code{"@i{STRING}"} と記述することです。
+@code{s\"} の場合と同じく、 バックスラッシュによるエスケープ(\-escapes)を使用できます。 ただし、
+この方法は標準ではないため(non-standard)、 移植性を高めるためには以下のいずれかのワードを使用することをお勧めします:
 
 @findex s\" ( @var{ compilation 'ccc"' -- ; run-time -- c-addr u   } ) core-ext,file-ext
 @cindex @code{s\"}
@@ -8109,22 +8107,20 @@ of the following words for improved portability:
 @format
 @code{s\"} ( @i{compilation 'ccc"' -- ; run-time -- c-addr u  }) core-ext,file-ext ``s-backslash-quote''
 @end format
-Like @code{S"}, but translates C-like \-escape-sequences, as follows:
-@code{\a} BEL (alert), @code{\b} BS, @code{\e} ESC (not in C99), @code{\f}
-FF, @code{\n} newline, @code{\r} CR, @code{\t} HT, @code{\v} VT, @code{\"}
-", @code{\\} \, @code{\}[0-7]@{1,3@} octal numerical character value
-(non-standard), @code{\x}[0-9a-f]@{0,2@} hex numerical character value
-(standard only with two digits), @code{\u}[0-9a-f]@{4@} for unicode
-codepoints (auto-merges surrogate pairs), @code{\U}[0-9a-f]@{8@} for
-extended unicode code points; a @code{\} before any other character is
-reserved.  @* Note that @code{\x}XX produces raw bytes, while @code{\u}XXXX
-and @code{\U}XXXXXXXX produce code points for the current encoding.  E.g.,
-if we use UTF-8 encoding and want to encode @"a (code point U+00E4), you can
-write the letter @"a itself, or write @code{\xc3\xa4} (the UTF-8 bytes for
-this code point), @code{\u00e4}, or @code{\U000000e4}.  @* Note that, unlike
-in C, @code{\n} produces the preferred newline sequence for the host OS,
-which may consist of several chars.  I.e., @code{"\n"} is equivalent to
-@code{newline}.
+これは @code{s"} と似ていますが、
+C言語のようなバックスラッシュ・エスケープ・シーケンス(\-escape-sequences)を次のように変換します: @code{\a} BEL
+(ビープ音)、 @code{\b} BS 、 @code{\e} ESC (not in C99)、 @code{\f} FF 、 @code{\n}
+改行(newline)、 @code{\r} CR 、 @code{\t} HT 、@code{\v} VT 、@code{\"} " 、
+@code{\\} \ 、 @code{\}[0-7]@{1,3@} 8進数(非標準)、 @code{\x}[0-9a-f]@{0,2@}
+16進指定char値(標準は2桁のみ)、 @code{\u}[0-9a-f]@{4@}
+ユニコード・コードポイント(サロゲート・ペア自動マージ;auto-merges surrogate pairs)、
+@code{\U}[0-9a-f]@{8@} 拡張ユニコード・コード・ポイント。 @code{\} は他の文字よりも前に予約されています。 @* 注意:
+@code{\x}XX は生のバイトを生成することに注意してください。 一方、 @code{\u}XXXX と @code{\U}XXXXXXXX は、
+現在のエンコーディングのコード・ポイントを生成します。 たとえば、 UTF-8 エンコーディングを使用し、 @"a (コード・ポイント
+U+00E4)をエンコードしたい場合は、 次のように指定できます: 文字 @"a 自体を記述するか、 @code{\xc3\xa4}
+(このコード・ポイントの UTF-8 バイト) または @code{\u00e4} または @code{\U000000e4} を記述します。 @*
+注意: C言語とは異なり、 @code{\n} はホストOS に適した改行シーケンスを生成します。 これは複数の文字で構成される場合があります。
+つまり、 @code{"\n"} は @code{newline} と同等です。
 
 
 @findex S" ( @var{ compilation 'ccc"' -- ; run-time -- c-addr u   } ) core,file
@@ -8133,22 +8129,18 @@ which may consist of several chars.  I.e., @code{"\n"} is equivalent to
 @format
 @code{S"} ( @i{compilation 'ccc"' -- ; run-time -- c-addr u  }) core,file ``s-quote''
 @end format
-Compilation: Parse a string @i{ccc} delimited by a @code{"} (double
-quote). At run-time, return the length, @i{u}, and the start address,
-@i{c-addr} of the string. Interpretation: parse the string as before, and
-return @i{c-addr}, @i{u}. Gforth @code{allocate}s the string. The resulting
-memory leak is usually not a problem; the exception is if you create strings
-containing @code{S"} and @code{evaluate} them; then the leak is not bounded
-by the size of the interpreted files and you may want to @code{free} the
-strings.  Forth-2012 only guarantees two buffers of 80 characters each, so
-in standard programs you should assume that the string lives only until the
-next-but-one @code{s"}.
+コンパイル・モードコードは  @code{"} (二重引用符) を区切り文字として文字列 @i{ccc} をパースします。 その実行時コードは、 長さ
+@i{u} と 文字列の開始アドレス @i{c-addr} を返します。 インタプリタ時: 同様に文字列をパースし、 @i{c-addr} と
+@i{u} 返します。 Gforth では文字列(string)を @code{allocate} します。
+結果として生じるメモリ・リークは通常は問題ではありません。 例外は、 @code{S"} を含む文字列を作成し、 その文字列を
+@code{evaluate} する場合です。 その場合、 リークはインタプリトされたファイルのサイズに制限されないため、 文字列を
+@code{free} することもできます。 Forth-2012 では、それぞれ 80 文字のバッファが 2 つしか保証されないため、
+標準プログラムでは、 文字列は 2 つ前の @code{s"} までしか存続していない想定する必要があります。
 
 
 
-Likewise, You can get the code @i{xc} of a character @i{C} with
-@code{'@i{C}'}.  This way has been standardized since Forth-2012.  An older
-way to get it is to use one of the following words:
+同様に、 @code{'@i{C}'} を使用すると、 文字 @i{C} のコード @i{xc} を取得できます。 この方法は Forth-2012
+から標準化されています。 これを取得する古い方法は、 以下のいずれかのワードを使用することです:
 
 @findex char ( @var{ '<spaces>ccc' -- c   } ) core,xchar-ext
 @cindex @code{char}
@@ -8156,8 +8148,9 @@ way to get it is to use one of the following words:
 @format
 @code{char} ( @i{'<spaces>ccc' -- c  }) core,xchar-ext ``char''
 @end format
-Skip leading spaces. Parse the string @i{ccc} and return @i{c}, the display
-code representing the first character of @i{ccc}.
+先頭のスペース達をスキップします。 文字列 @i{ccc} をパースし、 @i{ccc} の最初の文字の文字コード @i{c}
+を返します(訳注:ASCII以外の文字コードもいけるっぽい(LANG=ja_JP.UTF-8) char あ hex . decimal 3042
+ok)
 
 
 @findex [char] ( @var{ compilation '<spaces>ccc' -- ; run-time -- c   } ) core,xchar-ext
@@ -8166,36 +8159,32 @@ code representing the first character of @i{ccc}.
 @format
 @code{[char]} ( @i{compilation '<spaces>ccc' -- ; run-time -- c  }) core,xchar-ext ``bracket-char''
 @end format
-Compilation: skip leading spaces. Parse the string @i{ccc}. Run-time: return
-@i{c}, the display code representing the first character of @i{ccc}.
-Interpretation semantics for this word are undefined.
+コンパイル状態: 先頭のスペース達をスキップします。 文字列 @i{ccc} をパースします。 その実行時コード: @i{ccc}
+の最初の文字の文字コード @i{c} を返します。 このワードのインタプリタ機能(interpretation semantics)は未定義です。
 
 
 
-You usually use @code{char} outside and @code{[char]} inside colon
-definitions, or you just use @code{'@i{C}'}.
+通常は、 コロン定義の外側で @code{char} 使用するか、 コロン定義の内側で @code{[char]} を使用するか、 単にその両方で
+@code{'@i{C}'} を使用するかです。
 
-Note that, e.g.,
+注意: 例えば、
 
 @example
 "C" type
 @end example
 
 @noindent
-is (slightly) more efficient than
+の方が下記よりも(わずかに)効率的です
 
 @example
 'C' xemit
 @end example
 
 @noindent
-because the latter converts the code point into a sequence of bytes and
-individually @code{emit}s them.  Similarly, dealing with general characters
-is usually more efficient when representing them as strings rather than code
-points.
+なぜなら、 後者はコード・ポイントをバイトのシーケンスに変換し、 それらを個別に @code{emit} するからです。 同様に、
+一般的な文字達を扱う場合は、 通常、 コード・ポイントではなく文字列として表す方が効率的です。
 
-There are the following words for producing commonly-used characters and
-strings that cannot be produced with @code{S"} or @code{'@i{C}'}:
+@code{S"} または @code{'@i{C}'} では生成できない、 一般的に使用される文字や文字列を生成するために以下のワード群があります:
 
 @findex newline ( @var{ -- c-addr u  } ) gforth-0.5
 @cindex @code{newline}
@@ -8203,7 +8192,7 @@ strings that cannot be produced with @code{S"} or @code{'@i{C}'}:
 @format
 @code{newline} ( @i{-- c-addr u }) gforth-0.5 ``newline''
 @end format
-String containing the newline sequence of the host OS
+ホストOSの改行シーケンスを含む文字列(訳注: 文字コードを返す訳では無いことに注意。 文字列の内容は LF だったり CRLF だったりする)
 
 @findex bl ( @var{ -- c-char   } ) core
 @cindex @code{bl}
@@ -8211,7 +8200,7 @@ String containing the newline sequence of the host OS
 @format
 @code{bl} ( @i{-- c-char  }) core ``b-l''
 @end format
-@i{c-char} is the character value for a space.
+@i{c-char} は空白(space)の文字コード値です。
 
 
 @findex #tab ( @var{ -- c   } ) gforth-0.2
@@ -8276,19 +8265,18 @@ String containing the newline sequence of the host OS
 @format
 @code{#eof} ( @i{-- c  }) gforth-0.7 ``number-e-o-f''
 @end format
-actually EOT (ASCII code 4 aka @code{^D})
+実際には EOT (ASCII コード 4 別名 @code{^D})
 
 
 
 @node String words, $tring words, String and character literals, Strings and Characters
 @subsection String words
 
-Words that are used for memory blocks are also useful for strings, so for
-words that move, copy, compare and search strings, see @ref{Memory
-Blocks}. For words that display characters and strings, see @ref{Displaying
-characters and strings}.
+メモリ・ブロックに使用されるワードは文字列(string)にも役立つため、 文字列(string)の移動やコピーや比較や検索を行うワードについては、
+@ref{Memory Blocks} を参照してください。 文字や文字列を表示するワードについては、 see @ref{Displaying
+characters and strings} を参照してください。
 
-The following words work on previously existing strings:
+以下のワード群は、 既に存在している文字列(strings)に対して機能します:
 
 @findex str= ( @var{ c-addr1 u1 c-addr2 u2 -- f   } ) gforth-0.6
 @cindex @code{str=}
@@ -8310,7 +8298,7 @@ The following words work on previously existing strings:
 @format
 @code{string-prefix?} ( @i{c-addr1 u1 c-addr2 u2 -- f  }) gforth-0.6 ``string-prefix-question''
 @end format
-Is @var{c-addr2 u2} a prefix of @var{c-addr1 u1}?
+@var{c-addr2 u2} が @var{c-addr1 u1} の接頭辞部分と合致しますか？
 
 
 @findex string-suffix? ( @var{ c-addr1 u1 c-addr2 u2 -- f   } ) gforth-1.0
@@ -8319,7 +8307,7 @@ Is @var{c-addr2 u2} a prefix of @var{c-addr1 u1}?
 @format
 @code{string-suffix?} ( @i{c-addr1 u1 c-addr2 u2 -- f  }) gforth-1.0 ``string-suffix-question''
 @end format
-Is @var{c-addr2 u2} a suffix of @var{c-addr1 u1}?
+@var{c-addr2 u2} が @var{c-addr1 u1} の接尾辞部分と合致しますか？
 
 
 @findex search ( @var{ c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag   } ) string
@@ -8328,10 +8316,12 @@ Is @var{c-addr2 u2} a suffix of @var{c-addr1 u1}?
 @format
 @code{search} ( @i{c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag  }) string ``search''
 @end format
-Search the string specified by @i{c-addr1, u1} for the string specified by
-@i{c-addr2, u2}. If @i{flag} is true: match was found at @i{c-addr3} with
-@i{u3} characters remaining. If @i{flag} is false: no match was found;
-@i{c-addr3, u3} are equal to @i{c-addr1, u1}.
+@i{c-addr1, u1} で指定の文字列内で @i{c-addr2, u2} で指定の字列を検索します。  @i{flag} が true
+の場合:
+@i{c-addr1} からの見つかった位置を @i{c-addr3} に、 @i{c-addr2, u2}
+で指定の字列と同じ文字列を含んだそれ以降の文字数を @i{u3} に返します(訳注: s" GNU gforth マニュアル" s" ニュア"
+search drop ." [" type ." ]" [ニュアル] ok )。  @i{flag} が false の場合:
+一致するものが見つかりませんでした。 @i{c-addr3, u3} は @i{c-addr1, u1} と同じです。
 
 
 @findex scan ( @var{ c-addr1 u1 c -- c-addr2 u2  } ) gforth-0.2
@@ -8340,9 +8330,8 @@ Search the string specified by @i{c-addr1, u1} for the string specified by
 @format
 @code{scan} ( @i{c-addr1 u1 c -- c-addr2 u2 }) gforth-0.2 ``scan''
 @end format
-Skip all characters not equal to c.  The result starts with c or is empty.
-@code{Scan} is limited to single-byte (ASCII) characters.  Use @code{search}
-to search for multi-byte characters.
+c に等しくないすべての文字をスキップします。 結果は c で始まる(c-addr2 u2)か空(empty; c-addr2+u2, 0)です。
+@code{Scan} はシングルバイト文字(ASCII)に限定されます。 マルチバイト文字を検索するには、 @code{search} を使用します。
 
 @findex scan-back ( @var{ c-addr u1 c -- c-addr u2   } ) gforth-0.7
 @cindex @code{scan-back}
@@ -8357,9 +8346,8 @@ to search for multi-byte characters.
 @format
 @code{skip} ( @i{c-addr1 u1 c -- c-addr2 u2 }) gforth-0.2 ``skip''
 @end format
-Skip all characters equal to c.  The result starts with the first non-c
-character, or it is empty.  @code{Scan} is limited to single-byte (ASCII)
-characters.
+c に等しいすべての文字をスキップします。  結果は最初の非 C 文字で始まる(アドレス、長さ)か、 空(文字列の長さ0)になります。
+@code{skip} はシングルバイト文字(ASCII)に限定されます。
 
 @findex -trailing ( @var{ c_addr u1 -- c_addr u2   } ) string
 @cindex @code{-trailing}
@@ -8367,8 +8355,7 @@ characters.
 @format
 @code{-trailing} ( @i{c_addr u1 -- c_addr u2  }) string ``dash-trailing''
 @end format
-Adjust the string specified by @i{c-addr, u1} to remove all trailing
-spaces. @i{u2} is the length of the modified string.
+@i{c-addr, u1} で指定された文字列の末尾をトリムします(末尾のスペースをすべて削除します)。 @i{u2} は変更後の文字列の長さです。
 
 
 @findex /string ( @var{ c-addr1 u1 n -- c-addr2 u2  } ) string
@@ -8377,8 +8364,7 @@ spaces. @i{u2} is the length of the modified string.
 @format
 @code{/string} ( @i{c-addr1 u1 n -- c-addr2 u2 }) string ``slash-string''
 @end format
-Adjust the string specified by @i{c-addr1, u1} to remove @i{n} characters
-from the start of the string.
+@i{c-addr1, u1} で指定された文字列の先頭から @i{n} 文字削除します(訳注: c-addr1+n, u1-n するだけっぽい…)。
 
 @findex safe/string ( @var{ c-addr1 u1 n -- c-addr2 u2  } ) gforth-1.0
 @cindex @code{safe/string}
@@ -8386,9 +8372,8 @@ from the start of the string.
 @format
 @code{safe/string} ( @i{c-addr1 u1 n -- c-addr2 u2 }) gforth-1.0 ``safe-slash-string''
 @end format
-Adjust the string specified by @i{c-addr1, u1} to remove @i{n} characters
-from the start of the string.  Unlike @code{/string}, @code{safe/string}
-removes at least 0 and at most @i{u1} characters.
+@i{c-addr1, u1} で指定された文字列の先頭から @i{n} 文字を削除します。 @code{/string}
+とは異なり、@code{safe/string} は少なくとも 0 文字、 最大で @i{u1} 文字を削除します。
 
 @findex cstring>sstring ( @var{ c-addr -- c-addr u   } ) gforth-0.2
 @cindex @code{cstring>sstring}
@@ -8396,13 +8381,12 @@ removes at least 0 and at most @i{u1} characters.
 @format
 @code{cstring>sstring} ( @i{c-addr -- c-addr u  }) gforth-0.2 ``cstring-to-sstring''
 @end format
-@i{C-addr} is the start address of a zero-terminated string, @i{u} is its
-length.
+@i{C-addr} はゼロで終わる文字列の開始アドレス、 @i{u} はその長さです。
 
 
 
-The following words compare case-insensitively for ASCII characters, but
-case-sensitively for non-ASCII characters (like in lookup in wordlists).
+以下のワード群は、 ASCII 文字については大文字と小文字を区別せずに比較しますが、 (ワードリストの検索のような)非 ASCII
+文字については大文字と小文字を区別します 。
 
 @findex capscompare ( @var{ c-addr1 u1 c-addr2 u2 -- n  } ) gforth-0.7
 @cindex @code{capscompare}
@@ -8410,11 +8394,10 @@ case-sensitively for non-ASCII characters (like in lookup in wordlists).
 @format
 @code{capscompare} ( @i{c-addr1 u1 c-addr2 u2 -- n }) gforth-0.7 ``capscompare''
 @end format
-Compare two strings lexicographically, based on the values of the bytes in
-the strings, but comparing ASCII characters case-insensitively, and
-non-ASCII characters case-sensitively and without locale-specific collation
-order. If they are equal, @i{n} is 0; if the first string is smaller, @i{n}
-is -1; if the first string is larger, @i{n} is 1. 
+文字列内のバイトの値に基づいて、 2 つの文字列(string)を辞書順(lexicographically)に比較します。ただし、 ASCII
+文字は大文字と小文字を区別せずに比較し、 非 ASCII 文字は大文字と小文字を区別して、 かつ、 ロケール固有の照合順序を使用せずに比較します。
+それらが等しい場合 @i{n} は 0 です。 最初の文字列が小さい場合 @i{n} は -1 です。 最初の文字列が大きい場合@i{n} は 1
+です。 
 
 @findex capsstring-prefix? ( @var{ c-addr1 u1 c-addr2 u2 -- f   } ) gforth-1.0
 @cindex @code{capsstring-prefix?}
@@ -8422,8 +8405,8 @@ is -1; if the first string is larger, @i{n} is 1.
 @format
 @code{capsstring-prefix?} ( @i{c-addr1 u1 c-addr2 u2 -- f  }) gforth-1.0 ``capsstring-prefix?''
 @end format
-Like @code{string-prefix?}, but case-insensitive for ASCII characters: Is
-@var{c-addr2 u2} a prefix of @var{c-addr1 u1}?
+@code{string-prefix?} と似ていますが、 ASCII 文字の大文字と小文字は区別されません: @var{c-addr2 u2} は
+@var{c-addr1 u1} の接頭辞か？
 
 
 @findex capssearch ( @var{ c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag   } ) gforth-1.0
@@ -8432,12 +8415,12 @@ Like @code{string-prefix?}, but case-insensitive for ASCII characters: Is
 @format
 @code{capssearch} ( @i{c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag  }) gforth-1.0 ``capssearch''
 @end format
-Like @code{search}, but case-insensitive for ASCII characters: Search for
-@i{c-addr2 u2} in @i{c-addr1 u1}; @i{flag} is true if found.
+@code{search} と似ていますが、 ASCII 文字の大文字と小文字は区別されません: @i{c-addr1 u1} 内で
+@i{c-addr2 u2} を検索します。 見つかった場合 @i{flag} は true になります。
 
 
 
-The following words create or extend strings on the heap:
+以下のワード群は、 ヒープに文字列(string)を作成、 またはヒープの文字列(string)を拡張します。
 
 @findex s+ ( @var{ c-addr1 u1 c-addr2 u2 -- c-addr u   } ) gforth-0.7
 @cindex @code{s+}
@@ -8445,8 +8428,8 @@ The following words create or extend strings on the heap:
 @format
 @code{s+} ( @i{c-addr1 u1 c-addr2 u2 -- c-addr u  }) gforth-0.7 ``s-plus''
 @end format
-@i{c-addr u} is a newly @code{allocate}d string that contains the
-concatenation of @i{c-addr1 u1} (first) and @i{c-addr2 u2} (second).
+@i{c-addr u} は、@i{c-addr1 u1} (最初) と @i{c-addr2 u2} (2 番目) を連結したのを含む、 新しく
+@code{allocate} された文字列です。
 
 
 @findex append ( @var{ c-addr1 u1 c-addr2 u2 -- c-addr u   } ) gforth-0.7
@@ -8455,10 +8438,10 @@ concatenation of @i{c-addr1 u1} (first) and @i{c-addr2 u2} (second).
 @format
 @code{append} ( @i{c-addr1 u1 c-addr2 u2 -- c-addr u  }) gforth-0.7 ``append''
 @end format
-@i{C-addr u} is the concatenation of @i{c-addr1 u1} (first) and @i{c-addr2
-u2} (second).  @i{c-addr1 u1} is an @code{allocate}d string, and
-@code{append} @code{resize}s it (possibly moving it to a new address) to
-accomodate @i{u} characters.
+@i{C-addr u} は、@i{c-addr1 u1} (最初) と @i{c-addr2 u2} (2 番目) を連結したものです。
+@i{c-addr1 u1} は @code{allocate} された文字列であり、 @i{u}
+文字の領域に対応するために(可能なら)サイズ変更(resize)して @i{c-addr2 u2}
+の文字列を追加(append)します(サイズ変更できなくて、新しいアドレスに移動する可能性があります)。
 
 
 @findex >string-execute ( @var{ ... xt -- ... addr u   } ) gforth-1.0
@@ -8467,42 +8450,35 @@ accomodate @i{u} characters.
 @format
 @code{>string-execute} ( @i{... xt -- ... addr u  }) gforth-1.0 ``>string-execute''
 @end format
-execute xt while the standard output (@code{type}, @code{emit}, and
-everything that uses them) is redirected to a string.  The resulting string
-is addr u, which is in @code{allocate}d memory; it is the responsibility of
-the caller of @code{>string-execute} to @code{free} this string.
+xt を実行(execute)すると、 標準出力 (@code{type} や @code{emit} やそれらを使用するすべてのもの)
+を文字列にリダイレクトします。 結果の文字列は addr u で、これは割り当てられた(@code{allocate})メモリ内にあります。
+この文字列を開放(@code{free})するのは、 @code{>string-execute} の呼び出し元の責任です。
 
 
 
-One could define @code{s+} using @code{>string-execute}, as follows:
+以下のようにして、@code{>string-execute} を使用して @code{s+} を定義できます:
 
 : s+ ( c-addr1 u1 c-addr2 u2 -- c-addr u )  [: 2swap type type ;]
 >string-execute ;
 
-For concatenating just two strings @code{>string-execute} is inefficient,
-but for concatenating many strings @code{>string-execute} can be more
-efficient.
+2 つの文字列だけを連結する場合、 @code{>string-execute} は効率的ではありませんが、 多くの文字列を連結する場合は、
+@code{>string-execute} の方が効率的です。
 
 @node $tring words, Counted string words, String words, Strings and Characters
 @subsection $tring words
 @cindex string words with $
 
-The following string library stores strings in ordinary cell-size variables
-(string handles).  These handles contain a pointer to a cell-counted string
-allocated from the heap.  The string library originates from bigFORTH.
+以下の文字列ライブラリは、 文字列を通常のセル・サイズの変数(文字列ハンドル;string handle)に格納します。  これらのハンドルには、
+ヒープに割り当てられたセル・カウント文字列(cell-counted
+string;カウンタがセルサイズであるカウンタ付き文字列)へのポインタが含まれています。 この文字列ライブラリは bigFORTH 由来です。
 
-Because there is only one permanent reference to the contents (the one in
-the handle), the string can be relocated or deleted without worrying about
-dangling references; this requires that the programmer uses references
-produced by, e.g., @code{$@@} only for temporary purposes, i.e., these
-references are not passed out, e.g., as return values or stored in global
-memory, and words that may change the handle are not called while these
-references exist.
+内容への恒久的な参照は 1 つだけ(ハンドル内の参照)しかないため、 未解決の参照を恐れることなく文字列を再配置または削除できます。 これには、
+プログラマが、 例えば @code{$@@} 等によって生成された参照を一時的な目的でのみ使用する必要があります。 つまり、 これらの一時的な参照は、
+戻り値として渡されたり、 グローバル・メモリに格納されたりすることはなく、 ハンドルを変更する可能性のあるワードは、
+これらの一時的な参照が存在する間は呼び出されません。
 
-This library is complemented by the cell-pair representation: You use the
-$tring words for variable strings which are cumbersome with the c-addr u
-representation.  You use the cell-pair representation for processing (e.g.,
-inspecting) strings while they do not change.
+このライブラリを補完するものとしてセルペア表現(cell-pair representation)があります。 文字列変数に対して $tring
+ワードを使用しますが、 これは c-addr u 表現では面倒です。  セルペア表現は、 文字列を変更しないで処理(検査など)するために使用します。
 
 @findex $! ( @var{ addr1 u $addr --   } ) gforth-0.7
 @cindex @code{$!}
@@ -8510,8 +8486,7 @@ inspecting) strings while they do not change.
 @format
 @code{$!} ( @i{addr1 u $addr --  }) gforth-0.7 ``string-store''
 @end format
-stores a newly allocated string buffer at an address, frees the previous
-buffer if necessary.
+新しく割り当てられた文字列バッファをアドレス($addr)が指す先に格納し、 必要に応じて以前のバッファを解放します。
 
 
 @findex $@@ ( @var{ $addr -- addr2 u   } ) gforth-0.7
@@ -8520,7 +8495,7 @@ buffer if necessary.
 @format
 @code{$@@} ( @i{$addr -- addr2 u  }) gforth-0.7 ``string-fetch''
 @end format
-returns the stored string.
+格納された文字列のアドレスと長さを返します。
 
 
 @findex $@@len ( @var{ $addr -- u   } ) gforth-0.7
@@ -8529,7 +8504,7 @@ returns the stored string.
 @format
 @code{$@@len} ( @i{$addr -- u  }) gforth-0.7 ``string-fetch-len''
 @end format
-returns the length of the stored string.
+格納されている文字列の長さを返します。
 
 
 @findex $!len ( @var{ u $addr --   } ) gforth-0.7
@@ -8538,8 +8513,9 @@ returns the length of the stored string.
 @format
 @code{$!len} ( @i{u $addr --  }) gforth-0.7 ``string-store-len''
 @end format
-changes the length of the stored string.  Therefore we must change the
-memory area and adjust address and count cell as well.
+格納されている文字列(string)領域の長さを変更します(足し算ではない。 長さを直にいじる)  それゆえ、メモリ領域を変更し、
+アドレスとカウンタ・セルも調整(adjust)する必要があります(訳注: 元の長さより長くした場合、 領域を拡張するだけで初期化はしない。
+そこにはゴミが入っているので自分で初期化する必要がある)
 
 
 @findex $+!len ( @var{ u $addr -- addr   } ) gforth-1.0
@@ -8548,8 +8524,8 @@ memory area and adjust address and count cell as well.
 @format
 @code{$+!len} ( @i{u $addr -- addr  }) gforth-1.0 ``string-plus-store-len''
 @end format
-make room for u bytes at the end of the memory area referenced by $addr;
-addr is the address of the first of these bytes.
+$addr によって参照されるメモリ領域の最後に u バイト用の空間を確保します(追加。確保するだけで初期化はしない。 $addr
+の「長さ」に追加もする)。 addr は、 確保した空間の最初のアドレスです。
 
 
 @findex $del ( @var{ addr off u --   } ) gforth-0.7
@@ -8558,7 +8534,7 @@ addr is the address of the first of these bytes.
 @format
 @code{$del} ( @i{addr off u --  }) gforth-0.7 ``string-del''
 @end format
-deletes @var{u} bytes from a string with offset @var{off}.
+文字列のオフセット位置 @var{off} から @var{u} バイト削除します。
 
 
 @findex $ins ( @var{ addr1 u $addr off --   } ) gforth-0.7
@@ -8567,7 +8543,7 @@ deletes @var{u} bytes from a string with offset @var{off}.
 @format
 @code{$ins} ( @i{addr1 u $addr off --  }) gforth-0.7 ``string-ins''
 @end format
-inserts a string at offset @var{off}.
+オフセット位置 @var{off} に文字列を挿入します。
 
 
 @findex $+! ( @var{ addr1 u $addr --   } ) gforth-0.7
@@ -8576,7 +8552,7 @@ inserts a string at offset @var{off}.
 @format
 @code{$+!} ( @i{addr1 u $addr --  }) gforth-0.7 ``string-plus-store''
 @end format
-appends a string to another.
+文字列(addr1 u)を別の文字列($addr)に追加します。
 
 
 @findex c$+! ( @var{ char $addr --   } ) gforth-1.0
@@ -8585,7 +8561,7 @@ appends a string to another.
 @format
 @code{c$+!} ( @i{char $addr --  }) gforth-1.0 ``c-string-plus-store''
 @end format
-append a character to a string.
+文字列に文字を追加します。
 
 
 @findex $free ( @var{ $addr --   } ) gforth-1.0
@@ -8594,7 +8570,7 @@ append a character to a string.
 @format
 @code{$free} ( @i{$addr --  }) gforth-1.0 ``string-free''
 @end format
-free the string pointed to by addr, and set addr to 0
+$addr が指す文字列を解放し、  $addr のポインタを 0 にします( $@ すると 0 0 を返す)
 
 
 @findex $init ( @var{ $addr --   } ) gforth-1.0
@@ -8603,7 +8579,7 @@ free the string pointed to by addr, and set addr to 0
 @format
 @code{$init} ( @i{$addr --  }) gforth-1.0 ``string-init''
 @end format
-store an empty string there, regardless of what was in before
+以前に何があったかに関係なく、そこに空の文字列を保存します(訳注: ポインタを 0 にする訳ではなくて、 ポインタの指す先に長さゼロの文字列がある)
 
 
 @findex $split ( @var{ addr u char -- addr1 u1 addr2 u2   } ) gforth-0.7
@@ -8612,8 +8588,8 @@ store an empty string there, regardless of what was in before
 @format
 @code{$split} ( @i{addr u char -- addr1 u1 addr2 u2  }) gforth-0.7 ``string-split''
 @end format
-divides a string into two, with one char as separator (e.g. '?' for
-arguments in an HTML query)
+文字列中で最初に現れる char を区切り文字として文字列を 2 つに分割します(例: HTML クエリの引数の '?')(訳注: 区切り文字 char
+自体は分割後の文字列に含まれない)
 
 
 @findex $iter ( @var{ .. $addr char xt -- ..   } ) gforth-0.7
@@ -8622,9 +8598,10 @@ arguments in an HTML query)
 @format
 @code{$iter} ( @i{.. $addr char xt -- ..  }) gforth-0.7 ``string-iter''
 @end format
-takes a string apart piece for piece, also with a character as
-separator. For each part a passed token will be called. With this you can
-take apart arguments -- separated with '&' -- at ease.
+区切り文字 char で切り出した部分文字列(addr u)ごとに xt を呼び出します。 xt は (addr u -- ) でなければなりません。
+これにより、 例えば '&' で区切られた引数を簡単に分解できます(訳注: : my-type  ( addr u -- )  ." [" type
+." ]" ;   variable title s" GNU gforth manual" title $!   title $@ my-type
+[GNU gforth manual]   title bl ' my-type $iter [GNU][gforth][manual] ok)。
 
 
 @findex $over ( @var{ addr u $addr off --   } ) gforth-1.0
@@ -8633,7 +8610,7 @@ take apart arguments -- separated with '&' -- at ease.
 @format
 @code{$over} ( @i{addr u $addr off --  }) gforth-1.0 ``string-over''
 @end format
-overwrite string at offset off with addr u
+$addr の文字列のオフセット位置 off から文字列(addr u)で上書きします。
 
 
 @findex $exec ( @var{ xt addr --   } ) gforth-1.0
@@ -8642,8 +8619,7 @@ overwrite string at offset off with addr u
 @format
 @code{$exec} ( @i{xt addr --  }) gforth-1.0 ``string-exec''
 @end format
-execute xt while the standard output (TYPE, EMIT, and everything that uses
-them) is appended to the string variable addr.
+実行トークン xt を実行し、 その標準出力(TYPE や EMIT やそれらを使用するすべてのもの)を addr が指す文字列の末尾に「追加」します。 
 
 
 @findex $tmp ( @var{ xt -- addr u   } ) gforth-1.0
@@ -8652,7 +8628,7 @@ them) is appended to the string variable addr.
 @format
 @code{$tmp} ( @i{xt -- addr u  }) gforth-1.0 ``string-t-m-p''
 @end format
-generate a temporary string from the output of a word
+ワードの出力から一時的な文字列を生成します
 
 
 @findex $. ( @var{ addr --   } ) gforth-1.0
@@ -8661,7 +8637,7 @@ generate a temporary string from the output of a word
 @format
 @code{$.} ( @i{addr --  }) gforth-1.0 ``string-dot''
 @end format
-print a string, shortcut
+文字列を出力する、 ショートカット( $@ TYPE → $. )
 
 
 @findex $slurp ( @var{ fid addr --   } ) gforth-1.0
@@ -8670,8 +8646,8 @@ print a string, shortcut
 @format
 @code{$slurp} ( @i{fid addr --  }) gforth-1.0 ``string-slurp''
 @end format
-Read the file @i{fid} until the end (without closing it) and put the read
-data into the string at @i{addr}.
+(slurp;音を立ててすする)ファイル @i{fid} を最後まで読み取り(ファイルのクローズは行いません)、 読み取ったデータを @i{addr}
+の指す文字列に入れます。
 
 
 @findex $slurp-file ( @var{ c-addr u addr --   } ) gforth-1.0
@@ -8680,7 +8656,7 @@ data into the string at @i{addr}.
 @format
 @code{$slurp-file} ( @i{c-addr u addr --  }) gforth-1.0 ``string-slurp-file''
 @end format
-Put all the data in the file named @i{c-addr u} into the string at @i{addr}.
+@i{c-addr u} という名前のファイル内のすべてのデータを @i{addr} の文字列に入力します。
 
 
 @findex $+slurp ( @var{ fid addr --   } ) gforth-1.0
@@ -8689,8 +8665,7 @@ Put all the data in the file named @i{c-addr u} into the string at @i{addr}.
 @format
 @code{$+slurp} ( @i{fid addr --  }) gforth-1.0 ``string-plus-slurp''
 @end format
-Read the file @i{fid} until the end (without closing it) and append the read
-data to the string at @i{addr}.
+ファイル @i{fid} を最後まで読み取り(但しクローズはしません)、 読み取ったデータを @i{addr} の文字列に「追加」します。
 
 
 @findex $+slurp-file ( @var{ c-addr u addr --   } ) gforth-1.0
@@ -8699,8 +8674,7 @@ data to the string at @i{addr}.
 @format
 @code{$+slurp-file} ( @i{c-addr u addr --  }) gforth-1.0 ``string-plus+slurp-file''
 @end format
-Append all the data in the file named @i{c-addr u} to the string at
-@i{addr}.
+@i{c-addr u} という名前のファイル内のすべてのデータを @i{addr} の文字列に「追加」します。
 
 
 @findex $[] ( @var{ u $[]addr -- addr'   } ) gforth-1.0
@@ -8709,8 +8683,7 @@ Append all the data in the file named @i{c-addr u} to the string at
 @format
 @code{$[]} ( @i{u $[]addr -- addr'  }) gforth-1.0 ``string-array''
 @end format
-@i{Addr'} is the address of the @i{u}th element of the string array
-@i{$[]addr}.  The array is resized if needed.
+@i{addr'} は、 文字列配列 @i{$[]addr} の @i{u} 番目の要素のアドレスです。  配列のサイズは必要に応じて変更されます。
 
 
 @findex $[]! ( @var{ c-addr u n $[]addr --   } ) gforth-1.0
@@ -8719,8 +8692,8 @@ Append all the data in the file named @i{c-addr u} to the string at
 @format
 @code{$[]!} ( @i{c-addr u n $[]addr --  }) gforth-1.0 ``string-array-store''
 @end format
-Store string @i{c-addr y} into the string array @i{$[]addr} at index @i{n}.
-The array is resized if needed.
+文字列 @i{c-addr u} を文字列配列 @i{$[]addr} のインデックス @i{n} に格納します。
+必要に応じて配列のサイズが変更されます。
 
 
 @findex $[]+! ( @var{ c-addr u n $[]addr --   } ) gforth-1.0
@@ -8729,8 +8702,8 @@ The array is resized if needed.
 @format
 @code{$[]+!} ( @i{c-addr u n $[]addr --  }) gforth-1.0 ``string-array-plus-store''
 @end format
-Append the string @i{c-addr u} to the string at index @i{n}.  The array is
-resized if needed.  Don't confuse this with @code{$+[]!}.
+文字列 @i{c-addr u} をインデックス @i{n} の文字列に「追加」します。  必要に応じて配列のサイズが変更されます。  これを
+@code{$+[]!} と混同しないでください。
 
 
 @findex $+[]! ( @var{ c-addr u $[]addr --   } ) gforth-1.0
@@ -8739,8 +8712,8 @@ resized if needed.  Don't confuse this with @code{$+[]!}.
 @format
 @code{$+[]!} ( @i{c-addr u $[]addr --  }) gforth-1.0 ``string-append-array''
 @end format
-Store the string @i{c-addr u} as the new last element of string array
-@i{$[]addr}.  The array is resized if needed.
+文字列 @i{c-addr u} を文字列配列 @i{$[]addr} の新しい最後の要素として保存します(つまり要素が1つ増える)。
+必要に応じて配列のサイズが変更されます。
 
 
 @findex $[]@@ ( @var{ n $[]addr -- addr u   } ) gforth-1.0
@@ -8749,8 +8722,8 @@ Store the string @i{c-addr u} as the new last element of string array
 @format
 @code{$[]@@} ( @i{n $[]addr -- addr u  }) gforth-1.0 ``string-array-fetch''
 @end format
-fetch a string from array index @i{n} --- return the zero string if empty,
-and don't accidentally grow the array.
+配列インデックス @i{n} から文字列を取得します --- 空の場合はゼロ文字列( 0 0 )を返し、
+誤って配列が成長しないようにします(訳注:要素はあるけど空文字列(長さ0)の場合と、範囲外の要素を指した場合の区別は付かないので注意)
 
 
 @findex $[]# ( @var{ addr -- len   } ) gforth-1.0
@@ -8759,7 +8732,7 @@ and don't accidentally grow the array.
 @format
 @code{$[]#} ( @i{addr -- len  }) gforth-1.0 ``string-array-num''
 @end format
-return the number of elements in an array
+配列内の要素の数を返します
 
 
 @findex $[]map ( @var{ addr xt --   } ) gforth-1.0
@@ -8768,8 +8741,8 @@ return the number of elements in an array
 @format
 @code{$[]map} ( @i{addr xt --  }) gforth-1.0 ``string-array-map''
 @end format
-execute @var{xt} for all elements of the string array @var{addr}.  xt is
-@var{( addr u -- )}, getting one string at a time
+文字列配列 @var{addr} のすべての要素に対して 実行トークン @var{xt} を実行します。  xt は @var{( addr u --
+)} で、一度に 1 つの文字列を取得します
 
 
 @findex $[]slurp ( @var{ fid addr --   } ) gforth-1.0
@@ -8778,7 +8751,7 @@ execute @var{xt} for all elements of the string array @var{addr}.  xt is
 @format
 @code{$[]slurp} ( @i{fid addr --  }) gforth-1.0 ``string-array-slurp''
 @end format
-slurp a file @var{fid} line by line into a string array @var{addr}
+ファイル @var{fid} の内容を 1 行ずつ文字列配列 @var{addr} に入れます
 
 
 @findex $[]slurp-file ( @var{ addr u $addr --   } ) gforth-1.0
@@ -8787,7 +8760,7 @@ slurp a file @var{fid} line by line into a string array @var{addr}
 @format
 @code{$[]slurp-file} ( @i{addr u $addr --  }) gforth-1.0 ``string-array-slurp-file''
 @end format
-slurp a named file @var{addr u} line by line into a string array @var{$addr}
+名前付きファイル @var{addr u} を 1 行ずつ文字列配列 @var{$addr} に入れます。
 
 
 @findex $[]. ( @var{ addr --   } ) gforth-1.0
@@ -8796,7 +8769,7 @@ slurp a named file @var{addr u} line by line into a string array @var{$addr}
 @format
 @code{$[].} ( @i{addr --  }) gforth-1.0 ``string-array-dot''
 @end format
-print all array entries
+すべての配列エントリを出力します
 
 
 @findex $[]free ( @var{ addr --   } ) gforth-1.0
@@ -8805,9 +8778,8 @@ print all array entries
 @format
 @code{$[]free} ( @i{addr --  }) gforth-1.0 ``string-array-free''
 @end format
-addr contains the address of a cell-counted string that contains the
-addresses of a number of cell-counted strings; $[]free frees these strings,
-frees the array, and sets addr to 0
+addr は沢山のセルカウント文字列(string)へのアドレス達を含む、 セル・カウント文字列(string)へのアドレスで、 $[]free
+はこれらの文字列を解放、 つまり、 この配列を開放し、 addr の値を 0 にセットします。
 
 
 @findex $save ( @var{ $addr --   } ) gforth-1.0
@@ -8816,7 +8788,7 @@ frees the array, and sets addr to 0
 @format
 @code{$save} ( @i{$addr --  }) gforth-1.0 ``string-save''
 @end format
-push string to dictionary for savesys
+savesys のディクショナリに文字列(string)をプッシュします
 
 
 @findex $[]save ( @var{ addr --   } ) gforth-1.0
@@ -8825,7 +8797,7 @@ push string to dictionary for savesys
 @format
 @code{$[]save} ( @i{addr --  }) gforth-1.0 ``string-array-save''
 @end format
-push string array to dictionary for savesys
+文字列配列を savesys のディクショナリにプッシュ
 
 
 @findex $boot ( @var{ $addr --   } ) gforth-1.0
@@ -8834,8 +8806,7 @@ push string array to dictionary for savesys
 @format
 @code{$boot} ( @i{$addr --  }) gforth-1.0 ``string-boot''
 @end format
-take string from dictionary to allocated memory.  clean dictionary
-afterwards.
+ディクショナリから文字列を新しく割り当てたメモリに取り込みます。 その後、 ディクショナリのその文字列の領域を(0で)クリアします(長さはそのまま)。
 
 
 @findex $[]boot ( @var{ addr --   } ) gforth-1.0
@@ -8844,7 +8815,7 @@ afterwards.
 @format
 @code{$[]boot} ( @i{addr --  }) gforth-1.0 ``string-array-boot''
 @end format
-take string array from dictionary to allocated memory
+ディクショナリから、 文字列配列を割り当てられたメモリに取得します
 
 
 @findex $saved ( @var{ addr --   } ) gforth-1.0
@@ -8853,7 +8824,7 @@ take string array from dictionary to allocated memory
 @format
 @code{$saved} ( @i{addr --  }) gforth-1.0 ``string-saved''
 @end format
-mark an address as booted/saved
+アドレスを ブート済み(booted)/保存済み(saved) としてマークする
 
 
 @findex $[]saved ( @var{ addr --   } ) gforth-1.0
@@ -8862,7 +8833,7 @@ mark an address as booted/saved
 @format
 @code{$[]saved} ( @i{addr --  }) gforth-1.0 ``string-array-saved''
 @end format
-mark an address as booted/saved
+アドレスを ブート済み(booted)/保存済み(saved) としてマークする
 
 
 @findex $Variable ( @var{ --   } ) gforth-1.0
@@ -8871,7 +8842,7 @@ mark an address as booted/saved
 @format
 @code{$Variable} ( @i{--  }) gforth-1.0 ``string-variable''
 @end format
-A string variable which is preserved across savesystem
+savesystem 全体にわたって保存される文字列変数。
 
 
 @findex $[]Variable ( @var{ --   } ) gforth-1.0
@@ -8880,7 +8851,7 @@ A string variable which is preserved across savesystem
 @format
 @code{$[]Variable} ( @i{--  }) gforth-1.0 ``string-array-variable''
 @end format
-A string variable which is preserved across savesystem
+savesystem 全体にわたって保存される文字列変数。
 
 
 
@@ -8888,11 +8859,9 @@ A string variable which is preserved across savesystem
 @node Counted string words, , $tring words, Strings and Characters
 @subsection Counted string words
 
-Counted strings store the length as byte at the address pointed to, followed
-by the bytes of the string.  Their possible length is severely limited, and
-you cannot create a substring in-place without destroying the input string.
-Therefore we recommend against using counted strings.  Nevertheless, if you
-have to deal with counted strings, here are some words for that:
+カウンタ付文字列(counted string)は、 指定のアドレスのバイトとして長さを格納し、 その後に文字列のバイトが続きます。
+可能な長さは厳しく制限されており、 入力文字列を破壊せずにその場で部分文字列を作成することはできません。 したがって、
+カウンタ付文字列を使用しないことをお勧めします。 それでも、 カウンタ付文字列を処理する必要がある場合、 以下のようなワード群があります:
 
 @findex count ( @var{ c-addr1 -- c-addr2 u  } ) core
 @cindex @code{count}
@@ -8900,13 +8869,11 @@ have to deal with counted strings, here are some words for that:
 @format
 @code{count} ( @i{c-addr1 -- c-addr2 u }) core ``count''
 @end format
-@i{c-addr2} is the first character and @i{u} the length of the counted
-string at @i{c-addr1}.
+@i{c-addr2} は最初の文字で、 @i{u} は @i{c-addr1} のカウンタ付文字列の、 長さです。
 
 
-The following word has no useful interpretation semantics (unlike @code{s"})
-and no interpretive counterpart (unlike @code{[char]}), so you should use it
-only inside colon definitions (if at all):
+以下のワードは、 (@code{s"} とは異なり) 有用なインタプリタ機能(interpretation semantics)がなく、
+(@code{[char]} とは異なり) 対応するインタプリタ用コードがないため、 コロン定義内でのみ使用する必要があります(コロン定義がある場合):
 
 @findex C" ( @var{ compilation "ccc<quote>" -- ; run-time  -- c-addr   } ) core-ext
 @cindex @code{C"}
@@ -8914,20 +8881,20 @@ only inside colon definitions (if at all):
 @format
 @code{C"} ( @i{compilation "ccc<quote>" -- ; run-time  -- c-addr  }) core-ext ``c-quote''
 @end format
-Compilation: parse a string @i{ccc} delimited by a @code{"} (double
-quote). At run-time, return @i{c-addr} which specifies the counted string
-@i{ccc}.  Interpretation semantics are undefined.
+コンパイル状態: @code{"} (二重引用符) を区切り文字として文字列 @i{ccc} をパースします。 その実行時コードは、
+指定のカウンタ付文字列 @i{ccc} のアドレスを @i{c-addr} として返します。 インタプリタ機能は未定義です。
 
 
 
-doc-place
+( gforth-obsolete ) @code{place} ( @i{c-addr1 u c-addr2 --}) \ @var{c-addr2}
+に長さ @var{u} のカウンタ付き文字列を作成し、 文字列 @var{c-addr1 u} をその場所にコピーします。
 @findex string, ( @var{ c-addr u --   } ) gforth-0.2
 @cindex @code{string,}
 @kindex string,
 @format
 @code{string,} ( @i{c-addr u --  }) gforth-0.2 ``string,''
 @end format
-puts down string as cstring
+文字列をカウンタ付き文字列として(here以降の)データ空間に書き込みます。
 
 
 
@@ -8935,11 +8902,10 @@ puts down string as cstring
 @section Control Structures
 @cindex control structures
 
-Control structures in Forth cannot be used interpretively, only in a colon
-definition@footnote{To be precise, they have no interpretation semantics
-(@pxref{Interpretation and Compilation Semantics}).}. We do not like this
-limitation, but have not seen a satisfying way around it yet, although many
-schemes have been proposed.
+Forth の制御構造は、 コロン定義内のみで、
+インタプリタ状態(interpretively)で使用することはできません@footnote{正確には、 インタプリタ機能(interpretation
+semantics)(@pxref{Interpretation and Compilation Semantics})を持っていません}。
+私たちもこのような制限を好まないので、 多くのスキームが提案されてはいますが、 これを回避する満足のいく方法はまだ見つかっていません。
 
 @menu
 * Selection::                IF ... ELSE ... ENDIF
@@ -8966,8 +8932,8 @@ ENDIF
 @end example
 @noindent
 
-If @i{flag} is non-zero (as far as @code{IF} etc. are concerned, a cell with
-any bit set represents truth) @i{code} is executed.
+@i{flag} がゼロ以外の場合(@code{IF} などに関する限り、 任意のビットが設定されたセルは true 扱いです)、 @i{code}
+が実行されます。
 
 @example
 @i{flag}
@@ -8978,33 +8944,29 @@ ELSE
 ENDIF
 @end example
 
-If @var{flag} is true, @i{code1} is executed, otherwise @i{code2} is
-executed.
+@var{flag} が true の場合は @i{code1} が実行され、 それ以外の場合は @i{code2} が実行されます。
 
-You can use @code{THEN} instead of @code{ENDIF}. Indeed, @code{THEN} is
-standard, and @code{ENDIF} is not, although it is quite popular. We
-recommend using @code{ENDIF}, because it is less confusing for people who
-also know other languages (and is not prone to reinforcing negative
-prejudices against Forth in these people). Adding @code{ENDIF} to a system
-that only supplies @code{THEN} is simple:
+@code{ENDIF} の代わりに @code{THEN} を使用できます。 実際 @code{THEN} は標準です、 がしかし、
+@code{ENDIF} は非常に人気があるものの、 標準ではありません。 私達は @code{ENDIF} の使用をお勧めします。 なぜなら、
+他の言語を知っている人にとっても混乱が少ないためです(また、 @code{ENDIF} に対しては、 これらの人々の Forth
+に対する否定的な偏見が強化される傾向が見られません)。 なお、 @code{THEN} のみを提供するシステムに @code{ENDIF}
+を追加するのは以下のように簡単です:
 @example
 : ENDIF   POSTPONE then ; immediate
 @end example
 
-[According to @cite{Webster's New Encyclopedic Dictionary}, @dfn{then
-(adv.)} has the following meanings:
+[@cite{Webster's New Encyclopedic Dictionary} によると、@dfn{then (副詞)}
+には以下の意味があります:
 @quotation
-... 2b: following next after in order ... 3d: as a necessary consequence (if
-you were there, then you saw them).
+... 2b: 順番に次の後に続く ... 3d: 必然的な結果として (if you were there, then you saw them)
 @end quotation
-Forth's @code{THEN} has the meaning 2b, whereas @code{THEN} in Pascal and
-many other programming languages has the meaning 3d.]
+Forth の @code{THEN} は 2b の意味を持ちますが、 Pascal や他の多くのプログラミング言語の @code{THEN} は 3d
+の意味を持ちます。]
 
-Gforth also provides the words @code{?DUP-IF} and @code{?DUP-0=-IF}, so you
-can avoid using @code{?dup}. Using these alternatives is also more efficient
-than using @code{?dup}. Definitions in Standard Forth for @code{ENDIF},
-@code{?DUP-IF} and @code{?DUP-0=-IF} are provided in
-@file{compat/control.fs}.
+Gforth には @code{?DUP-IF} および @code{?DUP-0=-IF} というワードも用意されているため、 @code{?dup}
+の使用を避けることができます。これらの代替手段を使用することは、 @code{?dup} を使用するよりも効率的です。 @code{ENDIF} や
+@code{?DUP-IF} や @code{?DUP-0=-IF} の標準 Forth での定義は、@file{compat/control.fs}
+で提供されます。
 
 @cindex @code{CASE} control structure
 @example
@@ -9017,13 +8979,11 @@ CASE
 ENDCASE ( )
 @end example
 
-Executes the first @i{codei}, where the @i{xi} is equal to @i{x}.  If no
-@i{xi} matches, the optional @i{default-code} is executed. The optional
-default case can be added by simply writing the code after the last
-@code{ENDOF}. It may use @i{x}, which is on top of the stack, but must not
-consume it.  The value @i{x} is consumed by this construction (either by an
-@code{OF} that matches, or by the @code{ENDCASE}, if no OF matches).
-Example:
+@i{xi} が @i{x} に等しいなら、 最初の @i{codei} を実行します。 @i{x1} 〜 @i{xn} のいずれも一致しない場合は、
+オプションの @i{default-code} が実行されます。 オプションのデフォルト・ケースは、 最後の @code{ENDOF}
+の後にコードを記述するだけで追加できます。 スタック頂上にある @i{x} を使用することはできますが、 それを消費してはなりません。  値 @i{x}
+は、 この構造によって(一致する @code{OF} によって、 または一致する OF がない場合は @code{ENDCASE} によって)
+消費されます。  例:
 
 @example
 : num-name ( n -- c-addr u )
@@ -9037,9 +8997,8 @@ Example:
  endcase ;
 @end example
 
-You can also use (the non-standard) @code{?of} to use @code{case} as a
-general selection structure for more than two alternatives.  @code{?Of}
-takes a flag.  Example:
+(非標準の) @code{?of} を使用して、 @code{case} を 3 つ以上の選択肢の一般的な選択構造として使用することもできます。
+@code{?Of} はフラグを受け取ります。  例:
 
 @example
 : sgn ( n1 -- n2 )
@@ -9051,9 +9010,8 @@ takes a flag.  Example:
     endcase ;
 @end example
 
-@progstyle To keep the code understandable, you should ensure that you
-change the stack in the same way (wrt. number and types of stack items
-consumed and pushed) on all paths through a selection structure.
+@progstyle コードを理解しやすくするには、
+選択構造を介したすべての経路で同一の方法でスタックを変更(消費およびプッシュされるスタック項目の数と型)するようにする必要があります。
 
 @node Simple Loops, Counted Loops, Selection, Control Structures
 @subsection Simple Loops
@@ -9070,9 +9028,8 @@ WHILE
 REPEAT
 @end example
 
-@i{code1} is executed and @i{flag} is computed. If it is true, @i{code2} is
-executed and the loop is restarted; If @i{flag} is false, execution
-continues after the @code{REPEAT}.
+@i{code1} が実行され、 @i{flag} が計算されます。 @i{flag} が true の場合、 @i{code2} が実行され、
+@i{BEGIN} からループが再開されます。  @i{flag} が false の場合、 @code{REPEAT} の後へ実行が続行されます。
 
 @cindex @code{UNTIL} loop
 @example
@@ -9082,10 +9039,10 @@ BEGIN
 UNTIL
 @end example
 
-@i{code} is executed. The loop is restarted if @code{flag} is false.
+@i{code} が実行されます。 @code{flag} が false の場合、 @i{BEGIN} からループが再開されます。
 
-@progstyle To keep the code understandable, a complete iteration of the loop
-should not change the number and types of the items on the stacks.
+@progstyle コードを理解しやすくするために、 ループの完全な反復(complete
+iteration)によってスタック上の項目の数と型が変更されるべきではありません。
 
 @cindex endless loop
 @cindex loops, endless
@@ -9095,7 +9052,7 @@ BEGIN
 AGAIN
 @end example
 
-This is an endless loop.
+これは無限ループです。
 
 
 @node Counted Loops, BEGIN loops with multiple exits, Simple Loops, Control Structures
@@ -9104,186 +9061,172 @@ This is an endless loop.
 @cindex loops, counted
 @cindex @code{DO} loops
 
-The basic counted loop is:
+基本のカウンタ付きループ:
 @example
 @i{limit} @i{start} ?DO
   @i{body}
 LOOP
 @end example
 
-This performs one iteration for every integer, starting from @i{start} and
-up to, but excluding @i{limit}. The counter, or @i{index}, can be accessed
-with @code{i}. For example, the loop:
+これは、 @i{start} から始まり @i{limit} まで(@i{limit} 自身は除く)、 各整数値に対して 1 回の反復を実行します。
+カウンタ、 つまりインデックスには、 @code{i} を使用してアクセスできます。 たとえば、 以下のループをご覧ください:
 @example
 10 0 ?DO
   i .
 LOOP
 @end example
 @noindent
-prints @code{0 1 2 3 4 5 6 7 8 9}
+出力: @code{0 1 2 3 4 5 6 7 8 9}
 
-The index of the innermost loop can be accessed with @code{i}, the index of
-the next loop with @code{j}, and the index of the third loop with @code{k}.
+最も内側のループのインデックスには @code{i} を使用してアクセスでき、 その一つ外側のループのインデックスには @code{j}
+を使用してアクセスでき、 さらにもう一つ外側のループのインデックスには @code{k} を使用してアクセスできます。
 
-You can access the limit of the innermost loop with @code{i'} and
-@code{i'}-@code{i} with @code{delta-i}.  E.g., running
+@code{i'} を使用すると最も内側のループの limit にアクセスでき、 @code{delta-i} を使用すると @code{i'} -
+@code{i} にアクセスできます。
 
 @example
 : foo 7 5 ?do cr i . i' . delta-i . loop ; 
 @end example
 
-prints
+出力:
 
 @example
 5 7 2 
 6 7 1
 @end example
 
-The loop control data are kept on the return stack, so there are some
-restrictions on mixing return stack accesses and counted loop words. In
-particuler, if you put values on the return stack outside the loop, you
-cannot read them inside the loop@footnote{well, not in a way that is
-portable.}. If you put values on the return stack within a loop, you have to
-remove them before the end of the loop and before accessing the index of the
-loop.
+ループ制御データはリターン・スタックに保持されるため、 リターン・スタックへのアクセスとカウント・ループ・ワードの混在にはいくつかの制限があります。
+特に、ループの外側のリターン・スタックに値を置いた場合、 ループ内で値を読み取る事はできません@footnote{ええ、まぁ、
+移植可能な方法ではできません、 ぐらいな}。 ループ内のリターン・スタックに値を置く場合は、 ループの終了前、
+およびループのインデックスにアクセスする前に値を削除する必要があります。
 
-There are several variations on the counted loop:
+カウント・ループにはいくつかのバリエーションがあります:
 
 @itemize @bullet
 @item
-@code{LEAVE} leaves the innermost counted loop immediately; execution
-continues after the associated @code{LOOP} or @code{NEXT}. For example:
+@code{LEAVE} は、 最も内側のカウント・ループを直ちに抜け出します。 それが関係する @code{LOOP} または @code{NEXT}
+の後へ実行は移ります。 例:
 
 @example
 10 0 ?DO  i DUP . 3 = IF LEAVE THEN LOOP
 @end example
-prints @code{0 1 2 3}
+出力: @code{0 1 2 3}
 
 
 @item
-@code{UNLOOP} prepares for an abnormal loop exit, e.g., via
-@code{EXIT}. @code{UNLOOP} removes the loop control parameters from the
-return stack so @code{EXIT} can get to its return address. For example:
+@code{UNLOOP} は、 例えば @code{EXIT} などを介しての異常なループ終了の準備を行います。 @code{UNLOOP} は、
+@code{EXIT} がリターン・アドレスに到達できるように、 リターン・スタックからループ制御パラメーターを削除します(訳注: 1重ループなので
+unloop 1つ。2重ループなら unloop 2つ)。 例:
 
 @example
 : demo 10 0 ?DO i DUP . 3 = IF UNLOOP EXIT THEN LOOP ." Done" ;
 @end example
-prints @code{0 1 2 3}
+出力: @code{0 1 2 3}
 
 
 @item
-If @i{start} is greater than @i{limit}, a @code{?DO} loop is entered (and
-@code{LOOP} iterates until they become equal by wrap-around
-arithmetic). This behaviour is usually not what you want. Therefore, Gforth
-offers @code{+DO} and @code{U+DO} (as replacements for @code{?DO}), which do
-not enter the loop if @i{start} is greater than @i{limit}; @code{+DO} is for
-signed loop parameters, @code{U+DO} for unsigned loop parameters.
+@i{start} が @i{limit} より大きい場合でも、 @code{?DO}
+はループを開始します(ラップアラウンド演算(処理可能な範囲をの最後に達した後に最初に戻る事)によって両者が等しくなるまで @code{LOOP}
+を反復します)。 通常、 この振る舞いは望ましくないものです。 したがって、 Gforth は (@code{?DO} の代替として、)
+@code{+DO} と @code{U+DO} を提供します。 これらは、 @i{start} が @i{limit}
+より大きい場合にはループを開始しません。 @code{+DO} は符号付きループ・パラメータ用で、 @code{U+DO}
+は符号なしループ・パラメータ用です。
 
 @item
-@code{?DO} can be replaced by @code{DO}. @code{DO} always enters the loop,
-independent of the loop parameters. Do not use @code{DO}, even if you know
-that the loop is entered in any case. Such knowledge tends to become invalid
-during maintenance of a program, and then the @code{DO} will make trouble.
+@code{?DO} は @code{DO} に置き換えることはできます。 @code{DO} は、 ループ・パラメータ に関係なく、
+常にループに入ります。 あなたが、 どの場合にもループに入ることを知っている場合でも @code{DO} は使用しないでください。
+このような知恵はプログラムを保守していく中で無効になる傾向があり、 それゆえ @code{DO} が問題を引き起こすことになります。
 
 @item
-@code{LOOP} can be replaced with @code{@i{n} +LOOP}; this updates the index
-by @i{n} instead of by 1. The loop is terminated when the border between
-@i{limit-1} and @i{limit} is crossed. E.g.:
+@code{LOOP} は @code{@i{n} +LOOP} に置き換えることができます。 これにより、インデックスが 1 ではなく @i{n}
+によって更新されます。 @i{limit-1} と @i{limit} の間の境界を越えると、 ループは終了します。 例:
 
 @example
 4 0 +DO  i .  2 +LOOP
 @end example
 @noindent
-prints @code{0 2}
+出力: @code{0 2}
 
 @example
 4 1 +DO  i .  2 +LOOP
 @end example
 @noindent
-prints @code{1 3}
+出力: @code{1 3}
 
 @item
 @cindex negative increment for counted loops
 @cindex counted loops with negative increment
-The behaviour of @code{@i{n} +LOOP} is peculiar when @i{n} is negative:
+@i{n} が負数の場合、 @code{@i{n} +LOOP} の動作は奇妙です:
 
 @example
 -1 0 ?DO  i .  -1 +LOOP
 @end example
 @noindent
-prints @code{0 -1}
+出力: @code{0 -1}
 
 @example
 0 0 ?DO  i .  -1 +LOOP
 @end example
-prints nothing.
+出力: なし。
 
-We recommend not combining @code{?DO} with @code{+LOOP}.  Gforth offers
-several alternatives:
+私たちは @code{?DO} と @code{+LOOP} を組み合わせないことをお勧めします。  Gfors はいくつかの代替手段を提供します:
 
-If you want @code{-1 +LOOP}'s behaviour of including an iteration where
-@code{I}=limit, start the loop with @code{-[DO} or @code{U-[DO} (where the
-@code{[} is inspired by the mathematical notation for inclusive ranges,
-e.g., [1,n]):
+@code{I}=limit の反復を含める @code{-1 +LOOP} の振る舞いが必要な場合、 @code{-[DO} または
+@code{U-[DO}] でループを開始します(ここで、 @code{[} は、 包含範囲の数学的表記法(例: [1,n]
+からインスピレーションを得ています):
 
 @example
 -1 0 -[DO  i .  -1 +LOOP
 @end example
 
-prints @code{0 -1}.
+出力: @code{0 -1}.
 
 @example
 0 0 -[DO  i .  -1 +LOOP
 @end example
 
-prints @code{0}.
+出力: @code{0}
 
 @example
 0 -1 -[DO  i .  -1 +LOOP
 @end example
 
-prints nothing.
+出力: なし。
 
-If you want to exclude the limit, you instead use @code{1 -LOOP} (or
-generally @code{@i{u} -LOOP}) and start the loop with @code{?DO}, @code{-DO}
-or @code{U-DO}.  @code{-LOOP} terminates the loop when the border between
-@i{limit+1} and @i{limit} is crossed.  E.g.:
+limit を除外したい場合、 代わりに @code{1 -LOOP} (または一般的には @code{@i{u} -LOOP})を使用し、
+@code{?DO} または @code{-DO } または @code{U-DO} でループを開始します。 @code{-LOOP}
+は、@i{limit+1} と @i{limit} の間の境界を越えたときにループを終了します。  例:
 
 @example
 -2 0 -DO  i .  1 -LOOP
 @end example
 @noindent
-prints @code{0 -1}
+出力: @code{0 -1}
 
 @example
 -1 0 -DO  i .  1 -LOOP
 @end example
 @noindent
-prints @code{0}
+出力: @code{0}
 
 @example
 0 0 -DO  i .  1 -LOOP
 @end example
 @noindent
-prints nothing.
+出力: なし。
 
-Unfortunately, @code{+DO}, @code{U+DO}, @code{-DO}, @code{U-DO} and
-@code{-LOOP} are not defined in Standard Forth. However, an implementation
-for these words that uses only standard words is provided in
-@file{compat/loops.fs}.
+残念ながら、 @code{+DO}, @code{U+DO}, @code{-DO}, @code{U-DO}, @code{-LOOP} は 標準
+Forth では定義されていません。 ただし、 標準のワードのみを使用するこれらのワードの実装が @file{compat/loops.fs}
+にて提供されています。
 
 @item
 @cindex iterate over array
 @cindex array, iterating over
-A common task is to iterate over the elements of an array, forwards or
-backwards.  Iterating over the addresses of the elements has two benefits:
-It avoids the need to keep the start address of the array around, reducing
-the data stack load; and it avoids the need to perform address computations
-in every iteration.  The disadvantage is that, starting with the usual array
-representations @i{addr uelems} or @i{addr ubytes}, some processing is
-required to produce a start and limit address.  Gforth has @code{bounds} for
-getting there from the @i{addr ubytes} representation, so you can write a
-forward loop through a cell array @code{v} as:
+よくある作業は、 配列の要素を前方または後方に反復処理することです。  要素のアドレスに対して反復処理することには 2 つの利点があります。
+配列の開始アドレスを保持する必要がなくなり、 データ・スタックの負荷が軽減されます。 また、 反復ごとにアドレス計算を実行する必要がなくなります。
+欠点は、 通常の配列表現 @i{addr u要素} または @i{addr uバイト} から始めて、 start アドレスと limit
+アドレスを生成するために何らかの処理が必要なことです。  Gforth には、@i{addr ubytes} 表現からそこに到達するために
+@code{bounds} があるため、セル配列 @code{v} を介した前方ループを以下のように記述できます:
 
 @example
 create v 1 , 3 , 7 ,
@@ -9291,11 +9234,9 @@ create v 1 , 3 , 7 ,
 foo
 @end example
 
-which prints @code{1 3 7}.  Preprocessing the inputs for walking backwards
-is more involved, so Gforth provide a loop construct of the form
-@code{MEM-DO}...@code{LOOP} that does it for you: It takes an array in
-@i{addr ubytes} representation and the element size, and iterates over the
-addresses of the elements in backwards order:
+これは @code{1 3 7} を出力します。  逆方向にたどるための入力の前処理はより複雑であるため、 Gforth はそれを行う
+@code{MEM-DO} … @code{LOOP} 形式のループ構造を提供します。 これは @i{addr uバイト}
+表現の配列と要素サイズを受け取り、 要素のアドレスを逆順に反復処理します。
 
 @example
 create v 1 , 3 , 7 ,
@@ -9303,13 +9244,13 @@ create v 1 , 3 , 7 ,
 foo1
 @end example
 
-This prints @code{7 3 1}.  @code{ARRAY>MEM} converts the @i{addr uelems
-uelemsize} representation into the @i{addr ubytes uelemsize} representation
-expected by @code{MEM-DO}.  This loop is finished with @code{LOOP} which
-decrements by @i{uelemsize} when it finishes a @code{MEM-DO}.
+これは @code{7 3 1} を出力します。@code{ARRAY>MEM} は @i{addr uelems uelemsize} を
+@code{MEM-DO} が期待する @i{addr ubytes uelemsize} に変換します(ubytes は uelems *
+uelmsize です)。  このループは @code{MEM-DO} 通過後に@i{uelemsize} ずつ減算される、 @code{LOOP}
+と対になるループとなります。
 
-Gforth also adds @code{MEM+DO} for completeness.  It takes the same
-parameters as @code{MEM-DO}, but walks forwards through the array:
+Gforth は、 完全を期すために @code{MEM+DO} も追加します。  @code{MEM-DO} と同一のパラメータを受け取りますが、
+配列を順(forwards)に処理します:
 
 @example
 create v 1 , 3 , 7 ,
@@ -9317,27 +9258,25 @@ create v 1 , 3 , 7 ,
 foo2
 @end example
 
-prints @code{1 3 7}.
+出力: @code{1 3 7}
 
 @item
 @cindex @code{FOR} loops
-Another counted loop is:
+別のカウント・ループ:
 @example
 @i{n}
 FOR
   @i{body}
 NEXT
 @end example
-This is the preferred loop of native code compiler writers who are too lazy
-to optimize @code{?DO} loops properly. This loop structure is not defined in
-Standard Forth. In Gforth, this loop iterates @i{n+1} times; @code{i}
-produces values starting with @i{n} and ending with 0. Other Forth systems
-may behave differently, even if they support @code{FOR} loops. To avoid
-problems, don't use @code{FOR} loops.
+これは、 @code{?DO} ループを適切に最適化するのが面倒な、 ネイティブ・コード・コンパイラ作成者達が好むループです。 このループ構造は標準
+Forth では定義されていません。  Gforth では、 このループは @i{n+1} 回繰り返します。 @code{i} は、 @i{n}
+で始まり 0 で終わる値を生成します。 他の Forth システムは、@code{FOR} ループをサポートしている場合でも、
+振る舞いが異なる場合があります。 この問題を回避するには、 @code{FOR} ループを使用しないようにしてください。
 
 @end itemize
 
-The counted-loop words are:
+カウント・ループ・ワード群:
 
 @findex ?DO ( @var{ compilation -- do-sys ; run-time w1 w2 -- | loop-sys   } ) core-ext
 @cindex @code{?DO}
@@ -9366,15 +9305,14 @@ The counted-loop words are:
 @xref{Counted Loops}.
 
 
-@findex bounds ( @var{ u1 u2 -- u3 u1  } ) gforth-0.2
+@findex bounds ( @var{ addr u -- addr+u addr  } ) gforth-0.2
 @cindex @code{bounds}
 @kindex bounds
 @format
-@code{bounds} ( @i{u1 u2 -- u3 u1 }) gforth-0.2 ``bounds''
+@code{bounds} ( @i{addr u -- addr+u addr }) gforth-0.2 ``bounds''
 @end format
-Given a memory block represented by starting address @i{addr} and length
-@i{u} in aus, produce the end address @i{addr+u} and the start address in
-the right order for @code{u+do} or @code{?do}.
+開始アドレス @i{addr} と長さ @i{u} で表されるメモリ・ブロックを指定すると、 @code{u+do} または @code{?do}
+の終了アドレス @i{addr+u} と開始アドレス @i{addr} を正しい順序で生成します。
 
 @findex -[do ( @var{ compilation -- do-sys ; run-time n1 n2 -- | loop-sys   } ) gforth-experimental
 @cindex @code{-[do}
@@ -9382,9 +9320,8 @@ the right order for @code{u+do} or @code{?do}.
 @format
 @code{-[do} ( @i{compilation -- do-sys ; run-time n1 n2 -- | loop-sys  }) gforth-experimental ``minus-bracket-do''
 @end format
-Start of a counted loop with negative stride; Skips the loop if
-@i{n2}<@i{n1}; such a counted loop ends with @code{+loop} where the
-increment is negative; it runs as long as @code{I}>=@i{n1}.
+負の方向へカウントされるループを開始します。 @i{n2}<@i{n1} の場合、 ループをスキップします。 このようなカウント・ループは、
+増分が負である @code{+loop} と対になります。 @code{I}>=@i{n1} である限り実行されます。
 
 
 @findex u-[do ( @var{ compilation -- do-sys ; run-time u1 u2 -- | loop-sys   } ) gforth-experimental
@@ -9393,9 +9330,8 @@ increment is negative; it runs as long as @code{I}>=@i{n1}.
 @format
 @code{u-[do} ( @i{compilation -- do-sys ; run-time u1 u2 -- | loop-sys  }) gforth-experimental ``u-minus-bracket-do''
 @end format
-Start of a counted loop with negative stride; Skips the loop if
-@i{u2}<@i{u1}; such a counted loop ends with @code{+loop} where the
-increment is negative; it runs as long as @code{I}>=@i{u1}.
+負の方向へカウントするループを開始します。 @i{u2}<@i{u1} の場合、ループをスキップします。 このようなカウント・ループは、 増分が負の
+@code{+loop} と対になります。  @code{I}>=@i{u1} である限り実行されます。
 
 
 @findex -DO ( @var{ compilation -- do-sys ; run-time n1 n2 -- | loop-sys   } ) gforth-0.2
@@ -9416,16 +9352,16 @@ increment is negative; it runs as long as @code{I}>=@i{u1}.
 @xref{Counted Loops}.
 
 
-doc-array>mem
+@code{array>mem} ( @i{uelements uelemsize -- ubytes uelemsize}) \ ubytes は
+uelements * uelementsize です
 @findex mem+do ( @var{ compilation -- w xt do-sys; run-time addr ubytes +nstride --   } ) gforth-experimental
 @cindex @code{mem+do}
 @kindex mem+do
 @format
 @code{mem+do} ( @i{compilation -- w xt do-sys; run-time addr ubytes +nstride --  }) gforth-experimental ``mem-plus-do''
 @end format
-Starts a counted loop that starts with @code{I} as @i{addr} and then steps
-upwards through memory with @i{nstride} wide steps as long as
-@code{I}<@i{addr}+@i{ubytes}.  Must be finished with @i{loop}.
+@code{I} を @i{addr} から開始し、 @code{I}<@i{addr}+@i{ubytes} である限り、 @i{nstride}
+幅のステップでメモリ内をアドレスが増える方向にカウント・アップするカウント・ループを開始します。 @i{loop} と対にする必要があります。
 
 
 @findex mem-do ( @var{ compilation -- w xt do-sys; run-time addr ubytes +nstride --   } ) gforth-experimental
@@ -9434,10 +9370,9 @@ upwards through memory with @i{nstride} wide steps as long as
 @format
 @code{mem-do} ( @i{compilation -- w xt do-sys; run-time addr ubytes +nstride --  }) gforth-experimental ``mem-minus-do''
 @end format
-Starts a counted loop that starts with @code{I} as
-@i{addr}+@i{ubytes}-@i{ustride} and then steps backwards through memory with
--@i{nstride} wide steps as long as @code{I}>=@i{addr}.  Must be finished
-with @i{loop}.
+@code{I} を @i{addr}+@i{ubytes}-@i{ustride} として開始し、 @code{I}>=@i{addr} である間
+-@i{nstride} 幅のステップでメモリをアドレス下位方向(backward)にステップするカウント・ループを開始します。 @i{loop}
+と対にしなければなりません。
 
 
 @findex DO ( @var{ compilation -- do-sys ; run-time w1 w2 -- loop-sys   } ) core
@@ -9500,7 +9435,7 @@ with @i{loop}.
 @format
 @code{i} ( @i{R:n -- R:n n }) core ``i''
 @end format
-@i{n} is the index of the innermost counted loop.
+@i{n} は、最も内側のカウント・ループのインデックスです。
 
 @findex j ( @var{ R:n R:w1 R:w2 -- n R:n R:w1 R:w2  } ) core
 @cindex @code{j}
@@ -9508,7 +9443,7 @@ with @i{loop}.
 @format
 @code{j} ( @i{R:n R:w1 R:w2 -- n R:n R:w1 R:w2 }) core ``j''
 @end format
-@i{n} is the index of the next-to-innermost counted loop.
+@i{n} は、 最も内側から数えて 2 番目のカウント・ループのインデックスです。
 
 @findex k ( @var{ R:n R:w1 R:w2 R:w3 R:w4 -- n R:n R:w1 R:w2 R:w3 R:w4  } ) gforth-0.3
 @cindex @code{k}
@@ -9516,7 +9451,7 @@ with @i{loop}.
 @format
 @code{k} ( @i{R:n R:w1 R:w2 R:w3 R:w4 -- n R:n R:w1 R:w2 R:w3 R:w4 }) gforth-0.3 ``k''
 @end format
-@i{n} is the index of the third-innermost counted loop.
+@i{n} は、 最も内側から数えて3番目のカウント・ループのインデックスです。
 
 @findex i' ( @var{ R:w R:w2 -- R:w R:w2 w  } ) gforth-0.2
 @cindex @code{i'}
@@ -9524,7 +9459,7 @@ with @i{loop}.
 @format
 @code{i'} ( @i{R:w R:w2 -- R:w R:w2 w }) gforth-0.2 ``i-tick''
 @end format
-The limit of the innermost counted loop
+最も内側のカウント・ループの limit
 
 @findex delta-i ( @var{ r:ulimit r:u -- r:ulimit r:u u2  } ) gforth-1.0
 @cindex @code{delta-i}
@@ -9532,7 +9467,7 @@ The limit of the innermost counted loop
 @format
 @code{delta-i} ( @i{r:ulimit r:u -- r:ulimit r:u u2 }) gforth-1.0 ``delta-i''
 @end format
-@i{u2}=@code{I'}-@code{I} (difference between limit and index).
+@i{u2}=@code{I'}-@code{I} (limit とインデックスの差)
 
 @findex LEAVE ( @var{ compilation -- ; run-time loop-sys --   } ) core
 @cindex @code{LEAVE}
@@ -9565,18 +9500,17 @@ The limit of the innermost counted loop
 @format
 @code{DONE} ( @i{compilation do-sys -- ; run-time --  }) gforth-0.2 ``DONE''
 @end format
-resolves all LEAVEs up to the do-sys
+do-sys までのすべての LEAVE を解決します(訳注: loop, +loop , next 等の中で内部的に呼び出されます)。
 
 
 
 
-The standard does not allow using @code{CS-PICK} and @code{CS-ROLL} on
-@i{do-sys}. Gforth allows it, except for the do-sys produced by
-@code{MEM+DO} and @code{MEM-DO}, but it's your job to ensure that for every
-@code{?DO} etc. there is exactly one @code{UNLOOP} on any path through the
-definition (@code{LOOP} etc. compile an @code{UNLOOP} on the fall-through
-path). Also, you have to ensure that all @code{LEAVE}s are resolved (by
-using one of the loop-ending words or @code{DONE}).
+標準では、 @i{do-sys} で @code{CS-PICK} や @code{CS-ROLL} を使用することは許可されていません。
+@code{MEM+DO} と @code{MEM-DO} によって生成される do-sys を除いて、 Gforth では
+@code{CS-PICK} や @code{CS-ROLL} の使用を許可しますが、 すべての @code{?DO} などに対して、
+定義を介した任意の経路上に @code{UNLOOP} が正確に 1 つだけ存在すること(@code{LOOP} などの失敗経路上で
+@code{UNLOOP} コンパイルするなど)を確認するのはあなたの仕事です。 また、 すべての @code{LEAVE} が（ループ終了ワードの 1
+つまたは @code{DONE} を使用して)解決されていることを確認する必要があります。
 
 @node BEGIN loops with multiple exits, General control structures with CASE, Counted Loops, Control Structures
 @subsection @code{Begin} loops with multiple exits
@@ -12575,9 +12509,10 @@ it is Evil and How to Exorcise it}}, EuroForth '98.}!
 This section describes the creation and use of tokens that represent words.
 
 @menu
-* Execution token::          実行時(execution/interpretation semantics)
+* Execution token::          実行/インタプリタ 
+                               機能(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル時(compilation semantics)
+* Compilation token::        コンパイル機能(compilation semantics)
 @end menu
 
 @node Execution token, Name token, Tokens for Words, Tokens for Words
@@ -25028,17 +24963,15 @@ Terminate all workers.
 @cindex foreign language interface
 @cindex interface to C functions
 
-Gforth's C interface works by compiling a wrapper library that contains C
-functions which take parameters from the Forth stacks and calls the C
-functions.  This wrapper library is compiled by the C compiler.  Compilation
-results are cached, so that Gforth only needs to rerun the C compilation if
-the wrapper library has to change.  This build process is automatic, and
-done at the end of a interface declaration.  Gforth uses libtool and GCC for
-that process.
+Gforth の C言語インターフェイスは、 Forth スタックからパラメータを取得してC言語の関数を呼び出す、
+C言語の関数を含むラッパー・ライブラリをコンパイルすることによって機能します。
+このラッパー・ライブラリはC言語のコンパイラによってコンパイルされます。 コンパイル結果はキャッシュされるため、
+ラッパー・ライブラリを変更する必要がある場合、 Gforth は C言語のコンパイルを再実行するだけで済みます。
+このビルド処理は自動(automatic)で、 インターフェイス宣言の最後に行われます。  Gforth は、 この処理に libtool と GCC
+を使用します。
 
-The C interface is now mostly complete, callbacks have been added, but for
-structs, we use Forth2012 structs, which don't have independent scopes.  The
-offsets of those structs are extracted from header files with a SWIG plugin.
+C言語のインターフェイスはほぼ完成した状態で、 コールバックも既に追加されていますが、 構造体については、 独立したスコープを持たない
+Forth2012 構造体を使用します。 これらの構造体のオフセットは、 SWIG プラグインを使用してヘッダー・ファイルから抽出されます。
 
 @menu
 * Calling C Functions::
@@ -25058,26 +24991,21 @@ offsets of those structs are extracted from header files with a SWIG plugin.
 @cindex C functions, calls to
 @cindex calling C functions
 
-Once a C function is declared (see @pxref{Declaring C Functions}), you can
-call it as follows: You push the arguments on the stack(s), and then call
-the word for the C function.  The arguments have to be pushed in the same
-order as the arguments appear in the C documentation (i.e., the first
-argument is deepest on the stack).  Integer and pointer arguments have to be
-pushed on the data stack, floating-point arguments on the FP stack; these
-arguments are consumed by the called C function.
+C言語の関数関数が宣言されたら(@pxref{Declaring C Functions} 参照)、 次のように呼び出すことができます:
+あなたは引数達をスタックにプッシュしてから、 C言語関数のワードを呼び出します。  引数は、
+C言語のドキュメントに記載されているのと同じ順序でプッシュする必要があります(つまり、 最初の引数がスタックの最も深いところにあります)。
+整数およびポインタ引数はデータ・スタックにプッシュする必要があり、 浮動小数点引数は FP スタックにプッシュする必要があります。 これらの引数は、
+呼び出されたC言語の関数によって消費されます。
 
-On returning from the C function, the return value, if any, resides on the
-appropriate stack: an integer return value is pushed on the data stack, an
-FP return value on the FP stack, and a void return value results in not
-pushing anything.  Note that most C functions have a return value, even if
-that is often not used in C; in Forth, you have to @code{drop} this return
-value explicitly if you do not use it.
+C言語の関数から戻るとき、 戻り値がある場合、 その戻り値は適切なスタックに置きます。 整数の戻り値はデータ・スタックにプッシュされ、 FP の戻り値は
+FP スタックにプッシュされ、 void 戻り値の場合は何もプッシュされません。 C言語ではあまり使用されない場合でも、
+ほとんどのC言語の関数には戻り値があることに注意してください。 Forth では、 この戻り値を使用しない場合は、
+明示的に捨てる(@code{drop})必要があります。
 
-The C interface automatically converts between the C type and the Forth type
-as necessary, on a best-effort basis (in some cases, there may be some
-loss).
+C言語インターフェイスは、 必要に応じて、 ベストエフォートで C言語の型と Forth の型の間で自動的に変換します(場合によっては、
+ある程度の損失が発生する可能性があります)。
 
-As an example, consider the POSIX function @code{lseek()}:
+例として、 POSIX 関数 @code{lseek()} について考察してみましょう:
 
 @example
 off_t lseek(int fd, off_t offset, int whence);
@@ -25696,31 +25624,22 @@ of @code{add-lib}, however.
 @node Assembler Definitions, Common Assembler, Assembler and Code Words, Assembler and Code Words
 @subsection Definitions in assembly language
 
-Gforth provides ways to implement words in assembly language (using
-@code{abi-code}...@code{end-code}), and also ways to define defining words
-with arbitrary run-time behaviour (like @code{does>}), where (unlike
-@code{does>}) the behaviour is not defined in Forth, but in assembly
-language (with @code{;code}).
+Gforth は、 アセンブリ言語でワードを実装する方法(@code{abi-code} … @code{end-code} を使用)と、
+任意の実行時の振る舞いを持つ定義ワードを定義する方法(@code{does>} のようなの)を提供し、 ここで、
+この実行時の振る舞いを(@code{does>} とは異なり、) Forth ではなくアセンブリ言語で定義します。
 
-However, the machine-independent nature of Gforth poses a few problems:
-First of all, Gforth runs on several architectures, so it can provide no
-standard assembler. It does provide assemblers for several of the
-architectures it runs on, though.  Moreover, you can use a
-system-independent assembler in Gforth, or compile machine code directly
-with @code{,} and @code{c,}.
+ただし、 Gforth のマシン非依存の性質により、 いくつかの問題が生じます。 まず、 Gforth は複数のアーキテクチャ上で実行されるため、
+標準のアセンブラを提供できません。 ただし、 実行されるいくつかのアーキテクチャ用のアセンブラは提供されています。  さらに言えば、 Gforth
+ではシステムに依存しないアセンブラを使用したり、 @code{,} や @code{c,} を使用してマシン・コードを直接コンパイルしたりできます。
 
-Another problem is that the virtual machine registers of Gforth (the stack
-pointers and the virtual machine instruction pointer) depend on the
-installation and engine.  Also, which registers are free to use also depend
-on the installation and engine.  So any code written to run in the context
-of the Gforth virtual machine is essentially limited to the installation and
-engine it was developed for (it may run elsewhere, but you cannot rely on
-that).
+もう 1 つの問題は、Gforth の仮想マシンのレジスタ(スタック・ポインタと仮想マシン命令ポインタ)がインストールとエンジンに依存することです。
+また、 どのレジスタを自由に使用できるかは、 インストールとエンジンによって異なります。  したがって、 Gforth
+仮想マシンのコンテキストで実行するように記述されたコードは、 基本的に、 そのコードが開発されたインストールとエンジンに限定されます(たまたま、
+他の場所でも動く可能性はありますが、 それに頼ることはできません)。
 
-Fortunately, you can define @code{abi-code} words in Gforth that are
-portable to any Gforth running on a platform with the same calling
-convention (ABI); typically this means portability to the same
-architecture/OS combination, sometimes crossing OS boundaries).
+幸いなことに、 同じ呼び出し規約(ABI)を持つプラットフォーム上で実行されている Gforth に移植可能(portable)な
+@code{abi-code} ワードを Gforth で定義できます。 通常、 これは同じアーキテクチャと OS の組み合わせへの移植性を意味し、
+しばしば OS の境を越えることができます。
 
 @findex assembler ( @var{ --   } ) tools-ext
 @cindex @code{assembler}
@@ -25728,8 +25647,8 @@ architecture/OS combination, sometimes crossing OS boundaries).
 @format
 @code{assembler} ( @i{--  }) tools-ext ``assembler''
 @end format
-A vocubulary: Replaces the wordlist at the top of the search order with the
-assembler wordlist.
+ボキャブラリ: 検索順序の先頭(the top of the search order)のワードリストを assembler
+ワードリストに置き換えます。
 
 
 @findex init-asm ( @var{ --   } ) gforth-0.2
@@ -25738,7 +25657,7 @@ assembler wordlist.
 @format
 @code{init-asm} ( @i{--  }) gforth-0.2 ``init-asm''
 @end format
-Pushes the assembler wordlist on the search order.
+assembler ワードリストを検索順序(the search order)にプッシュします。
 
 
 @findex abi-code ( @var{ "name" -- colon-sys   } ) gforth-1.0
@@ -25747,14 +25666,12 @@ Pushes the assembler wordlist on the search order.
 @format
 @code{abi-code} ( @i{"name" -- colon-sys  }) gforth-1.0 ``abi-code''
 @end format
-Start a native code definition that is called using the platform's ABI
-conventions corresponding to the C-prototype:
+C言語プロトタイプ(C-prototype)に対応するプラットフォームの ABI 規則を使用して呼び出されるネイティブ・コード定義を開始します:
 @example
 Cell *function(Cell *sp, Float **fpp);
 @end example
-The FP stack pointer is passed in by providing a reference to a memory
-location containing the FP stack pointer and is passed out by storing the
-changed FP stack pointer there (if necessary).
+ここで、 FP スタック・ポインタは、 FP スタック・ポインタを含むメモリ位置への参照を提供することによって渡され、 (必要な場合)変更された FP
+スタック・ポインタをそこに格納することによって渡されます。
 
 
 @findex ;abi-code ( @var{ --   } ) gforth-1.0
@@ -25763,10 +25680,9 @@ changed FP stack pointer there (if necessary).
 @format
 @code{;abi-code} ( @i{--  }) gforth-1.0 ``semicolon-abi-code''
 @end format
-Ends the colon definition, but at run-time also changes the last defined
-word @i{X} (which must be a @code{create}d word) to call the following
-native code using the platform's ABI convention corresponding to the C
-prototype:
+コロン定義を終了しますが、 実行時に最後に定義されたワード @i{X} (@code{create}
+で作られたワードである必要があります)の変更もして、 C言語プロトタイプに対応するプラットフォームの ABI
+規約を使用してネイティブ・コードを呼び出します:
 @example
  Cell *function(Cell *sp, Float **fpp, Address body);
 @end example
@@ -26104,41 +26020,34 @@ For examples of 386 @code{abi-code} words, see @ref{Assembler Definitions}.
 @node AMD64 Assembler, Alpha Assembler, 386 Assembler, Assembler and Code Words
 @subsection AMD64 (x86_64) Assembler
 
-The AMD64 assembler is a slightly modified version of the 386 assembler, and
-as such shares most of the syntax.  Two new prefixes, @code{.q} and
-@code{.qa}, are provided to select 64-bit operand and address sizes
-respectively.  64-bit sizes are the default, so normally you only have to
-use the other prefixes.  Also there are additional register operands
-@code{R8}-@code{R15}.
+AMD64 アセンブラは、 386 アセンブラをわずかに変更したバージョンであり、 構文の大部分を共有しています。  2 つの新しい接頭辞
+@code{.q} と @code{.qa} が、 それぞれ 64 ビット・サイズのオペランドやアドレスを選択するために提供されています。  64
+ビット・サイズがデフォルトであるため、 通常は他のプレフィックスを使用するだけで済みます。  また、 追加のレジスタ・オペランド @code{R8} ～
+@code{R15} もあります。
 
-The registers lack the 'e' or 'r' prefix; even in 64 bit mode, @code{rax} is
-called @code{ax}.  Additional register operands are available to refer to
-the lowest-significant byte of all registers: @code{R8L}-@code{R15L},
-@code{SPL}, @code{BPL}, @code{SIL}, @code{DIL}.
+レジスタには「e」または「r」プレフィックスがありません。 64 ビット・モードでも、 @code{rax} は @code{ax} と呼ばれます。
+すべてのレジスタで最下位バイトを参照するために追加のレジスタ・オペランドを使用できます: @code{R8L} 〜 -@code{R15L},
+@code{SPL},  @code{BPL},  @code{SIL},  @code{DIL}
 
 @c source: https://en.wikipedia.org/wiki/X86_calling_conventions#AMD64_ABI_convention
-The Linux-AMD64 calling convention is to pass the first 6 integer parameters
-in rdi, rsi, rdx, rcx, r8 and r9 and to return the result in rax and rdx; to
-pass the first 8 FP parameters in xmm0--xmm7 and to return FP results in
-xmm0--xmm1.  So @code{abi-code} words get the data stack pointer in
-@code{di} and the address of the FP stack pointer in @code{si}, and return
-the data stack pointer in @code{ax}.  The other caller-saved registers are:
-r10, r11, xmm8-xmm15.  This calling convention reportedly is also used in
-other non-Microsoft OSs.
+Linux-AMD64 の呼び出し規則では、 最初の 6 つの整数パラメーターを rdi, rsi, rdx, rcx, r8, r9 で渡し、 結果を
+rax , rdx で返します。 最初の 8 つの FP パラメータを xmm0 ～ xmm7 に渡し、 FP 結果を xmm0 ～ xmm1
+に返します。  したがって、@code{abi-code} ワードは、 @code{di} でデータ・スタック・ポインタを取得し、 @code{si}
+で FP スタック・ポインタのアドレスを取得し、 リターン時は @code{ax} にデータ・スタック ポインタをセットします。
+呼び出し元が保存する他のレジスタは、 r10, r11 xmm8 ～ xmm15 です。 この呼び出し規約は、 Microsoft 以外の他の OS
+でも使用されていると報告されています。
 
 @c source: http://msdn.microsoft.com/en-us/library/9b372w95(v=VS.90).aspx
-Windows x64 passes the first four integer parameters in rcx, rdx, r8 and r9
-and return the integer result in rax.  The other caller-saved registers are
-r10 and r11.
+Windows x64 は、 最初の 4 つの整数パラメータを rcx, rdx, r8, r9 に渡し、 整数の結果を rax に返します。
+他の、呼び出し元保存レジスタは r10 と r11 です。
 
-On the Linux platform, according to
-@url{https://uclibc.org/docs/psABI-x86_64.pdf} page 21 the registers AX CX
-DX SI DI R8 R9 R10 R11 are available for scratch.
+@url{https://uclibc.org/docs/psABI-x86_64.pdf} の  21ページによると、 Linux
+プラットフォームでは、 レジスタ AX CX DX SI DI R8 R9 R10 R11 が自由(scratch)に使えます。
 
-The addressing modes for the AMD64 are:
+AMD64 のアドレッシング・モードは以下のとおりです:
 
 @example
-\ running word A produces a memory error as the registers are not initialised ;-)
+\ ご注意: ワード A を実行すると、レジスタが初期化されていないため、 メモリ・エラーが発生します ;-)
 ABI-CODE A  ( -- )
     500        #               AX  MOV     \ immediate
         DX              AX  MOV     \ register
@@ -26154,14 +26063,14 @@ ABI-CODE A  ( -- )
 END-CODE
 @end example
 
-Here are a few examples of an AMD64 @code{abi-code} words:
+AMD64 @code{abi-code} ワードの例をいくつか示します:
 
 @example
 abi-code my+  ( n1 n2 -- n3 )
 \ SP passed in di, returned in ax,  address of FP passed in si
-8 di d) ax lea        \ compute new sp in result reg
-di )    dx mov        \ get old tos
-dx    ax ) add        \ add to new tos
+8 di d) ax lea        \ compute new sp in result reg ( 結果として di+8 → ax つまり drop と同じ)
+di )    dx mov        \ get old tos ( [di] つまり n2   → dx )
+dx    ax ) add        \ add to new tos ( dx + [ax] → [ax]
 ret
 end-code
 @end example

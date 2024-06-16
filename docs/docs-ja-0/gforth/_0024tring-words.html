@@ -71,22 +71,17 @@ Next: <a href="Counted-string-words.html" accesskey="n" rel="next">Counted strin
 <span id="g_t_0024tring-words-1"></span><h4 class="subsection">6.8.5 $tring words</h4>
 <span id="index-string-words-with-_0024"></span>
 
-<p>The following string library stores strings in ordinary cell-size variables
-(string handles).  These handles contain a pointer to a cell-counted string
-allocated from the heap.  The string library originates from bigFORTH.
+<p>以下の文字列ライブラリは、 文字列を通常のセル・サイズの変数(文字列ハンドル;string handle)に格納します。  これらのハンドルには、
+ヒープに割り当てられたセル・カウント文字列(cell-counted
+string;カウンタがセルサイズであるカウンタ付き文字列)へのポインタが含まれています。 この文字列ライブラリは bigFORTH 由来です。
 </p>
-<p>Because there is only one permanent reference to the contents (the one in
-the handle), the string can be relocated or deleted without worrying about
-dangling references; this requires that the programmer uses references
-produced by, e.g., <code>$@</code> only for temporary purposes, i.e., these
-references are not passed out, e.g., as return values or stored in global
-memory, and words that may change the handle are not called while these
-references exist.
+<p>内容への恒久的な参照は 1 つだけ(ハンドル内の参照)しかないため、 未解決の参照を恐れることなく文字列を再配置または削除できます。 これには、
+プログラマが、 例えば <code>$@</code> 等によって生成された参照を一時的な目的でのみ使用する必要があります。 つまり、 これらの一時的な参照は、
+戻り値として渡されたり、 グローバル・メモリに格納されたりすることはなく、 ハンドルを変更する可能性のあるワードは、
+これらの一時的な参照が存在する間は呼び出されません。
 </p>
-<p>This library is complemented by the cell-pair representation: You use the
-$tring words for variable strings which are cumbersome with the c-addr u
-representation.  You use the cell-pair representation for processing (e.g.,
-inspecting) strings while they do not change.
+<p>このライブラリを補完するものとしてセルペア表現(cell-pair representation)があります。 文字列変数に対して $tring
+ワードを使用しますが、 これは c-addr u 表現では面倒です。  セルペア表現は、 文字列を変更しないで処理(検査など)するために使用します。
 </p>
 <span id="index-_0024_0021-_0028--addr1-u-_0024addr-_002d_002d--_0029-gforth_002d0_002e7"></span>
 <span id="index-_0024_0021"></span>
@@ -94,8 +89,7 @@ inspecting) strings while they do not change.
 <div class="format">
 <pre class="format"><code>$!</code> ( <i>addr1 u $addr &ndash;  </i>) gforth-0.7 &ldquo;string-store&rdquo;
 </pre></div>
-<p>stores a newly allocated string buffer at an address, frees the previous
-buffer if necessary.
+<p>新しく割り当てられた文字列バッファをアドレス($addr)が指す先に格納し、 必要に応じて以前のバッファを解放します。
 </p>
 
 <span id="index-_0024_0040-_0028--_0024addr-_002d_002d-addr2-u--_0029-gforth_002d0_002e7"></span>
@@ -104,7 +98,7 @@ buffer if necessary.
 <div class="format">
 <pre class="format"><code>$@</code> ( <i>$addr &ndash; addr2 u  </i>) gforth-0.7 &ldquo;string-fetch&rdquo;
 </pre></div>
-<p>returns the stored string.
+<p>格納された文字列のアドレスと長さを返します。
 </p>
 
 <span id="index-_0024_0040len-_0028--_0024addr-_002d_002d-u--_0029-gforth_002d0_002e7"></span>
@@ -113,7 +107,7 @@ buffer if necessary.
 <div class="format">
 <pre class="format"><code>$@len</code> ( <i>$addr &ndash; u  </i>) gforth-0.7 &ldquo;string-fetch-len&rdquo;
 </pre></div>
-<p>returns the length of the stored string.
+<p>格納されている文字列の長さを返します。
 </p>
 
 <span id="index-_0024_0021len-_0028--u-_0024addr-_002d_002d--_0029-gforth_002d0_002e7"></span>
@@ -122,8 +116,9 @@ buffer if necessary.
 <div class="format">
 <pre class="format"><code>$!len</code> ( <i>u $addr &ndash;  </i>) gforth-0.7 &ldquo;string-store-len&rdquo;
 </pre></div>
-<p>changes the length of the stored string.  Therefore we must change the
-memory area and adjust address and count cell as well.
+<p>格納されている文字列(string)領域の長さを変更します(足し算ではない。 長さを直にいじる)  それゆえ、メモリ領域を変更し、
+アドレスとカウンタ・セルも調整(adjust)する必要があります(訳注: 元の長さより長くした場合、 領域を拡張するだけで初期化はしない。
+そこにはゴミが入っているので自分で初期化する必要がある)
 </p>
 
 <span id="index-_0024_002b_0021len-_0028--u-_0024addr-_002d_002d-addr--_0029-gforth_002d1_002e0"></span>
@@ -132,8 +127,8 @@ memory area and adjust address and count cell as well.
 <div class="format">
 <pre class="format"><code>$+!len</code> ( <i>u $addr &ndash; addr  </i>) gforth-1.0 &ldquo;string-plus-store-len&rdquo;
 </pre></div>
-<p>make room for u bytes at the end of the memory area referenced by $addr;
-addr is the address of the first of these bytes.
+<p>$addr によって参照されるメモリ領域の最後に u バイト用の空間を確保します(追加。確保するだけで初期化はしない。 $addr
+の「長さ」に追加もする)。 addr は、 確保した空間の最初のアドレスです。
 </p>
 
 <span id="index-_0024del-_0028--addr-off-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
@@ -142,7 +137,7 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>$del</code> ( <i>addr off u &ndash;  </i>) gforth-0.7 &ldquo;string-del&rdquo;
 </pre></div>
-<p>deletes <var>u</var> bytes from a string with offset <var>off</var>.
+<p>文字列のオフセット位置 <var>off</var> から <var>u</var> バイト削除します。
 </p>
 
 <span id="index-_0024ins-_0028--addr1-u-_0024addr-off-_002d_002d--_0029-gforth_002d0_002e7"></span>
@@ -151,7 +146,7 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>$ins</code> ( <i>addr1 u $addr off &ndash;  </i>) gforth-0.7 &ldquo;string-ins&rdquo;
 </pre></div>
-<p>inserts a string at offset <var>off</var>.
+<p>オフセット位置 <var>off</var> に文字列を挿入します。
 </p>
 
 <span id="index-_0024_002b_0021-_0028--addr1-u-_0024addr-_002d_002d--_0029-gforth_002d0_002e7"></span>
@@ -160,7 +155,7 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>$+!</code> ( <i>addr1 u $addr &ndash;  </i>) gforth-0.7 &ldquo;string-plus-store&rdquo;
 </pre></div>
-<p>appends a string to another.
+<p>文字列(addr1 u)を別の文字列($addr)に追加します。
 </p>
 
 <span id="index-c_0024_002b_0021-_0028--char-_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -169,7 +164,7 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>c$+!</code> ( <i>char $addr &ndash;  </i>) gforth-1.0 &ldquo;c-string-plus-store&rdquo;
 </pre></div>
-<p>append a character to a string.
+<p>文字列に文字を追加します。
 </p>
 
 <span id="index-_0024free-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -178,7 +173,7 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>$free</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-free&rdquo;
 </pre></div>
-<p>free the string pointed to by addr, and set addr to 0
+<p>$addr が指す文字列を解放し、  $addr のポインタを 0 にします( $&nbsp;すると 0 0 を返す)
 </p>
 
 <span id="index-_0024init-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -187,7 +182,7 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>$init</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-init&rdquo;
 </pre></div>
-<p>store an empty string there, regardless of what was in before
+<p>以前に何があったかに関係なく、そこに空の文字列を保存します(訳注: ポインタを 0 にする訳ではなくて、 ポインタの指す先に長さゼロの文字列がある)
 </p>
 
 <span id="index-_0024split-_0028--addr-u-char-_002d_002d-addr1-u1-addr2-u2--_0029-gforth_002d0_002e7"></span>
@@ -196,8 +191,8 @@ addr is the address of the first of these bytes.
 <div class="format">
 <pre class="format"><code>$split</code> ( <i>addr u char &ndash; addr1 u1 addr2 u2  </i>) gforth-0.7 &ldquo;string-split&rdquo;
 </pre></div>
-<p>divides a string into two, with one char as separator (e.g. &rsquo;?&rsquo; for
-arguments in an HTML query)
+<p>文字列中で最初に現れる char を区切り文字として文字列を 2 つに分割します(例: HTML クエリの引数の &rsquo;?&rsquo;)(訳注: 区切り文字 char
+自体は分割後の文字列に含まれない)
 </p>
 
 <span id="index-_0024iter-_0028--_002e_002e-_0024addr-char-xt-_002d_002d-_002e_002e--_0029-gforth_002d0_002e7"></span>
@@ -206,9 +201,10 @@ arguments in an HTML query)
 <div class="format">
 <pre class="format"><code>$iter</code> ( <i>.. $addr char xt &ndash; ..  </i>) gforth-0.7 &ldquo;string-iter&rdquo;
 </pre></div>
-<p>takes a string apart piece for piece, also with a character as
-separator. For each part a passed token will be called. With this you can
-take apart arguments &ndash; separated with &rsquo;&amp;&rsquo; &ndash; at ease.
+<p>区切り文字 char で切り出した部分文字列(addr u)ごとに xt を呼び出します。 xt は (addr u &ndash; ) でなければなりません。
+これにより、 例えば &rsquo;&amp;&rsquo; で区切られた引数を簡単に分解できます(訳注: : my-type  ( addr u &ndash; )  .&quot; [&quot; type
+.&quot; ]&quot; ;   variable title s&quot; GNU gforth manual&quot; title $!   title $&nbsp;my-type
+[GNU gforth manual]   title bl &rsquo; my-type $iter [GNU][gforth][manual] ok)。
 </p>
 
 <span id="index-_0024over-_0028--addr-u-_0024addr-off-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -217,7 +213,7 @@ take apart arguments &ndash; separated with &rsquo;&amp;&rsquo; &ndash; at ease.
 <div class="format">
 <pre class="format"><code>$over</code> ( <i>addr u $addr off &ndash;  </i>) gforth-1.0 &ldquo;string-over&rdquo;
 </pre></div>
-<p>overwrite string at offset off with addr u
+<p>$addr の文字列のオフセット位置 off から文字列(addr u)で上書きします。
 </p>
 
 <span id="index-_0024exec-_0028--xt-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -226,8 +222,7 @@ take apart arguments &ndash; separated with &rsquo;&amp;&rsquo; &ndash; at ease.
 <div class="format">
 <pre class="format"><code>$exec</code> ( <i>xt addr &ndash;  </i>) gforth-1.0 &ldquo;string-exec&rdquo;
 </pre></div>
-<p>execute xt while the standard output (TYPE, EMIT, and everything that uses
-them) is appended to the string variable addr.
+<p>実行トークン xt を実行し、 その標準出力(TYPE や EMIT やそれらを使用するすべてのもの)を addr が指す文字列の末尾に「追加」します。 
 </p>
 
 <span id="index-_0024tmp-_0028--xt-_002d_002d-addr-u--_0029-gforth_002d1_002e0"></span>
@@ -236,7 +231,7 @@ them) is appended to the string variable addr.
 <div class="format">
 <pre class="format"><code>$tmp</code> ( <i>xt &ndash; addr u  </i>) gforth-1.0 &ldquo;string-t-m-p&rdquo;
 </pre></div>
-<p>generate a temporary string from the output of a word
+<p>ワードの出力から一時的な文字列を生成します
 </p>
 
 <span id="index-_0024_002e-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -245,7 +240,7 @@ them) is appended to the string variable addr.
 <div class="format">
 <pre class="format"><code>$.</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-dot&rdquo;
 </pre></div>
-<p>print a string, shortcut
+<p>文字列を出力する、 ショートカット( $&nbsp;TYPE → $. )
 </p>
 
 <span id="index-_0024slurp-_0028--fid-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -254,8 +249,8 @@ them) is appended to the string variable addr.
 <div class="format">
 <pre class="format"><code>$slurp</code> ( <i>fid addr &ndash;  </i>) gforth-1.0 &ldquo;string-slurp&rdquo;
 </pre></div>
-<p>Read the file <i>fid</i> until the end (without closing it) and put the read
-data into the string at <i>addr</i>.
+<p>(slurp;音を立ててすする)ファイル <i>fid</i> を最後まで読み取り(ファイルのクローズは行いません)、 読み取ったデータを <i>addr</i>
+の指す文字列に入れます。
 </p>
 
 <span id="index-_0024slurp_002dfile-_0028--c_002daddr-u-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -264,7 +259,7 @@ data into the string at <i>addr</i>.
 <div class="format">
 <pre class="format"><code>$slurp-file</code> ( <i>c-addr u addr &ndash;  </i>) gforth-1.0 &ldquo;string-slurp-file&rdquo;
 </pre></div>
-<p>Put all the data in the file named <i>c-addr u</i> into the string at <i>addr</i>.
+<p><i>c-addr u</i> という名前のファイル内のすべてのデータを <i>addr</i> の文字列に入力します。
 </p>
 
 <span id="index-_0024_002bslurp-_0028--fid-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -273,8 +268,7 @@ data into the string at <i>addr</i>.
 <div class="format">
 <pre class="format"><code>$+slurp</code> ( <i>fid addr &ndash;  </i>) gforth-1.0 &ldquo;string-plus-slurp&rdquo;
 </pre></div>
-<p>Read the file <i>fid</i> until the end (without closing it) and append the read
-data to the string at <i>addr</i>.
+<p>ファイル <i>fid</i> を最後まで読み取り(但しクローズはしません)、 読み取ったデータを <i>addr</i> の文字列に「追加」します。
 </p>
 
 <span id="index-_0024_002bslurp_002dfile-_0028--c_002daddr-u-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -283,8 +277,7 @@ data to the string at <i>addr</i>.
 <div class="format">
 <pre class="format"><code>$+slurp-file</code> ( <i>c-addr u addr &ndash;  </i>) gforth-1.0 &ldquo;string-plus+slurp-file&rdquo;
 </pre></div>
-<p>Append all the data in the file named <i>c-addr u</i> to the string at
-<i>addr</i>.
+<p><i>c-addr u</i> という名前のファイル内のすべてのデータを <i>addr</i> の文字列に「追加」します。
 </p>
 
 <span id="index-_0024_005b_005d-_0028--u-_0024_005b_005daddr-_002d_002d-addr_0027--_0029-gforth_002d1_002e0"></span>
@@ -293,8 +286,7 @@ data to the string at <i>addr</i>.
 <div class="format">
 <pre class="format"><code>$[]</code> ( <i>u $[]addr &ndash; addr&rsquo;  </i>) gforth-1.0 &ldquo;string-array&rdquo;
 </pre></div>
-<p><i>Addr&rsquo;</i> is the address of the <i>u</i>th element of the string array
-<i>$[]addr</i>.  The array is resized if needed.
+<p><i>addr&rsquo;</i> は、 文字列配列 <i>$[]addr</i> の <i>u</i> 番目の要素のアドレスです。  配列のサイズは必要に応じて変更されます。
 </p>
 
 <span id="index-_0024_005b_005d_0021-_0028--c_002daddr-u-n-_0024_005b_005daddr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -303,8 +295,8 @@ data to the string at <i>addr</i>.
 <div class="format">
 <pre class="format"><code>$[]!</code> ( <i>c-addr u n $[]addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-store&rdquo;
 </pre></div>
-<p>Store string <i>c-addr y</i> into the string array <i>$[]addr</i> at index <i>n</i>.
-The array is resized if needed.
+<p>文字列 <i>c-addr u</i> を文字列配列 <i>$[]addr</i> のインデックス <i>n</i> に格納します。
+必要に応じて配列のサイズが変更されます。
 </p>
 
 <span id="index-_0024_005b_005d_002b_0021-_0028--c_002daddr-u-n-_0024_005b_005daddr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -313,8 +305,8 @@ The array is resized if needed.
 <div class="format">
 <pre class="format"><code>$[]+!</code> ( <i>c-addr u n $[]addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-plus-store&rdquo;
 </pre></div>
-<p>Append the string <i>c-addr u</i> to the string at index <i>n</i>.  The array is
-resized if needed.  Don&rsquo;t confuse this with <code>$+[]!</code>.
+<p>文字列 <i>c-addr u</i> をインデックス <i>n</i> の文字列に「追加」します。  必要に応じて配列のサイズが変更されます。  これを
+<code>$+[]!</code> と混同しないでください。
 </p>
 
 <span id="index-_0024_002b_005b_005d_0021-_0028--c_002daddr-u-_0024_005b_005daddr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -323,8 +315,8 @@ resized if needed.  Don&rsquo;t confuse this with <code>$+[]!</code>.
 <div class="format">
 <pre class="format"><code>$+[]!</code> ( <i>c-addr u $[]addr &ndash;  </i>) gforth-1.0 &ldquo;string-append-array&rdquo;
 </pre></div>
-<p>Store the string <i>c-addr u</i> as the new last element of string array
-<i>$[]addr</i>.  The array is resized if needed.
+<p>文字列 <i>c-addr u</i> を文字列配列 <i>$[]addr</i> の新しい最後の要素として保存します(つまり要素が1つ増える)。
+必要に応じて配列のサイズが変更されます。
 </p>
 
 <span id="index-_0024_005b_005d_0040-_0028--n-_0024_005b_005daddr-_002d_002d-addr-u--_0029-gforth_002d1_002e0"></span>
@@ -333,8 +325,8 @@ resized if needed.  Don&rsquo;t confuse this with <code>$+[]!</code>.
 <div class="format">
 <pre class="format"><code>$[]@</code> ( <i>n $[]addr &ndash; addr u  </i>) gforth-1.0 &ldquo;string-array-fetch&rdquo;
 </pre></div>
-<p>fetch a string from array index <i>n</i> &mdash; return the zero string if empty,
-and don&rsquo;t accidentally grow the array.
+<p>配列インデックス <i>n</i> から文字列を取得します &mdash; 空の場合はゼロ文字列( 0 0 )を返し、
+誤って配列が成長しないようにします(訳注:要素はあるけど空文字列(長さ0)の場合と、範囲外の要素を指した場合の区別は付かないので注意)
 </p>
 
 <span id="index-_0024_005b_005d_0023-_0028--addr-_002d_002d-len--_0029-gforth_002d1_002e0"></span>
@@ -343,7 +335,7 @@ and don&rsquo;t accidentally grow the array.
 <div class="format">
 <pre class="format"><code>$[]#</code> ( <i>addr &ndash; len  </i>) gforth-1.0 &ldquo;string-array-num&rdquo;
 </pre></div>
-<p>return the number of elements in an array
+<p>配列内の要素の数を返します
 </p>
 
 <span id="index-_0024_005b_005dmap-_0028--addr-xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -352,8 +344,8 @@ and don&rsquo;t accidentally grow the array.
 <div class="format">
 <pre class="format"><code>$[]map</code> ( <i>addr xt &ndash;  </i>) gforth-1.0 &ldquo;string-array-map&rdquo;
 </pre></div>
-<p>execute <var>xt</var> for all elements of the string array <var>addr</var>.  xt is
-<var>( addr u &ndash; )</var>, getting one string at a time
+<p>文字列配列 <var>addr</var> のすべての要素に対して 実行トークン <var>xt</var> を実行します。  xt は <var>( addr u &ndash;
+)</var> で、一度に 1 つの文字列を取得します
 </p>
 
 <span id="index-_0024_005b_005dslurp-_0028--fid-addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -362,7 +354,7 @@ and don&rsquo;t accidentally grow the array.
 <div class="format">
 <pre class="format"><code>$[]slurp</code> ( <i>fid addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-slurp&rdquo;
 </pre></div>
-<p>slurp a file <var>fid</var> line by line into a string array <var>addr</var>
+<p>ファイル <var>fid</var> の内容を 1 行ずつ文字列配列 <var>addr</var> に入れます
 </p>
 
 <span id="index-_0024_005b_005dslurp_002dfile-_0028--addr-u-_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -371,7 +363,7 @@ and don&rsquo;t accidentally grow the array.
 <div class="format">
 <pre class="format"><code>$[]slurp-file</code> ( <i>addr u $addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-slurp-file&rdquo;
 </pre></div>
-<p>slurp a named file <var>addr u</var> line by line into a string array <var>$addr</var>
+<p>名前付きファイル <var>addr u</var> を 1 行ずつ文字列配列 <var>$addr</var> に入れます。
 </p>
 
 <span id="index-_0024_005b_005d_002e-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -380,7 +372,7 @@ and don&rsquo;t accidentally grow the array.
 <div class="format">
 <pre class="format"><code>$[].</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-dot&rdquo;
 </pre></div>
-<p>print all array entries
+<p>すべての配列エントリを出力します
 </p>
 
 <span id="index-_0024_005b_005dfree-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -389,9 +381,8 @@ and don&rsquo;t accidentally grow the array.
 <div class="format">
 <pre class="format"><code>$[]free</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-free&rdquo;
 </pre></div>
-<p>addr contains the address of a cell-counted string that contains the
-addresses of a number of cell-counted strings; $[]free frees these strings,
-frees the array, and sets addr to 0
+<p>addr は沢山のセルカウント文字列(string)へのアドレス達を含む、 セル・カウント文字列(string)へのアドレスで、 $[]free
+はこれらの文字列を解放、 つまり、 この配列を開放し、 addr の値を 0 にセットします。
 </p>
 
 <span id="index-_0024save-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -400,7 +391,7 @@ frees the array, and sets addr to 0
 <div class="format">
 <pre class="format"><code>$save</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-save&rdquo;
 </pre></div>
-<p>push string to dictionary for savesys
+<p>savesys のディクショナリに文字列(string)をプッシュします
 </p>
 
 <span id="index-_0024_005b_005dsave-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -409,7 +400,7 @@ frees the array, and sets addr to 0
 <div class="format">
 <pre class="format"><code>$[]save</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-save&rdquo;
 </pre></div>
-<p>push string array to dictionary for savesys
+<p>文字列配列を savesys のディクショナリにプッシュ
 </p>
 
 <span id="index-_0024boot-_0028--_0024addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -418,8 +409,7 @@ frees the array, and sets addr to 0
 <div class="format">
 <pre class="format"><code>$boot</code> ( <i>$addr &ndash;  </i>) gforth-1.0 &ldquo;string-boot&rdquo;
 </pre></div>
-<p>take string from dictionary to allocated memory.  clean dictionary
-afterwards.
+<p>ディクショナリから文字列を新しく割り当てたメモリに取り込みます。 その後、 ディクショナリのその文字列の領域を(0で)クリアします(長さはそのまま)。
 </p>
 
 <span id="index-_0024_005b_005dboot-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -428,7 +418,7 @@ afterwards.
 <div class="format">
 <pre class="format"><code>$[]boot</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-boot&rdquo;
 </pre></div>
-<p>take string array from dictionary to allocated memory
+<p>ディクショナリから、 文字列配列を割り当てられたメモリに取得します
 </p>
 
 <span id="index-_0024saved-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -437,7 +427,7 @@ afterwards.
 <div class="format">
 <pre class="format"><code>$saved</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-saved&rdquo;
 </pre></div>
-<p>mark an address as booted/saved
+<p>アドレスを ブート済み(booted)/保存済み(saved) としてマークする
 </p>
 
 <span id="index-_0024_005b_005dsaved-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -446,7 +436,7 @@ afterwards.
 <div class="format">
 <pre class="format"><code>$[]saved</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;string-array-saved&rdquo;
 </pre></div>
-<p>mark an address as booted/saved
+<p>アドレスを ブート済み(booted)/保存済み(saved) としてマークする
 </p>
 
 <span id="index-_0024Variable-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -455,7 +445,7 @@ afterwards.
 <div class="format">
 <pre class="format"><code>$Variable</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;string-variable&rdquo;
 </pre></div>
-<p>A string variable which is preserved across savesystem
+<p>savesystem 全体にわたって保存される文字列変数。
 </p>
 
 <span id="index-_0024_005b_005dVariable-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -464,7 +454,7 @@ afterwards.
 <div class="format">
 <pre class="format"><code>$[]Variable</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;string-array-variable&rdquo;
 </pre></div>
-<p>A string variable which is preserved across savesystem
+<p>savesystem 全体にわたって保存される文字列変数。
 </p>
 
 

@@ -73,171 +73,157 @@ Next: <a href="BEGIN-loops-with-multiple-exits.html" accesskey="n" rel="next"><c
 <span id="index-loops_002c-counted"></span>
 <span id="index-DO-loops"></span>
 
-<p>The basic counted loop is:
+<p>基本のカウンタ付きループ:
 </p><div class="example">
 <pre class="example"><i>limit</i> <i>start</i> ?DO
   <i>body</i>
 LOOP
 </pre></div>
 
-<p>This performs one iteration for every integer, starting from <i>start</i> and
-up to, but excluding <i>limit</i>. The counter, or <i>index</i>, can be accessed
-with <code>i</code>. For example, the loop:
+<p>これは、 <i>start</i> から始まり <i>limit</i> まで(<i>limit</i> 自身は除く)、 各整数値に対して 1 回の反復を実行します。
+カウンタ、 つまりインデックスには、 <code>i</code> を使用してアクセスできます。 たとえば、 以下のループをご覧ください:
 </p><div class="example">
 <pre class="example">10 0 ?DO
   i .
 LOOP
 </pre></div>
-<p>prints <code>0 1 2 3 4 5 6 7 8 9</code>
+<p>出力: <code>0 1 2 3 4 5 6 7 8 9</code>
 </p>
-<p>The index of the innermost loop can be accessed with <code>i</code>, the index of
-the next loop with <code>j</code>, and the index of the third loop with <code>k</code>.
+<p>最も内側のループのインデックスには <code>i</code> を使用してアクセスでき、 その一つ外側のループのインデックスには <code>j</code>
+を使用してアクセスでき、 さらにもう一つ外側のループのインデックスには <code>k</code> を使用してアクセスできます。
 </p>
-<p>You can access the limit of the innermost loop with <code>i'</code> and
-<code>i'</code>-<code>i</code> with <code>delta-i</code>.  E.g., running
+<p><code>i'</code> を使用すると最も内側のループの limit にアクセスでき、 <code>delta-i</code> を使用すると <code>i'</code> -
+<code>i</code> にアクセスできます。
 </p>
 <div class="example">
 <pre class="example">: foo 7 5 ?do cr i . i' . delta-i . loop ; 
 </pre></div>
 
-<p>prints
+<p>出力:
 </p>
 <div class="example">
 <pre class="example">5 7 2 
 6 7 1
 </pre></div>
 
-<p>The loop control data are kept on the return stack, so there are some
-restrictions on mixing return stack accesses and counted loop words. In
-particuler, if you put values on the return stack outside the loop, you
-cannot read them inside the loop<a id="DOCF12" href="#FOOT12"><sup>12</sup></a>. If you put values on the return stack within a loop, you have to
-remove them before the end of the loop and before accessing the index of the
-loop.
+<p>ループ制御データはリターン・スタックに保持されるため、 リターン・スタックへのアクセスとカウント・ループ・ワードの混在にはいくつかの制限があります。
+特に、ループの外側のリターン・スタックに値を置いた場合、 ループ内で値を読み取る事はできません<a id="DOCF12" href="#FOOT12"><sup>12</sup></a>。 ループ内のリターン・スタックに値を置く場合は、 ループの終了前、
+およびループのインデックスにアクセスする前に値を削除する必要があります。
 </p>
-<p>There are several variations on the counted loop:
+<p>カウント・ループにはいくつかのバリエーションがあります:
 </p>
 <ul>
-<li> <code>LEAVE</code> leaves the innermost counted loop immediately; execution
-continues after the associated <code>LOOP</code> or <code>NEXT</code>. For example:
+<li> <code>LEAVE</code> は、 最も内側のカウント・ループを直ちに抜け出します。 それが関係する <code>LOOP</code> または <code>NEXT</code>
+の後へ実行は移ります。 例:
 
 <div class="example">
 <pre class="example">10 0 ?DO  i DUP . 3 = IF LEAVE THEN LOOP
 </pre></div>
-<p>prints <code>0 1 2 3</code>
+<p>出力: <code>0 1 2 3</code>
 </p>
 
-</li><li> <code>UNLOOP</code> prepares for an abnormal loop exit, e.g., via
-<code>EXIT</code>. <code>UNLOOP</code> removes the loop control parameters from the
-return stack so <code>EXIT</code> can get to its return address. For example:
+</li><li> <code>UNLOOP</code> は、 例えば <code>EXIT</code> などを介しての異常なループ終了の準備を行います。 <code>UNLOOP</code> は、
+<code>EXIT</code> がリターン・アドレスに到達できるように、 リターン・スタックからループ制御パラメーターを削除します(訳注: 1重ループなので
+unloop 1つ。2重ループなら unloop 2つ)。 例:
 
 <div class="example">
 <pre class="example">: demo 10 0 ?DO i DUP . 3 = IF UNLOOP EXIT THEN LOOP .&quot; Done&quot; ;
 </pre></div>
-<p>prints <code>0 1 2 3</code>
+<p>出力: <code>0 1 2 3</code>
 </p>
 
-</li><li> If <i>start</i> is greater than <i>limit</i>, a <code>?DO</code> loop is entered (and
-<code>LOOP</code> iterates until they become equal by wrap-around
-arithmetic). This behaviour is usually not what you want. Therefore, Gforth
-offers <code>+DO</code> and <code>U+DO</code> (as replacements for <code>?DO</code>), which do
-not enter the loop if <i>start</i> is greater than <i>limit</i>; <code>+DO</code> is for
-signed loop parameters, <code>U+DO</code> for unsigned loop parameters.
+</li><li> <i>start</i> が <i>limit</i> より大きい場合でも、 <code>?DO</code>
+はループを開始します(ラップアラウンド演算(処理可能な範囲をの最後に達した後に最初に戻る事)によって両者が等しくなるまで <code>LOOP</code>
+を反復します)。 通常、 この振る舞いは望ましくないものです。 したがって、 Gforth は (<code>?DO</code> の代替として、)
+<code>+DO</code> と <code>U+DO</code> を提供します。 これらは、 <i>start</i> が <i>limit</i>
+より大きい場合にはループを開始しません。 <code>+DO</code> は符号付きループ・パラメータ用で、 <code>U+DO</code>
+は符号なしループ・パラメータ用です。
 
-</li><li> <code>?DO</code> can be replaced by <code>DO</code>. <code>DO</code> always enters the loop,
-independent of the loop parameters. Do not use <code>DO</code>, even if you know
-that the loop is entered in any case. Such knowledge tends to become invalid
-during maintenance of a program, and then the <code>DO</code> will make trouble.
+</li><li> <code>?DO</code> は <code>DO</code> に置き換えることはできます。 <code>DO</code> は、 ループ・パラメータ に関係なく、
+常にループに入ります。 あなたが、 どの場合にもループに入ることを知っている場合でも <code>DO</code> は使用しないでください。
+このような知恵はプログラムを保守していく中で無効になる傾向があり、 それゆえ <code>DO</code> が問題を引き起こすことになります。
 
-</li><li> <code>LOOP</code> can be replaced with <code><i>n</i> +LOOP</code>; this updates the index
-by <i>n</i> instead of by 1. The loop is terminated when the border between
-<i>limit-1</i> and <i>limit</i> is crossed. E.g.:
+</li><li> <code>LOOP</code> は <code><i>n</i> +LOOP</code> に置き換えることができます。 これにより、インデックスが 1 ではなく <i>n</i>
+によって更新されます。 <i>limit-1</i> と <i>limit</i> の間の境界を越えると、 ループは終了します。 例:
 
 <div class="example">
 <pre class="example">4 0 +DO  i .  2 +LOOP
 </pre></div>
-<p>prints <code>0 2</code>
+<p>出力: <code>0 2</code>
 </p>
 <div class="example">
 <pre class="example">4 1 +DO  i .  2 +LOOP
 </pre></div>
-<p>prints <code>1 3</code>
+<p>出力: <code>1 3</code>
 </p>
 </li><li> <span id="index-negative-increment-for-counted-loops"></span>
 <span id="index-counted-loops-with-negative-increment"></span>
-The behaviour of <code><i>n</i> +LOOP</code> is peculiar when <i>n</i> is negative:
+<i>n</i> が負数の場合、 <code><i>n</i> +LOOP</code> の動作は奇妙です:
 
 <div class="example">
 <pre class="example">-1 0 ?DO  i .  -1 +LOOP
 </pre></div>
-<p>prints <code>0 -1</code>
+<p>出力: <code>0 -1</code>
 </p>
 <div class="example">
 <pre class="example">0 0 ?DO  i .  -1 +LOOP
 </pre></div>
-<p>prints nothing.
+<p>出力: なし。
 </p>
-<p>We recommend not combining <code>?DO</code> with <code>+LOOP</code>.  Gforth offers
-several alternatives:
+<p>私たちは <code>?DO</code> と <code>+LOOP</code> を組み合わせないことをお勧めします。  Gfors はいくつかの代替手段を提供します:
 </p>
-<p>If you want <code>-1 +LOOP</code>&rsquo;s behaviour of including an iteration where
-<code>I</code>=limit, start the loop with <code>-[DO</code> or <code>U-[DO</code> (where the
-<code>[</code> is inspired by the mathematical notation for inclusive ranges,
-e.g., [1,n]):
+<p><code>I</code>=limit の反復を含める <code>-1 +LOOP</code> の振る舞いが必要な場合、 <code>-[DO</code> または
+<code>U-[DO</code>] でループを開始します(ここで、 <code>[</code> は、 包含範囲の数学的表記法(例: [1,n]
+からインスピレーションを得ています):
 </p>
 <div class="example">
 <pre class="example">-1 0 -[DO  i .  -1 +LOOP
 </pre></div>
 
-<p>prints <code>0 -1</code>.
+<p>出力: <code>0 -1</code>.
 </p>
 <div class="example">
 <pre class="example">0 0 -[DO  i .  -1 +LOOP
 </pre></div>
 
-<p>prints <code>0</code>.
+<p>出力: <code>0</code>
 </p>
 <div class="example">
 <pre class="example">0 -1 -[DO  i .  -1 +LOOP
 </pre></div>
 
-<p>prints nothing.
+<p>出力: なし。
 </p>
-<p>If you want to exclude the limit, you instead use <code>1 -LOOP</code> (or
-generally <code><i>u</i> -LOOP</code>) and start the loop with <code>?DO</code>, <code>-DO</code>
-or <code>U-DO</code>.  <code>-LOOP</code> terminates the loop when the border between
-<i>limit+1</i> and <i>limit</i> is crossed.  E.g.:
+<p>limit を除外したい場合、 代わりに <code>1 -LOOP</code> (または一般的には <code><i>u</i> -LOOP</code>)を使用し、
+<code>?DO</code> または <code>-DO </code> または <code>U-DO</code> でループを開始します。 <code>-LOOP</code>
+は、<i>limit+1</i> と <i>limit</i> の間の境界を越えたときにループを終了します。  例:
 </p>
 <div class="example">
 <pre class="example">-2 0 -DO  i .  1 -LOOP
 </pre></div>
-<p>prints <code>0 -1</code>
+<p>出力: <code>0 -1</code>
 </p>
 <div class="example">
 <pre class="example">-1 0 -DO  i .  1 -LOOP
 </pre></div>
-<p>prints <code>0</code>
+<p>出力: <code>0</code>
 </p>
 <div class="example">
 <pre class="example">0 0 -DO  i .  1 -LOOP
 </pre></div>
-<p>prints nothing.
+<p>出力: なし。
 </p>
-<p>Unfortunately, <code>+DO</code>, <code>U+DO</code>, <code>-DO</code>, <code>U-DO</code> and
-<code>-LOOP</code> are not defined in Standard Forth. However, an implementation
-for these words that uses only standard words is provided in
-<samp>compat/loops.fs</samp>.
+<p>残念ながら、 <code>+DO</code>, <code>U+DO</code>, <code>-DO</code>, <code>U-DO</code>, <code>-LOOP</code> は 標準
+Forth では定義されていません。 ただし、 標準のワードのみを使用するこれらのワードの実装が <samp>compat/loops.fs</samp>
+にて提供されています。
 </p>
 </li><li> <span id="index-iterate-over-array"></span>
 <span id="index-array_002c-iterating-over"></span>
-A common task is to iterate over the elements of an array, forwards or
-backwards.  Iterating over the addresses of the elements has two benefits:
-It avoids the need to keep the start address of the array around, reducing
-the data stack load; and it avoids the need to perform address computations
-in every iteration.  The disadvantage is that, starting with the usual array
-representations <i>addr uelems</i> or <i>addr ubytes</i>, some processing is
-required to produce a start and limit address.  Gforth has <code>bounds</code> for
-getting there from the <i>addr ubytes</i> representation, so you can write a
-forward loop through a cell array <code>v</code> as:
+よくある作業は、 配列の要素を前方または後方に反復処理することです。  要素のアドレスに対して反復処理することには 2 つの利点があります。
+配列の開始アドレスを保持する必要がなくなり、 データ・スタックの負荷が軽減されます。 また、 反復ごとにアドレス計算を実行する必要がなくなります。
+欠点は、 通常の配列表現 <i>addr u要素</i> または <i>addr uバイト</i> から始めて、 start アドレスと limit
+アドレスを生成するために何らかの処理が必要なことです。  Gforth には、<i>addr ubytes</i> 表現からそこに到達するために
+<code>bounds</code> があるため、セル配列 <code>v</code> を介した前方ループを以下のように記述できます:
 
 <div class="example">
 <pre class="example">create v 1 , 3 , 7 ,
@@ -245,11 +231,9 @@ forward loop through a cell array <code>v</code> as:
 foo
 </pre></div>
 
-<p>which prints <code>1 3 7</code>.  Preprocessing the inputs for walking backwards
-is more involved, so Gforth provide a loop construct of the form
-<code>MEM-DO</code>...<code>LOOP</code> that does it for you: It takes an array in
-<i>addr ubytes</i> representation and the element size, and iterates over the
-addresses of the elements in backwards order:
+<p>これは <code>1 3 7</code> を出力します。  逆方向にたどるための入力の前処理はより複雑であるため、 Gforth はそれを行う
+<code>MEM-DO</code> … <code>LOOP</code> 形式のループ構造を提供します。 これは <i>addr uバイト</i>
+表現の配列と要素サイズを受け取り、 要素のアドレスを逆順に反復処理します。
 </p>
 <div class="example">
 <pre class="example">create v 1 , 3 , 7 ,
@@ -257,13 +241,13 @@ addresses of the elements in backwards order:
 foo1
 </pre></div>
 
-<p>This prints <code>7 3 1</code>.  <code>ARRAY&gt;MEM</code> converts the <i>addr uelems
-uelemsize</i> representation into the <i>addr ubytes uelemsize</i> representation
-expected by <code>MEM-DO</code>.  This loop is finished with <code>LOOP</code> which
-decrements by <i>uelemsize</i> when it finishes a <code>MEM-DO</code>.
+<p>これは <code>7 3 1</code> を出力します。<code>ARRAY&gt;MEM</code> は <i>addr uelems uelemsize</i> を
+<code>MEM-DO</code> が期待する <i>addr ubytes uelemsize</i> に変換します(ubytes は uelems *
+uelmsize です)。  このループは <code>MEM-DO</code> 通過後に<i>uelemsize</i> ずつ減算される、 <code>LOOP</code>
+と対になるループとなります。
 </p>
-<p>Gforth also adds <code>MEM+DO</code> for completeness.  It takes the same
-parameters as <code>MEM-DO</code>, but walks forwards through the array:
+<p>Gforth は、 完全を期すために <code>MEM+DO</code> も追加します。  <code>MEM-DO</code> と同一のパラメータを受け取りますが、
+配列を順(forwards)に処理します:
 </p>
 <div class="example">
 <pre class="example">create v 1 , 3 , 7 ,
@@ -271,26 +255,24 @@ parameters as <code>MEM-DO</code>, but walks forwards through the array:
 foo2
 </pre></div>
 
-<p>prints <code>1 3 7</code>.
+<p>出力: <code>1 3 7</code>
 </p>
 </li><li> <span id="index-FOR-loops"></span>
-Another counted loop is:
+別のカウント・ループ:
 <div class="example">
 <pre class="example"><i>n</i>
 FOR
   <i>body</i>
 NEXT
 </pre></div>
-<p>This is the preferred loop of native code compiler writers who are too lazy
-to optimize <code>?DO</code> loops properly. This loop structure is not defined in
-Standard Forth. In Gforth, this loop iterates <i>n+1</i> times; <code>i</code>
-produces values starting with <i>n</i> and ending with 0. Other Forth systems
-may behave differently, even if they support <code>FOR</code> loops. To avoid
-problems, don&rsquo;t use <code>FOR</code> loops.
+<p>これは、 <code>?DO</code> ループを適切に最適化するのが面倒な、 ネイティブ・コード・コンパイラ作成者達が好むループです。 このループ構造は標準
+Forth では定義されていません。  Gforth では、 このループは <i>n+1</i> 回繰り返します。 <code>i</code> は、 <i>n</i>
+で始まり 0 で終わる値を生成します。 他の Forth システムは、<code>FOR</code> ループをサポートしている場合でも、
+振る舞いが異なる場合があります。 この問題を回避するには、 <code>FOR</code> ループを使用しないようにしてください。
 </p>
 </li></ul>
 
-<p>The counted-loop words are:
+<p>カウント・ループ・ワード群:
 </p>
 <span id="index-_003fDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-w1-w2-_002d_002d-_007c-loop_002dsys--_0029-core_002dext"></span>
 <span id="index-_003fDO"></span>
@@ -319,15 +301,14 @@ problems, don&rsquo;t use <code>FOR</code> loops.
 <p>See <a href="#Counted-Loops">Counted Loops</a>.
 </p>
 
-<span id="index-bounds-_0028--u1-u2-_002d_002d-u3-u1--_0029-gforth_002d0_002e2"></span>
+<span id="index-bounds-_0028--addr-u-_002d_002d-addr_002bu-addr--_0029-gforth_002d0_002e2"></span>
 <span id="index-bounds"></span>
 <span id="index-bounds-1"></span>
 <div class="format">
-<pre class="format"><code>bounds</code> ( <i>u1 u2 &ndash; u3 u1 </i>) gforth-0.2 &ldquo;bounds&rdquo;
+<pre class="format"><code>bounds</code> ( <i>addr u &ndash; addr+u addr </i>) gforth-0.2 &ldquo;bounds&rdquo;
 </pre></div>
-<p>Given a memory block represented by starting address <i>addr</i> and length
-<i>u</i> in aus, produce the end address <i>addr+u</i> and the start address in
-the right order for <code>u+do</code> or <code>?do</code>.
+<p>開始アドレス <i>addr</i> と長さ <i>u</i> で表されるメモリ・ブロックを指定すると、 <code>u+do</code> または <code>?do</code>
+の終了アドレス <i>addr+u</i> と開始アドレス <i>addr</i> を正しい順序で生成します。
 </p>
 <span id="index-_002d_005bdo-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-n1-n2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002dexperimental"></span>
 <span id="index-_002d_005bdo"></span>
@@ -335,9 +316,8 @@ the right order for <code>u+do</code> or <code>?do</code>.
 <div class="format">
 <pre class="format"><code>-[do</code> ( <i>compilation &ndash; do-sys ; run-time n1 n2 &ndash; | loop-sys  </i>) gforth-experimental &ldquo;minus-bracket-do&rdquo;
 </pre></div>
-<p>Start of a counted loop with negative stride; Skips the loop if
-<i>n2</i>&lt;<i>n1</i>; such a counted loop ends with <code>+loop</code> where the
-increment is negative; it runs as long as <code>I</code>&gt;=<i>n1</i>.
+<p>負の方向へカウントされるループを開始します。 <i>n2</i>&lt;<i>n1</i> の場合、 ループをスキップします。 このようなカウント・ループは、
+増分が負である <code>+loop</code> と対になります。 <code>I</code>&gt;=<i>n1</i> である限り実行されます。
 </p>
 
 <span id="index-u_002d_005bdo-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-u1-u2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002dexperimental"></span>
@@ -346,9 +326,8 @@ increment is negative; it runs as long as <code>I</code>&gt;=<i>n1</i>.
 <div class="format">
 <pre class="format"><code>u-[do</code> ( <i>compilation &ndash; do-sys ; run-time u1 u2 &ndash; | loop-sys  </i>) gforth-experimental &ldquo;u-minus-bracket-do&rdquo;
 </pre></div>
-<p>Start of a counted loop with negative stride; Skips the loop if
-<i>u2</i>&lt;<i>u1</i>; such a counted loop ends with <code>+loop</code> where the
-increment is negative; it runs as long as <code>I</code>&gt;=<i>u1</i>.
+<p>負の方向へカウントするループを開始します。 <i>u2</i>&lt;<i>u1</i> の場合、ループをスキップします。 このようなカウント・ループは、 増分が負の
+<code>+loop</code> と対になります。  <code>I</code>&gt;=<i>u1</i> である限り実行されます。
 </p>
 
 <span id="index-_002dDO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-n1-n2-_002d_002d-_007c-loop_002dsys--_0029-gforth_002d0_002e2"></span>
@@ -369,16 +348,16 @@ increment is negative; it runs as long as <code>I</code>&gt;=<i>u1</i>.
 <p>See <a href="#Counted-Loops">Counted Loops</a>.
 </p>
 
-<p>doc-array&gt;mem
+<p><code>array&gt;mem</code> ( <i>uelements uelemsize &ndash; ubytes uelemsize</i>) \ ubytes は
+uelements * uelementsize です
 <span id="index-mem_002bdo-_0028--compilation-_002d_002d-w-xt-do_002dsys_003b-run_002dtime-addr-ubytes-_002bnstride-_002d_002d--_0029-gforth_002dexperimental"></span>
 <span id="index-mem_002bdo"></span>
 <span id="index-mem_002bdo-1"></span>
 </p><div class="format">
 <pre class="format"><code>mem+do</code> ( <i>compilation &ndash; w xt do-sys; run-time addr ubytes +nstride &ndash;  </i>) gforth-experimental &ldquo;mem-plus-do&rdquo;
 </pre></div>
-<p>Starts a counted loop that starts with <code>I</code> as <i>addr</i> and then steps
-upwards through memory with <i>nstride</i> wide steps as long as
-<code>I</code>&lt;<i>addr</i>+<i>ubytes</i>.  Must be finished with <i>loop</i>.
+<p><code>I</code> を <i>addr</i> から開始し、 <code>I</code>&lt;<i>addr</i>+<i>ubytes</i> である限り、 <i>nstride</i>
+幅のステップでメモリ内をアドレスが増える方向にカウント・アップするカウント・ループを開始します。 <i>loop</i> と対にする必要があります。
 </p>
 
 <span id="index-mem_002ddo-_0028--compilation-_002d_002d-w-xt-do_002dsys_003b-run_002dtime-addr-ubytes-_002bnstride-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -387,10 +366,9 @@ upwards through memory with <i>nstride</i> wide steps as long as
 <div class="format">
 <pre class="format"><code>mem-do</code> ( <i>compilation &ndash; w xt do-sys; run-time addr ubytes +nstride &ndash;  </i>) gforth-experimental &ldquo;mem-minus-do&rdquo;
 </pre></div>
-<p>Starts a counted loop that starts with <code>I</code> as
-<i>addr</i>+<i>ubytes</i>-<i>ustride</i> and then steps backwards through memory with
--<i>nstride</i> wide steps as long as <code>I</code>&gt;=<i>addr</i>.  Must be finished
-with <i>loop</i>.
+<p><code>I</code> を <i>addr</i>+<i>ubytes</i>-<i>ustride</i> として開始し、 <code>I</code>&gt;=<i>addr</i> である間
+-<i>nstride</i> 幅のステップでメモリをアドレス下位方向(backward)にステップするカウント・ループを開始します。 <i>loop</i>
+と対にしなければなりません。
 </p>
 
 <span id="index-DO-_0028--compilation-_002d_002d-do_002dsys-_003b-run_002dtime-w1-w2-_002d_002d-loop_002dsys--_0029-core"></span>
@@ -453,7 +431,7 @@ with <i>loop</i>.
 <div class="format">
 <pre class="format"><code>i</code> ( <i>R:n &ndash; R:n n </i>) core &ldquo;i&rdquo;
 </pre></div>
-<p><i>n</i> is the index of the innermost counted loop.
+<p><i>n</i> は、最も内側のカウント・ループのインデックスです。
 </p>
 <span id="index-j-_0028--R_003an-R_003aw1-R_003aw2-_002d_002d-n-R_003an-R_003aw1-R_003aw2--_0029-core"></span>
 <span id="index-j"></span>
@@ -461,7 +439,7 @@ with <i>loop</i>.
 <div class="format">
 <pre class="format"><code>j</code> ( <i>R:n R:w1 R:w2 &ndash; n R:n R:w1 R:w2 </i>) core &ldquo;j&rdquo;
 </pre></div>
-<p><i>n</i> is the index of the next-to-innermost counted loop.
+<p><i>n</i> は、 最も内側から数えて 2 番目のカウント・ループのインデックスです。
 </p>
 <span id="index-k-_0028--R_003an-R_003aw1-R_003aw2-R_003aw3-R_003aw4-_002d_002d-n-R_003an-R_003aw1-R_003aw2-R_003aw3-R_003aw4--_0029-gforth_002d0_002e3"></span>
 <span id="index-k"></span>
@@ -469,7 +447,7 @@ with <i>loop</i>.
 <div class="format">
 <pre class="format"><code>k</code> ( <i>R:n R:w1 R:w2 R:w3 R:w4 &ndash; n R:n R:w1 R:w2 R:w3 R:w4 </i>) gforth-0.3 &ldquo;k&rdquo;
 </pre></div>
-<p><i>n</i> is the index of the third-innermost counted loop.
+<p><i>n</i> は、 最も内側から数えて3番目のカウント・ループのインデックスです。
 </p>
 <span id="index-i_0027-_0028--R_003aw-R_003aw2-_002d_002d-R_003aw-R_003aw2-w--_0029-gforth_002d0_002e2"></span>
 <span id="index-i_0027"></span>
@@ -477,7 +455,7 @@ with <i>loop</i>.
 <div class="format">
 <pre class="format"><code>i'</code> ( <i>R:w R:w2 &ndash; R:w R:w2 w </i>) gforth-0.2 &ldquo;i-tick&rdquo;
 </pre></div>
-<p>The limit of the innermost counted loop
+<p>最も内側のカウント・ループの limit
 </p>
 <span id="index-delta_002di-_0028--r_003aulimit-r_003au-_002d_002d-r_003aulimit-r_003au-u2--_0029-gforth_002d1_002e0"></span>
 <span id="index-delta_002di"></span>
@@ -485,7 +463,7 @@ with <i>loop</i>.
 <div class="format">
 <pre class="format"><code>delta-i</code> ( <i>r:ulimit r:u &ndash; r:ulimit r:u u2 </i>) gforth-1.0 &ldquo;delta-i&rdquo;
 </pre></div>
-<p><i>u2</i>=<code>I'</code>-<code>I</code> (difference between limit and index).
+<p><i>u2</i>=<code>I'</code>-<code>I</code> (limit とインデックスの差)
 </p>
 <span id="index-LEAVE-_0028--compilation-_002d_002d-_003b-run_002dtime-loop_002dsys-_002d_002d--_0029-core"></span>
 <span id="index-LEAVE"></span>
@@ -518,18 +496,17 @@ with <i>loop</i>.
 <div class="format">
 <pre class="format"><code>DONE</code> ( <i>compilation do-sys &ndash; ; run-time &ndash;  </i>) gforth-0.2 &ldquo;DONE&rdquo;
 </pre></div>
-<p>resolves all LEAVEs up to the do-sys
+<p>do-sys までのすべての LEAVE を解決します(訳注: loop, +loop , next 等の中で内部的に呼び出されます)。
 </p>
 
 
 
-<p>The standard does not allow using <code>CS-PICK</code> and <code>CS-ROLL</code> on
-<i>do-sys</i>. Gforth allows it, except for the do-sys produced by
-<code>MEM+DO</code> and <code>MEM-DO</code>, but it&rsquo;s your job to ensure that for every
-<code>?DO</code> etc. there is exactly one <code>UNLOOP</code> on any path through the
-definition (<code>LOOP</code> etc. compile an <code>UNLOOP</code> on the fall-through
-path). Also, you have to ensure that all <code>LEAVE</code>s are resolved (by
-using one of the loop-ending words or <code>DONE</code>).
+<p>標準では、 <i>do-sys</i> で <code>CS-PICK</code> や <code>CS-ROLL</code> を使用することは許可されていません。
+<code>MEM+DO</code> と <code>MEM-DO</code> によって生成される do-sys を除いて、 Gforth では
+<code>CS-PICK</code> や <code>CS-ROLL</code> の使用を許可しますが、 すべての <code>?DO</code> などに対して、
+定義を介した任意の経路上に <code>UNLOOP</code> が正確に 1 つだけ存在すること(<code>LOOP</code> などの失敗経路上で
+<code>UNLOOP</code> コンパイルするなど)を確認するのはあなたの仕事です。 また、 すべての <code>LEAVE</code> が（ループ終了ワードの 1
+つまたは <code>DONE</code> を使用して)解決されていることを確認する必要があります。
 </p>
 </div>
 <div class="footnote">
@@ -537,8 +514,8 @@ using one of the loop-ending words or <code>DONE</code>).
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT12" href="#DOCF12">(12)</a></h5>
-<p>well, not in a way that is
-portable.</p>
+<p>ええ、まぁ、
+移植可能な方法ではできません、 ぐらいな</p>
 </div>
 <hr>
 <div class="header">

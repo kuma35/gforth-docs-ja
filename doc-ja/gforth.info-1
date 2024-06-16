@@ -299,9 +299,10 @@ Tokens for Words
 
 
 
-* Execution token::          実行時(execution/interpretation semantics)
+* Execution token::          実行/インタプリタ
+                               機能(execution/interpretation semantics)
 * Name token::               名前付きワード
-* Compilation token::        コンパイル時(compilation semantics)
+* Compilation token::        コンパイル機能(compilation semantics)
 
 Compiling words
 
@@ -1058,7 +1059,7 @@ File: gforth.info,  Node: Leaving Gforth,  Next: Help on Gforth,  Prev: Invoking
 れます。 Gforth を終了する前にシステムの状態を保存する方法については、
 *note Image Files:: を参照してください。
 
-   doc-bye
+   ‘bye’ ( – ) \ gforth を正常に終了する。
 
 
 File: gforth.info,  Node: Help on Gforth,  Next: Command-line editing,  Prev: Leaving Gforth,  Up: Gforth Environment
@@ -1826,8 +1827,9 @@ Forth では、 演算子の名前はオーバーロードされません。 し
    符号付きのバリエーションと符号なしのバリエーションに違いがない場合(例
 えば ‘+’ の場合)、 プレフィックスのないバリエーションのみが存在します。
 
-   Forth は、 コンパイル時も実行時も型チェックを実行しません。 以下のよ
-うに間違った演算子を使うと、 データが正しく解釈(interpret)されません:
+   Forth は、 コンパイル・モード時もインタプリタ・モード時も型チェックを
+実行しません。 以下のように間違った演算子を使うと、 データが正しく解釈
+(interpret)されません:
 
      -1 u.
 
@@ -2557,7 +2559,9 @@ Forth の浮動小数点(floating-point)(FP)の、 数値と算術演算は、 �
 良い出発点は ‘David Goldberg, What Every Computer Scientist Should Know
 About Floating-Point Arithmetic
 (https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html), ACM
-Computing Surveys 23(1):5−48, March 1991’ です。
+Computing Surveys 23(1):5−48, March 1991’ です(訳注:
+<https://docs.oracle.com/cd/E19957-01/806-4847/ncg_goldberg.html> これが
+合ってるかどうか不明。一部文字化けあり2024/06現在)。
 
    Forth ソース・コードでは、リテラル浮動小数点数には指数が必要です(例:
 ‘1e0’)。これは、 ‘1e’ のように短く書くことも、 ‘+1.0e+0’ のように長く書
@@ -2738,17 +2742,17 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
      1 2 + .
      : foo + ;
 
-   これらの 2 つの振る舞いは、 コンパイル時compilation semantics)と実行
-時(interpretation semantics)として知られています。 通常のワード(例:
-‘+’)の場合、 コンパイル時は、 現在定義されているワード(上記の例では
-‘foo’)に実行時コードを追加します。 つまり、 後で ‘foo’ が実行されると、
-‘+’ のj実行時コード(interpretation semantics)(つまり、2 つの数値の加算
-)が実行されます。
+   これらの 2 つの振る舞いは、 コンパイル機能(compilation semantics)とイ
+ンタプリタ機能(interpretation semantics)として知られています。 通常のワ
+ード(例: ‘+’)の場合、 コンパイル機能は、 現在定義中のワード(上記の例では
+‘foo’)にインタプリタ機能を追加します。 つまり、 後で ‘foo’ が実行される
+と、 ‘+’ のインタプリタ機能(interpretation semantics)(つまり、2 つの数値
+の加算)が実行されます。
 
    ただし、 ‘if’ のような制御フロー・ワードなど、 デフォルト以外のコンパ
-イル時動作を持つワードが存在します。 ‘immediate’ を使用すると、 最後に定
-義されたワードのコンパイル時コードを実行時コードと等しくなるように変更で
-きます:
+イル機能を持つワードが存在します。 ‘immediate’ を使用すると、 最後に定義
+されたワードのコンパイル機能をインタプリタ機能と等しくなるように変更でき
+ます:
 
      : [FOO] ( -- )
       5 . ; immediate
@@ -2759,13 +2763,13 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
      bar
      see bar
 
-   デフォルト以外のコンパイル時ワードだと知らしめる 2 つの慣習は、 名前
-を括弧で囲む(より頻繁に使用される)ことと、 名前をすべて大文字で記述する
-(あまり使用されない)ことです。
+   デフォルト以外のコンパイル機能をもつワードだと知らしめる 2 つの慣習は
+、 名前を括弧で囲む(より頻繁に使用される)ことと、 名前をすべて大文字で記
+述する(あまり使用されない)ことです。
 
-   ‘if’ などの一部のワードについては、 実行時に使用するのは通常間違いで
-あるため、 それらを ‘compile-only’ としてマークし、 実行時に使用すると警
-告が表示されます。
+   ‘if’ などの一部のワードについては、 インタプリタ機能を使用するのは通
+常間違いであるため、 それらを ‘compile-only’ としてマークし、 インタプリ
+タ機能を使用すると警告が表示されます。
 
      : flip ( -- )
       6 . ; compile-only \ but not immediate
@@ -2775,20 +2779,19 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics and Immediacy
       flip ;
      flop
 
-   この例では、 最初に ‘flip’ の実行時コードが使用されます(警告が表示さ
-れます)。 ‘flip’ の 2 番目の使用では、 コンパイル時コードが使用されます
-(警告は表示されません)。 この例では、 compile-only が実行時(run-time)で
-はなくテキスト解釈時(text interpretation time)に評価される属性であること
-もわかります。
+   この例では、 最初に ‘flip’ のインタプリタ機能を使用します(警告が表示
+されます)。 ‘flip’ の 2 番目の使用では、 コンパイル機能を使用します(警告
+は表示されません)。 この例では、 compile-only が実行時(run-time)ではなく
+テキスト・インタプリタ時に評価される属性であることもわかります。
 
-   テキスト・インタプリタには 2 つの状態があります。 実行時(interpret)は
-、 遭遇したワードの実行時コードを実行します。 コンパイル時では、 これら
-のワードのコンパイル時コードが実行されます。
+   テキスト・インタプリタには 2 つの状態があります。 インタプリタ・モー
+ド(interpret)は、 遭遇したワードのインタプリタ機能(interpretation
+semantics)を実行します。 コンパイル・モードでは、 これらのワードのコンパ
+イル機能(compilation semantics)が実行されます。
 
-   特に、 ‘:’ はコンパイル状態に切り替え、 ‘;’ は解釈(interpret)状態に戻
-ります。 これらには、 状態を切り替えるだけがその効果である ‘]’ (コンパイ
-ル状態に切り替える) と ‘[’ (解釈(interpret)状態に切り替える) が含まれて
-います。
+   特に、 ‘:’ はコンパイル状態に切り替え、 ‘;’ はインタプリタ状態に戻し
+ます。 これらには、 状態を切り替えるだけの効果である ‘]’ (コンパイル状態
+に切り替える) と ‘[’ (インタプリタ状態に切り替える) が含まれています。
 
      : xxx ( -- )
        [ 5 . ]
@@ -2809,8 +2812,8 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
 =====================
 
 ‘' word’ は、 ワードの実行トークン(execution token)(XT)を提供します。 XT
-は、 ワードの実行時コードを表すセルです。 これは ‘execute’ で実行できま
-す:
+は、 ワードのインタプリタ機能(interpretation semantics)表すセルです。 こ
+れは ‘execute’ で実行できます:
 
      ' + .s
      1 2 rot execute .
@@ -2845,9 +2848,9 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
         [ ' + compile, ] ;
      see foo1
 
-   ‘compile,’ は標準ではコンパイル時コードがないため、 上記は標準ではな
-いけれども、 良い Forth システムでは動作します。 うまくいかなかったモノ
-ついては、 以下を使用してください
+   ‘compile,’ は標準ではコンパイル機能(compilation semantics)がないため
+、 上記は標準ではないけれども、 良い Forth システムでは動作します。 うま
+くいかなかったモノついては、 以下を使用してください
 
      : [compile,] compile, ; immediate
 
@@ -2855,9 +2858,9 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
         [ ' + ] [compile,] ;
      see foo1
 
-   ‘'’ は、 デフォルトでコンパイル時コードを持つワードです。 コンパイル
-中ではなく、 実行時コードの実行時、 その次のワードを構文解析(parse)しま
-す。
+   ‘'’ は、 デフォルトでコンパイル機能(compilation semantics)を持つワー
+ドです。 そのワードのインタプリタ機能(interpretation semantics)を実行す
+ると、 その次のワードを構文解析(parse)します。
 
      : foo ( -- xt )
        ' ;
@@ -2886,10 +2889,11 @@ File: gforth.info,  Node: Execution Tokens Tutorial,  Next: Exceptions Tutorial,
 (https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz))。
 
    XT の作成および実行は、 インタプリタの状態には影響を受けないことに注
-意してください。 つまり、 コンパイル状態で ‘'’ を実行した場合でも、 実行
-時コードが得られます。 そして、 そこでの状態が何であれ、 ‘execute’ は XT
-によって表されるコード(つまり、‘'’ で生成された XT の場合は実行時コード
-)を実行します。
+意してください。 つまり、 コンパイル状態で ‘'’ を実行した場合でも、 イン
+タプリタ機能(interpretation semantics)が得られます。 そして、 そこでの状
+態が何であれ、 ‘execute’ は XT によって表されるコード(つまり、‘'’ で生成
+された XT の場合はインタプリタ機能(interpretation semantics))を実行しま
+す。
 
    こちらも参照ください: *note Tokens for Words::
 
@@ -3081,8 +3085,8 @@ File: gforth.info,  Node: POSTPONE Tutorial,  Next: Literal Tutorial,  Prev: Arr
 3.33 ‘POSTPONE’
 ===============
 
-‘POSTPONE’ を使用すると、 (そのワードの実行時コード(interpretation
-semantics)をコンパイルする代わりに、) そのワードのコンパイル時コード
+‘POSTPONE’ を使用すると、 (そのワードのインタプリタ機能(interpretation
+semantics)をコンパイルする代わりに、) そのワードのコンパイル機能
 (compilation semantics)をコンパイルできます:
 
      : MY-+ ( Compilation: -- ; Run-time of compiled code: n1 n2 -- n )
@@ -3092,21 +3096,20 @@ semantics)をコンパイルする代わりに、) そのワードのコンパ�
      1 2 foo .
      see foo
 
-   ‘foo’ の定義中に、 テキスト・インタプリタは ‘MY-+’ のコンパイル時コー
-ドを実行し、 そのコンパイル時コードが ‘+’ のコンパイル時コードを実行しま
-す。 つまり、 ‘+’ を ‘foo’ 内にコンパイルします。
+   ‘foo’ の定義中に、 テキスト・インタプリタは ‘MY-+’ のコンパイル機能
+(compilation semantics)を実行し、 そのコンパイル機能が ‘+’ のコンパイル
+機能を実行します。 つまり、 ‘+’ を ‘foo’ 内にコンパイルします。
 
-   この例では、 コンパイル時コードとコンパイルされたコードのスタック効果
-について個別のスタック・コメントも表示します。 デフォルトのコンパイル時
-コード(compilation semantics)を持つワードの場合、 通常、 これらのスタッ
-ク効果は表示されません。 これらのワードのコンパイル時コード(compilation
-semantics)のスタック効果は常に ‘( -- )’ であり、 コンパイルされたコード
-のスタック効果は実行時コード(interpretation semantics)のスタック効果です
-。
+   この例では、 コンパイル機能(compilation semantics)とコンパイルされた
+コードのスタック効果について個別のスタック・コメントも表示します。 デフ
+ォルトのコンパイル機能を持つワードの場合、 通常、 これらのスタック効果は
+表示されません。 これらのワードのコンパイル機能のスタック効果は常に ‘(
+-- )’ であり、 コンパイルされたコードのスタック効果はインタプリタ機能
+(interpretation semantics)のスタック効果です。
 
-   注意: この方法でコンパイル時コード(compilation semantics)を実行する場
-合、 インタプリタの状態には影響を受けないことに注意してください。 あなた
-は解釈的(interpretively)に実行することもできます。 例:
+   注意: この方法でコンパイル機能(compilation semantics)を実行する場合、
+インタプリタの状態には影響を受けないことに注意してください。 あなたはそ
+れをインタプリタ的(interpretively)に実行することもできます。 例:
 
      : foo2 ( n1 n2 -- n )
       [ MY-+ ] ;
@@ -3130,9 +3133,9 @@ semantics)のスタック効果は常に ‘( -- )’ であり、 コンパイ�
      : ENDIF ( Compilation: orig -- )
        POSTPONE then ; immediate
 
-     研究課題(assignment): ‘2dup’ と同等のコンパイル時コードを持つ
-     ‘MY-2DUP’ を作成しますが、 コンパイルされるのは ‘over over’ になる
-     ようにしてみましょう。
+     研究課題(assignment): ‘2dup’ と同等のコンパイル機能(compilation
+     semantics)を持つ ‘MY-2DUP’ を作成しますが、 コンパイルされるのは
+     ‘over over’ になるようにしてみましょう。
 
 
 File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Prev: POSTPONE Tutorial,  Up: Tutorial
@@ -3153,10 +3156,10 @@ File: gforth.info,  Node: Literal Tutorial,  Next: Advanced macros Tutorial,  Pr
      flip .
      see flip
 
-   ‘LITERAL’ は、 コンパイル時(コンパイル時コードが実行されるとき)に数値
-を消費し、 実行時(コンパイルされたコードが実行されるとき)にそれをプッシ
-ュします。 ‘LITERAL’ のよくある使用法は、 コンパイル時に計算された数値を
-現在のワードにコンパイルすることです:
+   ‘LITERAL’ は、 コンパイル時(コンパイル機能(compilation semantics)が実
+行される時)に数値を消費し、 実行時(コンパイルされたコードが実行されると
+き)にそれをプッシュします。 ‘LITERAL’ のよくある使用法は、 コンパイル時
+に計算された数値を現在のワードにコンパイルすることです:
 
      : bar ( -- n )
        [ 2 2 + ] literal ;
@@ -3229,27 +3232,27 @@ File: gforth.info,  Node: Compilation Tokens Tutorial,  Next: Wordlists and Sear
 
 このセクションは Gforth 固有です。 スキップしても構いません。
 
-   ‘' word compile,’ は実行時コード(interpretation semantics)をコンパイ
-ルします。 デフォルトのコンパイル時コード(compilation semantics)を持つワ
-ードの場合、 これはコンパイル時コードを実行するのと同じです。 他のワード
-のコンパイル時コード(実行時に使えない ‘if’ などのワード)を表すために、
+   ‘' word compile,’ はインタプリタ機能(interpretation semantics)をコン
+パイルします。 デフォルトのコンパイル機能(compilation semantics)を持つワ
+ードの場合、 これはコンパイル機能を実行するのと同じです。 他のワードのコ
+ンパイル機能(インタプリタ機能を持たない ‘if’ などのワード)を表すために、
 Gforth にはコンパイル・トークン(CTと略します。 2つのセルで構成)と、 ワー
 ド ‘comp'’ と、 ワード ‘[comp']’ の概念があります。 ‘execute’ を使用して
-、 CT によって表されるコンパイル時コードを実行できます:
+、 CT によって表されるコンパイル機能を実行できます:
 
      : foo2 ( n1 n2 -- n )
         [ comp' + execute ] ;
      see foo2
 
-   ‘postpone,’ を使用して、 CT によって表されるコンパイル時コードをコン
-パイルできます:
+   ‘postpone,’ を使用して、 CT によって表されるコンパイル機能をコンパイ
+ルできます:
 
      : foo3 ( -- )
        [ comp' + postpone, ] ;
      see foo3
 
    ‘[ comp' word postpone, ]’ ‘POSTPONE word’ と同等です。 ‘comp'’ は、
-実行時コードを持たないワードに対して特に役立ちます:
+インタプリタ・モードコードを持たないワードに対して特に役立ちます:
 
      ' if
      comp' if .s 2drop
@@ -3789,9 +3792,9 @@ File: gforth.info,  Node: How does that work?,  Next: Forth is written in Forth,
    ‘:’ が行う 2 つ目の特別な処理は、 ‘state’ と呼ばれる変数の値を変更す
 ることです。 これは、 テキスト・インタプリタの振る舞いに影響します。
 Gforth が起動するとき、 ‘state’ の値は 0 であり、 テキスト・インタプリタ
-はインタプリタ中(interpreting)であると言われます。 (‘:’ で始まる)コロン
-定義中 、 ‘state’ は -1 に設定され、テキスト・インタプリタはコンパイル中
-(compiling)と言われます。
+はインタプリタ状態(“interpreting”)であると言われます。 (‘:’ で始まる)コ
+ロン定義中 、 ‘state’ は -1 に設定され、テキスト・インタプリタはコンパイ
+ル状態(“compiling”)と言われます。
 
    この例では、 テキスト・インタプリタは文字列 “‘2 + . ;’”。引き続き同じ
 方法で文字列を文字シーケンスに分割します。ただし、数値 ‘2’ をスタックに
@@ -3800,61 +3803,62 @@ Gforth が起動するとき、 ‘state’ の値は 0 であり、 テキス�
 ます。 同様に、 ‘+’ と ‘.’ の振る舞いも定義にコンパイルされます。
 
    特定の種類のワードはコンパイルされません。 これらのいわゆる「即実行ワ
-ード」(immediate word)は、 テキスト・インタプリタがインタプリタ・モード
-であるかコンパイル・モードかに関係なく、 実行されます(今、 直ちに実行さ
-れます)。 ‘;’ というワードは即実行ワードです。 定義にコンパイルされるの
-ではなく、 実行されます。 その効果は、 ‘state’ の値を 0 に戻すことを含む
-、 現在の定義を終了することです。
+ード」(immediate word)は、 テキスト・インタプリタがインタプリタ状態であ
+るかコンパイル状態であるかに関係なく、 実行されます(今、 直ちに実行され
+ます)。 ‘;’ というワードは即実行ワードです。 定義にコンパイルされるので
+はなく、 実行されます。 その効果は、 ‘state’ の値を 0 に戻すことを含む、
+現在の定義を終了することです。
 
    あなたが ‘add-two’ を実行すると、 その定義の外で ‘2 + . <RET>’ と入力
 した場合とまったく同一の「実行時効果」(run-time effect) が生じます。
 
    Forth では、 すべてのワードまたは数値は以下の 2 つの性質を持ちます:
 
-   • その 実行時コード(interpretation semantics)は、 テキスト・インタプ
-     リタが実行時(interpret 状態)どのように動作するかを記述します。 ワー
-     ドの実行時コードは、 その「実行トークン」(execution token)(*note
-     Execution token::)によって表されます。
-   • その コンパイル時コード(compilation semantics)は、 テキスト・インタ
-     プリタがコンパイル時(compile状態)に、 どのように動作するかを記述し
-     ます。 ワードのコンパイル時コードは、 その「コンパイル・トークン」
-     (*note Compilation token::)によって表されます。
+   • その インタプリタ機能(interpretation semantics)は、 テキスト・イン
+     タプリタがインタプリタ状態でどのように動作するかを記述します。 ワー
+     ドのインタプリタ機能は、 その「実行トークン」(execution
+     token)(*note Execution token::)によって表されます。
+   • その コンパイル機能(compilation semantics)は、 テキスト・インタプリ
+     タがコンパイル状態でどのように動作するかを記述します。 ワードのコン
+     パイル機能は、 その「コンパイル・トークン」(*note Compilation
+     token::)によって表されます。
 
 数値は常に決まった方法で処理されます:
 
    • その数値が解釈(interpret)される場合、 その振る舞いは、 その数値をス
      タックにプッシュすることです。
    • その数値がコンパイルされる場合、 実行時にその数値をプッシュするコー
-     ドが現在の定義に追加されます。 (言い換えれば、 数値のコンパイル時コ
-     ードは、 コンパイルされる定義の実行時まで、 その数値の実行時コード
-     の実行を延期します。)
+     ドが現在の定義に追加されます。 (言い換えれば、 数値のコンパイル機能
+     (compilation semantics)は、 コンパイルされる定義の実行時まで、 その
+     数値のインタプリタ機能(interpretation semantics)の実行を延期します
+     。)
 
-   ワードは常にこのように通常の振る舞いをするとは限りませんが、 ほとんど
-のワードには実行時とコンパイル時のデフォルトの振る舞い(default
-semantics)があり、 以下のように振る舞うことを意味します。
+   ワードは常にこのような通常の振る舞いをするとは限りませんが、 ほとんど
+のワードにはデフォルトの機能(default semantics)があり、 以下のように振る
+舞うことを意味します:
 
-   • ワードの実行時コード(compilation semantics)は、 何かしら役に立つこ
-     とを行うことです。
-   • ワードのコンパイル時コード(compilation semantics)は、 それの実行時
-     コード(interpretation semantics)を現在の定義に追加します(よって、 そ
-     れは実行時に何かしら役に立つことを行います)。
+   • ワードのインタプリタ機能(“interpretation semantics”)は、 何かしら役
+     に立つことを行うことです。
+   • ワードのコンパイル機能(compilation semantics)は、 そのワードのイン
+     タプリタ機能(interpretation semantics)を現在の定義に追加します(よっ
+     て、 それは実行時に何かしら役に立つことを行います)。
 
-   特定のワードの実際の、 実行時とコンパイル時の振る舞いは、 ワードの定
-義時に ‘immediate’ や ‘compile-only’ というワードを使用することで制御で
-きます。 これらのワードは、 最後に定義されたワードの名前ディクショナリ・
-エントリにフラグを設定します。 これらのフラグは、 名前ディクショナリでワ
-ードが見つかったときにテキスト・インタプリタによって取得されます。
+   特定のワードの実際の振る舞いは、 ワードの定義時に ‘immediate’ や
+‘compile-only’ というワードを使用することで制御できます。 これらのワード
+は、 最後に定義されたワードの名前ディクショナリ・エントリにフラグを設定
+します。 これらのフラグは、 名前ディクショナリでワードが見つかったときに
+テキスト・インタプリタによって取得されます。
 
-   “immediate” としてマークされたワードは、 その実行時コード
-(interpretation semantics)と同じコンパイル時コード(compilation
-semantics)を持ちます。 つまり、 以下のように振る舞います:
+   “immediate” としてマークされたワードは、 そのインタプリタ機能
+(interpretation semantics)と同じコンパイル機能(compilation semantics)を
+持ちます。 つまり、 以下のように振る舞います:
 
-   • ワードの実行時コード(compilation semantics)は、 何かしら役に立つこ
-     とを行うことです。
-   • このワードのコンパイル時コード(compilation semantics)は、 何かしら
-     役に立つことを行うことです(実際には実行時コードと同一のことを行うこ
-     とです)。 つまり、 コンパイル時に実行(実行時コードと同一のコードを
-     実行)を行います。
+   • ワードのインタプリタ機能(“interpretation semantics”)は、 何かしら役
+     に立つことを行うことです。
+   • このワードのコンパイル機能(compilation semantics)は、 何かしら役に
+     立つことを行うことです(実際にはインタプリタ機能と同一のことを行うこ
+     とです)。 つまり、 このワードのコンパイル機能はコンパイル中に実行さ
+     れます。
 
    ワードを “compile-only” としてマークすると、 解釈状態(interpretation
 state)でこのワードを検出したときにテキスト・インタプリタが警告を生成する
@@ -3882,22 +3886,22 @@ state)で正しく振る舞わないワードに ‘compile-only’ を適用す
 ェッチし)、 それをスタックに残します。 したがって、 ‘show-state’ の振る
 舞いは、 ‘state’ の現在の値を表す数値を出力することです。
 
-   ‘word1’ を実行すると、 システムが解釈中(interpreting)であることを示す
-数値 0 が出力されます。 テキスト・インタプリタが ‘word1’ の定義をコンパ
-イルしたときに、 コンパイル時コードが現在の定義に実行時コードを追加する
-‘show-state’ に遭遇しました。 ‘word1’ を実行すると、 ‘show-state’ の実行
-時コードが実行されます。 ‘word1’ (つまり ‘show-state’) が実行される時点
-で、システムは解釈中(interpreting)です。
+   ‘word1’ を実行すると、 システムがインタプリタ状態であることを示す数値
+0 が出力されます。 テキスト・インタプリタが ‘word1’ の定義をコンパイルし
+たときに、 コンパイル機能が現在の定義に実行時コードを追加する
+‘show-state’ に遭遇しました。 ‘word1’ を実行すると、 ‘show-state’ のイン
+タプリタ機能(interpretation semantics)が実行されます。 ‘word1’ (つまり
+‘show-state’) が実行される時点で、 システムはインタプリタ状態です。
 
    ‘word2’ の定義を入力した後に <RET> を押すと、 数値 -1 が出力され、 そ
 の後に ‘ ok’ が表示されるはずです。 テキスト・インタプリタが ‘word2’ の
 定義をコンパイルすると、 即実行ワードである ‘show-state-now’ が検出され
-たため、 そのコンパイル時コードは実行時コードを実行します。 これは直ちに
-に実行されます(テキスト・インタプリタが次の文字グループ(この例では ‘;’)の
-処理に移る前に)。 これを実行すると、 ‘word2’ の定義途中の ‘state’ の値が
-表示されます。 -1 を出力するので、 システムがその時点でコンパイル時であ
-ることがわかります。 もし あなたが ‘word2’ を「実行」しても何も行いませ
-ん。
+たため、 そのコンパイル機能(compilation semantics)はインタプリタ機能
+(interpretation semantics)を実行します。 これは直ちにに実行されます(テキ
+スト・インタプリタが次の文字グループ(この例では ‘;’)の処理に移る前に)。
+これを実行すると、 ‘word2’ の定義途中の ‘state’ の値が表示されます。 -1
+を出力するので、 システムがその時点でコンパイル状態であることがわかりま
+す。 もし あなたが ‘word2’ を「実行」しても何も行いません。
 
    即実行ワードの話題を離れる前に、 前のセクションの ‘greet’ の定義にお
 ける ‘."’ の振る舞いについて検討してみましょう。 このワードは構文解析ワ
@@ -3980,14 +3984,15 @@ File: gforth.info,  Node: Review - elements of a Forth system,  Next: Where to g
      果、 後置記法が使用されます。
    • 以前に定義されたワードを使用するために、 テキスト・インタプリタは「
      名前ディクショナリ」でそのワードを探します。
-   • ワードは実行時コード(interpretation semantics)とコンパイル時コード
-     (compilation semantics)を持っています。
+   • ワードはインタプリタ機能(“interpretation semantics”)とコンパイル機
+     能(“compilation semantics”)を持っています。
    • テキスト・インタプリタは、 ‘state’ の値を使用して、 探し出したワー
-     ドの「実行時コード」(interpretation semantics)を使用するかコンパイ
-     ル時コード(compilation semantics)を使用するかを選択します。
-   • ワードの実行時コード(interpretation semantics)とコンパイル時コード
+     ドのインタプリタ機能(interpretation semantics)を使用するかコンパイ
+     ル機能(compilation semantics)を使用するかを選択します。
+   • ワードのインタプリタ機能(interpretation semantics)とコンパイル機能
      (compilation semantics)の関係は、 そのワードが定義された方法(たとえ
-     ば、 それが「即実行ワード」であるかどうか)によって異なります。
+     ば、 それが「即実行ワード」(“immediate” word)であるかどうか)によっ
+     て異なります。
    • Forth 定義は、 Forth で実装(「高レベル定義」と呼ばれます)、 または
      、 その他のいくつかの方法(通常は低レベル言語で、 「低レベル定義」、
      「コード定義」、「プリミティブ」と呼ばれる事もある)で実装できます。
@@ -4248,12 +4253,13 @@ STACK EFFECT
      タック項目の名前は、 項目の型や機能を説明します。 型の説明について
      は、 下記を参照してください。
 
-     すべてのワードには、 コンパイル時のスタック効果と実行時のスタック効
-     果という 2 つのスタック効果があります。 ほとんどのワードのコンパイ
-     ル時のスタック効果は – です。 ワードのコンパイル時のスタック効果が
-     この標準の振る舞いから逸脱している場合、 またはワードがコンパイル時
-     に他の通常でない振る舞いを行う場合、 両方のスタック効果が表示されま
-     す。 それ以外の場合、 実行時のスタック効果のみが表示されます。
+     すべてのワードには、 コンパイル・モードのスタック効果とインタプリタ
+     ・モードのスタック効果という 2 つのスタック効果があります。 ほとん
+     どのワードのコンパイル・モードのスタック効果は – です。 ワードのコ
+     ンパイル・モードのスタック効果がこの標準の振る舞いから逸脱している
+     場合、 またはワードがコンパイル・モードに他の通常でない振る舞いを行
+     う場合、 両方のスタック効果が表示されます。 それ以外の場合、 インタ
+     プリタ・モードのスタック効果のみが表示されます。
 
      また、 コード・テンプレートまたはサンプルでは、​​ その時点でのスタ
      ックの状態表示するコメントが括弧内にある場合があることにも注意して
@@ -5024,7 +5030,9 @@ File: gforth.info,  Node: Floating Point,  Prev: Numeric comparison,  Up: Arithm
 題(およびその回避方法)について知りたい場合は、 ‘David Goldberg, What
 Every Computer Scientist Should Know About Floating-Point Arithmetic
 (https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html), ACM
-Computing Surveys 23(1):5−48, March 1991’ から始めると良いでしょう。
+Computing Surveys 23(1):5−48, March 1991’ から始めると良いでしょう(訳注:
+<https://docs.oracle.com/cd/E19957-01/806-4847/ncg_goldberg.html> これが
+合ってるかどうか不明。一部文字化けあり2024/06現在)。
 
    整数と浮動小数点の間の変換:
 
@@ -5511,7 +5519,8 @@ information)を提供します。 ただし、 通常では、 これは ‘,’
 
 ‘mem,’ ( addr u –  ) gforth-0.6 “mem,”
 
-   doc-save-mem-dict
+   ‘save-mem-dict’ ( addr1 u – addr2 u ) \ 訳注:文字列をhereからのディク
+ショナリに書き込み、その(ディクショナリ上の)文字列を返します
 
    メモリ・アクセスはアライメントする必要があります(*note Address
 arithmetic::)。 したがって、 メモリ割り当てもアライメントされるべきです
@@ -6051,32 +6060,32 @@ File: gforth.info,  Node: Characters,  Next: String representations,  Prev: Stri
 6.8.1 Characters
 ----------------
 
-Forth supports chars (aka bytes), used by words such as ‘c@’; these can
-be used to represent an ASCII character.
+Forth は、 ‘c@’ などのワードで使用される char (別名バイト)をサポートしま
+す。 これらは ASCII 文字を表すために使用できます。
 
-   Forth also supports extended characters, which may be represented by
-a sequence of several bytes (i.e., several chars).  A common character
-encoding is the UTF-8 representation of Unicode.
+   Forth は、 複数のバイト(つまり、 複数の char)のシーケンスで表現できる
+拡張文字(extended characters)もサポートしています。 一般的な文字エンコー
+ディングは、 ユニコードの UTF-8 表現です。
 
-   In general, most code does not have to worry about extended
-characters: In the string representation it does not matter whether a
-byte is a part of an extended character, or it is a character by itself,
-and words that consume chars (like ‘emit’) also work when the extended
-character is transferred as a sequence of chars.  Forth still provides
-words for dealing with extended characters (*note Xchars and Unicode::).
+   一般に、 ほとんどのプログラム・コードは拡張文字(extended characters)に
+ついて心配する必要はありません。 連なり(string)表現では、 当該バイトが拡
+張文字の一部であるか、 それ自体が1つの文字であるかは問題ではありません。
+拡張文字が char のシーケンスとして転送される場合、 (‘emit’ のような)
+char を消費するワードも機能します。 Forth は未だ、 拡張文字を処理するた
+めのワード群を提供しています(*note Xchars and Unicode::)。
 
-   In Unicode terms, chars are code units, whereas extended characters
-are code points.  Note that an Unicode abstract character can consist of
-a sequence of code points, but Forth (like other programming languages)
-has no data type for individual abstract characters; of course, they can
-be represented as strings.
+   ユニコード用語では、 char コード・ユニット、 拡張文字は コード・ポイ
+ント です。 Unicode 抽象文字(abstract character) はコード・ポイントのシ
+ーケンスとしで構成されますが、 (他のプログラミング言語と同様、 ) Forth に
+は抽象文字個々のデータ型はないことに注意してください。 もちろん、 これら
+は連なり(string)として表すことができます。
 
-   You can use the usual integer words on chars and Xchars on the stack,
-but Gforth also has some words for dealing with chars on the stack:
+   スタック上の char および Xchar には通常の整数ワードを使用できますが、
+Gforth にはスタック上の char を処理するためのワードもいくつかあります:
 
 ‘toupper’ ( c1 – c2 ) gforth-0.2 “toupper”
-   If c1 is a lower-case ASCII character, c2 is the equivalent
-upper-case character, otherwise c2 is c1.
+   c1 が小文字の ASCII 文字である場合、 c2 は同等の大文字です。 それ以外
+の場合、 c2 と c1 は同じです。
 
 
 File: gforth.info,  Node: String representations,  Next: String and character literals,  Prev: Characters,  Up: Strings and Characters
@@ -6084,25 +6093,26 @@ File: gforth.info,  Node: String representations,  Next: String and character li
 6.8.2 String representations
 ----------------------------
 
-Forth commonly represents strings as cell pair c-addr u on the stack; u
-is the length of the string in bytes (aka chars), and c-addr is the
-address of the first byte of the string.  Note that a code point may be
-represented by a sequence of several chars in the string (and a Unicode
-“abstract character” may consist of several code points).  *Note String
-words::.
+Forth は通常、 文字列(strings)をスタック上のセルのペア c-addr u として表
+します。 u はバイト単位の文字列の長さ(別名 文字数)、 c-addr は文字列の最
+初のバイトのアドレスです。 コード・ポイントは、 文字列内の複数の文字
+(char)のシーケンスによって表される場合があることに注意してください(また
+、 ユニコード の「抽象文字」(abstract character)は複数のコード・ポイント
+で構成される場合があります)。 *Note String words::
 
-   Another string representation is used with the string library of
-words containing ‘$’.  It represents the string on the stack through the
-address of a cell-sized string handle, which can be located in, e.g., a
-variable.  *Note $tring words::.
+   もう一つの文字列表現が、 ‘$’ を含む文字列ライブラリ・ワード群で使用さ
+れます。 それらは、 変数などに配置できるセルサイズの文字列ハンドル
+(cell-sized string handle)のアドレスを通じてスタック上の文字列を表します
+。 *Note $tring words::
 
-   A legacy string representation are “counted strings”, represented on
-the stack by c-addr.  The char addressed by c-addr contains a
-character-count, n, of the string and the string occupies the subsequent
-n char addresses in memory.  Counted strings are limited to 255 bytes in
-length.  While counted strings may look attractive due to needing only
-one stack item, due to their limitations we recommend avoiding them,
-especially as input parameters of words.  *Note Counted string words::.
+   旧来からの文字列表現は「カウンタ付き文字列」(counted strings)で、 ス
+タック上では c-addr と表現されます。 c-addr によって指定される char には
+、 文字列の文字数 n が含まれており、 その文字列はメモリ内の後続の n char
+アドレスを占有します。 カウントされる文字列の長さは 255 バイトに制限され
+ます。 カウンタ付き文字列は、 必要なスタック項目が 1 つだけであるため魅
+力的に見えるかもしれませんが、 この制限があるため、 特にワードの入力パラ
+メータとしては使用しないことをお勧めします。 *Note Counted string
+words::
 
 
 File: gforth.info,  Node: String and character literals,  Next: String words,  Prev: String representations,  Up: Strings and Characters
@@ -6110,78 +6120,81 @@ File: gforth.info,  Node: String and character literals,  Next: String words,  P
 6.8.3 String and Character literals
 -----------------------------------
 
-The nicest way to write a string literal is to write it as ‘"STRING"’.
-You can use the same \-escapes inside as for ‘s\"’.  However, this way
-is non-standard, so you may want to use one of the following words for
-improved portability:
+文字列リテラル(string literal)を記述する至高の方法は、 ‘"STRING"’ と記述
+することです。 ‘s\"’ の場合と同じく、 バックスラッシュによるエスケープ
+(\-escapes)を使用できます。 ただし、 この方法は標準ではないため
+(non-standard)、 移植性を高めるためには以下のいずれかのワードを使用する
+ことをお勧めします:
 
 ‘s\"’ ( compilation ’ccc"’ – ; run-time – c-addr u  ) core-ext,file-ext “s-backslash-quote”
-   Like ‘S"’, but translates C-like \-escape-sequences, as follows: ‘\a’
-BEL (alert), ‘\b’ BS, ‘\e’ ESC (not in C99), ‘\f’ FF, ‘\n’ newline, ‘\r’
-CR, ‘\t’ HT, ‘\v’ VT, ‘\"’ ", ‘\\’ \, ‘\’[0-7]{1,3} octal numerical
-character value (non-standard), ‘\x’[0-9a-f]{0,2} hex numerical
-character value (standard only with two digits), ‘\u’[0-9a-f]{4} for
-unicode codepoints (auto-merges surrogate pairs), ‘\U’[0-9a-f]{8} for
-extended unicode code points; a ‘\’ before any other character is
-reserved.
-Note that ‘\x’XX produces raw bytes, while ‘\u’XXXX and ‘\U’XXXXXXXX
-produce code points for the current encoding.  E.g., if we use UTF-8
-encoding and want to encode ä (code point U+00E4), you can write the
-letter ä itself, or write ‘\xc3\xa4’ (the UTF-8 bytes for this code
-point), ‘\u00e4’, or ‘\U000000e4’.
-Note that, unlike in C, ‘\n’ produces the preferred newline sequence for
-the host OS, which may consist of several chars.  I.e., ‘"\n"’ is
-equivalent to ‘newline’.
+   これは ‘s"’ と似ていますが、 C言語のようなバックスラッシュ・エスケー
+プ・シーケンス(\-escape-sequences)を次のように変換します: ‘\a’ BEL (ビー
+プ音)、 ‘\b’ BS 、 ‘\e’ ESC (not in C99)、 ‘\f’ FF 、 ‘\n’ 改行
+(newline)、 ‘\r’ CR 、 ‘\t’ HT 、‘\v’ VT 、‘\"’ " 、 ‘\\’ \ 、
+‘\’[0-7]{1,3} 8進数(非標準)、 ‘\x’[0-9a-f]{0,2} 16進指定char値(標準は2桁
+のみ)、 ‘\u’[0-9a-f]{4} ユニコード・コードポイント(サロゲート・ペア自動
+マージ;auto-merges surrogate pairs)、 ‘\U’[0-9a-f]{8} 拡張ユニコード・コ
+ード・ポイント。 ‘\’ は他の文字よりも前に予約されています。
+注意: ‘\x’XX は生のバイトを生成することに注意してください。 一方、
+‘\u’XXXX と ‘\U’XXXXXXXX は、 現在のエンコーディングのコード・ポイントを
+生成します。 たとえば、 UTF-8 エンコーディングを使用し、 ä (コード・ポイ
+ント U+00E4)をエンコードしたい場合は、 次のように指定できます: 文字 ä 自
+体を記述するか、 ‘\xc3\xa4’ (このコード・ポイントの UTF-8 バイト) または
+‘\u00e4’ または ‘\U000000e4’ を記述します。
+注意: C言語とは異なり、 ‘\n’ はホストOS に適した改行シーケンスを生成しま
+す。 これは複数の文字で構成される場合があります。 つまり、 ‘"\n"’ は
+‘newline’ と同等です。
 
 ‘S"’ ( compilation ’ccc"’ – ; run-time – c-addr u  ) core,file “s-quote”
-   Compilation: Parse a string ccc delimited by a ‘"’ (double quote).
-At run-time, return the length, u, and the start address, c-addr of the
-string.  Interpretation: parse the string as before, and return c-addr,
-u.  Gforth ‘allocate’s the string.  The resulting memory leak is usually
-not a problem; the exception is if you create strings containing ‘S"’
-and ‘evaluate’ them; then the leak is not bounded by the size of the
-interpreted files and you may want to ‘free’ the strings.  Forth-2012
-only guarantees two buffers of 80 characters each, so in standard
-programs you should assume that the string lives only until the
-next-but-one ‘s"’.
+   コンパイル・モードコードは ‘"’ (二重引用符) を区切り文字として文字列
+ccc をパースします。 その実行時コードは、 長さ u と 文字列の開始アドレス
+c-addr を返します。 インタプリタ時: 同様に文字列をパースし、 c-addr と u
+返します。 Gforth では文字列(string)を ‘allocate’ します。 結果として生
+じるメモリ・リークは通常は問題ではありません。 例外は、 ‘S"’ を含む文字
+列を作成し、 その文字列を ‘evaluate’ する場合です。 その場合、 リークは
+インタプリトされたファイルのサイズに制限されないため、 文字列を ‘free’ す
+ることもできます。 Forth-2012 では、それぞれ 80 文字のバッファが 2 つし
+か保証されないため、 標準プログラムでは、 文字列は 2 つ前の ‘s"’ までし
+か存続していない想定する必要があります。
 
-   Likewise, You can get the code xc of a character C with ‘'C'’.  This
-way has been standardized since Forth-2012.  An older way to get it is
-to use one of the following words:
+   同様に、 ‘'C'’ を使用すると、 文字 C のコード xc を取得できます。 こ
+の方法は Forth-2012 から標準化されています。 これを取得する古い方法は、
+以下のいずれかのワードを使用することです:
 
 ‘char’ ( ’<spaces>ccc’ – c  ) core,xchar-ext “char”
-   Skip leading spaces.  Parse the string ccc and return c, the display
-code representing the first character of ccc.
+   先頭のスペース達をスキップします。 文字列 ccc をパースし、 ccc の最初
+の文字の文字コード c を返します(訳注:ASCII以外の文字コードもいけるっぽい
+(LANG=ja_JP.UTF-8) char あ hex .  decimal 3042 ok)
 
 ‘[char]’ ( compilation ’<spaces>ccc’ – ; run-time – c  ) core,xchar-ext “bracket-char”
-   Compilation: skip leading spaces.  Parse the string ccc.  Run-time:
-return c, the display code representing the first character of ccc.
-Interpretation semantics for this word are undefined.
+   コンパイル状態: 先頭のスペース達をスキップします。 文字列 ccc をパー
+スします。 その実行時コード: ccc の最初の文字の文字コード c を返します。
+このワードのインタプリタ機能(interpretation semantics)は未定義です。
 
-   You usually use ‘char’ outside and ‘[char]’ inside colon definitions,
-or you just use ‘'C'’.
+   通常は、 コロン定義の外側で ‘char’ 使用するか、 コロン定義の内側で
+‘[char]’ を使用するか、 単にその両方で ‘'C'’ を使用するかです。
 
-   Note that, e.g.,
+   注意: 例えば、
 
      "C" type
 
-is (slightly) more efficient than
+の方が下記よりも(わずかに)効率的です
 
      'C' xemit
 
-because the latter converts the code point into a sequence of bytes and
-individually ‘emit’s them.  Similarly, dealing with general characters
-is usually more efficient when representing them as strings rather than
-code points.
+なぜなら、 後者はコード・ポイントをバイトのシーケンスに変換し、 それらを
+個別に ‘emit’ するからです。 同様に、 一般的な文字達を扱う場合は、 通常
+、 コード・ポイントではなく文字列として表す方が効率的です。
 
-   There are the following words for producing commonly-used characters
-and strings that cannot be produced with ‘S"’ or ‘'C'’:
+   ‘S"’ または ‘'C'’ では生成できない、 一般的に使用される文字や文字列を
+生成するために以下のワード群があります:
 
 ‘newline’ ( – c-addr u ) gforth-0.5 “newline”
-   String containing the newline sequence of the host OS
+   ホストOSの改行シーケンスを含む文字列(訳注: 文字コードを返す訳では無い
+ことに注意。 文字列の内容は LF だったり CRLF だったりする)
 
 ‘bl’ ( – c-char  ) core “b-l”
-   c-char is the character value for a space.
+   c-char は空白(space)の文字コード値です。
 
 ‘#tab’ ( – c  ) gforth-0.2 “number-tab”
 
@@ -6200,7 +6213,7 @@ and strings that cannot be produced with ‘S"’ or ‘'C'’:
 ‘#esc’ ( – c  ) gforth-0.5 “number-esc”
 
 ‘#eof’ ( – c  ) gforth-0.7 “number-e-o-f”
-   actually EOT (ASCII code 4 aka ‘^D’)
+   実際には EOT (ASCII コード 4 別名 ‘^D’)
 
 
 File: gforth.info,  Node: String words,  Next: $tring words,  Prev: String and character literals,  Up: Strings and Characters
@@ -6208,262 +6221,108 @@ File: gforth.info,  Node: String words,  Next: $tring words,  Prev: String and c
 6.8.4 String words
 ------------------
 
-Words that are used for memory blocks are also useful for strings, so
-for words that move, copy, compare and search strings, see *note Memory
-Blocks::.  For words that display characters and strings, see *note
-Displaying characters and strings::.
+メモリ・ブロックに使用されるワードは文字列(string)にも役立つため、 文字
+列(string)の移動やコピーや比較や検索を行うワードについては、 *note
+Memory Blocks:: を参照してください。 文字や文字列を表示するワードについ
+ては、 see *note Displaying characters and strings:: を参照してください
+。
 
-   The following words work on previously existing strings:
+   以下のワード群は、 既に存在している文字列(strings)に対して機能します:
 
 ‘str=’ ( c-addr1 u1 c-addr2 u2 – f  ) gforth-0.6 “str-equals”
 
 ‘str<’ ( c-addr1 u1 c-addr2 u2 – f  ) gforth-0.6 “str-less-than”
 
 ‘string-prefix?’ ( c-addr1 u1 c-addr2 u2 – f  ) gforth-0.6 “string-prefix-question”
-   Is C-ADDR2 U2 a prefix of C-ADDR1 U1?
+   C-ADDR2 U2 が C-ADDR1 U1 の接頭辞部分と合致しますか？
 
 ‘string-suffix?’ ( c-addr1 u1 c-addr2 u2 – f  ) gforth-1.0 “string-suffix-question”
-   Is C-ADDR2 U2 a suffix of C-ADDR1 U1?
+   C-ADDR2 U2 が C-ADDR1 U1 の接尾辞部分と合致しますか？
 
 ‘search’ ( c-addr1 u1 c-addr2 u2 – c-addr3 u3 flag  ) string “search”
-   Search the string specified by c-addr1, u1 for the string specified
-by c-addr2, u2.  If flag is true: match was found at c-addr3 with u3
-characters remaining.  If flag is false: no match was found; c-addr3, u3
-are equal to c-addr1, u1.
+   c-addr1, u1 で指定の文字列内で c-addr2, u2 で指定の字列を検索します。
+flag が true の場合: c-addr1 からの見つかった位置を c-addr3 に、
+c-addr2, u2 で指定の字列と同じ文字列を含んだそれ以降の文字数を u3 に返し
+ます(訳注: s" GNU gforth マニュアル" s" ニュア" search drop ."  [" type
+."  ]"  [ニュアル] ok )。 flag が false の場合: 一致するものが見つかりま
+せんでした。 c-addr3, u3 は c-addr1, u1 と同じです。
 
 ‘scan’ ( c-addr1 u1 c – c-addr2 u2 ) gforth-0.2 “scan”
-   Skip all characters not equal to c.  The result starts with c or is
-empty.  ‘Scan’ is limited to single-byte (ASCII) characters.  Use
-‘search’ to search for multi-byte characters.
+   c に等しくないすべての文字をスキップします。 結果は c で始まる
+(c-addr2 u2)か空(empty; c-addr2+u2, 0)です。 ‘Scan’ はシングルバイト文字
+(ASCII)に限定されます。 マルチバイト文字を検索するには、 ‘search’ を使用
+します。
 
 ‘scan-back’ ( c-addr u1 c – c-addr u2  ) gforth-0.7 “scan-back”
 
 ‘skip’ ( c-addr1 u1 c – c-addr2 u2 ) gforth-0.2 “skip”
-   Skip all characters equal to c.  The result starts with the first
-non-c character, or it is empty.  ‘Scan’ is limited to single-byte
-(ASCII) characters.
+   c に等しいすべての文字をスキップします。 結果は最初の非 C 文字で始ま
+る(アドレス、長さ)か、 空(文字列の長さ0)になります。 ‘skip’ はシングルバ
+イト文字(ASCII)に限定されます。
 
 ‘-trailing’ ( c_addr u1 – c_addr u2  ) string “dash-trailing”
-   Adjust the string specified by c-addr, u1 to remove all trailing
-spaces.  u2 is the length of the modified string.
+   c-addr, u1 で指定された文字列の末尾をトリムします(末尾のスペースをす
+べて削除します)。 u2 は変更後の文字列の長さです。
 
 ‘/string’ ( c-addr1 u1 n – c-addr2 u2 ) string “slash-string”
-   Adjust the string specified by c-addr1, u1 to remove n characters
-from the start of the string.
+   c-addr1, u1 で指定された文字列の先頭から n 文字削除します(訳注:
+c-addr1+n, u1-n するだけっぽい…)。
 
 ‘safe/string’ ( c-addr1 u1 n – c-addr2 u2 ) gforth-1.0 “safe-slash-string”
-   Adjust the string specified by c-addr1, u1 to remove n characters
-from the start of the string.  Unlike ‘/string’, ‘safe/string’ removes
-at least 0 and at most u1 characters.
+   c-addr1, u1 で指定された文字列の先頭から n 文字を削除します。
+‘/string’ とは異なり、‘safe/string’ は少なくとも 0 文字、 最大で u1 文字
+を削除します。
 
 ‘cstring>sstring’ ( c-addr – c-addr u  ) gforth-0.2 “cstring-to-sstring”
-   C-addr is the start address of a zero-terminated string, u is its
-length.
+   C-addr はゼロで終わる文字列の開始アドレス、 u はその長さです。
 
-   The following words compare case-insensitively for ASCII characters,
-but case-sensitively for non-ASCII characters (like in lookup in
-wordlists).
+   以下のワード群は、 ASCII 文字については大文字と小文字を区別せずに比較
+しますが、 (ワードリストの検索のような)非 ASCII 文字については大文字と小
+文字を区別します 。
 
 ‘capscompare’ ( c-addr1 u1 c-addr2 u2 – n ) gforth-0.7 “capscompare”
-   Compare two strings lexicographically, based on the values of the
-bytes in the strings, but comparing ASCII characters case-insensitively,
-and non-ASCII characters case-sensitively and without locale-specific
-collation order.  If they are equal, n is 0; if the first string is
-smaller, n is -1; if the first string is larger, n is 1.
+   文字列内のバイトの値に基づいて、 2 つの文字列(string)を辞書順
+(lexicographically)に比較します。ただし、 ASCII 文字は大文字と小文字を区
+別せずに比較し、 非 ASCII 文字は大文字と小文字を区別して、 かつ、 ロケー
+ル固有の照合順序を使用せずに比較します。 それらが等しい場合 n は 0 です
+。 最初の文字列が小さい場合 n は -1 です。 最初の文字列が大きい場合n は
+1 です。
 
 ‘capsstring-prefix?’ ( c-addr1 u1 c-addr2 u2 – f  ) gforth-1.0 “capsstring-prefix?”
-   Like ‘string-prefix?’, but case-insensitive for ASCII characters: Is
-C-ADDR2 U2 a prefix of C-ADDR1 U1?
+   ‘string-prefix?’ と似ていますが、 ASCII 文字の大文字と小文字は区別さ
+れません: C-ADDR2 U2 は C-ADDR1 U1 の接頭辞か？
 
 ‘capssearch’ ( c-addr1 u1 c-addr2 u2 – c-addr3 u3 flag  ) gforth-1.0 “capssearch”
-   Like ‘search’, but case-insensitive for ASCII characters: Search for
-c-addr2 u2 in c-addr1 u1; flag is true if found.
+   ‘search’ と似ていますが、 ASCII 文字の大文字と小文字は区別されません:
+c-addr1 u1 内で c-addr2 u2 を検索します。 見つかった場合 flag は true に
+なります。
 
-   The following words create or extend strings on the heap:
+   以下のワード群は、 ヒープに文字列(string)を作成、 またはヒープの文字
+列(string)を拡張します。
 
 ‘s+’ ( c-addr1 u1 c-addr2 u2 – c-addr u  ) gforth-0.7 “s-plus”
-   c-addr u is a newly ‘allocate’d string that contains the
-concatenation of c-addr1 u1 (first) and c-addr2 u2 (second).
+   c-addr u は、c-addr1 u1 (最初) と c-addr2 u2 (2 番目) を連結したのを
+含む、 新しく ‘allocate’ された文字列です。
 
 ‘append’ ( c-addr1 u1 c-addr2 u2 – c-addr u  ) gforth-0.7 “append”
-   C-addr u is the concatenation of c-addr1 u1 (first) and c-addr2 u2
-(second).  c-addr1 u1 is an ‘allocate’d string, and ‘append’ ‘resize’s
-it (possibly moving it to a new address) to accomodate u characters.
+   C-addr u は、c-addr1 u1 (最初) と c-addr2 u2 (2 番目) を連結したもの
+です。 c-addr1 u1 は ‘allocate’ された文字列であり、 u 文字の領域に対応
+するために(可能なら)サイズ変更(resize)して c-addr2 u2 の文字列を追加
+(append)します(サイズ変更できなくて、新しいアドレスに移動する可能性があ
+ります)。
 
 ‘>string-execute’ ( ... xt – ... addr u  ) gforth-1.0 “>string-execute”
-   execute xt while the standard output (‘type’, ‘emit’, and everything
-that uses them) is redirected to a string.  The resulting string is addr
-u, which is in ‘allocate’d memory; it is the responsibility of the
-caller of ‘>string-execute’ to ‘free’ this string.
+   xt を実行(execute)すると、 標準出力 (‘type’ や ‘emit’ やそれらを使用
+するすべてのもの) を文字列にリダイレクトします。 結果の文字列は addr u で
+、これは割り当てられた(‘allocate’)メモリ内にあります。 この文字列を開放
+(‘free’)するのは、 ‘>string-execute’ の呼び出し元の責任です。
 
-   One could define ‘s+’ using ‘>string-execute’, as follows:
+   以下のようにして、‘>string-execute’ を使用して ‘s+’ を定義できます:
 
    : s+ ( c-addr1 u1 c-addr2 u2 – c-addr u ) [: 2swap type type ;]
 >string-execute ;
 
-   For concatenating just two strings ‘>string-execute’ is inefficient,
-but for concatenating many strings ‘>string-execute’ can be more
-efficient.
-
-
-File: gforth.info,  Node: $tring words,  Next: Counted string words,  Prev: String words,  Up: Strings and Characters
-
-6.8.5 $tring words
-------------------
-
-The following string library stores strings in ordinary cell-size
-variables (string handles).  These handles contain a pointer to a
-cell-counted string allocated from the heap.  The string library
-originates from bigFORTH.
-
-   Because there is only one permanent reference to the contents (the
-one in the handle), the string can be relocated or deleted without
-worrying about dangling references; this requires that the programmer
-uses references produced by, e.g., ‘$@’ only for temporary purposes,
-i.e., these references are not passed out, e.g., as return values or
-stored in global memory, and words that may change the handle are not
-called while these references exist.
-
-   This library is complemented by the cell-pair representation: You use
-the $tring words for variable strings which are cumbersome with the
-c-addr u representation.  You use the cell-pair representation for
-processing (e.g., inspecting) strings while they do not change.
-
-‘$!’ ( addr1 u $addr –  ) gforth-0.7 “string-store”
-   stores a newly allocated string buffer at an address, frees the
-previous buffer if necessary.
-
-‘$@’ ( $addr – addr2 u  ) gforth-0.7 “string-fetch”
-   returns the stored string.
-
-‘$@len’ ( $addr – u  ) gforth-0.7 “string-fetch-len”
-   returns the length of the stored string.
-
-‘$!len’ ( u $addr –  ) gforth-0.7 “string-store-len”
-   changes the length of the stored string.  Therefore we must change
-the memory area and adjust address and count cell as well.
-
-‘$+!len’ ( u $addr – addr  ) gforth-1.0 “string-plus-store-len”
-   make room for u bytes at the end of the memory area referenced by
-$addr; addr is the address of the first of these bytes.
-
-‘$del’ ( addr off u –  ) gforth-0.7 “string-del”
-   deletes U bytes from a string with offset OFF.
-
-‘$ins’ ( addr1 u $addr off –  ) gforth-0.7 “string-ins”
-   inserts a string at offset OFF.
-
-‘$+!’ ( addr1 u $addr –  ) gforth-0.7 “string-plus-store”
-   appends a string to another.
-
-‘c$+!’ ( char $addr –  ) gforth-1.0 “c-string-plus-store”
-   append a character to a string.
-
-‘$free’ ( $addr –  ) gforth-1.0 “string-free”
-   free the string pointed to by addr, and set addr to 0
-
-‘$init’ ( $addr –  ) gforth-1.0 “string-init”
-   store an empty string there, regardless of what was in before
-
-‘$split’ ( addr u char – addr1 u1 addr2 u2  ) gforth-0.7 “string-split”
-   divides a string into two, with one char as separator (e.g.  ’?’ for
-arguments in an HTML query)
-
-‘$iter’ ( .. $addr char xt – ..  ) gforth-0.7 “string-iter”
-   takes a string apart piece for piece, also with a character as
-separator.  For each part a passed token will be called.  With this you
-can take apart arguments – separated with ’&’ – at ease.
-
-‘$over’ ( addr u $addr off –  ) gforth-1.0 “string-over”
-   overwrite string at offset off with addr u
-
-‘$exec’ ( xt addr –  ) gforth-1.0 “string-exec”
-   execute xt while the standard output (TYPE, EMIT, and everything that
-uses them) is appended to the string variable addr.
-
-‘$tmp’ ( xt – addr u  ) gforth-1.0 “string-t-m-p”
-   generate a temporary string from the output of a word
-
-‘$.’ ( addr –  ) gforth-1.0 “string-dot”
-   print a string, shortcut
-
-‘$slurp’ ( fid addr –  ) gforth-1.0 “string-slurp”
-   Read the file fid until the end (without closing it) and put the read
-data into the string at addr.
-
-‘$slurp-file’ ( c-addr u addr –  ) gforth-1.0 “string-slurp-file”
-   Put all the data in the file named c-addr u into the string at addr.
-
-‘$+slurp’ ( fid addr –  ) gforth-1.0 “string-plus-slurp”
-   Read the file fid until the end (without closing it) and append the
-read data to the string at addr.
-
-‘$+slurp-file’ ( c-addr u addr –  ) gforth-1.0 “string-plus+slurp-file”
-   Append all the data in the file named c-addr u to the string at addr.
-
-‘$[]’ ( u $[]addr – addr’  ) gforth-1.0 “string-array”
-   Addr’ is the address of the uth element of the string array $[]addr.
-The array is resized if needed.
-
-‘$[]!’ ( c-addr u n $[]addr –  ) gforth-1.0 “string-array-store”
-   Store string c-addr y into the string array $[]addr at index n.  The
-array is resized if needed.
-
-‘$[]+!’ ( c-addr u n $[]addr –  ) gforth-1.0 “string-array-plus-store”
-   Append the string c-addr u to the string at index n.  The array is
-resized if needed.  Don’t confuse this with ‘$+[]!’.
-
-‘$+[]!’ ( c-addr u $[]addr –  ) gforth-1.0 “string-append-array”
-   Store the string c-addr u as the new last element of string array
-$[]addr.  The array is resized if needed.
-
-‘$[]@’ ( n $[]addr – addr u  ) gforth-1.0 “string-array-fetch”
-   fetch a string from array index n — return the zero string if empty,
-and don’t accidentally grow the array.
-
-‘$[]#’ ( addr – len  ) gforth-1.0 “string-array-num”
-   return the number of elements in an array
-
-‘$[]map’ ( addr xt –  ) gforth-1.0 “string-array-map”
-   execute XT for all elements of the string array ADDR.  xt is ( ADDR U
-– ), getting one string at a time
-
-‘$[]slurp’ ( fid addr –  ) gforth-1.0 “string-array-slurp”
-   slurp a file FID line by line into a string array ADDR
-
-‘$[]slurp-file’ ( addr u $addr –  ) gforth-1.0 “string-array-slurp-file”
-   slurp a named file ADDR U line by line into a string array $ADDR
-
-‘$[].’ ( addr –  ) gforth-1.0 “string-array-dot”
-   print all array entries
-
-‘$[]free’ ( addr –  ) gforth-1.0 “string-array-free”
-   addr contains the address of a cell-counted string that contains the
-addresses of a number of cell-counted strings; $[]free frees these
-strings, frees the array, and sets addr to 0
-
-‘$save’ ( $addr –  ) gforth-1.0 “string-save”
-   push string to dictionary for savesys
-
-‘$[]save’ ( addr –  ) gforth-1.0 “string-array-save”
-   push string array to dictionary for savesys
-
-‘$boot’ ( $addr –  ) gforth-1.0 “string-boot”
-   take string from dictionary to allocated memory.  clean dictionary
-afterwards.
-
-‘$[]boot’ ( addr –  ) gforth-1.0 “string-array-boot”
-   take string array from dictionary to allocated memory
-
-‘$saved’ ( addr –  ) gforth-1.0 “string-saved”
-   mark an address as booted/saved
-
-‘$[]saved’ ( addr –  ) gforth-1.0 “string-array-saved”
-   mark an address as booted/saved
-
-‘$Variable’ ( –  ) gforth-1.0 “string-variable”
-   A string variable which is preserved across savesystem
-
-‘$[]Variable’ ( –  ) gforth-1.0 “string-array-variable”
-   A string variable which is preserved across savesystem
+   2 つの文字列だけを連結する場合、 ‘>string-execute’ は効率的ではありま
+せんが、 多くの文字列を連結する場合は、 ‘>string-execute’ の方が効率的で
+す。
 

@@ -70,39 +70,32 @@ Next: <a href="Alpha-Assembler.html" accesskey="n" rel="next">Alpha Assembler</a
 <hr>
 <span id="AMD64-_0028x86_005f64_0029-Assembler"></span><h4 class="subsection">6.29.5 AMD64 (x86_64) Assembler</h4>
 
-<p>The AMD64 assembler is a slightly modified version of the 386 assembler, and
-as such shares most of the syntax.  Two new prefixes, <code>.q</code> and
-<code>.qa</code>, are provided to select 64-bit operand and address sizes
-respectively.  64-bit sizes are the default, so normally you only have to
-use the other prefixes.  Also there are additional register operands
-<code>R8</code>-<code>R15</code>.
+<p>AMD64 アセンブラは、 386 アセンブラをわずかに変更したバージョンであり、 構文の大部分を共有しています。  2 つの新しい接頭辞
+<code>.q</code> と <code>.qa</code> が、 それぞれ 64 ビット・サイズのオペランドやアドレスを選択するために提供されています。  64
+ビット・サイズがデフォルトであるため、 通常は他のプレフィックスを使用するだけで済みます。  また、 追加のレジスタ・オペランド <code>R8</code> ～
+<code>R15</code> もあります。
 </p>
-<p>The registers lack the &rsquo;e&rsquo; or &rsquo;r&rsquo; prefix; even in 64 bit mode, <code>rax</code> is
-called <code>ax</code>.  Additional register operands are available to refer to
-the lowest-significant byte of all registers: <code>R8L</code>-<code>R15L</code>,
-<code>SPL</code>, <code>BPL</code>, <code>SIL</code>, <code>DIL</code>.
+<p>レジスタには「e」または「r」プレフィックスがありません。 64 ビット・モードでも、 <code>rax</code> は <code>ax</code> と呼ばれます。
+すべてのレジスタで最下位バイトを参照するために追加のレジスタ・オペランドを使用できます: <code>R8L</code> 〜 -<code>R15L</code>,
+<code>SPL</code>,  <code>BPL</code>,  <code>SIL</code>,  <code>DIL</code>
 </p>
-<p>The Linux-AMD64 calling convention is to pass the first 6 integer parameters
-in rdi, rsi, rdx, rcx, r8 and r9 and to return the result in rax and rdx; to
-pass the first 8 FP parameters in xmm0&ndash;xmm7 and to return FP results in
-xmm0&ndash;xmm1.  So <code>abi-code</code> words get the data stack pointer in
-<code>di</code> and the address of the FP stack pointer in <code>si</code>, and return
-the data stack pointer in <code>ax</code>.  The other caller-saved registers are:
-r10, r11, xmm8-xmm15.  This calling convention reportedly is also used in
-other non-Microsoft OSs.
+<p>Linux-AMD64 の呼び出し規則では、 最初の 6 つの整数パラメーターを rdi, rsi, rdx, rcx, r8, r9 で渡し、 結果を
+rax , rdx で返します。 最初の 8 つの FP パラメータを xmm0 ～ xmm7 に渡し、 FP 結果を xmm0 ～ xmm1
+に返します。  したがって、<code>abi-code</code> ワードは、 <code>di</code> でデータ・スタック・ポインタを取得し、 <code>si</code>
+で FP スタック・ポインタのアドレスを取得し、 リターン時は <code>ax</code> にデータ・スタック ポインタをセットします。
+呼び出し元が保存する他のレジスタは、 r10, r11 xmm8 ～ xmm15 です。 この呼び出し規約は、 Microsoft 以外の他の OS
+でも使用されていると報告されています。
 </p>
-<p>Windows x64 passes the first four integer parameters in rcx, rdx, r8 and r9
-and return the integer result in rax.  The other caller-saved registers are
-r10 and r11.
+<p>Windows x64 は、 最初の 4 つの整数パラメータを rcx, rdx, r8, r9 に渡し、 整数の結果を rax に返します。
+他の、呼び出し元保存レジスタは r10 と r11 です。
 </p>
-<p>On the Linux platform, according to
-<a href="https://uclibc.org/docs/psABI-x86_64.pdf">https://uclibc.org/docs/psABI-x86_64.pdf</a> page 21 the registers AX CX
-DX SI DI R8 R9 R10 R11 are available for scratch.
+<p><a href="https://uclibc.org/docs/psABI-x86_64.pdf">https://uclibc.org/docs/psABI-x86_64.pdf</a> の  21ページによると、 Linux
+プラットフォームでは、 レジスタ AX CX DX SI DI R8 R9 R10 R11 が自由(scratch)に使えます。
 </p>
-<p>The addressing modes for the AMD64 are:
+<p>AMD64 のアドレッシング・モードは以下のとおりです:
 </p>
 <div class="example">
-<pre class="example">\ running word A produces a memory error as the registers are not initialised ;-)
+<pre class="example">\ ご注意: ワード A を実行すると、レジスタが初期化されていないため、 メモリ・エラーが発生します ;-)
 ABI-CODE A  ( -- )
     500        #               AX  MOV     \ immediate
         DX              AX  MOV     \ register
@@ -118,14 +111,14 @@ ABI-CODE A  ( -- )
 END-CODE
 </pre></div>
 
-<p>Here are a few examples of an AMD64 <code>abi-code</code> words:
+<p>AMD64 <code>abi-code</code> ワードの例をいくつか示します:
 </p>
 <div class="example">
 <pre class="example">abi-code my+  ( n1 n2 -- n3 )
 \ SP passed in di, returned in ax,  address of FP passed in si
-8 di d) ax lea        \ compute new sp in result reg
-di )    dx mov        \ get old tos
-dx    ax ) add        \ add to new tos
+8 di d) ax lea        \ compute new sp in result reg ( 結果として di+8 → ax つまり drop と同じ)
+di )    dx mov        \ get old tos ( [di] つまり n2   → dx )
+dx    ax ) add        \ add to new tos ( dx + [ax] → [ax]
 ret
 end-code
 </pre></div>

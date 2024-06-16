@@ -27,6 +27,325 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Closures,  Prev: Locals implementation,  Up: Gforth locals
+
+6.22.1.6 Closures
+.................
+
+Gforth also provides basic closures.  A closure is a combination of a
+quotation (*note Quotations::) and locals.  Gforth’s closures have
+locals which are filled with values at the closure’s run-time, producing
+a trampoline xt.  When executing that trampoline xt, the closure’s code
+is executed, with access to the closure’s locals on the locals stack.
+Modifications of the closure’s locals aren’t persistent, i.e.  when the
+closure ‘EXIT’s, the modified values are lost.
+
+‘[{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-closure”
+   starts a closure.  Closures first declare the locals frame they are
+going to use, and then the code that is executed with those locals.
+Closures end like quotations with a ‘;]’.  The locals declaration ends
+depending where the closure’s locals are created.  At run-time, the
+closure is created as trampolin xt, and fills the values of its local
+frame from the stack.  At execution time of the xt, the local frame is
+copied to the locals stack, and used inside the closure’s code.  After
+return, those values are removed from the locals stack, and not updated
+in the closure itself.
+
+‘:}l’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “close-brace-locals”
+   end a closure’s locals declaration.  The closure will be allocated on
+the local’s stack.
+
+‘:}d’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-d”
+   end a closure’s locals declaration.  The closure will be allocated in
+the dictionary.
+
+‘:}h’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-h”
+   end a closure’s locals declaration.  The closure will be allocated on
+the heap.
+
+‘:}h1’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-h”
+   end a closure’s locals declaration.  The closure will be allocated on
+the heap.
+
+‘:}xt’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-x-t”
+   end a closure’s locals declaration.  The closure will be allocated by
+the xt on the stack, so the closure’s run-time stack effect is ‘(
+xt-alloc -- xt-closure )’.
+
+‘>addr’ ( xt – addr  ) gforth-experimental “to-addr”
+   convert the xt of a closure on the heap to the ADDR with can be
+passed to ‘free’ to get rid of the closure
+
+‘free-closure’ ( xt –  ) gforth-internal “free-closure”
+   free a heap-allocated closure
+
+     : foo [{: a f: b d: c xt: d :}d a . b f. c d. d ;] ;
+     5 3.3e #1234. ' cr foo execute
+
+   ‘foo’ creates a closure in the dictionary with a single cell, a
+floating point, a double, and an xt, and prints the first three values
+before executing the xt on invocation.
+
+   This allows to implement Donald Knuth’s “Man or boy test” proposed in
+1964 to test Algol compilers.
+
+     : A {: w^ k x1 x2 x3 xt: x4 xt: x5 | w^ B :} recursive
+         k  0<= IF  x4 x5 f+  ELSE
+             B k x1 x2 x3 action-of x4 [{: B k x1 x2 x3 x4 :}L
+                 -1 k +!
+                 k  B  x1 x2 x3 x4 A ;] dup B !
+             execute  THEN ;
+     : man-or-boy? ( n -- ) [: 1e ;] [: -1e ;] 2dup swap [: 0e ;] A f. ;
+
+   Sometimes, closures need a permanent storage to be modified; it is
+even possible that more than one closure shares that permanent storage.
+In the example above, local variables of the outer procedure are used
+for this, but in some cases, the closure lives longer than the outer
+procedure; especially closures allocated in the dictionary or on the
+heap are designed to outlive their parent procedure.
+
+   For those, we have home locations, which are allocated like closures,
+but their code is directly executed at creation and should provide us
+with the addresses of the home locations.
+
+     : bar ( a b c -- aaddr baddr caddr hl-addr )
+         <{: w^ a w^ b w^ c :}h a b c ;> ;
+
+   This example creates a home location with three cells on the heap,
+and returns the addresses of the three locations and the address of the
+home location.  This address can be used to ‘free’ the home location
+when it is no longer needed.
+
+‘<{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-homelocation”
+   starts a home location
+
+‘;>’ ( –  ) gforth-experimental “end-homelocation”
+   end using a home location
+
+
+File: gforth.info,  Node: Standard Forth locals,  Prev: Gforth locals,  Up: Locals
+
+6.22.2 Standard Forth locals
+----------------------------
+
+The Forth-2012 standard defines a syntax for locals is restricted
+version of Gforth’s locals:
+
+   • Locals can only be cell-sized values (no type specifiers are
+     allowed).
+   • Locals can be defined only outside control structures.
+   • Only one locals definition per definition is allowed.
+   • Locals can interfere with explicit usage of the return stack.  For
+     the exact (and long) rules, see the standard.  If you don’t use
+     return stack accessing words in a definition using locals, you will
+     be all right.  The purpose of this rule is to make locals
+     implementation on the return stack easier.
+   • The whole locals definition must be in one line.
+
+   The Standard Forth locals wordset itself consists of two words: ‘{:’
+and:
+
+‘(local)’ ( addr u –  ) local “paren-local-paren”
+
+   The ANS Forth locals extension wordset defines a syntax using
+‘locals|’, but it is so awful that we strongly recommend not to use it.
+We have implemented this syntax to make porting to Gforth easy, but do
+not document it here.  The problem with this syntax is that the locals
+are defined in an order reversed with respect to the standard stack
+comment notation, making programs harder to read, and easier to misread
+and miswrite.  The only merit of this syntax is that it is easy to
+implement using the ANS Forth locals wordset, but then, so is the ‘{:’
+syntax.
+
+
+File: gforth.info,  Node: Structures,  Next: Object-oriented Forth,  Prev: Locals,  Up: Words
+
+6.23 Structures
+===============
+
+This section presents the structure package that comes with Gforth.  A
+version of the package implemented in Standard Forth is available in
+‘compat/struct.fs’.  This package was inspired by a posting on
+comp.lang.forth in 1989 (unfortunately I don’t remember, by whom;
+possibly John Hayes).  A version of this section has been published in
+M. Anton Ertl, Yet Another Forth Structures Package
+(https://www.complang.tuwien.ac.at/forth/objects/structs.html), Forth
+Dimensions 19(3), pages 13–16.  Marcel Hendrix provided helpful
+comments.
+
+* Menu:
+
+* Why explicit structure support?::
+* Structure Usage::
+* Structure Naming Convention::
+* Structure Implementation::
+* Structure Glossary::
+* Forth200x Structures::
+
+
+File: gforth.info,  Node: Why explicit structure support?,  Next: Structure Usage,  Prev: Structures,  Up: Structures
+
+6.23.1 Why explicit structure support?
+--------------------------------------
+
+If we want to use a structure containing several fields, we could simply
+reserve memory for it, and access the fields using address arithmetic
+(*note Address arithmetic::).  As an example, consider a structure with
+the following fields
+
+‘a’
+     is a float
+‘b’
+     is a cell
+‘c’
+     is a float
+
+   Given the (float-aligned) base address of the structure we get the
+address of the field
+
+‘a’
+     without doing anything further.
+‘b’
+     with ‘float+’
+‘c’
+     with ‘float+ cell+ faligned’
+
+   It is easy to see that this can become quite tiring.
+
+   Moreover, it is not very readable, because seeing a ‘cell+’ tells us
+neither which kind of structure is accessed nor what field is accessed;
+we have to somehow infer the kind of structure, and then look up in the
+documentation, which field of that structure corresponds to that offset.
+
+   Finally, this kind of address arithmetic also causes maintenance
+troubles: If you add or delete a field somewhere in the middle of the
+structure, you have to find and change all computations for the fields
+afterwards.
+
+   So, instead of using ‘cell+’ and friends directly, how about storing
+the offsets in constants:
+
+     0 constant a-offset
+     0 float+ constant b-offset
+     0 float+ cell+ faligned c-offset
+
+   Now we can get the address of field ‘x’ with ‘x-offset +’.  This is
+much better in all respects.  Of course, you still have to change all
+later offset definitions if you add a field.  You can fix this by
+declaring the offsets in the following way:
+
+     0 constant a-offset
+     a-offset float+ constant b-offset
+     b-offset cell+ faligned constant c-offset
+
+   Since we always use the offsets with ‘+’, we could use a defining
+word ‘cfield’ that includes the ‘+’ in the action of the defined word:
+
+     : cfield ( n "name" -- )
+         create ,
+     does> ( name execution: addr1 -- addr2 )
+         @ + ;
+
+     0 cfield a
+     0 a float+ cfield b
+     0 b cell+ faligned cfield c
+
+   Instead of ‘x-offset +’, we now simply write ‘x’.
+
+   The structure field words now can be used quite nicely.  However,
+their definition is still a bit cumbersome: We have to repeat the name,
+the information about size and alignment is distributed before and after
+the field definitions etc.  The structure package presented here
+addresses these problems.
+
+
+File: gforth.info,  Node: Structure Usage,  Next: Structure Naming Convention,  Prev: Why explicit structure support?,  Up: Structures
+
+6.23.2 Structure Usage
+----------------------
+
+You can define a structure for a (data-less) linked list with:
+     struct
+         cell% field list-next
+     end-struct list%
+
+   With the address of the list node on the stack, you can compute the
+address of the field that contains the address of the next node with
+‘list-next’.  E.g., you can determine the length of a list with:
+
+     : list-length ( list -- n )
+     \ "list" is a pointer to the first element of a linked list
+     \ "n" is the length of the list
+         0 BEGIN ( list1 n1 )
+             over
+         WHILE ( list1 n1 )
+             1+ swap list-next @ swap
+         REPEAT
+         nip ;
+
+   You can reserve memory for a list node in the dictionary with ‘list%
+%allot’, which leaves the address of the list node on the stack.  For
+the equivalent allocation on the heap you can use ‘list% %alloc’ (or,
+for an ‘allocate’-like stack effect (i.e., with ior), use ‘list%
+%allocate’).  You can get the the size of a list node with ‘list% %size’
+and its alignment with ‘list% %alignment’.
+
+   Note that in Standard Forth the body of a ‘create’d word is ‘aligned’
+but not necessarily ‘faligned’; therefore, if you do a:
+
+     create _name_ foo% %allot drop
+
+then the memory alloted for ‘foo%’ is guaranteed to start at the body of
+‘_name_’ only if ‘foo%’ contains only character, cell and double fields.
+Therefore, if your structure contains floats, better use
+
+     foo% %allot constant _name_
+
+   You can include a structure ‘foo%’ as a field of another structure,
+like this:
+     struct
+     ...
+         foo% field ...
+     ...
+     end-struct ...
+
+   Instead of starting with an empty structure, you can extend an
+existing structure.  E.g., a plain linked list without data, as defined
+above, is hardly useful; You can extend it to a linked list of integers,
+like this:(1)
+
+     list%
+         cell% field intlist-int
+     end-struct intlist%
+
+   ‘intlist%’ is a structure with two fields: ‘list-next’ and
+‘intlist-int’.
+
+   You can specify an array type containing _n_ elements of type ‘foo%’
+like this:
+
+     foo% _n_ *
+
+   You can use this array type in any place where you can use a normal
+type, e.g., when defining a ‘field’, or with ‘%allot’.
+
+   The first field is at the base address of a structure and the word
+for this field (e.g., ‘list-next’) actually does not change the address
+on the stack.  You may be tempted to leave it away in the interest of
+run-time and space efficiency.  This is not necessary, because the
+structure package optimizes this case: If you compile a first-field
+words, no code is generated.  So, in the interest of readability and
+maintainability you should include the word for the field when accessing
+the field.
+
+   ---------- Footnotes ----------
+
+   (1) This feature is also known as _extended records_.  It is the main
+innovation in the Oberon language; in other words, adding this feature
+to Modula-2 led Wirth to create a new language, write a new compiler
+etc.  Adding this feature to Forth just required a few lines of code.
+
+
 File: gforth.info,  Node: Structure Naming Convention,  Next: Structure Implementation,  Prev: Structure Usage,  Up: Structures
 
 6.23.3 Structure Naming Convention
@@ -2831,18 +3150,19 @@ File: gforth.info,  Node: C Interface,  Next: Assembler and Code Words,  Prev: M
 6.28 C Interface
 ================
 
-Gforth’s C interface works by compiling a wrapper library that contains
-C functions which take parameters from the Forth stacks and calls the C
-functions.  This wrapper library is compiled by the C compiler.
-Compilation results are cached, so that Gforth only needs to rerun the C
-compilation if the wrapper library has to change.  This build process is
-automatic, and done at the end of a interface declaration.  Gforth uses
-libtool and GCC for that process.
+Gforth の C言語インターフェイスは、 Forth スタックからパラメータを取得し
+てC言語の関数を呼び出す、 C言語の関数を含むラッパー・ライブラリをコンパ
+イルすることによって機能します。 このラッパー・ライブラリはC言語のコンパ
+イラによってコンパイルされます。 コンパイル結果はキャッシュされるため、
+ラッパー・ライブラリを変更する必要がある場合、 Gforth は C言語のコンパイ
+ルを再実行するだけで済みます。 このビルド処理は自動(automatic)で、 イン
+ターフェイス宣言の最後に行われます。 Gforth は、 この処理に libtool と
+GCC を使用します。
 
-   The C interface is now mostly complete, callbacks have been added,
-but for structs, we use Forth2012 structs, which don’t have independent
-scopes.  The offsets of those structs are extracted from header files
-with a SWIG plugin.
+   C言語のインターフェイスはほぼ完成した状態で、 コールバックも既に追加
+されていますが、 構造体については、 独立したスコープを持たない Forth2012
+構造体を使用します。 これらの構造体のオフセットは、 SWIG プラグインを使
+用してヘッダー・ファイルから抽出されます。
 
 * Menu:
 
@@ -2863,26 +3183,27 @@ File: gforth.info,  Node: Calling C Functions,  Next: Declaring C Functions,  Pr
 6.28.1 Calling C functions
 --------------------------
 
-Once a C function is declared (see *note Declaring C Functions::), you
-can call it as follows: You push the arguments on the stack(s), and then
-call the word for the C function.  The arguments have to be pushed in
-the same order as the arguments appear in the C documentation (i.e., the
-first argument is deepest on the stack).  Integer and pointer arguments
-have to be pushed on the data stack, floating-point arguments on the FP
-stack; these arguments are consumed by the called C function.
+C言語の関数関数が宣言されたら(*note Declaring C Functions:: 参照)、 次の
+ように呼び出すことができます: あなたは引数達をスタックにプッシュしてから
+、 C言語関数のワードを呼び出します。 引数は、 C言語のドキュメントに記載
+されているのと同じ順序でプッシュする必要があります(つまり、 最初の引数が
+スタックの最も深いところにあります)。 整数およびポインタ引数はデータ・ス
+タックにプッシュする必要があり、 浮動小数点引数は FP スタックにプッシュ
+する必要があります。 これらの引数は、 呼び出されたC言語の関数によって消
+費されます。
 
-   On returning from the C function, the return value, if any, resides
-on the appropriate stack: an integer return value is pushed on the data
-stack, an FP return value on the FP stack, and a void return value
-results in not pushing anything.  Note that most C functions have a
-return value, even if that is often not used in C; in Forth, you have to
-‘drop’ this return value explicitly if you do not use it.
+   C言語の関数から戻るとき、 戻り値がある場合、 その戻り値は適切なスタッ
+クに置きます。 整数の戻り値はデータ・スタックにプッシュされ、 FP の戻り
+値は FP スタックにプッシュされ、 void 戻り値の場合は何もプッシュされませ
+ん。 C言語ではあまり使用されない場合でも、 ほとんどのC言語の関数には戻り
+値があることに注意してください。 Forth では、 この戻り値を使用しない場合
+は、 明示的に捨てる(‘drop’)必要があります。
 
-   The C interface automatically converts between the C type and the
-Forth type as necessary, on a best-effort basis (in some cases, there
-may be some loss).
+   C言語インターフェイスは、 必要に応じて、 ベストエフォートで C言語の型
+と Forth の型の間で自動的に変換します(場合によっては、 ある程度の損失が
+発生する可能性があります)。
 
-   As an example, consider the POSIX function ‘lseek()’:
+   例として、 POSIX 関数 ‘lseek()’ について考察してみましょう:
 
      off_t lseek(int fd, off_t offset, int whence);
 
@@ -3346,52 +3667,51 @@ File: gforth.info,  Node: Assembler Definitions,  Next: Common Assembler,  Prev:
 6.29.1 Definitions in assembly language
 ---------------------------------------
 
-Gforth provides ways to implement words in assembly language (using
-‘abi-code’...‘end-code’), and also ways to define defining words with
-arbitrary run-time behaviour (like ‘does>’), where (unlike ‘does>’) the
-behaviour is not defined in Forth, but in assembly language (with
-‘;code’).
+Gforth は、 アセンブリ言語でワードを実装する方法(‘abi-code’ … ‘end-code’
+を使用)と、 任意の実行時の振る舞いを持つ定義ワードを定義する方法(‘does>’
+のようなの)を提供し、 ここで、 この実行時の振る舞いを(‘does>’ とは異なり
+、) Forth ではなくアセンブリ言語で定義します。
 
-   However, the machine-independent nature of Gforth poses a few
-problems: First of all, Gforth runs on several architectures, so it can
-provide no standard assembler.  It does provide assemblers for several
-of the architectures it runs on, though.  Moreover, you can use a
-system-independent assembler in Gforth, or compile machine code directly
-with ‘,’ and ‘c,’.
+   ただし、 Gforth のマシン非依存の性質により、 いくつかの問題が生じます
+。 まず、 Gforth は複数のアーキテクチャ上で実行されるため、 標準のアセン
+ブラを提供できません。 ただし、 実行されるいくつかのアーキテクチャ用のア
+センブラは提供されています。 さらに言えば、 Gforth ではシステムに依存し
+ないアセンブラを使用したり、 ‘,’ や ‘c,’ を使用してマシン・コードを直接
+コンパイルしたりできます。
 
-   Another problem is that the virtual machine registers of Gforth (the
-stack pointers and the virtual machine instruction pointer) depend on
-the installation and engine.  Also, which registers are free to use also
-depend on the installation and engine.  So any code written to run in
-the context of the Gforth virtual machine is essentially limited to the
-installation and engine it was developed for (it may run elsewhere, but
-you cannot rely on that).
+   もう 1 つの問題は、Gforth の仮想マシンのレジスタ(スタック・ポインタと
+仮想マシン命令ポインタ)がインストールとエンジンに依存することです。 また
+、 どのレジスタを自由に使用できるかは、 インストールとエンジンによって異
+なります。 したがって、 Gforth 仮想マシンのコンテキストで実行するように
+記述されたコードは、 基本的に、 そのコードが開発されたインストールとエン
+ジンに限定されます(たまたま、 他の場所でも動く可能性はありますが、 それ
+に頼ることはできません)。
 
-   Fortunately, you can define ‘abi-code’ words in Gforth that are
-portable to any Gforth running on a platform with the same calling
-convention (ABI); typically this means portability to the same
-architecture/OS combination, sometimes crossing OS boundaries).
+   幸いなことに、 同じ呼び出し規約(ABI)を持つプラットフォーム上で実行さ
+れている Gforth に移植可能(portable)な ‘abi-code’ ワードを Gforth で定義
+できます。 通常、 これは同じアーキテクチャと OS の組み合わせへの移植性を
+意味し、 しばしば OS の境を越えることができます。
 
 ‘assembler’ ( –  ) tools-ext “assembler”
-   A vocubulary: Replaces the wordlist at the top of the search order
-with the assembler wordlist.
+   ボキャブラリ: 検索順序の先頭(the top of the search order)のワードリス
+トを assembler ワードリストに置き換えます。
 
 ‘init-asm’ ( –  ) gforth-0.2 “init-asm”
-   Pushes the assembler wordlist on the search order.
+   assembler ワードリストを検索順序(the search order)にプッシュします。
 
 ‘abi-code’ ( "name" – colon-sys  ) gforth-1.0 “abi-code”
-   Start a native code definition that is called using the platform’s
-ABI conventions corresponding to the C-prototype:
+   C言語プロトタイプ(C-prototype)に対応するプラットフォームの ABI 規則を
+使用して呼び出されるネイティブ・コード定義を開始します:
      Cell *function(Cell *sp, Float **fpp);
-   The FP stack pointer is passed in by providing a reference to a
-memory location containing the FP stack pointer and is passed out by
-storing the changed FP stack pointer there (if necessary).
+   ここで、 FP スタック・ポインタは、 FP スタック・ポインタを含むメモリ
+位置への参照を提供することによって渡され、 (必要な場合)変更された FP ス
+タック・ポインタをそこに格納することによって渡されます。
 
 ‘;abi-code’ ( –  ) gforth-1.0 “semicolon-abi-code”
-   Ends the colon definition, but at run-time also changes the last
-defined word X (which must be a ‘create’d word) to call the following
-native code using the platform’s ABI convention corresponding to the C
-prototype:
+   コロン定義を終了しますが、 実行時に最後に定義されたワード X (‘create’
+で作られたワードである必要があります)の変更もして、 C言語プロトタイプに
+対応するプラットフォームの ABI 規約を使用してネイティブ・コードを呼び出
+します:
       Cell *function(Cell *sp, Float **fpp, Address body);
    The FP stack pointer is passed in by providing a reference to a
 memory location containing the FP stack pointer and is passed out by
@@ -3689,38 +4009,38 @@ File: gforth.info,  Node: AMD64 Assembler,  Next: Alpha Assembler,  Prev: 386 As
 6.29.5 AMD64 (x86_64) Assembler
 -------------------------------
 
-The AMD64 assembler is a slightly modified version of the 386 assembler,
-and as such shares most of the syntax.  Two new prefixes, ‘.q’ and
-‘.qa’, are provided to select 64-bit operand and address sizes
-respectively.  64-bit sizes are the default, so normally you only have
-to use the other prefixes.  Also there are additional register operands
-‘R8’-‘R15’.
+AMD64 アセンブラは、 386 アセンブラをわずかに変更したバージョンであり、
+構文の大部分を共有しています。 2 つの新しい接頭辞 ‘.q’ と ‘.qa’ が、 そ
+れぞれ 64 ビット・サイズのオペランドやアドレスを選択するために提供されて
+います。 64 ビット・サイズがデフォルトであるため、 通常は他のプレフィッ
+クスを使用するだけで済みます。 また、 追加のレジスタ・オペランド ‘R8’ ～
+‘R15’ もあります。
 
-   The registers lack the ’e’ or ’r’ prefix; even in 64 bit mode, ‘rax’
-is called ‘ax’.  Additional register operands are available to refer to
-the lowest-significant byte of all registers: ‘R8L’-‘R15L’, ‘SPL’,
-‘BPL’, ‘SIL’, ‘DIL’.
+   レジスタには「e」または「r」プレフィックスがありません。 64 ビット・
+モードでも、 ‘rax’ は ‘ax’ と呼ばれます。 すべてのレジスタで最下位バイト
+を参照するために追加のレジスタ・オペランドを使用できます: ‘R8L’ 〜
+-‘R15L’, ‘SPL’, ‘BPL’, ‘SIL’, ‘DIL’
 
-   The Linux-AMD64 calling convention is to pass the first 6 integer
-parameters in rdi, rsi, rdx, rcx, r8 and r9 and to return the result in
-rax and rdx; to pass the first 8 FP parameters in xmm0–xmm7 and to
-return FP results in xmm0–xmm1.  So ‘abi-code’ words get the data stack
-pointer in ‘di’ and the address of the FP stack pointer in ‘si’, and
-return the data stack pointer in ‘ax’.  The other caller-saved registers
-are: r10, r11, xmm8-xmm15.  This calling convention reportedly is also
-used in other non-Microsoft OSs.
+   Linux-AMD64 の呼び出し規則では、 最初の 6 つの整数パラメーターを rdi,
+rsi, rdx, rcx, r8, r9 で渡し、 結果を rax , rdx で返します。 最初の 8 つ
+の FP パラメータを xmm0 ～ xmm7 に渡し、 FP 結果を xmm0 ～ xmm1 に返しま
+す。 したがって、‘abi-code’ ワードは、 ‘di’ でデータ・スタック・ポインタ
+を取得し、 ‘si’ で FP スタック・ポインタのアドレスを取得し、 リターン時
+は ‘ax’ にデータ・スタック ポインタをセットします。 呼び出し元が保存する
+他のレジスタは、 r10, r11 xmm8 ～ xmm15 です。 この呼び出し規約は、
+Microsoft 以外の他の OS でも使用されていると報告されています。
 
-   Windows x64 passes the first four integer parameters in rcx, rdx, r8
-and r9 and return the integer result in rax.  The other caller-saved
-registers are r10 and r11.
+   Windows x64 は、 最初の 4 つの整数パラメータを rcx, rdx, r8, r9 に渡
+し、 整数の結果を rax に返します。 他の、呼び出し元保存レジスタは r10 と
+r11 です。
 
-   On the Linux platform, according to
-<https://uclibc.org/docs/psABI-x86_64.pdf> page 21 the registers AX CX
-DX SI DI R8 R9 R10 R11 are available for scratch.
+   <https://uclibc.org/docs/psABI-x86_64.pdf> の 21ページによると、
+Linux プラットフォームでは、 レジスタ AX CX DX SI DI R8 R9 R10 R11 が自
+由(scratch)に使えます。
 
-   The addressing modes for the AMD64 are:
+   AMD64 のアドレッシング・モードは以下のとおりです:
 
-     \ running word A produces a memory error as the registers are not initialised ;-)
+     \ ご注意: ワード A を実行すると、レジスタが初期化されていないため、 メモリ・エラーが発生します ;-)
      ABI-CODE A  ( -- )
          500        #               AX  MOV     \ immediate
              DX              AX  MOV     \ register
@@ -3735,13 +4055,13 @@ DX SI DI R8 R9 R10 R11 are available for scratch.
                                  RET
      END-CODE
 
-   Here are a few examples of an AMD64 ‘abi-code’ words:
+   AMD64 ‘abi-code’ ワードの例をいくつか示します:
 
      abi-code my+  ( n1 n2 -- n3 )
      \ SP passed in di, returned in ax,  address of FP passed in si
-     8 di d) ax lea        \ compute new sp in result reg
-     di )    dx mov        \ get old tos
-     dx    ax ) add        \ add to new tos
+     8 di d) ax lea        \ compute new sp in result reg ( 結果として di+8 → ax つまり drop と同じ)
+     di )    dx mov        \ get old tos ( [di] つまり n2   → dx )
+     dx    ax ) add        \ add to new tos ( dx + [ax] → [ax]
      ret
      end-code
 
@@ -6860,390 +7180,4 @@ want to do that, you have to use ‘gforth-itc’ and execute ‘' , is
 compile,’.  Your program can check if it is running on a hybrid
 direct/indirect threaded engine or a pure indirect threaded engine with
 ‘threading-method’ (*note Threading Words::).
-
-
-File: gforth.info,  Node: Dynamic Superinstructions,  Next: DOES>,  Prev: Direct or Indirect Threaded?,  Up: Threading
-
-15.2.3 Dynamic Superinstructions
---------------------------------
-
-The engines ‘gforth’ and ‘gforth-fast’ use another optimization: Dynamic
-superinstructions with replication.  As an example, consider the
-following colon definition:
-
-     : squared ( n1 -- n2 )
-       dup * ;
-
-   Gforth compiles this into the threaded code sequence
-
-     dup
-     *
-     ;s
-
-   Use ‘simple-see’ (*note Examining compiled code::) to see the
-threaded code of a colon definition.
-
-   In normal direct threaded code there is a code address occupying one
-cell for each of these primitives.  Each code address points to a
-machine code routine, and the interpreter jumps to this machine code in
-order to execute the primitive.  The routines for these three primitives
-are (in ‘gforth-fast’ on the 386):
-
-     Code dup
-     ( $804B950 )  add     esi , # -4  \ $83 $C6 $FC
-     ( $804B953 )  add     ebx , # 4  \ $83 $C3 $4
-     ( $804B956 )  mov     dword ptr 4 [esi] , ecx  \ $89 $4E $4
-     ( $804B959 )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC
-     end-code
-     Code *
-     ( $804ACC4 )  mov     eax , dword ptr 4 [esi]  \ $8B $46 $4
-     ( $804ACC7 )  add     esi , # 4  \ $83 $C6 $4
-     ( $804ACCA )  add     ebx , # 4  \ $83 $C3 $4
-     ( $804ACCD )  imul    ecx , eax  \ $F $AF $C8
-     ( $804ACD0 )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC
-     end-code
-     Code ;s
-     ( $804A693 )  mov     eax , dword ptr [edi]  \ $8B $7
-     ( $804A695 )  add     edi , # 4  \ $83 $C7 $4
-     ( $804A698 )  lea     ebx , dword ptr 4 [eax]  \ $8D $58 $4
-     ( $804A69B )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC
-     end-code
-
-   With dynamic superinstructions and replication the compiler does not
-just lay down the threaded code, but also copies the machine code
-fragments, usually without the jump at the end.
-
-     ( $4057D27D )  add     esi , # -4  \ $83 $C6 $FC
-     ( $4057D280 )  add     ebx , # 4  \ $83 $C3 $4
-     ( $4057D283 )  mov     dword ptr 4 [esi] , ecx  \ $89 $4E $4
-     ( $4057D286 )  mov     eax , dword ptr 4 [esi]  \ $8B $46 $4
-     ( $4057D289 )  add     esi , # 4  \ $83 $C6 $4
-     ( $4057D28C )  add     ebx , # 4  \ $83 $C3 $4
-     ( $4057D28F )  imul    ecx , eax  \ $F $AF $C8
-     ( $4057D292 )  mov     eax , dword ptr [edi]  \ $8B $7
-     ( $4057D294 )  add     edi , # 4  \ $83 $C7 $4
-     ( $4057D297 )  lea     ebx , dword ptr 4 [eax]  \ $8D $58 $4
-     ( $4057D29A )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC
-
-   Only when a threaded-code control-flow change happens (e.g., in
-‘;s’), the jump is appended.  This optimization eliminates many of these
-jumps and makes the rest much more predictable.  The speedup depends on
-the processor and the application; on the Athlon and Pentium III this
-optimization typically produces a speedup by a factor of 2.
-
-   The code addresses in the direct-threaded code are set to point to
-the appropriate points in the copied machine code, in this example like
-this:
-
-     primitive  code address
-        dup       $4057D27D
-        *         $4057D286
-        ;s        $4057D292
-
-   Thus there can be threaded-code jumps to any place in this piece of
-code.  This also simplifies decompilation quite a bit.
-
-   ‘See-code’ (*note Examining compiled code::) shows the threaded code
-intermingled with the native code of dynamic superinstructions.  These
-days some additional optimizations are applied for the
-dynamically-generated native code, so the output of ‘see-code squared’
-on ‘gforth-fast’ on one particular AMD64 installation looks like this:
-
-     $7FB689C678C8 dup    1->2
-     7FB68990C1B2:   mov     r15,r8
-     $7FB689C678D0 *    2->1
-     7FB68990C1B5:   imul    r8,r15
-     $7FB689C678D8 ;s    1->1
-     7FB68990C1B9:   mov     rbx,[r14]
-     7FB68990C1BC:   add     r14,$08
-     7FB68990C1C0:   mov     rax,[rbx]
-     7FB68990C1C3:   jmp     eax
-
-   You can disable this optimization with ‘--no-dynamic’.  You can use
-the copying without eliminating the jumps (i.e., dynamic replication,
-but without superinstructions) with ‘--no-super’; this gives the branch
-prediction benefit alone; the effect on performance depends on the CPU;
-on the Athlon and Pentium III the speedup is a little less than for
-dynamic superinstructions with replication.
-
-   One use of these options is if you want to patch the threaded code.
-With superinstructions, many of the dispatch jumps are eliminated, so
-patching often has no effect.  These options preserve all the dispatch
-jumps.
-
-   On some machines dynamic superinstructions are disabled by default,
-because it is unsafe on these machines.  However, if you feel
-adventurous, you can enable it with ‘--dynamic’.
-
-
-File: gforth.info,  Node: DOES>,  Prev: Dynamic Superinstructions,  Up: Threading
-
-15.2.4 DOES>
-------------
-
-One of the most complex parts of a Forth engine is ‘dodoes’, i.e., the
-chunk of code executed by every word defined by a ‘CREATE’...‘DOES>’
-pair; actually with primitive-centric code, this is only needed if the
-xt of the word is ‘execute’d.  The main problem here is: How to find the
-Forth code to be executed, i.e.  the code after the ‘DOES>’ (the
-‘DOES>’-code)?  There are two solutions:
-
-   In fig-Forth the code field points directly to the ‘dodoes’ and the
-‘DOES>’-code address is stored in the cell after the code address (i.e.
-at ‘CFA cell+’).  It may seem that this solution is illegal in the
-Forth-79 and all later standards, because in fig-Forth this address lies
-in the body (which is illegal in these standards).  However, by making
-the code field larger for all words this solution becomes legal again.
-We use this approach.  Leaving a cell unused in most words is a bit
-wasteful, but on the machines we are targeting this is hardly a problem.
-
-
-File: gforth.info,  Node: Primitives,  Next: Performance,  Prev: Threading,  Up: Engine
-
-15.3 Primitives
-===============
-
-* Menu:
-
-* Automatic Generation::
-* TOS Optimization::
-* Produced code::
-
-
-File: gforth.info,  Node: Automatic Generation,  Next: TOS Optimization,  Prev: Primitives,  Up: Primitives
-
-15.3.1 Automatic Generation
----------------------------
-
-Since the primitives are implemented in a portable language, there is no
-longer any need to minimize the number of primitives.  On the contrary,
-having many primitives has an advantage: speed.  In order to reduce the
-number of errors in primitives and to make programming them easier, we
-provide a tool, the primitive generator (‘prims2x.fs’ aka Vmgen, *note
-Vmgen: (vmgen)Top.), that automatically generates most (and sometimes
-all) of the C code for a primitive from the stack effect notation.  The
-source for a primitive has the following form:
-
-Forth-name  ( stack-effect )        category    [pronounc.]
-[‘""’glossary entry‘""’]
-C code
-[‘:’
-Forth code]
-
-   The items in brackets are optional.  The category and glossary fields
-are there for generating the documentation, the Forth code is there for
-manual implementations on machines without GNU C. E.g., the source for
-the primitive ‘+’ is:
-     +    ( n1 n2 -- n )   core    plus
-     n = n1+n2;
-
-   This looks like a specification, but in fact ‘n = n1+n2’ is C code.
-Our primitive generation tool extracts a lot of information from the
-stack effect notations(1): The number of items popped from and pushed on
-the stack, their type, and by what name they are referred to in the C
-code.  It then generates a C code prelude and postlude for each
-primitive.  The final C code for ‘+’ looks like this:
-
-     I_plus: /* + ( n1 n2 -- n ) */  /* label, stack effect */
-     /*  */                          /* documentation */
-     NAME("+")                       /* debugging output (with -DDEBUG) */
-     {
-     DEF_CA                          /* definition of variable ca (indirect threading) */
-     Cell n1;                        /* definitions of variables */
-     Cell n2;
-     Cell n;
-     NEXT_P0;                        /* NEXT part 0 */
-     n1 = (Cell) sp[1];              /* input */
-     n2 = (Cell) TOS;
-     sp += 1;                        /* stack adjustment */
-     {
-     n = n1+n2;                      /* C code taken from the source */
-     }
-     NEXT_P1;                        /* NEXT part 1 */
-     TOS = (Cell)n;                  /* output */
-     NEXT_P2;                        /* NEXT part 2 */
-     }
-
-   This looks long and inefficient, but the GNU C compiler optimizes
-quite well and produces optimal code for ‘+’ on, e.g., the R3000 and the
-HP RISC machines: Defining the ‘n’s does not produce any code, and using
-them as intermediate storage also adds no cost.
-
-   There are also other optimizations that are not illustrated by this
-example: assignments between simple variables are usually for free (copy
-propagation).  If one of the stack items is not used by the primitive
-(e.g.  in ‘drop’), the compiler eliminates the load from the stack (dead
-code elimination).  On the other hand, there are some things that the
-compiler does not do, therefore they are performed by ‘prims2x.fs’: The
-compiler does not optimize code away that stores a stack item to the
-place where it just came from (e.g., ‘over’).
-
-   While programming a primitive is usually easy, there are a few cases
-where the programmer has to take the actions of the generator into
-account, most notably ‘?dup’, but also words that do not (always) fall
-through to ‘NEXT’.
-
-   For more information
-
-   ---------- Footnotes ----------
-
-   (1) We use a one-stack notation, even though we have separate data
-and floating-point stacks; The separate notation can be generated easily
-from the unified notation.
-
-
-File: gforth.info,  Node: TOS Optimization,  Next: Produced code,  Prev: Automatic Generation,  Up: Primitives
-
-15.3.2 TOS Optimization
------------------------
-
-An important optimization for stack machine emulators, e.g., Forth
-engines, is keeping one or more of the top stack items in registers.  If
-a word has the stack effect in1...inx ‘--’ out1...outy, keeping the top
-n items in registers
-   • is better than keeping n-1 items, if x>=n and y>=n, due to fewer
-     loads from and stores to the stack.
-   • is slower than keeping n-1 items, if x<>y and x<n and y<n, due to
-     additional moves between registers.
-
-   In particular, keeping one item in a register is never a
-disadvantage, if there are enough registers.  Keeping two items in
-registers is a disadvantage for frequent words like ‘?branch’,
-constants, variables, literals and ‘i’.  Therefore our generator only
-produces code that keeps zero or one items in registers.  The generated
-C code covers both cases; the selection between these alternatives is
-made at C-compile time using the switch ‘-DUSE_TOS’.  ‘TOS’ in the C
-code for ‘+’ is just a simple variable name in the one-item case,
-otherwise it is a macro that expands into ‘sp[0]’.  Note that the GNU C
-compiler tries to keep simple variables like ‘TOS’ in registers, and it
-usually succeeds, if there are enough registers.
-
-   The primitive generator performs the TOS optimization for the
-floating-point stack, too (‘-DUSE_FTOS’).  For floating-point operations
-the benefit of this optimization is even larger: floating-point
-operations take quite long on most processors, but can be performed in
-parallel with other operations as long as their results are not used.
-If the FP-TOS is kept in a register, this works.  If it is kept on the
-stack, i.e., in memory, the store into memory has to wait for the result
-of the floating-point operation, lengthening the execution time of the
-primitive considerably.
-
-   The TOS optimization makes the automatic generation of primitives a
-bit more complicated.  Just replacing all occurrences of ‘sp[0]’ by
-‘TOS’ is not sufficient.  There are some special cases to consider:
-   • In the case of ‘dup ( w -- w w )’ the generator must not eliminate
-     the store to the original location of the item on the stack, if the
-     TOS optimization is turned on.
-   • Primitives with stack effects of the form ‘--’ out1...outy must
-     store the TOS to the stack at the start.  Likewise, primitives with
-     the stack effect in1...inx ‘--’ must load the TOS from the stack at
-     the end.  But for the null stack effect ‘--’ no stores or loads
-     should be generated.
-
-
-File: gforth.info,  Node: Produced code,  Prev: TOS Optimization,  Up: Primitives
-
-15.3.3 Produced code
---------------------
-
-To see what assembly code is produced for the primitives on your machine
-with your compiler and your flag settings, type ‘make engine.s’ and look
-at the resulting file ‘engine.s’.  Alternatively, you can also
-disassemble the code of primitives with ‘see’ on some architectures.
-
-
-File: gforth.info,  Node: Performance,  Prev: Primitives,  Up: Engine
-
-15.4 Performance
-================
-
-On RISCs the Gforth engine is very close to optimal; i.e., it is usually
-impossible to write a significantly faster threaded-code engine.
-
-   On register-starved machines like the 386 architecture processors
-improvements are possible, because ‘gcc’ does not utilize the registers
-as well as a human, even with explicit register declarations; e.g.,
-Bernd Beuster wrote a Forth system fragment in assembly language and
-hand-tuned it for the 486; this system is 1.19 times faster on the Sieve
-benchmark on a 486DX2/66 than Gforth compiled with ‘gcc-2.6.3’ with
-‘-DFORCE_REG’.  The situation has improved with gcc-2.95 and
-gforth-0.4.9; now the most important virtual machine registers fit in
-real registers (and we can even afford to use the TOS optimization),
-resulting in a speedup of 1.14 on the sieve over the earlier results.
-And dynamic superinstructions provide another speedup (but only around a
-factor 1.2 on the 486).
-
-   The potential advantage of assembly language implementations is not
-necessarily realized in complete Forth systems: We compared Gforth-0.5.9
-(direct threaded, compiled with ‘gcc-2.95.1’ and ‘-DFORCE_REG’) with
-Win32Forth 1.2093 (newer versions are reportedly much faster), LMI’s NT
-Forth (Beta, May 1994) and Eforth (with and without peephole (aka
-pinhole) optimization of the threaded code); all these systems were
-written in assembly language.  We also compared Gforth with three
-systems written in C: PFE-0.9.14 (compiled with ‘gcc-2.6.3’ with the
-default configuration for Linux: ‘-O2 -fomit-frame-pointer -DUSE_REGS
--DUNROLL_NEXT’), ThisForth Beta (compiled with ‘gcc-2.6.3 -O3
--fomit-frame-pointer’; ThisForth employs peephole optimization of the
-threaded code) and TILE (compiled with ‘make opt’).  We benchmarked
-Gforth, PFE, ThisForth and TILE on a 486DX2/66 under Linux.  Kenneth
-O’Heskin kindly provided the results for Win32Forth and NT Forth on a
-486DX2/66 with similar memory performance under Windows NT. Marcel
-Hendrix ported Eforth to Linux, then extended it to run the benchmarks,
-added the peephole optimizer, ran the benchmarks and reported the
-results.
-
-   We used four small benchmarks: the ubiquitous Sieve; bubble-sorting
-and matrix multiplication come from the Stanford integer benchmarks and
-have been translated into Forth by Martin Fraeman; we used the versions
-included in the TILE Forth package, but with bigger data set sizes; and
-a recursive Fibonacci number computation for benchmarking calling
-performance.  The following table shows the time taken for the
-benchmarks scaled by the time taken by Gforth (in other words, it shows
-the speedup factor that Gforth achieved over the other systems).
-
-     relative       Win32-    NT       eforth       This-
-     time     Gforth Forth Forth eforth  +opt   PFE Forth  TILE
-     sieve      1.00  2.16  1.78   2.16  1.32  2.46  4.96 13.37
-     bubble     1.00  1.93  2.07   2.18  1.29  2.21        5.70
-     matmul     1.00  1.92  1.76   1.90  0.96  2.06        5.32
-     fib        1.00  2.32  2.03   1.86  1.31  2.64  4.55  6.54
-
-   You may be quite surprised by the good performance of Gforth when
-compared with systems written in assembly language.  One important
-reason for the disappointing performance of these other systems is
-probably that they are not written optimally for the 486 (e.g., they use
-the ‘lods’ instruction).  In addition, Win32Forth uses a comfortable,
-but costly method for relocating the Forth image: like ‘cforth’, it
-computes the actual addresses at run time, resulting in two address
-computations per ‘NEXT’ (*note Image File Background::).
-
-   The speedup of Gforth over PFE, ThisForth and TILE can be easily
-explained with the self-imposed restriction of the latter systems to
-standard C, which makes efficient threading impossible (however, the
-measured implementation of PFE uses a GNU C extension: *note Defining
-Global Register Variables: (gcc)Global Reg Vars.).  Moreover, current C
-compilers have a hard time optimizing other aspects of the ThisForth and
-the TILE source.
-
-   The performance of Gforth on 386 architecture processors varies
-widely with the version of ‘gcc’ used.  E.g., ‘gcc-2.5.8’ failed to
-allocate any of the virtual machine registers into real machine
-registers by itself and would not work correctly with explicit register
-declarations, giving a significantly slower engine (on a 486DX2/66
-running the Sieve) than the one measured above.
-
-   Note that there have been several releases of Win32Forth since the
-release presented here, so the results presented above may have little
-predictive value for the performance of Win32Forth today (results for
-the current release on an i486DX2/66 are welcome).
-
-   In ‘Translating Forth to Efficient C
-(https://www.complang.tuwien.ac.at/papers/ertl&maierhofer95.ps.gz)’ by
-M. Anton Ertl and Martin Maierhofer (presented at EuroForth ’95), an
-indirect threaded version of Gforth is compared with Win32Forth, NT
-Forth, PFE, ThisForth, and several native code systems; that version of
-Gforth is slower on a 486 than the version used here.  You can find a
-newer version of these measurements at
-<https://www.complang.tuwien.ac.at/forth/performance.html>.  You can
-find numbers for Gforth on various machines in ‘Benchres’.
 

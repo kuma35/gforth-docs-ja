@@ -70,31 +70,22 @@ Next: <a href="Common-Assembler.html" accesskey="n" rel="next">Common Assembler<
 <hr>
 <span id="Definitions-in-assembly-language"></span><h4 class="subsection">6.29.1 Definitions in assembly language</h4>
 
-<p>Gforth provides ways to implement words in assembly language (using
-<code>abi-code</code>...<code>end-code</code>), and also ways to define defining words
-with arbitrary run-time behaviour (like <code>does&gt;</code>), where (unlike
-<code>does&gt;</code>) the behaviour is not defined in Forth, but in assembly
-language (with <code>;code</code>).
+<p>Gforth は、 アセンブリ言語でワードを実装する方法(<code>abi-code</code> … <code>end-code</code> を使用)と、
+任意の実行時の振る舞いを持つ定義ワードを定義する方法(<code>does&gt;</code> のようなの)を提供し、 ここで、
+この実行時の振る舞いを(<code>does&gt;</code> とは異なり、) Forth ではなくアセンブリ言語で定義します。
 </p>
-<p>However, the machine-independent nature of Gforth poses a few problems:
-First of all, Gforth runs on several architectures, so it can provide no
-standard assembler. It does provide assemblers for several of the
-architectures it runs on, though.  Moreover, you can use a
-system-independent assembler in Gforth, or compile machine code directly
-with <code>,</code> and <code>c,</code>.
+<p>ただし、 Gforth のマシン非依存の性質により、 いくつかの問題が生じます。 まず、 Gforth は複数のアーキテクチャ上で実行されるため、
+標準のアセンブラを提供できません。 ただし、 実行されるいくつかのアーキテクチャ用のアセンブラは提供されています。  さらに言えば、 Gforth
+ではシステムに依存しないアセンブラを使用したり、 <code>,</code> や <code>c,</code> を使用してマシン・コードを直接コンパイルしたりできます。
 </p>
-<p>Another problem is that the virtual machine registers of Gforth (the stack
-pointers and the virtual machine instruction pointer) depend on the
-installation and engine.  Also, which registers are free to use also depend
-on the installation and engine.  So any code written to run in the context
-of the Gforth virtual machine is essentially limited to the installation and
-engine it was developed for (it may run elsewhere, but you cannot rely on
-that).
+<p>もう 1 つの問題は、Gforth の仮想マシンのレジスタ(スタック・ポインタと仮想マシン命令ポインタ)がインストールとエンジンに依存することです。
+また、 どのレジスタを自由に使用できるかは、 インストールとエンジンによって異なります。  したがって、 Gforth
+仮想マシンのコンテキストで実行するように記述されたコードは、 基本的に、 そのコードが開発されたインストールとエンジンに限定されます(たまたま、
+他の場所でも動く可能性はありますが、 それに頼ることはできません)。
 </p>
-<p>Fortunately, you can define <code>abi-code</code> words in Gforth that are
-portable to any Gforth running on a platform with the same calling
-convention (ABI); typically this means portability to the same
-architecture/OS combination, sometimes crossing OS boundaries).
+<p>幸いなことに、 同じ呼び出し規約(ABI)を持つプラットフォーム上で実行されている Gforth に移植可能(portable)な
+<code>abi-code</code> ワードを Gforth で定義できます。 通常、 これは同じアーキテクチャと OS の組み合わせへの移植性を意味し、
+しばしば OS の境を越えることができます。
 </p>
 <span id="index-assembler-_0028--_002d_002d--_0029-tools_002dext"></span>
 <span id="index-assembler-1"></span>
@@ -102,8 +93,8 @@ architecture/OS combination, sometimes crossing OS boundaries).
 <div class="format">
 <pre class="format"><code>assembler</code> ( <i>&ndash;  </i>) tools-ext &ldquo;assembler&rdquo;
 </pre></div>
-<p>A vocubulary: Replaces the wordlist at the top of the search order with the
-assembler wordlist.
+<p>ボキャブラリ: 検索順序の先頭(the top of the search order)のワードリストを assembler
+ワードリストに置き換えます。
 </p>
 
 <span id="index-init_002dasm-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -112,7 +103,7 @@ assembler wordlist.
 <div class="format">
 <pre class="format"><code>init-asm</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;init-asm&rdquo;
 </pre></div>
-<p>Pushes the assembler wordlist on the search order.
+<p>assembler ワードリストを検索順序(the search order)にプッシュします。
 </p>
 
 <span id="index-abi_002dcode-_0028--_0022name_0022-_002d_002d-colon_002dsys--_0029-gforth_002d1_002e0"></span>
@@ -121,14 +112,12 @@ assembler wordlist.
 <div class="format">
 <pre class="format"><code>abi-code</code> ( <i>&quot;name&quot; &ndash; colon-sys  </i>) gforth-1.0 &ldquo;abi-code&rdquo;
 </pre></div>
-<p>Start a native code definition that is called using the platform&rsquo;s ABI
-conventions corresponding to the C-prototype:
+<p>C言語プロトタイプ(C-prototype)に対応するプラットフォームの ABI 規則を使用して呼び出されるネイティブ・コード定義を開始します:
 </p><div class="example">
 <pre class="example">Cell *function(Cell *sp, Float **fpp);
 </pre></div>
-<p>The FP stack pointer is passed in by providing a reference to a memory
-location containing the FP stack pointer and is passed out by storing the
-changed FP stack pointer there (if necessary).
+<p>ここで、 FP スタック・ポインタは、 FP スタック・ポインタを含むメモリ位置への参照を提供することによって渡され、 (必要な場合)変更された FP
+スタック・ポインタをそこに格納することによって渡されます。
 </p>
 
 <span id="index-_003babi_002dcode-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -137,10 +126,9 @@ changed FP stack pointer there (if necessary).
 <div class="format">
 <pre class="format"><code>;abi-code</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;semicolon-abi-code&rdquo;
 </pre></div>
-<p>Ends the colon definition, but at run-time also changes the last defined
-word <i>X</i> (which must be a <code>create</code>d word) to call the following
-native code using the platform&rsquo;s ABI convention corresponding to the C
-prototype:
+<p>コロン定義を終了しますが、 実行時に最後に定義されたワード <i>X</i> (<code>create</code>
+で作られたワードである必要があります)の変更もして、 C言語プロトタイプに対応するプラットフォームの ABI
+規約を使用してネイティブ・コードを呼び出します:
 </p><div class="example">
 <pre class="example"> Cell *function(Cell *sp, Float **fpp, Address body);
 </pre></div>

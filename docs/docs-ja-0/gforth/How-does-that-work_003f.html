@@ -105,8 +105,8 @@ Next: <a href="Forth-is-written-in-Forth.html" accesskey="n" rel="next">Forth is
 <span id="index-text-interpreter-_002d-effect-of-state"></span>
 <p><code>:</code> が行う 2 つ目の特別な処理は、 <code>state</code> と呼ばれる変数の値を変更することです。 これは、
 テキスト・インタプリタの振る舞いに影響します。 Gforth が起動するとき、 <code>state</code> の値は 0 であり、
-テキスト・インタプリタはインタプリタ中(interpreting)であると言われます。 (<code>:</code> で始まる)コロン定義中 、
-<code>state</code> は -1 に設定され、テキスト・インタプリタはコンパイル中(compiling)と言われます。
+テキスト・インタプリタはインタプリタ状態(<em>interpreting</em>)であると言われます。 (<code>:</code> で始まる)コロン定義中 、
+<code>state</code> は -1 に設定され、テキスト・インタプリタはコンパイル状態(<em>compiling</em>)と言われます。
 </p>
 <p>この例では、 テキスト・インタプリタは文字列 &ldquo;<code>2 + . ;</code>&rdquo;。引き続き同じ方法で文字列を文字シーケンスに分割します。ただし、数値
 <code>2</code> をスタックにプッシュする代わりに、 数値 <code>2</code> を取得する魔法を <code>add-two</code>
@@ -114,7 +114,7 @@ Next: <a href="Forth-is-written-in-Forth.html" accesskey="n" rel="next">Forth is
 <code>.</code> の振る舞いも定義にコンパイルされます。
 </p>
 <p>特定の種類のワードはコンパイルされません。 これらのいわゆる「即実行ワード」(immediate word)は、
-テキスト・インタプリタがインタプリタ・モードであるかコンパイル・モードかに関係なく、 実行されます(今、 直ちに実行されます)。 <code>;</code>
+テキスト・インタプリタがインタプリタ状態であるかコンパイル状態であるかに関係なく、 実行されます(今、 直ちに実行されます)。 <code>;</code>
 というワードは即実行ワードです。 定義にコンパイルされるのではなく、 実行されます。 その効果は、 <code>state</code> の値を 0
 に戻すことを含む、 現在の定義を終了することです。
 </p>
@@ -125,45 +125,45 @@ Next: <a href="Forth-is-written-in-Forth.html" accesskey="n" rel="next">Forth is
 </p>
 <ul>
 <li> <span id="index-interpretation-semantics"></span>
-その 実行時コード(interpretation semantics)は、 テキスト・インタプリタが実行時(interpret
-状態)どのように動作するかを記述します。 ワードの実行時コードは、 その「実行トークン」(execution
+その インタプリタ機能(interpretation semantics)は、
+テキスト・インタプリタがインタプリタ状態でどのように動作するかを記述します。 ワードのインタプリタ機能は、 その「実行トークン」(execution
 token)(see <a href="Execution-token.html">Execution token</a>)によって表されます。
 </li><li> <span id="index-compilation-semantics"></span>
-その コンパイル時コード(compilation semantics)は、 テキスト・インタプリタがコンパイル時(compile状態)に、
-どのように動作するかを記述します。 ワードのコンパイル時コードは、 その「コンパイル・トークン」(see <a href="Compilation-token.html">Compilation token</a>)によって表されます。
+その コンパイル機能(compilation semantics)は、 テキスト・インタプリタがコンパイル状態でどのように動作するかを記述します。
+ワードのコンパイル機能は、 その「コンパイル・トークン」(see <a href="Compilation-token.html">Compilation token</a>)によって表されます。
 </li></ul>
 
 <p>数値は常に決まった方法で処理されます:
 </p>
 <ul>
 <li> その数値が解釈(interpret)される場合、 その振る舞いは、 その数値をスタックにプッシュすることです。
-</li><li> その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、 数値のコンパイル時コードは、
-コンパイルされる定義の実行時まで、 その数値の実行時コードの実行を延期します。)
+</li><li> その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、
+数値のコンパイル機能(compilation semantics)は、 コンパイルされる定義の実行時まで、
+その数値のインタプリタ機能(interpretation semantics)の実行を延期します。)
 </li></ul>
 
-<p>ワードは常にこのように通常の振る舞いをするとは限りませんが、 ほとんどのワードには実行時とコンパイル時のデフォルトの振る舞い(default
-semantics)があり、 以下のように振る舞うことを意味します。
+<p>ワードは常にこのような通常の振る舞いをするとは限りませんが、 ほとんどのワードにはデフォルトの機能(default semantics)があり、
+以下のように振る舞うことを意味します:
 </p>
 <ul>
-<li> ワードの実行時コード(compilation semantics)は、 何かしら役に立つことを行うことです。
-</li><li> ワードのコンパイル時コード(compilation semantics)は、 それの実行時コード(interpretation
+<li> ワードのインタプリタ機能(<em>interpretation semantics</em>)は、 何かしら役に立つことを行うことです。
+</li><li> ワードのコンパイル機能(compilation semantics)は、 そのワードのインタプリタ機能(interpretation
 semantics)を現在の定義に追加します(よって、 それは実行時に何かしら役に立つことを行います)。
 </li></ul>
 
 <span id="index-immediate-words"></span>
-<p>特定のワードの実際の、 実行時とコンパイル時の振る舞いは、 ワードの定義時に <code>immediate</code> や
-<code>compile-only</code> というワードを使用することで制御できます。 これらのワードは、
-最後に定義されたワードの名前ディクショナリ・エントリにフラグを設定します。 これらのフラグは、
-名前ディクショナリでワードが見つかったときにテキスト・インタプリタによって取得されます。
+<p>特定のワードの実際の振る舞いは、 ワードの定義時に <code>immediate</code> や <code>compile-only</code>
+というワードを使用することで制御できます。 これらのワードは、 最後に定義されたワードの名前ディクショナリ・エントリにフラグを設定します。
+これらのフラグは、 名前ディクショナリでワードが見つかったときにテキスト・インタプリタによって取得されます。
 </p>
-<p><em>immediate</em> としてマークされたワードは、 その実行時コード(interpretation
-semantics)と同じコンパイル時コード(compilation semantics)を持ちます。 つまり、 以下のように振る舞います:
+<p><em>immediate</em> としてマークされたワードは、 そのインタプリタ機能(interpretation
+semantics)と同じコンパイル機能(compilation semantics)を持ちます。 つまり、 以下のように振る舞います:
 </p>
 <ul>
-<li> ワードの実行時コード(compilation semantics)は、 何かしら役に立つことを行うことです。
-</li><li> このワードのコンパイル時コード(compilation semantics)は、
-何かしら役に立つことを行うことです(実際には実行時コードと同一のことを行うことです)。 つまり、
-コンパイル時に実行(実行時コードと同一のコードを実行)を行います。
+<li> ワードのインタプリタ機能(<em>interpretation semantics</em>)は、 何かしら役に立つことを行うことです。
+</li><li> このワードのコンパイル機能(compilation semantics)は、
+何かしら役に立つことを行うことです(実際にはインタプリタ機能と同一のことを行うことです)。 つまり、
+このワードのコンパイル機能はコンパイル中に実行されます。
 </li></ul>
 
 <p>ワードを <em>compile-only</em> としてマークすると、 解釈状態(interpretation
@@ -190,18 +190,19 @@ state)でこのワードを検出したときにテキスト・インタプリ�
 このワードは変数の値を取り出し(フェッチし)、 それをスタックに残します。 したがって、 <code>show-state</code> の振る舞いは、
 <code>state</code> の現在の値を表す数値を出力することです。
 </p>
-<p><code>word1</code> を実行すると、 システムが解釈中(interpreting)であることを示す数値 0 が出力されます。
-テキスト・インタプリタが <code>word1</code> の定義をコンパイルしたときに、 コンパイル時コードが現在の定義に実行時コードを追加する
-<code>show-state</code> に遭遇しました。 <code>word1</code> を実行すると、 <code>show-state</code>
-の実行時コードが実行されます。  <code>word1</code> (つまり <code>show-state</code>)
-が実行される時点で、システムは解釈中(interpreting)です。
+<p><code>word1</code> を実行すると、 システムがインタプリタ状態であることを示す数値 0 が出力されます。 テキスト・インタプリタが
+<code>word1</code> の定義をコンパイルしたときに、 コンパイル機能が現在の定義に実行時コードを追加する <code>show-state</code>
+に遭遇しました。 <code>word1</code> を実行すると、 <code>show-state</code> のインタプリタ機能(interpretation
+semantics)が実行されます。  <code>word1</code> (つまり <code>show-state</code>) が実行される時点で、
+システムはインタプリタ状態です。
 </p>
 <p><code>word2</code> の定義を入力した後に <tt class="key">RET</tt> を押すと、 数値 -1 が出力され、 その後に <code> ok</code>
 が表示されるはずです。 テキスト・インタプリタが <code>word2</code> の定義をコンパイルすると、 即実行ワードである
-<code>show-state-now</code> が検出されたため、 そのコンパイル時コードは実行時コードを実行します。
+<code>show-state-now</code> が検出されたため、 そのコンパイル機能(compilation
+semantics)はインタプリタ機能(interpretation semantics)を実行します。
 これは直ちにに実行されます(テキスト・インタプリタが次の文字グループ(この例では <code>;</code>)の処理に移る前に)。 これを実行すると、
 <code>word2</code> の定義途中の <code>state</code> の値が表示されます。 -1 を出力するので、
-システムがその時点でコンパイル時であることがわかります。 もし あなたが <code>word2</code> を「実行」しても何も行いません。
+システムがその時点でコンパイル状態であることがわかります。 もし あなたが <code>word2</code> を「実行」しても何も行いません。
 </p>
 <span id="index-_002e_0022_002c-how-it-works"></span>
 <p>即実行ワードの話題を離れる前に、 前のセクションの <code>greet</code> の定義における <code>.&quot;</code> の振る舞いについて検討してみましょう。
