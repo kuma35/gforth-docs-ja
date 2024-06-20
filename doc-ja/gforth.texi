@@ -9061,7 +9061,7 @@ AGAIN
 @cindex loops, counted
 @cindex @code{DO} loops
 
-基本のカウンタ付きループ:
+基本のカウント・ループ:
 @example
 @i{limit} @i{start} ?DO
   @i{body}
@@ -9516,11 +9516,9 @@ do-sys までのすべての LEAVE を解決します(訳注: loop, +loop , next
 @subsection @code{Begin} loops with multiple exits
 @cindex Multiple exits from @code{begin}
 
-For counted loops, you can use @code{leave} in several places.  For
-@code{begin} loops, you have the following options:
+カウント・ループの場合、 複数箇所で @code{leave} を使用できます。  @code{begin} ループの場合は、 以下の選択肢があります:
 
-Use @code{exit} (possibly several times) in the loop to leave not just the
-loop, but the whole colon definition.  E.g.,:
+ループ内で @code{exit} を使用(複数記述できます)すると、 ループだけでなくコロン定義全体からも去ります。 例:
 
 @example
 : foo
@@ -9535,14 +9533,11 @@ loop, but the whole colon definition.  E.g.,:
   exit-code1 ;
 @end example
   
-The disadvantage of this approach is that, if you want to have some common
-code afterwards, you either have to wrap @code{foo} in another word that
-contains the common code, or you have to call the common code several times,
-from each exit-code.
+このアプローチの欠点は、 ループ後に共通コードが必要な場合、 共通コードを含む別のワードで @code{foo} を包むか、 または、 それぞれの
+exit-code から共通コードを呼び出す必要があることです。
 
-Another approach is to use several @code{while}s in a @code{begin} loop.
-You have to append a @code{then} behind the loop for every additional
-@code{while}.  E.g.,;
+もう 1 つのアプローチは、 @code{begin} ループ内で複数の @code{while} を使用することです。  追加の
+@code{while} ごとにループの後ろに @code{then} を追加する必要があります。  例:
 
 @example
 begin
@@ -9552,14 +9547,12 @@ begin
 again then then then
 @end example
 
-Here I used @code{again} at the end of the loop so that I would have a
-@code{then} for each @code{while}; @code{repeat} would result in one less
-@code{then}, but otherwise the same behaviour.  For an explanation of why
-this works, @xref{Arbitrary control structures}.
+ここでは、 ループの最後に @code{again} を使用して、 各 @code{while} に @code{then} を用意しました。
+@code{repeat} は @code{then} を 1 つ減らしますが、 それ以外の場合は同じ動作になります。
+これが機能する理由の説明については、 @xref{Arbitrary control structures} をご覧下さい。
 
-We can have common code afterwards, but, as presented above, we cannot have
-different exit-codes for the different exits.  You can have these different
-exit-codes, as follows:
+後で共通のコードを使用することはできますが、 上で示したように、 異なる出口(exit)に対して異なる exit-code を使用することはできません。
+以下のようにすると、 これらの異なる exit-code を使用できます:
 
 @example
 begin
@@ -9571,23 +9564,18 @@ else exit-code2 then
 else exit-code1 then
 @end example
 
-This is relatively hard to comprehend, because the exit-codes are relatively
-far from the exit conditions (it does not help that we are not used to such
-control structures, either).
+exit-code は終了条件から比較的離れているため、 これを理解するのは比較的困難です(このような制御構造に慣れていないことも理由にはなりません)。
 
 @node General control structures with CASE, Arbitrary control structures, BEGIN loops with multiple exits, Control Structures
 @subsection General control structures with @code{case}
 @cindex @code{case} as generalized control structure
 @cindex general control structures (@code{case})
 
-Gforth provides an extended @code{case} that solves the problems of the
-multi-exit loops discussed above, and offers additional options.  You can
-find a portable implementation of this extended @code{case} in
-@file{compat/caseext.fs}.
+Gforth は、 拡張 @code{case} を提供することで、 上で説明した複数出口ループの問題を解決する追加のオプションを提供します。 この拡張
+@code{case} の移植可能な実装は @file{compat/caseext.fs} にあります。
 
-There are three additional words in the extension.  The first is @code{?of}
-which allows general tests (rather than just testing for equality) in a
-@code{case}; e.g.,
+この拡張には 3 つの追加ワードがあります。  1 つ目は @code{?of} で、 @code{case}
+内で(単なる同等性のテストではなく、)一般的なテストが可能です。 例:
 
 @example
 : sgn ( n -- -1|0|1 )
@@ -9598,13 +9586,13 @@ which allows general tests (rather than just testing for equality) in a
   0 endcase ;
 @end example
 
-Note that @code{endcase} drops a value, which works fine much of the time
-with @code{of}, but usually not with @code{?of}, so we leave a 0 on the
-stack for @code{endcase} to drop.  The n that is passed into @code{sgn} is
-also 0 if neither @code{?of} triggers, and that is then passed out.
+注意: @code{endcase} は値(a value)を drop することに注意してください。 これは @code{of}
+ではほとんどうまいこと機能しますが、 @code{?of} ではたいていうまいこといかないので、 今回も @code{endcase} で drop
+するための値として 0 をスタック置きます。  ここでは、 @code{sgn} に渡される n は、 いずれの @code{?of}
+もトリガーしない場合返り値の 0 そのものになります。
 
-The second additional word is @code{next-case}, which allows turning
-@code{case} into a loop.  Our triple-exit loop becomes:
+2 番目の追加ワードは @code{next-case} で、 これにより @code{case} をループに変えることができます。
+出口が3つのループは以下のようになります:
 
 @example
 case
@@ -9616,15 +9604,14 @@ next-case
 common code afterwards
 @end example
 
-As you can see, this solves both problems of the variants discussed above
-(@pxref{BEGIN loops with multiple exits}).  Note that @code{next-case} does
-not drop a value, unlike @code{endcase}.@footnote{@code{Next-case} has a
-@code{-}, unlike the other @code{case} words, because VFX Forth contains a
-@code{nextcase} that drops a value.}
+ご覧のとおり、 これにより、 先程議論したバリエーションの両方の問題が解決されます(@pxref{BEGIN loops with multiple
+exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値をドロップしないことに注意してください。
+@footnote{@code{next-case} は、 他の @code{case} ワード群とは異なり、
+名前にハイフン(@code{-})が含まれています。 VFX Forth には値をドロップする @code{nextcase}
+があるので、これと区別するためです。}
 
-The last additional word is @code{contof}, which is used instead of
-@code{endof} and starts the next iteration instead of leaving the loop.
-This can be used in ways similar to Dijkstra's guarded command @i{do}, e.g.:
+最後の追加ワードは @code{contof} です。 これは @code{endof} の代わりに使用され、
+ループを終了する代わりに次の反復を開始します。 これは、 ダイクストラのガード付きコマンド 繰り返し: @i{do} と同様の方法で使用できます。 例:
 
 @example
 : gcd ( n1 n2 -- n )
@@ -9634,12 +9621,11 @@ This can be used in ways similar to Dijkstra's guarded command @i{do}, e.g.:
     endcase ;
 @end example
 
-Here the two @code{?of}s have different ways of continuing the loop; when
-neither @code{?of} triggers, the two numbers are equal and are the gcd.
-@code{Endcase} drops one of them, leaving the other as n.
+ここで、 2 つの @code{?of} はループを継続する異なる方法を持っています。 どちらの @code{?of} もトリガーされない場合、 2
+つの数値は等しく、gcd(最大公約数) になります。  @code{Endcase} はそれらの 1 つを削除し、もう 1 つは n として残します。
 
-You can also combine these words.  Here's an example that uses each of the
-@code{case} words once, except @code{endcase}:
+これらのワードを組み合わせることもできます。  以下は、 @code{endcase} を除く、 各 @code{case} ワードをそれぞれ 1
+回使用する例です:
 
 @example
 : collatz ( u -- )
@@ -9652,28 +9638,23 @@ You can also combine these words.  Here's an example that uses each of the
     next-case ;
 @end example
 
-This example keeps the current value of the sequence on the stack.  If it is
-1, the @code{of} triggers, drops the value, and leaves the @code{case}
-structure.  For odd numbers, the @code{?of} triggers, computes 3n+1, and
-starts the next iteration with @code{contof}.  Otherwise, if the number is
-even, it is divided by 2, and the loop is restarted with @code{next-case}.
+この例では、 シーケンスの現在の値をスタックに保持します。  1 の場合、 @code{of} がトリガーされ、 値が削除され、 @code{case}
+構造から去ります。 奇数の場合、 @code{?of} がトリガーされ、 3n+1 が計算され、 @code{contof} で次の反復が開始されます。
+それ以外の場合、 数値が偶数の場合は 2 で除算され、 @code{next-case} でループが再開されます。
 
 @node Arbitrary control structures, Calls and returns, General control structures with CASE, Control Structures
 @subsection Arbitrary control structures
 @cindex control structures, user-defined
 
 @cindex control-flow stack
-Standard Forth permits and supports using control structures in a non-nested
-way. Information about incomplete control structures is stored on the
-control-flow stack. This stack may be implemented on the Forth data stack,
-and this is what we have done in Gforth.
+標準 Forth は、 ネストされない方法での制御構造の使用を許可・サポートします。 まだ完成されてない制御構造に関する情報は、
+制御フロー・スタック(control-flow stack)に保存されます。 このスタックは Forth のデータ・スタック上に実装でき、 Gforth
+はそうしました。
 
 @cindex @code{orig}, control-flow stack item
 @cindex @code{dest}, control-flow stack item
-An @i{orig} entry represents an unresolved forward branch, a @i{dest} entry
-represents a backward branch target. A few words are the basis for building
-any control structure possible (except control structures that need storage,
-like calls, coroutines, and backtracking).
+@i{orig} エントリは未解決の前方分岐を表し、 @i{dest} エントリは後方分岐ターゲットを表します。 いくつかのワードは、
+可能なあらゆる制御構造を構築するための基礎となります(ストレージを必要とする制御構造を除く、 呼び出しやコルーチンやバックトラッキングなど)。
 
 
 @findex IF ( @var{ compilation -- orig ; run-time f --   } ) core
@@ -9682,9 +9663,8 @@ like calls, coroutines, and backtracking).
 @format
 @code{IF} ( @i{compilation -- orig ; run-time f --  }) core ``IF''
 @end format
-At run-time, if @i{f}=0, execution continues after the @code{THEN} (or
-@code{ELSE}) that consumes the @i{orig}, otherwise right after the @code{IF}
-(@pxref{Selection}).
+実行時(run-time)、 @i{f}=0 の場合、 @i{orig} を消費する @code{THEN} (または @code{ELSE})
+の後から実行が続行されます。 それ以外の場合は、 @code{IF} の直後に続きます(@pxref{Selection})。
 
 
 @findex AHEAD ( @var{ compilation -- orig ; run-time --   } ) tools-ext
@@ -9693,8 +9673,7 @@ At run-time, if @i{f}=0, execution continues after the @code{THEN} (or
 @format
 @code{AHEAD} ( @i{compilation -- orig ; run-time --  }) tools-ext ``AHEAD''
 @end format
-At run-time, execution continues after the @code{THEN} that consumes the
-@i{orig}.
+実行時、 @i{orig} を消費する @code{THEN} の後から実行が続行されます。
 
 
 @findex THEN ( @var{ compilation orig -- ; run-time --   } ) core
@@ -9703,8 +9682,8 @@ At run-time, execution continues after the @code{THEN} that consumes the
 @format
 @code{THEN} ( @i{compilation orig -- ; run-time --  }) core ``THEN''
 @end format
-The @code{IF}, @code{AHEAD}, @code{ELSE} or @code{WHILE} that pushed
-@i{orig} jumps right after the @code{THEN} (@pxref{Selection}).
+@i{orig} にプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} または @code{WHILE}
+は、 @code{THEN} の直後にジャンプします(@pxref{Selection})。
 
 
 @findex BEGIN ( @var{ compilation -- dest ; run-time --   } ) core
@@ -9713,8 +9692,8 @@ The @code{IF}, @code{AHEAD}, @code{ELSE} or @code{WHILE} that pushed
 @format
 @code{BEGIN} ( @i{compilation -- dest ; run-time --  }) core ``BEGIN''
 @end format
-The @code{UNTIL}, @code{AGAIN} or @code{REPEAT} that consumes the @i{dest}
-jumps right behind the @code{BEGIN} (@pxref{Simple Loops}).
+@i{dest} を消費する @code{UNTIL} または @code{AGAIN} または @code{REPEAT} は、
+@code{BEGIN} の直後へジャンプします(@pxref{Simple Loops})。
 
 
 @findex UNTIL ( @var{ compilation dest -- ; run-time f --   } ) core
@@ -9723,9 +9702,8 @@ jumps right behind the @code{BEGIN} (@pxref{Simple Loops}).
 @format
 @code{UNTIL} ( @i{compilation dest -- ; run-time f --  }) core ``UNTIL''
 @end format
-At run-time, if @i{f}=0, execution continues after the @code{BEGIN} that
-produced @i{dest}, otherwise right after the @code{UNTIL} (@pxref{Simple
-Loops}).
+実行時、 @i{f}=0 の場合、 @i{dest} を生成した @code{BEGIN} の後で実行が続行されます。 それ以外の場合は、
+@code{UNTIL}の直後から実行が続行されます(@pxref{Simple Loops})。
 
 
 @findex AGAIN ( @var{ compilation dest -- ; run-time --   } ) core-ext
@@ -9734,8 +9712,7 @@ Loops}).
 @format
 @code{AGAIN} ( @i{compilation dest -- ; run-time --  }) core-ext ``AGAIN''
 @end format
-At run-time, execution continues after the @code{BEGIN} that produced the
-@i{dest} (@pxref{Simple Loops}).
+実行時、 @i{dest} を生成した @code{BEGIN} の後から実行が続行されます(@pxref{Simple Loops})。
 
 
 @findex CS-PICK ( @var{ orig0/dest0 orig1/dest1 ... origu/destu u -- ... orig0/dest0   } ) tools-ext
@@ -9760,16 +9737,14 @@ At run-time, execution continues after the @code{BEGIN} that produced the
 @end format
 
 
-The Standard words @code{CS-PICK} and @code{CS-ROLL} allow you to manipulate
-the control-flow stack in a portable way. Without them, you would need to
-know how many stack items are occupied by a control-flow entry (many systems
-use one cell. In Gforth they currently take three, but this may change in
-the future).
+標準ワードの @code{CS-PICK} や @code{CS-ROLL} を使用すると、 移植可能な方法で制御フロー・スタックを操作できます。
+これら無しだと制御フロー・エントリが占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを使用します。 Gforth では現在 3
+つを使用しますが、 これは将来変更される可能性があります)。
 
-@code{CS-PICK} can only pick a dest and @code{CS-DROP} can only drop a dest,
-because an orig must be resolved exactly once.
+@i{orig} は 1 回だけ解決する必要があるため、 @code{CS-PICK} は @i{dest} を pick することしかできず、 かつ、
+@code{CS-DROP} は @i{dest} を drop することしかできません。
 
-Some standard control structure words are built from these words:
+一部の標準の制御構造ワードは、 以下のワード群から構築されます:
 
 
 @findex ELSE ( @var{ compilation orig1 -- orig2 ; run-time --   } ) core
@@ -9778,9 +9753,9 @@ Some standard control structure words are built from these words:
 @format
 @code{ELSE} ( @i{compilation orig1 -- orig2 ; run-time --  }) core ``ELSE''
 @end format
-At run-time, execution continues after the @code{THEN} that consumes the
-@i{orig}; the @code{IF}, @code{AHEAD}, @code{ELSE} or @code{WHILE} that
-pushed @i{orig1} jumps right after the @code{ELSE}.  (@pxref{Selection}).
+実行時、 @i{orig} を消費する @code{THEN} の後から実行が続行されます。 @i{orig1} をプッシュした @code{IF}
+または @code{AHEAD} または @code{ELSE} または @code{WHILE} は、 @code{ELSE}
+の直後にジャンプします(@pxref{Selection})。
 
 
 @findex WHILE ( @var{ compilation dest -- orig dest ; run-time f --   } ) core
@@ -9789,9 +9764,9 @@ pushed @i{orig1} jumps right after the @code{ELSE}.  (@pxref{Selection}).
 @format
 @code{WHILE} ( @i{compilation dest -- orig dest ; run-time f --  }) core ``WHILE''
 @end format
-At run-time, if @i{f}=0, execution continues after the @code{REPEAT} (or
-@code{THEN} or @code{ELSE}) that consumes the @i{orig}, otherwise right
-after the @code{WHILE} (@pxref{Simple Loops}).
+実行時、 @i{f}=0 の場合、 @i{orig} を消費する @code{REPEAT} (または @code{THEN} または
+@code{ELSE}) の後から実行が継続されます。 それ以外の場合は、 @code{WHILE} の直後から実行されます(@pxref{Simple
+Loops})。
 
 
 @findex REPEAT ( @var{ compilation orig dest -- ; run-time --   } ) core
@@ -9800,16 +9775,15 @@ after the @code{WHILE} (@pxref{Simple Loops}).
 @format
 @code{REPEAT} ( @i{compilation orig dest -- ; run-time --  }) core ``REPEAT''
 @end format
-At run-time, execution continues after the @code{BEGIN} that produced the
-@i{dest}; the @code{WHILE}, @code{IF}, @code{AHEAD} or @code{ELSE} that
-pushed @i{orig} jumps right after the @code{REPEAT}.  (@pxref{Simple
-Loops}).
+実行時、 @i{dest} を生成した @code{BEGIN} の後から実行が続行されます。 @i{orig} をプッシュした
+@code{WHILE} または @code{IF} または @code{AHEAD} または @code{ELSE} は、 @code{REPEAT}
+の直後にジャンプします(@pxref{Simple Loops})。
 
 
 
 
 @noindent
-Gforth adds some more control-structure words:
+Gforth は、さらにいくつかの制御構造ワードを追加します:
 
 
 @findex ENDIF ( @var{ compilation orig -- ; run-time --   } ) gforth-0.2
@@ -9818,7 +9792,7 @@ Gforth adds some more control-structure words:
 @format
 @code{ENDIF} ( @i{compilation orig -- ; run-time --  }) gforth-0.2 ``ENDIF''
 @end format
-Same as @code{THEN}.
+@code{THEN} と同一です。
 
 
 @findex ?dup-IF ( @var{ compilation -- orig ; run-time n -- n|   } ) gforth-0.2
@@ -9827,8 +9801,8 @@ Same as @code{THEN}.
 @format
 @code{?dup-IF} ( @i{compilation -- orig ; run-time n -- n|  }) gforth-0.2 ``question-dupe-if''
 @end format
-This is the preferred alternative to the idiom "@code{?DUP IF}", since it
-can be better handled by tools like stack checkers. Besides, it's faster.
+これは、スタック・チェッカー(stack checker)などのツールでより適切に処理できるため、 イディオム「@code{?DUP
+IF}」の代替として推奨されます。 しかも、 @code{?DUP IF} より速いです。
 
 
 @findex ?DUP-0=-IF ( @var{ compilation -- orig ; run-time n -- n|   } ) gforth-0.2
@@ -9840,7 +9814,7 @@ can be better handled by tools like stack checkers. Besides, it's faster.
 
 
 @noindent
-Another group of control structure words are:
+制御構造ワードのもう一つのグループ:
 
 
 @findex case ( @var{ compilation  -- case-sys ; run-time  --   } ) core-ext
@@ -9849,7 +9823,7 @@ Another group of control structure words are:
 @format
 @code{case} ( @i{compilation  -- case-sys ; run-time  --  }) core-ext ``case''
 @end format
-Start a @code{case} structure.
+@code{case} 構造の開始。
 
 
 @findex endcase ( @var{ compilation case-sys -- ; run-time x --   } ) core-ext
@@ -9858,10 +9832,9 @@ Start a @code{case} structure.
 @format
 @code{endcase} ( @i{compilation case-sys -- ; run-time x --  }) core-ext ``end-case''
 @end format
-Finish the @code{case} structure; drop x, and continue behind the
-@code{endcase}.  Dropping x is useful in the original @code{case} construct
-(with only @code{of}s), but you may have to supply an x in other cases
-(especially when using @code{?of}).
+@code{case} 構造を終わらせます。 x を drop して、@code{endcase} の後ろへ進みます。  x の drop は、
+元の(@code{of} のみの)@code{case} 構造では便利ですが、 他の場合(特に @code{?of} を使用する場合)では(drop
+する為の) x を明示的に指定する必要がある場合があります。
 
 
 @findex next-case ( @var{ compilation case-sys -- ; run-time --   } ) gforth-1.0
@@ -9870,8 +9843,8 @@ Finish the @code{case} structure; drop x, and continue behind the
 @format
 @code{next-case} ( @i{compilation case-sys -- ; run-time --  }) gforth-1.0 ``next-case''
 @end format
-Restart the @code{case} loop by jumping to the matching @code{case}.  Note
-that @code{next-case} does not drop a cell, unlike @code{endcase}.
+マッチする @code{case} にジャンプして、 @code{case} ループを再開します。 @code{endcase} とは異なり、
+@code{next-case} はセルを drop しないことに注意してください。
 
 
 @findex of ( @var{ compilation  -- of-sys ; run-time x1 x2 -- |x1   } ) core-ext
@@ -9880,8 +9853,8 @@ that @code{next-case} does not drop a cell, unlike @code{endcase}.
 @format
 @code{of} ( @i{compilation  -- of-sys ; run-time x1 x2 -- |x1  }) core-ext ``of''
 @end format
-If x1=x2, continue (dropping both); otherwise, leave x1 on the stack and
-jump behind @code{endof} or @code{contof}.
+x1=x2 の場合は続行します(両方を drop します)。 それ以外の場合は、 x1 をスタック上に残し、 @code{endof} または
+@code{contof} の後ろにジャンプします。
 
 
 @findex ?of ( @var{ compilation  -- of-sys ; run-time  f --   } ) gforth-1.0
@@ -9890,8 +9863,7 @@ jump behind @code{endof} or @code{contof}.
 @format
 @code{?of} ( @i{compilation  -- of-sys ; run-time  f --  }) gforth-1.0 ``question-of''
 @end format
-If f is true, continue; otherwise, jump behind @code{endof} or
-@code{contof}.
+f が true の場合は続行します。 それ以外の場合は、 @code{endof} または @code{contof} の後ろにジャンプします。
 
 
 @findex endof ( @var{ compilation case-sys1 of-sys -- case-sys2 ; run-time  --   } ) core-ext
@@ -9900,8 +9872,8 @@ If f is true, continue; otherwise, jump behind @code{endof} or
 @format
 @code{endof} ( @i{compilation case-sys1 of-sys -- case-sys2 ; run-time  --  }) core-ext ``end-of''
 @end format
-Exit the enclosing @code{case} structure by jumping behind
-@code{endcase}/@code{next-case}.
+@code{endcase}/@code{next-case} の後ろにジャンプして、 囲んでいる @code{case}
+構造体を終了(exit)します。
 
 
 @findex contof ( @var{ compilation case-sys1 of-sys -- case-sys2 ; run-time  --   } ) gforth-1.0
@@ -9910,21 +9882,19 @@ Exit the enclosing @code{case} structure by jumping behind
 @format
 @code{contof} ( @i{compilation case-sys1 of-sys -- case-sys2 ; run-time  --  }) gforth-1.0 ``cont-of''
 @end format
-Restart the @code{case} loop by jumping to the enclosing @code{case}.
+囲んでいる @code{case} にジャンプして、 @code{case} ループを再開します。
 
 
 
-Internally, @i{of-sys} is an @code{orig}; and @i{case-sys} is a cell and
-some stack-depth information, 0 or more @code{orig}s, and a @code{dest}.
+内部的には、 @i{of-sys} は @code{orig} で、 @i{case-sys} はセルとスタック深さ情報と、0 個以上の
+@code{orig} と、 @code{dest} です。
 
 @subsubsection Programming Style
 @cindex control structures programming style
 @cindex programming style, arbitrary control structures
 
-In order to ensure readability we recommend that you do not create arbitrary
-control structures directly, but define new control structure words for the
-control structure you want and use these words in your program. For example,
-instead of writing:
+読みやすさを確保するために、 任意の制御構造を直接作成せず、 必要な制御構造に対して新しい制御構造ワードを定義し、
+プログラム内でこれらのワードを使用することをお勧めします。たとえば、 以下のように書く代わりに:
 
 @example
 BEGIN
@@ -9935,7 +9905,7 @@ AGAIN THEN
 @end example
 
 @noindent
-we recommend defining control structure words, e.g.,
+以下のように制御構造のワードを定義することをお勧めします。 例:
 
 @example
 : WHILE ( DEST -- ORIG DEST )
@@ -9948,7 +9918,7 @@ we recommend defining control structure words, e.g.,
 @end example
 
 @noindent
-and then using these to create the control structure:
+そして、 次に、 これらを使用して制御構造を作成します:
 
 @example
 BEGIN
@@ -9958,9 +9928,8 @@ WHILE
 REPEAT
 @end example
 
-That's much easier to read, isn't it? Of course, @code{REPEAT} and
-@code{WHILE} are predefined, so in this example it would not be necessary to
-define them.
+このほうがずっと読みやすいですよね。 もちろん、 @code{REPEAT} と @code{WHILE} は定義済みなので、
+この例を見て改めて定義する必要はありません。
 
 @node Calls and returns, Exception Handling, Arbitrary control structures, Control Structures
 @subsection Calls and returns
@@ -9968,11 +9937,9 @@ define them.
 @cindex returning from a definition
 
 @cindex recursive definitions
-A definition can be called simply be writing the name of the definition to
-be called. Normally a definition is invisible during its own definition. If
-you want to write a directly recursive definition, you can use
-@code{recursive} to make the current definition visible, or @code{recurse}
-to call the current definition directly.
+呼び出す定義の名前を記述するだけで定義を呼び出すことができます。 通常、 定義はそれ自身の定義中は表示されません。 直接再帰的な定義を記述したい場合は、
+@code{recursive} を使用して現在の定義を見えるようにする(使えるようにする)か、 @code{recurse}
+を使用して現在の定義を直接呼び出すことができます。
 
 
 @findex recursive ( @var{ compilation -- ; run-time --   } ) gforth-0.2
@@ -9981,7 +9948,7 @@ to call the current definition directly.
 @format
 @code{recursive} ( @i{compilation -- ; run-time --  }) gforth-0.2 ``recursive''
 @end format
-Make the current definition visible, enabling it to call itself recursively.
+現在の定義中の定義をその定義内で呼び出せるように(表示できるように)し、 それ自体を再帰的に呼び出せるようにします。
 
 
 @findex recurse ( @var{ ... -- ...   } ) core
@@ -9990,19 +9957,20 @@ Make the current definition visible, enabling it to call itself recursively.
 @format
 @code{recurse} ( @i{... -- ...  }) core ``recurse''
 @end format
-Alias to the current definition.
+現在の定義の別名(alias)。
 
 
 
-@noindent For examples of using these words, @xref{Recursion Tutorial}.
+@noindent
+これらのワードの使用例については @xref{Recursion Tutorial} を参照してください。
 
-@progstyle I prefer using @code{recursive} to @code{recurse}, because
-calling the definition by name is more descriptive (if the name is
-well-chosen) than the somewhat cryptic @code{recurse}.  E.g., in a quicksort
-implementation, it is much better to read (and think) ``now sort the
-partitions'' than to read ``now do a recursive call''.
+@progstyle 私は、@code{recurse} よりも @code{recursive} を使用することを好みます。
+名前で定義を呼び出す方が、 やや難解な @code{recurse} よりも説明的であるためです(名前が適切に選択されていれば)。
+たとえば、クイックソートの実装では、「今、再帰呼び出しを行う」(now do a recursive
+call)と読むよりも、「今、パーティションをソートする」(now sort the
+partitions)と読む(そして考える)方がはるかに優れています。
 
-For mutual recursion, use @code{Defer}red words, like this:
+相互再帰(mutual recursion)の場合は、 以下のように延期ワード(@code{Defer}red words)を使用します:
 
 @example
 Defer foo
@@ -10015,10 +9983,9 @@ Defer foo
 IS foo
 @end example
 
-Deferred words are discussed in more detail in @ref{Deferred Words}.
+延期ワードについては、 @ref{Deferred Words} で詳しく説明します。
 
-The current definition returns control to the calling definition when the
-end of the definition is reached or @code{EXIT} is encountered.
+定義の終わりに達するか、 @code{EXIT} に遭遇すると、 現在の定義は呼び出し元の定義に制御を返します。
 
 @findex EXIT ( @var{ compilation -- ; run-time nest-sys --   } ) core
 @cindex @code{EXIT}
@@ -10026,11 +9993,10 @@ end of the definition is reached or @code{EXIT} is encountered.
 @format
 @code{EXIT} ( @i{compilation -- ; run-time nest-sys --  }) core ``EXIT''
 @end format
-Return to the calling definition; usually used as a way of forcing an early
-return from a definition. Before @code{EXIT}ing you must clean up the return
-stack and @code{UNLOOP} any outstanding @code{?DO}...@code{LOOP}s.  Use
-@code{;s} for a tickable word that behaves like @code{exit} in the absence
-of locals.
+呼び出し元の定義に戻る(return): 通常、 定義から速やかに戻るのを強制する方法として使用されます。 @code{EXIT} する前に、
+リターン・スタックをクリーンアップし、 未処理の @code{?DO}...@code{LOOP} を @code{UNLOOP} する必要があります。
+ローカルズ(locals)が無い場合に @code{exit} のように動作するティック可能なワード(tickable word)には
+@code{;s} を使用します。
 
 
 @findex ?EXIT ( @var{ --   } ) gforth-0.2
@@ -10039,7 +10005,7 @@ of locals.
 @format
 @code{?EXIT} ( @i{--  }) gforth-0.2 ``?EXIT''
 @end format
-Return to the calling definition if @i{f} is true.
+@i{f} が true の場合、 呼び出し元の定義に戻ります(return)。
 
 
 @findex ;s ( @var{ R:w --  } ) gforth-0.2
@@ -10048,7 +10014,7 @@ Return to the calling definition if @i{f} is true.
 @format
 @code{;s} ( @i{R:w -- }) gforth-0.2 ``semis''
 @end format
-The primitive compiled by @code{EXIT}.
+@code{EXIT} によってコンパイルされたプリミティブ。
 
 
 
@@ -10060,9 +10026,8 @@ The primitive compiled by @code{EXIT}.
 @c because it does not translate into a THROW
 @c it also does not belong into this chapter
 
-If a word detects an error condition that it cannot handle, it can
-@code{throw} an exception.  In the simplest case, this will terminate your
-program, and report an appropriate error.
+ワードが処理できないエラー状態を検出した場合、 例外を投げる(@code{throw})ことができます。 最も単純なケースでは、
+これによりプログラムが終了し、適切なエラーが報告されます。
 
 @findex throw ( @var{ y1 .. ym nerror -- y1 .. ym / z1 .. zn error   } ) exception
 @cindex @code{throw}
@@ -10070,9 +10035,9 @@ program, and report an appropriate error.
 @format
 @code{throw} ( @i{y1 .. ym nerror -- y1 .. ym / z1 .. zn error  }) exception ``throw''
 @end format
-If @i{nerror} is 0, drop it and continue.  Otherwise, transfer control to
-the next dynamically enclosing exception handler, reset the stacks
-accordingly, and push @i{nerror}.
+@i{nerror} が 0 の場合は、 それを drop して続行します。 それ以外の場合は、 動的に囲んでいる次の例外ハンドラー(next
+dynamically enclosing exception handler)に制御を移し、 それに応じてスタックをリセットし、 @i{nerror}
+をプッシュします。
 
 
 @findex fast-throw ( @var{ ... wball -- ... wball  } ) gforth-experimental
@@ -10081,26 +10046,24 @@ accordingly, and push @i{nerror}.
 @format
 @code{fast-throw} ( @i{... wball -- ... wball }) gforth-experimental ``fast-throw''
 @end format
-Lightweight @code{throw} variant: only for non-zero balls, and does not
-store a backtrace or deal with missing @code{catch}.
+軽量の @code{throw} バリエーション: ゼロ以外のみに使用され、 バックトレースを保存したり、 欠落している @code{catch}
+を扱ったりしません。
 
 
-@code{Throw} consumes a cell-sized error number on the stack. There are some
-predefined error numbers in Standard Forth (see @file{errors.fs}).  In
-Gforth (and most other systems) you can use the iors produced by various
-words as error numbers (e.g., a typical use of @code{allocate} is
-@code{allocate throw}).  Gforth also provides the word @code{exception} to
-define your own error numbers (with decent error reporting); a Standard
-Forth version of this word (but without the error messages) is available in
-@code{compat/except.fs}.  And finally, you can use your own error numbers
-(anything outside the range -4095..0), but won't get nice error messages,
-only numbers.  For example, try:
+@code{throw} は、スタック上のセル・サイズのエラー番号数値を消費します。 標準 Forth
+には事前定義されたエラー番号がいくつかあります(@file{errors.fs} 参照)。  Gforth (および他のほとんどのシステム)では、
+さまざまなワードによって生成された ior をエラー番号として使用できます(たとえば、 @code{allocate} の一般的な使用法は
+@code{allocate throw} です)。  Gforth は、 (適切なエラー報告付きで)独自のエラー番号を定義するための
+@code{Exception} というワードも提供します。 このワードの標準 Forth バージョン(ただしエラー・メッセージなし) は
+@code{compat/excel.fs} で入手できます。  最後に、 あなた独自のエラー番号(-4095 〜 0
+の範囲以外の任意の番号)を使用できますが、 表示されるのは適切なエラー・メッセージではなく、数字のみです。  たとえば、
+以下のことを試してみてください:
 
 @example
--10 throw                    \ Standard defined
--267 throw                   \ system defined
-s" my error" exception throw \ user defined
-7 throw                      \ arbitrary number
+-10 throw                    \ 標準で定義済
+-267 throw                   \ システムで定義済
+s" my error" exception throw \ ユーザー定義
+7 throw                      \ 思いつくままの任意の番号
 @end example
 
 @findex exception ( @var{ addr u -- n   } ) gforth-0.2
@@ -10109,15 +10072,16 @@ s" my error" exception throw \ user defined
 @format
 @code{exception} ( @i{addr u -- n  }) gforth-0.2 ``exception''
 @end format
-@var{n} is a previously unused @code{throw} value in the range
-(-4095...-256). Consecutive calls to @code{exception} return consecutive
-decreasing numbers. Gforth uses the string @var{addr u} as an error message.
+@var{n} は、 -4095 〜 -256 の範囲内で以前に使用されていなかった @code{throw} 値です。
+@code{Exception} を連続して呼び出すと、 連続して減少する数値が返されます。 Gforth は文字列 @var{addr u}
+をエラー・メッセージとして使用します(訳注: 同じエラーメッセージを使いまわすには、 s" hoge err msg" exception
+constant hoge-error hoge-error ! などとして得られた hoge-error を使いまわす。 hoge-error
+throw 等する)
 
 
 
-There are also cases where you have a word (typically modeled after POSIX'
-@code{strerror}) for converting an error number into a string.  You can use
-the following word to get these strings into Gforth's error handling:
+エラー番号を文字列に変換するためのワード(通常は POSIX の @code{strerror} をモデルにしたもの)がある場合もあります。
+以下のワードを使用すると、 これらの文字列を Gforth のエラー処理に取り込むことができます:
 
 @findex exceptions ( @var{ xt n1 -- n2   } ) gforth-1.0
 @cindex @code{exceptions}
@@ -10125,49 +10089,48 @@ the following word to get these strings into Gforth's error handling:
 @format
 @code{exceptions} ( @i{xt n1 -- n2  }) gforth-1.0 ``exceptions''
 @end format
-@i{Xt} @code{( +n -- c-addr u )} converts an error number in the range
-0<=@i{n}<@i{n1} into an error message.  @code{Exceptions} reserves @i{n1}
-error codes in the range n2-n1<n3<=n2.  When (at some later point in time)
-the Gforth error code @i{n3} in that range is thrown, it pushes @i{n2-n3}
-and then executes @i{xt} to produce the error message.
+throw時: @i{xt} @code{( +n -- c-addr u )} は、 0<=@i{n}<@i{n1}
+の範囲のローカルのエラー・コードをエラー・メッセージに変換します。  @code{Exceptions} は、 n2-n1<n3<=n2 の範囲で
+@i{n1} 個(0 〜 n1)のエラー・コードを予約します。 n2 に、 対応する Gforth エラー・コード(ローカルのエラー番号 0 に対応。
+つまり、 0<=@i{n}<@i{n1} の範囲のローカルのエラー・コードに 対応する Gforth エラー・コードは n2 <= n3 <
+n2+n1)を返します。 (後の時点で)その範囲に対応した Gforth エラー・コード @i{n3} が throw されると、 @i{n2-n3}
+がプッシュされ(つまりローカルのエラー番号に変換した値をプッシュし)、 @i{xt} が実行されて、 @i{xt}
+がエラー・メッセージを生成します(訳注: minos2/pulse-audio.fs 等で確認。 xt にC-interface ワードをセットし、
+外部Cライブラリのエラー・メッセージを gforth 内から表示するのに使っているようだ)
 
 
 
-As an example, if the @code{errno} errors (and the conversion using
-@code{strerror}) was not already directly supported by Gforth, you could tie
-@code{strerror} in as follows:
+たとえば、 C言語ライブラリの @code{errno} エラー (および @code{strerror} を使用した変換) がまだ Gforth
+で直接サポートされていないとした場合、 以下のようにして @code{strerror} を gforth と結び付けることができます:
 
 @example
 ' strerror 1536 exceptions constant errno-base
 : errno-ior ( -- n )
-\ n is the Gforth ior corresponding to the value in errno, so
-\ we have to convert between the ranges here.
-\ ERRNO is not a Gforth word, so you  would have to use the
-\ C interface to access it.
+\ n は errno の値に対応する Gforth ior を求めなければならないので、
+\ ここでerrno 範囲と Gforth ior の範囲の間で変換する必要があります。
+\ ERRNO は Gforth ワードではないため、
+\ それにアクセスするには C インターフェイスを使用する必要があります。
   errno errno-base over - swap 0<> and ;
 @end example
 
-When you call a C function (with the C interface) and its return value
-indictes that an error happened, you can then perform @code{errno-ior throw}
-to produce an exception with the proper error message (such as ``Permission
-denied'').
+C言語の関数(C言語インターフェイス(C interface)を使用)を呼び出し、 その戻り値がエラーが発生したことを示している場合、
+@code{errno-ior throw} を実行して、適切なエラー・メッセージ (``Permission denied''
+など)を含む例外を生成できます。
 
-A common idiom to @code{THROW} a specific @i{err#} if a flag is true is
-this:
+フラグが true の場合、 特定の @i{err#} でエラーを投げる(@code{THROW})一般的な慣用句は以下のとおりです:
 
 @example
 @code{( flag ) 0<> @i{err#} and throw}
 @end example
 
-Your program can provide exception handlers to catch exceptions.  An
-exception handler can be used to correct the problem, or to clean up some
-data structures and just throw the exception to the next exception handler.
-Note that @code{throw} jumps to the dynamically innermost exception
-handler.  The system's exception handler is outermost, and just prints an
-error and restarts command-line interpretation (or, in batch mode (i.e.,
-while processing the shell command line), leaves Gforth).
+あなたのプログラムで、 例外をキャッチする例外ハンドラーを提供できます。  例外ハンドラーを使用すると、 問題を修正したり、
+一部のデータ構造をクリーンアップして例外を次の例外ハンドラーに投げたり(throw)することができます。  @code{throw}
+は動的に最も内側の例外ハンドラー(the dynamically innermost exception
+handler)にジャンプすることに注意してください。 システムの例外ハンドラーは最も外側にあり、
+エラーを出力してコマンド・ラインの解釈(interpretation)を再開するだけです(または、 バッチ・モード(つまり、
+シェル・コマンド・ラインの処理中)では Gforth を終了します)。
 
-The Standard Forth way to catch exceptions is @code{catch}:
+例外をキャッチする標準 Forth での方法は @code{catch} です:
 
 @findex catch ( @var{ x1 .. xn xt -- y1 .. ym 0 / z1 .. zn error   } ) exception
 @cindex @code{catch}
@@ -10175,10 +10138,9 @@ The Standard Forth way to catch exceptions is @code{catch}:
 @format
 @code{catch} ( @i{x1 .. xn xt -- y1 .. ym 0 / z1 .. zn error  }) exception ``catch''
 @end format
-@code{Executes} @i{xt}.  If execution returns normally, @code{catch} pushes
-0 on the stack.  If execution returns through @code{throw}, all the stacks
-are reset to the depth on entry to @code{catch}, and the TOS (the @i{xt}
-position) is replaced with the throw code.
+@i{xt} を実行します。  実行から正常に戻った場合、 @code{catch} はスタックに 0 をプッシュします。  @code{throw}
+を介して実行が戻った場合、 すべてのスタックは @code{catch} へ入る時点の深さにリセットされ、 TOS (@i{xt} の位置) は
+throw コードに置き換えられます。
 
 
 @findex nothrow ( @var{ --   } ) gforth-0.7
@@ -10187,14 +10149,12 @@ position) is replaced with the throw code.
 @format
 @code{nothrow} ( @i{--  }) gforth-0.7 ``nothrow''
 @end format
-Use this (or the standard sequence @code{['] false catch 2drop})  after a
-@code{catch} or @code{endtry} that does not rethrow; this ensures that the
-next @code{throw} will record a backtrace.
+再 throw しない @code{catch} または @code{endtry} の後ろでこれ (または標準のシーケンス @code{[']
+false catch 2drop}) を使用します。 これにより、 次の @code{throw} でバックトレースが確実に記録されます。
 
 
 
-The most common use of exception handlers is to clean up the state when an
-error happens.  E.g.,
+例外ハンドラーの最も一般的な使用法は、 エラーが発生したときに状態をクリーンアップすることです。  例：
 
 @example
 base @@ >r hex \ actually the HEX should be inside foo to protect
@@ -10204,8 +10164,7 @@ r> base !
 ( nerror|0 ) throw \ pass it on
 @end example
 
-A use of @code{catch} for handling the error @code{myerror} might look like
-this:
+@code{myerror} というエラー番号を処理するための @code{catch} の使用は以下のようになります:
 
 @example
 ['] foo catch
@@ -10215,8 +10174,7 @@ CASE
 ENDCASE
 @end example
 
-Having to wrap the code into a separate word is often cumbersome, therefore
-Gforth provides an alternative syntax:
+コードを別のワードでくるむ要があるのは面倒な場合が多いため、 Gforth では代替構文を提供しています:
 
 @example
 TRY
@@ -10228,11 +10186,9 @@ TRY
 ENDTRY
 @end example
 
-This performs @i{code1}.  If @i{code1} completes normally, execution
-continues with @i{code3}.  If there is an exception in @i{code1} or before
-@code{endtry}, the stacks are reset to the depth during @code{try}, the
-throw value is pushed on the data stack, and execution continues at
-@i{code2}, and finally falls through to @i{code3}.
+これは、 @i{code1} を実行しします。 @i{code1} が正常に完了すると、 @i{code3} の実行へ続きます。   @i{code1}
+または、 @code{endtry} より前で例外があった場合、 スタックは @code{try} 時の深さにリセットされ、 throw
+された値をデータ・スタックにプッシュし、 @i{code2} の実行に続き、 そして、 最終的に @i{code3} に到達します。
 
 @findex try ( @var{ compilation  -- orig ; run-time  -- R:sys1   } ) gforth-0.5
 @cindex @code{try}
@@ -10240,7 +10196,7 @@ throw value is pushed on the data stack, and execution continues at
 @format
 @code{try} ( @i{compilation  -- orig ; run-time  -- R:sys1  }) gforth-0.5 ``try''
 @end format
-Start an exception-catching region.
+例外キャッチ領域の開始
 
 
 @findex endtry ( @var{ compilation  -- ; run-time  R:sys1 --   } ) gforth-0.5
@@ -10249,7 +10205,7 @@ Start an exception-catching region.
 @format
 @code{endtry} ( @i{compilation  -- ; run-time  R:sys1 --  }) gforth-0.5 ``endtry''
 @end format
-End an exception-catching region.
+例外キャッチ領域の終わり
 
 
 @findex iferror ( @var{ compilation  orig1 -- orig2 ; run-time  --   } ) gforth-0.7
@@ -10258,14 +10214,12 @@ End an exception-catching region.
 @format
 @code{iferror} ( @i{compilation  orig1 -- orig2 ; run-time  --  }) gforth-0.7 ``iferror''
 @end format
-Starts the exception handling code (executed if there is an exception
-between @code{try} and @code{endtry}).  This part has to be finished with
-@code{then}.
+例外処理コードを開始します(@code{try} と @code{endtry} の間に例外がある場合に実行されます)。 この部分は
+@code{then} で終了する必要があります。
 
 
 
-If you don't need @i{code2}, you can write @code{restore} instead of
-@code{iferror then}:
+@i{code2} が必要ない場合は、 @code{iferror then} の代わりに @code{restore} を記述できます:
 
 @example
 TRY
@@ -10276,7 +10230,7 @@ ENDTRY
 @end example
 
 @cindex unwind-protect
-The cleanup example from above in this syntax:
+先程の例をこの構文で身綺麗にしてみます:
 
 @example
 base @@ @{ oldbase @}
@@ -10289,24 +10243,19 @@ ENDTRY
 throw
 @end example
 
-An additional advantage of this variant is that an exception between
-@code{restore} and @code{endtry} (e.g., from the user pressing @kbd{Ctrl-C})
-restarts the execution of the code after @code{restore}, so the base will be
-restored under all circumstances.
+このバリエーションの追加の利点は、 @code{restore} と @code{endtry} の間の例外(たとえば、 ユーザーが
+@kbd{Ctrl-C} を押すことによる例外)でも、 @code{restore} の直後へコードの実行が移ることです。 ゆえに、
+いかなる状況であっても base は復元されます。
 
-However, you have to ensure that this code does not cause an exception
-itself, otherwise the @code{iferror}/@code{restore} code will loop.
-Moreover, you should also make sure that the stack contents needed by the
-@code{iferror}/@code{restore} code exist everywhere between @code{try} and
-@code{endtry}; in our example this is achived by putting the data in a local
-before the @code{try} (you cannot use the return stack because the exception
-frame (@i{sys1}) is in the way there).
+ただし、 このコード自体が例外を引き起こさないようにする必要があります。 そうしないと、 @code{iferror}/@code{restore}
+コードがループします。  さらに、 @code{iferror}/@code{restore} コードで必要なスタックの内容が @code{try} と
+@code{endtry} の間のあらゆる場所に存在することも確認する必要があります。 この例では、 これは @code{try}
+の前にデータを「ローカルズ」(locals)に置くことによって実現されます(リターン・スタック上の例外フレーム(@i{sys1})が邪魔なのでリターン・スタックは使用できません)。
 
-This kind of usage corresponds to Lisp's @code{unwind-protect}.
+この種の使用法は、 Lisp の @code{unwind-protect} と同様のものです。
 
 @cindex @code{recover} (old Gforth versions)
-If you do not want this exception-restarting behaviour, you achieve this as
-follows:
+もし、あなたが、 この例外再開始(exception-restarting)の振る舞いを望まない場合は、 以下のようにしてください:
 
 @example
 TRY
@@ -10316,9 +10265,8 @@ ENDTRY-IFERROR
 THEN
 @end example
 
-If there is an exception in @i{code1}, then @i{code2} is executed, otherwise
-execution continues behind the @code{then} (or in a possible @code{else}
-branch).  This corresponds to the construct
+@i{code1} に例外がある場合は @i{code2} が実行され、 それ以外の場合は @code{then} の後ろ (または
+@code{else} 分岐の可能性あり) から実行が続行されます。 これはバージョン 0.7 より前の Gforth では以下の構成要素に該当します
 
 @example
 TRY
@@ -10328,20 +10276,16 @@ RECOVER
 ENDTRY
 @end example
 
-in Gforth before version 0.7.  So you can directly replace
-@code{recover}-using code; however, we recommend that you check if it would
-not be better to use one of the other @code{try} variants while you are at
-it.
+つまり、 この @code{recover} を使用しているコードを直に @code{try ... entry-iferror ... then}
+へと置き換えることができます。 ただし、 その置き換え作業中に他の @code{try}
+バリエーションのいずれかを使用した方が良いかどうかも検討することをお勧めします。
 
-To ease the transition, Gforth provides two compatibility files:
-@file{endtry-iferror.fs} provides the @code{try ... endtry-iferror ... then}
-syntax (but not @code{iferror} or @code{restore}) for old systems;
-@file{recover-endtry.fs} provides the @code{try ... recover ... endtry}
-syntax on new systems, so you can use that file as a stopgap to run old
-programs.  Both files work on any system (they just do nothing if the system
-already has the syntax it implements), so you can unconditionally
-@code{require} one of these files, even if you use a mix old and new
-systems.
+移行を容易にするために、 Gforth は 2 つの互換性ファイルを提供します:  1つ目は @file{endtry-iferror.fs} で、
+古いシステム用に @code{try ... endtry-iferror ... then} 構文を提供します(ただし、 @code{iferror}
+または @code{restore} は提供しません)。 2つ目の @file{recover-endtry.fs} は、 新しいシステム上で古い構文の
+@code{try ... recover ... endtry} 構文を提供するので、 古いプログラムを実行するための一時しのぎとして使用できます。
+どちらのファイルもどのシステムでも動作します(システムが、 実装する構文を既に定義済みの場合は何も行わないだけです)。 そのため、
+古いシステムと新しいシステムを混在させて使用している場合でも、 これらのファイルのいずれかを無条件に @code{require} することができます。
 
 @findex restore ( @var{ compilation  orig1 -- ; run-time  --   } ) gforth-0.7
 @cindex @code{restore}
@@ -10349,8 +10293,7 @@ systems.
 @format
 @code{restore} ( @i{compilation  orig1 -- ; run-time  --  }) gforth-0.7 ``restore''
 @end format
-Starts restoring code, that is executed if there is an exception, and if
-there is no exception.
+コードの復元(restore)を開始します。 これは、 例外がある場合と無い場合に行われます。
 
 
 @findex endtry-iferror ( @var{ compilation  orig1 -- orig2 ; run-time  R:sys1 --   } ) gforth-0.7
@@ -10359,14 +10302,13 @@ there is no exception.
 @format
 @code{endtry-iferror} ( @i{compilation  orig1 -- orig2 ; run-time  R:sys1 --  }) gforth-0.7 ``endtry-iferror''
 @end format
-End an exception-catching region while starting exception-handling code
-outside that region (executed if there is an exception between @code{try}
-and @code{endtry-iferror}).  This part has to be finished with @code{then}
-(or @code{else}...@code{then}).
+例外キャッチ領域を終了し、 その領域外で例外処理コードを開始します(@code{try} と @code{endtry-iferror}
+の間に例外がある場合に実行されます)。  この部分は @code{then} (または @code{else}...@code{then})
+で終了する必要があります。
 
 
 
-Here's the error handling example:
+ここで、 エラー処理の例を以下に示します:
 
 @example
 TRY
@@ -10379,19 +10321,16 @@ ENDTRY-IFERROR
 THEN
 @end example
 
-@progstyle As usual, you should ensure that the stack depth is statically
-known at the end: either after the @code{throw} for passing on errors, or
-after the @code{ENDTRY} (or, if you use @code{catch}, after the end of the
-selection construct for handling the error).
+@progstyle いつものように、 エラーを渡すための @code{throw} の後、 または @code{ENDTRY}
+の後のいずれか(または、@code{catch} を使用する場合は、エラーを処理するための選択構造の終了後)で、
+スタックの深さが静的に明白であることを保証する必要があります。
 
-There are two alternatives to @code{throw}: @code{Abort"} is conditional and
-you can provide an error message.  @code{Abort} just produces an ``Aborted''
-error.
+@code{throw} の代替は 2 つあります: @code{Abort"} は条件付きでエラー・メッセージを提供できます。
+@code{Abort} は「中止」(Abort)エラーを生成するだけです。
 
-The problem with these words is that exception handlers cannot differentiate
-between different @code{abort"}s; they just look like @code{-2 throw} to
-them (the error message cannot be accessed by standard programs).  Similar
-@code{abort} looks like @code{-1 throw} to exception handlers.
+これらのワードの問題は、 例外ハンドラーが、 異なる @code{abort"} を区別できないことです。 例外ハンドラーにとってはそれらは
+@code{-2 throw} のように見えるだけです(標準のプログラムではエラー・メッセージにアクセスできません)。 同様に、
+@code{abort} は例外ハンドラーに対して @code{-1 throw} のように見えます。
 
 @findex ABORT" ( @var{ compilation 'ccc"' -- ; run-time f --   } ) core,exception-ext
 @cindex @code{ABORT"}
@@ -10399,9 +10338,8 @@ them (the error message cannot be accessed by standard programs).  Similar
 @format
 @code{ABORT"} ( @i{compilation 'ccc"' -- ; run-time f --  }) core,exception-ext ``abort-quote''
 @end format
-If any bit of @i{f} is non-zero, perform the function of @code{-2 throw},
-displaying the string @i{ccc} if there is no exception frame on the
-exception stack.
+@i{f} のいずれかのビットがゼロ以外の場合、 @code{-2 throw} の機能を実行し、 例外スタック上例外フレームがない場合は文字列
+@i{ccc} を表示します。
 
 
 @findex abort ( @var{ ?? -- ??   } ) core,exception-ext
@@ -10414,9 +10352,8 @@ exception stack.
 
 
 
-For problems that are not that awful that you need to abort execution, you
-can just display a warning.  The variable @code{warnings} allows to tune how
-many warnings you see.
+実行を中止する必要があるほど深刻でない問題の場合は、 警告を表示するだけで済みます。  変数 @code{warnings} を使用すると、
+表示される警告の数を調整できます。
 
 @findex WARNING" ( @var{ compilation 'ccc"' -- ; run-time f --   } ) gforth-1.0
 @cindex @code{WARNING"}
@@ -10424,7 +10361,7 @@ many warnings you see.
 @format
 @code{WARNING"} ( @i{compilation 'ccc"' -- ; run-time f --  }) gforth-1.0 ``WARNING"''
 @end format
-if @i{f} is non-zero, display the string @i{ccc} as warning message.
+@i{f} がゼロ以外の場合、 警告メッセージとして文字列 @i{ccc} を表示します。
 
 
 @findex warnings ( @var{ -- addr   } ) gforth-0.2
@@ -10433,18 +10370,18 @@ if @i{f} is non-zero, display the string @i{ccc} as warning message.
 @format
 @code{warnings} ( @i{-- addr  }) gforth-0.2 ``warnings''
 @end format
-set warnings level to
+以下の警告レベルをセットしてください
 @table @code
 @item 0
-turns warnings off
+警告オフ
 @item -1
-turns normal warnings on
+通常警告オン
 @item -2
-turns beginner warnings on
+初心者警告オン
 @item -3
-pedantic warnings on
+偏執狂敵警告オン
 @item -4
-turns warnings into errors (including beginner warnings)
+全ての警告をエラーとして扱います(初心者警告を含む)
 @end table
 
 

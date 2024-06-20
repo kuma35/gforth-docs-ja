@@ -390,7 +390,7 @@ File: gforth.info,  Node: Counted Loops,  Next: BEGIN loops with multiple exits,
 6.9.3 Counted Loops
 -------------------
 
-基本のカウンタ付きループ:
+基本のカウント・ループ:
      limit start ?DO
        body
      LOOP
@@ -668,11 +668,11 @@ File: gforth.info,  Node: BEGIN loops with multiple exits,  Next: General contro
 6.9.4 ‘Begin’ loops with multiple exits
 ---------------------------------------
 
-For counted loops, you can use ‘leave’ in several places.  For ‘begin’
-loops, you have the following options:
+カウント・ループの場合、 複数箇所で ‘leave’ を使用できます。 ‘begin’ ル
+ープの場合は、 以下の選択肢があります:
 
-   Use ‘exit’ (possibly several times) in the loop to leave not just the
-loop, but the whole colon definition.  E.g.,:
+   ループ内で ‘exit’ を使用(複数記述できます)すると、 ループだけでなくコ
+ロン定義全体からも去ります。 例:
 
      : foo
        begin
@@ -685,14 +685,13 @@ loop, but the whole colon definition.  E.g.,:
        repeat
        exit-code1 ;
 
-   The disadvantage of this approach is that, if you want to have some
-common code afterwards, you either have to wrap ‘foo’ in another word
-that contains the common code, or you have to call the common code
-several times, from each exit-code.
+   このアプローチの欠点は、 ループ後に共通コードが必要な場合、 共通コー
+ドを含む別のワードで ‘foo’ を包むか、 または、 それぞれの exit-code から
+共通コードを呼び出す必要があることです。
 
-   Another approach is to use several ‘while’s in a ‘begin’ loop.  You
-have to append a ‘then’ behind the loop for every additional ‘while’.
-E.g.,;
+   もう 1 つのアプローチは、 ‘begin’ ループ内で複数の ‘while’ を使用する
+ことです。 追加の ‘while’ ごとにループの後ろに ‘then’ を追加する必要があ
+ります。 例:
 
      begin
        condition1 while
@@ -700,14 +699,14 @@ E.g.,;
            condition3 while
      again then then then
 
-   Here I used ‘again’ at the end of the loop so that I would have a
-‘then’ for each ‘while’; ‘repeat’ would result in one less ‘then’, but
-otherwise the same behaviour.  For an explanation of why this works,
-*Note Arbitrary control structures::.
+   ここでは、 ループの最後に ‘again’ を使用して、 各 ‘while’ に ‘then’ を
+用意しました。 ‘repeat’ は ‘then’ を 1 つ減らしますが、 それ以外の場合は
+同じ動作になります。 これが機能する理由の説明については、 *Note
+Arbitrary control structures:: をご覧下さい。
 
-   We can have common code afterwards, but, as presented above, we
-cannot have different exit-codes for the different exits.  You can have
-these different exit-codes, as follows:
+   後で共通のコードを使用することはできますが、 上で示したように、 異な
+る出口(exit)に対して異なる exit-code を使用することはできません。 以下の
+ようにすると、 これらの異なる exit-code を使用できます:
 
      begin
        condition1 while
@@ -717,9 +716,8 @@ these different exit-codes, as follows:
      else exit-code2 then
      else exit-code1 then
 
-   This is relatively hard to comprehend, because the exit-codes are
-relatively far from the exit conditions (it does not help that we are
-not used to such control structures, either).
+   exit-code は終了条件から比較的離れているため、 これを理解するのは比較
+的困難です(このような制御構造に慣れていないことも理由にはなりません)。
 
 
 File: gforth.info,  Node: General control structures with CASE,  Next: Arbitrary control structures,  Prev: BEGIN loops with multiple exits,  Up: Control Structures
@@ -727,14 +725,12 @@ File: gforth.info,  Node: General control structures with CASE,  Next: Arbitrary
 6.9.5 General control structures with ‘case’
 --------------------------------------------
 
-Gforth provides an extended ‘case’ that solves the problems of the
-multi-exit loops discussed above, and offers additional options.  You
-can find a portable implementation of this extended ‘case’ in
-‘compat/caseext.fs’.
+Gforth は、 拡張 ‘case’ を提供することで、 上で説明した複数出口ループの
+問題を解決する追加のオプションを提供します。 この拡張 ‘case’ の移植可能
+な実装は ‘compat/caseext.fs’ にあります。
 
-   There are three additional words in the extension.  The first is
-‘?of’ which allows general tests (rather than just testing for equality)
-in a ‘case’; e.g.,
+   この拡張には 3 つの追加ワードがあります。 1 つ目は ‘?of’ で、 ‘case’
+内で(単なる同等性のテストではなく、)一般的なテストが可能です。 例:
 
      : sgn ( n -- -1|0|1 )
        ( n ) case
@@ -743,13 +739,14 @@ in a ‘case’; e.g.,
          \ otherwise leave the 0 on the stack
        0 endcase ;
 
-   Note that ‘endcase’ drops a value, which works fine much of the time
-with ‘of’, but usually not with ‘?of’, so we leave a 0 on the stack for
-‘endcase’ to drop.  The n that is passed into ‘sgn’ is also 0 if neither
-‘?of’ triggers, and that is then passed out.
+   注意: ‘endcase’ は値(a value)を drop することに注意してください。 こ
+れは ‘of’ ではほとんどうまいこと機能しますが、 ‘?of’ ではたいていうまい
+こといかないので、 今回も ‘endcase’ で drop するための値として 0 をスタ
+ック置きます。 ここでは、 ‘sgn’ に渡される n は、 いずれの ‘?of’ もトリ
+ガーしない場合返り値の 0 そのものになります。
 
-   The second additional word is ‘next-case’, which allows turning
-‘case’ into a loop.  Our triple-exit loop becomes:
+   2 番目の追加ワードは ‘next-case’ で、 これにより ‘case’ をループに変
+えることができます。 出口が3つのループは以下のようになります:
 
      case
        condition1 ?of exit-code1 endof
@@ -759,13 +756,14 @@ with ‘of’, but usually not with ‘?of’, so we leave a 0 on the stack for
      next-case
      common code afterwards
 
-   As you can see, this solves both problems of the variants discussed
-above (*note BEGIN loops with multiple exits::).  Note that ‘next-case’
-does not drop a value, unlike ‘endcase’.(1)
+   ご覧のとおり、 これにより、 先程議論したバリエーションの両方の問題が
+解決されます(*note BEGIN loops with multiple exits::)。 注意: ‘endcase’
+とは異なり、 ‘next-case’ は値をドロップしないことに注意してください。
+(1)
 
-   The last additional word is ‘contof’, which is used instead of
-‘endof’ and starts the next iteration instead of leaving the loop.  This
-can be used in ways similar to Dijkstra’s guarded command do, e.g.:
+   最後の追加ワードは ‘contof’ です。 これは ‘endof’ の代わりに使用され
+、 ループを終了する代わりに次の反復を開始します。 これは、 ダイクストラ
+のガード付きコマンド 繰り返し: do と同様の方法で使用できます。 例:
 
      : gcd ( n1 n2 -- n )
          case
@@ -773,12 +771,13 @@ can be used in ways similar to Dijkstra’s guarded command do, e.g.:
              2dup < ?of over - contof
          endcase ;
 
-   Here the two ‘?of’s have different ways of continuing the loop; when
-neither ‘?of’ triggers, the two numbers are equal and are the gcd.
-‘Endcase’ drops one of them, leaving the other as n.
+   ここで、 2 つの ‘?of’ はループを継続する異なる方法を持っています。 ど
+ちらの ‘?of’ もトリガーされない場合、 2 つの数値は等しく、gcd(最大公約数
+) になります。 ‘Endcase’ はそれらの 1 つを削除し、もう 1 つは n として残
+します。
 
-   You can also combine these words.  Here’s an example that uses each
-of the ‘case’ words once, except ‘endcase’:
+   これらのワードを組み合わせることもできます。 以下は、 ‘endcase’ を除
+く、 各 ‘case’ ワードをそれぞれ 1 回使用する例です:
 
      : collatz ( u -- )
          \ print the 3n+1 sequence starting at u until we reach 1
@@ -789,16 +788,17 @@ of the ‘case’ words once, except ‘endcase’:
              2/
          next-case ;
 
-   This example keeps the current value of the sequence on the stack.
-If it is 1, the ‘of’ triggers, drops the value, and leaves the ‘case’
-structure.  For odd numbers, the ‘?of’ triggers, computes 3n+1, and
-starts the next iteration with ‘contof’.  Otherwise, if the number is
-even, it is divided by 2, and the loop is restarted with ‘next-case’.
+   この例では、 シーケンスの現在の値をスタックに保持します。 1 の場合、
+‘of’ がトリガーされ、 値が削除され、 ‘case’ 構造から去ります。 奇数の場
+合、 ‘?of’ がトリガーされ、 3n+1 が計算され、 ‘contof’ で次の反復が開始
+されます。 それ以外の場合、 数値が偶数の場合は 2 で除算され、
+‘next-case’ でループが再開されます。
 
    ---------- Footnotes ----------
 
-   (1) ‘Next-case’ has a ‘-’, unlike the other ‘case’ words, because VFX
-Forth contains a ‘nextcase’ that drops a value.
+   (1) ‘next-case’ は、 他の ‘case’ ワード群とは異なり、 名前にハイフン
+(‘-’)が含まれています。 VFX Forth には値をドロップする ‘nextcase’ がある
+ので、これと区別するためです。
 
 
 File: gforth.info,  Node: Arbitrary control structures,  Next: Calls and returns,  Prev: General control structures with CASE,  Up: Control Structures
@@ -806,40 +806,40 @@ File: gforth.info,  Node: Arbitrary control structures,  Next: Calls and returns
 6.9.6 Arbitrary control structures
 ----------------------------------
 
-Standard Forth permits and supports using control structures in a
-non-nested way.  Information about incomplete control structures is
-stored on the control-flow stack.  This stack may be implemented on the
-Forth data stack, and this is what we have done in Gforth.
+標準 Forth は、 ネストされない方法での制御構造の使用を許可・サポートしま
+す。 まだ完成されてない制御構造に関する情報は、 制御フロー・スタック
+(control-flow stack)に保存されます。 このスタックは Forth のデータ・スタ
+ック上に実装でき、 Gforth はそうしました。
 
-   An orig entry represents an unresolved forward branch, a dest entry
-represents a backward branch target.  A few words are the basis for
-building any control structure possible (except control structures that
-need storage, like calls, coroutines, and backtracking).
+   orig エントリは未解決の前方分岐を表し、 dest エントリは後方分岐ターゲ
+ットを表します。 いくつかのワードは、 可能なあらゆる制御構造を構築するた
+めの基礎となります(ストレージを必要とする制御構造を除く、 呼び出しやコル
+ーチンやバックトラッキングなど)。
 
 ‘IF’ ( compilation – orig ; run-time f –  ) core “IF”
-   At run-time, if f=0, execution continues after the ‘THEN’ (or ‘ELSE’)
-that consumes the orig, otherwise right after the ‘IF’ (*note
-Selection::).
+   実行時(run-time)、 f=0 の場合、 orig を消費する ‘THEN’ (または
+‘ELSE’) の後から実行が続行されます。 それ以外の場合は、 ‘IF’ の直後に続
+きます(*note Selection::)。
 
 ‘AHEAD’ ( compilation – orig ; run-time –  ) tools-ext “AHEAD”
-   At run-time, execution continues after the ‘THEN’ that consumes the
-orig.
+   実行時、 orig を消費する ‘THEN’ の後から実行が続行されます。
 
 ‘THEN’ ( compilation orig – ; run-time –  ) core “THEN”
-   The ‘IF’, ‘AHEAD’, ‘ELSE’ or ‘WHILE’ that pushed orig jumps right
-after the ‘THEN’ (*note Selection::).
+   orig にプッシュした ‘IF’ または ‘AHEAD’ または ‘ELSE’ または ‘WHILE’
+は、 ‘THEN’ の直後にジャンプします(*note Selection::)。
 
 ‘BEGIN’ ( compilation – dest ; run-time –  ) core “BEGIN”
-   The ‘UNTIL’, ‘AGAIN’ or ‘REPEAT’ that consumes the dest jumps right
-behind the ‘BEGIN’ (*note Simple Loops::).
+   dest を消費する ‘UNTIL’ または ‘AGAIN’ または ‘REPEAT’ は、 ‘BEGIN’ の
+直後へジャンプします(*note Simple Loops::)。
 
 ‘UNTIL’ ( compilation dest – ; run-time f –  ) core “UNTIL”
-   At run-time, if f=0, execution continues after the ‘BEGIN’ that
-produced dest, otherwise right after the ‘UNTIL’ (*note Simple Loops::).
+   実行時、 f=0 の場合、 dest を生成した ‘BEGIN’ の後で実行が続行されま
+す。 それ以外の場合は、 ‘UNTIL’の直後から実行が続行されます(*note Simple
+Loops::)。
 
 ‘AGAIN’ ( compilation dest – ; run-time –  ) core-ext “AGAIN”
-   At run-time, execution continues after the ‘BEGIN’ that produced the
-dest (*note Simple Loops::).
+   実行時、 dest を生成した ‘BEGIN’ の後から実行が続行されます(*note
+Simple Loops::)。
 
 ‘CS-PICK’ ( orig0/dest0 orig1/dest1 ... origu/destu u – ... orig0/dest0  ) tools-ext “c-s-pick”
 
@@ -847,83 +847,85 @@ dest (*note Simple Loops::).
 
 ‘CS-DROP’ ( dest –  ) gforth-1.0 “CS-DROP”
 
-   The Standard words ‘CS-PICK’ and ‘CS-ROLL’ allow you to manipulate
-the control-flow stack in a portable way.  Without them, you would need
-to know how many stack items are occupied by a control-flow entry (many
-systems use one cell.  In Gforth they currently take three, but this may
-change in the future).
+   標準ワードの ‘CS-PICK’ や ‘CS-ROLL’ を使用すると、 移植可能な方法で制
+御フロー・スタックを操作できます。 これら無しだと制御フロー・エントリが
+占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを
+使用します。 Gforth では現在 3 つを使用しますが、 これは将来変更される可
+能性があります)。
 
-   ‘CS-PICK’ can only pick a dest and ‘CS-DROP’ can only drop a dest,
-because an orig must be resolved exactly once.
+   orig は 1 回だけ解決する必要があるため、 ‘CS-PICK’ は dest を pick す
+ることしかできず、 かつ、 ‘CS-DROP’ は dest を drop することしかできませ
+ん。
 
-   Some standard control structure words are built from these words:
+   一部の標準の制御構造ワードは、 以下のワード群から構築されます:
 
 ‘ELSE’ ( compilation orig1 – orig2 ; run-time –  ) core “ELSE”
-   At run-time, execution continues after the ‘THEN’ that consumes the
-orig; the ‘IF’, ‘AHEAD’, ‘ELSE’ or ‘WHILE’ that pushed orig1 jumps right
-after the ‘ELSE’.  (*note Selection::).
+   実行時、 orig を消費する ‘THEN’ の後から実行が続行されます。 orig1 を
+プッシュした ‘IF’ または ‘AHEAD’ または ‘ELSE’ または ‘WHILE’ は、
+‘ELSE’ の直後にジャンプします(*note Selection::)。
 
 ‘WHILE’ ( compilation dest – orig dest ; run-time f –  ) core “WHILE”
-   At run-time, if f=0, execution continues after the ‘REPEAT’ (or
-‘THEN’ or ‘ELSE’) that consumes the orig, otherwise right after the
-‘WHILE’ (*note Simple Loops::).
+   実行時、 f=0 の場合、 orig を消費する ‘REPEAT’ (または ‘THEN’ または
+‘ELSE’) の後から実行が継続されます。 それ以外の場合は、 ‘WHILE’ の直後か
+ら実行されます(*note Simple Loops::)。
 
 ‘REPEAT’ ( compilation orig dest – ; run-time –  ) core “REPEAT”
-   At run-time, execution continues after the ‘BEGIN’ that produced the
-dest; the ‘WHILE’, ‘IF’, ‘AHEAD’ or ‘ELSE’ that pushed orig jumps right
-after the ‘REPEAT’.  (*note Simple Loops::).
+   実行時、 dest を生成した ‘BEGIN’ の後から実行が続行されます。 orig を
+プッシュした ‘WHILE’ または ‘IF’ または ‘AHEAD’ または ‘ELSE’ は、
+‘REPEAT’ の直後にジャンプします(*note Simple Loops::)。
 
-Gforth adds some more control-structure words:
+Gforth は、さらにいくつかの制御構造ワードを追加します:
 
 ‘ENDIF’ ( compilation orig – ; run-time –  ) gforth-0.2 “ENDIF”
-   Same as ‘THEN’.
+   ‘THEN’ と同一です。
 
 ‘?dup-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-if”
-   This is the preferred alternative to the idiom "‘?DUP IF’", since it
-can be better handled by tools like stack checkers.  Besides, it’s
-faster.
+   これは、スタック・チェッカー(stack checker)などのツールでより適切に処
+理できるため、 イディオム「‘?DUP IF’」の代替として推奨されます。 しかも
+、 ‘?DUP IF’ より速いです。
 
 ‘?DUP-0=-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-zero-equals-if”
 
-Another group of control structure words are:
+制御構造ワードのもう一つのグループ:
 
 ‘case’ ( compilation  – case-sys ; run-time  –  ) core-ext “case”
-   Start a ‘case’ structure.
+   ‘case’ 構造の開始。
 
 ‘endcase’ ( compilation case-sys – ; run-time x –  ) core-ext “end-case”
-   Finish the ‘case’ structure; drop x, and continue behind the
-‘endcase’.  Dropping x is useful in the original ‘case’ construct (with
-only ‘of’s), but you may have to supply an x in other cases (especially
-when using ‘?of’).
+   ‘case’ 構造を終わらせます。 x を drop して、‘endcase’ の後ろへ進みま
+す。 x の drop は、 元の(‘of’ のみの)‘case’ 構造では便利ですが、 他の場
+合(特に ‘?of’ を使用する場合)では(drop する為の) x を明示的に指定する必
+要がある場合があります。
 
 ‘next-case’ ( compilation case-sys – ; run-time –  ) gforth-1.0 “next-case”
-   Restart the ‘case’ loop by jumping to the matching ‘case’.  Note that
-‘next-case’ does not drop a cell, unlike ‘endcase’.
+   マッチする ‘case’ にジャンプして、 ‘case’ ループを再開します。
+‘endcase’ とは異なり、 ‘next-case’ はセルを drop しないことに注意してく
+ださい。
 
 ‘of’ ( compilation  – of-sys ; run-time x1 x2 – |x1  ) core-ext “of”
-   If x1=x2, continue (dropping both); otherwise, leave x1 on the stack
-and jump behind ‘endof’ or ‘contof’.
+   x1=x2 の場合は続行します(両方を drop します)。 それ以外の場合は、 x1
+をスタック上に残し、 ‘endof’ または ‘contof’ の後ろにジャンプします。
 
 ‘?of’ ( compilation  – of-sys ; run-time  f –  ) gforth-1.0 “question-of”
-   If f is true, continue; otherwise, jump behind ‘endof’ or ‘contof’.
+   f が true の場合は続行します。 それ以外の場合は、 ‘endof’ または
+‘contof’ の後ろにジャンプします。
 
 ‘endof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) core-ext “end-of”
-   Exit the enclosing ‘case’ structure by jumping behind
-‘endcase’/‘next-case’.
+   ‘endcase’/‘next-case’ の後ろにジャンプして、 囲んでいる ‘case’ 構造体
+を終了(exit)します。
 
 ‘contof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) gforth-1.0 “cont-of”
-   Restart the ‘case’ loop by jumping to the enclosing ‘case’.
+   囲んでいる ‘case’ にジャンプして、 ‘case’ ループを再開します。
 
-   Internally, of-sys is an ‘orig’; and case-sys is a cell and some
-stack-depth information, 0 or more ‘orig’s, and a ‘dest’.
+   内部的には、 of-sys は ‘orig’ で、 case-sys はセルとスタック深さ情報
+と、0 個以上の ‘orig’ と、 ‘dest’ です。
 
 6.9.6.1 Programming Style
 .........................
 
-In order to ensure readability we recommend that you do not create
-arbitrary control structures directly, but define new control structure
-words for the control structure you want and use these words in your
-program.  For example, instead of writing:
+読みやすさを確保するために、 任意の制御構造を直接作成せず、 必要な制御構
+造に対して新しい制御構造ワードを定義し、 プログラム内でこれらのワードを
+使用することをお勧めします。たとえば、 以下のように書く代わりに:
 
      BEGIN
        ...
@@ -931,7 +933,7 @@ program.  For example, instead of writing:
        ...
      AGAIN THEN
 
-we recommend defining control structure words, e.g.,
+以下のように制御構造のワードを定義することをお勧めします。 例:
 
      : WHILE ( DEST -- ORIG DEST )
       POSTPONE IF
@@ -941,7 +943,7 @@ we recommend defining control structure words, e.g.,
       POSTPONE AGAIN
       POSTPONE THEN ; immediate
 
-and then using these to create the control structure:
+そして、 次に、 これらを使用して制御構造を作成します:
 
      BEGIN
        ...
@@ -949,9 +951,8 @@ and then using these to create the control structure:
        ...
      REPEAT
 
-   That’s much easier to read, isn’t it?  Of course, ‘REPEAT’ and
-‘WHILE’ are predefined, so in this example it would not be necessary to
-define them.
+   このほうがずっと読みやすいですよね。 もちろん、 ‘REPEAT’ と ‘WHILE’ は
+定義済みなので、 この例を見て改めて定義する必要はありません。
 
 
 File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: Arbitrary control structures,  Up: Control Structures
@@ -959,28 +960,30 @@ File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: A
 6.9.7 Calls and returns
 -----------------------
 
-A definition can be called simply be writing the name of the definition
-to be called.  Normally a definition is invisible during its own
-definition.  If you want to write a directly recursive definition, you
-can use ‘recursive’ to make the current definition visible, or ‘recurse’
-to call the current definition directly.
+呼び出す定義の名前を記述するだけで定義を呼び出すことができます。 通常、
+定義はそれ自身の定義中は表示されません。 直接再帰的な定義を記述したい場
+合は、 ‘recursive’ を使用して現在の定義を見えるようにする(使えるようにす
+る)か、 ‘recurse’ を使用して現在の定義を直接呼び出すことができます。
 
 ‘recursive’ ( compilation – ; run-time –  ) gforth-0.2 “recursive”
-   Make the current definition visible, enabling it to call itself
-recursively.
+   現在の定義中の定義をその定義内で呼び出せるように(表示できるように)し
+、 それ自体を再帰的に呼び出せるようにします。
 
 ‘recurse’ ( ... – ...  ) core “recurse”
-   Alias to the current definition.
+   現在の定義の別名(alias)。
 
-For examples of using these words, *Note Recursion Tutorial::.
+これらのワードの使用例については *Note Recursion Tutorial:: を参照してく
+ださい。
 
-   プログラミング・スタイル・メモ: I prefer using ‘recursive’ to
-‘recurse’, because calling the definition by name is more descriptive
-(if the name is well-chosen) than the somewhat cryptic ‘recurse’.  E.g.,
-in a quicksort implementation, it is much better to read (and think)
-“now sort the partitions” than to read “now do a recursive call”.
+   プログラミング・スタイル・メモ: 私は、‘recurse’ よりも ‘recursive’ を
+使用することを好みます。 名前で定義を呼び出す方が、 やや難解な ‘recurse’
+よりも説明的であるためです(名前が適切に選択されていれば)。 たとえば、ク
+イックソートの実装では、「今、再帰呼び出しを行う」(now do a recursive
+call)と読むよりも、「今、パーティションをソートする」(now sort the
+partitions)と読む(そして考える)方がはるかに優れています。
 
-   For mutual recursion, use ‘Defer’red words, like this:
+   相互再帰(mutual recursion)の場合は、 以下のように延期ワード
+(‘Defer’red words)を使用します:
 
      Defer foo
 
@@ -991,23 +994,23 @@ in a quicksort implementation, it is much better to read (and think)
       ... bar ... ;
      IS foo
 
-   Deferred words are discussed in more detail in *note Deferred
-Words::.
+   延期ワードについては、 *note Deferred Words:: で詳しく説明します。
 
-   The current definition returns control to the calling definition when
-the end of the definition is reached or ‘EXIT’ is encountered.
+   定義の終わりに達するか、 ‘EXIT’ に遭遇すると、 現在の定義は呼び出し元
+の定義に制御を返します。
 
 ‘EXIT’ ( compilation – ; run-time nest-sys –  ) core “EXIT”
-   Return to the calling definition; usually used as a way of forcing an
-early return from a definition.  Before ‘EXIT’ing you must clean up the
-return stack and ‘UNLOOP’ any outstanding ‘?DO’...‘LOOP’s.  Use ‘;s’ for
-a tickable word that behaves like ‘exit’ in the absence of locals.
+   呼び出し元の定義に戻る(return): 通常、 定義から速やかに戻るのを強制す
+る方法として使用されます。 ‘EXIT’ する前に、 リターン・スタックをクリー
+ンアップし、 未処理の ‘?DO’...‘LOOP’ を ‘UNLOOP’ する必要があります。 ロ
+ーカルズ(locals)が無い場合に ‘exit’ のように動作するティック可能なワード
+(tickable word)には ‘;s’ を使用します。
 
 ‘?EXIT’ ( –  ) gforth-0.2 “?EXIT”
-   Return to the calling definition if f is true.
+   f が true の場合、 呼び出し元の定義に戻ります(return)。
 
 ‘;s’ ( R:w – ) gforth-0.2 “semis”
-   The primitive compiled by ‘EXIT’.
+   ‘EXIT’ によってコンパイルされたプリミティブ。
 
 
 File: gforth.info,  Node: Exception Handling,  Prev: Calls and returns,  Up: Control Structures
@@ -1015,96 +1018,108 @@ File: gforth.info,  Node: Exception Handling,  Prev: Calls and returns,  Up: Con
 6.9.8 Exception Handling
 ------------------------
 
-If a word detects an error condition that it cannot handle, it can
-‘throw’ an exception.  In the simplest case, this will terminate your
-program, and report an appropriate error.
+ワードが処理できないエラー状態を検出した場合、 例外を投げる(‘throw’)こと
+ができます。 最も単純なケースでは、 これによりプログラムが終了し、適切な
+エラーが報告されます。
 
 ‘throw’ ( y1 .. ym nerror – y1 .. ym / z1 .. zn error  ) exception “throw”
-   If nerror is 0, drop it and continue.  Otherwise, transfer control to
-the next dynamically enclosing exception handler, reset the stacks
-accordingly, and push nerror.
+   nerror が 0 の場合は、 それを drop して続行します。 それ以外の場合は
+、 動的に囲んでいる次の例外ハンドラー(next dynamically enclosing
+exception handler)に制御を移し、 それに応じてスタックをリセットし、
+nerror をプッシュします。
 
 ‘fast-throw’ ( ... wball – ... wball ) gforth-experimental “fast-throw”
-   Lightweight ‘throw’ variant: only for non-zero balls, and does not
-store a backtrace or deal with missing ‘catch’.
+   軽量の ‘throw’ バリエーション: ゼロ以外のみに使用され、 バックトレー
+スを保存したり、 欠落している ‘catch’ を扱ったりしません。
 
-   ‘Throw’ consumes a cell-sized error number on the stack.  There are
-some predefined error numbers in Standard Forth (see ‘errors.fs’).  In
-Gforth (and most other systems) you can use the iors produced by various
-words as error numbers (e.g., a typical use of ‘allocate’ is ‘allocate
-throw’).  Gforth also provides the word ‘exception’ to define your own
-error numbers (with decent error reporting); a Standard Forth version of
-this word (but without the error messages) is available in
-‘compat/except.fs’.  And finally, you can use your own error numbers
-(anything outside the range -4095..0), but won’t get nice error
-messages, only numbers.  For example, try:
+   ‘throw’ は、スタック上のセル・サイズのエラー番号数値を消費します。 標
+準 Forth には事前定義されたエラー番号がいくつかあります(‘errors.fs’ 参照
+)。 Gforth (および他のほとんどのシステム)では、 さまざまなワードによって
+生成された ior をエラー番号として使用できます(たとえば、 ‘allocate’ の一
+般的な使用法は ‘allocate throw’ です)。 Gforth は、 (適切なエラー報告付
+きで)独自のエラー番号を定義するための ‘Exception’ というワードも提供しま
+す。 このワードの標準 Forth バージョン(ただしエラー・メッセージなし) は
+‘compat/excel.fs’ で入手できます。 最後に、 あなた独自のエラー番号(-4095
+〜 0 の範囲以外の任意の番号)を使用できますが、 表示されるのは適切なエラ
+ー・メッセージではなく、数字のみです。 たとえば、 以下のことを試してみて
+ください:
 
-     -10 throw                    \ Standard defined
-     -267 throw                   \ system defined
-     s" my error" exception throw \ user defined
-     7 throw                      \ arbitrary number
+     -10 throw                    \ 標準で定義済
+     -267 throw                   \ システムで定義済
+     s" my error" exception throw \ ユーザー定義
+     7 throw                      \ 思いつくままの任意の番号
 
 ‘exception’ ( addr u – n  ) gforth-0.2 “exception”
-   N is a previously unused ‘throw’ value in the range (-4095...-256).
-Consecutive calls to ‘exception’ return consecutive decreasing numbers.
-Gforth uses the string ADDR U as an error message.
+   N は、 -4095 〜 -256 の範囲内で以前に使用されていなかった ‘throw’ 値
+です。 ‘Exception’ を連続して呼び出すと、 連続して減少する数値が返されま
+す。 Gforth は文字列 ADDR U をエラー・メッセージとして使用します(訳注: 同
+じエラーメッセージを使いまわすには、 s" hoge err msg" exception constant
+hoge-error hoge-error !  などとして得られた hoge-error を使いまわす。
+hoge-error throw 等する)
 
-   There are also cases where you have a word (typically modeled after
-POSIX’ ‘strerror’) for converting an error number into a string.  You
-can use the following word to get these strings into Gforth’s error
-handling:
+   エラー番号を文字列に変換するためのワード(通常は POSIX の ‘strerror’ を
+モデルにしたもの)がある場合もあります。 以下のワードを使用すると、 これ
+らの文字列を Gforth のエラー処理に取り込むことができます:
 
 ‘exceptions’ ( xt n1 – n2  ) gforth-1.0 “exceptions”
-   Xt ‘( +n -- c-addr u )’ converts an error number in the range 0<=n<n1
-into an error message.  ‘Exceptions’ reserves n1 error codes in the
-range n2-n1<n3<=n2.  When (at some later point in time) the Gforth error
-code n3 in that range is thrown, it pushes n2-n3 and then executes xt to
-produce the error message.
+   throw時: xt ‘( +n -- c-addr u )’ は、 0<=n<n1 の範囲のローカルのエラ
+ー・コードをエラー・メッセージに変換します。 ‘Exceptions’ は、
+n2-n1<n3<=n2 の範囲で n1 個(0 〜 n1)のエラー・コードを予約します。 n2 に
+、 対応する Gforth エラー・コード(ローカルのエラー番号 0 に対応。 つまり
+、 0<=n<n1 の範囲のローカルのエラー・コードに 対応する Gforth エラー・コ
+ードは n2 <= n3 < n2+n1)を返します。 (後の時点で)その範囲に対応した
+Gforth エラー・コード n3 が throw されると、 n2-n3 がプッシュされ(つまり
+ローカルのエラー番号に変換した値をプッシュし)、 xt が実行されて、 xt が
+エラー・メッセージを生成します(訳注: minos2/pulse-audio.fs 等で確認。 xt
+にC-interface ワードをセットし、 外部Cライブラリのエラー・メッセージを
+gforth 内から表示するのに使っているようだ)
 
-   As an example, if the ‘errno’ errors (and the conversion using
-‘strerror’) was not already directly supported by Gforth, you could tie
-‘strerror’ in as follows:
+   たとえば、 C言語ライブラリの ‘errno’ エラー (および ‘strerror’ を使用
+した変換) がまだ Gforth で直接サポートされていないとした場合、 以下のよ
+うにして ‘strerror’ を gforth と結び付けることができます:
 
      ' strerror 1536 exceptions constant errno-base
      : errno-ior ( -- n )
-     \ n is the Gforth ior corresponding to the value in errno, so
-     \ we have to convert between the ranges here.
-     \ ERRNO is not a Gforth word, so you  would have to use the
-     \ C interface to access it.
+     \ n は errno の値に対応する Gforth ior を求めなければならないので、
+     \ ここでerrno 範囲と Gforth ior の範囲の間で変換する必要があります。
+     \ ERRNO は Gforth ワードではないため、
+     \ それにアクセスするには C インターフェイスを使用する必要があります。
        errno errno-base over - swap 0<> and ;
 
-   When you call a C function (with the C interface) and its return
-value indictes that an error happened, you can then perform ‘errno-ior
-throw’ to produce an exception with the proper error message (such as
-“Permission denied”).
+   C言語の関数(C言語インターフェイス(C interface)を使用)を呼び出し、 そ
+の戻り値がエラーが発生したことを示している場合、 ‘errno-ior throw’ を実
+行して、適切なエラー・メッセージ (“Permission denied” など)を含む例外を
+生成できます。
 
-   A common idiom to ‘THROW’ a specific err# if a flag is true is this:
+   フラグが true の場合、 特定の err# でエラーを投げる(‘THROW’)一般的な
+慣用句は以下のとおりです:
 
      ( flag ) 0<> err# and throw
 
-   Your program can provide exception handlers to catch exceptions.  An
-exception handler can be used to correct the problem, or to clean up
-some data structures and just throw the exception to the next exception
-handler.  Note that ‘throw’ jumps to the dynamically innermost exception
-handler.  The system’s exception handler is outermost, and just prints
-an error and restarts command-line interpretation (or, in batch mode
-(i.e., while processing the shell command line), leaves Gforth).
+   あなたのプログラムで、 例外をキャッチする例外ハンドラーを提供できます
+。 例外ハンドラーを使用すると、 問題を修正したり、 一部のデータ構造をク
+リーンアップして例外を次の例外ハンドラーに投げたり(throw)することができ
+ます。 ‘throw’ は動的に最も内側の例外ハンドラー(the dynamically
+innermost exception handler)にジャンプすることに注意してください。 シス
+テムの例外ハンドラーは最も外側にあり、 エラーを出力してコマンド・ライン
+の解釈(interpretation)を再開するだけです(または、 バッチ・モード(つまり
+、 シェル・コマンド・ラインの処理中)では Gforth を終了します)。
 
-   The Standard Forth way to catch exceptions is ‘catch’:
+   例外をキャッチする標準 Forth での方法は ‘catch’ です:
 
 ‘catch’ ( x1 .. xn xt – y1 .. ym 0 / z1 .. zn error  ) exception “catch”
-   ‘Executes’ xt.  If execution returns normally, ‘catch’ pushes 0 on
-the stack.  If execution returns through ‘throw’, all the stacks are
-reset to the depth on entry to ‘catch’, and the TOS (the xt position) is
-replaced with the throw code.
+   xt を実行します。 実行から正常に戻った場合、 ‘catch’ はスタックに 0 を
+プッシュします。 ‘throw’ を介して実行が戻った場合、 すべてのスタックは
+‘catch’ へ入る時点の深さにリセットされ、 TOS (xt の位置) は throw コード
+に置き換えられます。
 
 ‘nothrow’ ( –  ) gforth-0.7 “nothrow”
-   Use this (or the standard sequence ‘['] false catch 2drop’) after a
-‘catch’ or ‘endtry’ that does not rethrow; this ensures that the next
-‘throw’ will record a backtrace.
+   再 throw しない ‘catch’ または ‘endtry’ の後ろでこれ (または標準のシ
+ーケンス ‘['] false catch 2drop’) を使用します。 これにより、 次の
+‘throw’ でバックトレースが確実に記録されます。
 
-   The most common use of exception handlers is to clean up the state
-when an error happens.  E.g.,
+   例外ハンドラーの最も一般的な使用法は、 エラーが発生したときに状態をク
+リーンアップすることです。 例：
 
      base @ >r hex \ actually the HEX should be inside foo to protect
                    \ against exceptions between HEX and CATCH
@@ -1112,8 +1127,8 @@ when an error happens.  E.g.,
      r> base !
      ( nerror|0 ) throw \ pass it on
 
-   A use of ‘catch’ for handling the error ‘myerror’ might look like
-this:
+   ‘myerror’ というエラー番号を処理するための ‘catch’ の使用は以下のよう
+になります:
 
      ['] foo catch
      CASE
@@ -1121,8 +1136,8 @@ this:
        dup throw \ default: pass other errors on, do nothing on non-errors
      ENDCASE
 
-   Having to wrap the code into a separate word is often cumbersome,
-therefore Gforth provides an alternative syntax:
+   コードを別のワードでくるむ要があるのは面倒な場合が多いため、 Gforth で
+は代替構文を提供しています:
 
      TRY
        code1
@@ -1132,24 +1147,23 @@ therefore Gforth provides an alternative syntax:
        code3
      ENDTRY
 
-   This performs code1.  If code1 completes normally, execution
-continues with code3.  If there is an exception in code1 or before
-‘endtry’, the stacks are reset to the depth during ‘try’, the throw
-value is pushed on the data stack, and execution continues at code2, and
-finally falls through to code3.
+   これは、 code1 を実行しします。 code1 が正常に完了すると、 code3 の実
+行へ続きます。 code1 または、 ‘endtry’ より前で例外があった場合、 スタッ
+クは ‘try’ 時の深さにリセットされ、 throw された値をデータ・スタックにプ
+ッシュし、 code2 の実行に続き、 そして、 最終的に code3 に到達します。
 
 ‘try’ ( compilation  – orig ; run-time  – R:sys1  ) gforth-0.5 “try”
-   Start an exception-catching region.
+   例外キャッチ領域の開始
 
 ‘endtry’ ( compilation  – ; run-time  R:sys1 –  ) gforth-0.5 “endtry”
-   End an exception-catching region.
+   例外キャッチ領域の終わり
 
 ‘iferror’ ( compilation  orig1 – orig2 ; run-time  –  ) gforth-0.7 “iferror”
-   Starts the exception handling code (executed if there is an exception
-between ‘try’ and ‘endtry’).  This part has to be finished with ‘then’.
+   例外処理コードを開始します(‘try’ と ‘endtry’ の間に例外がある場合に実
+行されます)。 この部分は ‘then’ で終了する必要があります。
 
-   If you don’t need code2, you can write ‘restore’ instead of ‘iferror
-then’:
+   code2 が必要ない場合は、 ‘iferror then’ の代わりに ‘restore’ を記述で
+きます:
 
      TRY
        code1
@@ -1157,7 +1171,7 @@ then’:
        code3
      ENDTRY
 
-   The cleanup example from above in this syntax:
+   先程の例をこの構文で身綺麗にしてみます:
 
      base @ { oldbase }
      TRY
@@ -1168,23 +1182,23 @@ then’:
      ENDTRY
      throw
 
-   An additional advantage of this variant is that an exception between
-‘restore’ and ‘endtry’ (e.g., from the user pressing ‘Ctrl-C’) restarts
-the execution of the code after ‘restore’, so the base will be restored
-under all circumstances.
+   このバリエーションの追加の利点は、 ‘restore’ と ‘endtry’ の間の例外
+(たとえば、 ユーザーが ‘Ctrl-C’ を押すことによる例外)でも、 ‘restore’ の
+直後へコードの実行が移ることです。 ゆえに、 いかなる状況であっても base
+は復元されます。
 
-   However, you have to ensure that this code does not cause an
-exception itself, otherwise the ‘iferror’/‘restore’ code will loop.
-Moreover, you should also make sure that the stack contents needed by
-the ‘iferror’/‘restore’ code exist everywhere between ‘try’ and
-‘endtry’; in our example this is achived by putting the data in a local
-before the ‘try’ (you cannot use the return stack because the exception
-frame (sys1) is in the way there).
+   ただし、 このコード自体が例外を引き起こさないようにする必要があります
+。 そうしないと、 ‘iferror’/‘restore’ コードがループします。 さらに、
+‘iferror’/‘restore’ コードで必要なスタックの内容が ‘try’ と ‘endtry’ の
+間のあらゆる場所に存在することも確認する必要があります。 この例では、 こ
+れは ‘try’ の前にデータを「ローカルズ」(locals)に置くことによって実現さ
+れます(リターン・スタック上の例外フレーム(sys1)が邪魔なのでリターン・ス
+タックは使用できません)。
 
-   This kind of usage corresponds to Lisp’s ‘unwind-protect’.
+   この種の使用法は、 Lisp の ‘unwind-protect’ と同様のものです。
 
-   If you do not want this exception-restarting behaviour, you achieve
-this as follows:
+   もし、あなたが、 この例外再開始(exception-restarting)の振る舞いを望ま
+ない場合は、 以下のようにしてください:
 
      TRY
        code1
@@ -1192,9 +1206,9 @@ this as follows:
        code2
      THEN
 
-   If there is an exception in code1, then code2 is executed, otherwise
-execution continues behind the ‘then’ (or in a possible ‘else’ branch).
-This corresponds to the construct
+   code1 に例外がある場合は code2 が実行され、 それ以外の場合は ‘then’ の
+後ろ (または ‘else’ 分岐の可能性あり) から実行が続行されます。 これはバ
+ージョン 0.7 より前の Gforth では以下の構成要素に該当します
 
      TRY
        code1
@@ -1202,31 +1216,32 @@ This corresponds to the construct
        code2
      ENDTRY
 
-   in Gforth before version 0.7.  So you can directly replace
-‘recover’-using code; however, we recommend that you check if it would
-not be better to use one of the other ‘try’ variants while you are at
-it.
+   つまり、 この ‘recover’ を使用しているコードを直に ‘try ...
+entry-iferror ... then’ へと置き換えることができます。 ただし、 その置き
+換え作業中に他の ‘try’ バリエーションのいずれかを使用した方が良いかどう
+かも検討することをお勧めします。
 
-   To ease the transition, Gforth provides two compatibility files:
-‘endtry-iferror.fs’ provides the ‘try ... endtry-iferror ... then’
-syntax (but not ‘iferror’ or ‘restore’) for old systems;
-‘recover-endtry.fs’ provides the ‘try ... recover ... endtry’ syntax on
-new systems, so you can use that file as a stopgap to run old programs.
-Both files work on any system (they just do nothing if the system
-already has the syntax it implements), so you can unconditionally
-‘require’ one of these files, even if you use a mix old and new systems.
+   移行を容易にするために、 Gforth は 2 つの互換性ファイルを提供します:
+1つ目は ‘endtry-iferror.fs’ で、 古いシステム用に ‘try ...
+endtry-iferror ... then’ 構文を提供します(ただし、 ‘iferror’ または
+‘restore’ は提供しません)。 2つ目の ‘recover-endtry.fs’ は、 新しいシス
+テム上で古い構文の ‘try ... recover ... endtry’ 構文を提供するので、 古
+いプログラムを実行するための一時しのぎとして使用できます。 どちらのファ
+イルもどのシステムでも動作します(システムが、 実装する構文を既に定義済み
+の場合は何も行わないだけです)。 そのため、 古いシステムと新しいシステム
+を混在させて使用している場合でも、 これらのファイルのいずれかを無条件に
+‘require’ することができます。
 
 ‘restore’ ( compilation  orig1 – ; run-time  –  ) gforth-0.7 “restore”
-   Starts restoring code, that is executed if there is an exception, and
-if there is no exception.
+   コードの復元(restore)を開始します。 これは、 例外がある場合と無い場合
+に行われます。
 
 ‘endtry-iferror’ ( compilation  orig1 – orig2 ; run-time  R:sys1 –  ) gforth-0.7 “endtry-iferror”
-   End an exception-catching region while starting exception-handling
-code outside that region (executed if there is an exception between
-‘try’ and ‘endtry-iferror’).  This part has to be finished with ‘then’
-(or ‘else’...‘then’).
+   例外キャッチ領域を終了し、 その領域外で例外処理コードを開始します
+(‘try’ と ‘endtry-iferror’ の間に例外がある場合に実行されます)。 この部
+分は ‘then’ (または ‘else’...‘then’) で終了する必要があります。
 
-   Here’s the error handling example:
+   ここで、 エラー処理の例を以下に示します:
 
      TRY
        foo
@@ -1237,47 +1252,46 @@ code outside that region (executed if there is an exception between
        ENDCASE
      THEN
 
-   プログラミング・スタイル・メモ: As usual, you should ensure that the
-stack depth is statically known at the end: either after the ‘throw’ for
-passing on errors, or after the ‘ENDTRY’ (or, if you use ‘catch’, after
-the end of the selection construct for handling the error).
+   プログラミング・スタイル・メモ: いつものように、 エラーを渡すための
+‘throw’ の後、 または ‘ENDTRY’ の後のいずれか(または、‘catch’ を使用する
+場合は、エラーを処理するための選択構造の終了後)で、 スタックの深さが静的
+に明白であることを保証する必要があります。
 
-   There are two alternatives to ‘throw’: ‘Abort"’ is conditional and
-you can provide an error message.  ‘Abort’ just produces an “Aborted”
-error.
+   ‘throw’ の代替は 2 つあります: ‘Abort"’ は条件付きでエラー・メッセー
+ジを提供できます。 ‘Abort’ は「中止」(Abort)エラーを生成するだけです。
 
-   The problem with these words is that exception handlers cannot
-differentiate between different ‘abort"’s; they just look like ‘-2
-throw’ to them (the error message cannot be accessed by standard
-programs).  Similar ‘abort’ looks like ‘-1 throw’ to exception handlers.
+   これらのワードの問題は、 例外ハンドラーが、 異なる ‘abort"’ を区別で
+きないことです。 例外ハンドラーにとってはそれらは ‘-2 throw’ のように見
+えるだけです(標準のプログラムではエラー・メッセージにアクセスできません
+)。 同様に、 ‘abort’ は例外ハンドラーに対して ‘-1 throw’ のように見えま
+す。
 
 ‘ABORT"’ ( compilation ’ccc"’ – ; run-time f –  ) core,exception-ext “abort-quote”
-   If any bit of f is non-zero, perform the function of ‘-2 throw’,
-displaying the string ccc if there is no exception frame on the
-exception stack.
+   f のいずれかのビットがゼロ以外の場合、 ‘-2 throw’ の機能を実行し、 例
+外スタック上例外フレームがない場合は文字列 ccc を表示します。
 
 ‘abort’ ( ?? – ??  ) core,exception-ext “abort”
    ‘-1 throw’.
 
-   For problems that are not that awful that you need to abort
-execution, you can just display a warning.  The variable ‘warnings’
-allows to tune how many warnings you see.
+   実行を中止する必要があるほど深刻でない問題の場合は、 警告を表示するだ
+けで済みます。 変数 ‘warnings’ を使用すると、 表示される警告の数を調整で
+きます。
 
 ‘WARNING"’ ( compilation ’ccc"’ – ; run-time f –  ) gforth-1.0 “WARNING"”
-   if f is non-zero, display the string ccc as warning message.
+   f がゼロ以外の場合、 警告メッセージとして文字列 ccc を表示します。
 
 ‘warnings’ ( – addr  ) gforth-0.2 “warnings”
-   set warnings level to
+   以下の警告レベルをセットしてください
 ‘0’
-     turns warnings off
+     警告オフ
 ‘-1’
-     turns normal warnings on
+     通常警告オン
 ‘-2’
-     turns beginner warnings on
+     初心者警告オン
 ‘-3’
-     pedantic warnings on
+     偏執狂敵警告オン
 ‘-4’
-     turns warnings into errors (including beginner warnings)
+     全ての警告をエラーとして扱います(初心者警告を含む)
 
 
 File: gforth.info,  Node: Defining Words,  Next: Interpretation and Compilation Semantics,  Prev: Control Structures,  Up: Words
@@ -6782,215 +6796,4 @@ arranged into:
 
    (1) In compiler construction terminology, all places dominated by the
 definition of the local.
-
-
-File: gforth.info,  Node: How long do locals live?,  Next: Locals programming style,  Prev: Where are locals visible by name?,  Up: Gforth locals
-
-6.22.1.3 How long do locals live?
-.................................
-
-The right answer for the lifetime question would be: A local lives at
-least as long as it can be accessed.  For a value-flavoured local this
-means: until the end of its visibility.  However, a variable-flavoured
-local could be accessed through its address far beyond its visibility
-scope.  Ultimately, this would mean that such locals would have to be
-garbage collected.  Since this entails un-Forth-like implementation
-complexities, I adopted the same cowardly solution as some other
-languages (e.g., C): The local lives only as long as it is visible;
-afterwards its address is invalid (and programs that access it
-afterwards are erroneous).
-
-
-File: gforth.info,  Node: Locals programming style,  Next: Locals implementation,  Prev: How long do locals live?,  Up: Gforth locals
-
-6.22.1.4 Locals programming style
-.................................
-
-The freedom to define locals anywhere has the potential to change
-programming styles dramatically.  In particular, the need to use the
-return stack for intermediate storage vanishes.  Moreover, all stack
-manipulations (except ‘PICK’s and ‘ROLL’s with run-time determined
-arguments) can be eliminated: If the stack items are in the wrong order,
-just write a locals definition for all of them; then write the items in
-the order you want.
-
-   This seems a little far-fetched and eliminating stack manipulations
-is unlikely to become a conscious programming objective.  Still, the
-number of stack manipulations will be reduced dramatically if local
-variables are used liberally (e.g., compare ‘max’ (*note Gforth
-locals::) with a traditional implementation of ‘max’).
-
-   This shows one potential benefit of locals: making Forth programs
-more readable.  Of course, this benefit will only be realized if the
-programmers continue to honour the principle of factoring instead of
-using the added latitude to make the words longer.
-
-   Using ‘TO’ can and should be avoided.  Without ‘TO’, every
-value-flavoured local has only a single assignment and many advantages
-of functional languages apply to Forth.  I.e., programs are easier to
-analyse, to optimize and to read: It is clear from the definition what
-the local stands for, it does not turn into something different later.
-
-   E.g., a definition using ‘TO’ might look like this:
-     : strcmp {: addr1 u1 addr2 u2 -- n :}
-      u1 u2 min 0
-      ?do
-        addr1 c@ addr2 c@ -
-        ?dup-if
-          unloop exit
-        then
-        addr1 char+ TO addr1
-        addr2 char+ TO addr2
-      loop
-      u1 u2 - ;
-   Here, ‘TO’ is used to update ‘addr1’ and ‘addr2’ at every loop
-iteration.  ‘strcmp’ is a typical example of the readability problems of
-using ‘TO’.  When you start reading ‘strcmp’, you think that ‘addr1’
-refers to the start of the string.  Only near the end of the loop you
-realize that it is something else.
-
-   This can be avoided by defining two locals at the start of the loop
-that are initialized with the right value for the current iteration.
-     : strcmp {: addr1 u1 addr2 u2 -- n :}
-      addr1 addr2
-      u1 u2 min 0
-      ?do {: s1 s2 :}
-        s1 c@ s2 c@ -
-        ?dup-if
-          unloop exit
-        then
-        s1 char+ s2 char+
-      loop
-      2drop
-      u1 u2 - ;
-   Here it is clear from the start that ‘s1’ has a different value in
-every loop iteration.
-
-
-File: gforth.info,  Node: Locals implementation,  Next: Closures,  Prev: Locals programming style,  Up: Gforth locals
-
-6.22.1.5 Locals implementation
-..............................
-
-Gforth uses an extra locals stack.  The most compelling reason for this
-is that the return stack is not float-aligned; using an extra stack also
-eliminates the problems and restrictions of using the return stack as
-locals stack.  Like the other stacks, the locals stack grows toward
-lower addresses.  A few primitives allow an efficient implementation;
-you should not use them directly, but they appear in the output of
-‘see’, so they are documented here:
-
-‘@localn’ ( noffset – w ) gforth-internal “fetch-local-n”
-
-‘f@localn’ ( noffset – r ) gforth-1.0 “f-fetch-local-n”
-
-‘lp@’ ( – c-addr ) gforth-0.2 “lp-fetch”
-   C_addr は、 ローカル・スタック・ポインタの現在の値です。
-
-   doc-lp+!#
-‘lp!’ ( c-addr – ) gforth-internal “lp-store”
-
-‘>l’ ( w – ) gforth-0.2 “to-l”
-
-‘f>l’ ( r – ) gforth-0.2 “f-to-l”
-
-   In addition to these primitives, some specializations of these
-primitives for commonly occurring inline arguments are provided for
-efficiency reasons, e.g., ‘@local0’ as specialization of ‘0 @localn’.
-The following compiling words compile the right specialized version, or
-the general version, as appropriate:
-
-‘compile-lp+!’ ( n –  ) gforth-0.2 “compile-l-p-plus-store”
-
-   Combinations of conditional branches and ‘lp+!#’ like ‘?branch-lp+!#’
-(the locals pointer is only changed if the branch is taken) are provided
-for efficiency and correctness in loops.
-
-   A special area in the dictionary space is reserved for keeping the
-local variable names.  ‘{:’ switches the dictionary pointer to this area
-and ‘:}’ switches it back and generates the locals initializing code.
-‘W:’ etc. are normal defining words.  This special area is cleared at
-the start of every colon definition.
-
-   A special feature of Gforth’s dictionary is used to implement the
-definition of locals without type specifiers: every word list (aka
-vocabulary) has its own methods for searching etc.  (*note Word
-Lists::).  For the present purpose we defined a word list with a special
-search method: When it is searched for a word, it actually creates that
-word using ‘W:’.  ‘{:’ changes the search order to first search the word
-list containing ‘:}’, ‘W:’ etc., and then the word list for defining
-locals without type specifiers.
-
-   The lifetime rules support a stack discipline within a colon
-definition: The lifetime of a local is either nested with other locals
-lifetimes or it does not overlap them.
-
-   At ‘BEGIN’, ‘IF’, and ‘AHEAD’ no code for locals stack pointer
-manipulation is generated.  Between control structure words locals
-definitions can push locals onto the locals stack.  ‘AGAIN’ is the
-simplest of the other three control flow words.  It has to restore the
-locals stack depth of the corresponding ‘BEGIN’ before branching.  The
-code looks like this:
-‘lp+!#’ current-locals-size − dest-locals-size
-‘branch’ <begin>
-
-   ‘UNTIL’ is a little more complicated: If it branches back, it must
-adjust the stack just like ‘AGAIN’.  But if it falls through, the locals
-stack must not be changed.  The compiler generates the following code:
-‘?branch-lp+!#’ <begin> current-locals-size − dest-locals-size
-   The locals stack pointer is only adjusted if the branch is taken.
-
-   ‘THEN’ can produce somewhat inefficient code:
-‘lp+!#’ current-locals-size − orig-locals-size
-<orig target>:
-‘lp+!#’ orig-locals-size − new-locals-size
-   The second ‘lp+!#’ adjusts the locals stack pointer from the level at
-the orig point to the level after the ‘THEN’.  The first ‘lp+!#’ adjusts
-the locals stack pointer from the current level to the level at the orig
-point, so the complete effect is an adjustment from the current level to
-the right level after the ‘THEN’.
-
-   In a conventional Forth implementation a dest control-flow stack
-entry is just the target address and an orig entry is just the address
-to be patched.  Our locals implementation adds a word list to every orig
-or dest item.  It is the list of locals visible (or assumed visible) at
-the point described by the entry.  Our implementation also adds a tag to
-identify the kind of entry, in particular to differentiate between live
-and dead (reachable and unreachable) orig entries.
-
-   A few unusual operations have to be performed on locals word lists:
-
-‘common-list’ ( list1 list2 – list3  ) gforth-internal “common-list”
-
-‘sub-list?’ ( list1 list2 – f  ) gforth-internal “sub-list?”
-
-‘list-size’ ( list – u  ) gforth-internal “list-size”
-
-   Several features of our locals word list implementation make these
-operations easy to implement: The locals word lists are organised as
-linked lists; the tails of these lists are shared, if the lists contain
-some of the same locals; and the address of a name is greater than the
-address of the names behind it in the list.
-
-   Another important implementation detail is the variable ‘dead-code’.
-It is used by ‘BEGIN’ and ‘THEN’ to determine if they can be reached
-directly or only through the branch that they resolve.  ‘dead-code’ is
-set by ‘UNREACHABLE’, ‘AHEAD’, ‘EXIT’ etc., and cleared at the start of
-a colon definition, by ‘BEGIN’ and usually by ‘THEN’.
-
-   Counted loops are similar to other loops in most respects, but
-‘LEAVE’ requires special attention: It performs basically the same
-service as ‘AHEAD’, but it does not create a control-flow stack entry.
-Therefore the information has to be stored elsewhere; traditionally, the
-information was stored in the target fields of the branches created by
-the ‘LEAVE’s, by organizing these fields into a linked list.
-Unfortunately, this clever trick does not provide enough space for
-storing our extended control flow information.  Therefore, we introduce
-another stack, the leave stack.  It contains the control-flow stack
-entries for all unresolved ‘LEAVE’s.
-
-   Local names are kept until the end of the colon definition, even if
-they are no longer visible in any control-flow path.  In a few cases
-this may lead to increased space needs for the locals name area, but
-usually less than reclaiming this space would cost in code size.
 

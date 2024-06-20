@@ -72,14 +72,11 @@ Next: <a href="Arbitrary-control-structures.html" accesskey="n" rel="next">Arbit
 <span id="index-case-as-generalized-control-structure"></span>
 <span id="index-general-control-structures-_0028case_0029"></span>
 
-<p>Gforth provides an extended <code>case</code> that solves the problems of the
-multi-exit loops discussed above, and offers additional options.  You can
-find a portable implementation of this extended <code>case</code> in
-<samp>compat/caseext.fs</samp>.
+<p>Gforth は、 拡張 <code>case</code> を提供することで、 上で説明した複数出口ループの問題を解決する追加のオプションを提供します。 この拡張
+<code>case</code> の移植可能な実装は <samp>compat/caseext.fs</samp> にあります。
 </p>
-<p>There are three additional words in the extension.  The first is <code>?of</code>
-which allows general tests (rather than just testing for equality) in a
-<code>case</code>; e.g.,
+<p>この拡張には 3 つの追加ワードがあります。  1 つ目は <code>?of</code> で、 <code>case</code>
+内で(単なる同等性のテストではなく、)一般的なテストが可能です。 例:
 </p>
 <div class="example">
 <pre class="example">: sgn ( n -- -1|0|1 )
@@ -90,13 +87,13 @@ which allows general tests (rather than just testing for equality) in a
   0 endcase ;
 </pre></div>
 
-<p>Note that <code>endcase</code> drops a value, which works fine much of the time
-with <code>of</code>, but usually not with <code>?of</code>, so we leave a 0 on the
-stack for <code>endcase</code> to drop.  The n that is passed into <code>sgn</code> is
-also 0 if neither <code>?of</code> triggers, and that is then passed out.
+<p>注意: <code>endcase</code> は値(a value)を drop することに注意してください。 これは <code>of</code>
+ではほとんどうまいこと機能しますが、 <code>?of</code> ではたいていうまいこといかないので、 今回も <code>endcase</code> で drop
+するための値として 0 をスタック置きます。  ここでは、 <code>sgn</code> に渡される n は、 いずれの <code>?of</code>
+もトリガーしない場合返り値の 0 そのものになります。
 </p>
-<p>The second additional word is <code>next-case</code>, which allows turning
-<code>case</code> into a loop.  Our triple-exit loop becomes:
+<p>2 番目の追加ワードは <code>next-case</code> で、 これにより <code>case</code> をループに変えることができます。
+出口が3つのループは以下のようになります:
 </p>
 <div class="example">
 <pre class="example">case
@@ -108,13 +105,11 @@ next-case
 common code afterwards
 </pre></div>
 
-<p>As you can see, this solves both problems of the variants discussed above
-(see <a href="BEGIN-loops-with-multiple-exits.html"><code>Begin</code> loops with multiple exits</a>).  Note that <code>next-case</code> does
-not drop a value, unlike <code>endcase</code>.<a id="DOCF13" href="#FOOT13"><sup>13</sup></a>
+<p>ご覧のとおり、 これにより、 先程議論したバリエーションの両方の問題が解決されます(see <a href="BEGIN-loops-with-multiple-exits.html"><code>Begin</code> loops with multiple exits</a>)。 注意: <code>endcase</code> とは異なり、 <code>next-case</code> は値をドロップしないことに注意してください。
+<a id="DOCF13" href="#FOOT13"><sup>13</sup></a>
 </p>
-<p>The last additional word is <code>contof</code>, which is used instead of
-<code>endof</code> and starts the next iteration instead of leaving the loop.
-This can be used in ways similar to Dijkstra&rsquo;s guarded command <i>do</i>, e.g.:
+<p>最後の追加ワードは <code>contof</code> です。 これは <code>endof</code> の代わりに使用され、
+ループを終了する代わりに次の反復を開始します。 これは、 ダイクストラのガード付きコマンド 繰り返し: <i>do</i> と同様の方法で使用できます。 例:
 </p>
 <div class="example">
 <pre class="example">: gcd ( n1 n2 -- n )
@@ -124,12 +119,11 @@ This can be used in ways similar to Dijkstra&rsquo;s guarded command <i>do</i>, 
     endcase ;
 </pre></div>
 
-<p>Here the two <code>?of</code>s have different ways of continuing the loop; when
-neither <code>?of</code> triggers, the two numbers are equal and are the gcd.
-<code>Endcase</code> drops one of them, leaving the other as n.
+<p>ここで、 2 つの <code>?of</code> はループを継続する異なる方法を持っています。 どちらの <code>?of</code> もトリガーされない場合、 2
+つの数値は等しく、gcd(最大公約数) になります。  <code>Endcase</code> はそれらの 1 つを削除し、もう 1 つは n として残します。
 </p>
-<p>You can also combine these words.  Here&rsquo;s an example that uses each of the
-<code>case</code> words once, except <code>endcase</code>:
+<p>これらのワードを組み合わせることもできます。  以下は、 <code>endcase</code> を除く、 各 <code>case</code> ワードをそれぞれ 1
+回使用する例です:
 </p>
 <div class="example">
 <pre class="example">: collatz ( u -- )
@@ -142,11 +136,9 @@ neither <code>?of</code> triggers, the two numbers are equal and are the gcd.
     next-case ;
 </pre></div>
 
-<p>This example keeps the current value of the sequence on the stack.  If it is
-1, the <code>of</code> triggers, drops the value, and leaves the <code>case</code>
-structure.  For odd numbers, the <code>?of</code> triggers, computes 3n+1, and
-starts the next iteration with <code>contof</code>.  Otherwise, if the number is
-even, it is divided by 2, and the loop is restarted with <code>next-case</code>.
+<p>この例では、 シーケンスの現在の値をスタックに保持します。  1 の場合、 <code>of</code> がトリガーされ、 値が削除され、 <code>case</code>
+構造から去ります。 奇数の場合、 <code>?of</code> がトリガーされ、 3n+1 が計算され、 <code>contof</code> で次の反復が開始されます。
+それ以外の場合、 数値が偶数の場合は 2 で除算され、 <code>next-case</code> でループが再開されます。
 </p>
 </div>
 <div class="footnote">
@@ -154,9 +146,9 @@ even, it is divided by 2, and the loop is restarted with <code>next-case</code>.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT13" href="#DOCF13">(13)</a></h5>
-<p><code>Next-case</code> has a
-<code>-</code>, unlike the other <code>case</code> words, because VFX Forth contains a
-<code>nextcase</code> that drops a value.</p>
+<p><code>next-case</code> は、 他の <code>case</code> ワード群とは異なり、
+名前にハイフン(<code>-</code>)が含まれています。 VFX Forth には値をドロップする <code>nextcase</code>
+があるので、これと区別するためです。</p>
 </div>
 <hr>
 <div class="header">

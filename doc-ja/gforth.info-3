@@ -27,6 +27,217 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: How long do locals live?,  Next: Locals programming style,  Prev: Where are locals visible by name?,  Up: Gforth locals
+
+6.22.1.3 How long do locals live?
+.................................
+
+The right answer for the lifetime question would be: A local lives at
+least as long as it can be accessed.  For a value-flavoured local this
+means: until the end of its visibility.  However, a variable-flavoured
+local could be accessed through its address far beyond its visibility
+scope.  Ultimately, this would mean that such locals would have to be
+garbage collected.  Since this entails un-Forth-like implementation
+complexities, I adopted the same cowardly solution as some other
+languages (e.g., C): The local lives only as long as it is visible;
+afterwards its address is invalid (and programs that access it
+afterwards are erroneous).
+
+
+File: gforth.info,  Node: Locals programming style,  Next: Locals implementation,  Prev: How long do locals live?,  Up: Gforth locals
+
+6.22.1.4 Locals programming style
+.................................
+
+The freedom to define locals anywhere has the potential to change
+programming styles dramatically.  In particular, the need to use the
+return stack for intermediate storage vanishes.  Moreover, all stack
+manipulations (except ‘PICK’s and ‘ROLL’s with run-time determined
+arguments) can be eliminated: If the stack items are in the wrong order,
+just write a locals definition for all of them; then write the items in
+the order you want.
+
+   This seems a little far-fetched and eliminating stack manipulations
+is unlikely to become a conscious programming objective.  Still, the
+number of stack manipulations will be reduced dramatically if local
+variables are used liberally (e.g., compare ‘max’ (*note Gforth
+locals::) with a traditional implementation of ‘max’).
+
+   This shows one potential benefit of locals: making Forth programs
+more readable.  Of course, this benefit will only be realized if the
+programmers continue to honour the principle of factoring instead of
+using the added latitude to make the words longer.
+
+   Using ‘TO’ can and should be avoided.  Without ‘TO’, every
+value-flavoured local has only a single assignment and many advantages
+of functional languages apply to Forth.  I.e., programs are easier to
+analyse, to optimize and to read: It is clear from the definition what
+the local stands for, it does not turn into something different later.
+
+   E.g., a definition using ‘TO’ might look like this:
+     : strcmp {: addr1 u1 addr2 u2 -- n :}
+      u1 u2 min 0
+      ?do
+        addr1 c@ addr2 c@ -
+        ?dup-if
+          unloop exit
+        then
+        addr1 char+ TO addr1
+        addr2 char+ TO addr2
+      loop
+      u1 u2 - ;
+   Here, ‘TO’ is used to update ‘addr1’ and ‘addr2’ at every loop
+iteration.  ‘strcmp’ is a typical example of the readability problems of
+using ‘TO’.  When you start reading ‘strcmp’, you think that ‘addr1’
+refers to the start of the string.  Only near the end of the loop you
+realize that it is something else.
+
+   This can be avoided by defining two locals at the start of the loop
+that are initialized with the right value for the current iteration.
+     : strcmp {: addr1 u1 addr2 u2 -- n :}
+      addr1 addr2
+      u1 u2 min 0
+      ?do {: s1 s2 :}
+        s1 c@ s2 c@ -
+        ?dup-if
+          unloop exit
+        then
+        s1 char+ s2 char+
+      loop
+      2drop
+      u1 u2 - ;
+   Here it is clear from the start that ‘s1’ has a different value in
+every loop iteration.
+
+
+File: gforth.info,  Node: Locals implementation,  Next: Closures,  Prev: Locals programming style,  Up: Gforth locals
+
+6.22.1.5 Locals implementation
+..............................
+
+Gforth uses an extra locals stack.  The most compelling reason for this
+is that the return stack is not float-aligned; using an extra stack also
+eliminates the problems and restrictions of using the return stack as
+locals stack.  Like the other stacks, the locals stack grows toward
+lower addresses.  A few primitives allow an efficient implementation;
+you should not use them directly, but they appear in the output of
+‘see’, so they are documented here:
+
+‘@localn’ ( noffset – w ) gforth-internal “fetch-local-n”
+
+‘f@localn’ ( noffset – r ) gforth-1.0 “f-fetch-local-n”
+
+‘lp@’ ( – c-addr ) gforth-0.2 “lp-fetch”
+   C_addr は、 ローカル・スタック・ポインタの現在の値です。
+
+   doc-lp+!#
+‘lp!’ ( c-addr – ) gforth-internal “lp-store”
+
+‘>l’ ( w – ) gforth-0.2 “to-l”
+
+‘f>l’ ( r – ) gforth-0.2 “f-to-l”
+
+   In addition to these primitives, some specializations of these
+primitives for commonly occurring inline arguments are provided for
+efficiency reasons, e.g., ‘@local0’ as specialization of ‘0 @localn’.
+The following compiling words compile the right specialized version, or
+the general version, as appropriate:
+
+‘compile-lp+!’ ( n –  ) gforth-0.2 “compile-l-p-plus-store”
+
+   Combinations of conditional branches and ‘lp+!#’ like ‘?branch-lp+!#’
+(the locals pointer is only changed if the branch is taken) are provided
+for efficiency and correctness in loops.
+
+   A special area in the dictionary space is reserved for keeping the
+local variable names.  ‘{:’ switches the dictionary pointer to this area
+and ‘:}’ switches it back and generates the locals initializing code.
+‘W:’ etc. are normal defining words.  This special area is cleared at
+the start of every colon definition.
+
+   A special feature of Gforth’s dictionary is used to implement the
+definition of locals without type specifiers: every word list (aka
+vocabulary) has its own methods for searching etc.  (*note Word
+Lists::).  For the present purpose we defined a word list with a special
+search method: When it is searched for a word, it actually creates that
+word using ‘W:’.  ‘{:’ changes the search order to first search the word
+list containing ‘:}’, ‘W:’ etc., and then the word list for defining
+locals without type specifiers.
+
+   The lifetime rules support a stack discipline within a colon
+definition: The lifetime of a local is either nested with other locals
+lifetimes or it does not overlap them.
+
+   At ‘BEGIN’, ‘IF’, and ‘AHEAD’ no code for locals stack pointer
+manipulation is generated.  Between control structure words locals
+definitions can push locals onto the locals stack.  ‘AGAIN’ is the
+simplest of the other three control flow words.  It has to restore the
+locals stack depth of the corresponding ‘BEGIN’ before branching.  The
+code looks like this:
+‘lp+!#’ current-locals-size − dest-locals-size
+‘branch’ <begin>
+
+   ‘UNTIL’ is a little more complicated: If it branches back, it must
+adjust the stack just like ‘AGAIN’.  But if it falls through, the locals
+stack must not be changed.  The compiler generates the following code:
+‘?branch-lp+!#’ <begin> current-locals-size − dest-locals-size
+   The locals stack pointer is only adjusted if the branch is taken.
+
+   ‘THEN’ can produce somewhat inefficient code:
+‘lp+!#’ current-locals-size − orig-locals-size
+<orig target>:
+‘lp+!#’ orig-locals-size − new-locals-size
+   The second ‘lp+!#’ adjusts the locals stack pointer from the level at
+the orig point to the level after the ‘THEN’.  The first ‘lp+!#’ adjusts
+the locals stack pointer from the current level to the level at the orig
+point, so the complete effect is an adjustment from the current level to
+the right level after the ‘THEN’.
+
+   In a conventional Forth implementation a dest control-flow stack
+entry is just the target address and an orig entry is just the address
+to be patched.  Our locals implementation adds a word list to every orig
+or dest item.  It is the list of locals visible (or assumed visible) at
+the point described by the entry.  Our implementation also adds a tag to
+identify the kind of entry, in particular to differentiate between live
+and dead (reachable and unreachable) orig entries.
+
+   A few unusual operations have to be performed on locals word lists:
+
+‘common-list’ ( list1 list2 – list3  ) gforth-internal “common-list”
+
+‘sub-list?’ ( list1 list2 – f  ) gforth-internal “sub-list?”
+
+‘list-size’ ( list – u  ) gforth-internal “list-size”
+
+   Several features of our locals word list implementation make these
+operations easy to implement: The locals word lists are organised as
+linked lists; the tails of these lists are shared, if the lists contain
+some of the same locals; and the address of a name is greater than the
+address of the names behind it in the list.
+
+   Another important implementation detail is the variable ‘dead-code’.
+It is used by ‘BEGIN’ and ‘THEN’ to determine if they can be reached
+directly or only through the branch that they resolve.  ‘dead-code’ is
+set by ‘UNREACHABLE’, ‘AHEAD’, ‘EXIT’ etc., and cleared at the start of
+a colon definition, by ‘BEGIN’ and usually by ‘THEN’.
+
+   Counted loops are similar to other loops in most respects, but
+‘LEAVE’ requires special attention: It performs basically the same
+service as ‘AHEAD’, but it does not create a control-flow stack entry.
+Therefore the information has to be stored elsewhere; traditionally, the
+information was stored in the target fields of the branches created by
+the ‘LEAVE’s, by organizing these fields into a linked list.
+Unfortunately, this clever trick does not provide enough space for
+storing our extended control flow information.  Therefore, we introduce
+another stack, the leave stack.  It contains the control-flow stack
+entries for all unresolved ‘LEAVE’s.
+
+   Local names are kept until the end of the colon definition, even if
+they are no longer visible in any control-flow path.  In a few cases
+this may lead to increased space needs for the locals name area, but
+usually less than reclaiming this space would cost in code size.
+
+
 File: gforth.info,  Node: Closures,  Prev: Locals implementation,  Up: Gforth locals
 
 6.22.1.6 Closures
@@ -6975,209 +7186,4 @@ command-line arguments.  Normally prints the Gforth startup message.
 ‘process-option’ ( addr u – true / addr u false  ) gforth-0.7 “process-option”
    Process an option ADDR U, return true, if the option is processed;
 unprocessed options are loaded as files throu ‘required’.
-
-
-File: gforth.info,  Node: Engine,  Next: Cross Compiler,  Prev: Image Files,  Up: Top
-
-15 Engine
-*********
-
-Reading this chapter is not necessary for programming with Gforth.  It
-may be helpful for finding your way in the Gforth sources.
-
-   The ideas in this section have also been published in the following
-papers: Bernd Paysan, ‘ANS fig/GNU/??? Forth’ (in German), Forth-Tagung
-’93; M. Anton Ertl, ‘A Portable Forth Engine
-(https://www.complang.tuwien.ac.at/papers/ertl93.ps.Z)’, EuroForth ’93;
-M. Anton Ertl, ‘Threaded code variations and optimizations (extended
-version) (https://www.complang.tuwien.ac.at/papers/ertl02.ps.gz)’,
-Forth-Tagung ’02.
-
-* Menu:
-
-* Portability::
-* Threading::
-* Primitives::
-* Performance::
-
-
-File: gforth.info,  Node: Portability,  Next: Threading,  Prev: Engine,  Up: Engine
-
-15.1 Portability
-================
-
-An important goal of the Gforth Project is availability across a wide
-range of personal machines.  fig-Forth, and, to a lesser extent, F83,
-achieved this goal by manually coding the engine in assembly language
-for several then-popular processors.  This approach is very
-labor-intensive and the results are short-lived due to progress in
-computer architecture.
-
-   Others have avoided this problem by coding in C, e.g., Mitch Bradley
-(cforth), Mikael Patel (TILE) and Dirk Zoller (pfe).  This approach is
-particularly popular for UNIX-based Forths due to the large variety of
-architectures of UNIX machines.  Unfortunately an implementation in C
-does not mix well with the goals of efficiency and with using
-traditional techniques: Indirect or direct threading cannot be expressed
-in C, and switch threading, the fastest technique available in C, is
-significantly slower.  Another problem with C is that it is very
-cumbersome to express double integer arithmetic.
-
-   Fortunately, there is a portable language that does not have these
-limitations: GNU C, the version of C processed by the GNU C compiler
-(*note Extensions to the C Language Family: (gcc)C Extensions.).  Its
-labels as values feature (*note Labels as Values: (gcc)Labels as
-Values.) makes direct and indirect threading possible, its ‘long long’
-type (*note Double-Word Integers: (gcc)Long Long.) corresponds to
-Forth’s double numbers on many systems.  GNU C is freely available on
-all important (and many unimportant) UNIX machines, VMS, 80386s running
-MS-DOS, the Amiga, and the Atari ST, so a Forth written in GNU C can run
-on all these machines.
-
-   Writing in a portable language has the reputation of producing code
-that is slower than assembly.  For our Forth engine we repeatedly looked
-at the code produced by the compiler and eliminated most
-compiler-induced inefficiencies by appropriate changes in the source
-code.
-
-   However, register allocation cannot be portably influenced by the
-programmer, leading to some inefficiencies on register-starved machines.
-We use explicit register declarations (*note Variables in Specified
-Registers: (gcc)Explicit Reg Vars.) to improve the speed on some
-machines.  They are turned on by using the configuration flag
-‘--enable-force-reg’ (‘gcc’ switch ‘-DFORCE_REG’).  Unfortunately, this
-feature not only depends on the machine, but also on the compiler
-version: On some machines some compiler versions produce incorrect code
-when certain explicit register declarations are used.  So by default
-‘-DFORCE_REG’ is not used.
-
-
-File: gforth.info,  Node: Threading,  Next: Primitives,  Prev: Portability,  Up: Engine
-
-15.2 Threading
-==============
-
-GNU C’s labels as values extension (available since ‘gcc-2.0’, *note
-Labels as Values: (gcc)Labels as Values.) makes it possible to take the
-address of label by writing ‘&&label’.  This address can then be used in
-a statement like ‘goto *address’.  I.e., ‘goto *&&x’ is the same as
-‘goto x’.
-
-   With this feature an indirect threaded ‘NEXT’ looks like:
-     cfa = *ip++;
-     ca = *cfa;
-     goto *ca;
-   For those unfamiliar with the names: ‘ip’ is the Forth instruction
-pointer; the ‘cfa’ (code-field address) corresponds to Standard Forth’s
-execution token and points to the code field of the next word to be
-executed; The ‘ca’ (code address) fetched from there points to some
-executable code, e.g., a primitive or the colon definition handler
-‘docol’.
-
-   Direct threading is even simpler:
-     ca = *ip++;
-     goto *ca;
-
-   Of course we have packaged the whole thing neatly in macros called
-‘NEXT’ and ‘NEXT1’ (the part of ‘NEXT’ after fetching the cfa).
-
-* Menu:
-
-* Scheduling::
-* Direct or Indirect Threaded?::
-* Dynamic Superinstructions::
-* DOES>::
-
-
-File: gforth.info,  Node: Scheduling,  Next: Direct or Indirect Threaded?,  Prev: Threading,  Up: Threading
-
-15.2.1 Scheduling
------------------
-
-There is a little complication: Pipelined and superscalar processors,
-i.e., RISC and some modern CISC machines can process independent
-instructions while waiting for the results of an instruction.  The
-compiler usually reorders (schedules) the instructions in a way that
-achieves good usage of these delay slots.  However, on our first tries
-the compiler did not do well on scheduling primitives.  E.g., for ‘+’
-implemented as
-     n=sp[0]+sp[1];
-     sp++;
-     sp[0]=n;
-     NEXT;
-   the ‘NEXT’ comes strictly after the other code, i.e., there is nearly
-no scheduling.  After a little thought the problem becomes clear: The
-compiler cannot know that ‘sp’ and ‘ip’ point to different addresses
-(and the version of ‘gcc’ we used would not know it even if it was
-possible), so it could not move the load of the cfa above the store to
-the TOS. Indeed the pointers could be the same, if code on or very near
-the top of stack were executed.  In the interest of speed we chose to
-forbid this probably unused “feature” and helped the compiler in
-scheduling: ‘NEXT’ is divided into several parts: ‘NEXT_P0’, ‘NEXT_P1’
-and ‘NEXT_P2’).  ‘+’ now looks like:
-     NEXT_P0;
-     n=sp[0]+sp[1];
-     sp++;
-     NEXT_P1;
-     sp[0]=n;
-     NEXT_P2;
-
-   There are various schemes that distribute the different operations of
-NEXT between these parts in several ways; in general, different schemes
-perform best on different processors.  We use a scheme for most
-architectures that performs well for most processors of this
-architecture; in the future we may switch to benchmarking and chosing
-the scheme on installation time.
-
-
-File: gforth.info,  Node: Direct or Indirect Threaded?,  Next: Dynamic Superinstructions,  Prev: Scheduling,  Up: Threading
-
-15.2.2 Direct or Indirect Threaded?
------------------------------------
-
-Threaded forth code consists of references to primitives (simple machine
-code routines like ‘+’) and to non-primitives (e.g., colon definitions,
-variables, constants); for a specific class of non-primitives (e.g.,
-variables) there is one code routine (e.g., ‘dovar’), but each variable
-needs a separate reference to its data.
-
-   Traditionally Forth has been implemented as indirect threaded code,
-because this allows to use only one cell to reference a non-primitive
-(basically you point to the data, and find the code address there).
-
-   However, threaded code in Gforth (since 0.6.0) uses two cells for
-non-primitives, one for the code address, and one for the data address;
-the data pointer is an immediate argument for the virtual machine
-instruction represented by the code address.  We call this
-_primitive-centric_ threaded code, because all code addresses point to
-simple primitives.  E.g., for a variable, the code address is for ‘lit’
-(also used for integer literals like ‘99’).
-
-   Primitive-centric threaded code allows us to use (faster) direct
-threading as dispatch method, completely portably (direct threaded code
-in Gforth before 0.6.0 required architecture-specific code).  It also
-eliminates the performance problems related to I-cache consistency that
-386 implementations have with direct threaded code, and allows
-additional optimizations.
-
-   There is a catch, however: the XT parameter of ‘execute’ can occupy
-only one cell, so how do we pass non-primitives with their code _and_
-data addresses to them?  Our answer is to use indirect threaded dispatch
-for ‘execute’ and other words that use a single-cell xt.  So, normal
-threaded code in colon definitions uses direct threading, and ‘execute’
-and similar words, which dispatch to xts on the data stack, use indirect
-threaded code.  We call this _hybrid direct/indirect_ threaded code.
-
-   The engines ‘gforth’ and ‘gforth-fast’ use hybrid direct/indirect
-threaded code.  This means that with these engines you cannot use ‘,’ to
-compile an xt.  Instead, you have to use ‘compile,’.
-
-   If you want to compile xts with ‘,’, use ‘gforth-itc’.  This engine
-uses plain old indirect threaded code.  It still compiles in a
-primitive-centric style, so you cannot use ‘compile,’ instead of ‘,’
-(e.g., for producing tables of xts with ‘] word1 word2 ... [’).  If you
-want to do that, you have to use ‘gforth-itc’ and execute ‘' , is
-compile,’.  Your program can check if it is running on a hybrid
-direct/indirect threaded engine or a pure indirect threaded engine with
-‘threading-method’ (*note Threading Words::).
 

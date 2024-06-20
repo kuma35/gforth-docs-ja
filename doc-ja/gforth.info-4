@@ -27,6 +27,211 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Engine,  Next: Cross Compiler,  Prev: Image Files,  Up: Top
+
+15 Engine
+*********
+
+Reading this chapter is not necessary for programming with Gforth.  It
+may be helpful for finding your way in the Gforth sources.
+
+   The ideas in this section have also been published in the following
+papers: Bernd Paysan, ‘ANS fig/GNU/??? Forth’ (in German), Forth-Tagung
+’93; M. Anton Ertl, ‘A Portable Forth Engine
+(https://www.complang.tuwien.ac.at/papers/ertl93.ps.Z)’, EuroForth ’93;
+M. Anton Ertl, ‘Threaded code variations and optimizations (extended
+version) (https://www.complang.tuwien.ac.at/papers/ertl02.ps.gz)’,
+Forth-Tagung ’02.
+
+* Menu:
+
+* Portability::
+* Threading::
+* Primitives::
+* Performance::
+
+
+File: gforth.info,  Node: Portability,  Next: Threading,  Prev: Engine,  Up: Engine
+
+15.1 Portability
+================
+
+An important goal of the Gforth Project is availability across a wide
+range of personal machines.  fig-Forth, and, to a lesser extent, F83,
+achieved this goal by manually coding the engine in assembly language
+for several then-popular processors.  This approach is very
+labor-intensive and the results are short-lived due to progress in
+computer architecture.
+
+   Others have avoided this problem by coding in C, e.g., Mitch Bradley
+(cforth), Mikael Patel (TILE) and Dirk Zoller (pfe).  This approach is
+particularly popular for UNIX-based Forths due to the large variety of
+architectures of UNIX machines.  Unfortunately an implementation in C
+does not mix well with the goals of efficiency and with using
+traditional techniques: Indirect or direct threading cannot be expressed
+in C, and switch threading, the fastest technique available in C, is
+significantly slower.  Another problem with C is that it is very
+cumbersome to express double integer arithmetic.
+
+   Fortunately, there is a portable language that does not have these
+limitations: GNU C, the version of C processed by the GNU C compiler
+(*note Extensions to the C Language Family: (gcc)C Extensions.).  Its
+labels as values feature (*note Labels as Values: (gcc)Labels as
+Values.) makes direct and indirect threading possible, its ‘long long’
+type (*note Double-Word Integers: (gcc)Long Long.) corresponds to
+Forth’s double numbers on many systems.  GNU C is freely available on
+all important (and many unimportant) UNIX machines, VMS, 80386s running
+MS-DOS, the Amiga, and the Atari ST, so a Forth written in GNU C can run
+on all these machines.
+
+   Writing in a portable language has the reputation of producing code
+that is slower than assembly.  For our Forth engine we repeatedly looked
+at the code produced by the compiler and eliminated most
+compiler-induced inefficiencies by appropriate changes in the source
+code.
+
+   However, register allocation cannot be portably influenced by the
+programmer, leading to some inefficiencies on register-starved machines.
+We use explicit register declarations (*note Variables in Specified
+Registers: (gcc)Explicit Reg Vars.) to improve the speed on some
+machines.  They are turned on by using the configuration flag
+‘--enable-force-reg’ (‘gcc’ switch ‘-DFORCE_REG’).  Unfortunately, this
+feature not only depends on the machine, but also on the compiler
+version: On some machines some compiler versions produce incorrect code
+when certain explicit register declarations are used.  So by default
+‘-DFORCE_REG’ is not used.
+
+
+File: gforth.info,  Node: Threading,  Next: Primitives,  Prev: Portability,  Up: Engine
+
+15.2 Threading
+==============
+
+GNU C’s labels as values extension (available since ‘gcc-2.0’, *note
+Labels as Values: (gcc)Labels as Values.) makes it possible to take the
+address of label by writing ‘&&label’.  This address can then be used in
+a statement like ‘goto *address’.  I.e., ‘goto *&&x’ is the same as
+‘goto x’.
+
+   With this feature an indirect threaded ‘NEXT’ looks like:
+     cfa = *ip++;
+     ca = *cfa;
+     goto *ca;
+   For those unfamiliar with the names: ‘ip’ is the Forth instruction
+pointer; the ‘cfa’ (code-field address) corresponds to Standard Forth’s
+execution token and points to the code field of the next word to be
+executed; The ‘ca’ (code address) fetched from there points to some
+executable code, e.g., a primitive or the colon definition handler
+‘docol’.
+
+   Direct threading is even simpler:
+     ca = *ip++;
+     goto *ca;
+
+   Of course we have packaged the whole thing neatly in macros called
+‘NEXT’ and ‘NEXT1’ (the part of ‘NEXT’ after fetching the cfa).
+
+* Menu:
+
+* Scheduling::
+* Direct or Indirect Threaded?::
+* Dynamic Superinstructions::
+* DOES>::
+
+
+File: gforth.info,  Node: Scheduling,  Next: Direct or Indirect Threaded?,  Prev: Threading,  Up: Threading
+
+15.2.1 Scheduling
+-----------------
+
+There is a little complication: Pipelined and superscalar processors,
+i.e., RISC and some modern CISC machines can process independent
+instructions while waiting for the results of an instruction.  The
+compiler usually reorders (schedules) the instructions in a way that
+achieves good usage of these delay slots.  However, on our first tries
+the compiler did not do well on scheduling primitives.  E.g., for ‘+’
+implemented as
+     n=sp[0]+sp[1];
+     sp++;
+     sp[0]=n;
+     NEXT;
+   the ‘NEXT’ comes strictly after the other code, i.e., there is nearly
+no scheduling.  After a little thought the problem becomes clear: The
+compiler cannot know that ‘sp’ and ‘ip’ point to different addresses
+(and the version of ‘gcc’ we used would not know it even if it was
+possible), so it could not move the load of the cfa above the store to
+the TOS. Indeed the pointers could be the same, if code on or very near
+the top of stack were executed.  In the interest of speed we chose to
+forbid this probably unused “feature” and helped the compiler in
+scheduling: ‘NEXT’ is divided into several parts: ‘NEXT_P0’, ‘NEXT_P1’
+and ‘NEXT_P2’).  ‘+’ now looks like:
+     NEXT_P0;
+     n=sp[0]+sp[1];
+     sp++;
+     NEXT_P1;
+     sp[0]=n;
+     NEXT_P2;
+
+   There are various schemes that distribute the different operations of
+NEXT between these parts in several ways; in general, different schemes
+perform best on different processors.  We use a scheme for most
+architectures that performs well for most processors of this
+architecture; in the future we may switch to benchmarking and chosing
+the scheme on installation time.
+
+
+File: gforth.info,  Node: Direct or Indirect Threaded?,  Next: Dynamic Superinstructions,  Prev: Scheduling,  Up: Threading
+
+15.2.2 Direct or Indirect Threaded?
+-----------------------------------
+
+Threaded forth code consists of references to primitives (simple machine
+code routines like ‘+’) and to non-primitives (e.g., colon definitions,
+variables, constants); for a specific class of non-primitives (e.g.,
+variables) there is one code routine (e.g., ‘dovar’), but each variable
+needs a separate reference to its data.
+
+   Traditionally Forth has been implemented as indirect threaded code,
+because this allows to use only one cell to reference a non-primitive
+(basically you point to the data, and find the code address there).
+
+   However, threaded code in Gforth (since 0.6.0) uses two cells for
+non-primitives, one for the code address, and one for the data address;
+the data pointer is an immediate argument for the virtual machine
+instruction represented by the code address.  We call this
+_primitive-centric_ threaded code, because all code addresses point to
+simple primitives.  E.g., for a variable, the code address is for ‘lit’
+(also used for integer literals like ‘99’).
+
+   Primitive-centric threaded code allows us to use (faster) direct
+threading as dispatch method, completely portably (direct threaded code
+in Gforth before 0.6.0 required architecture-specific code).  It also
+eliminates the performance problems related to I-cache consistency that
+386 implementations have with direct threaded code, and allows
+additional optimizations.
+
+   There is a catch, however: the XT parameter of ‘execute’ can occupy
+only one cell, so how do we pass non-primitives with their code _and_
+data addresses to them?  Our answer is to use indirect threaded dispatch
+for ‘execute’ and other words that use a single-cell xt.  So, normal
+threaded code in colon definitions uses direct threading, and ‘execute’
+and similar words, which dispatch to xts on the data stack, use indirect
+threaded code.  We call this _hybrid direct/indirect_ threaded code.
+
+   The engines ‘gforth’ and ‘gforth-fast’ use hybrid direct/indirect
+threaded code.  This means that with these engines you cannot use ‘,’ to
+compile an xt.  Instead, you have to use ‘compile,’.
+
+   If you want to compile xts with ‘,’, use ‘gforth-itc’.  This engine
+uses plain old indirect threaded code.  It still compiles in a
+primitive-centric style, so you cannot use ‘compile,’ instead of ‘,’
+(e.g., for producing tables of xts with ‘] word1 word2 ... [’).  If you
+want to do that, you have to use ‘gforth-itc’ and execute ‘' , is
+compile,’.  Your program can check if it is running on a hybrid
+direct/indirect threaded engine or a pure indirect threaded engine with
+‘threading-method’ (*note Threading Words::).
+
+
 File: gforth.info,  Node: Dynamic Superinstructions,  Next: DOES>,  Prev: Direct or Indirect Threaded?,  Up: Threading
 
 15.2.3 Dynamic Superinstructions
@@ -2441,7 +2646,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  32)
 * ;m ( COLON-SYS --; RUN-TIME: -- ) objects: Objects Glossary.
                                                               (line 107)
-* ;s ( R:W -- ) gforth-0.2:              Calls and returns.   (line  53)
+* ;s ( R:W -- ) gforth-0.2:              Calls and returns.   (line  55)
 * ;] ( COMPILE-TIME: QUOTATION-SYS -- ; RUN-TIME: -- XT ) gforth-1.0: Quotations.
                                                               (line  30)
 * < ( N1 N2 -- F ) core:                 Numeric comparison.  (line   9)
@@ -2505,16 +2710,16 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 177)
 * ?dup ( W -- S:... W ) core:            Data stack.          (line  29)
 * ?DUP-0=-IF ( COMPILATION -- ORIG ; RUN-TIME N -- N| ) gforth-0.2: Arbitrary control structures.
-                                                              (line  83)
+                                                              (line  84)
 * ?dup-IF ( COMPILATION -- ORIG ; RUN-TIME N -- N| ) gforth-0.2: Arbitrary control structures.
-                                                              (line  78)
+                                                              (line  79)
 * ?events ( -- ) gforth-experimental:    Message queues.      (line  21)
-* ?EXIT ( -- ) gforth-0.2:               Calls and returns.   (line  50)
+* ?EXIT ( -- ) gforth-0.2:               Calls and returns.   (line  52)
 * ?inside ( RX RY -- ACT / 0 ) minos2:   actor methods.       (line  33)
 * ?LEAVE ( COMPILATION -- ; RUN-TIME F | F LOOP-SYS -- ) gforth-0.2: Counted Loops.
                                                               (line 256)
 * ?of ( COMPILATION -- OF-SYS ; RUN-TIME F -- ) gforth-1.0: Arbitrary control structures.
-                                                              (line 104)
+                                                              (line 106)
 * @ ( A-ADDR -- W ) core:                Memory Access.       (line   6)
 * @localn ( NOFFSET -- W ) gforth-internal: Locals implementation.
                                                               (line  14)
@@ -2631,9 +2836,9 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  63)
 * abi-code ( "NAME" -- COLON-SYS ) gforth-1.0: Assembler Definitions.
                                                               (line  38)
-* abort ( ?? -- ?? ) core,exception-ext: Exception Handling.  (line 247)
+* abort ( ?? -- ?? ) core,exception-ext: Exception Handling.  (line 258)
 * ABORT" ( COMPILATION 'CCC"' -- ; RUN-TIME F -- ) core,exception-ext: Exception Handling.
-                                                              (line 242)
+                                                              (line 254)
 * abs ( N -- U ) core:                   Single precision.    (line  30)
 * absolute-file? ( ADDR U -- FLAG ) gforth-1.0: Search Paths. (line  31)
 * accept ( C-ADDR +N1 -- +N2 ) core:     Line input and conversion.
@@ -2728,7 +2933,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * before-word ( -- ) gforth-0.7:         Text Interpreter Hooks.
                                                               (line   9)
 * BEGIN ( COMPILATION -- DEST ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  29)
+                                                              (line  28)
 * begin-structure ( "NAME" -- STRUCT-SYS 0 ) facility-ext: Forth200x Structures.
                                                               (line  40)
 * bin ( FAM1 -- FAM2 ) file:             General files.       (line  15)
@@ -2804,9 +3009,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * capsstring-prefix? ( C-ADDR1 U1 C-ADDR2 U2 -- F ) gforth-1.0: String words.
                                                               (line  73)
 * case ( COMPILATION -- CASE-SYS ; RUN-TIME -- ) core-ext: Arbitrary control structures.
-                                                              (line  87)
+                                                              (line  88)
 * catch ( X1 .. XN XT -- Y1 .. YM 0 / Z1 .. ZN ERROR ) exception: Exception Handling.
-                                                              (line  83)
+                                                              (line  95)
 * cell ( -- U ) gforth-0.2:              Address arithmetic.  (line  64)
 * cell% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  24)
 * cell+ ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  55)
@@ -2877,7 +3082,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * construct ( ... OBJECT -- ) objects:   Objects Glossary.    (line  41)
 * context ( -- ADDR ) gforth-0.2:        Word Lists.          (line 160)
 * contof ( COMPILATION CASE-SYS1 OF-SYS -- CASE-SYS2 ; RUN-TIME -- ) gforth-1.0: Arbitrary control structures.
-                                                              (line 111)
+                                                              (line 114)
 * convert ( UD1 C-ADDR1 -- UD2 C-ADDR2 ) core-ext-obsolescent: Line input and conversion.
                                                               (line  61)
 * CORE ( -- F ) environment:             Environmental Queries.
@@ -3055,7 +3260,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ekey? ( -- FLAG ) facility-ext:        Single-key input.    (line  59)
 * ekeyed ( EKEY -- ) minos2:             actor methods.       (line  30)
 * ELSE ( COMPILATION ORIG1 -- ORIG2 ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  58)
+                                                              (line  59)
 * emit ( C -- ) core:                    Displaying characters and strings.
                                                               (line  13)
 * emit-file ( C WFILEID -- WIOR ) gforth-0.2: General files.  (line  74)
@@ -3080,17 +3285,17 @@ this manual.  Each word is listed with its stack effect and wordset.
 * end-structure ( STRUCT-SYS +N -- ) facility-ext: Forth200x Structures.
                                                               (line  46)
 * endcase ( COMPILATION CASE-SYS -- ; RUN-TIME X -- ) core-ext: Arbitrary control structures.
-                                                              (line  90)
+                                                              (line  91)
 * ENDIF ( COMPILATION ORIG -- ; RUN-TIME -- ) gforth-0.2: Arbitrary control structures.
-                                                              (line  75)
+                                                              (line  76)
 * endof ( COMPILATION CASE-SYS1 OF-SYS -- CASE-SYS2 ; RUN-TIME -- ) core-ext: Arbitrary control structures.
-                                                              (line 107)
+                                                              (line 110)
 * endscope ( COMPILATION SCOPE -- ; RUN-TIME -- ) gforth-0.2: Where are locals visible by name?.
                                                               (line  13)
 * endtry ( COMPILATION -- ; RUN-TIME R:SYS1 -- ) gforth-0.5: Exception Handling.
-                                                              (line 132)
+                                                              (line 143)
 * endtry-iferror ( COMPILATION ORIG1 -- ORIG2 ; RUN-TIME R:SYS1 -- ) gforth-0.7: Exception Handling.
-                                                              (line 211)
+                                                              (line 224)
 * entered ( -- ) minos2:                 actor methods.       (line  42)
 * environment ( -- ) gforth-0.6:         Environmental Queries.
                                                               (line 162)
@@ -3104,8 +3309,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * error-hl-ul ( -- ) gforth-1.0:         Terminal output.     (line  45)
 * evaluate ( ... ADDR U -- ... ) core,block: Input Sources.   (line  41)
 * event-loop ( -- ) gforth-experimental: Message queues.      (line  25)
-* exception ( ADDR U -- N ) gforth-0.2:  Exception Handling.  (line  35)
-* exceptions ( XT N1 -- N2 ) gforth-1.0: Exception Handling.  (line  45)
+* exception ( ADDR U -- N ) gforth-0.2:  Exception Handling.  (line  37)
+* exceptions ( XT N1 -- N2 ) gforth-1.0: Exception Handling.  (line  49)
 * execute ( XT -- ) core:                Execution token.     (line  83)
 * execute-exit ( COMPILATION -- ; RUN-TIME XT NEST-SYS -- ) gforth-1.0: Execution token.
                                                               (line  86)
@@ -3116,7 +3321,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * execute-task ( XT -- TASK ) gforth-experimental: Basic multi-tasking.
                                                               (line  59)
 * EXIT ( COMPILATION -- ; RUN-TIME NEST-SYS -- ) core: Calls and returns.
-                                                              (line  44)
+                                                              (line  45)
 * exitm ( -- ) objects:                  Objects Glossary.    (line  75)
 * expand-where ( -- ) gforth-1.0:        Locating uses of a word.
                                                               (line  43)
@@ -3184,7 +3389,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fasin ( R1 -- R2 ) floating-ext:       Floating Point.      (line 118)
 * fasinh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 135)
 * fast-throw ( ... WBALL -- ... WBALL ) gforth-experimental: Exception Handling.
-                                                              (line  15)
+                                                              (line  16)
 * fatan ( R1 -- R2 ) floating-ext:       Floating Point.      (line 122)
 * fatan2 ( R1 R2 -- R3 ) floating-ext:   Floating Point.      (line 124)
 * fatanh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 139)
@@ -3356,7 +3561,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * IF ( COMPILATION -- ORIG ; RUN-TIME F -- ) core: Arbitrary control structures.
                                                               (line  16)
 * iferror ( COMPILATION ORIG1 -- ORIG2 ; RUN-TIME -- ) gforth-0.7: Exception Handling.
-                                                              (line 135)
+                                                              (line 146)
 * immediate ( -- ) core:                 Interpretation and Compilation Semantics.
                                                               (line  48)
 * immediate? ( NT -- FLAG ) gforth-1.0:  Header methods.      (line 168)
@@ -3609,7 +3814,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * next-arg ( -- ADDR U ) gforth-0.7:     OS command line arguments.
                                                               (line  15)
 * next-case ( COMPILATION CASE-SYS -- ; RUN-TIME -- ) gforth-1.0: Arbitrary control structures.
-                                                              (line  96)
+                                                              (line  97)
 * nextname ( C-ADDR U -- ) gforth-0.2:   Supplying names.     (line  10)
 * nip ( W1 W2 -- W2 ) core-ext:          Data stack.          (line   8)
 * nocov[ ( -- ) gforth-1.0:              Code Coverage.       (line  17)
@@ -3620,7 +3825,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * noop ( -- ) gforth-0.2:                Execution token.     (line  96)
 * notfound ( STATE -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  31)
-* nothrow ( -- ) gforth-0.7:             Exception Handling.  (line  89)
+* nothrow ( -- ) gforth-0.7:             Exception Handling.  (line 101)
 * nr> ( R:XN..X1 R:N -- X1 .. XN N ) tools-ext: Return stack. (line  31)
 * ns ( D -- ) gforth-1.0:                Keeping track of Time.
                                                               (line   8)
@@ -3659,7 +3864,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * object-with ( O -- ) oof:              The OOF base class.  (line  86)
 * object-[] ( N "NAME" -- ) oof:         The OOF base class.  (line  49)
 * of ( COMPILATION -- OF-SYS ; RUN-TIME X1 X2 -- |X1 ) core-ext: Arbitrary control structures.
-                                                              (line 100)
+                                                              (line 102)
 * off ( A-ADDR -- ) gforth-0.2:          Boolean Flags.       (line  20)
 * on ( A-ADDR -- ) gforth-0.2:           Boolean Flags.       (line  17)
 * once ( -- ) gforth-1.0:                Debugging.           (line  47)
@@ -3771,15 +3976,15 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  70)
 * recognizer-sequence: ( XT1 .. XTN N "NAME" -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  73)
-* recurse ( ... -- ... ) core:           Calls and returns.   (line  16)
+* recurse ( ... -- ... ) core:           Calls and returns.   (line  15)
 * recursive ( COMPILATION -- ; RUN-TIME -- ) gforth-0.2: Calls and returns.
-                                                              (line  12)
+                                                              (line  11)
 * refill ( -- FLAG ) core-ext,block-ext,file-ext: The Input Stream.
                                                               (line  54)
 * rename-file ( C-ADDR1 U1 C-ADDR2 U2 -- WIOR ) file-ext: General files.
                                                               (line  33)
 * REPEAT ( COMPILATION ORIG DEST -- ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  68)
+                                                              (line  69)
 * replace-word ( XT1 XT2 -- ) gforth-1.0: Debugging.          (line  65)
 * replaces ( ADDR1 LEN1 ADDR2 LEN2 -- ) string-ext: Substitute.
                                                               (line  17)
@@ -3796,7 +4001,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * restart ( TASK -- ) gforth-experimental: Basic multi-tasking.
                                                               (line  87)
 * restore ( COMPILATION ORIG1 -- ; RUN-TIME -- ) gforth-0.7: Exception Handling.
-                                                              (line 207)
+                                                              (line 220)
 * restore-input ( X1 .. XN N -- FLAG ) core-ext: Input Sources.
                                                               (line  32)
 * restrict ( -- ) gforth-0.2:            Interpretation and Compilation Semantics.
@@ -4000,7 +4205,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * text-emoji-fade-color: ( RGBATEXT1 ~2 RGBAEMOJI1 ~2 "NAME" -- ) minos2: widget methods.
                                                               (line 148)
 * THEN ( COMPILATION ORIG -- ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  25)
+                                                              (line  24)
 * third ( W1 W2 W3 -- W1 W2 W3 W1 ) gforth-1.0: Data stack.   (line  14)
 * this ( -- OBJECT ) objects:            Objects Glossary.    (line 145)
 * threading-method ( -- N ) gforth-0.2:  Threading Words.     (line  69)
@@ -4036,7 +4241,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  48)
 * true ( -- F ) core-ext:                Boolean Flags.       (line  11)
 * try ( COMPILATION -- ORIG ; RUN-TIME -- R:SYS1 ) gforth-0.5: Exception Handling.
-                                                              (line 129)
+                                                              (line 140)
 * try-recognize ( ADDR U XT -- RESULTS | FALSE ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line 100)
 * tt ( U -- ) gforth-1.0:                Locating exception source.
@@ -4095,7 +4300,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * UNREACHABLE ( -- ) gforth-0.2:         Where are locals visible by name?.
                                                               (line  49)
 * UNTIL ( COMPILATION DEST -- ; RUN-TIME F -- ) core: Arbitrary control structures.
-                                                              (line  33)
+                                                              (line  32)
 * unused ( -- U ) core-ext:              Dictionary allocation.
                                                               (line  27)
 * unused-words ( -- ) gforth-1.0:        Locating uses of a word.
@@ -4146,9 +4351,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * walign ( -- ) gforth-1.0:              Address arithmetic.  (line 128)
 * waligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 125)
 * WARNING" ( COMPILATION 'CCC"' -- ; RUN-TIME F -- ) gforth-1.0: Exception Handling.
-                                                              (line 254)
+                                                              (line 265)
 * warning-color ( -- ) gforth-1.0:       Terminal output.     (line  48)
-* warnings ( -- ADDR ) gforth-0.2:       Exception Handling.  (line 257)
+* warnings ( -- ADDR ) gforth-0.2:       Exception Handling.  (line 268)
 * wbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  66)
 * wfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
@@ -4158,7 +4363,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * whereg ( "NAME" -- ) gforth-1.0:       Locating uses of a word.
                                                               (line  35)
 * WHILE ( COMPILATION DEST -- ORIG DEST ; RUN-TIME F -- ) core: Arbitrary control structures.
-                                                              (line  63)
+                                                              (line  64)
 * widget ( -- CLASS ) minos2:            MINOS2 object framework.
                                                               (line  17)
 * within ( U1 U2 U3 -- F ) core-ext:     Numeric comparison.  (line  41)
@@ -4609,7 +4814,7 @@ in the Word Index (only the names are listed for the words here).
 * ;inline:                               Colon Definitions.   (line  32)
 * ;m:                                    Objects Glossary.    (line 107)
 * ;m usage:                              Method conveniences. (line  12)
-* ;s:                                    Calls and returns.   (line  53)
+* ;s:                                    Calls and returns.   (line  55)
 * ;]:                                    Quotations.          (line  30)
 * <:                                     Numeric comparison.  (line   9)
 * <#:                                    Formatted numeric output.
@@ -4669,15 +4874,15 @@ in the Word Index (only the names are listed for the words here).
 * ?DO:                                   Counted Loops.       (line 177)
 * ?dup:                                  Data stack.          (line  29)
 * ?DUP-0=-IF:                            Arbitrary control structures.
-                                                              (line  83)
+                                                              (line  84)
 * ?dup-IF:                               Arbitrary control structures.
-                                                              (line  78)
+                                                              (line  79)
 * ?events:                               Message queues.      (line  21)
-* ?EXIT:                                 Calls and returns.   (line  50)
+* ?EXIT:                                 Calls and returns.   (line  52)
 * ?inside:                               actor methods.       (line  33)
 * ?LEAVE:                                Counted Loops.       (line 256)
 * ?of:                                   Arbitrary control structures.
-                                                              (line 104)
+                                                              (line 106)
 * @:                                     Memory Access.       (line   6)
 * @localn:                               Locals implementation.
                                                               (line  14)
@@ -4788,8 +4993,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  63)
 * abi-code:                              Assembler Definitions.
                                                               (line  38)
-* abort:                                 Exception Handling.  (line 247)
-* ABORT":                                Exception Handling.  (line 242)
+* abort:                                 Exception Handling.  (line 258)
+* ABORT":                                Exception Handling.  (line 254)
 * ABORT", exception abort sequence:      core-idef.           (line  75)
 * abs:                                   Single precision.    (line  30)
 * absolute-file?:                        Search Paths.        (line  31)
@@ -4940,7 +5145,7 @@ in the Word Index (only the names are listed for the words here).
 * before-word:                           Text Interpreter Hooks.
                                                               (line   9)
 * BEGIN:                                 Arbitrary control structures.
-                                                              (line  29)
+                                                              (line  28)
 * begin-structure:                       Forth200x Structures.
                                                               (line  40)
 * benchmarking Forth systems:            Performance.         (line   6)
@@ -5049,14 +5254,14 @@ in the Word Index (only the names are listed for the words here).
 * capssearch:                            String words.        (line  77)
 * capsstring-prefix?:                    String words.        (line  73)
 * case:                                  Arbitrary control structures.
-                                                              (line  87)
+                                                              (line  88)
 * case as generalized control structure: General control structures with CASE.
                                                               (line   6)
 * CASE control structure:                Selection.           (line  45)
 * case sensitivity:                      Case insensitivity.  (line   6)
 * case-sensitivity characteristics:      core-idef.           (line 156)
 * case-sensitivity for name lookup:      core-idef.           (line  34)
-* catch:                                 Exception Handling.  (line  83)
+* catch:                                 Exception Handling.  (line  95)
 * catch and backtraces:                  Error messages.      (line  42)
 * catch and this:                        Objects Implementation.
                                                               (line  43)
@@ -5235,13 +5440,13 @@ in the Word Index (only the names are listed for the words here).
 * contiguous regions in dictionary allocation: Dictionary allocation.
                                                               (line  10)
 * contof:                                Arbitrary control structures.
-                                                              (line 111)
+                                                              (line 114)
 * contributors to Gforth:                Origin.              (line   9)
 * control characters as delimiters:      core-idef.           (line  50)
 * control structures:                    Control Structures.  (line   6)
 * control structures for selection:      Selection.           (line   6)
 * control structures programming style:  Arbitrary control structures.
-                                                              (line 120)
+                                                              (line 123)
 * control structures, user-defined:      Arbitrary control structures.
                                                               (line   6)
 * control-flow stack:                    Arbitrary control structures.
@@ -5563,7 +5768,7 @@ in the Word Index (only the names are listed for the words here).
 * elements of a Forth system:            Review - elements of a Forth system.
                                                               (line   6)
 * ELSE:                                  Arbitrary control structures.
-                                                              (line  58)
+                                                              (line  59)
 * Emacs and Gforth:                      Emacs and Gforth.    (line   6)
 * emit:                                  Displaying characters and strings.
                                                               (line  13)
@@ -5589,16 +5794,16 @@ in the Word Index (only the names are listed for the words here).
 * end-structure:                         Forth200x Structures.
                                                               (line  46)
 * endcase:                               Arbitrary control structures.
-                                                              (line  90)
+                                                              (line  91)
 * ENDIF:                                 Arbitrary control structures.
-                                                              (line  75)
+                                                              (line  76)
 * endless loop:                          Simple Loops.        (line  29)
 * endof:                                 Arbitrary control structures.
-                                                              (line 107)
+                                                              (line 110)
 * endscope:                              Where are locals visible by name?.
                                                               (line  13)
-* endtry:                                Exception Handling.  (line 132)
-* endtry-iferror:                        Exception Handling.  (line 211)
+* endtry:                                Exception Handling.  (line 143)
+* endtry-iferror:                        Exception Handling.  (line 224)
 * engine:                                Engine.              (line   6)
 * engine performance:                    Performance.         (line   6)
 * engine portability:                    Portability.         (line   6)
@@ -5635,7 +5840,7 @@ in the Word Index (only the names are listed for the words here).
 * evaluate:                              Input Sources.       (line  41)
 * event-loop:                            Message queues.      (line  25)
 * examining data and code:               Examining data.      (line   6)
-* exception:                             Exception Handling.  (line  35)
+* exception:                             Exception Handling.  (line  37)
 * exception abort sequence of ABORT":    core-idef.           (line  75)
 * exception source code:                 Locating exception source.
                                                               (line   6)
@@ -5645,7 +5850,7 @@ in the Word Index (only the names are listed for the words here).
 * exception words, system documentation: The optional Exception word set.
                                                               (line   6)
 * exceptions:                            Exception Handling.  (line   6)
-* exceptions <1>:                        Exception Handling.  (line  45)
+* exceptions <1>:                        Exception Handling.  (line  49)
 * exceptions tutorial:                   Exceptions Tutorial. (line   6)
 * executable image file:                 Running Image Files. (line  10)
 * execute:                               Execution token.     (line  83)
@@ -5669,7 +5874,7 @@ in the Word Index (only the names are listed for the words here).
 * execution tokens tutorial:             Execution Tokens Tutorial.
                                                               (line   6)
 * exercises:                             Exercises.           (line   6)
-* EXIT:                                  Calls and returns.   (line  44)
+* EXIT:                                  Calls and returns.   (line  45)
 * exit in m: ... ;m:                     Method conveniences. (line  15)
 * exitm:                                 Objects Glossary.    (line  75)
 * exitm discussion:                      Method conveniences. (line  15)
@@ -5764,7 +5969,7 @@ in the Word Index (only the names are listed for the words here).
 * FASIN, |float|>1:                      floating-ambcond.    (line  66)
 * fasinh:                                Floating Point.      (line 135)
 * FASINH, float<0:                       floating-ambcond.    (line  61)
-* fast-throw:                            Exception Handling.  (line  15)
+* fast-throw:                            Exception Handling.  (line  16)
 * fatan:                                 Floating Point.      (line 122)
 * fatan2:                                Floating Point.      (line 124)
 * FATAN2, both arguments are equal to zero: floating-ambcond. (line  29)
@@ -6108,7 +6313,7 @@ in the Word Index (only the names are listed for the words here).
 * IF control structure:                  Selection.           (line   6)
 * if, tutorial:                          Conditional execution Tutorial.
                                                               (line   6)
-* iferror:                               Exception Handling.  (line 135)
+* iferror:                               Exception Handling.  (line 146)
 * image file:                            Image Files.         (line   6)
 * image file background:                 Image File Background.
                                                               (line   6)
@@ -6655,7 +6860,7 @@ in the Word Index (only the names are listed for the words here).
 * next-arg:                              OS command line arguments.
                                                               (line  15)
 * next-case:                             Arbitrary control structures.
-                                                              (line  96)
+                                                              (line  97)
 * nextname:                              Supplying names.     (line  10)
 * NFA:                                   Name token.          (line  93)
 * nip:                                   Data stack.          (line   8)
@@ -6671,7 +6876,7 @@ in the Word Index (only the names are listed for the words here).
 * notation of glossary entries:          Notation.            (line   6)
 * notfound:                              Dealing with existing Recognizers.
                                                               (line  31)
-* nothrow:                               Exception Handling.  (line  89)
+* nothrow:                               Exception Handling.  (line 101)
 * nr>:                                   Return stack.        (line  31)
 * ns:                                    Keeping track of Time.
                                                               (line   8)
@@ -6754,7 +6959,7 @@ in the Word Index (only the names are listed for the words here).
 * objects.fs properties:                 Properties of the Objects model.
                                                               (line   6)
 * of:                                    Arbitrary control structures.
-                                                              (line 100)
+                                                              (line 102)
 * off:                                   Boolean Flags.       (line  20)
 * on:                                    Boolean Flags.       (line  17)
 * once:                                  Debugging.           (line  47)
@@ -6897,7 +7102,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  56)
 * program data space available:          core-other.          (line  16)
 * programming style, arbitrary control structures: Arbitrary control structures.
-                                                              (line 120)
+                                                              (line 123)
 * programming style, locals:             Locals programming style.
                                                               (line   6)
 * programming style, object-oriented:    Object-Oriented Programming Style.
@@ -6970,11 +7175,11 @@ in the Word Index (only the names are listed for the words here).
 * records:                               Structures.          (line   6)
 * records tutorial:                      Arrays and Records Tutorial.
                                                               (line   6)
-* recover (old Gforth versions):         Exception Handling.  (line 174)
-* recurse:                               Calls and returns.   (line  16)
+* recover (old Gforth versions):         Exception Handling.  (line 185)
+* recurse:                               Calls and returns.   (line  15)
 * RECURSE appears after DOES>:           core-ambcond.        (line 122)
 * recursion tutorial:                    Recursion Tutorial.  (line   6)
-* recursive:                             Calls and returns.   (line  12)
+* recursive:                             Calls and returns.   (line  11)
 * recursive definitions:                 Calls and returns.   (line   6)
 * Redirection:                           Redirection.         (line   6)
 * refill:                                The Input Stream.    (line  54)
@@ -6988,7 +7193,7 @@ in the Word Index (only the names are listed for the words here).
 * remainder:                             Integer division.    (line   6)
 * rename-file:                           General files.       (line  33)
 * REPEAT:                                Arbitrary control structures.
-                                                              (line  68)
+                                                              (line  69)
 * repeatability to be expected from the execution of MS: facility-idef.
                                                               (line  19)
 * replace-word:                          Debugging.           (line  65)
@@ -7012,7 +7217,7 @@ in the Word Index (only the names are listed for the words here).
 * resize-file:                           General files.       (line  86)
 * resized:                               widget methods.      (line 108)
 * restart:                               Basic multi-tasking. (line  87)
-* restore:                               Exception Handling.  (line 207)
+* restore:                               Exception Handling.  (line 220)
 * restore-input:                         Input Sources.       (line  32)
 * RESTORE-INPUT, Argument type mismatch: core-ambcond.        (line 125)
 * restrict:                              Interpretation and Compilation Semantics.
@@ -7412,7 +7617,7 @@ in the Word Index (only the names are listed for the words here).
 * text-emoji-color::                     widget methods.      (line 138)
 * text-emoji-fade-color::                widget methods.      (line 148)
 * THEN:                                  Arbitrary control structures.
-                                                              (line  25)
+                                                              (line  24)
 * third:                                 Data stack.          (line  14)
 * this:                                  Objects Glossary.    (line 145)
 * this and catch:                        Objects Implementation.
@@ -7470,7 +7675,7 @@ in the Word Index (only the names are listed for the words here).
 * trigonometric operations:              Floating Point.      (line 106)
 * true:                                  Boolean Flags.       (line  11)
 * truncation of floating-point numbers:  floating-idef.       (line  14)
-* try:                                   Exception Handling.  (line 129)
+* try:                                   Exception Handling.  (line 140)
 * try-recognize:                         Dealing with existing Recognizers.
                                                               (line 100)
 * tt:                                    Locating exception source.
@@ -7538,13 +7743,13 @@ in the Word Index (only the names are listed for the words here).
 * UNREACHABLE:                           Where are locals visible by name?.
                                                               (line  49)
 * UNTIL:                                 Arbitrary control structures.
-                                                              (line  33)
+                                                              (line  32)
 * UNTIL loop:                            Simple Loops.        (line  17)
 * unused:                                Dictionary allocation.
                                                               (line  27)
 * unused-words:                          Locating uses of a word.
                                                               (line  54)
-* unwind-protect:                        Exception Handling.  (line 148)
+* unwind-protect:                        Exception Handling.  (line 159)
 * up@:                                   Task-local data.     (line  35)
 * update:                                Blocks.              (line 168)
 * UPDATE, no current block buffer:       block-ambcond.       (line  25)
@@ -7626,9 +7831,9 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  37)
 * walign:                                Address arithmetic.  (line 128)
 * waligned:                              Address arithmetic.  (line 125)
-* WARNING":                              Exception Handling.  (line 254)
+* WARNING":                              Exception Handling.  (line 265)
 * warning-color:                         Terminal output.     (line  48)
-* warnings:                              Exception Handling.  (line 257)
+* warnings:                              Exception Handling.  (line 268)
 * wbe:                                   Special Memory Accesses.
                                                               (line  66)
 * wfield::                               Forth200x Structures.
@@ -7639,7 +7844,7 @@ in the Word Index (only the names are listed for the words here).
 * whereg:                                Locating uses of a word.
                                                               (line  35)
 * WHILE:                                 Arbitrary control structures.
-                                                              (line  63)
+                                                              (line  64)
 * WHILE loop:                            Simple Loops.        (line   6)
 * wid:                                   Word Lists.          (line  18)
 * wid, stack item type:                  Notation.            (line 114)
