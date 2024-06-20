@@ -71,25 +71,20 @@ Next: <a href="Values.html" accesskey="n" rel="next">Values</a>, Previous: <a hr
 <span id="Constants-1"></span><h4 class="subsection">6.10.3 Constants</h4>
 <span id="index-constants"></span>
 
-<p><code>Constant</code> allows you to declare a fixed value and refer to it by
-name. For example:
+<p><code>constant</code> を使用すると、 固定値を宣言し、 名前でそれを参照できます。 例:
 </p>
 <div class="example">
 <pre class="example">12 Constant INCHES-PER-FOOT
 3E+08 fconstant SPEED-O-LIGHT
 </pre></div>
 
-<p>A <code>Variable</code> can be both read and written, so its run-time behaviour is
-to supply an address through which its current value can be manipulated. In
-contrast, the value of a <code>Constant</code> cannot be changed once it has been
-declared<a id="DOCF14" href="#FOOT14"><sup>14</sup></a> so it&rsquo;s not necessary to
-supply the address &ndash; it is more efficient to return the value of the
-constant directly. That&rsquo;s exactly what happens; the run-time effect of a
-constant is to put its value on the top of the stack (You can find one way
-of implementing <code>Constant</code> in <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>).
+<p><code>Variable</code> は読み取りと書き込みの両方ができるため、 その実行時の振る舞いは、 現在の値を操作できるアドレスを提供することです。
+それとは対照的に、 <code>Constant</code> の値は一度宣言すると変更できないため、 アドレスを指定する必要はありません<a id="DOCF14" href="#FOOT14"><sup>14</sup></a>
+&ndash; 定数の値を直接返す方が効率的です。 そして正にそのとおりになります。 つまり、
+定数の実行時の効果は、その値をスタックの頂上に置くことです((<code>Constant</code> を実装する方法の1つは <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> で見つけることができます)。
 </p>
-<p>Forth also provides <code>2Constant</code> and <code>fconstant</code> for defining
-double and floating-point constants, respectively.
+<p>Forth は、それぞれ2倍長定数と浮動小数点定数を定義するための <code>2Constant</code> と <code>fconstant</code>
+も提供します。
 </p>
 <span id="index-Constant-_0028--w-_0022name_0022-_002d_002d--_0029-core"></span>
 <span id="index-Constant"></span>
@@ -97,9 +92,9 @@ double and floating-point constants, respectively.
 <div class="format">
 <pre class="format"><code>Constant</code> ( <i>w &quot;name&quot; &ndash;  </i>) core &ldquo;Constant&rdquo;
 </pre></div>
-<p>Define a constant <i>name</i> with value <i>w</i>.
+<p>定数 <i>name</i> を値 <i>w</i> で定義します。
 </p> 
-<p><i>name</i> execution: <i>&ndash; w</i>
+<p><i>name</i> 実行時: <i>&ndash; w</i>
 </p>
 
 <span id="index-AConstant-_0028--addr-_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -108,8 +103,7 @@ double and floating-point constants, respectively.
 <div class="format">
 <pre class="format"><code>AConstant</code> ( <i>addr &quot;name&quot; &ndash;  </i>) gforth-0.2 &ldquo;AConstant&rdquo;
 </pre></div>
-<p>Like <code>constant</code>, but defines a constant for an address (this only makes
-a difference in the cross-compiler).
+<p><code>constant</code> と似ていますが、 アドレスのための定数を定義します(これはクロス・コンパイラーでのみ違いが生じます)。
 </p>
 
 <span id="index-2Constant-_0028--w1-w2-_0022name_0022-_002d_002d--_0029-double"></span>
@@ -131,15 +125,11 @@ a difference in the cross-compiler).
 
 
 
-<p>Constants in Forth behave differently from their equivalents in other
-programming languages. In other languages, a constant (such as an EQU in
-assembler or a #define in C) only exists at compile-time; in the executable
-program the constant has been translated into an absolute number and, unless
-you are using a symbolic debugger, it&rsquo;s impossible to know what abstract
-thing that number represents. In Forth a constant has an entry in the header
-space and remains there after the code that uses it has been defined. In
-fact, it must remain in the dictionary since it has run-time duties to
-perform. For example:
+<p>Forth の定数は、他のプログラミング言語の定数とは異なる振る舞いをします。 他の言語では、 定数(アセンブラの EQU や C の #define
+など)はコンパイル時にのみ存在します。 実行プログラム(executable program)では、 定数は即値(absolute
+number)に変換されているため、 シンボリック・デバッガを使用しない限り、 その数値がどのような抽象的なものを表しているかを知ることは不可能です。
+Forth では、 定数はヘッダー空間にエントリを持ち、 それを使用するコードが定義された後もそこに残ります。 実際、 実行時に機能する義務があるため、
+それをディクショナリに残しておく必要があります。 例:
 </p>
 <div class="example">
 <pre class="example">12 Constant INCHES-PER-FOOT
@@ -147,29 +137,24 @@ perform. For example:
 </pre></div>
 
 <span id="index-in_002dlining-of-constants"></span>
-<p>When <code>FEET-TO-INCHES</code> is executed, it will in turn execute the xt
-associated with the constant <code>INCHES-PER-FOOT</code>. If you use <code>see</code>
-to decompile the definition of <code>FEET-TO-INCHES</code>, you can see that it
-makes a call to <code>INCHES-PER-FOOT</code>. Some Forth compilers attempt to
-optimise constants by in-lining them where they are used. You can force
-Gforth to in-line a constant like this:
+<p>ここで、 <code>FEET-TO-INCHES</code> が実行されると、 定数 <code>INCHES-PER-FOOT</code> に関連付けられた xt
+が実行されます。 <code>see</code> を使用して <code>FEET-TO-INCHES</code> の定義を逆コンパイルすると、
+<code>INCHES-PER-FOOT</code> を呼び出していることがわかります。 一部の Forth
+コンパイラは、定数を使用する場所にインライン展開(in-lining)することによって定数を最適化しようとします。 以下のようにして Gforth
+に定数をインライン化するように強制できます:
 </p>
 <div class="example">
 <pre class="example">: FEET-TO-INCHES ( n1 -- n2 ) [ INCHES-PER-FOOT ] LITERAL * ;
 </pre></div>
 
-<p>If you use <code>see</code> to decompile <i>this</i> version of
-<code>FEET-TO-INCHES</code>, you can see that <code>INCHES-PER-FOOT</code> is no longer
-present. To understand how this works, read <a href="Interpret_002fCompile-states.html">Interpret/Compile states</a>,
-and <a href="Literals.html">Literals</a>.
+<p>ここで、 <code>see</code> を使用して <code>FEET-TO-INCHES</code> の このバージョンを逆コンパイルすると、
+<code>INCHES-PER-FOOT</code> が存在しないことがわかります。 これがどのように機能するかを理解するには、
+<a href="Interpret_002fCompile-states.html">Interpret/Compile states</a> と <a href="Literals.html">Literals</a> を読んでください。
 </p>
-<p>In-lining constants in this way might improve execution time fractionally,
-and can ensure that a constant is now only referenced at
-compile-time. However, the definition of the constant still remains in the
-dictionary. Some Forth compilers provide a mechanism for controlling a
-second dictionary for holding transient words such that this second
-dictionary can be deleted later in order to recover memory space. However,
-there is no standard way of doing this.
+<p>この方法で定数をインライン化すると、 実行時間がわずかに改善される可能性があり、 定数がコンパイル時にのみ参照されるようにすることができます。 ただし、
+定数の定義はまだディクショナリに残っています。 一部の Forth コンパイラは、 一時的なワード(transient words)を保持する 2
+番目のディクショナリを制御するメカニズムを提供し、 メモリ領域を回復するために後でこの 2 番目のディクショナリを削除できるようしています。 ただし、
+これを行う標準の方法はありません。
 </p>
 
 </div>
@@ -178,13 +163,9 @@ there is no standard way of doing this.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT14" href="#DOCF14">(14)</a></h5>
-<p>Well, often it can be &ndash; but not in a Standard, portable
-way. It&rsquo;s safer to use a <code>Value</code> (read on).</p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Values.html">Values</a>, Previous: <a href="Variables.html">Variables</a>, Up: <a href="Defining-Words.html">Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+<p>まあ、
+多くの場合、 それは可能ではありますが、 標準的な移植可能な方法では変更できません。 <code>Value</code> を使用する方が安全です
+(続きを読んでください)まあ、多くの場合変更できますが、標準的な移植可能な方法では変更できません。 <code>Value</code> (続きを読んでください)</p>
 </div>
 
 

@@ -10379,7 +10379,7 @@ THEN
 @item -2
 初心者警告オン
 @item -3
-偏執狂敵警告オン
+偏執狂的警告オン
 @item -4
 全ての警告をエラーとして扱います(初心者警告を含む)
 @end table
@@ -10391,8 +10391,7 @@ THEN
 @section Defining Words
 @cindex defining words
 
-Defining words are used to extend Forth by creating new entries in the
-dictionary.
+定義ワード(defining word)は、 ディクショナリに新しいエントリを作成することによって Forth を拡張するために使用されます。
 
 @menu
 * CREATE::
@@ -10415,20 +10414,19 @@ dictionary.
 @cindex simple defining words
 @cindex defining words, simple
 
-Defining words are used to create new entries in the dictionary. The
-simplest defining word is @code{CREATE}. @code{CREATE} is used like this:
+定義ワードは、 ディクショナリに新しいエントリを作成するために使用されます。 最も単純な定義ワードは @code{CREATE} です。
+@code{CREATE} は以下のように使用します:
 
 @example
 CREATE new-word1
 @end example
 
-@code{CREATE} is a parsing word, i.e., it takes an argument from the input
-stream (@code{new-word1} in our example).  It generates a dictionary entry
-for @code{new-word1}. When @code{new-word1} is executed, all that it does is
-leave an address on the stack. The address represents the value of the data
-space pointer (@code{HERE}) at the time that @code{new-word1} was
-defined. Therefore, @code{CREATE} is a way of associating a name with the
-address of a region of memory.
+@code{CREATE} はパース・ワード(parsing word)です。
+つまり、入力ストリームから引数(argument)を受け取ります(この例では @code{new-word1} です)。 @code{CREATE} は
+@code{new-word1} のディクショナリ・エントリを作成します。  @code{new-word1} が実行される時は、
+アドレスがスタックに残されるだけです。 そのアドレスは、 @code{new-word1}
+が定義された時点のデータ空間ポインタ(@code{HERE})の値を表します。したがって、 @code{CREATE}
+は名前をメモリ領域のアドレスに関連付ける方法です。
 
 @findex Create ( @var{ "name" --   } ) core
 @cindex @code{Create}
@@ -10438,23 +10436,22 @@ address of a region of memory.
 @end format
 
 
-Note that Standard Forth guarantees only for @code{create} that its body is
-in dictionary data space (i.e., where @code{here}, @code{allot} etc. work,
-@pxref{Dictionary allocation}).  Also, in Standard Forth only @code{create}d
-words can be modified with @code{does>} (@pxref{User-defined Defining
-Words}).  And in Standard Forth @code{>body} can only be applied to
-@code{create}d words.
+注意: 標準 Forth は、 @code{create} に対してのみ、 そのボディ部分がディクショナリのデータ空間(つまり、 @code{here}
+や @code{allot} などが機能する空間。 @pxref{Dictionary
+allocation})にあることを保証することに注意してください。  また、 標準 Forth では、 @code{does>} で変更できるのは
+@code{create} で作成されたワードのみで(@pxref{User-defined Defining Words})、 標準 Forth の
+@code{>body} は @code{create} されたワードにのみ適用できます。
 
-By extending this example to reserve some memory in data space, we end up
-with something like a @i{variable}. Here are two different ways to do it:
+この new-word1 の例を拡張して、 データ空間にメモリを少々確保すると、 最終的には @i{variable} のような代物になります。
+これを行う 2 つの異なる方法を以下に示します:
 
 @example
-CREATE new-word2 1 cells allot  \ reserve 1 cell - initial value undefined
-CREATE new-word3 4 ,            \ reserve 1 cell and initialise it (to 4)
+CREATE new-word2 1 cells allot  \ 1 セル予約 - 初期値未定義
+CREATE new-word3 4 ,            \ 1 セル予約 かつ (4で)初期化
 @end example
 
-The variable can be examined and modified using @code{@@} (``fetch'') and
-@code{!} (``store'') like this:
+これらの変数は、 以下のように @code{@@} (「フェッチ」(fetch;取り出す)) と @code{!}
+(「ストア」(store;格納する)) を使用して検査(examine)および変更(modify)できます:
 
 @example
 new-word2 @@ .      \ get address, fetch from it and display
@@ -10462,8 +10459,7 @@ new-word2 @@ .      \ get address, fetch from it and display
 @end example
 
 @cindex arrays
-A similar mechanism can be used to create arrays. For example, an
-80-character text input buffer:
+同様のメカニズムを使用して配列を作成できます。 たとえば、 80 文字のテキスト入力バッファです:
 
 @example
 CREATE text-buf 80 chars allot
@@ -10472,19 +10468,16 @@ text-buf 0 chars + c@@ \ the 1st character (offset 0)
 text-buf 3 chars + c@@ \ the 4th character (offset 3)
 @end example
 
-You can build arbitrarily complex data structures by allocating appropriate
-areas of memory. For further discussions of this, and to learn about some
-Gforth tools that make it easier, @xref{Structures}.
+メモリに適切な領域を割り当てることで、 思いつく限りの複雑なデータ構造を構築できます。 これについてさらに詳しく説明し、 それを容易にする Gforth
+ツールについて知りたい場合は、 @xref{Structures} を参照ください。
 
 
 @node Variables, Constants, CREATE, Defining Words
 @subsection Variables
 @cindex variables
 
-The previous section showed how a sequence of commands could be used to
-generate a variable.  As a final refinement, the whole code sequence can be
-wrapped up in a defining word (pre-empting the subject of the next section),
-making it easier to create new variables:
+前のセクションでは、 一連のコマンドを使用して変数を生成する方法を説明しました。 最終的な改良として、
+(次のセクションの主題を先取りして)そのコード・シーケンス全体を定義ワードでまとめることができ、 新しい変数の作成が容易になります:
 
 @example
 : myvariableX ( "name" -- a-addr ) CREATE 1 cells allot ;
@@ -10498,15 +10491,13 @@ myvariable0 joe \ whilst joe is initialised to 0
 3 joe +!       \ increment joe by 3.. to 1237
 @end example
 
-Not surprisingly, there is no need to define @code{myvariable}, since Forth
-already has a definition @code{Variable}. Standard Forth does not guarantee
-that a @code{Variable} is initialised when it is created (i.e., it may
-behave like @code{myvariableX}). In contrast, Gforth's @code{Variable}
-initialises the variable to 0 (i.e., it behaves exactly like
-@code{myvariable0}). Forth also provides @code{2Variable} and
-@code{fvariable} for double and floating-point variables, respectively --
-they are initialised to 0. and 0e in Gforth. If you use a @code{Variable} to
-store a boolean, you can use @code{on} and @code{off} to toggle its state.
+当然のことながら、 Forth にはすでに @code{Variable} の定義があるため、 @code{myvariable}
+を定義する必要はありません。 標準 Forth は、 @code{Variable} が作成時に初期化されることを保証しません(つまり、
+@code{myvariableX} のように振る舞う可能性があります)。 対照的に、Gforth の @code{Variable} は変数を 0
+に初期化します(つまり、 @code{myvariable0} とまったく同じように振る舞います)。 Forth は、
+倍精度変数と浮動小数点変数に対して、 それぞれ @code{2Variable} と @code{fvariable} も提供します。
+これらは、Gforth ではそれぞれ 0. と 0e に初期化されます。 @code{Variable} を使用してブール値を保存する場合、
+@code{on} と @code{off} を使用してその状態を切り替えることができます。
 
 @findex Variable ( @var{ "name" --   } ) core
 @cindex @code{Variable}
@@ -10514,8 +10505,7 @@ store a boolean, you can use @code{on} and @code{off} to toggle its state.
 @format
 @code{Variable} ( @i{"name" --  }) core ``Variable''
 @end format
-Define @i{name} and reserve a cell starting at @i{addr}.  @i{name} run-time:
-@code{( -- addr )}.
+@i{name} を定義し、 @i{addr} で始まるセルを予約します。  @i{name} 実行時: @code{( -- addr )}
 
 
 @findex AVariable ( @var{ "name" --   } ) gforth-0.2
@@ -10524,8 +10514,8 @@ Define @i{name} and reserve a cell starting at @i{addr}.  @i{name} run-time:
 @format
 @code{AVariable} ( @i{"name" --  }) gforth-0.2 ``AVariable''
 @end format
-Works like @code{variable}, but (when used in cross-compiled code) tells the
-cross-compiler that the cell stored in the variable is an address.
+@code{variable} と同様に機能しますが、
+(クロス・コンパイルされたコードで使用される場合)その変数に格納されているセルがアドレスであることをクロス・コンパイラーに伝えます。
 
 
 @findex 2Variable ( @var{ "name" --   } ) double
@@ -10543,7 +10533,7 @@ cross-compiler that the cell stored in the variable is an address.
 @end format
 
 
-Finally, for buffers of arbitrary length there is
+最後に、 任意の長さのバッファは以下のようになります
 
 @findex buffer: ( @var{ u "name" --   } ) core-ext
 @cindex @code{buffer:}
@@ -10551,9 +10541,8 @@ Finally, for buffers of arbitrary length there is
 @format
 @code{buffer:} ( @i{u "name" --  }) core-ext ``buffer-colon''
 @end format
-Define @i{name} and reserve @i{u} bytes starting at @i{addr}.  @i{name}
-run-time: @code{( -- addr )}.  Gforth initializes the reserved bytes to 0,
-but the standard does not guarantee this.
+@i{name} を定義し、@i{addr} から始まる @i{u} バイトを予約します。  @i{name} 実行時: @code{( -- addr
+)}  なお、 Gforth は予約したバイトを 0 に初期化しますが、 標準では保証されません。
 
 
 
@@ -10566,26 +10555,23 @@ but the standard does not guarantee this.
 @subsection Constants
 @cindex constants
 
-@code{Constant} allows you to declare a fixed value and refer to it by
-name. For example:
+@code{constant} を使用すると、 固定値を宣言し、 名前でそれを参照できます。 例:
 
 @example
 12 Constant INCHES-PER-FOOT
 3E+08 fconstant SPEED-O-LIGHT
 @end example
 
-A @code{Variable} can be both read and written, so its run-time behaviour is
-to supply an address through which its current value can be manipulated. In
-contrast, the value of a @code{Constant} cannot be changed once it has been
-declared@footnote{Well, often it can be -- but not in a Standard, portable
-way. It's safer to use a @code{Value} (read on).} so it's not necessary to
-supply the address -- it is more efficient to return the value of the
-constant directly. That's exactly what happens; the run-time effect of a
-constant is to put its value on the top of the stack (You can find one way
-of implementing @code{Constant} in @ref{User-defined Defining Words}).
+@code{Variable} は読み取りと書き込みの両方ができるため、 その実行時の振る舞いは、 現在の値を操作できるアドレスを提供することです。
+それとは対照的に、 @code{Constant} の値は一度宣言すると変更できないため、 アドレスを指定する必要はありません@footnote{まあ、
+多くの場合、 それは可能ではありますが、 標準的な移植可能な方法では変更できません。 @code{Value} を使用する方が安全です
+(続きを読んでください)まあ、多くの場合変更できますが、標準的な移植可能な方法では変更できません。 @code{Value} (続きを読んでください)}
+-- 定数の値を直接返す方が効率的です。 そして正にそのとおりになります。 つまり、
+定数の実行時の効果は、その値をスタックの頂上に置くことです((@code{Constant} を実装する方法の1つは @ref{User-defined
+Defining Words} で見つけることができます)。
 
-Forth also provides @code{2Constant} and @code{fconstant} for defining
-double and floating-point constants, respectively.
+Forth は、それぞれ2倍長定数と浮動小数点定数を定義するための @code{2Constant} と @code{fconstant}
+も提供します。
 
 @findex Constant ( @var{ w "name" --   } ) core
 @cindex @code{Constant}
@@ -10593,9 +10579,9 @@ double and floating-point constants, respectively.
 @format
 @code{Constant} ( @i{w "name" --  }) core ``Constant''
 @end format
-Define a constant @i{name} with value @i{w}.
+定数 @i{name} を値 @i{w} で定義します。
  
-@i{name} execution: @i{-- w}
+@i{name} 実行時: @i{-- w}
 
 
 @findex AConstant ( @var{ addr "name" --   } ) gforth-0.2
@@ -10604,8 +10590,7 @@ Define a constant @i{name} with value @i{w}.
 @format
 @code{AConstant} ( @i{addr "name" --  }) gforth-0.2 ``AConstant''
 @end format
-Like @code{constant}, but defines a constant for an address (this only makes
-a difference in the cross-compiler).
+@code{constant} と似ていますが、 アドレスのための定数を定義します(これはクロス・コンパイラーでのみ違いが生じます)。
 
 
 @findex 2Constant ( @var{ w1 w2 "name" --   } ) double
@@ -10640,15 +10625,11 @@ a difference in the cross-compiler).
 
 @c anton: In what way?
 
-Constants in Forth behave differently from their equivalents in other
-programming languages. In other languages, a constant (such as an EQU in
-assembler or a #define in C) only exists at compile-time; in the executable
-program the constant has been translated into an absolute number and, unless
-you are using a symbolic debugger, it's impossible to know what abstract
-thing that number represents. In Forth a constant has an entry in the header
-space and remains there after the code that uses it has been defined. In
-fact, it must remain in the dictionary since it has run-time duties to
-perform. For example:
+Forth の定数は、他のプログラミング言語の定数とは異なる振る舞いをします。 他の言語では、 定数(アセンブラの EQU や C の #define
+など)はコンパイル時にのみ存在します。 実行プログラム(executable program)では、 定数は即値(absolute
+number)に変換されているため、 シンボリック・デバッガを使用しない限り、 その数値がどのような抽象的なものを表しているかを知ることは不可能です。
+Forth では、 定数はヘッダー空間にエントリを持ち、 それを使用するコードが定義された後もそこに残ります。 実際、 実行時に機能する義務があるため、
+それをディクショナリに残しておく必要があります。 例:
 
 @example
 12 Constant INCHES-PER-FOOT
@@ -10656,47 +10637,41 @@ perform. For example:
 @end example
 
 @cindex in-lining of constants
-When @code{FEET-TO-INCHES} is executed, it will in turn execute the xt
-associated with the constant @code{INCHES-PER-FOOT}. If you use @code{see}
-to decompile the definition of @code{FEET-TO-INCHES}, you can see that it
-makes a call to @code{INCHES-PER-FOOT}. Some Forth compilers attempt to
-optimise constants by in-lining them where they are used. You can force
-Gforth to in-line a constant like this:
+ここで、 @code{FEET-TO-INCHES} が実行されると、 定数 @code{INCHES-PER-FOOT} に関連付けられた xt
+が実行されます。 @code{see} を使用して @code{FEET-TO-INCHES} の定義を逆コンパイルすると、
+@code{INCHES-PER-FOOT} を呼び出していることがわかります。 一部の Forth
+コンパイラは、定数を使用する場所にインライン展開(in-lining)することによって定数を最適化しようとします。 以下のようにして Gforth
+に定数をインライン化するように強制できます:
 
 @example
 : FEET-TO-INCHES ( n1 -- n2 ) [ INCHES-PER-FOOT ] LITERAL * ;
 @end example
 
-If you use @code{see} to decompile @i{this} version of
-@code{FEET-TO-INCHES}, you can see that @code{INCHES-PER-FOOT} is no longer
-present. To understand how this works, read @ref{Interpret/Compile states},
-and @ref{Literals}.
+ここで、 @code{see} を使用して @code{FEET-TO-INCHES} の このバージョンを逆コンパイルすると、
+@code{INCHES-PER-FOOT} が存在しないことがわかります。 これがどのように機能するかを理解するには、
+@ref{Interpret/Compile states} と @ref{Literals} を読んでください。
 
-In-lining constants in this way might improve execution time fractionally,
-and can ensure that a constant is now only referenced at
-compile-time. However, the definition of the constant still remains in the
-dictionary. Some Forth compilers provide a mechanism for controlling a
-second dictionary for holding transient words such that this second
-dictionary can be deleted later in order to recover memory space. However,
-there is no standard way of doing this.
+この方法で定数をインライン化すると、 実行時間がわずかに改善される可能性があり、 定数がコンパイル時にのみ参照されるようにすることができます。 ただし、
+定数の定義はまだディクショナリに残っています。 一部の Forth コンパイラは、 一時的なワード(transient words)を保持する 2
+番目のディクショナリを制御するメカニズムを提供し、 メモリ領域を回復するために後でこの 2 番目のディクショナリを削除できるようしています。 ただし、
+これを行う標準の方法はありません。
 
 
 @node Values, Varues, Constants, Defining Words
 @subsection Values
 @cindex values
 
-A @code{Value} behaves like a @code{Constant}, but it can be changed.
-@code{TO} is a parsing word that changes a @code{Values}.  In Gforth (not in
-Standard Forth) you can access (and change) a @code{value} also with
-@code{>body}.
+@code{Value} は @code{Constant} のように動作しますが、 変更することができます。 @code{TO}
+は、@code{Values} を変更するパース・ワード(parsing word)です。 (標準 Forth ではなく) Gforth では、
+@code{>body} を使用しても @code{value} にアクセス(および変更)できます。
 
-Here are some examples:
+ここで幾つか例を示します:
 
 @example
-12 Value APPLES     \ Define APPLES with an initial value of 12
-34 TO APPLES        \ Change the value of APPLES. TO is a parsing word
-1 ' APPLES >body +! \ Increment APPLES.  Non-standard usage.
-APPLES              \ puts 35 on the top of the stack.
+12 Value APPLES     \ APPLES を初期値 12 で定義
+34 TO APPLES        \ APPLES の値を変更。 TO はパース・ワード
+1 ' APPLES >body +! \ APPLES をインクリメント。 非標準の使い方
+APPLES              \ スタック頂上に 35 を置く(はず)
 @end example
 
 @findex Value ( @var{ w "name" --   } ) core-ext
@@ -10705,10 +10680,11 @@ APPLES              \ puts 35 on the top of the stack.
 @format
 @code{Value} ( @i{w "name" --  }) core-ext ``Value''
 @end format
-Define @i{name} with the initial value @i{w}; this value can be changed with
-@code{to @i{name}} or @code{->@i{name}}.
+@i{name} を初期値 @i{w} で定義します。 この値は @code{to @i{name}} または @code{->@i{name}}
+で変更できます(訳注: -> と name の間に空白を開けない。 ->name とする。 ワードではなく、
+テキスト・インタプリタの認識器(recognizer)機能によるもの)。
  
-@i{name} execution: @i{-- w2}
+@i{name} 実行時: @i{-- w2}
 
 
 @findex AValue ( @var{ w "name" --   } ) gforth-0.6
@@ -14029,16 +14005,14 @@ Consumes the rest of the line.
 @subsection Recognizers
 @cindex recongizers
 
-When the text interpreter processes source code, it divides the code into
-blank-delimited strings, and then calls recognizers to identify them as
-words, numbers, etc., until one recognizer identifies (recognizes) the
-string; if the string is not recognized, the text interpreter reports an
-error (@code{undefined word}).
+テキスト・インタプリタはソース・コードを処理するときに、 コードを空白で区切られた文字列に分割し、
+認識器群(recognizers)の中からどれか1つの認識器が文字列を識別(identify)(認識(recognize))するまで認識器群を呼び出して、
+それらをワードや数値などとして識別します。 その文字列が認識されない場合、 テキスト・インタプリタはエラー(@code{undefined
+word})を報告します。
 
-The usual way to deal with recognizers is to just write code that one of
-them identifies (@pxref{Default Recognizers}); however, you can also
-manipulate them (@pxref{Dealing with existing Recognizers}) or even define
-new ones (@pxref{Defining Recognizers}).
+認識器を取り扱う通常の方法は、 認識器の 1 つを識別(identify)するコードを記述するだけです(@pxref{Default
+Recognizers})。 ただし、 それらを操作したり(@pxref{Dealing with existing Recognizers})、
+新しい認識器を定義したりすることもできます(@pxref{Defining Recognizers})。
 
 @menu
 * Default Recognizers::
@@ -14050,60 +14024,54 @@ new ones (@pxref{Defining Recognizers}).
 @subsubsection Default Recognizers
 @cindex Recognizers normal usage
 
-The standard Forth text interpreter recognizes words in the search order
-(@code{rec-nt}), integer numbers (@code{rec-num}), and floating point
-numbers (@code{rec-float}).  By default Gforth also recognizes syntaxes for
+標準の Forth テキスト・インタプリタは、 検索順序(search order)内のワード(@code{rec-nt}) と、
+整数(@code{rec-num})と、 浮動小数点数(@code{rec-float})を認識します。  デフォルトでは、 Gforth は
+以下の構文も認識します
 
 @itemize @bullet
 
 @item
-strings, e.g., @code{"mystring"}, with @code{rec-string}
+文字列 例: @code{"mystring"} (@code{rec-string})
 
 @item
-complex numbers, e.g., @code{0e+1ei}, with @code{rec-complex}
+混合数値(complex numbers) 例: @code{0e+1ei} (@code{rec-complex})
 
 @item
-storing a value or changing a defered word, e.g., @code{->myvalue}, with
-@code{rec-to}
+value への格納または defered word の変更 例: @code{->myvalue} (@code{rec-to})
 
 @item
-the xt representing the interpretation semantics of a word, e.g.,
-@code{`dup}, with @code{rec-tick}
+ワードのインタプリタ機能(interpretation semantics)表す xt です。 例: @code{`dup}
+(@code{rec-tick})
 
 @item
-the nt of a word, e.g., @code{``mysynonym}, with @code{rec-dtick}
+ワードの nt です。 例: @code{``mysynonym} (@code{rec-dtick})
 
 @item
-an address in the body of a word, e.g., @code{<myarray+8>}, with
-@code{rec-body}
+ワードのボディのアドレス 例: @code{<myarray+8>} (@code{rec-body})
 
 @item
-an access to an environment variable of the operating system, e.g.,
-@code{$@{HOME@}}, with @code{rec-env}
+オペレーティング・システムの環境変数へのアクセス 例: @code{$@{HOME@}} (@code{rec-env})
 
 @item
-a word in a vocabulary, e.g., @code{myvoc1:myvoc2:myword}, with
-@code{rec-scope}
+ボキャブラリ内のワード 例: @code{myvoc1:myvoc2:myword} (@code{rec-scope})
 
 @item
-using a specific recognizer to recognize something, e.g., @code{float?1.}, ,
-with @code{rec-meta}
+指定の認識器(recognizer)使用して何かを認識する 例: @code{float?1.} (@code{rec-meta})
 
 @end itemize
 
-You can use @code{locate} (@pxref{Locating source code definitions}) to
-determine which recognizer recognizes a piece of source code.  E.g.:
+@code{locate} (@pxref{Locating source code definitions}) を使用して、 ソース・コードの一片を、
+どの認識器(recognizer)が認識するか調べられます。  例:
 
 @example
 defer mydefer
 locate ->mydefer
 @end example
 
-will show that @code{rec-to} recognizes @code{->mydefer}.  However, if the
-recognizer recognizes a dictionary word (e.g., the scope recognizer), locate
-will show that word.
+これは @code{rec-to} が @code{->mydefer} を認識したことを示すハズです。  ただし、
+認識器がディクショナリのワードを認識する場合(スコープ認識機能など)、 locate はそのワードを表示します。
 
-You can see which recognizers are used and the order of recognizers with
+以下を使用すると、 使用されている認識器と認識器の順序を確認できます
 
 @findex .recognizers ( @var{ --   } ) gforth-experimental
 @cindex @code{.recognizers}
@@ -14111,50 +14079,42 @@ You can see which recognizers are used and the order of recognizers with
 @format
 @code{.recognizers} ( @i{--  }) gforth-experimental ``dot-recognizers''
 @end format
-Print the current recognizer order, with the first-searched recognizer
-leftmost (unlike .order).  The inverted @code{~} is displayed instead of
-@code{rec-}, which is the common prefix of all recognizers.
+(.order とは異なり、)最初に検索された認識器を左端にして、 現在の認識器の順序を出力します。 すべての認識器に共通のプレフィックスである
+@code{rec-} の代わりに、 反転表示の @code{~} が表示されます。
 
 
 
-Recognizers are typically designed to avoid matching the same strings as
-other recognizers.  E.g., @code{rec-env} (the environment variable
-recognizer) requires braces to avoid a conflict with the number recognizer
-for input strings like @code{$ADD}.  There are a few exceptions to this
-policy, however:
+通常、 認識器は、 他の認識器と同一の文字列との一致を避けるように設計されています。  たとえば、@code{rec-env} (環境変数認識器)には、
+@code{$ADD} のような入力文字列の数値認識器との競合を避けるために中かっこ(braces)が必要です。 ただし、
+このポリシーにはいくつかの例外があります:
 
 @itemize @bullet
 
 @item
-Word names can be anything, so they can conflict with any other recognizer
-(and the search order is searched before other recognizers).
+ワード名には任意の名前を付けることができるため、 他の認識器と競合する可能性があります(また、 検索順序(search
+order)は他の認識器よりも前に検索されます)。
 
-However, they tend not to start with @code{0} (and if they do, they contain
-special characters), so if your base is @code{hex}, it is a good practice to
-let your numbers start with @code{0}.
+ただし、 名前は @code{0} (ゼロ)で始まらない傾向がある(そして @code{0} (ゼロ)
+で始まる場合は特殊文字が含まれる傾向がある)ため、 base が @code{hex} の場合は、 数値を @code{0}
+(ゼロ)で始めることをお勧めします。
 
-In the code bases we have looked at, starting words with @code{'} (quote aka
-tick) is much more common than starting them with @code{`} (backquote aka
-backtick), so the recognizers for the xt and the nt use @code{`} to reduce
-the number of conflicts.
-
-@item
-Both the integer recognizer @code{rec-num} and the floating-point recognizer
-@code{rec-float} recognize, e.g., @code{1.}.  Because @code{rec-num} is (by
-default) first, @code{1.} is recognized as a double-cell integer.  If you
-change the recognizer order to use @code{rec-float} first, @code{1.} is
-recognized as a floating-point number, but loading code written in standard
-Forth may behave in a non-standard way.
-
-In any case, it's a good practice to avoid that conflict in your own code as
-follows: Always write double-cell integers with a number prefix, e.g.,
-@code{#1.}; and always write floating-point numbers with an @code{e}, e.g.,
-@code{1e}.
+これまで私たちが見てきた幾多のコードでは、 ワードを @code{'} (クォート。 別名ティック)で始める方が、 @code{`}
+(バック・クォート。別名バック・ティック) で始めるよりもはるかに一般的であるため、 xt と nt の認識器は @code{`}
+(バック・クォート)を使用して競合を減らしてください。
 
 @item
-We have seen a few word names that start with @code{->}.  You can avoid a
-conflict by using @code{to myvalue} or @code{to?->myvalue} (the latter works
-with @code{postpone}).
+整数認識器 @code{rec-num} と、 浮動小数点認識器 @code{rec-float} は、 どちらも、 たとえば @code{1.}
+を認識します。 しかし、 @code{rec-num} が(デフォルトでは)先にあるため、 @code{1.} は2倍長セルの整数として認識されます。
+@code{rec-float} を最初に使用するように認識順序を変更すると、 @code{1.} は浮動小数点数として認識されますが、 標準
+Forth で書かれたコードを読み込むと、 非標準的な振る舞いになる可能性があります。
+
+いずれの場合も、 以下のようにして、 あなた独自のコード内では、 この競合を回避することをお勧めします。 つまり、
+常に数値プレフィックスを付けて2倍長セル整数を記述します(例: @code{#1.})。 また、 浮動小数点数は常に @code{e}
+を使用して記述します(例: @code{1e})。
+
+@item
+@code{->} で始まるワードをいくつか見てきました。  @code{to myvalue} または @code{to?->myvalue}
+を使用すると競合を回避できます(後者は @code{postpone} で機能します)。
 
 @end itemize
 

@@ -27,6 +27,67 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Modifying the Startup Sequence,  Prev: Running Image Files,  Up: Image Files
+
+14.8 Modifying the Startup Sequence
+===================================
+
+You can add your own initialization to the startup sequence of an image
+through the deferred word ‘'cold’.  ‘'cold’ is invoked just before the
+image-specific command line processing (i.e., loading files and
+evaluating (‘-e’) strings) starts.
+
+   A sequence for adding your initialization usually looks like this:
+
+     :noname
+         Defers 'cold \ do other initialization stuff (e.g., rehashing wordlists)
+         ... \ your stuff
+     ; IS 'cold
+
+   After ‘'cold’, Gforth processes the image options (*note Invoking
+Gforth::), and then it performs ‘bootmessage’, another deferred word.
+This normally prints Gforth’s startup message and does nothing else.
+
+   So, if you want to make a turnkey image (i.e., an image for an
+application instead of an extended Forth system), you can do this in
+several ways:
+
+   • If you want to do your interpretation of the OS command-line
+     arguments, hook into ‘'cold’.  In that case you probably also want
+     to build the image with ‘gforthmi --application’ (*note gforthmi::)
+     to keep the engine from processing OS command line options.  You
+     can then do your own command-line processing with ‘next-arg’
+
+   • If you want to have the normal Gforth processing of OS command-line
+     arguments, but specify your own command-line options, hook into
+     ‘process-option’.
+
+   • If you want to have more options in addition to the ones that come
+     with Gforth, define words into the ‘options’ vocabulary.
+
+   • If you want to display your own boot message, hook into
+     ‘bootmessage’.
+
+   In either case, you probably do not want the word that you execute in
+these hooks to exit normally, but use ‘bye’ or ‘throw’.  Otherwise the
+Gforth startup process would continue and eventually present the Forth
+command line to the user.
+
+‘'cold’ ( –  ) gforth-0.2 “tick-cold”
+   Hook (deferred word) for things to do right before interpreting the
+OS command-line arguments.  Normally does some initializations that you
+also want to perform.
+
+‘bootmessage’ ( –  ) gforth-0.4 “bootmessage”
+   Hook (deferred word) executed right after interpreting the OS
+command-line arguments.  Normally prints the Gforth startup message.
+
+   doc-’quit
+‘process-option’ ( addr u – true / addr u false  ) gforth-0.7 “process-option”
+   Process an option ADDR U, return true, if the option is processed;
+unprocessed options are loaded as files throu ‘required’.
+
+
 File: gforth.info,  Node: Engine,  Next: Cross Compiler,  Prev: Image Files,  Up: Top
 
 15 Engine
@@ -2487,7 +2548,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 228)
 * +ltrace ( -- ) gforth-1.0:             Debugging.           (line  74)
 * +thru ( I*X N1 N2 -- J*X ) gforth-0.2: Blocks.              (line 194)
-* +TO ( VALUE "NAME" -- ) gforth-1.0:    Values.              (line  36)
+* +TO ( VALUE "NAME" -- ) gforth-1.0:    Values.              (line  39)
 * +x/string ( XC-ADDR1 U1 -- XC-ADDR2 U2 ) xchar-ext: Xchars and Unicode.
                                                               (line  90)
 * +} ( ADDR ADDR' -- ADDR' ) regexp-pattern: Regular Expressions.
@@ -2540,7 +2601,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * .r ( N1 N2 -- ) core-ext:              Simple numeric output.
                                                               (line  30)
 * .recognizers ( -- ) gforth-experimental: Default Recognizers.
-                                                              (line  47)
+                                                              (line  44)
 * .s ( -- ) tools:                       Examining data.      (line  11)
 * .substitute ( ADDR1 LEN1 -- N / IOR ) gforth-experimental: Substitute.
                                                               (line  21)
@@ -2594,7 +2655,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 2/ ( N1 -- N2 ) core:                  Bitwise operations.  (line  44)
 * 2>r ( W1 W2 -- R:W1 R:W2 ) core-ext:   Return stack.        (line  21)
 * 2@ ( A-ADDR -- W1 W2 ) core:           Memory Access.       (line  21)
-* 2Constant ( W1 W2 "NAME" -- ) double:  Constants.           (line  33)
+* 2Constant ( W1 W2 "NAME" -- ) double:  Constants.           (line  32)
 * 2drop ( W1 W2 -- ) core:               Data stack.          (line  35)
 * 2dup ( W1 W2 -- W1 W2 W1 W2 ) core:    Data stack.          (line  39)
 * 2field: ( U1 "NAME" -- U2 ) gforth-0.7: Forth200x Structures.
@@ -2613,8 +2674,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 2swap ( W1 W2 W3 W4 -- W3 W4 W1 W2 ) core: Data stack.      (line  45)
 * 2tuck ( W1 W2 W3 W4 -- W3 W4 W1 W2 W3 W4 ) gforth-0.2: Data stack.
                                                               (line  43)
-* 2Value ( D "NAME" -- ) double-ext:     Values.              (line  27)
-* 2Variable ( "NAME" -- ) double:        Variables.           (line  39)
+* 2Value ( D "NAME" -- ) double-ext:     Values.              (line  30)
+* 2Variable ( "NAME" -- ) double:        Variables.           (line  40)
 * 2varue ( X1 X2 "NAME" -- ) gforth-1.0: Varues.              (line  15)
 * : ( "NAME" -- COLON-SYS ) core:        Colon Definitions.   (line  17)
 * :: ( CLASS "NAME" -- ) mini-oof:       Basic Mini-OOF Usage.
@@ -2843,7 +2904,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * absolute-file? ( ADDR U -- FLAG ) gforth-1.0: Search Paths. (line  31)
 * accept ( C-ADDR +N1 -- +N2 ) core:     Line input and conversion.
                                                               (line  11)
-* AConstant ( ADDR "NAME" -- ) gforth-0.2: Constants.         (line  29)
+* AConstant ( ADDR "NAME" -- ) gforth-0.2: Constants.         (line  28)
 * act ( -- OPTR ) minos2:                widget methods.      (line   9)
 * act-name$ ( -- ADDR U ) minos2:        actor methods.       (line  12)
 * action-of ( INTERPRETATION "NAME" -- XT; COMPILATION "NAME" -- ; RUN-TIME -- XT ) core-ext: Deferred Words.
@@ -2914,7 +2975,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * at-xy ( X Y -- ) facility:             Terminal output.     (line   9)
 * AUser ( "NAME" -- ) gforth-0.2:        Task-local data.     (line  17)
 * authors ( -- ) gforth-1.0:             Help on Gforth.      (line  19)
-* AValue ( W "NAME" -- ) gforth-0.6:     Values.              (line  23)
+* AValue ( W "NAME" -- ) gforth-0.6:     Values.              (line  26)
 * AVariable ( "NAME" -- ) gforth-0.2:    Variables.           (line  35)
 * b ( -- ) gforth-1.0:                   Locating source code definitions.
                                                               (line  45)
@@ -2965,7 +3026,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  10)
 * buffer ( U -- A-ADDR ) block:          Blocks.              (line 153)
 * buffer% ( -- U1 U2 ) gforth-experimental: Heap Allocation.  (line  62)
-* buffer: ( U "NAME" -- ) core-ext:      Variables.           (line  45)
+* buffer: ( U "NAME" -- ) core-ext:      Variables.           (line  46)
 * bw ( -- ) gforth-1.0:                  Locating uses of a word.
                                                               (line  20)
 * bw-cover ( -- ) gforth-1.0:            Code Coverage.       (line  56)
@@ -3078,7 +3139,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * compile-only? ( NT -- FLAG ) gforth-1.0: Header fields.     (line  49)
 * const-does> ( RUN-TIME: W*UW R*UR UW UR "NAME" -- ) gforth-obsolete: Const-does>.
                                                               (line   9)
-* Constant ( W "NAME" -- ) core:         Constants.           (line  24)
+* Constant ( W "NAME" -- ) core:         Constants.           (line  23)
 * construct ( ... OBJECT -- ) objects:   Objects Glossary.    (line  41)
 * context ( -- ADDR ) gforth-0.2:        Word Lists.          (line 160)
 * contof ( COMPILATION CASE-SYS1 OF-SYS -- CASE-SYS2 ; RUN-TIME -- ) gforth-1.0: Arbitrary control structures.
@@ -3396,7 +3457,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * faxpy ( RA F-X NSTRIDEX F-Y NSTRIDEY UCOUNT -- ) gforth-0.5: Floating Point.
                                                               (line 103)
 * fclearstack ( R0 .. RN -- ) gforth-1.0: Examining data.     (line  46)
-* fconstant ( R "NAME" -- ) floating:    Constants.           (line  35)
+* fconstant ( R "NAME" -- ) floating:    Constants.           (line  34)
 * fcopysign ( R1 R2 -- R3 ) gforth-1.0:  Floating Point.      (line  48)
 * fcos ( R1 -- R2 ) floating-ext:        Floating Point.      (line 111)
 * fcosh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 131)
@@ -3510,8 +3571,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ftrunc ( R1 -- R2 ) floating-ext:      Floating Point.      (line  63)
 * ftuck ( R1 R2 -- R2 R1 R2 ) gforth-0.2: Floating point stack.
                                                               (line  18)
-* fvalue ( R "NAME" -- ) floating-ext:   Values.              (line  29)
-* fvariable ( "NAME" -- ) floating:      Variables.           (line  41)
+* fvalue ( R "NAME" -- ) floating-ext:   Values.              (line  32)
+* fvariable ( "NAME" -- ) floating:      Variables.           (line  42)
 * fvarue ( R "NAME" -- ) gforth-1.0:     Varues.              (line  19)
 * F^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME R -- ) gforth-0.2: Locals definition words.
                                                               (line  67)
@@ -4216,7 +4277,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 129)
 * time&date ( -- NSEC NMIN NHOUR NDAY NMONTH NYEAR ) facility-ext: Keeping track of Time.
                                                               (line  10)
-* TO ( VALUE "NAME" -- ) core-ext:       Values.              (line  33)
+* TO ( VALUE "NAME" -- ) core-ext:       Values.              (line  36)
 * to-method: ( XT TABLE "NAME" -- ) gforth-experimental: User-defined TO and DEFER@.
                                                               (line  21)
 * to-table: ( "NAME" "XT1" .. "XTN" -- ) gforth-experimental: User-defined TO and DEFER@.
@@ -4316,7 +4377,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * UValue ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  25)
 * v* ( F-ADDR1 NSTRIDE1 F-ADDR2 NSTRIDE2 UCOUNT -- R ) gforth-0.5: Floating Point.
                                                               (line  98)
-* Value ( W "NAME" -- ) core-ext:        Values.              (line  17)
+* Value ( W "NAME" -- ) core-ext:        Values.              (line  18)
 * var ( M V SIZE "NAME" -- M V' ) mini-oof: Basic Mini-OOF Usage.
                                                               (line  17)
 * var ( SIZE -- ) oof:                   Class Declaration.   (line   8)
@@ -4613,7 +4674,7 @@ in the Word Index (only the names are listed for the words here).
 * +LOOP:                                 Counted Loops.       (line 228)
 * +ltrace:                               Debugging.           (line  74)
 * +thru:                                 Blocks.              (line 194)
-* +TO:                                   Values.              (line  36)
+* +TO:                                   Values.              (line  39)
 * +x/string:                             Xchars and Unicode.  (line  90)
 * +}:                                    Regular Expressions. (line 131)
 * ,:                                     Dictionary allocation.
@@ -4719,7 +4780,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  29)
 * .r:                                    Simple numeric output.
                                                               (line  30)
-* .recognizers:                          Default Recognizers. (line  47)
+* .recognizers:                          Default Recognizers. (line  44)
 * .s:                                    Examining data.      (line  11)
 * .substitute:                           Substitute.          (line  21)
 * .unresolved:                           Forward.             (line  17)
@@ -4771,7 +4832,7 @@ in the Word Index (only the names are listed for the words here).
 * 2/:                                    Bitwise operations.  (line  44)
 * 2>r:                                   Return stack.        (line  21)
 * 2@:                                    Memory Access.       (line  21)
-* 2Constant:                             Constants.           (line  33)
+* 2Constant:                             Constants.           (line  32)
 * 2drop:                                 Data stack.          (line  35)
 * 2dup:                                  Data stack.          (line  39)
 * 2field::                               Forth200x Structures.
@@ -4785,8 +4846,8 @@ in the Word Index (only the names are listed for the words here).
 * 2rot:                                  Data stack.          (line  47)
 * 2swap:                                 Data stack.          (line  45)
 * 2tuck:                                 Data stack.          (line  43)
-* 2Value:                                Values.              (line  27)
-* 2Variable:                             Variables.           (line  39)
+* 2Value:                                Values.              (line  30)
+* 2Variable:                             Variables.           (line  40)
 * 2varue:                                Varues.              (line  15)
 * ::                                     Colon Definitions.   (line  17)
 * :, passing data across:                Literals.            (line  70)
@@ -5004,7 +5065,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  11)
 * ACCEPT, display after end of input:    core-idef.           (line  71)
 * ACCEPT, editing:                       core-idef.           (line  17)
-* AConstant:                             Constants.           (line  29)
+* AConstant:                             Constants.           (line  28)
 * act:                                   widget methods.      (line   9)
 * act-name$:                             actor methods.       (line  12)
 * action-of:                             Deferred Words.      (line  92)
@@ -5090,7 +5151,7 @@ in the Word Index (only the names are listed for the words here).
 * arithmetics tutorial:                  Arithmetics Tutorial.
                                                               (line   6)
 * array, iterating over:                 Counted Loops.       (line 125)
-* arrays:                                CREATE.              (line  41)
+* arrays:                                CREATE.              (line  42)
 * arrays tutorial:                       Arrays and Records Tutorial.
                                                               (line   6)
 * arshift:                               Bitwise operations.  (line  26)
@@ -5119,7 +5180,7 @@ in the Word Index (only the names are listed for the words here).
 * authors:                               Help on Gforth.      (line  19)
 * authors of Gforth:                     Origin.              (line   9)
 * auto-indentation of Forth code in Emacs: Auto-Indentation.  (line   6)
-* AValue:                                Values.              (line  23)
+* AValue:                                Values.              (line  26)
 * AVariable:                             Variables.           (line  35)
 * a_, stack item type:                   Notation.            (line 101)
 * b:                                     Locating source code definitions.
@@ -5199,7 +5260,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  10)
 * buffer:                                Blocks.              (line 153)
 * buffer%:                               Heap Allocation.     (line  62)
-* buffer::                               Variables.           (line  45)
+* buffer::                               Variables.           (line  46)
 * bug reporting:                         Bugs.                (line   6)
 * bw:                                    Locating uses of a word.
                                                               (line  20)
@@ -5430,7 +5491,7 @@ in the Word Index (only the names are listed for the words here).
 * conditionals, tutorial:                Conditional execution Tutorial.
                                                               (line   6)
 * const-does>:                           Const-does>.         (line   9)
-* Constant:                              Constants.           (line  24)
+* Constant:                              Constants.           (line  23)
 * constants:                             Constants.           (line   6)
 * construct:                             Objects Glossary.    (line  41)
 * construct discussion:                  Creating objects.    (line   6)
@@ -5977,7 +6038,7 @@ in the Word Index (only the names are listed for the words here).
 * FATANH, |float|>1:                     floating-ambcond.    (line  66)
 * faxpy:                                 Floating Point.      (line 103)
 * fclearstack:                           Examining data.      (line  46)
-* fconstant:                             Constants.           (line  35)
+* fconstant:                             Constants.           (line  34)
 * fcopysign:                             Floating Point.      (line  48)
 * fcos:                                  Floating Point.      (line 111)
 * fcosh:                                 Floating Point.      (line 131)
@@ -6193,8 +6254,8 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * functions, tutorial:                   Colon Definitions Tutorial.
                                                               (line   6)
-* fvalue:                                Values.              (line  29)
-* fvariable:                             Variables.           (line  41)
+* fvalue:                                Values.              (line  32)
+* fvariable:                             Variables.           (line  42)
 * fvarue:                                Varues.              (line  19)
 * F^:                                    Locals definition words.
                                                               (line  67)
@@ -6365,7 +6426,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * implementation-defined options, search-order words: search-idef.
                                                               (line   6)
-* in-lining of constants:                Constants.           (line  50)
+* in-lining of constants:                Constants.           (line  48)
 * include:                               Forth source files.  (line  46)
 * include search path:                   Search Paths.        (line   6)
 * include, placement in files:           Emacs Tags.          (line   6)
@@ -7644,7 +7705,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * TMP, TEMP - environment variable:      Environment variables.
                                                               (line  38)
-* TO:                                    Values.              (line  33)
+* TO:                                    Values.              (line  36)
 * TO on non-VALUEs:                      core-ambcond.        (line 161)
 * TO on non-VALUEs and non-locals:       locals-ambcond.      (line  12)
 * to-method::                            User-defined TO and DEFER@.
@@ -7770,7 +7831,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  19)
 * UValue:                                Task-local data.     (line  25)
 * v*:                                    Floating Point.      (line  98)
-* Value:                                 Values.              (line  17)
+* Value:                                 Values.              (line  18)
 * value-flavoured locals:                Gforth locals.       (line  42)
 * values:                                Values.              (line   6)
 * var:                                   Class Declaration.   (line   8)
