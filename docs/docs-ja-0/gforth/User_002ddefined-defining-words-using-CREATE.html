@@ -83,38 +83,29 @@ def-word name
 </pre></div>
 
 <span id="index-child-words"></span>
-<p>This fragment defines a <em>defining word</em> <code>def-word</code> and then
-executes it.  When <code>def-word</code> executes, it <code>CREATE</code>s a new word
-<code>name</code>, and executes the code <i>code1</i>. The code <i>code2</i> is not
-executed at this time. The word <code>name</code> is sometimes called a
-<em>child</em> of <code>def-word</code>.
+<p>このコード断片は 定義ワード(<em>defining word</em>) <code>def-word</code> を定義し、 そして、 それを実行します。
+<code>def-word</code> が実行されると、 新しいワード <code>name</code> が <code>CREATE</code> され、コード <i>code1</i>
+が実行されます。 コード <i>code2</i> は現時点では実行されません。 <code>name</code> というワードは、 <code>def-word</code>
+の子供(<em>child</em>)と呼ばれることもあります。
 </p>
-<p>When you execute <code>name</code>, the address of the body of <code>name</code> is put
-on the data stack and <i>code2</i> is executed (the address of the body of
-<code>name</code> is the address <code>HERE</code> returns immediately after the
-<code>CREATE</code>, i.e., the address a <code>create</code>d word returns by default).
+<p><code>name</code> を実行すると、 <code>name</code> の本体のアドレスがデータ・スタックに置かれ、 <i>code2</i>
+が実行されます(<code>name</code> の本文のアドレスは、 <code>CREATE</code> の直後に <code>HERE</code> が返すアドレス、 つまり、
+<code>create</code> されたワードがデフォルトで返すアドレスです)。
 </p>
-<p>You can use <code>def-word</code> to define a set of child words that behave
-similarly; they all have a common run-time behaviour determined by
-<i>code2</i>. Typically, the <i>code1</i> sequence builds a data area in the body
-of the child word. The structure of the data is common to all children of
-<code>def-word</code>, but the data values are specific &ndash; and private &ndash; to each
-child word. When a child word is executed, the address of its private data
-area is passed as a parameter on TOS to be used and manipulated<a id="DOCF16" href="#FOOT16"><sup>16</sup></a> by <i>code2</i>.
+<p><code>def-word</code> を使用して、 同様に動作する一連の子ワード達を定義できます。 つまり、 これらはすべて <i>code2</i>
+によって決定される共通の実行時の振る舞いを持っています。 通常、 <i>code1</i> シーケンスは、 子ワードの本体にデータ領域を構築します。
+データの構造は <code>def-word</code> のすべての子に共通ですが、 データ値は各子ワードに固有で、 そして、 プライベートです。
+子ワードが実行されると、 そのプライベート・データ領域のアドレスが TOS 上のパラメータとして渡され、 <i>code2</i>
+によって使用および操作されます<a id="DOCF16" href="#FOOT16"><sup>16</sup></a>。
 </p>
-<p>The two fragments of code that make up the defining words act (are executed)
-at two completely separate times:
+<p>定義ワードを構成する 2 つのコード断片は、 完全に別々の 2 つの時点で動作(実行)されます:
 </p>
 <ul>
-<li> At <i>define time</i>, the defining word executes <i>code1</i> to generate a child
-word
-</li><li> At <i>child execution time</i>, when a child word is invoked, <i>code2</i> is
-executed, using parameters (data) that are private and specific to the child
-word.
+<li> <i>定義時</i> 、定義ワードが <i>code1</i> を実行して子ワードを生成します
+</li><li> <i>子の実行時</i>、 子ワードが呼び出されると、 子ワード固有のプライベートなパラメータ達(データ)を使って、 <i>code2</i> が実行されます。
 </li></ul>
 
-<p>Another way of understanding the behaviour of <code>def-word</code> and
-<code>name</code> is to say that, if you make the following definitions:
+<p><code>def-word</code> と <code>name</code> の振る舞いを理解するもう 1 つの方法は、 以下のように定義することです:
 </p><div class="example">
 <pre class="example">: def-word1 ( &quot;name&quot; -- )
     CREATE <i>code1</i> ;
@@ -125,10 +116,10 @@ word.
 def-word1 name1
 </pre></div>
 
-<p>Then using <code>name1 action1</code> is equivalent to using <code>name</code>.
+<p>この場合、 <code>name1 action1</code> を使用することは、 <code>name</code> を使用することと同じです。
 </p>
 <span id="index-CREATE-_002e_002e_002e-SET_002dDOES_003e"></span>
-<p>Another way of writing <code>def-word</code> is (see <a href="Quotations.html">Quotations</a>):
+<p><code>def-word</code> を記述するもう 1 つの方法が引用(see <a href="Quotations.html">Quotations</a>)です:
 </p>
 <div class="example">
 <pre class="example">: def-word ( &quot;name&quot; -- ; name execution: ... -- ... )
@@ -136,12 +127,11 @@ def-word1 name1
     [: <i>code2</i> ;] set-does&gt; ;
 </pre></div>
 
-<p>Gforth actually compiles the code using <code>does&gt;</code> into code equivalent to
-the latter code.  An advantage of the <code>set-does&gt;</code> approach is that you
-can put other code behind it and you can use it inside control structures
-without needing workarounds.  A disadvantage is that it is Gforth-specific.
+<p>Gforth  は実際は <code>does&gt;</code> を使用してコードを後者のコードと同等のコードにコンパイルします。  <code>set-does&gt;</code>
+アプローチの利点は、 その背後に他のコードを配置でき、 回避策を必要とせずに制御構造内でそれを使用できることです。  欠点は、 Gforth
+固有であることです。
 </p>
-<p>A classic example is that you can define <code>CONSTANT</code> in this way:
+<p>典型的な例は、 以下のようにして <code>CONSTANT</code> を定義できることです:
 </p>
 <div class="example">
 <pre class="example">: CONSTANT ( w &quot;name&quot; -- )
@@ -150,7 +140,7 @@ DOES&gt; ( -- w )
     @ ;
 </pre></div>
 
-<p>or equivalently
+<p>または同等の
 </p>
 <div class="example">
 <pre class="example">: CONSTANT ( w &quot;name&quot; -- ; name execution: -- w )
@@ -159,16 +149,14 @@ DOES&gt; ( -- w )
 </pre></div>
 
 
-<p>When you create a constant with <code>5 CONSTANT five</code>, a set of define-time
-actions take place; first a new word <code>five</code> is created, then the value
-5 is laid down in the body of <code>five</code> with <code>,</code>. When <code>five</code> is
-executed, the address of the body is put on the stack, and <code>@</code>
-retrieves the value 5. The word <code>five</code> has no code of its own; it
-simply contains a data field and the xt of the quotation or of <code>@</code>.
+<p><code>5 CONSTANT four</code> を使用して定数を作成すると、 一連の定義時アクションが実行されます。 最初に新しいワード
+<code>five</code> が作成され、 次に <code>,</code> を使用して <code>five</code> の本体に値 5 が配置されます。
+<code>five</code> が実行されると、 本文のアドレスがスタックに置かれ、 <code>@</code> は値 5 を取得します。 ワード
+<code>five</code> にはそれ自体のコードはありません。 ワード <code>five</code> には、データ・フィールドと、 引用(quotation) の
+xt または <code>@</code> の xt が含まれるだけです。
 </p>
-<p>The final example in this section is intended to remind you that space
-reserved in <code>CREATE</code>d words is <i>data</i> space and therefore can be both
-read and written by a Standard program<a id="DOCF17" href="#FOOT17"><sup>17</sup></a>:
+<p>このセクションの最後の例は、 <code>CREATE</code> されたワードで予約されている空間はデータ空間であるため、
+標準プログラムによる読み取りと書き込みの両方が可能であることを思い出していただくことを目的としています<a id="DOCF17" href="#FOOT17"><sup>17</sup></a>:
 </p>
 <div class="example">
 <pre class="example">: foo ( &quot;name&quot; -- )
@@ -182,23 +170,18 @@ foo second-word
 123 ' first-word &gt;BODY !
 </pre></div>
 
-<p>If <code>first-word</code> had been a <code>CREATE</code>d word, we could simply have
-executed it to get the address of its data field. However, since it was
-defined to have <code>DOES&gt;</code> actions, its execution semantics are to perform
-those <code>DOES&gt;</code> actions. To get the address of its data field it&rsquo;s
-necessary to use <code>'</code> to get its xt, then <code>&gt;BODY</code> to translate the
-xt into the address of the data field.  When you execute <code>first-word</code>,
-it will display <code>123</code>. When you execute <code>second-word</code> it will
-display <code>-1</code>.
+<p><code>first-word</code> が <code>CREATE</code> されたワードであった場合、
+単純にそれを実行してデータ・フィールドのアドレスを取得できます。 ただし、 <code>DOES&gt;</code> アクションを持つように定義されているため、
+その実行機能(execution semantics)は、 それらの <code>DOES&gt;</code> アクションを実行することになります。
+データ・フィールドのアドレスを取得するには、 <code>'</code> を使用して xt を取得し、 次に <code>&gt;BODY</code> を使用して xt
+をデータ・フィールドのアドレスに変換する必要があります。  <code>first-word</code> を実行すると、 <code>123</code> が表示されます。
+<code>second-word</code> を実行すると、<code>-1</code> が表示されます。
 </p>
 <span id="index-stack-effect-of-DOES_003e_002dparts"></span>
 <span id="index-DOES_003e_002dparts_002c-stack-effect"></span>
-<p>In the examples above the stack comment after the <code>DOES&gt;</code> specifies the
-stack effect of the defined words, not the stack effect of the following
-code (the following code expects the address of the body on the top of
-stack, which is not reflected in the stack comment). This is the convention
-that I use and recommend (it clashes a bit with using locals declarations
-for stack effect specification, though).
+<p>上記の例では、 <code>DOES&gt;</code> の後のスタック・コメントは、 次のコードのスタック効果ではなく、
+定義されたワードのスタック効果を指定しています(次のコードは、 スタックの先頭にある本体のアドレスを期待しています。
+スタックコメントには反映されません)。 これは私が使用し、 推奨している規則です(スタック効果の指定にローカル宣言を使うのと少々衝突する)。
 </p>
 
 </div>
@@ -207,13 +190,11 @@ for stack effect specification, though).
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT16" href="#DOCF16">(16)</a></h5>
-<p>It
-is legitimate both to read and write to this data area.</p>
+<p>このデータ領域への読み取りと書き込みは両方とも正当です。</p>
 <h5><a id="FOOT17" href="#DOCF17">(17)</a></h5>
-<p>Exercise: use this example
-as a starting point for your own implementation of <code>Value</code> and
-<code>TO</code> &ndash; if you get stuck, investigate the behaviour of <code>'</code> and
-<code>[']</code>.</p>
+<p>研究課題: この例は
+<code>Value</code> と <code>TO</code> をあなた独自に実装するための出発点として使って見ましょう。 &ndash; あなたが行き詰まった場合は、
+<code>'</code> と <code>[']</code> の振る舞いを調べてください。</p>
 </div>
 <hr>
 <div class="header">

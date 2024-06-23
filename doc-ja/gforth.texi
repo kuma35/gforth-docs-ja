@@ -11153,41 +11153,31 @@ def-word name
 @end example
 
 @cindex child words
-This fragment defines a @dfn{defining word} @code{def-word} and then
-executes it.  When @code{def-word} executes, it @code{CREATE}s a new word
-@code{name}, and executes the code @i{code1}. The code @i{code2} is not
-executed at this time. The word @code{name} is sometimes called a
-@dfn{child} of @code{def-word}.
+このコード断片は 定義ワード(@dfn{defining word}) @code{def-word} を定義し、 そして、 それを実行します。
+@code{def-word} が実行されると、 新しいワード @code{name} が @code{CREATE} され、コード @i{code1}
+が実行されます。 コード @i{code2} は現時点では実行されません。 @code{name} というワードは、 @code{def-word}
+の子供(@dfn{child})と呼ばれることもあります。
 
-When you execute @code{name}, the address of the body of @code{name} is put
-on the data stack and @i{code2} is executed (the address of the body of
-@code{name} is the address @code{HERE} returns immediately after the
-@code{CREATE}, i.e., the address a @code{create}d word returns by default).
+@code{name} を実行すると、 @code{name} の本体のアドレスがデータ・スタックに置かれ、 @i{code2}
+が実行されます(@code{name} の本文のアドレスは、 @code{CREATE} の直後に @code{HERE} が返すアドレス、 つまり、
+@code{create} されたワードがデフォルトで返すアドレスです)。
 
-You can use @code{def-word} to define a set of child words that behave
-similarly; they all have a common run-time behaviour determined by
-@i{code2}. Typically, the @i{code1} sequence builds a data area in the body
-of the child word. The structure of the data is common to all children of
-@code{def-word}, but the data values are specific -- and private -- to each
-child word. When a child word is executed, the address of its private data
-area is passed as a parameter on TOS to be used and manipulated@footnote{It
-is legitimate both to read and write to this data area.} by @i{code2}.
+@code{def-word} を使用して、 同様に動作する一連の子ワード達を定義できます。 つまり、 これらはすべて @i{code2}
+によって決定される共通の実行時の振る舞いを持っています。 通常、 @i{code1} シーケンスは、 子ワードの本体にデータ領域を構築します。
+データの構造は @code{def-word} のすべての子に共通ですが、 データ値は各子ワードに固有で、 そして、 プライベートです。
+子ワードが実行されると、 そのプライベート・データ領域のアドレスが TOS 上のパラメータとして渡され、 @i{code2}
+によって使用および操作されます@footnote{このデータ領域への読み取りと書き込みは両方とも正当です。}。
 
-The two fragments of code that make up the defining words act (are executed)
-at two completely separate times:
+定義ワードを構成する 2 つのコード断片は、 完全に別々の 2 つの時点で動作(実行)されます:
 
 @itemize @bullet
 @item
-At @i{define time}, the defining word executes @i{code1} to generate a child
-word
+@i{定義時} 、定義ワードが @i{code1} を実行して子ワードを生成します
 @item
-At @i{child execution time}, when a child word is invoked, @i{code2} is
-executed, using parameters (data) that are private and specific to the child
-word.
+@i{子の実行時}、 子ワードが呼び出されると、 子ワード固有のプライベートなパラメータ達(データ)を使って、 @i{code2} が実行されます。
 @end itemize
 
-Another way of understanding the behaviour of @code{def-word} and
-@code{name} is to say that, if you make the following definitions:
+@code{def-word} と @code{name} の振る舞いを理解するもう 1 つの方法は、 以下のように定義することです:
 @example
 : def-word1 ( "name" -- )
     CREATE @i{code1} ;
@@ -11199,10 +11189,10 @@ def-word1 name1
 @end example
 
 @noindent
-Then using @code{name1 action1} is equivalent to using @code{name}.
+この場合、 @code{name1 action1} を使用することは、 @code{name} を使用することと同じです。
 
 @cindex @code{CREATE} ... @code{SET-DOES>}
-Another way of writing @code{def-word} is (@pxref{Quotations}):
+@code{def-word} を記述するもう 1 つの方法が引用(@pxref{Quotations})です:
 
 @example
 : def-word ( "name" -- ; name execution: ... -- ... )
@@ -11210,12 +11200,11 @@ Another way of writing @code{def-word} is (@pxref{Quotations}):
     [: @i{code2} ;] set-does> ;
 @end example
 
-Gforth actually compiles the code using @code{does>} into code equivalent to
-the latter code.  An advantage of the @code{set-does>} approach is that you
-can put other code behind it and you can use it inside control structures
-without needing workarounds.  A disadvantage is that it is Gforth-specific.
+Gforth  は実際は @code{does>} を使用してコードを後者のコードと同等のコードにコンパイルします。  @code{set-does>}
+アプローチの利点は、 その背後に他のコードを配置でき、 回避策を必要とせずに制御構造内でそれを使用できることです。  欠点は、 Gforth
+固有であることです。
 
-A classic example is that you can define @code{CONSTANT} in this way:
+典型的な例は、 以下のようにして @code{CONSTANT} を定義できることです:
 
 @example
 : CONSTANT ( w "name" -- )
@@ -11225,7 +11214,7 @@ DOES> ( -- w )
 @end example
 
 @noindent
-or equivalently
+または同等の
 
 @example
 : CONSTANT ( w "name" -- ; name execution: -- w )
@@ -11237,19 +11226,16 @@ or equivalently
 @comment it does in the Forthwrite 100th edition.. as well as an elegant
 @comment commentary on the Counting Fruits problem.
 
-When you create a constant with @code{5 CONSTANT five}, a set of define-time
-actions take place; first a new word @code{five} is created, then the value
-5 is laid down in the body of @code{five} with @code{,}. When @code{five} is
-executed, the address of the body is put on the stack, and @code{@@}
-retrieves the value 5. The word @code{five} has no code of its own; it
-simply contains a data field and the xt of the quotation or of @code{@@}.
+@code{5 CONSTANT four} を使用して定数を作成すると、 一連の定義時アクションが実行されます。 最初に新しいワード
+@code{five} が作成され、 次に @code{,} を使用して @code{five} の本体に値 5 が配置されます。
+@code{five} が実行されると、 本文のアドレスがスタックに置かれ、 @code{@@} は値 5 を取得します。 ワード
+@code{five} にはそれ自体のコードはありません。 ワード @code{five} には、データ・フィールドと、 引用(quotation) の
+xt または @code{@@} の xt が含まれるだけです。
 
-The final example in this section is intended to remind you that space
-reserved in @code{CREATE}d words is @i{data} space and therefore can be both
-read and written by a Standard program@footnote{Exercise: use this example
-as a starting point for your own implementation of @code{Value} and
-@code{TO} -- if you get stuck, investigate the behaviour of @code{'} and
-@code{[']}.}:
+このセクションの最後の例は、 @code{CREATE} されたワードで予約されている空間はデータ空間であるため、
+標準プログラムによる読み取りと書き込みの両方が可能であることを思い出していただくことを目的としています@footnote{研究課題: この例は
+@code{Value} と @code{TO} をあなた独自に実装するための出発点として使って見ましょう。 -- あなたが行き詰まった場合は、
+@code{'} と @code{[']} の振る舞いを調べてください。}:
 
 @example
 : foo ( "name" -- )
@@ -11263,23 +11249,18 @@ foo second-word
 123 ' first-word >BODY !
 @end example
 
-If @code{first-word} had been a @code{CREATE}d word, we could simply have
-executed it to get the address of its data field. However, since it was
-defined to have @code{DOES>} actions, its execution semantics are to perform
-those @code{DOES>} actions. To get the address of its data field it's
-necessary to use @code{'} to get its xt, then @code{>BODY} to translate the
-xt into the address of the data field.  When you execute @code{first-word},
-it will display @code{123}. When you execute @code{second-word} it will
-display @code{-1}.
+@code{first-word} が @code{CREATE} されたワードであった場合、
+単純にそれを実行してデータ・フィールドのアドレスを取得できます。 ただし、 @code{DOES>} アクションを持つように定義されているため、
+その実行機能(execution semantics)は、 それらの @code{DOES>} アクションを実行することになります。
+データ・フィールドのアドレスを取得するには、 @code{'} を使用して xt を取得し、 次に @code{>BODY} を使用して xt
+をデータ・フィールドのアドレスに変換する必要があります。  @code{first-word} を実行すると、 @code{123} が表示されます。
+@code{second-word} を実行すると、@code{-1} が表示されます。
 
 @cindex stack effect of @code{DOES>}-parts
 @cindex @code{DOES>}-parts, stack effect
-In the examples above the stack comment after the @code{DOES>} specifies the
-stack effect of the defined words, not the stack effect of the following
-code (the following code expects the address of the body on the top of
-stack, which is not reflected in the stack comment). This is the convention
-that I use and recommend (it clashes a bit with using locals declarations
-for stack effect specification, though).
+上記の例では、 @code{DOES>} の後のスタック・コメントは、 次のコードのスタック効果ではなく、
+定義されたワードのスタック効果を指定しています(次のコードは、 スタックの先頭にある本体のアドレスを期待しています。
+スタックコメントには反映されません)。 これは私が使用し、 推奨している規則です(スタック効果の指定にローカル宣言を使うのと少々衝突する)。
 
 
 @node CREATE..DOES> applications, CREATE..DOES> details, User-defined defining words using CREATE, User-defined Defining Words
