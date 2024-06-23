@@ -243,10 +243,10 @@ File: gforth.info,  Node: Control Structures,  Next: Defining Words,  Prev: Stri
 6.9 Control Structures
 ======================
 
-Forth の制御構造は、 コロン定義内のみで、 インタプリタ状態
-(interpretively)で使用することはできません(1)。 私たちもこのような制限を
-好まないので、 多くのスキームが提案されてはいますが、 これを回避する満足
-のいく方法はまだ見つかっていません。
+Forth の制御構造は、 コロン定義内のみで、 対話的(interpretively)に使用す
+ることはできません(1)。 私たちもこのような制限を好まないので、 多くのス
+キームが提案されてはいますが、 これを回避する満足のいく方法はまだ見つか
+っていません。
 
 * Menu:
 
@@ -1528,20 +1528,20 @@ Forth ではなく) Gforth では、 ‘>body’ を使用しても ‘value’ 
    name 実行時: – w2
 
 ‘AValue’ ( w "name" –  ) gforth-0.6 “AValue”
-   Like ‘value’, but defines a value for an address (this only makes a
-difference in the cross-compiler).
+   ‘value’ と似ていますが、 アドレスの為の値を定義します(これはクロス・
+コンパイラーでのみ違いが生じます)。
 
 ‘2Value’ ( d "name" –  ) double-ext “two-value”
 
 ‘fvalue’ ( r "name" –  ) floating-ext “f-value”
-   Define name ‘( -- r1 )’ where r1 initially is r; this value can be
-changed with ‘to name’ or ‘->name’.
+   実行時: ‘( -- r1 )’ な name を定義します。 ここで r は初期値です。 値
+は ‘to name’ または ‘->name’ で変更できます。
 
 ‘TO’ ( value "name" –  ) core-ext “TO”
-   changes the value of NAME to VALUE
+   NAME の値を VALUE に変更します
 
 ‘+TO’ ( value "name" –  ) gforth-1.0 “+TO”
-   increments the value of NAME by VALUE
+   NAME の値に VALUE を足し込みます
 
 
 File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: Defining Words
@@ -1549,26 +1549,31 @@ File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: 
 6.10.5 Varues
 -------------
 
-Sometimes you want to take the address of a value-like word.  Because
-this has some disadvantages, Gforth asks you to be explicit about it,
-and use ‘varue’ (named that way because it combines characteristics of a
-variable and a value) to declare the name.
+(訳注: vaLue ではなくて vaRue) value のようなワードでアドレスを取得した
+い場合があります。 これにはいくつかの欠点があるため、 Gforth では、 これ
+についてh明示的に指定し、 ‘varue’を使用して名前を宣言するように求めます
+(variable と value の特性を組み合わせたものであるため、 そのように名付け
+られました)。
 
 ‘Varue’ ( w "name" –  ) gforth-1.0 “Varue”
-   Like ‘value’, but you can also use ‘addr name’; in the future, varues
-may be less efficient than values.
+   ‘value’ と似ていますが、 ‘addr name’ で得たアドレスで値にアクセスする
+こともできます。 将来的には、 varues の効率が values よりも低くなる可能
+性があります。
 
 ‘2varue’ ( x1 x2 "name" –  ) gforth-1.0 “2varue”
-   Like ‘2value’, but you can also use ‘addr name’; in the future,
-2varues may be less efficient than 2values.
+   ‘2value’ と似ていますが、 ‘addr name’ で得たアドレスで値にアクセスす
+ることもできます。 将来的には、2varues は 2values よりも効率が低くなる可
+能性があります。
 
 ‘fvarue’ ( r "name" –  ) gforth-1.0 “fvarue”
-   Like ‘fvalue’, but you can also use ‘addr name’; in the future,
-fvarues may be less efficient than fvalues.
+   ‘fvalue’ と似ていますが、 ‘addr name’ で得たアドレスで値にアクセスす
+ることもできます。 将来的には、fvarues は fvalues よりも効率が低くなる可
+能性があります。
 
 ‘addr’ ( "name" – addr  ) gforth-1.0 “addr”
-   provides the address ADDR of the varue, 2varue, or fvarue NAME or a
-local name defined with one of ‘wa: ca: da: fa: xta:’.
+   varue NAME または 2varue NAME または fvarue NAME のアドレスを提供しま
+す。 または ‘wa: ca: da: fa: xta:’ のいずれかで定義されたローカル name の
+アドレスを提供します。
 
 
 File: gforth.info,  Node: Colon Definitions,  Next: Anonymous Definitions,  Prev: Varues,  Up: Defining Words
@@ -1579,33 +1584,34 @@ File: gforth.info,  Node: Colon Definitions,  Next: Anonymous Definitions,  Prev
      : name ( ... -- ... )
          word1 word2 word3 ;
 
-Creates a word called ‘name’ that, upon execution, executes ‘word1 word2
-word3’.  ‘name’ is a “(colon) definition”.
+‘name’ というワードを作成し、 実行時に ‘word1 word2 word3’ を実行します
+。 ‘name’ は 定義(コロン定義)(“(colon) definition”) です。
 
-   The explanation above is somewhat superficial.  For simple examples
-of colon definitions see *note Your first definition::.  For an in-depth
-discussion of some of the issues involved, *Note Interpretation and
-Compilation Semantics::.
+   上記の説明はやや表面的です。 コロン定義の簡単な例については、 *note
+Your first definition:: を参照してください。 関連する問題の一部について
+の詳細な説明については、 *Note Interpretation and Compilation
+Semantics:: を参照してください。
 
 ‘:’ ( "name" – colon-sys  ) core “colon”
 
 ‘;’ ( compilation colon-sys – ; run-time nest-sys –  ) core “semicolon”
 
-   We plan to to perform automatic inlining eventually, but for now you
-can perform inlining with
+   最終的には自動インライン化を実行する予定ですが、 今のところは以下のよ
+うにしてインライン化を実行できます
 
 ‘inline:’ ( "name" – inline:-sys  ) gforth-experimental “inline-colon”
-   Start inline colon definition.  The code between ‘inline:’ and
-‘;inline’ has to compile (not perform) the code to be inlined, but the
-resulting definition name is a colon definition that performs the
-inlined code.  Note that the compiling code must have the stack effect
-‘( -- )’, otherwise you will get an error when Gforth tries to create
-the colon definition for name.
+   インライン・コロン定義を開始します。 ‘inline:’ と ‘;inline’ の間のコ
+ードは、 インライン化するコードを(実行するのではなく)コンパイルする必要
+がありますが、 結果の定義 name は、 インライン化されたコードを実行するコ
+ロン定義です。 コンパイルするコードはスタック効果が‘( -- )’ (スタックの
+深さが変わらない)である必要があることに注意してください。 さもないと、
+Gforth が name のコロン定義を作成しようとしたときにエラーが発生します。
 
 ‘;inline’ ( inline:-sys –  ) gforth-experimental “semi-inline”
-   end inline definition started with ‘inline:’
+   ‘inline:’ で始まるインライン定義を終了します
 
-   As an example, you can define an inlined word and use it with
+   例として、 インライン化されたワードを定義し、 以下のようにして使いま
+す
 
      inline: my2dup ( a b -- a b a b )
          ]] over over [[ ;inline
@@ -1615,31 +1621,32 @@ the colon definition for name.
      #1. foo d. d.
      see foo
 
-   Inline words are related to macros (*note Macros::); the difference
-is that a macro has immediate compilation semantics while an
-‘inline:’-defined word has default compilation semantics; this means
-that you normally use a macro only inside a colon definition, while you
-can use an ‘inline:’ word also interpretively.  But that also means that
-you can do some things with macros that you cannot do as an ‘inline:’
-word.  E.g.,
+   インライン・ワードはマクロ(*note Macros::)に関連しています。 マクロと
+の違いは、マクロには即時コンパイル機能(immediate compilation semantics)が
+あるのに対し、 ‘inline:’ で定義されたワードにはデフォルトのコンパイル機
+能(compilation semantics)があることです。 つまり、 通常はコロン定義内で
+のみマクロを使用しますが、 ‘inline:’ ワードは対話的(interpretively)にも
+使用できることを意味します。 しかしそれは、 ‘inline:’ ワードとしては実行
+できないいくつかのことをマクロでは実行できることも意味します。 例:
 
      \ Doesn't work:
      \   inline: endif ]] then [[ ;inline
      \ Instead, write a macro:
      : endif ]] then [[ ; immediate
 
-   Conversely, for words that would be fine as non-immediate colon
-definitions, define them as non-immediate colon definitions or (if
-utmost performance is required) as ‘inline:’ words; don’t define them as
-macros, because then you cannot properly use them interpretively:
+   逆に、 非即時コロン定義(non-immediate colon definitions)として問題な
+いワードについては、 非即時コロン定義として定義するか、 (最大限のパフォ
+ーマンスが必要な場合) ‘inline:’ ワードとして定義します。 それらをマクロ
+として定義しないでください。 対話的(interpretively)に適切に使用できなく
+なります:
 
      : another2dup ]] over over [[ ; immediate
      \ Doesn't work:
      \   #1. another2dup d. d.
 
-   You may wonder why you have to write compiling code between ‘inline:’
-and ‘;inline’.  That’s because the implementation of an inline word like
-‘my2dup’ above works similar to:
+   なぜ ‘inline:’ と ‘;inline’ の間にコンパイル・コードを書かなければな
+らないのか疑問に思われるかもしれません。 これは、 上記の ‘my2dup’ のよう
+なインライン・ワードの実装が以下のように動作するためです:
 
      : compile-my2dup ( xt -- )
          drop ]] over over [[ ;
@@ -1647,9 +1654,9 @@ and ‘;inline’.  That’s because the implementation of an inline word like
      : my2dup [ 0 compile-my2dup ] ;
      ' compile-my2dup set-optimizer
 
-   The ‘DROP’ and ‘0’ are there because ‘compile-my2dup’ is the
-implementation of ‘compile,’ for ‘my2dup’, and ‘compile,’ expects an xt
-(*note User-defined compile-comma::).
+   ‘DROP’ や ‘0’ があるのは、 ‘compile-my2dup’ が ‘my2dup’ の ‘compile,’
+の実装であり、 ‘compile,’ は xt を期待する為です(*note User-defined
+compile-comma::)。
 
 
 File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon Definitions,  Up: Defining Words
@@ -1657,48 +1664,49 @@ File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon
 6.10.7 Anonymous Definitions
 ----------------------------
 
-Sometimes you want to define an “anonymous word”; a word without a name.
-You can do this with:
+しばしば匿名のワード(“anonymous word”)を定義したい場合があります。 つま
+り、 名前無しのワードです。 これは以下のようにします:
 
 ‘:noname’ ( – xt colon-sys  ) core-ext “colon-no-name”
 
-   This leaves the execution token for the word on the stack after the
-closing ‘;’.  Here’s an example in which a deferred word is initialised
-with an ‘xt’ from an anonymous colon definition:
+   これにより、 終わりの ‘;’ の後にワードの実行トークンがスタックに残り
+ます。 以下は、 延期ワード(deferred word)が匿名コロン定義(anonymous
+colon definition)の ‘xt’ で初期化される例です:
 
      Defer deferred
      :noname ( ... -- ... )
        ... ;
      IS deferred
 
-Gforth provides an alternative way of doing this, using two separate
-words:
+Gforth は、 2 つの別々のワードを使用して、 これを行う別の方法を提供しま
+す:
 
 ‘noname’ ( –  ) gforth-0.2 “noname”
-   The next defined word will be anonymous.  The defining word will
-leave the input stream alone.  The xt of the defined word will be given
-by ‘latestxt’.
+   次に定義するワードは匿名になります。 その定義するワードは(‘noname’が
+いじる訳ではなくて)入力ストリームからのをそのままを使います(The defining
+word will leave the input stream alone)。 その定義したワードの xt は
+‘latestxt’ で取得します。
 
 ‘latestxt’ ( – xt  ) gforth-0.6 “latestxt”
-   xt is the execution token of the last word defined.
+   xt は、 最後に定義されたワードの実行トークンです。
 
-The previous example can be rewritten using ‘noname’ and ‘latestxt’:
+先の例を、 ‘noname’ と ‘latestxt’ を使用して書き直すことができます:
 
      Defer deferred
      noname : ( ... -- ... )
        ... ;
      latestxt IS deferred
 
-‘noname’ works with any defining word, not just ‘:’.
+‘noname’ は、 ‘:’ だけでなく、 あらゆる定義ワードで機能します。
 
-   ‘latestxt’ also works when the last word was not defined as ‘noname’.
-It does not work for combined words, though.  It also has the useful
-property that is is valid as soon as the header for a definition has
-been built.  Thus:
+   ‘latestxt’ は、 最後のワードが ‘noname’ として定義されていない場合に
+も機能します。 ただし、 複合ワード(combined words)には機能しません。 ま
+た、 これは、 定義のヘッダーが構築されるやいなや有効になる便利なプロパテ
+ィでもあります。 したがって、 以下のようにすると:
 
      latestxt . : foo [ latestxt . ] ; ' foo .
 
-prints 3 numbers; the last two are the same.
+これは3つの数値を出力: 後ろの2つは同一の数値です。
 
 
 File: gforth.info,  Node: Quotations,  Next: Supplying names,  Prev: Anonymous Definitions,  Up: Defining Words
@@ -1706,10 +1714,10 @@ File: gforth.info,  Node: Quotations,  Next: Supplying names,  Prev: Anonymous D
 6.10.8 Quotations
 -----------------
 
-A quotation is an anonymous colon definition inside another colon
-definition.  Quotations are useful when dealing with words that consume
-an execution token, like ‘catch’ or ‘outfile-execute’.  E.g.  consider
-the following example of using ‘outfile-execute’ (*note Redirection::):
+引用(quotation)は、 別のコロン定義内の匿名コロン定義です。 引用
+(quotation)は、 ‘catch’ や ‘outfile-execute’ など、 実行トークンを消費す
+るワードを扱うときに便利です。 例えば、 以下の ‘outfile-execute’ (*note
+Redirection::) の使用例を考えてみましょう:
 
      : some-warning ( n -- )
          cr ." warning# " . ;
@@ -1717,21 +1725,21 @@ the following example of using ‘outfile-execute’ (*note Redirection::):
      : print-some-warning ( n -- )
          ['] some-warning stderr outfile-execute ;
 
-   Here we defined ‘some-warning’ as a helper word whose xt we could
-pass to outfile-execute.  Instead, we can use a quotation to define such
-a word anonymously inside ‘print-some-warning’:
+   ここで、 ‘some-warning’ をヘルパー・ワードとして定義し、 その xt を
+outfile-execute に渡すことができます。 その代わりに、 引用(quotation)を
+使用して ‘print-some-warning’ 内でそのようなワードを匿名で定義できます:
 
      : print-some-warning ( n -- )
        [: cr ." warning# " . ;] stderr outfile-execute ;
 
-   The quotation is bouded by ‘[:’ and ‘;]’.  It produces an execution
-token at run-time.
+   引用(quotation)は ‘[:’ と ‘;]’ で囲まれています。 それは実行時に実行
+トークンを生成します。
 
 ‘[:’ ( compile-time: – quotation-sys flag colon-sys  ) gforth-1.0 “bracket-colon”
-   Starts a quotation
+   引用(quotation)を開始します
 
 ‘;]’ ( compile-time: quotation-sys – ; run-time: – xt  ) gforth-1.0 “semi-bracket”
-   ends a quotation
+   引用(quotation)を終了します
 
 
 File: gforth.info,  Node: Supplying names,  Next: User-defined Defining Words,  Prev: Quotations,  Up: Defining Words
@@ -1739,23 +1747,23 @@ File: gforth.info,  Node: Supplying names,  Next: User-defined Defining Words,  
 6.10.9 Supplying the name of a defined word
 -------------------------------------------
 
-By default, a defining word takes the name for the defined word from the
-input stream.  Sometimes you want to supply the name from a string.  You
-can do this with:
+デフォルトでは、 定義ワードは入力ストリームから定義されるワードの名前を
+取得します。 しばしば文字列から名前を指定したい場合があります。 これは以
+下のようにして行うことができます:
 
 ‘nextname’ ( c-addr u –  ) gforth-0.2 “nextname”
-   The next defined word will have the name C-ADDR U; the defining word
-will leave the input stream alone.
+   次に定義されるワードの名前は C-ADDR U になります。 定義中のワードは入
+力ストリームからそのままで ‘nextname’ がいじることはありません。
 
-   For example:
+   例:
 
      s" foo" nextname create
 
-is equivalent to:
+これは以下と同等です:
 
      create foo
 
-‘nextname’ works with any defining word.
+‘nextname’ は、 あらゆる定義ワードで機能します。
 
 
 File: gforth.info,  Node: User-defined Defining Words,  Next: Deferred Words,  Prev: Supplying names,  Up: Defining Words
@@ -1763,10 +1771,9 @@ File: gforth.info,  Node: User-defined Defining Words,  Next: Deferred Words,  P
 6.10.10 User-defined Defining Words
 -----------------------------------
 
-You can define new defining words in terms of any existing defining
-word, but ‘:’ and ‘create’...‘does>’/‘set-does>’ are particularly
-flexible, whereas the children of, e.g., ‘constant’ are all just
-constants.
+既存の定義ワードに基づいて新しい定義ワードを定義できますが、 ‘:’ と
+‘create’...‘does>’/‘set-does>’ は特に柔軟です。 一方、 たとえば、
+‘constant’ の子供達は全て単なる定数です。
 
 * Menu:
 
@@ -1787,14 +1794,13 @@ File: gforth.info,  Node: User-defined defining words with colon definitions,  N
 6.10.10.1 User-defined defining words with colon definitions
 ............................................................
 
-You can create a new defining word by wrapping defining-time code around
-an existing defining word and putting the sequence in a colon
-definition.
+既存の定義ワードをくるんで定義時コードを被せ、 そのシーケンスをコロン定
+義に入れることによって、 新しい定義ワードを作成できます。
 
-   For example, suppose that you have a word ‘stats’ that gathers
-statistics about colon definitions given the xt of the definition, and
-you want every colon definition in your application to make a call to
-‘stats’.  You can define and use a new version of ‘:’ like this:
+   たとえば、 定義の xt を指定してコロン定義に関する統計を収集するワード
+‘stats’ があり、 アプリケーション内のすべてのコロン定義で ‘stats’ を呼び
+出す必要があるとします。 これには、 以下のように ‘:’ の新しいバージョン
+を定義して使用できます:
 
      : stats
        ( xt -- ) DUP ." (Gathering statistics for " . ." )"
@@ -1804,30 +1810,29 @@ you want every colon definition in your application to make a call to
 
      my: foo + - ;
 
-   When ‘foo’ is defined using ‘my:’ these steps occur:
+   ‘my:’ を使用して ‘foo’ を定義する場合、 以下のステップが実行されます:
 
-   • ‘my:’ is executed.
-   • The ‘:’ within the definition (the one between ‘my:’ and
-     ‘latestxt’) is executed, and does just what it always does; it
-     parses the input stream for a name, builds a dictionary header for
-     the name ‘foo’ and switches ‘state’ from interpret to compile.
-   • The word ‘latestxt’ is executed.  It puts the xt for the word that
-     is being defined – ‘foo’ – onto the stack.
-   • The code that was produced by ‘postpone literal’ is executed; this
-     causes the value on the stack to be compiled as a literal in the
-     code area of ‘foo’.
-   • The code ‘['] stats’ compiles a literal into the definition of
-     ‘my:’.  When ‘compile,’ is executed, that literal – the execution
-     token for ‘stats’ – is layed down in the code area of ‘foo’ ,
-     following the literal(1).
-   • At this point, the execution of ‘my:’ is complete, and control
-     returns to the text interpreter.  The text interpreter is in
-     compile state, so subsequent text ‘+ -’ is compiled into the
-     definition of ‘foo’ and the ‘;’ terminates the definition as
-     always.
+   • ‘my:’ が実行されます。
+   • 定義内の ‘:’ (‘my:’ と ‘latestxt’ の間にあるもの) が実行され、 ‘:’
+     として、 いつもと同じことを行います。 名前ために入力ストリームをパ
+     ースし、 名前 ‘foo’ のディクショナリ・ヘッダーを構築し、 ‘state’ を
+     インタプリタ状態からコンパイル状態に切り替えます。
+   • ‘latestxt’ というワードが実行されます。 定義中のワード(‘foo’)の xt
+     をスタックに置きます。
+   • ‘postpone literal’ によって生成されたコードが実行されます。 これに
+     より、 スタック上の値(‘foo’ の xt)が ‘foo’ のコード領域にリテラルと
+     してコンパイルされます。
+   • コード ‘['] stats’ は、 ‘my:’ の定義時に、 リテラルを ‘my:’ の定義
+     内にコンパイルします(訳注: そして、 ‘my:’ の実行時は ‘stats’ の xt
+     をスタックに積みます)。 そして、 ‘compile,’ が実行されると、 ‘foo’
+     のコード領域に、 上記に続けて ‘stats’ の xt をコンパイルします(1)。
+   • この時点で、 ‘my:’ の実行が完了し、 制御がテキスト・インタプリタに
+     戻ります。 テキスト・インタプリタはコンパイル状態にあるため、 後続
+     のテキスト ‘+ -’ は ‘foo’ の定義にコンパイルされ、 いつものように
+     ‘;’ によって定義が終了します。
 
-   You can use ‘see’ to decompile a word that was defined using ‘my:’
-and see how it is different from a normal ‘:’ definition.  For example:
+   ‘see’ を使用すると、 ‘my:’ を使用して定義されたワードを逆コンパイルし
+、 それが通常の ‘:’ 定義とどのように異なるかを確認できます。 例:
 
      : bar + - ;  \ like foo but using : rather than my:
      see bar
@@ -1837,14 +1842,14 @@ and see how it is different from a normal ‘:’ definition.  For example:
      : foo
        `foo stats + - ;
 
-   ‘`foo’ is another way of writing ‘['] foo’.
+   ‘`foo’ は ‘['] foo’ を記述する別の方法です。
 
    ---------- Footnotes ----------
 
-   (1) Strictly speaking, the mechanism that ‘compile,’ uses to convert
-an xt into something in the code area is implementation-dependent.  A
-threaded implementation might spit out the execution token directly
-whilst another implementation might spit out a native code sequence.
+   (1) 厳密に言えば、 ‘compile,’ が xt をコード領域内の何かに変換するた
+めに使用するメカニズムは実装に依存します。 スレッド実装は実行トークンを
+直接吐き出す場合がありますが、 別の実装はネイティブ・コード・シーケンス
+を吐き出す場合があります
 
 
 File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREATE..DOES> applications,  Prev: User-defined defining words with colon definitions,  Up: User-defined Defining Words
@@ -1852,9 +1857,8 @@ File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREAT
 6.10.10.2 User-defined defining words using create
 ..................................................
 
-If you want the words defined with your defining words to behave
-differently from words defined with standard defining words, you can
-write your defining word like this:
+定義ワードで定義されたワードを、 標準の定義ワードで定義されたワードとは
+異なる振る舞いにしたい場合は、 以下のように定義ワードを記述できます:
 
      : def-word ( "name" -- )
          CREATE code1
@@ -6618,185 +6622,4 @@ is ‘:}’.
 order (they are in the vocabulary ‘locals-types’), and they are not
 necessarily words in all Forth systems; therefore they are documented as
 Gforth words.
-
-
-File: gforth.info,  Node: Where are locals visible by name?,  Next: How long do locals live?,  Prev: Locals definition words,  Up: Gforth locals
-
-6.22.1.2 Where are locals visible by name?
-..........................................
-
-Basically, the answer is that locals are visible where you would expect
-it in block-structured languages, and sometimes a little longer.  If you
-want to restrict the scope of a local, enclose its definition in
-‘SCOPE’...‘ENDSCOPE’.
-
-‘scope’ ( compilation  – scope ; run-time  –  ) gforth-0.2 “scope”
-
-‘endscope’ ( compilation scope – ; run-time  –  ) gforth-0.2 “endscope”
-
-   These words behave like control structure words, so you can use them
-with ‘CS-PICK’ and ‘CS-ROLL’ to restrict the scope in arbitrary ways.
-
-   If you want a more exact answer to the visibility question, here’s
-the basic principle: A local is visible in all places that can only be
-reached through the definition of the local(1).  In other words, it is
-not visible in places that can be reached without going through the
-definition of the local.  E.g., locals defined in ‘IF’...‘ENDIF’ are
-visible until the ‘ENDIF’, locals defined in ‘BEGIN’...‘UNTIL’ are
-visible after the ‘UNTIL’ (until, e.g., a subsequent ‘ENDSCOPE’).
-
-   The reasoning behind this solution is: We want to have the locals
-visible as long as it is meaningful.  The user can always make the
-visibility shorter by using explicit scoping.  In a place that can only
-be reached through the definition of a local, the meaning of a local
-name is clear.  In other places it is not: How is the local initialized
-at the control flow path that does not contain the definition?  Which
-local is meant, if the same name is defined twice in two independent
-control flow paths?
-
-   This should be enough detail for nearly all users, so you can skip
-the rest of this section.  If you really must know all the gory details
-and options, read on.
-
-   In order to implement this rule, the compiler has to know which
-places are unreachable.  It knows this automatically after ‘AHEAD’,
-‘AGAIN’, ‘EXIT’ and ‘LEAVE’; in other cases (e.g., after most ‘THROW’s),
-you can use the word ‘UNREACHABLE’ to tell the compiler that the control
-flow never reaches that place.  If ‘UNREACHABLE’ is not used where it
-could, the only consequence is that the visibility of some locals is
-more limited than the rule above says.  If ‘UNREACHABLE’ is used where
-it should not (i.e., if you lie to the compiler), buggy code will be
-produced.
-
-‘UNREACHABLE’ ( –  ) gforth-0.2 “UNREACHABLE”
-
-   Another problem with this rule is that at ‘BEGIN’, the compiler does
-not know which locals will be visible on the incoming back-edge.  All
-problems discussed in the following are due to this ignorance of the
-compiler (we discuss the problems using ‘BEGIN’ loops as examples; the
-discussion also applies to ‘?DO’ and other loops).  Perhaps the most
-insidious example is:
-     AHEAD
-     BEGIN
-       x
-     [ 1 CS-ROLL ] THEN
-       {: x :}
-       ...
-     UNTIL
-
-   This should be legal according to the visibility rule.  The use of
-‘x’ can only be reached through the definition; but that appears
-textually below the use.
-
-   From this example it is clear that the visibility rules cannot be
-fully implemented without major headaches.  Our implementation treats
-common cases as advertised and the exceptions are treated in a safe way:
-The compiler makes a reasonable guess about the locals visible after a
-‘BEGIN’; if it is too pessimistic, the user will get a spurious error
-about the local not being defined; if the compiler is too optimistic, it
-will notice this later and issue a warning.  In the case above the
-compiler would complain about ‘x’ being undefined at its use.  You can
-see from the obscure examples in this section that it takes quite
-unusual control structures to get the compiler into trouble, and even
-then it will often do fine.
-
-   If the ‘BEGIN’ is reachable from above, the most optimistic guess is
-that all locals visible before the ‘BEGIN’ will also be visible after
-the ‘BEGIN’.  This guess is valid for all loops that are entered only
-through the ‘BEGIN’, in particular, for normal
-‘BEGIN’...‘WHILE’...‘REPEAT’ and ‘BEGIN’...‘UNTIL’ loops and it is
-implemented in our compiler.  When the branch to the ‘BEGIN’ is finally
-generated by ‘AGAIN’ or ‘UNTIL’, the compiler checks the guess and warns
-the user if it was too optimistic:
-     IF
-       {: x :}
-     BEGIN
-       \ x ?
-     [ 1 cs-roll ] THEN
-       ...
-     UNTIL
-
-   Here, ‘x’ lives only until the ‘BEGIN’, but the compiler
-optimistically assumes that it lives until the ‘THEN’.  It notices this
-difference when it compiles the ‘UNTIL’ and issues a warning.  The user
-can avoid the warning, and make sure that ‘x’ is not used in the wrong
-area by using explicit scoping:
-     IF
-       SCOPE
-       {: x :}
-       ENDSCOPE
-     BEGIN
-     [ 1 cs-roll ] THEN
-       ...
-     UNTIL
-
-   Since the guess is optimistic, there will be no spurious error
-messages about undefined locals.
-
-   If the ‘BEGIN’ is not reachable from above (e.g., after ‘AHEAD’ or
-‘EXIT’), the compiler cannot even make an optimistic guess, as the
-locals visible after the ‘BEGIN’ may be defined later.
-
-   It pessimistically assumes that all locals are visible that were
-visible at the latest place outside any control structure (i.e., where
-nothing is on the control-flow stack).  This means that in:
-
-     : foo
-       IF {: z :} THEN
-       {: x :}
-       AHEAD
-         BEGIN
-           ( * )
-         [ 1 CS-ROLL ] THEN
-         {: y :}
-         ...
-       UNTIL ;
-
-   At the place marked with ‘( * )’, ‘x’ is visible, but ‘y’ is not
-(although, according to the reachability rule it should); ‘z’ is not and
-should not be visible there.
-
-   However, you can use ‘ASSUME-LIVE’ to make the compiler assume that
-the same locals are visible at the BEGIN as at the point where the top
-control-flow stack item was created.
-
-‘ASSUME-LIVE’ ( orig – orig  ) gforth-0.2 “ASSUME-LIVE”
-
-E.g.,
-     IF
-       {: x :}
-       AHEAD
-         ASSUME-LIVE
-         BEGIN
-           x
-         [ 1 CS-ROLL ] THEN
-         ...
-       UNTIL
-     THEN
-
-   Here ‘x’ would not be visible at the use of ‘x’, because its
-definition is inside a control structure, but by using ASSUME-LIVE the
-programmer tells the compiler that the locals visible at the ‘AHEAD’
-should be visible at the ‘BEGIN’.
-
-   Other cases where the locals are defined before the ‘BEGIN’ can be
-handled by inserting an appropriate ‘CS-ROLL’ before the ‘ASSUME-LIVE’
-(and changing the control-flow stack manipulation behind the
-‘ASSUME-LIVE’).
-
-   Cases where locals are defined after the ‘BEGIN’ (but should be
-visible immediately after the ‘BEGIN’) can only be handled by
-rearranging the loop.  E.g., the “most insidious” example above can be
-arranged into:
-     BEGIN
-       {: x :}
-       ... 0=
-     WHILE
-       x
-     REPEAT
-
-   ---------- Footnotes ----------
-
-   (1) In compiler construction terminology, all places dominated by the
-definition of the local.
 

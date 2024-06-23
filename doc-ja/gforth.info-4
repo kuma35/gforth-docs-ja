@@ -27,6 +27,127 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: cross.fs,  Prev: gforthmi,  Up: Fully Relocatable Image Files
+
+14.5.2 ‘cross.fs’
+-----------------
+
+You can also use ‘cross’, a batch compiler that accepts a Forth-like
+programming language (*note Cross Compiler::).
+
+   ‘cross’ allows you to create image files for machines with different
+data sizes and data formats than the one used for generating the image
+file.  You can also use it to create an application image that does not
+contain a Forth compiler.  These features are bought with restrictions
+and inconveniences in programming.  E.g., addresses have to be stored in
+memory with special words (‘A!’, ‘A,’, etc.)  in order to make the code
+relocatable.
+
+
+File: gforth.info,  Node: Stack and Dictionary Sizes,  Next: Running Image Files,  Prev: Fully Relocatable Image Files,  Up: Image Files
+
+14.6 Stack and Dictionary Sizes
+===============================
+
+If you invoke Gforth with a command line flag for the size (*note
+Invoking Gforth::), the size you specify is stored in the dictionary.
+If you save the dictionary with ‘savesystem’ or create an image with
+‘gforthmi’, this size will become the default for the resulting image
+file.  E.g., the following will create a fully relocatable version of
+‘gforth.fi’ with a 1MB dictionary:
+
+     gforthmi gforth.fi -m 1M
+
+   In other words, if you want to set the default size for the
+dictionary and the stacks of an image, just invoke ‘gforthmi’ with the
+appropriate options when creating the image.
+
+   Note: For cache-friendly behaviour (i.e., good performance), you
+should make the sizes of the stacks modulo, say, 2K, somewhat different.
+E.g., the default stack sizes are: data: 16k (mod 2k=0); fp: 15.5k (mod
+2k=1.5k); return: 15k(mod 2k=1k); locals: 14.5k (mod 2k=0.5k).
+
+
+File: gforth.info,  Node: Running Image Files,  Next: Modifying the Startup Sequence,  Prev: Stack and Dictionary Sizes,  Up: Image Files
+
+14.7 Running Image Files
+========================
+
+You can invoke Gforth with an image file image instead of the default
+‘gforth.fi’ with the ‘-i’ flag (*note Invoking Gforth::):
+     gforth -i image
+
+   If your operating system supports starting scripts with a line of the
+form ‘#! ...’, you just have to type the image file name to start Gforth
+with this image file (note that the file extension ‘.fi’ is just a
+convention).  I.e., to run Gforth with the image file image, you can
+just type image instead of ‘gforth -i image’.  This works because every
+‘.fi’ file starts with a line of this format:
+
+     #! /usr/local/bin/gforth-0.4.0 -i
+
+   The file and pathname for the Gforth engine specified on this line is
+the specific Gforth executable that it was built against; i.e.  the
+value of the environment variable ‘GFORTH’ at the time that ‘gforthmi’
+was executed.
+
+   You can make use of the same shell capability to make a Forth source
+file into an executable.  For example, if you place this text in a file:
+
+     #! /usr/local/bin/gforth
+
+     ." Hello, world" CR
+     bye
+
+and then make the file executable (chmod +x in Unix), you can run it
+directly from the command line.  The sequence ‘#!’ is used in two ways;
+firstly, it is recognised as a “magic sequence” by the operating
+system(1) secondly it is treated as a comment character by Gforth.
+Because of the second usage, a space is required between ‘#!’ and the
+path to the executable (moreover, some Unixes require the sequence ‘#!
+/’).
+
+   Most Unix systems (including Linux) support exactly one option after
+the binary name.  If that is not enough, you can use the following
+trick:
+
+     #! /bin/sh
+     : ## ; 0 [if]
+     exec gforth -m 10M -d 1M $0 "$@"
+     [then]
+     ." Hello, world" cr
+     bye \ caution: this prevents (further) processing of "$@"
+
+   First this script is interpreted as shell script, which treats the
+first two lines as (mostly) comments, then performs the third line,
+which invokes gforth with this script (‘$0’) as parameter and its
+parameters as additional parameters (‘"$@"’).  Then this script is
+interpreted as Forth script, which first defines a colon definition
+‘##’, then ignores everything up to ‘[then]’ and finally processes the
+following Forth code.  You can also use
+
+     #0 [if]
+
+   in the second line, but this works only in Gforth-0.7.0 and later.
+
+   The ‘gforthmi’ approach is the fastest one, the shell-based one is
+slowest (needs to start an additional shell).  An additional advantage
+of the shell approach is that it is unnecessary to know where the Gforth
+binary resides, as long as it is in the ‘$PATH’.
+
+‘#!’ ( –  ) gforth-0.2 “hash-bang”
+   An alias for ‘\’
+
+   ---------- Footnotes ----------
+
+   (1) The Unix kernel actually recognises two types of files:
+executable files and files of data, where the data is processed by an
+interpreter that is specified on the “interpreter line” – the first line
+of the file, starting with the sequence #!.  There may be a small limit
+(e.g., 32) on the number of characters that may be specified on the
+interpreter line.
+
+
 File: gforth.info,  Node: Modifying the Startup Sequence,  Prev: Running Image Files,  Up: Image Files
 
 14.8 Modifying the Startup Sequence
@@ -2676,7 +2797,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  43)
 * 2Value ( D "NAME" -- ) double-ext:     Values.              (line  30)
 * 2Variable ( "NAME" -- ) double:        Variables.           (line  40)
-* 2varue ( X1 X2 "NAME" -- ) gforth-1.0: Varues.              (line  15)
+* 2varue ( X1 X2 "NAME" -- ) gforth-1.0: Varues.              (line  17)
 * : ( "NAME" -- COLON-SYS ) core:        Colon Definitions.   (line  17)
 * :: ( CLASS "NAME" -- ) mini-oof:       Basic Mini-OOF Usage.
                                                               (line  32)
@@ -2926,7 +3047,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  33)
 * add-libpath ( C-ADDR U -- ) gforth-0.7: Declaring OS-level libraries.
                                                               (line  37)
-* addr ( "NAME" -- ADDR ) gforth-1.0:    Varues.              (line  23)
+* addr ( "NAME" -- ADDR ) gforth-1.0:    Varues.              (line  27)
 * ADDRESS-UNIT-BITS ( -- N ) environment: Environmental Queries.
                                                               (line  25)
 * adjust-buffer ( U ADDR -- ) gforth-experimental: Heap Allocation.
@@ -3573,7 +3694,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  18)
 * fvalue ( R "NAME" -- ) floating-ext:   Values.              (line  32)
 * fvariable ( "NAME" -- ) floating:      Variables.           (line  42)
-* fvarue ( R "NAME" -- ) gforth-1.0:     Varues.              (line  19)
+* fvarue ( R "NAME" -- ) gforth-1.0:     Varues.              (line  22)
 * F^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME R -- ) gforth-0.2: Locals definition words.
                                                               (line  67)
 * f~ ( R1 R2 R3 -- FLAG ) floating-ext:  Floating Point.      (line 157)
@@ -3733,7 +3854,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * latest ( -- NT ) gforth-0.6:           Name token.          (line  28)
 * latestnt ( -- NT ) gforth-1.0:         Name token.          (line  32)
 * latestxt ( -- XT ) gforth-0.6:         Anonymous Definitions.
-                                                              (line  28)
+                                                              (line  29)
 * lbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  76)
 * LEAVE ( COMPILATION -- ; RUN-TIME LOOP-SYS -- ) core: Counted Loops.
@@ -4382,7 +4503,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  17)
 * var ( SIZE -- ) oof:                   Class Declaration.   (line   8)
 * Variable ( "NAME" -- ) core:           Variables.           (line  31)
-* Varue ( W "NAME" -- ) gforth-1.0:      Varues.              (line  11)
+* Varue ( W "NAME" -- ) gforth-1.0:      Varues.              (line  12)
 * vglue ( -- RTYP RSUB RADD ) minos2:    widget methods.      (line  75)
 * vglue@ ( -- RTYP RSUB RADD ) minos2:   widget methods.      (line  84)
 * vlist ( -- ) gforth-0.2:               Word Lists.          (line 128)
@@ -4848,7 +4969,7 @@ in the Word Index (only the names are listed for the words here).
 * 2tuck:                                 Data stack.          (line  43)
 * 2Value:                                Values.              (line  30)
 * 2Variable:                             Variables.           (line  40)
-* 2varue:                                Varues.              (line  15)
+* 2varue:                                Varues.              (line  17)
 * ::                                     Colon Definitions.   (line  17)
 * :, passing data across:                Literals.            (line  70)
 * :::                                    Basic Mini-OOF Usage.
@@ -5085,7 +5206,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  33)
 * add-libpath:                           Declaring OS-level libraries.
                                                               (line  37)
-* addr:                                  Varues.              (line  23)
+* addr:                                  Varues.              (line  27)
 * address alignment exception:           core-ambcond.        (line 139)
 * address alignment exception, stack overflow: core-ambcond.  (line  41)
 * address arithmetic for structures:     Why explicit structure support?.
@@ -5372,7 +5493,7 @@ in the Word Index (only the names are listed for the words here).
 * child class:                           Object-Oriented Terminology.
                                                               (line  43)
 * child words:                           User-defined defining words using CREATE.
-                                                              (line  17)
+                                                              (line  16)
 * cilk-bye:                              Cilk.                (line  49)
 * cilk-init:                             Cilk.                (line  31)
 * cilk-sync:                             Cilk.                (line  46)
@@ -5552,7 +5673,7 @@ in the Word Index (only the names are listed for the words here).
 * CREATE ... DOES>, details:             CREATE..DOES> details.
                                                               (line   6)
 * CREATE ... SET-DOES>:                  User-defined defining words using CREATE.
-                                                              (line  57)
+                                                              (line  56)
 * CREATE and alignment:                  Address arithmetic.  (line  36)
 * create-file:                           General files.       (line  27)
 * create-from:                           Creating from a prototype.
@@ -5771,7 +5892,7 @@ in the Word Index (only the names are listed for the words here).
 * does>-code:                            Threading Words.     (line 109)
 * DOES>-code:                            DOES>.               (line   6)
 * DOES>-parts, stack effect:             User-defined defining words using CREATE.
-                                                              (line 112)
+                                                              (line 111)
 * dofield,:                              Threading Words.     (line  47)
 * dofield::                              Threading Words.     (line  97)
 * DONE:                                  Counted Loops.       (line 261)
@@ -5929,7 +6050,7 @@ in the Word Index (only the names are listed for the words here).
 * execution token input format:          Literals in source code.
                                                               (line 114)
 * execution token of last defined word:  Anonymous Definitions.
-                                                              (line  28)
+                                                              (line  29)
 * execution token of words with undefined execution semantics: core-ambcond.
                                                               (line  24)
 * execution tokens tutorial:             Execution Tokens Tutorial.
@@ -6256,7 +6377,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * fvalue:                                Values.              (line  32)
 * fvariable:                             Variables.           (line  42)
-* fvarue:                                Varues.              (line  19)
+* fvarue:                                Varues.              (line  22)
 * F^:                                    Locals definition words.
                                                               (line  67)
 * f_, stack item type:                   Notation.            (line 106)
@@ -6634,7 +6755,7 @@ in the Word Index (only the names are listed for the words here).
 * latest:                                Name token.          (line  28)
 * latestnt:                              Name token.          (line  32)
 * latestxt:                              Anonymous Definitions.
-                                                              (line  28)
+                                                              (line  29)
 * lbe:                                   Special Memory Accesses.
                                                               (line  76)
 * LC_ALL – environment variable:         Environment variables.
@@ -7514,7 +7635,7 @@ in the Word Index (only the names are listed for the words here).
 * Stack effect design, tutorial:         Designing the stack effect Tutorial.
                                                               (line   6)
 * stack effect of DOES>-parts:           User-defined defining words using CREATE.
-                                                              (line 112)
+                                                              (line 111)
 * stack effect of included files:        Forth source files.  (line  20)
 * stack effects of selectors:            Object-Oriented Programming Style.
                                                               (line   8)
@@ -7842,7 +7963,7 @@ in the Word Index (only the names are listed for the words here).
 * variables:                             Variables.           (line   6)
 * variadic C functions:                  Declaring C Functions.
                                                               (line  56)
-* Varue:                                 Varues.              (line  11)
+* Varue:                                 Varues.              (line  12)
 * varue-flavoured locals:                Gforth locals.       (line  42)
 * varues:                                Varues.              (line   6)
 * versions, invoking other versions of Gforth: Invoking Gforth.
