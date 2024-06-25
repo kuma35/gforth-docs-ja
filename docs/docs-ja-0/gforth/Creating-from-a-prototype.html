@@ -70,14 +70,12 @@ Next: <a href="Making-a-word-current.html" accesskey="n" rel="next">Making a wor
 <hr>
 <span id="Creating-from-a-prototype-1"></span><h4 class="subsubsection">6.10.10.8 Creating from a prototype</h4>
 
-<p>In the above we show how to define a word by first using <code>create</code>, and
-then modifying it with <code>set-does&gt;</code>, <code>set-to</code>, <code>set-optimizer</code>
-etc.
+<p>上記では、 最初に <code>create</code> を使用して単語を定義し、 それから <code>set-does&gt;</code> や <code>set-to</code> や
+<code>set-optimizer</code> などで変更する方法を示しました。
 </p>
-<p>An alternative way is to create a prototype using these words, and then
-create a new word from that prototype.  This kind of copying does not cover
-the body, so that has to be allocated and initialized explicitly.  Taking
-<code>fvalue</code> above, we could instead define it as:
+<p>別の方法として、 以下のワード群を使用してプロトタイプを作成し、そのプロトタイプから新しいワードを作成します。
+この種のコピーでは本体(body)部分は網羅されないため、 明示的に割り当てて初期化する必要があります。  上記の <code>fvalue</code>
+を例に取ると、 代わりに以下のように定義できます:
 </p>
 <div class="example">
 <pre class="example">create fvalue-prototype ( -- r )
@@ -89,11 +87,9 @@ the body, so that has to be allocated and initialized explicitly.  Taking
   ``fvalue-prototype create-from f, reveal ;
 </pre></div>
 
-<p>An advantage of this approach is that creating <code>fvalue</code> words is now
-faster, because it does not need to first duplicate the header methods of
-<code>create</code>, modify them, and eventually deduplicate them.  But this
-advantage is only relevant if the number of words created with this defining
-word is huge.
+<p>このアプローチの利点は、まず <code>create</code> ヘッダー・メソッド達を複製し、 それらを変更し、 最終的に重複排除する必要がないため、
+<code>fvalue</code> ワード群の作成が高速化されることだ。 ただし、 この利点は、
+この定義ワードで作成されるワードの数が膨大な場合にのみ意味があります。
 </p>
 <span id="index-create_002dfrom-_0028--nt-_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-create_002dfrom"></span>
@@ -101,12 +97,11 @@ word is huge.
 <div class="format">
 <pre class="format"><code>create-from</code> ( <i>nt &quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;create-from&rdquo;
 </pre></div>
-<p>Create a word <i>name</i> that behaves like <i>nt</i>, but with an empty body.
-<i>nt</i> must be the nt of a named word.  The resulting header is not yet
-revealed.  Creating a word with <code>create-from</code> without using any
-<code>set-</code> words is faster than if you create a word using <code>set-</code>
-words, <code>immediate</code>, or <code>does&gt;</code>.  You can use <code>noname</code> with
-<code>create-from</code>.
+<p>指定の <i>nt</i> のように振る舞うが、 ボディが空のワード <i>name</i> を作成します。  <i>nt</i> は名前付きワードの nt
+でなければなりません。  結果として得られるヘッダーはまだ非公開状態です(訳注: not yet
+reveal;ワードリスト未登録なので普通は呼び出せない)。  <code>set-</code> ワード群を使用せずに <code>create-from</code>
+でワードを作成すると、 <code>set-</code> ワード群または <code>immediate</code> または <code>does&gt;</code>
+を使用してワードを作成するよりも高速になります。  <code>noname</code> で <code>create-from</code> を使用できます。
 </p>
 
 <span id="index-reveal-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -115,13 +110,11 @@ words, <code>immediate</code>, or <code>does&gt;</code>.  You can use <code>nona
 <div class="format">
 <pre class="format"><code>reveal</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;reveal&rdquo;
 </pre></div>
-<p>Put the current word in the wordlist current at the time of the header
-definition.
+<p>(reveal;明らかにする、暴露する)ヘッダー定義時の現在のワード・リスト(wordlist current)に現在のワードを入れます。
 </p>
 
 
-<p>The performance advantage does not extend to using <code>noname</code> with the
-defining word.  Therefore we also have
+<p><code>noname</code> を定義ワードとともに使用しても、 パフォーマンス上の利点は得られません。  したがって、 以下もいっしょに使います
 </p>
 <span id="index-noname_002dfrom-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-noname_002dfrom"></span>
@@ -129,12 +122,12 @@ defining word.  Therefore we also have
 <div class="format">
 <pre class="format"><code>noname-from</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;noname-from&rdquo;
 </pre></div>
-<p>Create a nameless word that behaves like <i>xt</i>, but with an empty body.
-<i>xt</i> must be the nt of a nameless word.
+<p>指定の <i>xt</i> のように動作するが、 本体が空の名前のないワードを作成します。  <i>xt</i> は、 名前のないワードの xt
+でなければなりません。
 </p>
 
 
-<p>Here&rsquo;s a usage example:
+<p>以下に使用例を示します:
 </p>
 <div class="example">
 <pre class="example">``fvalue-prototype noname create-from
@@ -146,11 +139,6 @@ latestnt constant noname-fvalue-prototype
 </pre></div>
 
 
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Making-a-word-current.html">Making a word current</a>, Previous: <a href="User_002ddefined-compile_002dcomma.html">User-defined <code>compile,</code></a>, Up: <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

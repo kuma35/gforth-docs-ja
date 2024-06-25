@@ -1654,9 +1654,9 @@ Gforth が name のコロン定義を作成しようとしたときにエラー�
      : my2dup [ 0 compile-my2dup ] ;
      ' compile-my2dup set-optimizer
 
-   ‘DROP’ や ‘0’ があるのは、 ‘compile-my2dup’ が ‘my2dup’ の ‘compile,’
-の実装であり、 ‘compile,’ は xt を期待する為です(*note User-defined
-compile-comma::)。
+   ‘DROP’ や ‘0’ があるのは、 ‘compile-my2dup’ が ‘my2dup’ ための
+‘compile,’ の実装であり、 ‘compile,’ は xt を期待する為です(*note
+User-defined compile-comma::)。
 
 
 File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon Definitions,  Up: Defining Words
@@ -1980,19 +1980,19 @@ File: gforth.info,  Node: CREATE..DOES> applications,  Next: CREATE..DOES> detai
 6.10.10.3 Applications of ‘CREATE..DOES>’
 .........................................
 
-You may wonder how to use this feature.  Here are some usage patterns:
+あなたは、 この機能をどのように使用するのか不思議に思うかもしれません。
+いくつかの使用パターンを以下に示します:
 
-   When you see a sequence of code occurring several times, and you can
-identify a meaning, you will factor it out as a colon definition.  When
-you see similar colon definitions, you can factor them using
-‘CREATE..DOES>’.  E.g., an assembler usually defines several words that
-look very similar:
+   とあるコードのフレーズが複数回出現し、 その意味を同一視できる場合は、
+それをコロン定義としてくくり出します。 類似のコロン定義が見つかった場合
+は、 ‘CREATE..DOES>’ を使用してそれらをファクタリングできます。 たとえば
+、 アセンブラは通常、 非常によく似たいくつかのワードを定義します:
      : ori, ( reg-target reg-source n -- )
          0 asm-reg-reg-imm ;
      : andi, ( reg-target reg-source n -- )
          1 asm-reg-reg-imm ;
 
-This could be factored with:
+これは以下のようにファクタリングできます:
      : reg-reg-imm ( op-code -- )
          CREATE ,
      DOES> ( reg-target reg-source n -- )
@@ -2001,10 +2001,11 @@ This could be factored with:
      0 reg-reg-imm ori,
      1 reg-reg-imm andi,
 
-   Another view of ‘CREATE..DOES>’ is to consider it as a crude way to
-supply a part of the parameters for a word (known as “currying” in the
-functional language community).  E.g., ‘+’ needs two parameters.
-Creating versions of ‘+’ with one parameter fixed can be done like this:
+   ‘CREATE..DOES>’ の別の観点は、 これをワードのパラメータの一部を提供す
+る粗雑な方法(関数型言語コミュニティではカリー化(“currying”)として知られ
+ています)とみなすことです。 たとえば、 ‘+’ には 2 つのパラメータが必要で
+すが、そのうち 1 つのパラメータを固定した ‘+’ のバージョンを作成するには
+、 以下のようにします:
 
      : curry+ ( n1 "name" -- )
          CREATE ,
@@ -2022,9 +2023,10 @@ File: gforth.info,  Node: CREATE..DOES> details,  Next: Advanced does> usage exa
 
 ‘DOES>’ ( compilation colon-sys1 – colon-sys2  ) core “does”
 
-   This means that you need not use ‘CREATE’ and ‘DOES>’ in the same
-definition; you can put the ‘DOES>’-part in a separate definition.  This
-allows us to, e.g., select among different ‘DOES>’-parts:
+   これは、 一つの定義内で ‘CREATE’ と ‘DOES>’ の両方を使用する必要がな
+いことを意味します。 ‘DOES>’ 部分を別の定義に置くことができます。 これに
+より、 たとえば、 さまざまな ‘DOES>’ 部分から選択するようにすることがで
+きます:
      : does1
      DOES> ( ... -- ... )
          code1 ;
@@ -2041,13 +2043,12 @@ allows us to, e.g., select among different ‘DOES>’-parts:
             does2
          ENDIF ;
 
-   In this example, the selection of whether to use ‘does1’ or ‘does2’
-is made at definition-time; at the time that the child word is
-‘CREATE’d.
+   この例では、 ‘does1’ と ‘does2’ のどちらを使用するかの選択は、 子ワー
+ドが ‘CREATE’ される定義時に行われます。
 
-   Note that the property of ‘does>’ to end the definition makes it
-necessary to introduce extra definitions ‘does1’ and ‘does2’.  You can
-avoid that with ‘set-does>’:
+   注意: 定義を終了する ‘does>’ の性質により、 追加の定義 ‘does1’ と
+‘does2’ を導入する必要があることに注意してください。 ‘set-does>’ を使用
+するとこれを回避できます:
 
      : def-word ( ... -- ... )
          create ...
@@ -2057,41 +2058,40 @@ avoid that with ‘set-does>’:
             [: code2 ;] set-does>
          ENDIF ;
 
-   In a standard program you can apply a ‘DOES>’-part only if the last
-word was defined with ‘CREATE’.  In Gforth, the ‘DOES>’-part will
-override the behaviour of the last word defined in any case.  In a
-standard program, you can use ‘DOES>’ only in a colon definition.  In
-Gforth, you can also use it in interpretation state, in a kind of
-one-shot mode; for example:
+   標準のプログラムでは、 最後のワードが ‘CREATE’ で定義されている場合に
+のみ ‘DOES>’ 部分を適用できます。 Gforth では、 ‘DOES>’ 部分は、 いかな
+る場合でも定義された最後のワードの振る舞いをオーバーライドします。 標準
+のプログラムでは、 ‘DOES>’ はコロン定義でのみ使用できます。 Gforth では
+、 一種のワンショット・モードとして、 インタプリタ状態で使用することもで
+きます。 例:
      CREATE name ( ... -- ... )
        initialization
      DOES>
        code ;
 
-is equivalent to the standard:
+これは、 以下の標準のと同等です:
      :noname
      DOES>
          code ;
      CREATE name EXECUTE ( ... -- ... )
          initialization
 
-   Gforth also supports quotations in interpreted code, and quotations
-save and restore the current definition, so you can also write the
-example above also as:
+   Gforth は対話時に打ち込んだコード内での引用(quotations)もサポートして
+おり、 引用は現在の定義を保存および復元するため、 上記の例を以下のように
+記述することもできます:
 
      CREATE name ( ... -- ... )
        initialization
      [: code ;] set-does>
 
 ‘set-does>’ ( xt –  ) gforth-1.0 “set-does>”
-   Changes the current word such that it pushes its body address and
-then executes xt.  Also changes the ‘compile,’ implementation
-accordingly.  Call ‘set-optimizer’ afterwards if you want a more
-efficient implementation.
+   現在のワードを変更して、 本体アドレスをプッシュしてから xt を実行しま
+す。 それに応じて ‘compile,’ の実装も変更します。 より効率的な実装が必要
+な場合、 この後で ‘set-optimizer’ を呼び出します。
 
 ‘>body’ ( xt – a_addr  ) core “to-body”
-   Get the address of the body of the word represented by xt (the
-address of the word’s data field).
+   xt で表されるワードの本体(body)のアドレス(ワードのデータ・フィールド
+のアドレス)を取得します。
 
 
 File: gforth.info,  Node: Advanced does> usage example,  Next: User-defined TO and DEFER@,  Prev: CREATE..DOES> details,  Up: User-defined Defining Words
@@ -2099,37 +2099,40 @@ File: gforth.info,  Node: Advanced does> usage example,  Next: User-defined TO a
 6.10.10.5 Advanced does> usage example
 ......................................
 
-The MIPS disassembler (‘arch/mips/disasm.fs’) contains many words for
-disassembling instructions, that follow a very repetetive scheme:
+MIPS 逆アセンブラ(‘arch/mips/disasm.fs’)には、 非常に反復的なスキームに
+従って逆アセンブルするための多くのワードが含まれています(訳注: very
+repetetive scheme; repetitiveのスペルミスっぽい):
 
      :noname DISASM-OPERANDS s" INST-NAME" type ;
      ENTRY-NUM cells TABLE + !
 
-   Of course, this inspires the idea to factor out the commonalities to
-allow a definition like
+   もちろん、 これは共通点をくくり出して以下のような定義を可能にするとい
+うアイデアを刺激します:
 
      DISASM-OPERANDS ENTRY-NUM TABLE define-inst INST-NAME
 
-   The parameters DISASM-OPERANDS and TABLE are usually correlated.
-Moreover, before I wrote the disassembler, there already existed code
-that defines instructions like this:
+   通常、 パラメータ DISASM-OPERANDS と TABLE は相関しています。 さらに
+、 私が逆アセンブラを作成する前に、 以下のような命令を定義するコードがす
+でに存在していました:
 
      ENTRY-NUM INST-FORMAT INST-NAME
 
-   This code comes from the assembler and resides in
-‘arch/mips/insts.fs’.
+   このコードは assembler 由来で、 ‘arch/mips/insts.fs’ にあります。
 
-   So I had to define the INST-FORMAT words that performed the scheme
-above when executed.  At first I chose to use run-time code-generation:
+   したがって、 実行時に上記のスキームを実行する INST-FORMAT ワードを定
+義する必要がありました。 私は、 まず最初に、ランタイム・コード生成を使用
+することを選択しました:
 
      : INST-FORMAT ( entry-num "name" -- ; compiled code: addr w -- )
        :noname Postpone DISASM-OPERANDS
        name Postpone sliteral Postpone type Postpone ;
        swap cells TABLE + ! ;
 
-   Note that this supplies the other two parameters of the scheme above.
+   注意: これにより、 上記のスキームの他に 2 つのパラメータが提供される
+ことに注意してください。
 
-   An alternative would have been to write this using ‘create’/‘does>’:
+   別の方法として、 ‘create’/‘does>’ を使用してこれを記述することもでき
+ます:
 
      : INST-FORMAT ( entry-num "name" -- )
        here name string, ( entry-num c-addr ) \ parse and save "name"
@@ -2141,29 +2144,28 @@ above when executed.  At first I chose to use run-time code-generation:
        DISASM-OPERANDS
        r> count type ;
 
-   Somehow the first solution is simpler, mainly because it’s simpler to
-shift a string from definition-time to use-time with ‘sliteral’ than
-with ‘string,’ and friends.
+   どういうわけか、 最初の解決策の方が簡単です。 その主な理由は、
+‘string,’ やその友達を使用するよりも、 ‘sliteral’ を使用した方が、 文字
+列を定義時から使用時へシフトするのが簡単だからです。
 
-   I wrote a lot of words following this scheme and soon thought about
-factoring out the commonalities among them.  Note that this uses a
-two-level defining word, i.e., a word that defines ordinary defining
-words.
+   私はこのスキームに従ってたくさんのワードを書き、 すぐにそれらの共通点
+を取り出すことを考えました。 これは 2 レベルの定義ワード、 つまり通常の
+定義ワードを定義するワードを使用していることに注意してください。
 
-   This time a solution involving ‘postpone’ and friends seemed more
-difficult (try it as an exercise), so I decided to use a
-‘create’/‘does>’ word; since I was already at it, I also used
-‘create’/‘does>’ for the lower level (try using ‘postpone’ etc.  as an
-exercise), resulting in the following definition:
+   今回は、 ‘postpone’ とその友人が関与する解決策はより困難に思えたので
+(研究課題として試してみましょう)、 ‘create’/‘does>’ というワードを使用す
+ることにしました。 私はすでにそれを行っていたので、 下位レベルにも
+‘create’/‘does>’ を使用しました(研究課題として ‘postpone’ などを使用して
+みましょう)。 その結果、 以下の定義が得られました:
 
      : define-format ( disasm-xt table-xt -- )
-         \ define an instruction format that uses disasm-xt for
-         \ disassembling and enters the defined instructions into table
-         \ table-xt
+         \ 逆アセンブルに disasm-xt を使用する命令フォーマットを定義し、
+         \ 定義された命令を
+         \ 表(table) table-xt に入れます
          create 2,
      does> ( u "inst" -- )
-         \ defines an anonymous word for disassembling instruction inst,
-         \ and enters it as u-th entry into table-xt
+         \ 命令 inst を逆アセンブルする匿名ワードを定義し、
+         \ それを u 番目のエントリとして table-xt に入れます
          2@ swap here name string, ( u table-xt disasm-xt c-addr ) \ remember string
          noname create 2,      \ define anonymous word
          execute latestxt swap ! \ enter xt of defined word into table-xt
@@ -2173,34 +2175,33 @@ exercise), resulting in the following definition:
          execute ( R: c-addr ) \ disassemble operands
          r> count type ; \ print name
 
-   Note that the tables here (in contrast to above) do the ‘cells +’ by
-themselves (that’s why you have to pass an xt).  This word is used in
-the following way:
+   注意: ここでのテーブルは(上記とは対照的に) ‘cells +’ を単独で実行する
+ことに注意してください (そのため、xt を渡す必要があります)。 このワード
+は以下のように使用されます:
 
      ' DISASM-OPERANDS ' TABLE define-format INST-FORMAT
 
-   As shown above, the defined instruction format is then used like
-this:
+   上に示したように、 定義された命令フォーマットは以下のように使用されま
+す:
 
      ENTRY-NUM INST-FORMAT INST-NAME
 
-   In terms of currying, this kind of two-level defining word provides
-the parameters in three stages: first DISASM-OPERANDS and TABLE, then
-ENTRY-NUM and INST-NAME, finally ‘addr w’, i.e., the instruction to be
-disassembled.
+   カリー化に関しては、 この種の 2 レベルの定義ワードは 3 段階でパラメー
+タを提供します。 最初に DISASM-OPERANDS と TABLE、 次に ENTRY-NUM と
+INST-NAME 、最後に ‘addr w’ つまり、 逆アセンブル対象の命令です。
 
-   Of course this did not quite fit all the instruction format names
-used in ‘insts.fs’, so I had to define a few wrappers that conditioned
-the parameters into the right form.
+   もちろん、 これは ‘insts.fs’ で使用されるすべての命令フォーマット名に
+完全に適合するわけではないため、 パラメータを正しい形式に条件付けるいく
+つかのラッパーを定義する必要がありました。
 
-   If you have trouble following this section, don’t worry.  First, this
-is involved and takes time (and probably some playing around) to
-understand; second, this is the first two-level ‘create’/‘does>’ word I
-have written in seventeen years of Forth; and if I did not have
-‘insts.fs’ to start with, I may well have elected to use just a
-one-level defining word (with some repeating of parameters when using
-the defining word).  So it is not necessary to understand this, but it
-may improve your understanding of Forth.
+   あなたが、 このセクションを理解するのが難しい場合でも、 心配する必要
+はありません。 まず、 これは複雑であり、 理解するのに時間がかかります(お
+そらく多少いじくりまわすことも必要です)。 2 番目に、 これは私が Forth の
+17 年間で書いた最初の 2 レベルの ‘create’/‘does>’ ワードです。 また、 最
+初に ‘insts.fs’ がなかった場合は、 1 レベルの定義ワードのみを使用するこ
+とを選択した可能性があります(定義ワードを使用するときにパラメータをいく
+つか繰り返します)。 したがって、 これを理解する必要はありませんが、 あな
+たの Forth についての理解が深まるかもしれません。
 
 
 File: gforth.info,  Node: User-defined TO and DEFER@,  Next: User-defined compile-comma,  Prev: Advanced does> usage example,  Up: User-defined Defining Words
@@ -2208,48 +2209,51 @@ File: gforth.info,  Node: User-defined TO and DEFER@,  Next: User-defined compil
 6.10.10.6 User-defined ‘to’ and ‘defer@’
 ........................................
 
-Gforth’s values have several operators: ‘to’ (to which ‘is’ is an alias,
-and ‘defer!’ takes an xt instead of a name in the input stream), ‘+to’,
-‘addr’, and ‘action-of’ (where ‘defer@’ takes an xt instead of a name in
-the input stream).
+Gforth の value にはいくつかの操作子(operators)があります。 ‘to’ (‘is’ は
+エイリアスであり、 ‘defer!’ は入力ストリーム内の名前の代わりに xt を受け
+取ります)や ‘+to’ や ‘addr’ や ‘action-of’ (‘defer@’ は入力ストリーム内
+の名前の代わりに xt を受け取ります)です。
 
-   Gforth allows you to change the ‘(to)’ action of a word.
+   Gforth を使用すると、 ワードの ‘(to)’ アクションを変更できます。
 
 ‘(to)’ ( val operation xt –  ) gforth-1.0 “paren-to”
-   xt is of a value like word name.  Stores val ‘to’ name.  operation
-selects between ‘to’, ‘+to’, ‘addr’, and ‘action-of’.
+   name という名前の、 ワードに似ている value の xt です。 name に val を
+保存します。 operation は、 ‘to’ と ‘+to’ と ‘addr’ と ‘action-of’ から
+選択します。
 
 ‘to-table:’ ( "name" "xt1" .. "xtn" –  ) gforth-experimental “to-table-colon”
-   create a table with entries for ‘TO’, ‘+TO’, ‘ADDR’, and ‘ACTION-OF’.
-Use ‘n/a’ to mark unsupported operations.
+   ‘TO’ や ‘+TO’ や ‘ADDR’ や ‘ACTION-OF’ のエントリを含むテーブルを作成
+します。 ‘n/a’ を使用して、 サポートされていない操作をマークします。
 
 ‘to-method:’ ( xt table "name" –  ) gforth-experimental “to-method-colon”
-   create a to-method, where XT computes the address to access the
-field, and TABLE contains the operators to store to it.
+   to-method を作成します。 ここで、XT はフィールドにアクセスするための
+アドレスを計算し、 TABLE にはそれに格納する操作子(operators)が含まれます
+。
 
 ‘set-to’ ( to-xt –  ) gforth-1.0 “set-to”
-   Sets the implementation of the ‘(to) ( val xt -- )’ method of the
-current word to to-xt.
+   現在のワードの ‘(to) ( val xt -- )’ メソッドの実装を to-xt に設定しま
+す。
 
 ‘n/a’ ( –  ) gforth-experimental “not-available”
-   this word can be ticked, but throws an “Operation not supported”
-exception on interpretation and compilation.  Use this for methods and
-alike that aren’t supported.
+   このワードをチック(tick)することはできますが、 インタプリタ時およびコ
+ンパイル時に “Operation not supported” (操作はサポートされていません)と
+いう例外が投げられます(throw)。 サポートされていないメソッドなどにこれを
+使用します。
 
-   ‘(to)’ is a word used inside ‘to’: it stores the value at run-time.
-The general stack effect of ‘(to)’ method is ‘( val operation xt -- )’,
-where xt identifies the word stored into, operation the actual variant
-of ‘to’-like operations, and val is the value (of appropriate type)
-stored there.
+   ‘(to)’ は ‘to’ 内で使用されるワードです。 実行時(run-time)に値を保存
+します。 ‘(to)’ メソッドの一般的なスタック効果は ‘( val Operation xt --
+)’ です。 ここで、 xt は格納されているワードを示し、 operation は ‘to’ 風
+の操作の実際のバリエーションを示します。 val はそこに格納されている (適
+切な型の) 値です。
 
-   You shall implement the ‘to’-method using ‘to-table:’ to create a
-type-specific table of operations (not specified slots at the end of the
-table are filled up with ‘n/a’), and using ‘to-method:’ together with
-the operation to get from the xt of the value to its data field (usually
-‘>body’ for values in the dictionary, but value-style data can also
-reside in structures or user areas).
+   ‘to-table:’ を使用して ‘to’ メソッドを実装し、 タイプ固有の操作テーブ
+ルを作成し(テーブルの最後にある指定されていないスロットは ‘n/a’ で埋めら
+れます)、 ‘to-method:’ を、 value の xt からそのデータ・フィールドを取得
+する操作と組み合わせて使用​​します(通常、 ディクショナリ内の値の場合は
+‘>body’ ですが、 value-style データは構造体またはユーザー領域に存在する
+こともできます)。
 
-   E.g., one can implement ‘fvalue’ as follows:
+   たとえば、 以下のように ‘fvalue’ を実装できます:
 
      to-table: f!-table f! f+!
      ' >body f!-table to-method: fvalue-to
@@ -2269,31 +2273,32 @@ File: gforth.info,  Node: User-defined compile-comma,  Next: Creating from a pro
 6.10.10.7 User-defined ‘compile,’
 .................................
 
-You can also change the implementation of ‘compile,’ for a word, with
+以下を使用して、 とあるワードのための ‘compile,’ の実装を変更することも
+できます
 
 ‘set-optimizer’ ( xt –  ) gforth-1.0 “set-optimizer”
-   Changes the current word such that ‘compile,’ing it executes xt (with
-the same stack contents as passed to ‘compile,’).  Note that ‘compile,’
-must be consistent with ‘execute’, so you must use ‘set-optimizer’ only
-to install a more efficient implementation of the same behaviour.
+   ‘compile,’ で xt execute するように現在のワードを変更します
+(‘compile,’ に渡されたものと同じスタック内容を使用)。 注意: ‘compile,’ は
+‘execute’ とスタック内容が一致している必要があるため、 ‘set-optimizer’ は
+同じ振る舞いの、 より効率的な実装をインストールする場合にのみ使用しなけ
+ればならないことに注意してください。
 
 ‘opt:’ ( compilation – colon-sys2 ; run-time – nest-sys  ) gforth-1.0 “opt:”
-   Starts a nameless colon definition; when it is complete, this colon
-definition will become the ‘compile,’ implementation of the latest word
-(before the ‘opt:’).
+   名前無しのコロン定義を開始します。 完了すると、 このコロン定義は
+(‘opt:’ の前の)最新のワードの ‘compile,’ の実装になります。
 
-   Note that the resulting ‘compile,’ must still be equivalent to
-‘postpone literal postpone execute’, so ‘set-optimizer’ is useful for
-efficiency, not for changing the behaviour.  There is nothing that
-prevents you from shooting yourself in the foot, however.  You can check
-whether your uses of ‘set-optimizer’ are correct by comparing the
-results when you use it with the results you get when you disable your
-uses by first defining
+   注意: 結果として得られる ‘compile,’ は、 依然として ‘postpone literal
+postpone execute’ と同等である必要があることに注意してください。 そのた
+め、 ‘set-optimizer’ は、 振る舞いを変更するためではなく、 効率化のため
+に役立てるものです。 しかし、 あなたが自分の足を撃つことを妨げるものは何
+もありません。 あなたが ‘set-optimizer’ を使用したときの結果と、 最初に
+以下を定義して使用を無効にしたときに得られる結果を比較することで、
+‘set-optimizer’ の使用が正しいかどうかを確認できます。
 
      : set-optimizer drop ;
 
-   As an example of the use of ‘set-optimizer’, we can enhance one of
-the definitions of ‘CONSTANT’ above as follows.
+   ‘set-optimizer’ の使用例として、 上記の ‘CONSTANT’ の定義の 1 つを以
+下のように拡張できます。
 
      : CONSTANT ( n "name" -- ; name: -- n )
        create ,
@@ -2301,31 +2306,30 @@ the definitions of ‘CONSTANT’ above as follows.
        [: >body @ postpone literal ;] set-optimizer
      ;
 
-   The only change is the addition of the ‘set-optimizer’ line.  When
-you define a constant and compile it:
+   唯一の変更は、 ‘set-optimizer’ 行の追加です。 あなたが定数を定義して
+コンパイルすると、 以下のようになります:
 
      5 constant five
      : foo five ;
 
-   the compiled ‘five’ in ‘foo’ is now compiled to the literal 5 instead
-of a generic invocation of ‘five’.  The quotation has the same stack
-effect as ‘compile,’: ‘( xt -- )’.  The passed xt belongs to the
-‘compile,’d word, i.e., ‘five’ in the example.  In the example the xt is
-first converted to the body address, then the value 5 at that place is
-fetched, and that value is compiled with the ‘postpone literal’ (*note
-Literals::).
+   ‘foo’ 内のコンパイル済み ‘five’ は、 ‘five’ の一般的な呼び出しではな
+く、 literal 5 とコンパイルされるようになりました。 引用(quotation)には
+、 ‘compile,’ と同じスタック効果があり、 それは ‘( xt -- )’ です。 渡さ
+れた xt は ‘compile,’ されたワード、 つまりこの例では ‘five’ に属します
+。 この例では、 まず xt が本文アドレスに変換され、 次にその場所の値 5 が
+フェッチされ、 その値が ‘postpone literal’ でコンパイルされます(*note
+Literals::)。
 
-   This use of ‘set-optimizer’ assumes that the user does not change the
-value of a constant with, e.g., ‘6 ' five >body !’.  While ‘five’ has
-been defined with ‘create’, that is an implementation detail of
-‘CONSTANT’, and if you don’t document it, the user must not rely on it.
-And if you use ‘set-optimizer’ in a way that assumes that the body does
-not change (like is done here), you must not document that ‘create’ is
-used; and conversely, if you document it, you have to write the
-‘compile,’ implementation such that it can deal with changing bodies.
+   この ‘set-optimizer’ の使用は、 ユーザーが、 例えば ‘6 ' four >body
+!’ などして定数の値を変更しないことを前提としています。 ‘five’ は
+‘create’ で定義されていますが、 これは ‘CONSTANT’ の実装の詳細であり、 そ
+れを文書化しない場合、 ユーザーはそれに依存してはなりません。 また、 h本
+体が変更されないことを前提とした方法で ‘set-optimizer’ を使用する場合、
+(ここで行われているように) ‘create’ が使用されていることを文書化してはな
+りません。 逆に、 それを文書化する場合は、 本体の変更を処理できるように
+‘compile,’ 実装を記述する必要があります。
 
-   Another example is a better-optimized variant of the ‘fvalue’ example
-above:
+   別の例は、 上記の ‘fvalue’ の例をさらに最適化したものです:
 
      : compile-fvalue-to ( xt-value-to -- )
        drop ]] >body f! [[ ;
@@ -2344,34 +2348,33 @@ above:
      : bar foo 1e f+ to foo ;
      see bar
 
-   Compare the code for ‘bar’ with the one for the earlier definition.
-Here we see the optimization of both the code for reading the fvalue
-(coming from the ‘set-optimizer’ in ‘fvalue’) and for writing the fvalue
-(coming from the ‘set-optimizer’ applied to ‘fvalue-to’.  Because an
-fvalue can change (unlike a constant), the reading part (inside
-‘fvalue’) compiles the address and a ‘f@’ that is performed at run-time.
+   ‘bar’ のコードを以前の定義のコードと比較します。 ここでは、 fvalue を
+読み取るコード(‘fvalue’ の ‘set-optimizer’ より)と、 fvalue を書き込むコ
+ード(‘fvalue-to’ に適用された ‘set-optimizer’ より)の両方の最適化が見ら
+れます。 fvalue は(定数とは異なり)変化する可能性があるため、 (‘fvalue’ 内
+部の)読み取り部分が、 アドレスと、 実行時に実行される ‘f@’ をコンパイル
+します。
 
-   For ‘fvalue-to’, the ‘compile,’ implementation basically just
-compiles the code executed by ‘fvalue’ inline.  The compilation
-semantics of ‘to’ compiles the address as literal and then the ‘(to)’
-implementation (i.e., ‘fvalue-to’).  In this process the ‘>body’ is
-optimized away.
+   ‘fvalue-to’ の場合、 ‘compile,’ の実装は基本的に、 ‘fvalue’ によって
+インラインで実行されるコードをコンパイルするだけです。 ‘to’ のコンパイル
+機能(compilation semantics)は、アドレスをリテラルとしてコンパイルしてか
+ら、 ‘(to)’ の実装(つまり、 ‘fvalue-to’)をコンパイルします。 この処理で
+は、 ‘>body’ が最適化されて削除されます。
 
-   In practice Gforth’s ‘fvalue’ includes a few additional twists, e.g.,
-to support ‘+TO’.
+   実際には、 Gforth の ‘fvalue’ は、 たとえば ‘+TO’ をサポートするなど
+、 いくつかの追加の工夫が含まれています。
 
-   Note that the call to ‘set-optimizer’ has to be performed after the
-call to ‘set-does>’ (or ‘does>’, because ‘set-does>’ overwrites the
-‘compile,’ implementation itself.
+   注意: ‘set-optimizer’ の呼び出しは、 ‘set-does>’ (または ‘does>’ の呼
+び出しの後に実行する必要があることに注意してください。 なぜなら、
+‘set-does>’ は ‘compile,’ の実装それ自体を上書きするからです。
 
-   As we can see in the ‘fvalue-to’ example, we can also apply
-‘set-optimizer’ to individual words rather than inside a defining word
-like ‘constant’ or ‘fvalue’.  In this case, the xt of the word passed to
-optimizer is usually unnecessary and is ‘drop’ped, as in
-‘compile-fvalue-to’.
+   ‘fvalue-to’ の例でわかるように、 ‘set-optimizer’ を ‘constant’ や
+‘fvalue’ のような定義ワード内ではなく、 個々のワードに適用することもでき
+ます。 この場合、 オプティマイザに渡されるワードの xt は通常は不要であり
+、 ‘compile-fvalue-to’ のように ‘drop’ されます。
 
-   The engine ‘gforth-itc’ uses ‘,’ for ‘compile,’ and ‘set-optimizer’
-has no effect there.
+   エンジン ‘gforth-itc’ は ‘compile,’ に ‘,’ を使用するので、 そこでは
+‘set-optimizer’ は効果ありません。
 
 
 File: gforth.info,  Node: Creating from a prototype,  Next: Making a word current,  Prev: User-defined compile-comma,  Up: User-defined Defining Words
@@ -2379,13 +2382,13 @@ File: gforth.info,  Node: Creating from a prototype,  Next: Making a word curren
 6.10.10.8 Creating from a prototype
 ...................................
 
-In the above we show how to define a word by first using ‘create’, and
-then modifying it with ‘set-does>’, ‘set-to’, ‘set-optimizer’ etc.
+上記では、 最初に ‘create’ を使用して単語を定義し、 それから ‘set-does>’
+や ‘set-to’ や ‘set-optimizer’ などで変更する方法を示しました。
 
-   An alternative way is to create a prototype using these words, and
-then create a new word from that prototype.  This kind of copying does
-not cover the body, so that has to be allocated and initialized
-explicitly.  Taking ‘fvalue’ above, we could instead define it as:
+   別の方法として、 以下のワード群を使用してプロトタイプを作成し、そのプ
+ロトタイプから新しいワードを作成します。 この種のコピーでは本体(body)部
+分は網羅されないため、 明示的に割り当てて初期化する必要があります。 上記
+の ‘fvalue’ を例に取ると、 代わりに以下のように定義できます:
 
      create fvalue-prototype ( -- r )
      ['] f@ set-does>
@@ -2395,31 +2398,32 @@ explicitly.  Taking ‘fvalue’ above, we could instead define it as:
      : fvalue ( r "name" -- ; name: -- r )
        ``fvalue-prototype create-from f, reveal ;
 
-   An advantage of this approach is that creating ‘fvalue’ words is now
-faster, because it does not need to first duplicate the header methods
-of ‘create’, modify them, and eventually deduplicate them.  But this
-advantage is only relevant if the number of words created with this
-defining word is huge.
+   このアプローチの利点は、まず ‘create’ ヘッダー・メソッド達を複製し、
+それらを変更し、 最終的に重複排除する必要がないため、 ‘fvalue’ ワード群
+の作成が高速化されることだ。 ただし、 この利点は、 この定義ワードで作成
+されるワードの数が膨大な場合にのみ意味があります。
 
 ‘create-from’ ( nt "name" –  ) gforth-1.0 “create-from”
-   Create a word name that behaves like nt, but with an empty body.  nt
-must be the nt of a named word.  The resulting header is not yet
-revealed.  Creating a word with ‘create-from’ without using any ‘set-’
-words is faster than if you create a word using ‘set-’ words,
-‘immediate’, or ‘does>’.  You can use ‘noname’ with ‘create-from’.
+   指定の nt のように振る舞うが、 ボディが空のワード name を作成します。
+nt は名前付きワードの nt でなければなりません。 結果として得られるヘッダ
+ーはまだ非公開状態です(訳注: not yet reveal;ワードリスト未登録なので普通
+は呼び出せない)。 ‘set-’ ワード群を使用せずに ‘create-from’ でワードを作
+成すると、 ‘set-’ ワード群または ‘immediate’ または ‘does>’ を使用してワ
+ードを作成するよりも高速になります。 ‘noname’ で ‘create-from’ を使用で
+きます。
 
 ‘reveal’ ( –  ) gforth-0.2 “reveal”
-   Put the current word in the wordlist current at the time of the
-header definition.
+   (reveal;明らかにする、暴露する)ヘッダー定義時の現在のワード・リスト
+(wordlist current)に現在のワードを入れます。
 
-   The performance advantage does not extend to using ‘noname’ with the
-defining word.  Therefore we also have
+   ‘noname’ を定義ワードとともに使用しても、 パフォーマンス上の利点は得
+られません。 したがって、 以下もいっしょに使います
 
 ‘noname-from’ ( xt –  ) gforth-1.0 “noname-from”
-   Create a nameless word that behaves like xt, but with an empty body.
-xt must be the nt of a nameless word.
+   指定の xt のように動作するが、 本体が空の名前のないワードを作成します
+。 xt は、 名前のないワードの xt でなければなりません。
 
-   Here’s a usage example:
+   以下に使用例を示します:
 
      ``fvalue-prototype noname create-from
      latestnt constant noname-fvalue-prototype
@@ -2434,17 +2438,16 @@ File: gforth.info,  Node: Making a word current,  Next: Const-does>,  Prev: Crea
 6.10.10.9 Making a word current
 ...............................
 
-Many words mentioned above, such as ‘immediate’ or ‘set-optimizer’
-change the “current” or “most recently defined” word.  Sometimes you
-want to change an earlier word.  You can do this with
+‘immediate’ や ‘set-optimizer’ など、 上記の多くのワードは、「現在の」ワ
+ードまたは「一番最近定義された」ワードを変更します。 しばしば以前のワー
+ドを変更したい場合があります。 これは以下のようにして行うことができます
 
 ‘make-latest’ ( nt –  ) gforth-1.0 “make-latest”
-   Make nt the latest definition, which can be manipulated by
-‘immediate’ and ‘set-*’ operations.  If you have used (especially
-compiled) the word referred to by nt already, do not change the
-behaviour of the word (only its implementation), otherwise you may get a
-surprising mix of behaviours that is not consistent between Gforth
-engines and versions.
+   nt を最新の定義にし、 ‘immediate’ および ‘set-*’ 操作で操作できるよう
+にします。 nt によって参照されるワードを既に使用している(特にコンパイル
+済みの)場合、 そのワードの振る舞いを変更しないでください(その実装だけを
+変更してください)。 さもないと、 Gforth エンジンやバージョン間で一貫性の
+ない驚くべき振る舞いの組み合わせが発生する可能性があります。
 
 
 File: gforth.info,  Node: Const-does>,  Prev: Making a word current,  Up: User-defined Defining Words
@@ -2452,16 +2455,16 @@ File: gforth.info,  Node: Const-does>,  Prev: Making a word current,  Up: User-d
 6.10.10.10 ‘Const-does>’
 ........................
 
-A frequent use of ‘create’...‘does>’ is for transferring some values
-from definition-time to run-time.  Gforth supports this use with
+‘create’...‘does>’ は、 定義時から実行時に幾つかの値を転送(transfer)する
+ためによく使用されます。 Gforth は、 このために以下を用意しています
 
 ‘const-does>’ ( run-time: w*uw r*ur uw ur "name" –  ) gforth-obsolete “const-does”
-   Defines NAME and returns.
+   定義時: NAME を定義して返ります。
 
-   NAME execution: pushes W*UW R*UR, then performs the code following
-the ‘const-does>’.
+   NAME 実行時: W*UW R*UR をプッシュし、 ‘const-does>’ に続くコードを実
+行します。
 
-   A typical use of this word is:
+   このワードの一般的な使用例は以下のとおりです:
 
      : curry+ ( n1 "name" -- )
      1 0 CONST-DOES> ( n2 -- n1+n2 )
@@ -2469,20 +2472,20 @@ the ‘const-does>’.
 
      3 curry+ 3+
 
-   Here the ‘1 0’ means that 1 cell and 0 floats are transferred from
-definition to run-time.
+   ここで ‘1 0’ は、 1 つのセルと 0 の浮動小数点が定義時から実行時に転送
+されることを意味します。
 
-   The advantages of using ‘const-does>’ are:
+   ‘const-does>’ を使用する利点は以下のとおりです:
 
-   • You don’t have to deal with storing and retrieving the values,
-     i.e., your program becomes more writable and readable.
+   • 値の保存と取得を扱う必要がなくなります。 つまり、 プログラムの書き
+     込みと読み取りがより容易になります。
 
-   • When using ‘does>’, you have to introduce a ‘@’ that cannot be
-     optimized away (because you could change the data using
-     ‘>body’...‘!’); ‘const-does>’ avoids this problem.
+   • ‘does>’ を使用する場合は、 最適化できない ‘@’ を導入する必要があり
+     ます(なぜなら ‘>body’...‘!’ を使用してデータを変更できるため)。
+     ‘const-does>’ はこの問題を回避します。
 
-   A Standard Forth implementation of ‘const-does>’ is available in
-‘compat/const-does.fs’.
+   ‘const-does>’ の標準 Forth 実装は ‘compat/const-does.fs’ で利用できま
+す。
 
 
 File: gforth.info,  Node: Deferred Words,  Next: Forward,  Prev: User-defined Defining Words,  Up: Defining Words
@@ -2490,29 +2493,29 @@ File: gforth.info,  Node: Deferred Words,  Next: Forward,  Prev: User-defined De
 6.10.11 Deferred Words
 ----------------------
 
-The defining word ‘Defer’ allows you to define a word by name without
-defining its behaviour; the definition of its behaviour is deferred.
-Here are two situation where this can be useful:
+定義ワード ‘defer’ を使用すると、 その振る舞いを定義せずに名前でワードを
+定義できます。 その振る舞いの定義は延期(defer)されます。 これが役立つ 2
+つの状況を以下に示します:
 
-   • Where you want to allow the behaviour of a word to be altered
-     later, and for all precompiled references to the word to change
-     when its behaviour is changed.
-   • For mutual recursion; *Note Calls and returns::.
+   • ワードの振る舞いを後で変更できるようにし、 振る舞いが変更されたとき
+     にそのワードへの全てのプリコンパイルされた参照も変更できるようにし
+     たい場合。
+   • 相互再帰(mutual recursion)の場合。 *Note Calls and returns::
 
-   In the following example, ‘foo’ always invokes the version of ‘greet’
-that prints “‘Good morning’” whilst ‘bar’ always invokes the version
-that prints “‘Hello’”.  There is no way of getting ‘foo’ to use the
-later version without re-ordering the source code and recompiling it.
+   以下の例では、 ‘foo’ は常に ‘greet’ の「‘Good breakfast’」を出力する
+バージョンを呼び出し、 ‘bar’ は常に‘greet’ の「‘Hello’」を出力するバージ
+ョンを呼び出します。 ソースコードを並べ替えて再コンパイルすることなく、
+‘foo’ で新しいバージョンを使用できるようにする方法はありません。
 
      : greet ." Good morning" ;
      : foo ... greet ... ;
      : greet ." Hello" ;
      : bar ... greet ... ;
 
-   This problem can be solved by defining ‘greet’ as a ‘Defer’red word.
-The behaviour of a ‘Defer’red word can be defined and redefined at any
-time by using ‘IS’ to associate the xt of a previously-defined word with
-it.  The previous example becomes:
+   この問題は、 ‘greet’ を 延期(‘Defer’)ワードとして定義することで解決で
+きます。 延期ワードの振る舞いは、 ‘IS’ を使用して以前に定義されたワード
+の xt と関連付けることによって、 いつでも定義および再定義できます。 上記
+の例は以下のようになります:
 
      Defer greet ( -- )
      : foo ... greet ... ;
@@ -2521,14 +2524,15 @@ it.  The previous example becomes:
      : greet2 ( -- ) ." Hello" ;
      ' greet2 IS greet  \ make greet behave like greet2
 
-   プログラミング・スタイル・メモ: You should write a stack comment for
-every deferred word, and put only XTs into deferred words that conform
-to this stack effect.  Otherwise it’s too difficult to use the deferred
-word.
+   プログラミング・スタイル・メモ: すべての延期ワードに対してスタック・
+コメントを記述し、 かつ、 そのスタック効果に一致する XT のみを延期ワード
+に入れる必要があります。 そうしないと、 延期ワードを使用するのは非常に困
+難です。
 
-   A deferred word can be used to improve the statistics-gathering
-example from *note User-defined Defining Words::; rather than edit the
-application’s source code to change every ‘:’ to a ‘my:’, do this:
+   延期ワードを使用すると、 *note User-defined Defining Words:: の統計収
+集の例(statistics-gathering example)を改善できます。 アプリケーションの
+ソース・コードを編集してすべての ‘:’ を ‘my:’ に変更するのではなく、 以
+下のようにします:
 
      : real: : ;     \ retain access to the original
      defer :         \ redefine as a deferred word
@@ -2538,22 +2542,24 @@ application’s source code to change every ‘:’ to a ‘my:’, do this:
      \
      ' real: IS :    \ go back to the original
 
-   One thing to note is that ‘IS’ has special compilation semantics,
-such that it parses the name at compile time (like ‘TO’):
+   注意すべき点の 1 つは、 ‘IS’ には特別なコンパイル機能(compilation
+semantics)があり、 (‘TO’ のように)コンパイル時に名前をパースするというこ
+とです:
 
      : set-greet ( xt -- )
        IS greet ;
 
      ' greet1 set-greet
 
-   In situations where ‘IS’ does not fit, use ‘defer!’ instead.
+   ‘IS’ が適合しない状況では、 代わりに ‘defer!’ を使用してください。
 
-   A deferred word can only inherit execution semantics from the xt
-(because that is all that an xt can represent – for more discussion of
-this *note Tokens for Words::); by default it will have default
-interpretation and compilation semantics deriving from this execution
-semantics.  However, you can change the interpretation and compilation
-semantics of the deferred word in the usual ways:
+   延期(defer)ワードは、 xt から実行機能(execution semantics)のみを継承
+できます(xt が表現できるのはそれだけであるためです – これについての詳し
+い説明は *note Tokens for Words:: 参照)。 デフォルトでは、この実行機能
+(execution semantics)から派生したデフォルトのインタプリタ機能
+(interpretation semantics)とコンパイル機能(compilation semantics)を持ち
+ます。 ただし、 延期ワードのインタプリタ機能とコンパイル機能は、 通常の
+方法で変更できます。
 
      : bar .... ; immediate
      Defer fred immediate
@@ -2563,35 +2569,46 @@ semantics of the deferred word in the usual ways:
      ' bar IS fred \ fred is immediate
 
 ‘Defer’ ( "name" –  ) core-ext “Defer”
-   Define a deferred word name; its execution semantics can be set with
-‘defer!’ or ‘is’ (and they have to, before first executing name.
+   延期(defer)ワード name を定義します。 その実行機能(execution
+semantics)は ‘defer!’ または ‘is’ で設定できます(最初に name を実行する
+前に設定する必要があります)。
 
 ‘defer!’ ( xt xt-deferred –  ) core-ext “defer-store”
-   Changes the ‘defer’red word XT-DEFERRED to execute XT.
+   xt (XT-DEFERRED) で表される延期(defer)ワードに実行のための XT を設定
+します。
 
-‘IS’ ( value "name" –  ) core-ext “IS”
-   changes the ‘defer’red word NAME to execute VALUE
+‘IS’ ( xt "name" –  ) core-ext “IS”
+   延期(‘defer’)ワード NAME に実行のための XT を設定します。
 
 ‘defer@’ ( xt-deferred – xt  ) core-ext “new-defer-fetch”
-   xt represents the word currently associated with the deferred word
-xt-deferred.
+   xt は、 延期ワード xt-deferred に現在関連付けられているワードを表しま
+す。
 
 ‘action-of’ ( interpretation "name" – xt; compilation "name" – ; run-time – xt  ) core-ext “action-of”
-   Xt is the XT that is currently assigned to name.
+   Xt は、 現在 name に割り当てられている XT です。
 
-   Definitions of these Forth-2012 words in Forth-94 are provided in
-‘compat/defer.fs’.  In addition, Gforth provides:
+   Forth-94 では、 これら Forth-2012 のワードの定義は、‘compat/defer.fs’
+で提供されます。 さらに、 Gforth は以下を提供します:
 
 ‘defers’ ( compilation "name" – ; run-time ... – ...  ) gforth-0.2 “defers”
-   Compiles the present contents of the deferred word name into the
-current definition.  I.e., this produces static binding as if name was
-not deferred.
+   延期(defer)ワード name の現在の内容を現在の定義にコンパイルします。 つ
+まり、 これにより、 name が延期されなかったかのように静的バインディング
+が生成されます。
 
 ‘wrap-xt’ ( xt1 xt2 xt: xt3 – ...  ) gforth-1.0 “wrap-xt”
-   Set deferred word xt2 to xt1 and execute xt3.  Restore afterwards.
+   延期(defer)ワード xt2 の現在の xt を退避して xt1 に設定した上で、 xt3
+を実行し、 xt3 実行後、 退避した xt を 延期ワード xt2 に戻します(訳注:
+xt3 の内部のどこかで xt2 を使っているとして、 その実行機能を一時的に xt1
+に設定してから xt3 を実行し、実行後に xt2 の実行機能を元に戻しておく。 元
+に戻すのは try ...  restore ...  endtry で囲まれた部分なので xt3 実行中
+にエラーがあっても確実に復旧される。 詳しくはソースコード見て下さい)
 
 ‘preserve’ ( "name" –  ) gforth-1.0 “preserve”
-   emit code that reverts a deferred word to the state at compilation
+   指定の延期(defer)ワード name で、 現在設定されている実行機能 xt を、
+その場で ‘is’ や ‘defer!’ したかのようなコードに変換します(訳注: 上記例
+より、 ’ greet2 is greet : preserve-greet2 preserve greet ; → greet1 is
+greet ok → greet Good morning ok → preserve-greet2 ok → greet Hello ok ;
+see preserve-greet2 → : preserve-greet2 ‘greet2 ‘greet !  ; ok)
 
 
 File: gforth.info,  Node: Forward,  Next: Aliases,  Prev: Deferred Words,  Up: Defining Words
@@ -2599,19 +2616,19 @@ File: gforth.info,  Node: Forward,  Next: Aliases,  Prev: Deferred Words,  Up: D
 6.10.12 Forward
 ---------------
 
-The defining word ‘Forward’ in ‘forward.fs’ allows you to create forward
-references, which are resolved automatically, and do not incur
-additional costs like the indirection of ‘Defer’.  However, these
-forward definitions only work for colon definitions.
+‘forward.fs’ 内の定義ワード ‘forward’ を使用すると、 前方参照(forward
+references)を作成できます。 これは自動的に解決され、 ‘Defer’ の間接化
+(indirection)のような追加コストは発生しません。 ただし、 これらの
+forward 定義はコロン定義に対してのみ機能します。
 
 ‘forward’ ( "name" –  ) gforth-1.0 “forward”
-   Defines a forward reference to a colon definition.  Defining a colon
-definition with the same name in the same wordlist resolves the forward
-references.  Use ‘.unresolved’ to check whether any forwards are
-unresolved.
+   コロン定義への前方参照(forward reference)を定義します。 同一のワード
+リスト内(wordlist)で同一の名前のコロン定義を定義すると、 前方参照が解決
+されます。 ‘.unresolved’ を使用して、 未解決の forward があるかどうかを
+確認します。
 
 ‘.unresolved’ ( –  ) gforth-1.0 “.unresolved”
-   print all unresolved forward references
+   未解決の前方参照(forward references)をすべて出力します
 
 
 File: gforth.info,  Node: Aliases,  Prev: Forward,  Up: Defining Words
@@ -2619,30 +2636,27 @@ File: gforth.info,  Node: Aliases,  Prev: Forward,  Up: Defining Words
 6.10.13 Aliases
 ---------------
 
-The defining word ‘synonym’ allows you to define a word by name that has
-the same behaviour as some other word.  Here are two situation where
-this can be useful:
+定義ワード ‘synonym’ を使用すると、 他のワードと同一の振る舞いをするワー
+ドを名前で定義できます。 これが役立つ 2 つの状況を以下に示します:
 
-   • When you want access to a word’s definition from a different word
-     list (for an example of this, see the definition of the ‘Root’ word
-     list in the Gforth source).
-   • When you want to create a synonym; a definition that can be known
-     by either of two names (for example, ‘THEN’ and ‘ENDIF’ are
-     synonyms).
+   • 別のワードリストからワードの定義にアクセスしたい場合(この例について
+     は、 Gforth ソースの ‘root’ ワードリストの定義を参照してください)。
+   • あなたが同義語(synonym)を作成したい場合。 2つの名前どちらでも認識で
+     きる定義(たとえば、 ‘THEN’ と ‘ENDIF’ は同義語(synonyms)です)。
 
 ‘Synonym’ ( "name" "oldname" –  ) tools-ext “Synonym”
-   Define name to behave the same way as oldname: Same interpretation
-semantics, same compilation semantics, same ‘to’/‘defer!’ and ‘defer@’
-semantics.
+   oldname と同一に振る舞うように name を定義します。 つまり、 同一のイ
+ンタプリタ機能(interpretation semantics)と、 同一のコンパイル機能
+(compilation semantics)と、 同一の ‘to’/‘defer!’ や ‘defer@’ 機能を持ち
+ます。
 
-   Gforth also offers the non-standard ‘alias’, that does not inherit
-the compilation semantics, ‘to’/‘defer!’ or ‘defer@’ semantics from its
-parent.  You can then change, e.g., the compilation semantics with,
-e.g., ‘immediate’.
+   Gforth は、 コンパイル機能、 または ‘to’/‘defer!’ や ‘defer@’ 機能を
+親から継承しない、 非標準の ‘alias’ も提供します。 あなたは後で、 例えば
+‘immediate’ などを使用してコンパイル機能などを変更できます。
 
 ‘Alias’ ( xt "name" –  ) gforth-0.2 “Alias”
-   Define name as a word that performs xt.  Unlike for deferred words,
-aliases don’t have an indirection overhead when compiled.
+   name を xt を実行するワードとして定義します。 延期ワードとは異なり、
+エイリアス(aliase)にはコンパイル時に間接的なオーバーヘッドがありません。
 
    Example:
 
@@ -2652,9 +2666,9 @@ aliases don’t have an indirection overhead when compiled.
      ' foo Alias bar2 immediate \ bar2 is an immediate word
      synonym bar3 foo           \ bar3 is an immediate word
 
-   Both synonyms and aliases have a different nt than the original, but
-ticking it (or using ‘name>interpret’) produces the same xt as the
-original (*note Tokens for Words::).
+   synonyms(同義語)とaliases(別名)はどちらも元の nt とは異なる nt を持ち
+ますが、 それをチック(tick)すると(または ‘name>interpret’ を使用すると
+)、 元の xt と同じ xt が生成されます(*note Tokens for Words::)。
 
 
 File: gforth.info,  Node: Interpretation and Compilation Semantics,  Next: Tokens for Words,  Prev: Defining Words,  Up: Words
@@ -6385,238 +6399,4 @@ command name).  Changed by ‘next-arg’ and ‘shift-args’.
 arguments (including the command-name).  Each argument is represented as
 a C-style zero-terminated string.  Changed by ‘next-arg’ and
 ‘shift-args’.
-
-
-File: gforth.info,  Node: Locals,  Next: Structures,  Prev: OS command line arguments,  Up: Words
-
-6.22 Locals
-===========
-
-Local variables can make Forth programming more enjoyable and Forth
-programs easier to read.  Unfortunately, the locals of Standard Forth
-are laden with restrictions.  Therefore, we provide not only the
-Standard Forth locals wordset, but also our own, more powerful locals
-wordset (we implemented the Standard Forth locals wordset through our
-locals wordset).
-
-   The ideas in this section have also been published in M. Anton Ertl,
-‘Automatic Scoping of Local Variables
-(https://www.complang.tuwien.ac.at/papers/ertl94l.ps.gz)’, EuroForth
-’94.
-
-* Menu:
-
-* Gforth locals::
-* Standard Forth locals::
-
-
-File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Locals,  Up: Locals
-
-6.22.1 Gforth locals
---------------------
-
-Locals can be defined with
-
-     {: local1 local2 ... -- comment :}
-   or
-     {: local1 local2 ... :}
-   or
-     {: local1 local2 ... | ulocal0 ulocal1 -- comment :}
-
-   E.g.,
-     : max {: n1 n2 -- n3 :}
-      n1 n2 > if
-        n1
-      else
-        n2
-      endif ;
-
-   The similarity of locals definitions with stack comments is intended.
-A locals definition often replaces the stack comment of a word.  The
-order of the locals corresponds to the order in a stack comment and
-everything after the ‘--’ is really a comment.
-
-   This similarity has one disadvantage: It is too easy to confuse
-locals declarations with stack comments, causing bugs and making them
-hard to find.  However, this problem can be avoided by appropriate
-coding conventions: Do not use both notations in the same program.  If
-you do, they should be distinguished using additional means, e.g.  by
-position.
-
-   The name of the local may be preceded by a type specifier, e.g., ‘F:’
-for a floating point value:
-
-     : CX* {: F: Ar F: Ai F: Br F: Bi -- Cr Ci :}
-     \ complex multiplication
-      Ar Br f* Ai Bi f* f-
-      Ar Bi f* Ai Br f* f+ ;
-
-   Gforth currently supports cells (‘W:’, ‘WA:’, ‘W^’), doubles (‘D:’,
-‘DA:’, ‘D^’), floats (‘F:’, ‘FA:’, ‘F^’), characters (‘C:’, ‘CA:’,
-‘C^’), and xts (‘xt:’, ‘xta:’) in several flavours:
-
-“value-flavoured”
-     (*note Values::) A value-flavoured local (defined with ‘W:’, ‘D:’
-     etc.)  produces its value and can be changed with ‘TO’.
-
-“varue-flavoured”
-     (*note Varues::) A varue-flavoured local l (defined with ‘WA:’
-     etc.)  behaves exactly like a value-flavoured local, except that
-     you can use ‘addr l’ to get its address (which becomes invalid when
-     the variable’s scope is left).  Currently there is no performance
-     difference, but in the long run value-flavoured locals will be
-     significantly faster, because they can reside in registers.
-
-“variable-flavoured”
-     (*note Variables::) A variable-flavoured local (defined with ‘W^’
-     etc.)  produces its address (which becomes invalid when the
-     variable’s scope is left).  E.g., the standard word ‘emit’ can be
-     defined in terms of ‘type’ like this:
-
-          : emit {: C^ char* -- :}
-              char* 1 type ;
-
-“defer-flavoured”
-     (*note Deferred Words::) A defer-flavoured local (defined with
-     ‘XT:’ or ‘XTA:’) ‘execute’s the xt; you can use ‘action-of’ (*note
-     Deferred Words::) to get the xt out of a defer-flavoured local.  If
-     the local is defined with ‘xta:’, you can use ‘addr’ to get the
-     address (valid until the end of the scope of the local) where the
-     xt is stored.  E.g., the standard word ‘execute’ can be defined
-     with a defer-flavoured local like this:
-
-          : execute {: xt: x -- :}
-            x ;
-
-   A local without type specifier is a ‘W:’ local.  You can allow or
-disallow the use of ‘addr’ with:
-
-‘default-wa:’ ( –  ) gforth-experimental “default-wa:”
-   Allow ‘addr’ on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using ‘wa:’.
-
-‘default-w:’ ( –  ) gforth-experimental “default-w:”
-   Forbid ‘addr’ on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using ‘w:’.
-
-   All flavours of locals are initialized with values from the data or
-(for FP locals) FP stack, with the exception being locals defined behind
-‘|’: Gforth initializes them to 0; some Forth systems leave them
-uninitialized.
-
-   Gforth supports the square bracket notation for local buffers and
-data structures.  These locals are similar to variable-flavored locals,
-the size is specified as a constant expression.  A declaration looks
-‘name[ size ]’.  The Forth expression ‘size’ is evaluated during
-declaration, it must have the stack effect ‘( -- +n )’, giving the size
-in bytes.  The square bracket ‘[’ is part of the defined name.
-
-   Local data structures are initialized by copying size bytes from an
-address passed on the stack; uninitialized local data structures (after
-‘|’ in the declaration) are not erased, they just contain whatever data
-there was on the locals stack before.
-
-   Example:
-
-     begin-structure test-struct
-       field: a1
-       field: a2
-     end-structure
-
-     : test-local {: foo[ test-struct ] :}
-         foo[ a1 !  foo[ a2 !
-         foo[ test-struct dump ;
-
-   Gforth allows defining locals everywhere in a colon definition.  This
-poses the following questions:
-
-* Menu:
-
-* Locals definition words::
-* Where are locals visible by name?::
-* How long do locals live?::
-* Locals programming style::
-* Locals implementation::
-* Closures::
-
-
-File: gforth.info,  Node: Locals definition words,  Next: Where are locals visible by name?,  Prev: Gforth locals,  Up: Gforth locals
-
-6.22.1.1 Locals definitions words
-.................................
-
-This section documents the words used for defining locals.  Note that
-the run-times for the words (like ‘W:’) that define a local are
-performed from the rightmost defined local to the leftmost defined
-local, such that the rightmost local gets the top of stack.
-
-‘{:’ ( – hmaddr u latest latestnt wid 0  ) local-ext “open-brace-colon”
-   Start locals definitions.
-
-‘--’ ( hmaddr u latest latestnt wid 0 ... –  ) gforth-0.2 “dash-dash”
-   During locals definitions everything from ‘--’ to ‘:}’ is ignored.
-This is typically used when you want to make a locals definition serve
-double duty as a stack effect description.
-
-‘|’ ( –  ) gforth-1.0 “bar”
-   Locals defined behind ‘|’ are not initialized from the stack; so the
-run-time of words like ‘W:’ changes to ‘( -- )’.
-
-‘:}’ ( hmaddr u latest latestnt wid 0 xt1 ... xtn –  ) gforth-1.0 “colon-close-brace”
-   Ends locals definitions.
-
-‘{’ ( – hmaddr u latest latestnt wid 0  ) gforth-0.2 “open-brace”
-   Start locals definitions.  The Forth-2012 standard name for this word
-is ‘{:’.
-
-‘}’ ( hmaddr u latest latestnt wid 0 xt1 ... xtn –  ) gforth-0.2 “close-brace”
-   Ends locals definitions.  The Forth-2012 standard name for this word
-is ‘:}’.
-
-‘W:’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-0.2 “w-colon”
-   Define value-flavoured cell local name ‘( -- x1 )’
-
-‘WA:’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-1.0 “w-a-colon”
-   Define varue-flavoured cell local name ‘( -- x1 )’
-
-‘W^’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-0.2 “w-caret”
-   Define variable-flavoured cell local name ‘( -- a-addr )’
-
-‘D:’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-0.2 “d-colon”
-   Define value-flavoured double local name ‘( -- x3 x4 )’
-
-‘DA:’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-1.0 “w-a-colon”
-   Define varue-flavoured double local name ‘( -- x3 x4 )’
-
-‘D^’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-0.2 “d-caret”
-   Define variable-flavoured double local name ‘( -- a-addr )’
-
-‘C:’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-0.2 “c-colon”
-   Define value-flavoured char local name ‘( -- c1 )’
-
-‘CA:’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-1.0 “c-a-colon”
-   Define varue-flavoured char local name ‘( -- c1 )’
-
-‘C^’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-0.2 “c-caret”
-   Define variable-flavoured char local name ‘( -- c-addr )’
-
-‘F:’ ( compilation "name" – a-addr xt; run-time r –  ) gforth-0.2 “f-colon”
-   Define value-flavoured float local name ‘( -- r1 )’
-
-‘FA:’ ( compilation "name" – a-addr xt; run-time f –  ) gforth-1.0 “f-a-colon”
-   Define varue-flavoured float local name ‘( -- r1 )’
-
-‘F^’ ( compilation "name" – a-addr xt; run-time r –  ) gforth-0.2 “f-caret”
-   Define variable-flavoured float local name ‘( -- f-addr )’
-
-‘XT:’ ( compilation "name" – a-addr xt; run-time xt1 –  ) gforth-1.0 “x-t-colon”
-   Define defer-flavoured cell local name ‘( ... -- ... )’
-
-‘XTA:’ ( compilation "name" – a-addr xt; run-time ... – ...  ) gforth-1.0 “x-t-a-colon”
-   Define a defer-flavoured local name on which ‘addr’ can be used.
-
-   Note that ‘|’, ‘--’, ‘:}’ and ‘}’ are not normally in the search
-order (they are in the vocabulary ‘locals-types’), and they are not
-necessarily words in all Forth systems; therefore they are documented as
-Gforth words.
 

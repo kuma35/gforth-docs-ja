@@ -27,6 +27,240 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Locals,  Next: Structures,  Prev: OS command line arguments,  Up: Words
+
+6.22 Locals
+===========
+
+Local variables can make Forth programming more enjoyable and Forth
+programs easier to read.  Unfortunately, the locals of Standard Forth
+are laden with restrictions.  Therefore, we provide not only the
+Standard Forth locals wordset, but also our own, more powerful locals
+wordset (we implemented the Standard Forth locals wordset through our
+locals wordset).
+
+   The ideas in this section have also been published in M. Anton Ertl,
+‘Automatic Scoping of Local Variables
+(https://www.complang.tuwien.ac.at/papers/ertl94l.ps.gz)’, EuroForth
+’94.
+
+* Menu:
+
+* Gforth locals::
+* Standard Forth locals::
+
+
+File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Locals,  Up: Locals
+
+6.22.1 Gforth locals
+--------------------
+
+Locals can be defined with
+
+     {: local1 local2 ... -- comment :}
+   or
+     {: local1 local2 ... :}
+   or
+     {: local1 local2 ... | ulocal0 ulocal1 -- comment :}
+
+   E.g.,
+     : max {: n1 n2 -- n3 :}
+      n1 n2 > if
+        n1
+      else
+        n2
+      endif ;
+
+   The similarity of locals definitions with stack comments is intended.
+A locals definition often replaces the stack comment of a word.  The
+order of the locals corresponds to the order in a stack comment and
+everything after the ‘--’ is really a comment.
+
+   This similarity has one disadvantage: It is too easy to confuse
+locals declarations with stack comments, causing bugs and making them
+hard to find.  However, this problem can be avoided by appropriate
+coding conventions: Do not use both notations in the same program.  If
+you do, they should be distinguished using additional means, e.g.  by
+position.
+
+   The name of the local may be preceded by a type specifier, e.g., ‘F:’
+for a floating point value:
+
+     : CX* {: F: Ar F: Ai F: Br F: Bi -- Cr Ci :}
+     \ complex multiplication
+      Ar Br f* Ai Bi f* f-
+      Ar Bi f* Ai Br f* f+ ;
+
+   Gforth currently supports cells (‘W:’, ‘WA:’, ‘W^’), doubles (‘D:’,
+‘DA:’, ‘D^’), floats (‘F:’, ‘FA:’, ‘F^’), characters (‘C:’, ‘CA:’,
+‘C^’), and xts (‘xt:’, ‘xta:’) in several flavours:
+
+“value-flavoured”
+     (*note Values::) A value-flavoured local (defined with ‘W:’, ‘D:’
+     etc.)  produces its value and can be changed with ‘TO’.
+
+“varue-flavoured”
+     (*note Varues::) A varue-flavoured local l (defined with ‘WA:’
+     etc.)  behaves exactly like a value-flavoured local, except that
+     you can use ‘addr l’ to get its address (which becomes invalid when
+     the variable’s scope is left).  Currently there is no performance
+     difference, but in the long run value-flavoured locals will be
+     significantly faster, because they can reside in registers.
+
+“variable-flavoured”
+     (*note Variables::) A variable-flavoured local (defined with ‘W^’
+     etc.)  produces its address (which becomes invalid when the
+     variable’s scope is left).  E.g., the standard word ‘emit’ can be
+     defined in terms of ‘type’ like this:
+
+          : emit {: C^ char* -- :}
+              char* 1 type ;
+
+“defer-flavoured”
+     (*note Deferred Words::) A defer-flavoured local (defined with
+     ‘XT:’ or ‘XTA:’) ‘execute’s the xt; you can use ‘action-of’ (*note
+     Deferred Words::) to get the xt out of a defer-flavoured local.  If
+     the local is defined with ‘xta:’, you can use ‘addr’ to get the
+     address (valid until the end of the scope of the local) where the
+     xt is stored.  E.g., the standard word ‘execute’ can be defined
+     with a defer-flavoured local like this:
+
+          : execute {: xt: x -- :}
+            x ;
+
+   A local without type specifier is a ‘W:’ local.  You can allow or
+disallow the use of ‘addr’ with:
+
+‘default-wa:’ ( –  ) gforth-experimental “default-wa:”
+   Allow ‘addr’ on locals defined without a type specifyer.  On other
+words, define locals without a type specifyer using ‘wa:’.
+
+‘default-w:’ ( –  ) gforth-experimental “default-w:”
+   Forbid ‘addr’ on locals defined without a type specifyer.  On other
+words, define locals without a type specifyer using ‘w:’.
+
+   All flavours of locals are initialized with values from the data or
+(for FP locals) FP stack, with the exception being locals defined behind
+‘|’: Gforth initializes them to 0; some Forth systems leave them
+uninitialized.
+
+   Gforth supports the square bracket notation for local buffers and
+data structures.  These locals are similar to variable-flavored locals,
+the size is specified as a constant expression.  A declaration looks
+‘name[ size ]’.  The Forth expression ‘size’ is evaluated during
+declaration, it must have the stack effect ‘( -- +n )’, giving the size
+in bytes.  The square bracket ‘[’ is part of the defined name.
+
+   Local data structures are initialized by copying size bytes from an
+address passed on the stack; uninitialized local data structures (after
+‘|’ in the declaration) are not erased, they just contain whatever data
+there was on the locals stack before.
+
+   Example:
+
+     begin-structure test-struct
+       field: a1
+       field: a2
+     end-structure
+
+     : test-local {: foo[ test-struct ] :}
+         foo[ a1 !  foo[ a2 !
+         foo[ test-struct dump ;
+
+   Gforth allows defining locals everywhere in a colon definition.  This
+poses the following questions:
+
+* Menu:
+
+* Locals definition words::
+* Where are locals visible by name?::
+* How long do locals live?::
+* Locals programming style::
+* Locals implementation::
+* Closures::
+
+
+File: gforth.info,  Node: Locals definition words,  Next: Where are locals visible by name?,  Prev: Gforth locals,  Up: Gforth locals
+
+6.22.1.1 Locals definitions words
+.................................
+
+This section documents the words used for defining locals.  Note that
+the run-times for the words (like ‘W:’) that define a local are
+performed from the rightmost defined local to the leftmost defined
+local, such that the rightmost local gets the top of stack.
+
+‘{:’ ( – hmaddr u latest latestnt wid 0  ) local-ext “open-brace-colon”
+   Start locals definitions.
+
+‘--’ ( hmaddr u latest latestnt wid 0 ... –  ) gforth-0.2 “dash-dash”
+   During locals definitions everything from ‘--’ to ‘:}’ is ignored.
+This is typically used when you want to make a locals definition serve
+double duty as a stack effect description.
+
+‘|’ ( –  ) gforth-1.0 “bar”
+   Locals defined behind ‘|’ are not initialized from the stack; so the
+run-time of words like ‘W:’ changes to ‘( -- )’.
+
+‘:}’ ( hmaddr u latest latestnt wid 0 xt1 ... xtn –  ) gforth-1.0 “colon-close-brace”
+   Ends locals definitions.
+
+‘{’ ( – hmaddr u latest latestnt wid 0  ) gforth-0.2 “open-brace”
+   Start locals definitions.  The Forth-2012 standard name for this word
+is ‘{:’.
+
+‘}’ ( hmaddr u latest latestnt wid 0 xt1 ... xtn –  ) gforth-0.2 “close-brace”
+   Ends locals definitions.  The Forth-2012 standard name for this word
+is ‘:}’.
+
+‘W:’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-0.2 “w-colon”
+   Define value-flavoured cell local name ‘( -- x1 )’
+
+‘WA:’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-1.0 “w-a-colon”
+   Define varue-flavoured cell local name ‘( -- x1 )’
+
+‘W^’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-0.2 “w-caret”
+   Define variable-flavoured cell local name ‘( -- a-addr )’
+
+‘D:’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-0.2 “d-colon”
+   Define value-flavoured double local name ‘( -- x3 x4 )’
+
+‘DA:’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-1.0 “w-a-colon”
+   Define varue-flavoured double local name ‘( -- x3 x4 )’
+
+‘D^’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-0.2 “d-caret”
+   Define variable-flavoured double local name ‘( -- a-addr )’
+
+‘C:’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-0.2 “c-colon”
+   Define value-flavoured char local name ‘( -- c1 )’
+
+‘CA:’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-1.0 “c-a-colon”
+   Define varue-flavoured char local name ‘( -- c1 )’
+
+‘C^’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-0.2 “c-caret”
+   Define variable-flavoured char local name ‘( -- c-addr )’
+
+‘F:’ ( compilation "name" – a-addr xt; run-time r –  ) gforth-0.2 “f-colon”
+   Define value-flavoured float local name ‘( -- r1 )’
+
+‘FA:’ ( compilation "name" – a-addr xt; run-time f –  ) gforth-1.0 “f-a-colon”
+   Define varue-flavoured float local name ‘( -- r1 )’
+
+‘F^’ ( compilation "name" – a-addr xt; run-time r –  ) gforth-0.2 “f-caret”
+   Define variable-flavoured float local name ‘( -- f-addr )’
+
+‘XT:’ ( compilation "name" – a-addr xt; run-time xt1 –  ) gforth-1.0 “x-t-colon”
+   Define defer-flavoured cell local name ‘( ... -- ... )’
+
+‘XTA:’ ( compilation "name" – a-addr xt; run-time ... – ...  ) gforth-1.0 “x-t-a-colon”
+   Define a defer-flavoured local name on which ‘addr’ can be used.
+
+   Note that ‘|’, ‘--’, ‘:}’ and ‘}’ are not normally in the search
+order (they are in the vocabulary ‘locals-types’), and they are not
+necessarily words in all Forth systems; therefore they are documented as
+Gforth words.
+
+
 File: gforth.info,  Node: Where are locals visible by name?,  Next: How long do locals live?,  Prev: Locals definition words,  Up: Gforth locals
 
 6.22.1.2 Where are locals visible by name?
@@ -5018,7 +5252,7 @@ but it is also the core of ‘to’.  The general stack effect of the
 ‘defer!’/‘(to)’ method is ‘( val xt -- )’, where xt identifies the word
 stored into, and val is the value (of appropriate type) stored there.
 
-   E.g., one can implement ‘fvalue’ as follows:
+   たとえば、 以下のように ‘fvalue’ を実装できます:
 
      : fvalue-to ( r xt -- ) >body f! ;
 
@@ -6977,212 +7211,4 @@ to the image.  However, if your image needs an engine (a gforth binary)
 that is under the GPL, you should make sure that you distribute both in
 a way that is at most a _mere aggregation_, if you don’t want the terms
 of the GPL to apply to the image.
-
-
-File: gforth.info,  Node: Image File Background,  Next: Non-Relocatable Image Files,  Prev: Image Licensing Issues,  Up: Image Files
-
-14.2 Image File Background
-==========================
-
-Gforth consists not only of primitives (in the engine), but also of
-definitions written in Forth.  Since the Forth compiler itself belongs
-to those definitions, it is not possible to start the system with the
-engine and the Forth source alone.  Therefore we provide the Forth code
-as an image file in nearly executable form.  When Gforth starts up, a C
-routine loads the image file into memory, optionally relocates the
-addresses, then sets up the memory (stacks etc.)  according to
-information in the image file, and (finally) starts executing Forth
-code.
-
-   The default image file is ‘gforth.fi’ (in the ‘GFORTHPATH’).  You can
-use a different image by using the ‘-i’, ‘--image-file’ or
-‘--appl-image’ options (*note Invoking Gforth::), e.g.:
-
-     gforth-fast -i myimage.fi
-
-   There are different variants of image files, and they represent
-different compromises between the goals of making it easy to generate
-image files and making them portable.
-
-   Win32Forth 3.4 and Mitch Bradley’s ‘cforth’ use relocation at
-run-time.  This avoids many of the complications discussed below (image
-files are data relocatable without further ado), but costs performance
-(one addition per memory access) and makes it difficult to pass
-addresses between Forth and library calls or other programs.
-
-   By contrast, the Gforth loader performs relocation at image load
-time.  The loader also has to replace tokens that represent primitive
-calls with the appropriate code-field addresses (or code addresses in
-the case of direct threading).
-
-   There are three kinds of image files, with different degrees of
-relocatability: non-relocatable, data-relocatable, and fully relocatable
-image files.
-
-   These image file variants have several restrictions in common; they
-are caused by the design of the image file loader:
-
-   • There is only one segment; in particular, this means, that an image
-     file cannot represent ‘ALLOCATE’d memory chunks (and pointers to
-     them).  The contents of the stacks are not represented, either.
-
-   • The only kinds of relocation supported are: adding the same offset
-     to all cells that represent data addresses; and replacing special
-     tokens with code addresses or with pieces of machine code.
-
-     If any complex computations involving addresses are performed, the
-     results cannot be represented in the image file.  Several
-     applications that use such computations come to mind:
-
-        − Hashing addresses (or data structures which contain addresses)
-          for table lookup.  If you use Gforth’s ‘table’s or ‘wordlist’s
-          for this purpose, you will have no problem, because the hash
-          tables are recomputed automatically when the system is
-          started.  If you use your own hash tables, you will have to do
-          something similar.
-
-        − There’s a cute implementation of doubly-linked lists that uses
-          ‘XOR’ed addresses.  You could represent such lists as
-          singly-linked in the image file, and restore the doubly-linked
-          representation on startup.(1)
-
-        − The code addresses of run-time routines like ‘docol:’ cannot
-          be represented in the image file (because their tokens would
-          be replaced by machine code in direct threaded
-          implementations).  As a workaround, compute these addresses at
-          run-time with ‘>code-address’ from the executions tokens of
-          appropriate words (see the definitions of ‘docol:’ and friends
-          in ‘kernel/getdoers.fs’).
-
-        − On many architectures addresses are represented in machine
-          code in some shifted or mangled form.  You cannot put ‘CODE’
-          words that contain absolute addresses in this form in a
-          relocatable image file.  Workarounds are representing the
-          address in some relative form (e.g., relative to the CFA,
-          which is present in some register), or loading the address
-          from a place where it is stored in a non-mangled form.
-
-   ---------- Footnotes ----------
-
-   (1) In my opinion, though, you should think thrice before using a
-doubly-linked list (whatever implementation).
-
-
-File: gforth.info,  Node: Non-Relocatable Image Files,  Next: Data-Relocatable Image Files,  Prev: Image File Background,  Up: Image Files
-
-14.3 Non-Relocatable Image Files
-================================
-
-These files are simple memory dumps of the dictionary.  They are
-specific to the executable (i.e., ‘gforth’ file) they were created with.
-What’s worse, they are specific to the place on which the dictionary
-resided when the image was created.  Now, there is no guarantee that the
-dictionary will reside at the same place the next time you start Gforth,
-so there’s no guarantee that a non-relocatable image will work the next
-time (Gforth will complain instead of crashing, though).  Indeed, on OSs
-with (enabled) address-space randomization non-relocatable images are
-unlikely to work.
-
-   You can create a non-relocatable image file with ‘savesystem’, e.g.:
-
-     gforth app.fs -e "savesystem app.fi bye"
-
-‘savesystem’ ( "image" –  ) gforth-0.2 “savesystem”
-
-
-File: gforth.info,  Node: Data-Relocatable Image Files,  Next: Fully Relocatable Image Files,  Prev: Non-Relocatable Image Files,  Up: Image Files
-
-14.4 Data-Relocatable Image Files
-=================================
-
-These files contain relocatable data addresses, but fixed code addresses
-(instead of tokens).  They are specific to the executable (i.e.,
-‘gforth’ file) they were created with.  Also, they disable dynamic
-native code generation (typically a factor of 2 in speed).  You get a
-data-relocatable image, if you pass the engine you want to use through
-the ‘GFORTHD’ environment variable to ‘gforthmi’ (*note gforthmi::),
-e.g.
-
-     GFORTHD="/usr/bin/gforth-fast --no-dynamic" gforthmi myimage.fi source.fs
-
-   Note that the ‘--no-dynamic’ is required here for the image to work
-(otherwise it will contain references to dynamically generated code that
-is not saved in the image).
-
-
-File: gforth.info,  Node: Fully Relocatable Image Files,  Next: Stack and Dictionary Sizes,  Prev: Data-Relocatable Image Files,  Up: Image Files
-
-14.5 Fully Relocatable Image Files
-==================================
-
-These image files have relocatable data addresses, and tokens for code
-addresses.  They can be used with different binaries (e.g., with and
-without debugging) on the same machine, and even across machines with
-the same data formats (byte order, cell size, floating point format),
-and they work with dynamic native code generation.  However, they are
-usually specific to the version of Gforth they were created with.  The
-files ‘gforth.fi’ and ‘kernl*.fi’ are fully relocatable.
-
-   There are two ways to create a fully relocatable image file:
-
-* Menu:
-
-* gforthmi::                 通常の方法
-* cross.fs::                 困難な方法
-
-
-File: gforth.info,  Node: gforthmi,  Next: cross.fs,  Prev: Fully Relocatable Image Files,  Up: Fully Relocatable Image Files
-
-14.5.1 ‘gforthmi’
------------------
-
-You will usually use ‘gforthmi’.  If you want to create an image file
-that contains everything you would load by invoking Gforth with ‘gforth
-options’, you simply say:
-     gforthmi file options
-
-   E.g., if you want to create an image ‘asm.fi’ that has the file
-‘asm.fs’ loaded in addition to the usual stuff, you could do it like
-this:
-
-     gforthmi asm.fi asm.fs
-
-   ‘gforthmi’ is implemented as a sh script and works like this: It
-produces two non-relocatable images for different addresses and then
-compares them.  Its output reflects this: first you see the output (if
-any) of the two Gforth invocations that produce the non-relocatable
-image files, then you see the output of the comparing program: It
-displays the offset used for data addresses and the offset used for code
-addresses; moreover, for each cell that cannot be represented correctly
-in the image files, it displays a line like this:
-
-          78DC         BFFFFA50         BFFFFA40
-
-   This means that at offset $78dc from ‘forthstart’, one input image
-contains $bffffa50, and the other contains $bffffa40.  Since these cells
-cannot be represented correctly in the output image, you should examine
-these places in the dictionary and verify that these cells are dead
-(i.e., not read before they are written).
-
-   If you insert the option ‘--application’ in front of the image file
-name, you will get an image that uses the ‘--appl-image’ option instead
-of the ‘--image-file’ option (*note Invoking Gforth::).  When you
-execute such an image on Unix (by typing the image name as command), the
-Gforth engine will pass all options to the image instead of trying to
-interpret them as engine options.
-
-   If you type ‘gforthmi’ with no arguments, it prints some usage
-instructions.
-
-   There are a few wrinkles: After processing the passed options, the
-words ‘savesystem’ and ‘bye’ must be visible.  A special doubly indirect
-threaded version of the ‘gforth’ executable is used for creating the
-non-relocatable images; you can pass the exact filename of this
-executable through the environment variable ‘GFORTHD’ (default:
-‘gforth-ditc’); if you pass a version that is not doubly indirect
-threaded, you will not get a fully relocatable image, but a
-data-relocatable image (*note Data-Relocatable Image Files::), because
-there is no code address offset).  The normal ‘gforth’ executable is
-used for creating the relocatable image; you can pass the exact filename
-of this executable through the environment variable ‘GFORTH’.
 

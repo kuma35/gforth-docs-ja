@@ -10883,7 +10883,7 @@ compilation semantics)があるのに対し、 @code{inline:}
 ' compile-my2dup set-optimizer
 @end example
 
-@code{DROP} や @code{0} があるのは、 @code{compile-my2dup} が @code{my2dup} の
+@code{DROP} や @code{0} があるのは、 @code{compile-my2dup} が @code{my2dup} ための
 @code{compile,} の実装であり、 @code{compile,} は xt を期待する為です(@pxref{User-defined
 compile-comma})。
 
@@ -11267,14 +11267,12 @@ foo second-word
 @subsubsection Applications of @code{CREATE..DOES>}
 @cindex @code{CREATE} ... @code{DOES>}, applications
 
-You may wonder how to use this feature. Here are some usage patterns:
+あなたは、 この機能をどのように使用するのか不思議に思うかもしれません。 いくつかの使用パターンを以下に示します:
 
 @cindex factoring similar colon definitions
-When you see a sequence of code occurring several times, and you can
-identify a meaning, you will factor it out as a colon definition. When you
-see similar colon definitions, you can factor them using
-@code{CREATE..DOES>}. E.g., an assembler usually defines several words that
-look very similar:
+とあるコードのフレーズが複数回出現し、 その意味を同一視できる場合は、 それをコロン定義としてくくり出します。 類似のコロン定義が見つかった場合は、
+@code{CREATE..DOES>} を使用してそれらをファクタリングできます。 たとえば、 アセンブラは通常、
+非常によく似たいくつかのワードを定義します:
 @example
 : ori, ( reg-target reg-source n -- )
     0 asm-reg-reg-imm ;
@@ -11283,7 +11281,7 @@ look very similar:
 @end example
 
 @noindent
-This could be factored with:
+これは以下のようにファクタリングできます:
 @example
 : reg-reg-imm ( op-code -- )
     CREATE ,
@@ -11295,11 +11293,10 @@ DOES> ( reg-target reg-source n -- )
 @end example
 
 @cindex currying
-Another view of @code{CREATE..DOES>} is to consider it as a crude way to
-supply a part of the parameters for a word (known as @dfn{currying} in the
-functional language community). E.g., @code{+} needs two
-parameters. Creating versions of @code{+} with one parameter fixed can be
-done like this:
+@code{CREATE..DOES>} の別の観点は、
+これをワードのパラメータの一部を提供する粗雑な方法(関数型言語コミュニティではカリー化(@dfn{currying})として知られています)とみなすことです。
+たとえば、 @code{+} には 2 つのパラメータが必要ですが、そのうち 1 つのパラメータを固定した @code{+}
+のバージョンを作成するには、 以下のようにします:
 
 @example
 : curry+ ( n1 "name" -- )
@@ -11325,9 +11322,9 @@ DOES> ( n2 -- n1+n2 )
 
 
 @cindex @code{DOES>} in a separate definition
-This means that you need not use @code{CREATE} and @code{DOES>} in the same
-definition; you can put the @code{DOES>}-part in a separate definition. This
-allows us to, e.g., select among different @code{DOES>}-parts:
+これは、 一つの定義内で @code{CREATE} と @code{DOES>} の両方を使用する必要がないことを意味します。
+@code{DOES>} 部分を別の定義に置くことができます。 これにより、 たとえば、 さまざまな @code{DOES>}
+部分から選択するようにすることができます:
 @example
 : does1 
 DOES> ( ... -- ... )
@@ -11346,13 +11343,11 @@ DOES> ( ... -- ... )
     ENDIF ;
 @end example
 
-In this example, the selection of whether to use @code{does1} or
-@code{does2} is made at definition-time; at the time that the child word is
-@code{CREATE}d.
+この例では、 @code{does1} と @code{does2} のどちらを使用するかの選択は、 子ワードが @code{CREATE}
+される定義時に行われます。
 
-Note that the property of @code{does>} to end the definition makes it
-necessary to introduce extra definitions @code{does1} and @code{does2}.  You
-can avoid that with @code{set-does>}:
+注意: 定義を終了する @code{does>} の性質により、 追加の定義 @code{does1} と @code{does2}
+を導入する必要があることに注意してください。  @code{set-does>} を使用するとこれを回避できます:
 
 @example
 : def-word ( ... -- ... )
@@ -11365,12 +11360,10 @@ can avoid that with @code{set-does>}:
 @end example
 
 @cindex @code{DOES>} in interpretation state
-In a standard program you can apply a @code{DOES>}-part only if the last
-word was defined with @code{CREATE}. In Gforth, the @code{DOES>}-part will
-override the behaviour of the last word defined in any case. In a standard
-program, you can use @code{DOES>} only in a colon definition. In Gforth, you
-can also use it in interpretation state, in a kind of one-shot mode; for
-example:
+標準のプログラムでは、 最後のワードが @code{CREATE} で定義されている場合にのみ @code{DOES>} 部分を適用できます。
+Gforth では、 @code{DOES>} 部分は、 いかなる場合でも定義された最後のワードの振る舞いをオーバーライドします。
+標準のプログラムでは、 @code{DOES>} はコロン定義でのみ使用できます。 Gforth では、 一種のワンショット・モードとして、
+インタプリタ状態で使用することもできます。 例:
 @example
 CREATE name ( ... -- ... )
   @i{initialization}
@@ -11379,7 +11372,7 @@ DOES>
 @end example
 
 @noindent
-is equivalent to the standard:
+これは、 以下の標準のと同等です:
 @example
 :noname
 DOES>
@@ -11388,9 +11381,8 @@ CREATE name EXECUTE ( ... -- ... )
     @i{initialization}
 @end example
 
-Gforth also supports quotations in interpreted code, and quotations save and
-restore the current definition, so you can also write the example above also
-as:
+Gforth は対話時に打ち込んだコード内での引用(quotations)もサポートしており、 引用は現在の定義を保存および復元するため、
+上記の例を以下のように記述することもできます:
 
 @example
 CREATE name ( ... -- ... )
@@ -11404,10 +11396,8 @@ CREATE name ( ... -- ... )
 @format
 @code{set-does>} ( @i{xt --  }) gforth-1.0 ``set-does>''
 @end format
-Changes the current word such that it pushes its body address and then
-executes @i{xt}.  Also changes the @code{compile,} implementation
-accordingly.  Call @code{set-optimizer} afterwards if you want a more
-efficient implementation.
+現在のワードを変更して、 本体アドレスをプッシュしてから @i{xt} を実行します。  それに応じて @code{compile,}
+の実装も変更します。  より効率的な実装が必要な場合、 この後で @code{set-optimizer} を呼び出します。
 
 
 @findex >body ( @var{ xt -- a_addr   } ) core
@@ -11416,41 +11406,39 @@ efficient implementation.
 @format
 @code{>body} ( @i{xt -- a_addr  }) core ``to-body''
 @end format
-Get the address of the body of the word represented by @i{xt} (the address
-of the word's data field).
+@i{xt} で表されるワードの本体(body)のアドレス(ワードのデータ・フィールドのアドレス)を取得します。
 
 
 
 @node Advanced does> usage example, User-defined TO and DEFER@@, CREATE..DOES> details, User-defined Defining Words
 @subsubsection Advanced does> usage example
 
-The MIPS disassembler (@file{arch/mips/disasm.fs}) contains many words for
-disassembling instructions, that follow a very repetetive scheme:
+MIPS 逆アセンブラ(@file{arch/mips/disasm.fs})には、
+非常に反復的なスキームに従って逆アセンブルするための多くのワードが含まれています(訳注: very repetetive scheme;
+repetitiveのスペルミスっぽい):
 
 @example
 :noname @var{disasm-operands} s" @var{inst-name}" type ;
 @var{entry-num} cells @var{table} + !
 @end example
 
-Of course, this inspires the idea to factor out the commonalities to allow a
-definition like
+もちろん、 これは共通点をくくり出して以下のような定義を可能にするというアイデアを刺激します:
 
 @example
 @var{disasm-operands} @var{entry-num} @var{table} define-inst @var{inst-name}
 @end example
 
-The parameters @var{disasm-operands} and @var{table} are usually
-correlated.  Moreover, before I wrote the disassembler, there already
-existed code that defines instructions like this:
+通常、 パラメータ @var{disasm-operands} と @var{table} は相関しています。 さらに、
+私が逆アセンブラを作成する前に、 以下のような命令を定義するコードがすでに存在していました:
 
 @example
 @var{entry-num} @var{inst-format} @var{inst-name}
 @end example
 
-This code comes from the assembler and resides in @file{arch/mips/insts.fs}.
+このコードは assembler 由来で、 @file{arch/mips/insts.fs} にあります。
 
-So I had to define the @var{inst-format} words that performed the scheme
-above when executed.  At first I chose to use run-time code-generation:
+したがって、 実行時に上記のスキームを実行する @var{inst-format} ワードを定義する必要がありました。 私は、
+まず最初に、ランタイム・コード生成を使用することを選択しました:
 
 @example
 : @var{inst-format} ( entry-num "name" -- ; compiled code: addr w -- )
@@ -11459,10 +11447,9 @@ above when executed.  At first I chose to use run-time code-generation:
   swap cells @var{table} + ! ;
 @end example
 
-Note that this supplies the other two parameters of the scheme above.
+注意: これにより、 上記のスキームの他に 2 つのパラメータが提供されることに注意してください。
 
-An alternative would have been to write this using
-@code{create}/@code{does>}:
+別の方法として、 @code{create}/@code{does>} を使用してこれを記述することもできます:
 
 @example
 : @var{inst-format} ( entry-num "name" -- )
@@ -11476,29 +11463,26 @@ does> ( addr w -- )
   r> count type ;
 @end example
 
-Somehow the first solution is simpler, mainly because it's simpler to shift
-a string from definition-time to use-time with @code{sliteral} than with
-@code{string,} and friends.
+どういうわけか、 最初の解決策の方が簡単です。 その主な理由は、 @code{string,} やその友達を使用するよりも、
+@code{sliteral} を使用した方が、 文字列を定義時から使用時へシフトするのが簡単だからです。
 
-I wrote a lot of words following this scheme and soon thought about
-factoring out the commonalities among them.  Note that this uses a two-level
-defining word, i.e., a word that defines ordinary defining words.
+私はこのスキームに従ってたくさんのワードを書き、 すぐにそれらの共通点を取り出すことを考えました。  これは 2 レベルの定義ワード、
+つまり通常の定義ワードを定義するワードを使用していることに注意してください。
 
-This time a solution involving @code{postpone} and friends seemed more
-difficult (try it as an exercise), so I decided to use a
-@code{create}/@code{does>} word; since I was already at it, I also used
-@code{create}/@code{does>} for the lower level (try using @code{postpone}
-etc. as an exercise), resulting in the following definition:
+今回は、 @code{postpone} とその友人が関与する解決策はより困難に思えたので(研究課題として試してみましょう)、
+@code{create}/@code{does>} というワードを使用することにしました。 私はすでにそれを行っていたので、 下位レベルにも
+@code{create}/@code{does>} を使用しました(研究課題として @code{postpone} などを使用してみましょう)。
+その結果、 以下の定義が得られました:
 
 @example
 : define-format ( disasm-xt table-xt -- )
-    \ define an instruction format that uses disasm-xt for
-    \ disassembling and enters the defined instructions into table
-    \ table-xt
+    \ 逆アセンブルに disasm-xt を使用する命令フォーマットを定義し、
+    \ 定義された命令を
+    \ 表(table) table-xt に入れます
     create 2,
 does> ( u "inst" -- )
-    \ defines an anonymous word for disassembling instruction inst,
-    \ and enters it as u-th entry into table-xt
+    \ 命令 inst を逆アセンブルする匿名ワードを定義し、
+    \ それを u 番目のエントリとして table-xt に入れます
     2@@ swap here name string, ( u table-xt disasm-xt c-addr ) \ remember string
     noname create 2,      \ define anonymous word
     execute latestxt swap ! \ enter xt of defined word into table-xt
@@ -11509,49 +11493,42 @@ does> ( addr w -- )
     r> count type ; \ print name 
 @end example
 
-Note that the tables here (in contrast to above) do the @code{cells +} by
-themselves (that's why you have to pass an xt).  This word is used in the
-following way:
+注意: ここでのテーブルは(上記とは対照的に) @code{cells +} を単独で実行することに注意してください (そのため、xt
+を渡す必要があります)。  このワードは以下のように使用されます:
 
 @example
 ' @var{disasm-operands} ' @var{table} define-format @var{inst-format}
 @end example
 
-As shown above, the defined instruction format is then used like this:
+上に示したように、 定義された命令フォーマットは以下のように使用されます:
 
 @example
 @var{entry-num} @var{inst-format} @var{inst-name}
 @end example
 
-In terms of currying, this kind of two-level defining word provides the
-parameters in three stages: first @var{disasm-operands} and @var{table},
-then @var{entry-num} and @var{inst-name}, finally @code{addr w}, i.e., the
-instruction to be disassembled.  
+カリー化に関しては、 この種の 2 レベルの定義ワードは 3 段階でパラメータを提供します。 最初に @var{disasm-operands} と
+@var{table}、 次に @var{entry-num} と @var{inst-name }、最後に @code{addr w} つまり、
+逆アセンブル対象の命令です。  
 
-Of course this did not quite fit all the instruction format names used in
-@file{insts.fs}, so I had to define a few wrappers that conditioned the
-parameters into the right form.
+もちろん、 これは @file{insts.fs} で使用されるすべての命令フォーマット名に完全に適合するわけではないため、
+パラメータを正しい形式に条件付けるいくつかのラッパーを定義する必要がありました。
 
-If you have trouble following this section, don't worry.  First, this is
-involved and takes time (and probably some playing around) to understand;
-second, this is the first two-level @code{create}/@code{does>} word I have
-written in seventeen years of Forth; and if I did not have @file{insts.fs}
-to start with, I may well have elected to use just a one-level defining word
-(with some repeating of parameters when using the defining word). So it is
-not necessary to understand this, but it may improve your understanding of
-Forth.
+あなたが、 このセクションを理解するのが難しい場合でも、 心配する必要はありません。  まず、 これは複雑であり、
+理解するのに時間がかかります(おそらく多少いじくりまわすことも必要です)。 2 番目に、 これは私が Forth の 17 年間で書いた最初の 2
+レベルの @code{create}/@code{does>} ワードです。 また、 最初に @file{insts.fs} がなかった場合は、 1
+レベルの定義ワードのみを使用することを選択した可能性があります(定義ワードを使用するときにパラメータをいくつか繰り返します)。 したがって、
+これを理解する必要はありませんが、 あなたの Forth についての理解が深まるかもしれません。
 
 
 
 @node User-defined TO and DEFER@@, User-defined compile-comma, Advanced does> usage example, User-defined Defining Words
 @subsubsection User-defined @code{to} and @code{defer@@}
 
-Gforth's values have several operators: @code{to} (to which @code{is} is an
-alias, and @code{defer!} takes an xt instead of a name in the input stream),
-@code{+to}, @code{addr}, and @code{action-of} (where @code{defer@@} takes an
-xt instead of a name in the input stream).
+Gforth の value にはいくつかの操作子(operators)があります。 @code{to} (@code{is} はエイリアスであり、
+@code{defer!} は入力ストリーム内の名前の代わりに xt を受け取ります)や @code{+to} や @code{addr} や
+@code{action-of} (@code{defer@@} は入力ストリーム内の名前の代わりに xt を受け取ります)です。
 
-Gforth allows you to change the @code{(to)} action of a word.
+Gforth を使用すると、 ワードの @code{(to)} アクションを変更できます。
 
 @findex (to) ( @var{ val operation xt --   } ) gforth-1.0
 @cindex @code{(to)}
@@ -11559,9 +11536,9 @@ Gforth allows you to change the @code{(to)} action of a word.
 @format
 @code{(to)} ( @i{val operation xt --  }) gforth-1.0 ``paren-to''
 @end format
-@i{xt} is of a value like word @i{name}.  Stores @i{val} @code{to}
-@i{name}.  @i{operation} selects between @code{to}, @code{+to}, @code{addr},
-and @code{action-of}.
+@i{name} という名前の、 ワードに似ている value の @i{xt} です。 @i{name} に @i{val} を保存します。
+@i{operation} は、 @code{to} と @code{+to} と @code{addr} と @code{action-of}
+から選択します。
 
 
 @findex to-table: ( @var{ "name" "xt1" .. "xtn" --   } ) gforth-experimental
@@ -11570,8 +11547,8 @@ and @code{action-of}.
 @format
 @code{to-table:} ( @i{"name" "xt1" .. "xtn" --  }) gforth-experimental ``to-table-colon''
 @end format
-create a table with entries for @code{TO}, @code{+TO}, @code{ADDR}, and
-@code{ACTION-OF}.  Use @code{n/a} to mark unsupported operations.
+@code{TO} や @code{+TO} や @code{ADDR} や @code{ACTION-OF} のエントリを含むテーブルを作成します。
+@code{n/a} を使用して、 サポートされていない操作をマークします。
 
 
 @findex to-method: ( @var{ xt table "name" --   } ) gforth-experimental
@@ -11580,8 +11557,8 @@ create a table with entries for @code{TO}, @code{+TO}, @code{ADDR}, and
 @format
 @code{to-method:} ( @i{xt table "name" --  }) gforth-experimental ``to-method-colon''
 @end format
-create a to-method, where @var{xt} computes the address to access the field,
-and @var{table} contains the operators to store to it.
+to-method を作成します。 ここで、@var{xt} はフィールドにアクセスするためのアドレスを計算し、 @var{table}
+にはそれに格納する操作子(operators)が含まれます。
 
 
 @findex set-to ( @var{ to-xt --   } ) gforth-1.0
@@ -11590,8 +11567,7 @@ and @var{table} contains the operators to store to it.
 @format
 @code{set-to} ( @i{to-xt --  }) gforth-1.0 ``set-to''
 @end format
-Sets the implementation of the @code{(to) ( val xt -- )} method of the
-current word to @i{to-xt}.
+現在のワードの @code{(to) ( val xt -- )} メソッドの実装を @i{to-xt} に設定します。
 
 
 @findex n/a ( @var{ --   } ) gforth-experimental
@@ -11600,26 +11576,22 @@ current word to @i{to-xt}.
 @format
 @code{n/a} ( @i{--  }) gforth-experimental ``not-available''
 @end format
-this word can be ticked, but throws an ``Operation not supported'' exception
-on interpretation and compilation.  Use this for methods and alike that
-aren't supported.
+このワードをチック(tick)することはできますが、 インタプリタ時およびコンパイル時に ``Operation not supported''
+(操作はサポートされていません)という例外が投げられます(throw)。  サポートされていないメソッドなどにこれを使用します。
 
 
 
-@code{(to)} is a word used inside @code{to}: it stores the value at
-run-time.  The general stack effect of @code{(to)} method is @code{( val
-operation xt -- )}, where @i{xt} identifies the word stored into,
-@i{operation} the actual variant of @code{to}-like operations, and @i{val}
-is the value (of appropriate type) stored there.
+@code{(to)} は @code{to} 内で使用されるワードです。 実行時(run-time)に値を保存します。  @code{(to)}
+メソッドの一般的なスタック効果は @code{( val Operation xt -- )} です。 ここで、 @i{xt}
+は格納されているワードを示し、 @i{operation} は @code{to} 風の操作の実際のバリエーションを示します。  @i{val}
+はそこに格納されている (適切な型の) 値です。
 
-You shall implement the @code{to}-method using @code{to-table:} to create a
-type-specific table of operations (not specified slots at the end of the
-table are filled up with @code{n/a}), and using @code{to-method:} together
-with the operation to get from the @i{xt} of the value to its data field
-(usually @code{>body} for values in the dictionary, but value-style data can
-also reside in structures or user areas).
+@code{to-table:} を使用して @code{to} メソッドを実装し、
+タイプ固有の操作テーブルを作成し(テーブルの最後にある指定されていないスロットは @code{n/a} で埋められます)、
+@code{to-method:} を、 value の @i{xt} からそのデータ・フィールドを取得する操作と組み合わせて使用​​します(通常、
+ディクショナリ内の値の場合は @code{>body} ですが、 value-style データは構造体またはユーザー領域に存在することもできます)。
 
-E.g., one can implement @code{fvalue} as follows:
+たとえば、 以下のように @code{fvalue} を実装できます:
 
 @example
 to-table: f!-table f! f+!
@@ -11638,7 +11610,7 @@ see bar
 @node User-defined compile-comma, Creating from a prototype, User-defined TO and DEFER@@, User-defined Defining Words
 @subsubsection User-defined @code{compile,}
 
-You can also change the implementation of @code{compile,} for a word, with
+以下を使用して、 とあるワードのための @code{compile,} の実装を変更することもできます
 
 @findex set-optimizer ( @var{ xt --   } ) gforth-1.0
 @cindex @code{set-optimizer}
@@ -11646,11 +11618,10 @@ You can also change the implementation of @code{compile,} for a word, with
 @format
 @code{set-optimizer} ( @i{xt --  }) gforth-1.0 ``set-optimizer''
 @end format
-Changes the current word such that @code{compile,}ing it executes @i{xt}
-(with the same stack contents as passed to @code{compile,}).  Note that
-@code{compile,} must be consistent with @code{execute}, so you must use
-@code{set-optimizer} only to install a more efficient implementation of the
-same behaviour.
+@code{compile,} で @i{xt} execute するように現在のワードを変更します(@code{compile,}
+に渡されたものと同じスタック内容を使用)。 注意: @code{compile,} は @code{execute}
+とスタック内容が一致している必要があるため、 @code{set-optimizer} は同じ振る舞いの、
+より効率的な実装をインストールする場合にのみ使用しなければならないことに注意してください。
 
 
 @findex opt: ( @var{ compilation -- colon-sys2 ; run-time -- nest-sys   } ) gforth-1.0
@@ -11659,26 +11630,22 @@ same behaviour.
 @format
 @code{opt:} ( @i{compilation -- colon-sys2 ; run-time -- nest-sys  }) gforth-1.0 ``opt:''
 @end format
-Starts a nameless colon definition; when it is complete, this colon
-definition will become the @code{compile,} implementation of the latest word
-(before the @code{opt:}).
+名前無しのコロン定義を開始します。 完了すると、 このコロン定義は(@code{opt:} の前の)最新のワードの @code{compile,}
+の実装になります。
 
 
 
-Note that the resulting @code{compile,} must still be equivalent to
-@code{postpone literal postpone execute}, so @code{set-optimizer} is useful
-for efficiency, not for changing the behaviour.  There is nothing that
-prevents you from shooting yourself in the foot, however.  You can check
-whether your uses of @code{set-optimizer} are correct by comparing the
-results when you use it with the results you get when you disable your uses
-by first defining
+注意: 結果として得られる @code{compile,} は、 依然として @code{postpone literal postpone
+execute} と同等である必要があることに注意してください。 そのため、 @code{set-optimizer} は、
+振る舞いを変更するためではなく、 効率化のために役立てるものです。  しかし、 あなたが自分の足を撃つことを妨げるものは何もありません。  あなたが
+@code{set-optimizer} を使用したときの結果と、 最初に以下を定義して使用を無効にしたときに得られる結果を比較することで、
+@code{set-optimizer} の使用が正しいかどうかを確認できます。
 
 @example
 : set-optimizer drop ;
 @end example
 
-As an example of the use of @code{set-optimizer}, we can enhance one of the
-definitions of @code{CONSTANT} above as follows.
+@code{set-optimizer} の使用例として、 上記の @code{CONSTANT} の定義の 1 つを以下のように拡張できます。
 
 @example
 : CONSTANT ( n "name" -- ; name: -- n )
@@ -11688,34 +11655,27 @@ definitions of @code{CONSTANT} above as follows.
 ;
 @end example
 
-The only change is the addition of the @code{set-optimizer} line.  When you
-define a constant and compile it:
+唯一の変更は、 @code{set-optimizer} 行の追加です。 あなたが定数を定義してコンパイルすると、 以下のようになります:
 
 @example
 5 constant five
 : foo five ;
 @end example
 
-the compiled @code{five} in @code{foo} is now compiled to the literal 5
-instead of a generic invocation of @code{five}.  The quotation has the same
-stack effect as @code{compile,}: @code{( xt -- )}.  The passed xt belongs to
-the @code{compile,}d word, i.e., @code{five} in the example.  In the example
-the xt is first converted to the body address, then the value 5 at that
-place is fetched, and that value is compiled with the @code{postpone
-literal} (@pxref{Literals}).
+@code{foo} 内のコンパイル済み @code{five} は、 @code{five} の一般的な呼び出しではなく、 literal 5
+とコンパイルされるようになりました。  引用(quotation)には、 @code{compile,} と同じスタック効果があり、 それは
+@code{( xt -- )} です。  渡された xt は @code{compile,} されたワード、 つまりこの例では @code{five}
+に属します。 この例では、 まず xt が本文アドレスに変換され、 次にその場所の値 5 がフェッチされ、 その値が @code{postpone
+literal} でコンパイルされます(@pxref{Literals})。
 
-This use of @code{set-optimizer} assumes that the user does not change the
-value of a constant with, e.g., @code{6 ' five >body !}.  While @code{five}
-has been defined with @code{create}, that is an implementation detail of
-@code{CONSTANT}, and if you don't document it, the user must not rely on
-it.  And if you use @code{set-optimizer} in a way that assumes that the body
-does not change (like is done here), you must not document that
-@code{create} is used; and conversely, if you document it, you have to write
-the @code{compile,} implementation such that it can deal with changing
-bodies.
+この @code{set-optimizer} の使用は、 ユーザーが、 例えば @code{6 ' four >body !}
+などして定数の値を変更しないことを前提としています。  @code{five} は @code{create} で定義されていますが、 これは
+@code{CONSTANT} の実装の詳細であり、 それを文書化しない場合、 ユーザーはそれに依存してはなりません。  また、
+h本体が変更されないことを前提とした方法で @code{set-optimizer} を使用する場合、 (ここで行われているように)
+@code{create} が使用されていることを文書化してはなりません。 逆に、 それを文書化する場合は、 本体の変更を処理できるように
+@code{compile,} 実装を記述する必要があります。
 
-Another example is a better-optimized variant of the @code{fvalue} example
-above:
+別の例は、 上記の @code{fvalue} の例をさらに最適化したものです:
 
 @example
 : compile-fvalue-to ( xt-value-to -- )
@@ -11736,50 +11696,42 @@ above:
 see bar
 @end example
 
-Compare the code for @code{bar} with the one for the earlier definition.
-Here we see the optimization of both the code for reading the fvalue (coming
-from the @code{set-optimizer} in @code{fvalue}) and for writing the fvalue
-(coming from the @code{set-optimizer} applied to @code{fvalue-to}.  Because
-an fvalue can change (unlike a constant), the reading part (inside
-@code{fvalue}) compiles the address and a @code{f@@} that is performed at
-run-time.
+@code{bar} のコードを以前の定義のコードと比較します。  ここでは、 fvalue を読み取るコード(@code{fvalue} の
+@code{set-optimizer} より)と、 fvalue を書き込むコード(@code{fvalue-to} に適用された
+@code{set-optimizer} より)の両方の最適化が見られます。 fvalue は(定数とは異なり)変化する可能性があるため、
+(@code{fvalue} 内部の)読み取り部分が、 アドレスと、 実行時に実行される @code{f@@} をコンパイルします。
 
 @c !! reference the appropriate sections that explain these
 @c optimizations
-For @code{fvalue-to}, the @code{compile,} implementation basically just
-compiles the code executed by @code{fvalue} inline.  The compilation
-semantics of @code{to} compiles the address as literal and then the
-@code{(to)} implementation (i.e., @code{fvalue-to}).  In this process the
-@code{>body} is optimized away.
+@code{fvalue-to} の場合、 @code{compile,} の実装は基本的に、 @code{fvalue}
+によってインラインで実行されるコードをコンパイルするだけです。 @code{to} のコンパイル機能(compilation
+semantics)は、アドレスをリテラルとしてコンパイルしてから、 @code{(to)} の実装(つまり、
+@code{fvalue-to})をコンパイルします。 この処理では、 @code{>body} が最適化されて削除されます。
 
-In practice Gforth's @code{fvalue} includes a few additional twists, e.g.,
-to support @code{+TO}.
+実際には、 Gforth の @code{fvalue} は、 たとえば @code{+TO} をサポートするなど、
+いくつかの追加の工夫が含まれています。
 
-Note that the call to @code{set-optimizer} has to be performed after the
-call to @code{set-does>} (or @code{does>}, because @code{set-does>}
-overwrites the @code{compile,} implementation itself.
+注意: @code{set-optimizer} の呼び出しは、 @code{set-does>} (または @code{does>}
+の呼び出しの後に実行する必要があることに注意してください。 なぜなら、 @code{set-does>} は @code{compile,}
+の実装それ自体を上書きするからです。
 
-As we can see in the @code{fvalue-to} example, we can also apply
-@code{set-optimizer} to individual words rather than inside a defining word
-like @code{constant} or @code{fvalue}.  In this case, the xt of the word
-passed to optimizer is usually unnecessary and is @code{drop}ped, as in
-@code{compile-fvalue-to}.
+@code{fvalue-to} の例でわかるように、 @code{set-optimizer} を @code{constant} や
+@code{fvalue} のような定義ワード内ではなく、 個々のワードに適用することもできます。  この場合、 オプティマイザに渡されるワードの xt
+は通常は不要であり、 @code{compile-fvalue-to} のように @code{drop} されます。
 
-The engine @code{gforth-itc} uses @code{,} for @code{compile,} and
-@code{set-optimizer} has no effect there.
+エンジン @code{gforth-itc} は @code{compile,} に @code{,} を使用するので、 そこでは
+@code{set-optimizer} は効果ありません。
 
 
 @node Creating from a prototype, Making a word current, User-defined compile-comma, User-defined Defining Words
 @subsubsection Creating from a prototype
 
-In the above we show how to define a word by first using @code{create}, and
-then modifying it with @code{set-does>}, @code{set-to}, @code{set-optimizer}
-etc.
+上記では、 最初に @code{create} を使用して単語を定義し、 それから @code{set-does>} や @code{set-to} や
+@code{set-optimizer} などで変更する方法を示しました。
 
-An alternative way is to create a prototype using these words, and then
-create a new word from that prototype.  This kind of copying does not cover
-the body, so that has to be allocated and initialized explicitly.  Taking
-@code{fvalue} above, we could instead define it as:
+別の方法として、 以下のワード群を使用してプロトタイプを作成し、そのプロトタイプから新しいワードを作成します。
+この種のコピーでは本体(body)部分は網羅されないため、 明示的に割り当てて初期化する必要があります。  上記の @code{fvalue}
+を例に取ると、 代わりに以下のように定義できます:
 
 @example
 create fvalue-prototype ( -- r )
@@ -11791,11 +11743,9 @@ create fvalue-prototype ( -- r )
   ``fvalue-prototype create-from f, reveal ;
 @end example
 
-An advantage of this approach is that creating @code{fvalue} words is now
-faster, because it does not need to first duplicate the header methods of
-@code{create}, modify them, and eventually deduplicate them.  But this
-advantage is only relevant if the number of words created with this defining
-word is huge.
+このアプローチの利点は、まず @code{create} ヘッダー・メソッド達を複製し、 それらを変更し、 最終的に重複排除する必要がないため、
+@code{fvalue} ワード群の作成が高速化されることだ。 ただし、 この利点は、
+この定義ワードで作成されるワードの数が膨大な場合にのみ意味があります。
 
 @findex create-from ( @var{ nt "name" --   } ) gforth-1.0
 @cindex @code{create-from}
@@ -11803,12 +11753,11 @@ word is huge.
 @format
 @code{create-from} ( @i{nt "name" --  }) gforth-1.0 ``create-from''
 @end format
-Create a word @i{name} that behaves like @i{nt}, but with an empty body.
-@i{nt} must be the nt of a named word.  The resulting header is not yet
-revealed.  Creating a word with @code{create-from} without using any
-@code{set-} words is faster than if you create a word using @code{set-}
-words, @code{immediate}, or @code{does>}.  You can use @code{noname} with
-@code{create-from}.
+指定の @i{nt} のように振る舞うが、 ボディが空のワード @i{name} を作成します。  @i{nt} は名前付きワードの nt
+でなければなりません。  結果として得られるヘッダーはまだ非公開状態です(訳注: not yet
+reveal;ワードリスト未登録なので普通は呼び出せない)。  @code{set-} ワード群を使用せずに @code{create-from}
+でワードを作成すると、 @code{set-} ワード群または @code{immediate} または @code{does>}
+を使用してワードを作成するよりも高速になります。  @code{noname} で @code{create-from} を使用できます。
 
 
 @findex reveal ( @var{ --   } ) gforth-0.2
@@ -11817,13 +11766,11 @@ words, @code{immediate}, or @code{does>}.  You can use @code{noname} with
 @format
 @code{reveal} ( @i{--  }) gforth-0.2 ``reveal''
 @end format
-Put the current word in the wordlist current at the time of the header
-definition.
+(reveal;明らかにする、暴露する)ヘッダー定義時の現在のワード・リスト(wordlist current)に現在のワードを入れます。
 
 
 
-The performance advantage does not extend to using @code{noname} with the
-defining word.  Therefore we also have
+@code{noname} を定義ワードとともに使用しても、 パフォーマンス上の利点は得られません。  したがって、 以下もいっしょに使います
 
 @findex noname-from ( @var{ xt --   } ) gforth-1.0
 @cindex @code{noname-from}
@@ -11831,12 +11778,12 @@ defining word.  Therefore we also have
 @format
 @code{noname-from} ( @i{xt --  }) gforth-1.0 ``noname-from''
 @end format
-Create a nameless word that behaves like @i{xt}, but with an empty body.
-@i{xt} must be the nt of a nameless word.
+指定の @i{xt} のように動作するが、 本体が空の名前のないワードを作成します。  @i{xt} は、 名前のないワードの xt
+でなければなりません。
 
 
 
-Here's a usage example:
+以下に使用例を示します:
 
 @example
 ``fvalue-prototype noname create-from
@@ -11852,9 +11799,9 @@ latestnt constant noname-fvalue-prototype
 @subsubsection Making a word current
 @cindex Modifying a word defined earlier
 
-Many words mentioned above, such as @code{immediate} or @code{set-optimizer}
-change the ``current'' or ``most recently defined'' word.  Sometimes you
-want to change an earlier word.  You can do this with
+@code{immediate} や @code{set-optimizer} など、
+上記の多くのワードは、「現在の」ワードまたは「一番最近定義された」ワードを変更します。 しばしば以前のワードを変更したい場合があります。
+これは以下のようにして行うことができます
 
 @findex make-latest ( @var{ nt --   } ) gforth-1.0
 @cindex @code{make-latest}
@@ -11862,11 +11809,9 @@ want to change an earlier word.  You can do this with
 @format
 @code{make-latest} ( @i{nt --  }) gforth-1.0 ``make-latest''
 @end format
-Make @i{nt} the latest definition, which can be manipulated by
-@code{immediate} and @code{set-*} operations.  If you have used (especially
-compiled) the word referred to by nt already, do not change the behaviour of
-the word (only its implementation), otherwise you may get a surprising mix
-of behaviours that is not consistent between Gforth engines and versions.
+@i{nt} を最新の定義にし、 @code{immediate} および @code{set-*} 操作で操作できるようにします。  nt
+によって参照されるワードを既に使用している(特にコンパイル済みの)場合、 そのワードの振る舞いを変更しないでください(その実装だけを変更してください)。
+さもないと、 Gforth エンジンやバージョン間で一貫性のない驚くべき振る舞いの組み合わせが発生する可能性があります。
 
 
 
@@ -11874,8 +11819,8 @@ of behaviours that is not consistent between Gforth engines and versions.
 @node Const-does>, , Making a word current, User-defined Defining Words
 @subsubsection @code{Const-does>}
 
-A frequent use of @code{create}...@code{does>} is for transferring some
-values from definition-time to run-time.  Gforth supports this use with
+@code{create}...@code{does>} は、 定義時から実行時に幾つかの値を転送(transfer)するためによく使用されます。
+Gforth は、 このために以下を用意しています
 
 @findex const-does> ( @var{ run-time: w*uw r*ur uw ur "name" --   } ) gforth-obsolete
 @cindex @code{const-does>}
@@ -11883,14 +11828,13 @@ values from definition-time to run-time.  Gforth supports this use with
 @format
 @code{const-does>} ( @i{run-time: w*uw r*ur uw ur "name" --  }) gforth-obsolete ``const-does''
 @end format
-Defines @var{name} and returns.
+定義時: @var{name} を定義して返ります。
  
-@var{name} execution: pushes @var{w*uw r*ur}, then performs the code
-following the @code{const-does>}.
+@var{name} 実行時: @var{w*uw r*ur} をプッシュし、 @code{const-does>} に続くコードを実行します。
 
 
 
-A typical use of this word is:
+このワードの一般的な使用例は以下のとおりです:
 
 @example
 : curry+ ( n1 "name" -- )
@@ -11900,50 +11844,41 @@ A typical use of this word is:
 3 curry+ 3+
 @end example
 
-Here the @code{1 0} means that 1 cell and 0 floats are transferred from
-definition to run-time.
+ここで @code{1 0} は、 1 つのセルと 0 の浮動小数点が定義時から実行時に転送されることを意味します。
 
-The advantages of using @code{const-does>} are:
+@code{const-does>} を使用する利点は以下のとおりです:
 
 @itemize
 
 @item
-You don't have to deal with storing and retrieving the values, i.e., your
-program becomes more writable and readable.
+値の保存と取得を扱う必要がなくなります。 つまり、 プログラムの書き込みと読み取りがより容易になります。
 
 @item
-When using @code{does>}, you have to introduce a @code{@@} that cannot be
-optimized away (because you could change the data using
-@code{>body}...@code{!}); @code{const-does>} avoids this problem.
+@code{does>} を使用する場合は、 最適化できない @code{@@} を導入する必要があります(なぜなら
+@code{>body}...@code{!} を使用してデータを変更できるため)。 @code{const-does>} はこの問題を回避します。
 
 @end itemize
 
-A Standard Forth implementation of @code{const-does>} is available in
-@file{compat/const-does.fs}.
+@code{const-does>} の標準 Forth 実装は @file{compat/const-does.fs} で利用できます。
 
 
 @node Deferred Words, Forward, User-defined Defining Words, Defining Words
 @subsection Deferred Words
 @cindex deferred words
 
-The defining word @code{Defer} allows you to define a word by name without
-defining its behaviour; the definition of its behaviour is deferred. Here
-are two situation where this can be useful:
+定義ワード @code{defer} を使用すると、 その振る舞いを定義せずに名前でワードを定義できます。
+その振る舞いの定義は延期(defer)されます。 これが役立つ 2 つの状況を以下に示します:
 
 @itemize @bullet
 @item
-Where you want to allow the behaviour of a word to be altered later, and for
-all precompiled references to the word to change when its behaviour is
-changed.
+ワードの振る舞いを後で変更できるようにし、 振る舞いが変更されたときにそのワードへの全てのプリコンパイルされた参照も変更できるようにしたい場合。
 @item
-For mutual recursion; @xref{Calls and returns}.
+相互再帰(mutual recursion)の場合。 @xref{Calls and returns}
 @end itemize
 
-In the following example, @code{foo} always invokes the version of
-@code{greet} that prints ``@code{Good morning}'' whilst @code{bar} always
-invokes the version that prints ``@code{Hello}''. There is no way of getting
-@code{foo} to use the later version without re-ordering the source code and
-recompiling it.
+以下の例では、 @code{foo} は常に @code{greet} の「@code{Good breakfast}」を出力するバージョンを呼び出し、
+@code{bar} は常に@code{greet} の「@code{Hello}」を出力するバージョンを呼び出します。
+ソースコードを並べ替えて再コンパイルすることなく、 @code{foo} で新しいバージョンを使用できるようにする方法はありません。
 
 @example
 : greet ." Good morning" ;
@@ -11952,10 +11887,9 @@ recompiling it.
 : bar ... greet ... ;
 @end example
 
-This problem can be solved by defining @code{greet} as a @code{Defer}red
-word. The behaviour of a @code{Defer}red word can be defined and redefined
-at any time by using @code{IS} to associate the xt of a previously-defined
-word with it. The previous example becomes:
+この問題は、 @code{greet} を 延期(@code{Defer})ワードとして定義することで解決できます。 延期ワードの振る舞いは、
+@code{IS} を使用して以前に定義されたワードの xt と関連付けることによって、 いつでも定義および再定義できます。
+上記の例は以下のようになります:
 
 @example
 Defer greet ( -- )
@@ -11966,13 +11900,12 @@ Defer greet ( -- )
 ' greet2 IS greet  \ make greet behave like greet2
 @end example
 
-@progstyle You should write a stack comment for every deferred word, and put
-only XTs into deferred words that conform to this stack effect.  Otherwise
-it's too difficult to use the deferred word.
+@progstyle すべての延期ワードに対してスタック・コメントを記述し、 かつ、 そのスタック効果に一致する XT
+のみを延期ワードに入れる必要があります。 そうしないと、 延期ワードを使用するのは非常に困難です。
 
-A deferred word can be used to improve the statistics-gathering example from
-@ref{User-defined Defining Words}; rather than edit the application's source
-code to change every @code{:} to a @code{my:}, do this:
+延期ワードを使用すると、 @ref{User-defined Defining Words} の統計収集の例(statistics-gathering
+example)を改善できます。 アプリケーションのソース・コードを編集してすべての @code{:} を @code{my:} に変更するのではなく、
+以下のようにします:
 
 @example
 : real: : ;     \ retain access to the original
@@ -11985,8 +11918,8 @@ defer :         \ redefine as a deferred word
 @end example
 
 
-One thing to note is that @code{IS} has special compilation semantics, such
-that it parses the name at compile time (like @code{TO}):
+注意すべき点の 1 つは、 @code{IS} には特別なコンパイル機能(compilation semantics)があり、 (@code{TO}
+のように)コンパイル時に名前をパースするということです:
 
 @example
 : set-greet ( xt -- )
@@ -11995,14 +11928,13 @@ that it parses the name at compile time (like @code{TO}):
 ' greet1 set-greet
 @end example
 
-In situations where @code{IS} does not fit, use @code{defer!} instead.
+@code{IS} が適合しない状況では、 代わりに @code{defer!} を使用してください。
 
-A deferred word can only inherit execution semantics from the xt (because
-that is all that an xt can represent -- for more discussion of this
-@pxref{Tokens for Words}); by default it will have default interpretation
-and compilation semantics deriving from this execution semantics.  However,
-you can change the interpretation and compilation semantics of the deferred
-word in the usual ways:
+延期(defer)ワードは、 xt から実行機能(execution semantics)のみを継承できます(xt
+が表現できるのはそれだけであるためです -- これについての詳しい説明は @pxref{Tokens for Words} 参照)。
+デフォルトでは、この実行機能(execution semantics)から派生したデフォルトのインタプリタ機能(interpretation
+semantics)とコンパイル機能(compilation semantics)を持ちます。  ただし、
+延期ワードのインタプリタ機能とコンパイル機能は、 通常の方法で変更できます。
 
 @example
 : bar .... ; immediate
@@ -12019,9 +11951,8 @@ Defer jim
 @format
 @code{Defer} ( @i{"name" --  }) core-ext ``Defer''
 @end format
-Define a deferred word @i{name}; its execution semantics can be set with
-@code{defer!} or @code{is} (and they have to, before first executing
-@i{name}.
+延期(defer)ワード @i{name} を定義します。 その実行機能(execution semantics)は @code{defer!} または
+@code{is} で設定できます(最初に @i{name} を実行する前に設定する必要があります)。
 
 
 @findex defer! ( @var{ xt xt-deferred --   } ) core-ext
@@ -12030,16 +11961,16 @@ Define a deferred word @i{name}; its execution semantics can be set with
 @format
 @code{defer!} ( @i{xt xt-deferred --  }) core-ext ``defer-store''
 @end format
-Changes the @code{defer}red word @var{xt-deferred} to execute @var{xt}.
+xt (@var{xt-deferred}) で表される延期(defer)ワードに実行のための @var{xt} を設定します。
 
 
-@findex IS ( @var{ value "name" --   } ) core-ext
+@findex IS ( @var{ xt "name" --   } ) core-ext
 @cindex @code{IS}
 @kindex IS
 @format
-@code{IS} ( @i{value "name" --  }) core-ext ``IS''
+@code{IS} ( @i{xt "name" --  }) core-ext ``IS''
 @end format
-changes the @code{defer}red word @var{name} to execute @var{value}
+延期(@code{defer})ワード @var{name} に実行のための @var{xt} を設定します。
 
 
 @findex defer@@ ( @var{ xt-deferred -- xt   } ) core-ext
@@ -12048,8 +11979,7 @@ changes the @code{defer}red word @var{name} to execute @var{value}
 @format
 @code{defer@@} ( @i{xt-deferred -- xt  }) core-ext ``new-defer-fetch''
 @end format
-@i{xt} represents the word currently associated with the deferred word
-@i{xt-deferred}.
+@i{xt} は、 延期ワード @i{xt-deferred} に現在関連付けられているワードを表します。
 
 
 @findex action-of ( @var{ interpretation "name" -- xt; compilation "name" -- ; run-time -- xt   } ) core-ext
@@ -12058,14 +11988,14 @@ changes the @code{defer}red word @var{name} to execute @var{value}
 @format
 @code{action-of} ( @i{interpretation "name" -- xt; compilation "name" -- ; run-time -- xt  }) core-ext ``action-of''
 @end format
-@i{Xt} is the XT that is currently assigned to @i{name}.
+@i{Xt} は、 現在 @i{name} に割り当てられている XT です。
 
 
 
 @c Use @code{words-deferred} to see a list of deferred words.
 
-Definitions of these Forth-2012 words in Forth-94 are provided in
-@file{compat/defer.fs}.  In addition, Gforth provides:
+Forth-94 では、 これら Forth-2012 のワードの定義は、@file{compat/defer.fs} で提供されます。  さらに、
+Gforth は以下を提供します:
 
 @findex defers ( @var{ compilation "name" -- ; run-time ... -- ...   } ) gforth-0.2
 @cindex @code{defers}
@@ -12073,9 +12003,8 @@ Definitions of these Forth-2012 words in Forth-94 are provided in
 @format
 @code{defers} ( @i{compilation "name" -- ; run-time ... -- ...  }) gforth-0.2 ``defers''
 @end format
-Compiles the present contents of the deferred word @i{name} into the current
-definition.  I.e., this produces static binding as if @i{name} was not
-deferred.
+延期(defer)ワード @i{name} の現在の内容を現在の定義にコンパイルします。  つまり、 これにより、 @i{name}
+が延期されなかったかのように静的バインディングが生成されます。
 
 
 @findex wrap-xt ( @var{ xt1 xt2 xt: xt3 -- ...   } ) gforth-1.0
@@ -12084,7 +12013,10 @@ deferred.
 @format
 @code{wrap-xt} ( @i{xt1 xt2 xt: xt3 -- ...  }) gforth-1.0 ``wrap-xt''
 @end format
-Set deferred word xt2 to xt1 and execute xt3.  Restore afterwards.
+延期(defer)ワード xt2 の現在の xt を退避して xt1 に設定した上で、 xt3 を実行し、 xt3 実行後、 退避した xt を
+延期ワード xt2 に戻します(訳注: xt3 の内部のどこかで xt2 を使っているとして、 その実行機能を一時的に xt1 に設定してから xt3
+を実行し、実行後に xt2 の実行機能を元に戻しておく。 元に戻すのは try ... restore ... endtry で囲まれた部分なので
+xt3 実行中にエラーがあっても確実に復旧される。 詳しくはソースコード見て下さい)
 
 
 @findex preserve ( @var{ "name" --   } ) gforth-1.0
@@ -12093,7 +12025,11 @@ Set deferred word xt2 to xt1 and execute xt3.  Restore afterwards.
 @format
 @code{preserve} ( @i{"name" --  }) gforth-1.0 ``preserve''
 @end format
-emit code that reverts a deferred word to the state at compilation
+指定の延期(defer)ワード @i{name} で、 現在設定されている実行機能 @i{xt} を、 その場で @code{is} や
+@code{defer!} したかのようなコードに変換します(訳注: 上記例より、 ' greet2 is greet  :
+preserve-greet2 preserve greet ; → greet1 is greet  ok  → greet Good morning
+ok → preserve-greet2  ok → greet Hello ok ; see preserve-greet2 → :
+preserve-greet2  `greet2 `greet ! ; ok)
 
 
 
@@ -12101,10 +12037,9 @@ emit code that reverts a deferred word to the state at compilation
 @node Forward, Aliases, Deferred Words, Defining Words
 @subsection Forward
 
-The defining word @code{Forward} in @code{forward.fs} allows you to create
-forward references, which are resolved automatically, and do not incur
-additional costs like the indirection of @code{Defer}.  However, these
-forward definitions only work for colon definitions.
+@code{forward.fs} 内の定義ワード @code{forward} を使用すると、 前方参照(forward
+references)を作成できます。 これは自動的に解決され、 @code{Defer}
+の間接化(indirection)のような追加コストは発生しません。  ただし、 これらの forward 定義はコロン定義に対してのみ機能します。
 
 @findex forward ( @var{ "name" --   } ) gforth-1.0
 @cindex @code{forward}
@@ -12112,10 +12047,9 @@ forward definitions only work for colon definitions.
 @format
 @code{forward} ( @i{"name" --  }) gforth-1.0 ``forward''
 @end format
-Defines a forward reference to a colon definition.  Defining a colon
-definition with the same name in the same wordlist resolves the forward
-references.  Use @code{.unresolved} to check whether any forwards are
-unresolved.
+コロン定義への前方参照(forward reference)を定義します。
+同一のワードリスト内(wordlist)で同一の名前のコロン定義を定義すると、 前方参照が解決されます。  @code{.unresolved}
+を使用して、 未解決の forward があるかどうかを確認します。
 
 
 @findex .unresolved ( @var{ --   } ) gforth-1.0
@@ -12124,7 +12058,7 @@ unresolved.
 @format
 @code{.unresolved} ( @i{--  }) gforth-1.0 ``.unresolved''
 @end format
-print all unresolved forward references
+未解決の前方参照(forward references)をすべて出力します
 
 
 
@@ -12133,18 +12067,16 @@ print all unresolved forward references
 @cindex aliases
 @cindex synonyms
 
-The defining word @code{synonym} allows you to define a word by name that
-has the same behaviour as some other word. Here are two situation where this
-can be useful:
+定義ワード @code{synonym} を使用すると、 他のワードと同一の振る舞いをするワードを名前で定義できます。 これが役立つ 2
+つの状況を以下に示します:
 
 @itemize @bullet
 @item
-When you want access to a word's definition from a different word list (for
-an example of this, see the definition of the @code{Root} word list in the
-Gforth source).
+別のワードリストからワードの定義にアクセスしたい場合(この例については、 Gforth ソースの @code{root}
+ワードリストの定義を参照してください)。
 @item
-When you want to create a synonym; a definition that can be known by either
-of two names (for example, @code{THEN} and @code{ENDIF} are synonyms).
+あなたが同義語(synonym)を作成したい場合。 2つの名前どちらでも認識できる定義(たとえば、 @code{THEN} と @code{ENDIF}
+は同義語(synonyms)です)。
 @end itemize
 
 @findex Synonym ( @var{ "name" "oldname" --   } ) tools-ext
@@ -12153,16 +12085,15 @@ of two names (for example, @code{THEN} and @code{ENDIF} are synonyms).
 @format
 @code{Synonym} ( @i{"name" "oldname" --  }) tools-ext ``Synonym''
 @end format
-Define @i{name} to behave the same way as @i{oldname}: Same interpretation
-semantics, same compilation semantics, same @code{to}/@code{defer!} and
-@code{defer@@} semantics.
+@i{oldname} と同一に振る舞うように @i{name} を定義します。 つまり、 同一のインタプリタ機能(interpretation
+semantics)と、 同一のコンパイル機能(compilation semantics)と、 同一の @code{to}/@code{defer!}
+や @code{defer@@} 機能を持ちます。
 
 
 
-Gforth also offers the non-standard @code{alias}, that does not inherit the
-compilation semantics, @code{to}/@code{defer!} or @code{defer@@} semantics
-from its parent.  You can then change, e.g., the compilation semantics with,
-e.g., @code{immediate}.
+Gforth は、 コンパイル機能、 または @code{to}/@code{defer!} や @code{defer@@} 機能を親から継承しない、
+非標準の @code{alias} も提供します。 あなたは後で、 例えば @code{immediate}
+などを使用してコンパイル機能などを変更できます。
 
 @findex Alias ( @var{ xt "name" --   } ) gforth-0.2
 @cindex @code{Alias}
@@ -12170,8 +12101,8 @@ e.g., @code{immediate}.
 @format
 @code{Alias} ( @i{xt "name" --  }) gforth-0.2 ``Alias''
 @end format
-Define @i{name} as a word that performs @i{xt}.  Unlike for deferred words,
-aliases don't have an indirection overhead when compiled.
+@i{name} を @i{xt} を実行するワードとして定義します。  延期ワードとは異なり、
+エイリアス(aliase)にはコンパイル時に間接的なオーバーヘッドがありません。
 
 
 
@@ -12185,9 +12116,9 @@ Example:
 synonym bar3 foo           \ bar3 is an immediate word
 @end example
 
-Both synonyms and aliases have a different nt than the original, but ticking
-it (or using @code{name>interpret}) produces the same xt as the original
-(@pxref{Tokens for Words}).
+synonyms(同義語)とaliases(別名)はどちらも元の nt とは異なる nt を持ちますが、 それをチック(tick)すると(または
+@code{name>interpret} を使用すると)、 元の xt と同じ xt が生成されます(@pxref{Tokens for
+Words})。
 
 @node Interpretation and Compilation Semantics, Tokens for Words, Defining Words, Words
 @section Interpretation and Compilation Semantics
@@ -26555,7 +26486,7 @@ effect of the @code{defer!}/@code{(to)} method is @code{( val xt -- )},
 where @i{xt} identifies the word stored into, and @i{val} is the value (of
 appropriate type) stored there.
 
-E.g., one can implement @code{fvalue} as follows:
+たとえば、 以下のように @code{fvalue} を実装できます:
 
 @example
 : fvalue-to ( r xt -- ) >body f! ;

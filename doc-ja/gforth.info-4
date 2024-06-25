@@ -27,6 +27,214 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Image File Background,  Next: Non-Relocatable Image Files,  Prev: Image Licensing Issues,  Up: Image Files
+
+14.2 Image File Background
+==========================
+
+Gforth consists not only of primitives (in the engine), but also of
+definitions written in Forth.  Since the Forth compiler itself belongs
+to those definitions, it is not possible to start the system with the
+engine and the Forth source alone.  Therefore we provide the Forth code
+as an image file in nearly executable form.  When Gforth starts up, a C
+routine loads the image file into memory, optionally relocates the
+addresses, then sets up the memory (stacks etc.)  according to
+information in the image file, and (finally) starts executing Forth
+code.
+
+   The default image file is ‘gforth.fi’ (in the ‘GFORTHPATH’).  You can
+use a different image by using the ‘-i’, ‘--image-file’ or
+‘--appl-image’ options (*note Invoking Gforth::), e.g.:
+
+     gforth-fast -i myimage.fi
+
+   There are different variants of image files, and they represent
+different compromises between the goals of making it easy to generate
+image files and making them portable.
+
+   Win32Forth 3.4 and Mitch Bradley’s ‘cforth’ use relocation at
+run-time.  This avoids many of the complications discussed below (image
+files are data relocatable without further ado), but costs performance
+(one addition per memory access) and makes it difficult to pass
+addresses between Forth and library calls or other programs.
+
+   By contrast, the Gforth loader performs relocation at image load
+time.  The loader also has to replace tokens that represent primitive
+calls with the appropriate code-field addresses (or code addresses in
+the case of direct threading).
+
+   There are three kinds of image files, with different degrees of
+relocatability: non-relocatable, data-relocatable, and fully relocatable
+image files.
+
+   These image file variants have several restrictions in common; they
+are caused by the design of the image file loader:
+
+   • There is only one segment; in particular, this means, that an image
+     file cannot represent ‘ALLOCATE’d memory chunks (and pointers to
+     them).  The contents of the stacks are not represented, either.
+
+   • The only kinds of relocation supported are: adding the same offset
+     to all cells that represent data addresses; and replacing special
+     tokens with code addresses or with pieces of machine code.
+
+     If any complex computations involving addresses are performed, the
+     results cannot be represented in the image file.  Several
+     applications that use such computations come to mind:
+
+        − Hashing addresses (or data structures which contain addresses)
+          for table lookup.  If you use Gforth’s ‘table’s or ‘wordlist’s
+          for this purpose, you will have no problem, because the hash
+          tables are recomputed automatically when the system is
+          started.  If you use your own hash tables, you will have to do
+          something similar.
+
+        − There’s a cute implementation of doubly-linked lists that uses
+          ‘XOR’ed addresses.  You could represent such lists as
+          singly-linked in the image file, and restore the doubly-linked
+          representation on startup.(1)
+
+        − The code addresses of run-time routines like ‘docol:’ cannot
+          be represented in the image file (because their tokens would
+          be replaced by machine code in direct threaded
+          implementations).  As a workaround, compute these addresses at
+          run-time with ‘>code-address’ from the executions tokens of
+          appropriate words (see the definitions of ‘docol:’ and friends
+          in ‘kernel/getdoers.fs’).
+
+        − On many architectures addresses are represented in machine
+          code in some shifted or mangled form.  You cannot put ‘CODE’
+          words that contain absolute addresses in this form in a
+          relocatable image file.  Workarounds are representing the
+          address in some relative form (e.g., relative to the CFA,
+          which is present in some register), or loading the address
+          from a place where it is stored in a non-mangled form.
+
+   ---------- Footnotes ----------
+
+   (1) In my opinion, though, you should think thrice before using a
+doubly-linked list (whatever implementation).
+
+
+File: gforth.info,  Node: Non-Relocatable Image Files,  Next: Data-Relocatable Image Files,  Prev: Image File Background,  Up: Image Files
+
+14.3 Non-Relocatable Image Files
+================================
+
+These files are simple memory dumps of the dictionary.  They are
+specific to the executable (i.e., ‘gforth’ file) they were created with.
+What’s worse, they are specific to the place on which the dictionary
+resided when the image was created.  Now, there is no guarantee that the
+dictionary will reside at the same place the next time you start Gforth,
+so there’s no guarantee that a non-relocatable image will work the next
+time (Gforth will complain instead of crashing, though).  Indeed, on OSs
+with (enabled) address-space randomization non-relocatable images are
+unlikely to work.
+
+   You can create a non-relocatable image file with ‘savesystem’, e.g.:
+
+     gforth app.fs -e "savesystem app.fi bye"
+
+‘savesystem’ ( "image" –  ) gforth-0.2 “savesystem”
+
+
+File: gforth.info,  Node: Data-Relocatable Image Files,  Next: Fully Relocatable Image Files,  Prev: Non-Relocatable Image Files,  Up: Image Files
+
+14.4 Data-Relocatable Image Files
+=================================
+
+These files contain relocatable data addresses, but fixed code addresses
+(instead of tokens).  They are specific to the executable (i.e.,
+‘gforth’ file) they were created with.  Also, they disable dynamic
+native code generation (typically a factor of 2 in speed).  You get a
+data-relocatable image, if you pass the engine you want to use through
+the ‘GFORTHD’ environment variable to ‘gforthmi’ (*note gforthmi::),
+e.g.
+
+     GFORTHD="/usr/bin/gforth-fast --no-dynamic" gforthmi myimage.fi source.fs
+
+   Note that the ‘--no-dynamic’ is required here for the image to work
+(otherwise it will contain references to dynamically generated code that
+is not saved in the image).
+
+
+File: gforth.info,  Node: Fully Relocatable Image Files,  Next: Stack and Dictionary Sizes,  Prev: Data-Relocatable Image Files,  Up: Image Files
+
+14.5 Fully Relocatable Image Files
+==================================
+
+These image files have relocatable data addresses, and tokens for code
+addresses.  They can be used with different binaries (e.g., with and
+without debugging) on the same machine, and even across machines with
+the same data formats (byte order, cell size, floating point format),
+and they work with dynamic native code generation.  However, they are
+usually specific to the version of Gforth they were created with.  The
+files ‘gforth.fi’ and ‘kernl*.fi’ are fully relocatable.
+
+   There are two ways to create a fully relocatable image file:
+
+* Menu:
+
+* gforthmi::                 通常の方法
+* cross.fs::                 困難な方法
+
+
+File: gforth.info,  Node: gforthmi,  Next: cross.fs,  Prev: Fully Relocatable Image Files,  Up: Fully Relocatable Image Files
+
+14.5.1 ‘gforthmi’
+-----------------
+
+You will usually use ‘gforthmi’.  If you want to create an image file
+that contains everything you would load by invoking Gforth with ‘gforth
+options’, you simply say:
+     gforthmi file options
+
+   E.g., if you want to create an image ‘asm.fi’ that has the file
+‘asm.fs’ loaded in addition to the usual stuff, you could do it like
+this:
+
+     gforthmi asm.fi asm.fs
+
+   ‘gforthmi’ is implemented as a sh script and works like this: It
+produces two non-relocatable images for different addresses and then
+compares them.  Its output reflects this: first you see the output (if
+any) of the two Gforth invocations that produce the non-relocatable
+image files, then you see the output of the comparing program: It
+displays the offset used for data addresses and the offset used for code
+addresses; moreover, for each cell that cannot be represented correctly
+in the image files, it displays a line like this:
+
+          78DC         BFFFFA50         BFFFFA40
+
+   This means that at offset $78dc from ‘forthstart’, one input image
+contains $bffffa50, and the other contains $bffffa40.  Since these cells
+cannot be represented correctly in the output image, you should examine
+these places in the dictionary and verify that these cells are dead
+(i.e., not read before they are written).
+
+   If you insert the option ‘--application’ in front of the image file
+name, you will get an image that uses the ‘--appl-image’ option instead
+of the ‘--image-file’ option (*note Invoking Gforth::).  When you
+execute such an image on Unix (by typing the image name as command), the
+Gforth engine will pass all options to the image instead of trying to
+interpret them as engine options.
+
+   If you type ‘gforthmi’ with no arguments, it prints some usage
+instructions.
+
+   There are a few wrinkles: After processing the passed options, the
+words ‘savesystem’ and ‘bye’ must be visible.  A special doubly indirect
+threaded version of the ‘gforth’ executable is used for creating the
+non-relocatable images; you can pass the exact filename of this
+executable through the environment variable ‘GFORTHD’ (default:
+‘gforth-ditc’); if you pass a version that is not doubly indirect
+threaded, you will not get a fully relocatable image, but a
+data-relocatable image (*note Data-Relocatable Image Files::), because
+there is no code address offset).  The normal ‘gforth’ executable is
+used for creating the relocatable image; you can pass the exact filename
+of this executable through the environment variable ‘GFORTH’.
+
+
 File: gforth.info,  Node: cross.fs,  Prev: gforthmi,  Up: Fully Relocatable Image Files
 
 14.5.2 ‘cross.fs’
@@ -2854,7 +3062,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * >addr ( XT -- ADDR ) gforth-experimental: Closures.         (line  46)
 * >animate ( RDELTA ADDR XT -- ) minos2: widget methods.      (line 120)
 * >body ( XT -- A_ADDR ) core:           CREATE..DOES> details.
-                                                              (line  75)
+                                                              (line  74)
 * >code-address ( XT -- C_ADDR ) gforth-0.2: Threading Words. (line  73)
 * >compile ( TRANSLATOR -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line 110)
@@ -3029,7 +3237,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * act ( -- OPTR ) minos2:                widget methods.      (line   9)
 * act-name$ ( -- ADDR U ) minos2:        actor methods.       (line  12)
 * action-of ( INTERPRETATION "NAME" -- XT; COMPILATION "NAME" -- ; RUN-TIME -- XT ) core-ext: Deferred Words.
-                                                              (line  92)
+                                                              (line  97)
 * activate ( RUN-TIME NEST-SYS1 TASK -- ) gforth-experimental: Basic multi-tasking.
                                                               (line  46)
 * active-w ( -- OPTR ) minos2:           actor methods.       (line   9)
@@ -3058,7 +3266,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  37)
 * AHEAD ( COMPILATION -- ORIG ; RUN-TIME -- ) tools-ext: Arbitrary control structures.
                                                               (line  21)
-* Alias ( XT "NAME" -- ) gforth-0.2:     Aliases.             (line  27)
+* Alias ( XT "NAME" -- ) gforth-0.2:     Aliases.             (line  24)
 * align ( -- ) core:                     Dictionary allocation.
                                                               (line  85)
 * aligned ( C-ADDR -- A-ADDR ) core:     Address arithmetic.  (line  67)
@@ -3287,7 +3495,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * create-file ( C-ADDR U WFAM -- WFILEID WIOR ) file: General files.
                                                               (line  27)
 * create-from ( NT "NAME" -- ) gforth-1.0: Creating from a prototype.
-                                                              (line  28)
+                                                              (line  27)
 * critical-section ( XT SEMAPHORE -- ) gforth-experimental: Semaphores.
                                                               (line  30)
 * CS-DROP ( DEST -- ) gforth-1.0:        Arbitrary control structures.
@@ -3346,12 +3554,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * default-color ( -- ) gforth-1.0:       Terminal output.     (line  36)
 * default-w: ( -- ) gforth-experimental: Gforth locals.       (line  86)
 * default-wa: ( -- ) gforth-experimental: Gforth locals.      (line  82)
-* Defer ( "NAME" -- ) core-ext:          Deferred Words.      (line  78)
+* Defer ( "NAME" -- ) core-ext:          Deferred Words.      (line  81)
 * defer ( -- ) oof:                      Class Declaration.   (line  21)
-* defer! ( XT XT-DEFERRED -- ) core-ext: Deferred Words.      (line  82)
-* defer@ ( XT-DEFERRED -- XT ) core-ext: Deferred Words.      (line  88)
+* defer! ( XT XT-DEFERRED -- ) core-ext: Deferred Words.      (line  86)
+* defer@ ( XT-DEFERRED -- XT ) core-ext: Deferred Words.      (line  93)
 * defers ( COMPILATION "NAME" -- ; RUN-TIME ... -- ... ) gforth-0.2: Deferred Words.
-                                                              (line  98)
+                                                              (line 103)
 * definer! ( DEFINER XT -- ) gforth-obsolete: Threading Words.
                                                               (line 139)
 * defines ( XT CLASS "NAME" -- ) mini-oof: Basic Mini-OOF Usage.
@@ -3787,7 +3995,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * interpret/compile: ( INTERP-XT COMP-XT "NAME" -- ) gforth-0.2: Combined words.
                                                               (line   9)
 * invert ( W1 -- W2 ) core:              Bitwise operations.  (line  12)
-* IS ( VALUE "NAME" -- ) core-ext:       Deferred Words.      (line  85)
+* IS ( XT "NAME" -- ) core-ext:          Deferred Words.      (line  90)
 * j ( R:N R:W1 R:W2 -- N R:N R:W1 R:W2 ) core: Counted Loops. (line 240)
 * JOIN ( ORIG -- ) gforth-0.7:           Regular Expressions. (line  21)
 * k ( R:N R:W1 R:W2 R:W3 R:W4 -- N R:N R:W1 R:W2 R:W3 R:W4 ) gforth-0.3: Counted Loops.
@@ -3969,7 +4177,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * n ( -- ) gforth-1.0:                   Locating source code definitions.
                                                               (line  41)
 * n/a ( -- ) gforth-experimental:        User-defined TO and DEFER@.
-                                                              (line  29)
+                                                              (line  31)
 * n>r ( X1 .. XN N -- R:XN..X1 R:N ) tools-ext: Return stack. (line  29)
 * name ( -- C-ADDR U ) gforth-obsolete:  The Input Stream.    (line  42)
 * name$ ( -- ADDR U ) minos2:            widget methods.      (line  12)
@@ -4003,7 +4211,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * noname ( -- ) gforth-0.2:              Anonymous Definitions.
                                                               (line  23)
 * noname-from ( XT -- ) gforth-1.0:      Creating from a prototype.
-                                                              (line  42)
+                                                              (line  43)
 * noop ( -- ) gforth-0.2:                Execution token.     (line  96)
 * notfound ( STATE -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  31)
@@ -4063,7 +4271,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * open-pipe ( C-ADDR U WFAM -- WFILEID WIOR ) gforth-0.2: Pipes.
                                                               (line  10)
 * opt: ( COMPILATION -- COLON-SYS2 ; RUN-TIME -- NEST-SYS ) gforth-1.0: User-defined compile-comma.
-                                                              (line  14)
+                                                              (line  16)
 * or ( W1 W2 -- W ) core:                Bitwise operations.  (line   8)
 * order ( -- ) search-ext:               Word Lists.          (line  89)
 * os-class ( -- C-ADDR U ) gforth-environment: Environmental Queries.
@@ -4104,7 +4312,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  34)
 * prepend-where ( -- ) gforth-1.0:       Locating uses of a word.
                                                               (line  47)
-* preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 106)
+* preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 116)
 * previous ( -- ) search-ext:            Word Lists.          (line  73)
 * print ( OBJECT -- ) objects:           Objects Glossary.    (line 129)
 * printdebugdata ( -- ) gforth-0.2:      Debugging.           (line  32)
@@ -4191,7 +4399,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * return-stack-cells ( -- N ) environment: Environmental Queries.
                                                               (line  63)
 * reveal ( -- ) gforth-0.2:              Creating from a prototype.
-                                                              (line  35)
+                                                              (line  36)
 * rol ( U1 U -- U2 ) gforth-1.0:         Bitwise operations.  (line  92)
 * roll ( X0 X1 .. XN N -- X1 .. XN X0 ) core-ext: Data stack. (line  33)
 * Root ( -- ) gforth-0.2:                Word Lists.          (line 140)
@@ -4263,14 +4471,14 @@ this manual.  Each word is listed with its stack effect and wordset.
 * set-name>link ( XT -- ) gforth-1.0:    Header methods.      (line 183)
 * set-name>string ( XT -- ) gforth-1.0:  Header methods.      (line 179)
 * set-optimizer ( XT -- ) gforth-1.0:    User-defined compile-comma.
-                                                              (line   8)
+                                                              (line   9)
 * set-order ( WIDN .. WID1 N -- ) search: Word Lists.         (line  50)
 * set-precision ( U -- ) floating-ext:   Floating-point output.
                                                               (line  38)
 * set-recognizers ( XT1 .. XTN N -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  67)
 * set-to ( TO-XT -- ) gforth-1.0:        User-defined TO and DEFER@.
-                                                              (line  25)
+                                                              (line  27)
 * sf! ( R SF-ADDR -- ) floating-ext:     Memory Access.       (line  37)
 * sf@ ( SF-ADDR -- R ) floating-ext:     Memory Access.       (line  34)
 * sfalign ( -- ) floating-ext:           Dictionary allocation.
@@ -4373,7 +4581,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  29)
 * success-color ( -- ) gforth-1.0:       Terminal output.     (line  54)
 * swap ( W1 W2 -- W2 W1 ) core:          Data stack.          (line  20)
-* Synonym ( "NAME" "OLDNAME" -- ) tools-ext: Aliases.         (line  17)
+* Synonym ( "NAME" "OLDNAME" -- ) tools-ext: Aliases.         (line  14)
 * system ( C-ADDR U -- ) gforth-0.2:     Passing Commands to the OS.
                                                               (line  13)
 * s\" ( COMPILATION 'CCC"' -- ; RUN-TIME -- C-ADDR U ) core-ext,file-ext: String and character literals.
@@ -4400,9 +4608,9 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  10)
 * TO ( VALUE "NAME" -- ) core-ext:       Values.              (line  36)
 * to-method: ( XT TABLE "NAME" -- ) gforth-experimental: User-defined TO and DEFER@.
-                                                              (line  21)
+                                                              (line  22)
 * to-table: ( "NAME" "XT1" .. "XTN" -- ) gforth-experimental: User-defined TO and DEFER@.
-                                                              (line  17)
+                                                              (line  18)
 * to-this ( OBJECT -- ) objects:         Objects Glossary.    (line 154)
 * touchdown ( $RXY*N BMASK -- ) minos2:  actor methods.       (line  21)
 * touchup ( $RXY*N BMASK -- ) minos2:    actor methods.       (line  24)
@@ -4559,7 +4767,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  76)
 * words ( -- ) tools:                    Word Lists.          (line 124)
 * wrap-xt ( XT1 XT2 XT: XT3 -- ... ) gforth-1.0: Deferred Words.
-                                                              (line 103)
+                                                              (line 108)
 * write-file ( C-ADDR U1 WFILEID -- WIOR ) file: General files.
                                                               (line  70)
 * write-line ( C-ADDR U WFILEID -- IOR ) file: General files. (line  72)
@@ -5018,7 +5226,7 @@ in the Word Index (only the names are listed for the words here).
 * >addr:                                 Closures.            (line  46)
 * >animate:                              widget methods.      (line 120)
 * >body:                                 CREATE..DOES> details.
-                                                              (line  75)
+                                                              (line  74)
 * >BODY of non-CREATEd words:            core-ambcond.        (line 186)
 * >code-address:                         Threading Words.     (line  73)
 * >compile:                              Dealing with existing Recognizers.
@@ -5189,7 +5397,7 @@ in the Word Index (only the names are listed for the words here).
 * AConstant:                             Constants.           (line  28)
 * act:                                   widget methods.      (line   9)
 * act-name$:                             actor methods.       (line  12)
-* action-of:                             Deferred Words.      (line  92)
+* action-of:                             Deferred Words.      (line  97)
 * activate:                              Basic multi-tasking. (line  46)
 * active-w:                              actor methods.       (line   9)
 * actor:                                 MINOS2 object framework.
@@ -5223,7 +5431,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  37)
 * AHEAD:                                 Arbitrary control structures.
                                                               (line  21)
-* Alias:                                 Aliases.             (line  27)
+* Alias:                                 Aliases.             (line  24)
 * aliases:                               Aliases.             (line   6)
 * align:                                 Dictionary allocation.
                                                               (line  85)
@@ -5677,7 +5885,7 @@ in the Word Index (only the names are listed for the words here).
 * CREATE and alignment:                  Address arithmetic.  (line  36)
 * create-file:                           General files.       (line  27)
 * create-from:                           Creating from a prototype.
-                                                              (line  28)
+                                                              (line  27)
 * create...does> tutorial:               Defining Words Tutorial.
                                                               (line   6)
 * creating objects:                      Creating objects.    (line   6)
@@ -5783,12 +5991,12 @@ in the Word Index (only the names are listed for the words here).
 * default-color:                         Terminal output.     (line  36)
 * default-w::                            Gforth locals.       (line  86)
 * default-wa::                           Gforth locals.       (line  82)
-* Defer:                                 Deferred Words.      (line  78)
+* Defer:                                 Deferred Words.      (line  81)
 * defer:                                 Class Declaration.   (line  21)
-* defer!:                                Deferred Words.      (line  82)
-* defer@:                                Deferred Words.      (line  88)
+* defer!:                                Deferred Words.      (line  86)
+* defer@:                                Deferred Words.      (line  93)
 * deferred words:                        Deferred Words.      (line   6)
-* defers:                                Deferred Words.      (line  98)
+* defers:                                Deferred Words.      (line 103)
 * definer:                               Threading Words.     (line 131)
 * definer!:                              Threading Words.     (line 139)
 * defines:                               Basic Mini-OOF Usage.
@@ -6138,7 +6346,7 @@ in the Word Index (only the names are listed for the words here).
 * FACOSH, float<1:                       floating-ambcond.    (line  50)
 * factoring:                             Introduction.        (line  29)
 * factoring similar colon definitions:   CREATE..DOES> applications.
-                                                              (line   8)
+                                                              (line   9)
 * factoring tutorial:                    Factoring Tutorial.  (line   6)
 * fade-color::                           widget methods.      (line 142)
 * falign:                                Dictionary allocation.
@@ -6678,7 +6886,7 @@ in the Word Index (only the names are listed for the words here).
 * ior type description:                  Notation.            (line 116)
 * ior values and meaning:                file-idef.           (line  36)
 * ior values and meaning <1>:            memory-idef.         (line   7)
-* IS:                                    Deferred Words.      (line  85)
+* IS:                                    Deferred Words.      (line  90)
 * items on the stack after interpretation: Stack depth changes.
                                                               (line   6)
 * iterate over array:                    Counted Loops.       (line 125)
@@ -7000,7 +7208,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  41)
 * n, stack item type:                    Notation.            (line  91)
 * n/a:                                   User-defined TO and DEFER@.
-                                                              (line  29)
+                                                              (line  31)
 * n>r:                                   Return stack.        (line  29)
 * name:                                  The Input Stream.    (line  42)
 * name dictionary:                       Introducing the Text Interpreter.
@@ -7053,7 +7261,7 @@ in the Word Index (only the names are listed for the words here).
 * noname:                                Anonymous Definitions.
                                                               (line  23)
 * noname-from:                           Creating from a prototype.
-                                                              (line  42)
+                                                              (line  43)
 * noop:                                  Execution token.     (line  96)
 * notation of glossary entries:          Notation.            (line   6)
 * notfound:                              Dealing with existing Recognizers.
@@ -7167,7 +7375,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * operator’s terminal facilities available: core-other.       (line  10)
 * opt::                                  User-defined compile-comma.
-                                                              (line  14)
+                                                              (line  16)
 * options on the command line:           Invoking Gforth.     (line   6)
 * or:                                    Bitwise operations.  (line   8)
 * order:                                 Word Lists.          (line  89)
@@ -7260,7 +7468,7 @@ in the Word Index (only the names are listed for the words here).
 * prefix `:                              Execution token.     (line  14)
 * prepend-where:                         Locating uses of a word.
                                                               (line  47)
-* preserve:                              Deferred Words.      (line 106)
+* preserve:                              Deferred Words.      (line 116)
 * previous:                              Word Lists.          (line  73)
 * previous, search order empty:          search-ambcond.      (line  15)
 * primitive source format:               Automatic Generation.
@@ -7420,7 +7628,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  63)
 * returning from a definition:           Calls and returns.   (line   6)
 * reveal:                                Creating from a prototype.
-                                                              (line  35)
+                                                              (line  36)
 * rol:                                   Bitwise operations.  (line  92)
 * roll:                                  Data stack.          (line  33)
 * Root:                                  Word Lists.          (line 140)
@@ -7532,14 +7740,14 @@ in the Word Index (only the names are listed for the words here).
 * set-name>link:                         Header methods.      (line 183)
 * set-name>string:                       Header methods.      (line 179)
 * set-optimizer:                         User-defined compile-comma.
-                                                              (line   8)
+                                                              (line   9)
 * set-order:                             Word Lists.          (line  50)
 * set-precision:                         Floating-point output.
                                                               (line  38)
 * set-recognizers:                       Dealing with existing Recognizers.
                                                               (line  67)
 * set-to:                                User-defined TO and DEFER@.
-                                                              (line  25)
+                                                              (line  27)
 * sf!:                                   Memory Access.       (line  37)
 * sf@:                                   Memory Access.       (line  34)
 * sf@ or sf! used with an address that is not single-float aligned: floating-ambcond.
@@ -7739,7 +7947,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * swap:                                  Data stack.          (line  20)
 * symmetric division:                    Integer division.    (line  11)
-* Synonym:                               Aliases.             (line  17)
+* Synonym:                               Aliases.             (line  14)
 * synonyms:                              Aliases.             (line   6)
 * syntax tutorial:                       Syntax Tutorial.     (line   6)
 * system:                                Passing Commands to the OS.
@@ -7830,9 +8038,9 @@ in the Word Index (only the names are listed for the words here).
 * TO on non-VALUEs:                      core-ambcond.        (line 161)
 * TO on non-VALUEs and non-locals:       locals-ambcond.      (line  12)
 * to-method::                            User-defined TO and DEFER@.
-                                                              (line  21)
+                                                              (line  22)
 * to-table::                             User-defined TO and DEFER@.
-                                                              (line  17)
+                                                              (line  18)
 * to-this:                               Objects Glossary.    (line 154)
 * tokens for words:                      Tokens for Words.    (line   6)
 * TOS definition:                        Stacks and Postfix notation.
@@ -8061,7 +8269,7 @@ in the Word Index (only the names are listed for the words here).
 * words used in your program:            Standard Report.     (line   6)
 * words, forgetting:                     Forgetting words.    (line   6)
 * wordset:                               Notation.            (line  43)
-* wrap-xt:                               Deferred Words.      (line 103)
+* wrap-xt:                               Deferred Words.      (line 108)
 * write-file:                            General files.       (line  70)
 * write-line:                            General files.       (line  72)
 * wrol:                                  Bitwise operations.  (line  76)

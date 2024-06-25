@@ -70,7 +70,7 @@ Next: <a href="Creating-from-a-prototype.html" accesskey="n" rel="next">Creating
 <hr>
 <span id="User_002ddefined-compile_002c"></span><h4 class="subsubsection">6.10.10.7 User-defined <code>compile,</code></h4>
 
-<p>You can also change the implementation of <code>compile,</code> for a word, with
+<p>以下を使用して、 とあるワードのための <code>compile,</code> の実装を変更することもできます
 </p>
 <span id="index-set_002doptimizer-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-set_002doptimizer"></span>
@@ -78,11 +78,10 @@ Next: <a href="Creating-from-a-prototype.html" accesskey="n" rel="next">Creating
 <div class="format">
 <pre class="format"><code>set-optimizer</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-optimizer&rdquo;
 </pre></div>
-<p>Changes the current word such that <code>compile,</code>ing it executes <i>xt</i>
-(with the same stack contents as passed to <code>compile,</code>).  Note that
-<code>compile,</code> must be consistent with <code>execute</code>, so you must use
-<code>set-optimizer</code> only to install a more efficient implementation of the
-same behaviour.
+<p><code>compile,</code> で <i>xt</i> execute するように現在のワードを変更します(<code>compile,</code>
+に渡されたものと同じスタック内容を使用)。 注意: <code>compile,</code> は <code>execute</code>
+とスタック内容が一致している必要があるため、 <code>set-optimizer</code> は同じ振る舞いの、
+より効率的な実装をインストールする場合にのみ使用しなければならないことに注意してください。
 </p>
 
 <span id="index-opt_003a-_0028--compilation-_002d_002d-colon_002dsys2-_003b-run_002dtime-_002d_002d-nest_002dsys--_0029-gforth_002d1_002e0"></span>
@@ -91,26 +90,22 @@ same behaviour.
 <div class="format">
 <pre class="format"><code>opt:</code> ( <i>compilation &ndash; colon-sys2 ; run-time &ndash; nest-sys  </i>) gforth-1.0 &ldquo;opt:&rdquo;
 </pre></div>
-<p>Starts a nameless colon definition; when it is complete, this colon
-definition will become the <code>compile,</code> implementation of the latest word
-(before the <code>opt:</code>).
+<p>名前無しのコロン定義を開始します。 完了すると、 このコロン定義は(<code>opt:</code> の前の)最新のワードの <code>compile,</code>
+の実装になります。
 </p>
 
 
-<p>Note that the resulting <code>compile,</code> must still be equivalent to
-<code>postpone literal postpone execute</code>, so <code>set-optimizer</code> is useful
-for efficiency, not for changing the behaviour.  There is nothing that
-prevents you from shooting yourself in the foot, however.  You can check
-whether your uses of <code>set-optimizer</code> are correct by comparing the
-results when you use it with the results you get when you disable your uses
-by first defining
+<p>注意: 結果として得られる <code>compile,</code> は、 依然として <code>postpone literal postpone
+execute</code> と同等である必要があることに注意してください。 そのため、 <code>set-optimizer</code> は、
+振る舞いを変更するためではなく、 効率化のために役立てるものです。  しかし、 あなたが自分の足を撃つことを妨げるものは何もありません。  あなたが
+<code>set-optimizer</code> を使用したときの結果と、 最初に以下を定義して使用を無効にしたときに得られる結果を比較することで、
+<code>set-optimizer</code> の使用が正しいかどうかを確認できます。
 </p>
 <div class="example">
 <pre class="example">: set-optimizer drop ;
 </pre></div>
 
-<p>As an example of the use of <code>set-optimizer</code>, we can enhance one of the
-definitions of <code>CONSTANT</code> above as follows.
+<p><code>set-optimizer</code> の使用例として、 上記の <code>CONSTANT</code> の定義の 1 つを以下のように拡張できます。
 </p>
 <div class="example">
 <pre class="example">: CONSTANT ( n &quot;name&quot; -- ; name: -- n )
@@ -120,34 +115,27 @@ definitions of <code>CONSTANT</code> above as follows.
 ;
 </pre></div>
 
-<p>The only change is the addition of the <code>set-optimizer</code> line.  When you
-define a constant and compile it:
+<p>唯一の変更は、 <code>set-optimizer</code> 行の追加です。 あなたが定数を定義してコンパイルすると、 以下のようになります:
 </p>
 <div class="example">
 <pre class="example">5 constant five
 : foo five ;
 </pre></div>
 
-<p>the compiled <code>five</code> in <code>foo</code> is now compiled to the literal 5
-instead of a generic invocation of <code>five</code>.  The quotation has the same
-stack effect as <code>compile,</code>: <code>( xt -- )</code>.  The passed xt belongs to
-the <code>compile,</code>d word, i.e., <code>five</code> in the example.  In the example
-the xt is first converted to the body address, then the value 5 at that
-place is fetched, and that value is compiled with the <code>postpone
-literal</code> (see <a href="Literals.html">Literals</a>).
+<p><code>foo</code> 内のコンパイル済み <code>five</code> は、 <code>five</code> の一般的な呼び出しではなく、 literal 5
+とコンパイルされるようになりました。  引用(quotation)には、 <code>compile,</code> と同じスタック効果があり、 それは
+<code>( xt -- )</code> です。  渡された xt は <code>compile,</code> されたワード、 つまりこの例では <code>five</code>
+に属します。 この例では、 まず xt が本文アドレスに変換され、 次にその場所の値 5 がフェッチされ、 その値が <code>postpone
+literal</code> でコンパイルされます(see <a href="Literals.html">Literals</a>)。
 </p>
-<p>This use of <code>set-optimizer</code> assumes that the user does not change the
-value of a constant with, e.g., <code>6 ' five &gt;body !</code>.  While <code>five</code>
-has been defined with <code>create</code>, that is an implementation detail of
-<code>CONSTANT</code>, and if you don&rsquo;t document it, the user must not rely on
-it.  And if you use <code>set-optimizer</code> in a way that assumes that the body
-does not change (like is done here), you must not document that
-<code>create</code> is used; and conversely, if you document it, you have to write
-the <code>compile,</code> implementation such that it can deal with changing
-bodies.
+<p>この <code>set-optimizer</code> の使用は、 ユーザーが、 例えば <code>6 ' four &gt;body !</code>
+などして定数の値を変更しないことを前提としています。  <code>five</code> は <code>create</code> で定義されていますが、 これは
+<code>CONSTANT</code> の実装の詳細であり、 それを文書化しない場合、 ユーザーはそれに依存してはなりません。  また、
+h本体が変更されないことを前提とした方法で <code>set-optimizer</code> を使用する場合、 (ここで行われているように)
+<code>create</code> が使用されていることを文書化してはなりません。 逆に、 それを文書化する場合は、 本体の変更を処理できるように
+<code>compile,</code> 実装を記述する必要があります。
 </p>
-<p>Another example is a better-optimized variant of the <code>fvalue</code> example
-above:
+<p>別の例は、 上記の <code>fvalue</code> の例をさらに最適化したものです:
 </p>
 <div class="example">
 <pre class="example">: compile-fvalue-to ( xt-value-to -- )
@@ -168,35 +156,29 @@ above:
 see bar
 </pre></div>
 
-<p>Compare the code for <code>bar</code> with the one for the earlier definition.
-Here we see the optimization of both the code for reading the fvalue (coming
-from the <code>set-optimizer</code> in <code>fvalue</code>) and for writing the fvalue
-(coming from the <code>set-optimizer</code> applied to <code>fvalue-to</code>.  Because
-an fvalue can change (unlike a constant), the reading part (inside
-<code>fvalue</code>) compiles the address and a <code>f@</code> that is performed at
-run-time.
+<p><code>bar</code> のコードを以前の定義のコードと比較します。  ここでは、 fvalue を読み取るコード(<code>fvalue</code> の
+<code>set-optimizer</code> より)と、 fvalue を書き込むコード(<code>fvalue-to</code> に適用された
+<code>set-optimizer</code> より)の両方の最適化が見られます。 fvalue は(定数とは異なり)変化する可能性があるため、
+(<code>fvalue</code> 内部の)読み取り部分が、 アドレスと、 実行時に実行される <code>f@</code> をコンパイルします。
 </p>
-<p>For <code>fvalue-to</code>, the <code>compile,</code> implementation basically just
-compiles the code executed by <code>fvalue</code> inline.  The compilation
-semantics of <code>to</code> compiles the address as literal and then the
-<code>(to)</code> implementation (i.e., <code>fvalue-to</code>).  In this process the
-<code>&gt;body</code> is optimized away.
+<p><code>fvalue-to</code> の場合、 <code>compile,</code> の実装は基本的に、 <code>fvalue</code>
+によってインラインで実行されるコードをコンパイルするだけです。 <code>to</code> のコンパイル機能(compilation
+semantics)は、アドレスをリテラルとしてコンパイルしてから、 <code>(to)</code> の実装(つまり、
+<code>fvalue-to</code>)をコンパイルします。 この処理では、 <code>&gt;body</code> が最適化されて削除されます。
 </p>
-<p>In practice Gforth&rsquo;s <code>fvalue</code> includes a few additional twists, e.g.,
-to support <code>+TO</code>.
+<p>実際には、 Gforth の <code>fvalue</code> は、 たとえば <code>+TO</code> をサポートするなど、
+いくつかの追加の工夫が含まれています。
 </p>
-<p>Note that the call to <code>set-optimizer</code> has to be performed after the
-call to <code>set-does&gt;</code> (or <code>does&gt;</code>, because <code>set-does&gt;</code>
-overwrites the <code>compile,</code> implementation itself.
+<p>注意: <code>set-optimizer</code> の呼び出しは、 <code>set-does&gt;</code> (または <code>does&gt;</code>
+の呼び出しの後に実行する必要があることに注意してください。 なぜなら、 <code>set-does&gt;</code> は <code>compile,</code>
+の実装それ自体を上書きするからです。
 </p>
-<p>As we can see in the <code>fvalue-to</code> example, we can also apply
-<code>set-optimizer</code> to individual words rather than inside a defining word
-like <code>constant</code> or <code>fvalue</code>.  In this case, the xt of the word
-passed to optimizer is usually unnecessary and is <code>drop</code>ped, as in
-<code>compile-fvalue-to</code>.
+<p><code>fvalue-to</code> の例でわかるように、 <code>set-optimizer</code> を <code>constant</code> や
+<code>fvalue</code> のような定義ワード内ではなく、 個々のワードに適用することもできます。  この場合、 オプティマイザに渡されるワードの xt
+は通常は不要であり、 <code>compile-fvalue-to</code> のように <code>drop</code> されます。
 </p>
-<p>The engine <code>gforth-itc</code> uses <code>,</code> for <code>compile,</code> and
-<code>set-optimizer</code> has no effect there.
+<p>エンジン <code>gforth-itc</code> は <code>compile,</code> に <code>,</code> を使用するので、 そこでは
+<code>set-optimizer</code> は効果ありません。
 </p>
 
 </div>
