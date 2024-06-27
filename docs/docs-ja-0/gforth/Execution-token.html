@@ -72,18 +72,17 @@ Next: <a href="Name-token.html" accesskey="n" rel="next">Name token</a>, Previou
 
 <span id="index-xt-1"></span>
 <span id="index-execution-token-1"></span>
-<p>An <em>execution token</em> (<em>xt</em>) represents some behaviour of a word.
-You can use <code>execute</code> to invoke the behaviour represented by the xt and
-<code>compile,</code> (see <a href="Macros.html">Macros</a>) to compile it into the current definition.
-Other uses include deferred words (see <a href="Deferred-Words.html">Deferred Words</a>).
+<p>実行トークン(<em>execution token</em>)(<i>xt</i>)はワードの振る舞いを表します。  <code>execute</code> を使用して
+xt で表される振る舞いを呼び出すことができ、 そして、 <code>compile,</code> (see <a href="Macros.html">Macros</a>)
+を使用してそれを現在の定義にコンパイルできます。 その他の使用法としては、 延期ワード(see <a href="Deferred-Words.html">Deferred Words</a>) があります。
 </p>
-<p>In particular, there is <em>the</em> execution token of a word that represents
-its interpretation semantics aka execution semantics.<a id="DOCF21" href="#FOOT21"><sup>21</sup></a>
+<p>特に、 ワードのインタプリタ機能(interpretation semantics)(別名 実行機能(execution
+semantics))を表す「実行トークン」(execution token)があります<a id="DOCF21" href="#FOOT21"><sup>21</sup></a>。
 </p>
 <span id="index-prefix-_0060"></span>
 <span id="index-_0060-prefix"></span>
-<p>For a named word <i>x</i>, you can use <code>`<i>x</i></code> to get its execution
-token:
+<p>名前付きワード <i>x</i> の場合、
+<code>`<i>x</i></code>(訳注:アポストロフィではなくてバックスラッシュ)を使用してその実行トークンを取得できます:
 </p>
 <div class="example">
 <pre class="example">5 `. ( n xt )
@@ -93,8 +92,7 @@ execute ( )      \ execute the xt (i.e., &quot;.&quot;)
 </pre></div>
 
 <span id="index-tick-_0028_0027_0029"></span>
-<p>However, the <code>`</code> prefix is a Gforth extension, so you may prefer to use
-the standard Forth words:
+<p>しかしながら、 <code>`</code> プレフィックスは Gforth 拡張であるため、 以下の標準 Forth のワードを使用する方が好ましいです:
 </p>
 <span id="index-_0027-_0028--_0022name_0022-_002d_002d-xt--_0029-core"></span>
 <span id="index-_0027"></span>
@@ -102,8 +100,8 @@ the standard Forth words:
 <div class="format">
 <pre class="format"><code>'</code> ( <i>&quot;name&quot; &ndash; xt  </i>) core &ldquo;tick&rdquo;
 </pre></div>
-<p><i>xt</i> represents <i>name</i>&rsquo;s interpretation semantics. Perform <code>-14
-throw</code> if the word has no interpretation semantics.
+<p><i>xt</i> は <i>name</i> のインタプリタ機能(interpretation semantics)を表します。
+ワードにインタプリタ機能が無い場合、 <code>-14 throw</code> を実行します。
 </p>
 
 <span id="index-_005b_0027_005d-_0028--compilation_002e-_0022name_0022-_002d_002d-_003b-run_002dtime_002e-_002d_002d-xt--_0029-core"></span>
@@ -112,67 +110,66 @@ throw</code> if the word has no interpretation semantics.
 <div class="format">
 <pre class="format"><code>[']</code> ( <i>compilation. &quot;name&quot; &ndash; ; run-time. &ndash; xt  </i>) core &ldquo;bracket-tick&rdquo;
 </pre></div>
-<p><i>xt</i> represents <i>name</i>&rsquo;s interpretation semantics. Perform <code>-14
-throw</code> if the word has no interpretation semantics.
+<p><i>xt</i> は <i>name</i> のインタプリタ機能(interpretation semantics)を表します。
+ワードにインタプリタ機能が無い場合、 <code>-14 throw</code> を実行します。
 </p>
 
 
-<p>These are parsing words (whereas <code>`<i>x</i></code> is treated as a literal by a
-recognizer), and you may find the behaviour in interpreted and compiled code
-unintuitive:
+<p>これらはパース・ワード(parsing words)であるため(なお、 <code>`<i>x</i></code> は recognizer
+によってリテラルとして扱われます)、 インタプリタで解釈されたりコンパイルされたコードの振る舞いが直感的ではない場合があります:
 </p>
 <div class="example">
 <pre class="example">5 ' .   ( n xt ) 
-execute ( )      \ execute the xt of .
-\ does not work as intended:
+execute ( -- )      \ execute the xt of .
+\ 以下は意図したとおりに動きません:
 \ : foo ' . ;
 \ 5 foo execute
-\ instead:
+\ その代わりに以下のようにします:
 : foo ['] . ;
 5 foo execute    \ execute the xt of .
-\ Usage of ' in colon definition:
+\ コロン定義内で ' を使った場合:
 : bar ' execute ;
 5 bar .          \ execute the xt of .
+\ 訳注: 一見普段と変わらないように見えるが、
+\       テキスト・インタプリタが . を実行するのではなく、
+\       bar が その後ろのワードの xt を execute している。
+\       よって bar の後ろを省略すると下記のようにエラーとなる
+5 bar 
+*the terminal*:10:6: error: Attempt to use zero-length string as a name
+5 bar&gt;&gt;&gt;&lt;&lt;&lt;
 </pre></div>
 
-<p><code>'</code> parses at run-time, so if you put it in a colon definition, as in
-<code>bar</code>, it does not consume the next word in the colon definition, but
-the next word at run-time (i.e., the <code>.</code> in the invocation of
-<code>bar</code>).  If you want to put a literal xt in a colon definition without
-writing <code>`<i>x</i></code>, write <code>['] <i>x</i></code>.
+<p><code>'</code> は実行時にパースするため、 <code>bar</code> のようにコロン定義に置くと、
+コロン定義内の次のワードを消費せずに実行時に次のワードが消費されます。  <code>`<i>x</i></code> と書かずにリテラル xt
+をコロン定義に入れたい場合は、 <code>['] <i>x</i></code> と書きます。
 </p>
-<p>Gforth&rsquo;s <code>`<i>x</i></code>, <code>'</code> and <code>[']</code> warn when you use them on
-compile-only words, because such usage may be non-portable between different
-Forth systems.
+<p>Gforth の <code>`<i>x</i></code> や <code>'</code> や <code>[']</code> は、 compile-only
+ワードで使用すると警告(warn)します。 そのような使用法が、 異なる Forth システム間で移植できない可能性があるためです。
 </p>
-<p>You can avoid that warning as well as the portability problems by defining
-an immediate variant of the word, e.g.:
+<p>ワードの immediate のバリエーションを定義することで、 この警告(warning)と移植性の問題を回避できます。 例:
 </p>
 <div class="example">
 <pre class="example">: if postpone if ; immediate
 : test [ ' if execute ] .&quot; test&quot; then ;
 </pre></div>
 
-<p>The resulting execution token performs the compilation semantics of
-<code>if</code> when <code>execute</code>d.
+<p>結果として得られる実行トークンが <code>execute</code> されたときは、 <code>if</code> のコンパイル機能(compilation
+semantics)を実行します。
 </p>
-<p>Another way to get an xt is <code>:noname</code> or <code>latestxt</code>
-(see <a href="Anonymous-Definitions.html">Anonymous Definitions</a>).  For anonymous words this gives an xt for
-the only behaviour the word has (the execution semantics), but you can also
-use it after defining a named word to get its xt.
+<p>xt を取得するもう一つ方法は、 <code>:noname</code> または <code>latestxt</code> です(see <a href="Anonymous-Definitions.html">Anonymous Definitions</a>)。  匿名のワードの場合、 <code>:noname</code> または <code>latestxt</code> により、
+そのワードが持つ唯一の振る舞い(実行機能(execution semantics)) の xt が得られますが、 名前付きワードの定義の後ろで
+<code>latestxt</code> を使用して、 その xt を取得することもできます。
 </p>
 <div class="example">
 <pre class="example">:noname .&quot; hello&quot; ;
 execute
 </pre></div>
 
-<p>An xt occupies one cell and can be manipulated like any other cell.
+<p>xt は 1 つのセルを占有し、 他のセルと同様に操作できます。
 </p>
-<p>In Standard Forth the xt is just an abstract data type (i.e., defined by the
-operations that produce or consume it).  The concrete implementation (since
-Gforth 1.0) is the body address (for old hands: PFA) of the word; in Gforth
-0.7 and earlier, the xt was implemented as code field addres (CFA, 2 cells
-before the PFA).
+<p>標準 Forth では、 xt は単なる抽象データ型です(つまり、 xt を生成または消費する操作によって定義されます)。 (Gforth 1.0
+以降の)具体的な実装は、 ワードの本体アドレス(昔は PFA だった)です。 Gforth 0.7 以前では、 xt
+はコード・フィールド・アドレス(CFA は PFA の 2 セル前)として実装されていました。
 </p>
 <span id="index-execute-_0028--xt-_002d_002d--_0029-core"></span>
 <span id="index-execute"></span>
@@ -180,7 +177,7 @@ before the PFA).
 <div class="format">
 <pre class="format"><code>execute</code> ( <i>xt &ndash; </i>) core &ldquo;execute&rdquo;
 </pre></div>
-<p>Perform the semantics represented by the execution token, <i>xt</i>.
+<p>実行トークン <i>xt</i> によって表される機能(semantics)を実行します。
 </p>
 <span id="index-execute_002dexit-_0028--compilation-_002d_002d-_003b-run_002dtime-xt-nest_002dsys-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-execute_002dexit"></span>
@@ -188,9 +185,9 @@ before the PFA).
 <div class="format">
 <pre class="format"><code>execute-exit</code> ( <i>compilation &ndash; ; run-time xt nest-sys &ndash;  </i>) gforth-1.0 &ldquo;execute-exit&rdquo;
 </pre></div>
-<p>Execute <code>xt</code> and return from the current definition, in a
-tail-call-optimized way: The return address <code>nest-sys</code> and the locals
-are deallocated before executing <code>xt</code>.
+<p><code>xt</code> を実行し、 末尾呼び出し最適化法(tail-call-optimized way)で現在の定義から戻ります。 戻りアドレス
+<code>nest-sys</code> とローカルズ(locals)は、 <code>xt</code> を execute
+する前に割り当て解除(deallocate)されます。
 </p>
 
 <span id="index-perform-_0028--a_002daddr-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -202,7 +199,7 @@ are deallocated before executing <code>xt</code>.
 <p><code>@ execute</code>.
 </p>
 
-<p><code>Noop</code> is sometimes used to have a placeholder execution token:
+<p><code>Noop</code> は、 しばしば実行トークンのプレースホルダーとして使用されます:
 </p>
 <span id="index-noop-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
 <span id="index-noop"></span>
@@ -219,12 +216,11 @@ are deallocated before executing <code>xt</code>.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT21" href="#DOCF21">(21)</a></h5>
-<p>The Forth
-standard has words with undefined interpretation semantics (e.g.,
-<code>r@</code>) and words without defined execution semantics (e.g., <code>s&quot;</code>)
-and words with neither (e.g., <code>if</code>), but in cases where both
-interpretation and execution semantics are defined, they are the same; so we
-treat them as being the same.</p>
+<p>標準 Forth には、
+インタプリタ機能(interpretation semantics)が未定義のワード(例: <code>r@</code>)や、
+定義された実行機能(execution semantics)が無いワード(例: <code>s&quot;</code>)や、 およびそのどちらも持たないワード(例:
+<code>if</code>)があります。 ただし、 インタプリタ機能(interpretation semantics)と実行機能(execution
+semantics)の両方が定義されている場合、 それらは同一でであるため、 それらを同一のものとして扱います</p>
 </div>
 <hr>
 <div class="header">

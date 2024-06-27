@@ -27,6 +27,129 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Substitute,  Next: CSV Reader,  Prev: i18n and l10n,  Up: Other I/O
+
+6.20.12 Substitute
+------------------
+
+This is a simple text macro replacement facility.  Texts in the form
+‘"text %macro% text"’ are processed, and the macro variables enclosed in
+‘'%'’ are replaced with their associated strings.  Two consecutive ‘%’
+are replaced by one ‘%’.  Macros are defined in a specific wordlist, and
+return a string upon execution; the standard defines only one way to
+declare macros, ‘replaces’, which creates a macro that just returns a
+string.
+
+‘macros-wordlist’ ( – wid  ) gforth-experimental “macros-wordlist”
+   wordlist for string replacement macros
+
+‘replaces’ ( addr1 len1 addr2 len2 –  ) string-ext “replaces”
+   create a macro with name ADDR2 LEN2 and content ADDR1 LEN1.  If the
+macro already exists, just change the content.
+
+‘.substitute’ ( addr1 len1 – n / ior  ) gforth-experimental “dot-substitute”
+   substitute all macros in text ADDR1 LEN1 and print the result.  N is
+the number of substitutions or, if negative, a throwable IOR.
+
+‘$substitute’ ( addr1 len1 – addr2 len2 n/ior  ) gforth-experimental “string-substitute”
+   substitute all macros in text ADDR1 LEN1.  N is the number of
+substitutions, if negative, it’s a throwable IOR, ADDR2 LEN2 the result.
+
+‘substitute’ ( addr1 len1 addr2 len2 – addr2 len3 n/ior  ) string-ext “substitute”
+   substitute all macros in text ADDR1 LEN1, and copy the result to
+ADDR2 LEN2.  N is the number of substitutions or, if negative, a
+throwable IOR, ADDR2 LEN3 the result.
+
+‘unescape’ ( addr1 u1 dest – dest u2  ) string-ext “unescape”
+   double all delimiters in ADDR1 U1, so that substitute will result in
+the original text.  Note that the buffer DEST does not have a size, as
+in worst case, it will need just twice as many characters as U1.  DEST
+U2 is the resulting string.
+
+‘$unescape’ ( addr1 u1 – addr2 u2  ) gforth-experimental “string-unescape”
+   same as ‘unescape’, but creates a temporary destination string with
+‘$tmp’.
+
+
+File: gforth.info,  Node: CSV Reader,  Prev: Substitute,  Up: Other I/O
+
+6.20.13 CSV Reader
+------------------
+
+Comma-separated values (CSV) are a popular text format to interchange
+data.  Gforth provides an reader in ‘csv.fs’.
+
+‘read-csv’ ( addr u xt –  ) gforth-experimental “read-csv”
+   read CVS file ADDR U and execute XT for every item found.  XT takes
+‘( addr u col line -- )’, i.e.  the string, the current column (starting
+with 0), and the current line (starting with 1).
+
+
+File: gforth.info,  Node: OS command line arguments,  Next: Locals,  Prev: Other I/O,  Up: Words
+
+6.21 OS command line arguments
+==============================
+
+The usual way to pass arguments to Gforth programs on the command line
+is via the ‘-e’ option, e.g.
+
+     gforth -e "123 456" foo.fs -e bye
+
+   However, you may want to interpret the command-line arguments
+directly.  In that case, you can access the (image-specific)
+command-line arguments through ‘next-arg’:
+
+‘next-arg’ ( – addr u  ) gforth-0.7 “next-arg”
+   get the next argument from the OS command line, consuming it; if
+there is no argument left, return ‘0 0’.
+
+   Here’s an example program ‘echo.fs’ for ‘next-arg’:
+
+     : echo ( -- )
+         begin
+     	next-arg 2dup 0 0 d<> while
+     	    type space
+         repeat
+         2drop ;
+
+     echo cr bye
+
+   This can be invoked with
+
+     gforth echo.fs hello world
+
+   and it will print
+
+     hello world
+
+   The next lower level of dealing with the OS command line are the
+following words:
+
+‘arg’ ( u – addr count  ) gforth-0.2 “arg”
+   Return the string for the uth command-line argument; returns ‘0 0’ if
+the access is beyond the last argument.  ‘0 arg’ is the program name
+with which you started Gforth.  The next unprocessed argument is always
+‘1 arg’, the one after that is ‘2 arg’ etc.  All arguments already
+processed by the system are deleted.  After you have processed an
+argument, you can delete it with ‘shift-args’.
+
+‘shift-args’ ( –  ) gforth-0.7 “shift-args”
+   ‘1 arg’ is deleted, shifting all following OS command line parameters
+to the left by 1, and reducing ‘argc @’.  This word can change ‘argv @’.
+
+   Finally, at the lowest level Gforth provides the following words:
+
+‘argc’ ( – addr  ) gforth-0.2 “argc”
+   ‘Variable’ – the number of command-line arguments (including the
+command name).  Changed by ‘next-arg’ and ‘shift-args’.
+
+‘argv’ ( – addr  ) gforth-0.2 “argv”
+   ‘Variable’ – a pointer to a vector of pointers to the command-line
+arguments (including the command-name).  Each argument is represented as
+a C-style zero-terminated string.  Changed by ‘next-arg’ and
+‘shift-args’.
+
+
 File: gforth.info,  Node: Locals,  Next: Structures,  Prev: OS command line arguments,  Up: Words
 
 6.22 Locals
@@ -7055,160 +7178,4 @@ the preloaded words is ‘$(datadir)/gforth/$(VERSION)/TAGS’ (e.g.,
 ‘etags.fs’, you should avoid putting definitions both before and after
 ‘require’ etc., otherwise you will see the same file visited several
 times by commands like ‘tags-search’.
-
-
-File: gforth.info,  Node: Hilighting,  Next: Auto-Indentation,  Prev: Emacs Tags,  Up: Emacs and Gforth
-
-13.3 Hilighting
-===============
-
-‘gforth.el’ comes with a custom source hilighting engine.  When you open
-a file in ‘forth-mode’, it will be completely parsed, assigning faces to
-keywords, comments, strings etc.  While you edit the file, modified
-regions get parsed and updated on-the-fly.
-
-   Use the variable ‘forth-hilight-level’ to change the level of
-decoration from 0 (no hilighting at all) to 3 (the default).  Even if
-you set the hilighting level to 0, the parser will still work in the
-background, collecting information about whether regions of text are
-“compiled” or “interpreted”.  Those information are required for
-auto-indentation to work properly.  Set ‘forth-disable-parser’ to
-non-nil if your computer is too slow to handle parsing.  This will have
-an impact on the smartness of the auto-indentation engine, though.
-
-   Sometimes Forth sources define new features that should be hilighted,
-new control structures, defining-words etc.  You can use the variable
-‘forth-custom-words’ to make ‘forth-mode’ hilight additional words and
-constructs.  See the docstring of ‘forth-words’ for details (in Emacs,
-type ‘C-h v forth-words’).
-
-   ‘forth-custom-words’ is meant to be customized in your ‘.emacs’ file.
-To customize hilighing in a file-specific manner, set
-‘forth-local-words’ in a local-variables section at the end of your
-source file (*note Variables: (emacs)Local Variables in Files.).
-
-   Example:
-     0 [IF]
-        Local Variables:
-        forth-local-words:
-           ((("t:") definition-starter (font-lock-keyword-face . 1)
-             "[ \t\n]" t name (font-lock-function-name-face . 3))
-            ((";t") definition-ender (font-lock-keyword-face . 1)))
-        End:
-     [THEN]
-
-
-File: gforth.info,  Node: Auto-Indentation,  Next: Blocks Files,  Prev: Hilighting,  Up: Emacs and Gforth
-
-13.4 Auto-Indentation
-=====================
-
-‘forth-mode’ automatically tries to indent lines in a smart way,
-whenever you type <TAB> or break a line with ‘C-m’.
-
-   Simple customization can be achieved by setting ‘forth-indent-level’
-and ‘forth-minor-indent-level’ in your ‘.emacs’ file.  For historical
-reasons ‘gforth.el’ indents per default by multiples of 4 columns.  To
-use the more traditional 3-column indentation, add the following lines
-to your ‘.emacs’:
-
-     (add-hook 'forth-mode-hook (function (lambda ()
-        ;; customize variables here:
-        (setq forth-indent-level 3)
-        (setq forth-minor-indent-level 1)
-     )))
-
-   If you want indentation to recognize non-default words, customize it
-by setting ‘forth-custom-indent-words’ in your ‘.emacs’.  See the
-docstring of ‘forth-indent-words’ for details (in Emacs, type ‘C-h v
-forth-indent-words’).
-
-   To customize indentation in a file-specific manner, set
-‘forth-local-indent-words’ in a local-variables section at the end of
-your source file (*note Variables: (emacs)Local Variables in Files.).
-
-   Example:
-     0 [IF]
-        Local Variables:
-        forth-local-indent-words:
-           ((("t:") (0 . 2) (0 . 2))
-            ((";t") (-2 . 0) (0 . -2)))
-        End:
-     [THEN]
-
-
-File: gforth.info,  Node: Blocks Files,  Prev: Auto-Indentation,  Up: Emacs and Gforth
-
-13.5 Blocks Files
-=================
-
-‘forth-mode’ Autodetects blocks files by checking whether the length of
-the first line exceeds 1023 characters.  It then tries to convert the
-file into normal text format.  When you save the file, it will be
-written to disk as normal stream-source file.
-
-   If you want to write blocks files, use ‘forth-blocks-mode’.  It
-inherits all the features from ‘forth-mode’, plus some additions:
-
-   • Files are written to disk in blocks file format.
-   • Screen numbers are displayed in the mode line (enumerated beginning
-     with the value of ‘forth-block-base’)
-   • Warnings are displayed when lines exceed 64 characters.
-   • The beginning of the currently edited block is marked with an
-     overlay-arrow.
-
-   There are some restrictions you should be aware of.  When you open a
-blocks file that contains tabulator or newline characters, these
-characters will be translated into spaces when the file is written back
-to disk.  If tabs or newlines are encountered during blocks file
-reading, an error is output to the echo area.  So have a look at the
-‘*Messages*’ buffer, when Emacs’ bell rings during reading.
-
-   Please consult the docstring of ‘forth-blocks-mode’ for more
-information by typing ‘C-h v forth-blocks-mode’).
-
-
-File: gforth.info,  Node: Image Files,  Next: Engine,  Prev: Emacs and Gforth,  Up: Top
-
-14 Image Files
-**************
-
-An image file is a file containing an image of the Forth dictionary,
-i.e., compiled Forth code and data residing in the dictionary.  By
-convention, we use the extension ‘.fi’ for image files.
-
-* Menu:
-
-* Image Licensing Issues::   イメージの配布条件
-* Image File Background::    なぜイメージ・ファイルがあるのですか?
-* Non-Relocatable Image Files::  ※これは常に機能するとは限りません
-* Data-Relocatable Image Files::  ※こちらの方がよいです
-* Fully Relocatable Image Files::  ※こちらの方がもっといいです
-* Stack and Dictionary Sizes::  イメージでのデフォルト・サイズを設定
-* Running Image Files::      ‘gforth -i file’ or file.
-* Modifying the Startup Sequence::  ターンキー・アプリケーションにする事もできる
-
-
-File: gforth.info,  Node: Image Licensing Issues,  Next: Image File Background,  Prev: Image Files,  Up: Image Files
-
-14.1 Image Licensing Issues
-===========================
-
-An image created with ‘gforthmi’ (*note gforthmi::) or ‘savesystem’
-(*note Non-Relocatable Image Files::) includes the original image; i.e.,
-according to copyright law it is a derived work of the original image.
-
-   Since Gforth is distributed under the GNU GPL, the newly created
-image falls under the GNU GPL, too.  In particular, this means that if
-you distribute the image, you have to make all of the sources for the
-image available, including those you wrote.  For details see *note GNU
-General Public License (Section 3): Copying.
-
-   If you create an image with ‘cross’ (*note cross.fs::), the image
-contains only code compiled from the sources you gave it; if none of
-these sources is under the GPL, the terms discussed above do not apply
-to the image.  However, if your image needs an engine (a gforth binary)
-that is under the GPL, you should make sure that you distribute both in
-a way that is at most a _mere aggregation_, if you don’t want the terms
-of the GPL to apply to the image.
 

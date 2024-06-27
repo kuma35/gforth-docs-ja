@@ -70,8 +70,8 @@ Previous: <a href="Interpretation-and-Compilation-Semantics.html" accesskey="p" 
 <span id="Combined-Words"></span><h4 class="subsection">6.11.1 Combined Words</h4>
 <span id="index-combined-words"></span>
 
-<p>Gforth allows you to define <em>combined words</em> &ndash; words that have an
-arbitrary combination of interpretation and compilation semantics.
+<p>Gforth を使用すると、 複合ワード(<em>combined words</em>)、 つまりインタプリタ機能(interpretation
+semantics)とコンパイル機能(compilation semantics)を任意に組み合わせたワードを定義できます。
 </p>
 <span id="index-interpret_002fcompile_003a-_0028--interp_002dxt-comp_002dxt-_0022name_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
 <span id="index-interpret_002fcompile_003a"></span>
@@ -81,17 +81,15 @@ arbitrary combination of interpretation and compilation semantics.
 </pre></div>
 
 
-<p>This feature was introduced for implementing <code>TO</code> and <code>S&quot;</code>. I
-recommend that you do not define such words, as cute as they may be: they
-make it hard to get at both parts of the word in some contexts.  E.g.,
-assume you want to get an execution token for the compilation part. Instead,
-define two words, one that embodies the interpretation part, and one that
-embodies the compilation part.  Once you have done that, you can define a
-combined word with <code>interpret/compile:</code> for the convenience of your
-users.
+<p>この機能は、 <code>TO</code> と <code>S&quot;</code> を実装するために導入されました。 このようなワードは、
+たとえ小さなかわいいものであっても定義しないことをお勧めします。 なぜなら、 ワードによっては、
+いくつかの文脈でワードの両方の部分を理解するのが困難になるからです。 たとえば、 あなたがコンパイル部分の実行トークンを取得したいとすると、 代わりに、
+2つのワードを定義します。 1つはインタプリタ機能部分を具体化するもで、 もう一つはコンパイル機能部分を具体化するものです。 それら完成したら、
+あなたのユーザーの便宜のために <code>interpret/compile:</code> を使用して、 それらを組み合わせた複合ワード(combined
+word)を定義できます。
 </p>
-<p>You might try to use this feature to provide an optimizing implementation of
-the default compilation semantics of a word. For example, by defining:
+<p>この機能を使用して、 ワードのデフォルトのコンパイル機能(compilation semantics)の最適化実装を提供してみるとしましょう。
+たとえば、 以下のように定義します:
 </p><div class="example">
 <pre class="example">:noname
    foo bar ;
@@ -100,24 +98,22 @@ the default compilation semantics of a word. For example, by defining:
 interpret/compile: opti-foobar
 </pre></div>
 
-<p>as an optimizing version of:
+<p>上記は以下の最適化バージョンです:
 </p>
 <div class="example">
 <pre class="example">: foobar
     foo bar ;
 </pre></div>
 
-<p>Unfortunately, this does not work correctly with <code>[compile]</code>, because
-<code>[compile]</code> assumes that the compilation semantics of all
-<code>interpret/compile:</code> words are non-default. I.e., <code>[compile]
-opti-foobar</code> would compile compilation semantics, whereas <code>[compile]
-foobar</code> would compile interpretation semantics.
+<p>残念ながら、 これは <code>[compile]</code> では正しく動きません。 なぜなら、 <code>[compile]</code> では、 すべての
+<code>interpret/compile:</code> ワードのコンパイル機能がデフォルトでは無いと想定しているためです。 つまり、
+<code>[compile] opti-foobar</code> はコンパイル機能をコンパイルしますが、 <code>[compile] foobar</code>
+はインタプリタ機能をコンパイルします。
 </p>
 <span id="index-state_002dsmart-words-_0028are-a-bad-idea_0029"></span>
-<span id="state_002dsmartness"></span><p>Some people try to use <em>state-smart</em> words to emulate the feature
-provided by <code>interpret/compile:</code> (words are state-smart if they check
-<code>STATE</code> during execution). E.g., they would try to code <code>foobar</code>
-like this:
+<span id="state_002dsmartness"></span><p><em>state-smart</em> ワードを使用して、<code>interpret/compile:</code>
+によって提供される機能をエミュレートしようとする人もいます(実行途中に <code>STATE</code> をチェックする場合、 ワードは state-smart
+になります)。 たとえば、<code>foobar</code> を以下のようにコーディングしようとします:
 </p>
 <div class="example">
 <pre class="example">: foobar
@@ -129,15 +125,12 @@ like this:
   ENDIF ; immediate
 </pre></div>
 
-<p>Although this works if <code>foobar</code> is only processed by the text
-interpreter, it does not work in other contexts (like <code>'</code> or
-<code>POSTPONE</code>). E.g., <code>' foobar</code> will produce an execution token for
-a state-smart word, not for the interpretation semantics of the original
-<code>foobar</code>; when you execute this execution token (directly with
-<code>EXECUTE</code> or indirectly through <code>COMPILE,</code>) in compile state, the
-result will not be what you expected (i.e., it will not perform <code>foo
-bar</code>). State-smart words are a bad idea. Simply don&rsquo;t write
-them<a id="DOCF20" href="#FOOT20"><sup>20</sup></a>!
+<p>これは <code>foobar</code> がテキスト・インタプリタによってのみ処理される場合には機能しますが、 他のコンテキスト(<code>'</code> や
+<code>POSTPONE</code> など)では機能しません。 たとえば、 <code>' foobar</code> は、 元の <code>foobar</code>
+のインタプリタ機能ではなく、 state-smart ワードの実行トークンを生成します。 この実行トークンを(<code>EXECUTE</code> で直接、
+または <code>COMPILE,</code> で間接的に)コンパイル状態において実行(execute)すると、 結果は期待したものになりません(つまり、
+<code>foo bar</code> は実行されません)。 state-smart ワードは良くないアイディアです。 対策は、
+こんなの書かない事！です<a id="DOCF20" href="#FOOT20"><sup>20</sup></a>。
 </p>
 </div>
 <div class="footnote">
@@ -145,15 +138,9 @@ them<a id="DOCF20" href="#FOOT20"><sup>20</sup></a>!
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT20" href="#DOCF20">(20)</a></h5>
-<p>For a more detailed discussion of this topic, see M. Anton
-Ertl,
+<p>このトピックに関する議論の詳細は M. Anton Ertl,
 <cite><a href="https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz"><code>State</code>-smartness&mdash;Why
-it is Evil and How to Exorcise it</a></cite>, EuroForth &rsquo;98.</p>
-</div>
-<hr>
-<div class="header">
-<p>
-Previous: <a href="Interpretation-and-Compilation-Semantics.html">Interpretation and Compilation Semantics</a>, Up: <a href="Interpretation-and-Compilation-Semantics.html">Interpretation and Compilation Semantics</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+it is Evil and How to Exorcise it</a></cite>, EuroForth &rsquo;98. をご覧ください。</p>
 </div>
 
 
