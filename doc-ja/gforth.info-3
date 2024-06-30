@@ -27,6 +27,224 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Pipes,  Next: Xchars and Unicode,  Prev: Line input and conversion,  Up: Other I/O
+
+6.20.9 Pipes
+------------
+
+In addition to using Gforth in pipes created by other processes (*note
+Gforth in pipes::), you can create your own pipe with ‘open-pipe’, and
+read from or write to it.
+
+‘open-pipe’ ( c-addr u wfam – wfileid wior ) gforth-0.2 “open-pipe”
+
+‘close-pipe’ ( wfileid – wretval wior ) gforth-0.2 “close-pipe”
+
+   If you write to a pipe, Gforth can throw a ‘broken-pipe-error’; if
+you don’t catch this exception, Gforth will catch it and exit, usually
+silently (*note Gforth in pipes::).  Since you probably do not want
+this, you should wrap a ‘catch’ or ‘try’ block around the code from
+‘open-pipe’ to ‘close-pipe’, so you can deal with the problem yourself,
+and then return to regular processing.
+
+‘broken-pipe-error’ ( – n  ) gforth-0.6 “broken-pipe-error”
+   the error number for a broken pipe
+
+
+File: gforth.info,  Node: Xchars and Unicode,  Next: i18n and l10n,  Prev: Pipes,  Up: Other I/O
+
+6.20.10 Xchars and Unicode
+--------------------------
+
+ASCII is only appropriate for the English language.  Most western
+languages however fit somewhat into the Forth frame, since a byte is
+sufficient to encode the few special characters in each (though not
+always the same encoding can be used; latin-1 is most widely used,
+though).  For other languages, different char-sets have to be used,
+several of them variable-width.  To deal with this problem, characters
+are often represented as Unicode codepoints on the stack, and as UTF-8
+byte strings in memory.  An Unicode codepoint often represents one
+application-level character, but Unicode also supports decomposed
+characters that consist of several code points, e.g., a base letter and
+a combining diacritical mark.
+
+   An Unicode codepoint can consume more than one byte in memory, so we
+adjust our terminology: A char is a raw byte in memory or a value in the
+range 0-255 on the stack.  An xchar (for extended char) stands for one
+codepoint; it is represented by one or more bytes in memory and may have
+larger values on the stack.  ASCII characters are the same as chars and
+as xchars: values in the range 0-127, and a single byte with that value
+in memory.
+
+   When using UTF-8 encoding, all other codepoints take more than one
+byte/char.  In most cases, you can just treat such characters as strings
+in memory and don’t need to use the following words, but if you want to
+deal with individual codepoints, the following words are useful.  We
+currently have no words for dealing with decomposed characters.
+
+   The xchar words add a few data types:
+
+   • XC is an extended char (xchar) on the stack.  It occupies one cell,
+     and is a subset of unsigned cell.  On 16 bit systems, only the BMP
+     subset of the Unicode character set (i.e., codepoints <65536) can
+     be represented on the stack.  If you represent your application
+     characters as strings at all times, you can avoid this limitation.
+
+   • XC-ADDR is the address of an xchar in memory.  Alignment
+     requirements are the same as C-ADDR.  The memory representation of
+     an xchar differs from the stack representation, and depends on the
+     encoding used.  An xchar may use a variable number of chars in
+     memory.
+
+   • XC-ADDR U is a buffer of xchars in memory, starting at XC-ADDR, U
+     chars (i.e., bytes, not xchars) long.
+
+‘xc-size’ ( xc – u  ) xchar “x-c-size”
+   Computes the memory size of the xchar XC in chars.
+
+‘x-size’ ( xc-addr u1 – u2  ) xchar “x-size”
+   Computes the memory size of the first xchar stored at XC-ADDR in
+chars.
+
+‘xc@’ ( xc-addr – xc  ) xchar-ext “xc-fetch”
+   Fetchs the xchar XC at XC-ADDR1.
+
+‘xc@+’ ( xc-addr1 – xc-addr2 xc  ) xchar “x-c-fetch-plus”
+   Fetchs the xchar XC at XC-ADDR1.  XC-ADDR2 points to the first memory
+location after XC.
+
+‘xc@+?’ ( xc-addr1 u1 – xc-addr2 u2 xc  ) gforth-experimental “x-c-fetch-plus-query”
+   Fetchs the first xchar XC of the string XC-ADDR1 U1.  XC-ADDR2 U2 is
+the remaining string after XC.
+
+‘xc!+?’ ( xc xc-addr1 u1 – xc-addr2 u2 f  ) xchar “x-c-store-plus-query”
+   Stores the xchar XC into the buffer starting at address XC-ADDR1, U1
+chars large.  XC-ADDR2 points to the first memory location after XC, U2
+is the remaining size of the buffer.  If the xchar XC did fit into the
+buffer, F is true, otherwise F is false, and XC-ADDR2 U2 equal XC-ADDR1
+U1.  XC!+?  is safe for buffer overflows, and therefore preferred over
+XC!+.
+
+‘xc!+’ ( xc xc-addr1 – xc-addr2  ) xchar “x-c-store”
+   Stores the xchar XC at XC-ADDR1.  XC-ADDR2 is the next unused address
+in the buffer.  Note that this writes up to 4 bytes, so you need at
+least 3 bytes of padding after the end of the buffer to avoid
+overwriting useful data if you only check the address against the end of
+the buffer.
+
+‘xchar+’ ( xc-addr1 – xc-addr2  ) xchar “x-char-plus”
+   Adds the size of the xchar stored at XC-ADDR1 to this address, giving
+XC-ADDR2.
+
+‘xchar-’ ( xc-addr1 – xc-addr2  ) xchar-ext “x-char-minus”
+   Goes backward from XC_ADDR1 until it finds an xchar so that the size
+of this xchar added to XC_ADDR2 gives XC_ADDR1.
+
+‘+x/string’ ( xc-addr1 u1 – xc-addr2 u2  ) xchar-ext “plus-x-slash-string”
+   Step forward by one xchar in the buffer defined by address XC-ADDR1,
+size U1 chars.  XC-ADDR2 is the address and u2 the size in chars of the
+remaining buffer after stepping over the first xchar in the buffer.
+
+‘x\string-’ ( xc-addr u1 – xc-addr u2  ) xchar-ext “x-backslash-string-minus”
+   Step backward by one xchar in the buffer defined by address XC-ADDR
+and size U1 in chars, starting at the end of the buffer.  XC-ADDR is the
+address and U2 the size in chars of the remaining buffer after stepping
+backward over the last xchar in the buffer.
+
+‘-trailing-garbage’ ( xc-addr u1 – xc-addr u2  ) xchar-ext “minus-trailing-garbage”
+   Examine the last XCHAR in the buffer XC-ADDR U1—if the encoding is
+correct and it repesents a full char, U2 equals U1, otherwise, U2
+represents the string without the last (garbled) xchar.
+
+‘x-width’ ( xc-addr u – n  ) xchar-ext “x-width”
+   N is the number of monospace ASCII chars that take the same space to
+display as the the xchar string starting at XC-ADDR, using U chars;
+assuming a monospaced display font, i.e.  char width is always an
+integer multiple of the width of an ASCII char.
+
+‘xkey’ ( – xc  ) xchar “x-key”
+   Reads an xchar from the terminal.  This will discard all input events
+up to the completion of the xchar.
+
+‘xc-width’ ( xc – n  ) xchar-ext “x-c-width”
+   XC has a width of N times the width of a normal fixed-width glyph.
+
+‘xhold’ ( xc –  ) xchar-ext “x-hold”
+   Used between ‘<<#’ and ‘#>’.  Prepend XC to the pictured numeric
+output string.  Alternatively, use ‘holds’.
+
+‘xc,’ ( xchar –  ) xchar “x-c-comma”
+
+
+File: gforth.info,  Node: i18n and l10n,  Next: Substitute,  Prev: Xchars and Unicode,  Up: Other I/O
+
+6.20.11 国際化(I18n)とローカライズ
+----------------------------------
+
+Programs for end users require to address those in their native
+language.  There is a decades old proposal for such a facility that has
+been split from other proposals for international character sets like
+Xchars (*note Xchars and Unicode::) and Substitute (*note Substitute::).
+Messages displayed on the screen need to be translated from the native
+language of the developers to the local languages of the user.
+
+   Strings subject to translation are declared with ‘L" ’STRING‘"’.
+This returns a locale string identifier (LSID). LSIDs are opaque types,
+taking a cell on the stack.  LSIDs can be translated into a locale;
+locales are languages and country-specific variants of that language.
+
+‘L"’ ( "lsid<">" – lsid  ) gforth-experimental “l-quote”
+   Parse a string and define a new lsid, if the string is uniquely new.
+Identical strings result in identical lsids, which allows to refer to
+the same lsid from multiple locations using the same string.
+
+‘LU"’ ( "lsid<">" – lsid  ) gforth-experimental “l-unique-quote”
+   Parse a string and always define a new lsid, even if the string is
+not unique.
+
+‘native@’ ( lsid – addr u  ) gforth-experimental “native-fetch”
+   fetch native string from an LSID
+
+‘locale@’ ( lsid – addr u  ) gforth-experimental “locale-fetch”
+   fetch the localized string in the current language and country
+
+‘locale!’ ( addr u lsid –  ) gforth-experimental “locale-store”
+   Store localized string ADDR U for the current locale and country in
+LSID.
+
+‘Language’ ( "name" –  ) gforth-experimental “Language”
+   define a locale.  Executing that locale makes it the current locale.
+
+‘Country’ ( <lang> "name" –  ) gforth-experimental “Country”
+   define a variant (typical: country) for the current locale.
+Executing that locale makes it the current locale.  You can create
+variants of variants (a country may have variants within, e.g.  think of
+how many words for rolls/buns there are in many languages).
+
+‘locale-file’ ( fid –  ) gforth-experimental “locale-file”
+   read lines from FID into the current locale.
+
+‘included-locale’ ( addr u –  ) gforth-experimental “included-locale”
+   read lines from the file ADDR U into the current locale.
+
+‘include-locale’ ( "name" –  ) gforth-experimental “include-locale”
+   read lines from the file "NAME" into the current locale.
+
+‘locale-csv’ ( "name" –  ) gforth-experimental “locale-csv”
+   import comma-separated value table into locales.  first line contains
+locale names, “program” and “default” are special entries; generic
+languages must preceed translations for specific countries.  Entries
+under “program” (must be leftmost) are used to search for the lsid; if
+empty, the line number-1 is the lsid index.
+
+‘.locale-csv’ ( –  ) gforth-experimental “dot-locale-csv”
+   write the locale database in CSV format to the terminal output.
+
+‘locale-csv-out’ ( "name" –  ) gforth-experimental “locale-csv”
+   Create file "NAME" and write the locale database out to the file
+"NAME" in CSV format.
+
+
 File: gforth.info,  Node: Substitute,  Next: CSV Reader,  Prev: i18n and l10n,  Up: Other I/O
 
 6.20.12 Substitute
@@ -210,7 +428,7 @@ position.
 for a floating point value:
 
      : CX* {: F: Ar F: Ai F: Br F: Bi -- Cr Ci :}
-     \ complex multiplication
+     \ 複素数の掛け算
       Ar Br f* Ai Bi f* f-
       Ar Bi f* Ai Br f* f+ ;
 
@@ -218,7 +436,7 @@ for a floating point value:
 ‘DA:’, ‘D^’), floats (‘F:’, ‘FA:’, ‘F^’), characters (‘C:’, ‘CA:’,
 ‘C^’), and xts (‘xt:’, ‘xta:’) in several flavours:
 
-“value-flavoured”
+“valueフレーバー(value-flavoured)”
      (*note Values::) A value-flavoured local (defined with ‘W:’, ‘D:’
      etc.)  produces its value and can be changed with ‘TO’.
 
@@ -239,14 +457,14 @@ for a floating point value:
           : emit {: C^ char* -- :}
               char* 1 type ;
 
-“defer-flavoured”
-     (*note Deferred Words::) A defer-flavoured local (defined with
-     ‘XT:’ or ‘XTA:’) ‘execute’s the xt; you can use ‘action-of’ (*note
-     Deferred Words::) to get the xt out of a defer-flavoured local.  If
-     the local is defined with ‘xta:’, you can use ‘addr’ to get the
-     address (valid until the end of the scope of the local) where the
-     xt is stored.  E.g., the standard word ‘execute’ can be defined
-     with a defer-flavoured local like this:
+“deferフレーバー(defer-flavoured)”
+     (*note Deferred Words::) (‘XT:’ または ‘XTA:’ と指定した) defer フ
+     レーバーのローカル変数 xt を ‘execute’ します。 ‘action-of’ を使用
+     すると、 defer フレーバーのローカル変数から xt を取得できます。 ロ
+     ーカル変数が ‘xta:’ で定義されている場合、 ‘addr’ を使用して、 xt が
+     保存されているアドレス(ローカル変数のスコープの終わりまで有効)を取
+     得できます。 たとえば、 標準のワード ‘execute’ は、 以下のように
+     defer フレーバーのローカル変数で定義できます:
 
           : execute {: xt: x -- :}
             x ;
@@ -6985,179 +7203,4 @@ the technical committee.
    Note also that portability between Forth systems is not the only
 portability issue; there is also the issue of portability between
 different platforms (processor/OS combinations).
-
-
-File: gforth.info,  Node: Model,  Next: Integrating Gforth,  Prev: Standard vs Extensions,  Up: Top
-
-11 Model
-********
-
-This chapter has yet to be written.  It will contain information, on
-which internal structures you can rely.
-
-
-File: gforth.info,  Node: Integrating Gforth,  Next: Emacs and Gforth,  Prev: Model,  Up: Top
-
-12 Integrating Gforth into C programs
-*************************************
-
-Several people like to use Forth as scripting language for applications
-that are otherwise written in C, C++, or some other language.
-
-   The Forth system ATLAST provides facilities for embedding it into
-applications; unfortunately it has several disadvantages: most
-importantly, it is not based on Standard Forth, and it is apparently
-dead (i.e., not developed further and not supported).  The facilities
-provided by Gforth in this area are inspired by ATLAST’s facilities, so
-making the switch should not be hard.
-
-   We also tried to design the interface such that it can easily be
-implemented by other Forth systems, so that we may one day arrive at a
-standardized interface.  Such a standard interface would allow you to
-replace the Forth system without having to rewrite C code.
-
-   You embed the Gforth interpreter by linking with the library
-‘libgforth.a’ or ‘libgforth.so’ (give the compiler the option
-‘-lgforth’, or for one of the other engines ‘-lgforth-fast’,
-‘-lgforth-itc’, or ‘-lgforth-ditc’).  All global symbols in this library
-that belong to the interface, have the prefix ‘gforth_’; if a common
-interface emerges, the functions may also be available through
-‘#define’s with the prefix ‘forth_’.
-
-   You can include the declarations of Forth types, the functions and
-variables of the interface with ‘#include <gforth.h>’.
-
-   You can now run a Gforth session by either calling ‘gforth_main’ or
-using the components:
-
-     Cell gforth_main(int argc, char **argv, char **env)
-     {
-       Cell retvalue=gforth_start(argc, argv);
-
-       if(retvalue == -56) { /* throw-code for quit */
-         retvalue = gforth_bootmessage();     // show boot message
-         if(retvalue == -56)
-           retvalue = gforth_quit(); // run quit loop
-       }
-       gforth_cleanup();
-       gforth_printmetrics();
-       // gforth_free_dict(); // if you want to restart, do this
-
-       return retvalue;
-     }
-
-   To interact with the Forth interpreter, there’s ‘Xt gforth_find(Char
-* name)’ and ‘Cell gforth_execute(Xt xt)’.
-
-   More documentation needs to be put here.
-
-12.1 Types
-==========
-
-‘Cell’, ‘UCell’: data stack elements.
-
-   ‘Float’: float stack element.
-
-   ‘Address’, ‘Xt’, ‘Label’: pointer typies to memory, Forth words, and
-Forth instructions inside the VM.
-
-12.2 Variables
-==============
-
-Data and FP Stack pointer.  Area sizes.  Accessing the Stacks
-
-   ‘gforth_SP’, ‘gforth_FP’.
-
-12.3 Functions
-==============
-
-     void *gforth_engine(Xt *, stackpointers *);
-     Cell gforth_main(int argc, char **argv, char **env);
-     int gforth_args(int argc, char **argv, char **path, char **imagename);
-     ImageHeader* gforth_loader(char* imagename, char* path);
-     user_area* gforth_stacks(Cell dsize, Cell rsize, Cell fsize, Cell lsize);
-     void gforth_free_stacks(user_area* t);
-     void gforth_setstacks(user_area * t);
-     void gforth_free_dict();
-     Cell gforth_go(Xt* ip0);
-     Cell gforth_boot(int argc, char** argv, char* path);
-     void gforth_bootmessage();
-     Cell gforth_start(int argc, char ** argv);
-     Cell gforth_quit();
-     Xt gforth_find(Char * name);
-     Cell gforth_execute(Xt xt);
-     void gforth_cleanup();
-     void gforth_printmetrics();
-     void gforth_setwinch();
-
-12.4 Signals
-============
-
-Gforth sets up signal handlers to catch exceptions and window size
-changes.  This may interfere with your C program.
-
-
-File: gforth.info,  Node: Emacs and Gforth,  Next: Image Files,  Prev: Integrating Gforth,  Up: Top
-
-13 Emacs and Gforth
-*******************
-
-Gforth comes with ‘gforth.el’, an improved version of ‘forth.el’ by
-Goran Rydqvist (included in the TILE package).  The improvements are:
-
-   • A better handling of indentation.
-   • A custom hilighting engine for Forth-code.
-   • Comment paragraph filling (‘M-q’)
-   • Commenting (‘C-x \’) and uncommenting (‘C-u C-x \’) of regions
-   • Removal of debugging tracers (‘C-x ~’, *note Debugging::).
-   • Support of the ‘info-lookup’ feature for looking up the
-     documentation of a word.
-   • Support for reading and writing blocks files.
-
-   To get a basic description of these features, enter Forth mode and
-type ‘C-h m’.
-
-   In addition, Gforth supports Emacs quite well: The source code
-locations given in error messages, debugging output (from ‘~~’) and
-failed assertion messages are in the right format for Emacs’ compilation
-mode (*note Running Compilations under Emacs: (emacs)Compilation.) so
-the source location corresponding to an error or other message is only a
-few keystrokes away (‘C-x `’ for the next error, ‘C-c C-c’ for the error
-under the cursor).
-
-   Moreover, for words documented in this manual, you can look up the
-glossary entry quickly by using ‘C-h TAB’ (‘info-lookup-symbol’, *note
-Documentation Commands: (emacs)Documentation.).  This feature requires
-Emacs 20.3 or later and does not work for words containing ‘:’.
-
-* Menu:
-
-* Installing gforth.el::     Emacs に Forth を認識させる
-* Emacs Tags::               ワードのソースを Emacs で閲覧
-* Hilighting::               Forth コードの見栄えを良くします
-* Auto-Indentation::         自動インデントのカスタマイズ
-* Blocks Files::             ブロック・ファイルの読み書き
-
-
-File: gforth.info,  Node: Installing gforth.el,  Next: Emacs Tags,  Prev: Emacs and Gforth,  Up: Emacs and Gforth
-
-13.1 Installing gforth.el
-=========================
-
-To make the features from ‘gforth.el’ available in Emacs, add the
-following lines to your ‘.emacs’ file:
-
-     (autoload 'forth-mode "gforth.el")
-     (setq auto-mode-alist (cons '("\\.fs\\'" . forth-mode)
-     			    auto-mode-alist))
-     (autoload 'forth-block-mode "gforth.el")
-     (setq auto-mode-alist (cons '("\\.fb\\'" . forth-block-mode)
-     			    auto-mode-alist))
-     (add-hook 'forth-mode-hook (function (lambda ()
-        ;; customize variables here:
-        (setq forth-indent-level 4)
-        (setq forth-minor-indent-level 2)
-        (setq forth-hilight-level 3)
-        ;;; ...
-     )))
 

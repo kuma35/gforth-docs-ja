@@ -982,8 +982,8 @@ File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: A
 call)と読むよりも、「今、パーティションをソートする」(now sort the
 partitions)と読む(そして考える)方がはるかに優れています。
 
-   相互再帰(mutual recursion)の場合は、 以下のように延期ワード
-(‘Defer’red words)を使用します:
+   相互再帰(mutual recursion)の場合は、 以下のように ‘defer’ ワードを使
+用します:
 
      Defer foo
 
@@ -994,7 +994,8 @@ partitions)と読む(そして考える)方がはるかに優れています。
       ... bar ... ;
      IS foo
 
-   延期ワードについては、 *note Deferred Words:: で詳しく説明します。
+   defer された ワードについては、 *note Deferred Words:: で詳しく説明し
+ます。
 
    定義の終わりに達するか、 ‘EXIT’ に遭遇すると、 現在の定義は呼び出し元
 の定義に制御を返します。
@@ -1003,8 +1004,8 @@ partitions)と読む(そして考える)方がはるかに優れています。
    呼び出し元の定義に戻る(return): 通常、 定義から速やかに戻るのを強制す
 る方法として使用されます。 ‘EXIT’ する前に、 リターン・スタックをクリー
 ンアップし、 未処理の ‘?DO’...‘LOOP’ を ‘UNLOOP’ する必要があります。 ロ
-ーカルズ(locals)が無い場合に ‘exit’ のように動作するティック可能なワード
-(tickable word)には ‘;s’ を使用します。
+ーカル変数(local)が無い場合に ‘exit’ のように動作するティック可能なワー
+ド(tickable word)には ‘;s’ を使用します。
 
 ‘?EXIT’ ( –  ) gforth-0.2 “?EXIT”
    f が true の場合、 呼び出し元の定義に戻ります(return)。
@@ -1191,9 +1192,9 @@ innermost exception handler)にジャンプすることに注意してくださ�
 。 そうしないと、 ‘iferror’/‘restore’ コードがループします。 さらに、
 ‘iferror’/‘restore’ コードで必要なスタックの内容が ‘try’ と ‘endtry’ の
 間のあらゆる場所に存在することも確認する必要があります。 この例では、 こ
-れは ‘try’ の前にデータを「ローカルズ」(locals)に置くことによって実現さ
-れます(リターン・スタック上の例外フレーム(sys1)が邪魔なのでリターン・ス
-タックは使用できません)。
+れは ‘try’ の前にデータをローカル変数(local)に置くことによって実現されま
+す(リターン・スタック上の例外フレーム(sys1)が邪魔なのでリターン・スタッ
+クは使用できません)。
 
    この種の使用法は、 Lisp の ‘unwind-protect’ と同様のものです。
 
@@ -1551,7 +1552,7 @@ File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: 
 
 (訳注: vaLue ではなくて vaRue) value のようなワードでアドレスを取得した
 い場合があります。 これにはいくつかの欠点があるため、 Gforth では、 これ
-についてh明示的に指定し、 ‘varue’を使用して名前を宣言するように求めます
+について明示的に指定し、 ‘varue’を使用して名前を宣言するように求めます
 (variable と value の特性を組み合わせたものであるため、 そのように名付け
 られました)。
 
@@ -1572,8 +1573,8 @@ File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: 
 
 ‘addr’ ( "name" – addr  ) gforth-1.0 “addr”
    varue NAME または 2varue NAME または fvarue NAME のアドレスを提供しま
-す。 または ‘wa: ca: da: fa: xta:’ のいずれかで定義されたローカル name の
-アドレスを提供します。
+す。 または ‘wa: ca: da: fa: xta:’ のいずれかで定義されたローカル変数
+name のアドレスを提供します。
 
 
 File: gforth.info,  Node: Colon Definitions,  Next: Anonymous Definitions,  Prev: Varues,  Up: Defining Words
@@ -1670,8 +1671,8 @@ File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon
 ‘:noname’ ( – xt colon-sys  ) core-ext “colon-no-name”
 
    これにより、 終わりの ‘;’ の後にワードの実行トークンがスタックに残り
-ます。 以下は、 延期ワード(deferred word)が匿名コロン定義(anonymous
-colon definition)の ‘xt’ で初期化される例です:
+ます。 以下は、 defer された ワード(deferred word)が匿名コロン定義
+(anonymous colon definition)の ‘xt’ で初期化される例です:
 
      Defer deferred
      :noname ( ... -- ... )
@@ -1794,8 +1795,9 @@ File: gforth.info,  Node: User-defined defining words with colon definitions,  N
 6.10.10.1 User-defined defining words with colon definitions
 ............................................................
 
-既存の定義ワードをくるんで定義時コードを被せ、 そのシーケンスをコロン定
-義に入れることによって、 新しい定義ワードを作成できます。
+既存の定義ワードを定義時(defining-time)コードで取り囲み、 その取り囲んだ
+一連のコードをコロン定義に入れることで、 新しい定義ワードを作成できます
+。
 
    たとえば、 定義の xt を指定してコロン定義に関する統計を収集するワード
 ‘stats’ があり、 アプリケーション内のすべてのコロン定義で ‘stats’ を呼び
@@ -1814,9 +1816,9 @@ File: gforth.info,  Node: User-defined defining words with colon definitions,  N
 
    • ‘my:’ が実行されます。
    • 定義内の ‘:’ (‘my:’ と ‘latestxt’ の間にあるもの) が実行され、 ‘:’
-     として、 いつもと同じことを行います。 名前ために入力ストリームをパ
-     ースし、 名前 ‘foo’ のディクショナリ・ヘッダーを構築し、 ‘state’ を
-     インタプリタ状態からコンパイル状態に切り替えます。
+     として、 いつもと同じことを行います。 名前を得るために入力ストリー
+     ムをパースし、 名前 ‘foo’ のディクショナリ・ヘッダーを構築し、
+     ‘state’ をインタプリタ状態からコンパイル状態に切り替えます。
    • ‘latestxt’ というワードが実行されます。 定義中のワード(‘foo’)の xt
      をスタックに置きます。
    • ‘postpone literal’ によって生成されたコードが実行されます。 これに
@@ -1964,7 +1966,7 @@ File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREAT
 ック効果ではなく、 定義されたワードのスタック効果を指定しています(次のコ
 ードは、 スタックの先頭にある本体のアドレスを期待しています。 スタックコ
 メントには反映されません)。 これは私が使用し、 推奨している規則です(スタ
-ック効果の指定にローカル宣言を使うのと少々衝突する)。
+ック効果の指定にローカル変数宣言を使うのと少々衝突する)。
 
    ---------- Footnotes ----------
 
@@ -2382,8 +2384,9 @@ File: gforth.info,  Node: Creating from a prototype,  Next: Making a word curren
 6.10.10.8 Creating from a prototype
 ...................................
 
-上記では、 最初に ‘create’ を使用して単語を定義し、 それから ‘set-does>’
-や ‘set-to’ や ‘set-optimizer’ などで変更する方法を示しました。
+上記では、 最初に ‘create’ を使用してワードを定義し、 それから
+‘set-does>’ や ‘set-to’ や ‘set-optimizer’ などで変更する方法を示しまし
+た。
 
    別の方法として、 以下のワード群を使用してプロトタイプを作成し、そのプ
 ロトタイプから新しいワードを作成します。 この種のコピーでは本体(body)部
@@ -2493,9 +2496,9 @@ File: gforth.info,  Node: Deferred Words,  Next: Forward,  Prev: User-defined De
 6.10.11 Deferred Words
 ----------------------
 
-定義ワード ‘defer’ を使用すると、 その振る舞いを定義せずに名前でワードを
-定義できます。 その振る舞いの定義は延期(defer)されます。 これが役立つ 2
-つの状況を以下に示します:
+定義ワード ‘defer’ (訳注: (期限を定めない)延期)を使用すると、 その振る舞
+いを定義せずに名前でワードを定義できます。 その振る舞いの定義は延期
+(defer)されます。 これが役立つ 2 つの状況を以下に示します:
 
    • ワードの振る舞いを後で変更できるようにし、 振る舞いが変更されたとき
      にそのワードへの全てのプリコンパイルされた参照も変更できるようにし
@@ -2512,10 +2515,10 @@ File: gforth.info,  Node: Deferred Words,  Next: Forward,  Prev: User-defined De
      : greet ." Hello" ;
      : bar ... greet ... ;
 
-   この問題は、 ‘greet’ を 延期(‘Defer’)ワードとして定義することで解決で
-きます。 延期ワードの振る舞いは、 ‘IS’ を使用して以前に定義されたワード
-の xt と関連付けることによって、 いつでも定義および再定義できます。 上記
-の例は以下のようになります:
+   この問題は、 ‘greet’ を ‘defer’ された ワードとして定義することで解決
+できます。 ‘defer’ された ワードの振る舞いは、 ‘IS’ を使用して以前に定義
+されたワードの xt と関連付けることによって、 いつでも定義および再定義で
+きます。 上記の例は以下のようになります:
 
      Defer greet ( -- )
      : foo ... greet ... ;
@@ -2524,15 +2527,15 @@ File: gforth.info,  Node: Deferred Words,  Next: Forward,  Prev: User-defined De
      : greet2 ( -- ) ." Hello" ;
      ' greet2 IS greet  \ make greet behave like greet2
 
-   プログラミング・スタイル・メモ: すべての延期ワードに対してスタック・
-コメントを記述し、 かつ、 そのスタック効果に一致する XT のみを延期ワード
-に入れる必要があります。 そうしないと、 延期ワードを使用するのは非常に困
-難です。
+   プログラミング・スタイル・メモ: すべての defer された ワードに対して
+スタック・コメントを記述し、 かつ、 そのスタック効果に一致する XT のみを
+延期ワードに入れる必要があります。 そうしないと、 defer された ワードを
+使用するのは非常に困難です。
 
-   延期ワードを使用すると、 *note User-defined Defining Words:: の統計収
-集の例(statistics-gathering example)を改善できます。 アプリケーションの
-ソース・コードを編集してすべての ‘:’ を ‘my:’ に変更するのではなく、 以
-下のようにします:
+   defer された ワードを使用すると、 *note User-defined Defining Words::
+の統計収集の例(statistics-gathering example)を改善できます。 アプリケー
+ションのソース・コードを編集してすべての ‘:’ を ‘my:’ に変更するのではな
+く、 以下のようにします:
 
      : real: : ;     \ retain access to the original
      defer :         \ redefine as a deferred word
@@ -2553,13 +2556,13 @@ semantics)があり、 (‘TO’ のように)コンパイル時に名前をパ�
 
    ‘IS’ が適合しない状況では、 代わりに ‘defer!’ を使用してください。
 
-   延期(defer)ワードは、 xt から実行機能(execution semantics)のみを継承
-できます(xt が表現できるのはそれだけであるためです – これについての詳し
-い説明は *note Tokens for Words:: 参照)。 デフォルトでは、この実行機能
+   defer された ワードは、 xt から実行機能(execution semantics)のみを継
+承できます(xt が表現できるのはそれだけであるためです – これについての詳
+しい説明は *note Tokens for Words:: 参照)。 デフォルトでは、この実行機能
 (execution semantics)から派生したデフォルトのインタプリタ機能
 (interpretation semantics)とコンパイル機能(compilation semantics)を持ち
-ます。 ただし、 延期ワードのインタプリタ機能とコンパイル機能は、 通常の
-方法で変更できます。
+ます。 ただし、 defer された ワードのインタプリタ機能とコンパイル機能は
+、 通常の方法で変更できます。
 
      : bar .... ; immediate
      Defer fred immediate
@@ -2569,20 +2572,20 @@ semantics)があり、 (‘TO’ のように)コンパイル時に名前をパ�
      ' bar IS fred \ fred is immediate
 
 ‘Defer’ ( "name" –  ) core-ext “Defer”
-   延期(defer)ワード name を定義します。 その実行機能(execution
+   defer された ワード name を定義します。 その実行機能(execution
 semantics)は ‘defer!’ または ‘is’ で設定できます(最初に name を実行する
 前に設定する必要があります)。
 
 ‘defer!’ ( xt xt-deferred –  ) core-ext “defer-store”
-   xt (XT-DEFERRED) で表される延期(defer)ワードに実行のための XT を設定
-します。
+   xt (XT-DEFERRED) で表される defer された ワードに実行のための XT を設
+定します。
 
 ‘IS’ ( xt "name" –  ) core-ext “IS”
-   延期(‘defer’)ワード NAME に実行のための XT を設定します。
+   ‘defer’ された ワード NAME に実行のための XT を設定します。
 
 ‘defer@’ ( xt-deferred – xt  ) core-ext “new-defer-fetch”
-   xt は、 延期ワード xt-deferred に現在関連付けられているワードを表しま
-す。
+   xt は、 defer された ワード xt-deferred に現在関連付けられているワー
+ドを表します。
 
 ‘action-of’ ( interpretation "name" – xt; compilation "name" – ; run-time – xt  ) core-ext “action-of”
    Xt は、 現在 name に割り当てられている XT です。
@@ -2591,24 +2594,25 @@ semantics)は ‘defer!’ または ‘is’ で設定できます(最初に na
 で提供されます。 さらに、 Gforth は以下を提供します:
 
 ‘defers’ ( compilation "name" – ; run-time ... – ...  ) gforth-0.2 “defers”
-   延期(defer)ワード name の現在の内容を現在の定義にコンパイルします。 つ
-まり、 これにより、 name が延期されなかったかのように静的バインディング
-が生成されます。
+   defer された ワード name の現在の内容を現在の定義にコンパイルします。
+つまり、 これにより、 name が defer されなかったかのように静的バインディ
+ングが生成されます。
 
 ‘wrap-xt’ ( xt1 xt2 xt: xt3 – ...  ) gforth-1.0 “wrap-xt”
-   延期(defer)ワード xt2 の現在の xt を退避して xt1 に設定した上で、 xt3
-を実行し、 xt3 実行後、 退避した xt を 延期ワード xt2 に戻します(訳注:
-xt3 の内部のどこかで xt2 を使っているとして、 その実行機能を一時的に xt1
-に設定してから xt3 を実行し、実行後に xt2 の実行機能を元に戻しておく。 元
-に戻すのは try ...  restore ...  endtry で囲まれた部分なので xt3 実行中
-にエラーがあっても確実に復旧される。 詳しくはソースコード見て下さい)
+   defer された ワード xt2 の現在の xt を退避して xt1 に設定した上で、
+xt3 を実行し、 xt3 実行後、 退避した xt を 延期ワード xt2 に戻します(訳
+注: xt3 の内部のどこかで xt2 を使っているとして、 その実行機能を一時的に
+xt1 に設定してから xt3 を実行し、 実行後に xt2 の実行機能を元に戻してお
+く。 元に戻すのは try ...  restore ...  endtry で囲まれた部分なので xt3
+実行中にエラーがあっても確実に復旧される。 詳しくはソースコード見て下さ
+い)
 
 ‘preserve’ ( "name" –  ) gforth-1.0 “preserve”
-   指定の延期(defer)ワード name で、 現在設定されている実行機能 xt を、
-その場で ‘is’ や ‘defer!’ したかのようなコードに変換します(訳注: 上記例
-より、 ’ greet2 is greet : preserve-greet2 preserve greet ; → greet1 is
-greet ok → greet Good morning ok → preserve-greet2 ok → greet Hello ok ;
-see preserve-greet2 → : preserve-greet2 ‘greet2 ‘greet !  ; ok)
+   指定の defer された ワード name で、 現在設定されている実行機能 xt を
+、 その場で ‘is’ や ‘defer!’ したかのようなコードに変換します(訳注: 上記
+例より、 ’ greet2 is greet : preserve-greet2 preserve greet ; → greet1
+is greet ok → greet Good morning ok → preserve-greet2 ok → greet Hello
+ok ; see preserve-greet2 → : preserve-greet2 ‘greet2 ‘greet !  ; ok)
 
 
 File: gforth.info,  Node: Forward,  Next: Aliases,  Prev: Deferred Words,  Up: Defining Words
@@ -2655,8 +2659,9 @@ File: gforth.info,  Node: Aliases,  Prev: Forward,  Up: Defining Words
 ‘immediate’ などを使用してコンパイル機能などを変更できます。
 
 ‘Alias’ ( xt "name" –  ) gforth-0.2 “Alias”
-   name を xt を実行するワードとして定義します。 延期ワードとは異なり、
-エイリアス(aliase)にはコンパイル時に間接的なオーバーヘッドがありません。
+   name を xt を実行するワードとして定義します。 defer された ワードとは
+異なり、 エイリアス(aliase)にはコンパイル時に間接的なオーバーヘッドがあ
+りません。
 
    Example:
 
@@ -2844,8 +2849,8 @@ File: gforth.info,  Node: Execution token,  Next: Name token,  Prev: Tokens for 
 実行トークン(“execution token”)(xt)はワードの振る舞いを表します。
 ‘execute’ を使用して xt で表される振る舞いを呼び出すことができ、 そして
 、 ‘compile,’ (*note Macros::) を使用してそれを現在の定義にコンパイルで
-きます。 その他の使用法としては、 延期ワード(*note Deferred Words::) が
-あります。
+きます。 その他の使用法としては、 defer された ワード(*note Deferred
+Words::) があります。
 
    特に、 ワードのインタプリタ機能(interpretation semantics)(別名 実行機
 能(execution semantics))を表す「実行トークン」(execution token)がありま
@@ -2870,8 +2875,8 @@ File: gforth.info,  Node: Execution token,  Next: Name token,  Prev: Tokens for 
    xt は name のインタプリタ機能(interpretation semantics)を表します。 ワ
 ードにインタプリタ機能が無い場合、 ‘-14 throw’ を実行します。
 
-   これらはパース・ワード(parsing words)であるため(なお、 ‘`x’ は
-recognizer によってリテラルとして扱われます)、 インタプリタで解釈された
+   これらはパース・ワード(parsing words)であるため(なお、 ‘`x’ は認識器
+(recognizer)によってリテラルとして扱われます)、 インタプリタで解釈された
 りコンパイルされたコードの振る舞いが直感的ではない場合があります:
 
      5 ' .   ( n xt )
@@ -2933,8 +2938,8 @@ semantics)) の xt が得られますが、 名前付きワードの定義の後
 
 ‘execute-exit’ ( compilation – ; run-time xt nest-sys –  ) gforth-1.0 “execute-exit”
    ‘xt’ を実行し、 末尾呼び出し最適化法(tail-call-optimized way)で現在の
-定義から戻ります。 戻りアドレス ‘nest-sys’ とローカルズ(locals)は、 ‘xt’
-を execute する前に割り当て解除(deallocate)されます。
+定義から戻ります。 戻りアドレス ‘nest-sys’ とローカル変数(local)は、
+‘xt’ を execute する前に割り当て解除(deallocate)されます。
 
 ‘perform’ ( a-addr – ) gforth-0.2 “perform”
    ‘@ execute’.
@@ -2993,11 +2998,11 @@ synonym と、 aliase と、 ‘interpret/compile:’ で定義されたワー�
 を返す)
 
 ‘>name’ ( xt – nt|0  ) gforth-0.2 “to-name”
-   xt で表される単語の基本名前トークン(primary name token) nt を取得しま
-す。 xt が ぢつは xt でない場合(非 xt を xt と誤認する可能性が低いヒュー
-リスティック・チェックを使用)、 または基本 nt (primary nt)が名前無しワー
-ドである場合は 0 を返します。 Gforth 1.0 の時点では、 すべての xt に基本
-nt がありますが、 他の名前付きワードも同一のインタプリタ機能
+   xt で表されるワードの基本名前トークン(primary name token) nt を取得し
+ます。 xt が ぢつは xt でない場合(非 xt を xt と誤認する可能性が低いヒュ
+ーリスティック・チェックを使用)、 または基本 nt (primary nt)が名前無しワ
+ードである場合は 0 を返します。 Gforth 1.0 の時点では、 すべての xt に基
+本 nt がありますが、 他の名前付きワードも同一のインタプリタ機能
 (interpretation sematics) xt を持つ可能性があります。
 
 ‘xt>name’ ( xt – nt  ) gforth-1.0 “xt-to-name”
@@ -3034,8 +3039,8 @@ nt がありますが、 他の名前付きワードも同一のインタプリ�
    ‘id.’ の F83 での名前です。
 
 ‘name>link’ ( nt1 – nt2 / 0  ) gforth-1.0 “name-to-link”
-   単語 nt1 の場合、 同じワードリスト内の1つ前のワード nt2 を返します。
-前のワードがない場合は 0 を返します。
+   ワード nt1 の場合、 同じワードリスト内の1つ前のワード nt2 を返します
+。 前のワードがない場合は 0 を返します。
 
    名前なしワードは通常、 インタプリタ機能(interpretation compilation)も
 無く、 コンパイル機能(compilation semantics)も無く、 名前も無く、 単語リ
@@ -3122,13 +3127,13 @@ File: gforth.info,  Node: Compiling words,  Next: The Text Interpreter,  Prev: T
 6.13 Compiling words
 ====================
 
-In contrast to most other languages, Forth has no strict boundary
-between compilation and run-time.  E.g., you can run arbitrary code
-between defining words (or for computing data used by defining words
-like ‘constant’).  Moreover, ‘Immediate’ (*note Interpretation and
-Compilation Semantics:: and ‘[’...‘]’  (see below) allow running
-arbitrary code while compiling a colon definition (exception: you must
-not allot dictionary space).
+他のほとんどの言語とは異なり、 Forth にはコンパイルと実行時(run-time)の
+間に厳密な境界がありません。 たとえば、 ワードの定義中(または ‘constant’
+のようなワードの定義によって使用されるデータのための計算)に任意のコード
+を実行できます。 さらに、 ‘immediate’ (*note Interpretation and
+Compilation Semantics::) や ‘[’...‘]’  (下記参照)を使用すると、 コロン定
+義のコンパイル中に任意のコードを実行できます(例外: ディクショナリ空間で
+割り当てしてはいけません)。
 
 * Menu:
 
@@ -3141,78 +3146,79 @@ File: gforth.info,  Node: Literals,  Next: Macros,  Prev: Compiling words,  Up: 
 6.13.1 Literals
 ---------------
 
-The simplest and most frequent example is to compute a literal during
-compilation.  E.g., the following definition prints an array of strings,
-one string per line:
+最も単純で最も頻繁に使用される例は、 コンパイル中にリテラルを計算するこ
+とです。 たとえば、 以下の定義は、 文字列の配列を 1 行に 1 つの文字列で
+出力します:
 
      : .strings ( addr u -- ) \ gforth
          2* cells bounds U+DO
-     	cr i 2@ type
+             cr i 2@ type
          2 cells +LOOP ;
 
-   With a simple-minded compiler like Gforth’s, this computes ‘2 cells’
-on every loop iteration.  You can compute this value once and for all at
-compile time and compile it into the definition like this:
+   Gforth のような愚かで低能なコンパイラを使用すると、 ループ反復ごとに
+‘2 cells’ が計算されます。 あなたは、 この値をコンパイル時に一度だけ計算
+し、 定義にコンパイルできます。 以下のようにします:
 
      : .strings ( addr u -- ) \ gforth
          2* cells bounds U+DO
-     	cr i 2@ type
+             cr i 2@ type
          [ 2 cells ] literal +LOOP ;
 
-   ‘[’ switches the text interpreter to interpret state (you will get an
-‘ok’ prompt if you type this example interactively and insert a newline
-between ‘[’ and ‘]’), so it performs the interpretation semantics of ‘2
-cells’; this computes a number.  ‘]’ switches the text interpreter back
-into compile state.  It then performs ‘Literal’’s compilation semantics,
-which are to compile this number into the current word.  You can
-decompile the word with ‘see .strings’ to see the effect on the compiled
-code.
+   ‘[’ は、 テキスト・インタープリタをインタプリタ状態に切り替えます(こ
+の例を対話的に入力し、 ‘[’ と ‘]’ の間に改行を挿入すると、 ‘ok’ プロンプ
+トが表示されます)。 ‘2 cells’ のインタプリタ機能(interpretation
+semantics)を実行します。 ここでは数値を計算します。 ‘]’ は、 テキスト・
+インタプリタをコンパイル状態に戻します。 次に、 この数値を現在のワードに
+コンパイルする ‘Literal’ のコンパイル機能(compilation semantics)を実行し
+ます。 ‘see .strings’ を使用してワードを逆コンパイルすると、 コンパイル
+されたコードへの影響を確認できます。
 
-   You can also optimize the ‘2* cells’ into ‘[ 2 cells ] literal *’ in
-this way.
+   この方法で ‘2* cells’ を ‘[ 2 cells ] literal *’ に最適化することもで
+きます。
 
 ‘[’ ( –  ) core “left-bracket”
-   Enter interpretation state.  Immediate word.
+   インタプリタ状態にします。 即実行ワードです。
 
 ‘]’ ( –  ) core “right-bracket”
-   Enter compilation state.
+   コンパイル状態にします。
 
 ‘Literal’ ( compilation n – ; run-time – n  ) core “Literal”
-   Compilation semantics: compile the run-time semantics.
-Run-time Semantics: push n.
-Interpretation semantics: undefined.
+   コンパイル機能(compilation semantics): 実行機能(run-time semantics)を
+コンパイルします。 実行機能(run-time semantics): n をスタックにプッシュ
+します。 インタプリタ機能(interpretation semantics): 未定義です。
 
 ‘ALiteral’ ( compilation addr – ; run-time – addr  ) gforth-0.2 “ALiteral”
-   Works like ‘literal’, but (when used in cross-compiled code) tells
-the cross-compiler that the literal is an address.
+   ‘literal’ と同様に機能しますが、 (クロス・コンパイルされたコードで使
+用される場合、)リテラルがアドレスであることをクロス・コンパイラーに伝え
+ます。
 
 ‘]L’ ( compilation: n – ; run-time: – n  ) gforth-0.5 “]L”
-   equivalent to ‘] literal’
+   ‘] literal’ と同等。
 
-   There are also words for compiling other data types than single cells
-as literals:
+   単一セル以外のデータ型をリテラルとしてコンパイルするためのワードもあ
+ります:
 
 ‘2Literal’ ( compilation w1 w2 – ; run-time  – w1 w2  ) double “two-literal”
-   Compile appropriate code such that, at run-time, w1 w2 are placed on
-the stack.  Interpretation semantics are undefined.
+   実行時に w1 w2 がスタックに配置されるように、 適切なコードをコンパイ
+ルします。 インタプリタ機能(interpretation semantics)は未定義です。
 
 ‘FLiteral’ ( compilation r – ; run-time – r  ) floating “f-literal”
-   Compile appropriate code such that, at run-time, r is placed on the
-(floating-point) stack.  Interpretation semantics are undefined.
+   実行時に r が(浮動小数点)スタックに配置されるように、 適切なコードを
+コンパイルします。 インタプリタ機能(interpretation semantics)は未定義で
+す。
 
 ‘SLiteral’ ( Compilation c-addr1 u ; run-time – c-addr2 u  ) string “SLiteral”
-   Compilation: compile the string specified by c-addr1, u into the
-current definition.  Run-time: return c-addr2 u describing the address
-and length of the string.
+   コンパイル時: c-addr1, u で指定された文字列を現在の定義にコンパイルし
+ます。 実行時: 文字列のアドレスと長さを記述する c-addr2 u を返します。
 
-   You might be tempted to pass data from outside a colon definition to
-the inside on the data stack.  This does not work, because ‘:’ puhes a
-colon-sys, making stuff below unaccessible.  E.g., this does not work:
+   データ・スタック上のコロン定義の外側から内側にデータを渡したいと思う
+かもしれません。 ‘:’ がコロン colon-sys をプッシュし、 colon-sys より下
+のモノのにアクセスできなくなるため、 これは機能しません。 たとえば、 以
+下は機能しません:
 
      5 : foo literal ; \ error: "unstructured"
 
-   Instead, you have to pass the value in some other way, e.g., through
-a variable:
+   代わりに、 変数など、 他の方法で値を渡す必要があります:
 
      variable temp
      5 temp !
@@ -3224,9 +3230,9 @@ File: gforth.info,  Node: Macros,  Prev: Literals,  Up: Compiling words
 6.13.2 Macros
 -------------
 
-‘Literal’ and friends compile data values into the current definition.
-You can also write words that compile other words into the current
-definition.  E.g.,
+‘Literal’ とその仲間たちは、 データ値を現在の定義にコンパイルします。 他
+のワードを現在の定義にコンパイルするワードを記述することもできます。 例
+えば:
 
      : compile-+ ( -- ) \ compiled code: ( n1 n2 -- n )
        POSTPONE + ;
@@ -3235,18 +3241,20 @@ definition.  E.g.,
        [ compile-+ ] ;
      1 2 foo .
 
-   This is equivalent to ‘: foo + ;’ (‘see foo’ to check this).  What
-happens in this example?  ‘Postpone’ compiles the compilation semantics
-of ‘+’ into ‘compile-+’; later the text interpreter executes ‘compile-+’
-and thus the compilation semantics of +, which compile (the execution
-semantics of) ‘+’ into ‘foo’.(1)
+   これは ‘: foo + ;’ と同等です(確認するには ‘see foo’ としてください
+)。 この例では何が起こっているのでしょうか?  ‘Postpone’ は、 ‘+’ のコン
+パイル機能(compilation semantics)を ‘compile-+’ にコンパイルします。 そ
+の後、 テキスト・インタプリタは ‘compile-+’ を実行し、 + のコンパイル機
+能(compilation semantics)を実行します。 これにより、‘+’ (の実行機能
+(execution semantics)) が ‘foo’ にコンパイルされます(1)。
 
 ‘postpone’ ( "name" –  ) core “postpone”
-   Compiles the compilation semantics of name.
+   name の コンパイル機能(compilation semantics)をコンパイルする。
 
-   Compiling words like ‘compile-+’ are usually immediate (or similar)
-so you do not have to switch to interpret state to execute them;
-modifying the last example accordingly produces:
+   ‘compile-+’ のようなコンパイル・ワード(compiling words)のコンパイルは
+通常即実行ワード(または即実行同様)であるため、 それらを実行するためにイ
+ンタプリタ状態に切り替える必要はありません。 最後の例をそれに応じて変更
+すると、 以下のようになります:
 
      : [compile-+] ( compilation: --; interpretation: -- )
        \ compiled code: ( n1 n2 -- n )
@@ -3256,29 +3264,30 @@ modifying the last example accordingly produces:
        [compile-+] ;
      1 2 foo .
 
-   You will occassionally find the need to POSTPONE several words;
-putting POSTPONE before each such word is cumbersome, so Gforth provides
-a more convenient syntax: ‘]] ... [[’.  This allows us to write
-‘[compile-+]’ as:
+   場合によっては、 複数のワードを POSTPONE する必要があることに気づくで
+しょう。 このような各ワードの前に POSTPONE を置くのは面倒なので、 Gforth
+ではより便利な構文 ‘]] ... [[’ を提供しています。 これにより、
+‘[compile-+]’ を以下のように記述できるようになります:
 
      : [compile-+] ( compilation: --; interpretation: -- )
        ]] + [[ ; immediate
 
 ‘]]’ ( –  ) gforth-0.6 “right-bracket-bracket”
-   Switch into postpone state: All words and recognizers are processed
-as if they were preceded by ‘postpone’.  Postpone state ends when ‘[[’
-is recognized.
+   postpone 状態に切り替え: すべてのワードと認識器(recognizers)は、 その
+前に ‘postpone’ があるかのように処理されます。 ‘[[’ が認識されると、
+postpone 状態は終了します。
 
-   The unusual direction of the brackets indicates their function: ‘]]’
-switches from compilation to postponing (i.e., compilation of
-compilation), just like ‘]’ switches from immediate execution
-(interpretation) to compilation.  Conversely, ‘[[’ switches from
-postponing to compilation, ananlogous to ‘[’ which switches from
-compilation to immediate execution.
+   角括弧の珍しい方向はその機能を示しています。 ‘]’ が即時実行(インタプ
+リタ状態)からコンパイルに切り替えるのと同じように、 ‘]]’ はコンパイルか
+ら postpone 状態(つまり、 コンパイル機能のコンパイル)に切り替えます。 逆
+に、 ‘[[’ は postpone 状態からコンパイル状態に切り替えます。 これは、 コ
+ンパイル状態から即時実行(インタプリタ状態)に切り替える ‘[’ に似ています
+。
 
-   The real advantage of ‘]] ’...‘ [[’ becomes apparent when there are
-many words to POSTPONE. E.g., the word ‘compile-map-array’ (*note
-Advanced macros Tutorial::) can be written much shorter as follows:
+   ‘]] ’...‘ [[’ の本当の利点は、 POSTPONE するワードがたくさんある場合
+に明らかになります。 たとえば、 ワード ‘compile-map-array’ (*note
+Advanced macros Tutorial::) は、 以下のようにさらに短く書くことができま
+す:
 
      : compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )
      \ at run-time, execute xt ( ... x -- ... ) for each element of the
@@ -3290,71 +3299,73 @@ Advanced macros Tutorial::) can be written much shorter as follows:
      : sum-array ( addr u -- n )
        0 [ ' + compile-map-array ] ;
 
-   If you then say ‘see sum-array’, it shows the following code:
+   ‘see sum-array’ すると、 以下のコードが表示されます:
 
      : sum-array
        #0 over + swap ?do
          i  + #8 +LOOP
      ;
 
-   In addition to ‘]]’...‘[[’, this example shows off some other
-features:
+   ‘]]’...‘[[’ に加えて、 この例では他の機能もいくつかお披露目しています
+:
 
-   • It uses a defer-flavoured (defined with ‘xt:’ local ‘xt’;
-     mentioning the local inside ‘]]’...‘[[’ results in ‘compile,’ing
-     the xt in the local.
+   • (‘xt:’ を指定する) defer フレーバーのローカル変数 ‘xt’ を使用してい
+     ます。 ‘]]’...‘[[’ 内でローカル変数 xt に遭遇すると、 ローカル変数
+     xt を ‘compile,’ します。
 
-   • It uses the literal ‘1’ inside ‘]]’...‘[[’.  This results in
-     ‘postpone’ing the ‘1’, i.e.  compiling it when ‘compile-map-array’
-     is run.
+   • ‘]]’...‘[[’ 内でリテラル ‘1’ を使用します。 これにより、 ‘1’ が
+     postpone (延期)されます。 つまり、 ‘compile-map-array’ の実行時にコ
+     ンパイルされます。
 
-   • When ‘compile-map-array’ is run, ‘1 cells’ is compiled and
-     optimized into ‘#8’ by Gforth’s constant folding.
+   • ‘compile-map-array’ が実行されると、 ‘1 cells’ がコンパイルされ、
+     Gforth の定数折りたたみによって ‘#8’ に最適化(optimize)されます。
 
-   Note that parsing words such as ‘s\"’ don’t parse at postpone time
-and therefore not inside ‘]]’...‘[[’.  Instead of ‘s\" mystring\n"’ you
-can use the string recognizer and write ‘"mystring\n"’, which works
-inside ‘]]’...‘[[’.  Likewise for the parsing word ‘[']’ and the
-recognizer notation starting with ‘`’.
+   注意: ‘s\"’ などのワードのパースは postpone 指定時にはパースされない
+ため、 ‘]]’...‘[[’ 内ではパースされないことに注意してください。 ‘s\"
+mystring\n"’ の代わりに、 文字列認識器(string recognizer)を使用して、
+‘]]’...‘[[’ 内で動作する ‘"mystring\n"’ で記述することができます。これは
+‘]]’...‘[[’ 内で機能します。 同様に、 パース・ワード ‘[']’ についても、
+‘`’ で始まる認識器(recognizer)表記で記述することができます。
 
-   But if you prefer to use ‘s\"’ (or have a parsing word that has no
-recognizer replacement), you can do it by switching back to compilation:
+   ただし、 あなたが ‘s\"’ を使用したい場合(または、 認識器
+(recognizer)置換がないパース・ワードがある場合)、 以下のようにコンパイル
+状態に切り替えることで実行できます:
 
      ]] ... [[ s\" mystring\n" ]] 2literal ... [[
 
-   Definitions of ‘]]’ and friends in Standard Forth are provided in
-‘compat/macros.fs’.
+   標準 Forth での ‘]]’ と、 その仲間の定義は、 ‘compat/macros.fs’ で提
+供されます。
 
-   Immediate compiling words are similar to macros in other languages
-(in particular, Lisp).  The important differences to macros in, e.g., C
-are:
+   即時コンパイル・ワード(immediate compiling words)は、 他の言語(特に
+Lisp)のマクロに似ています。 C言語などのマクロとの重要な違いは以下のとお
+りです:
 
-   • You use the same language for defining and processing macros, not a
-     separate preprocessing language and processor.
+   • マクロの定義と処理には、 別個の前処理用の言語や処理器ではなく、 同
+     一の言語を使用します。
 
-   • Consequently, the full power of Forth is available in macro
-     definitions.  E.g., you can perform arbitrarily complex
-     computations, or generate different code conditionally or in a loop
-     (e.g., *note Advanced macros Tutorial::).  This power is very
-     useful when writing a parser generators or other code-generating
-     software.
+   • したがって、 Forth の全機能をマクロ定義で利用できます。 たとえば、
+     任意の複雑な計算を実行したり、 条件付きまたはループで異なるコードを
+     生成したりできます (例: *note Advanced macros Tutorial::)。 この能
+     力は、 パーサ・ジェネレータや、 その他のコード生成ソフトウェアを作
+     成するときに非常に役立ちます。
 
-   • Macros defined using ‘postpone’ etc.  deal with the language at a
-     higher level than strings; name binding happens at macro definition
-     time, so you can avoid the pitfalls of name collisions that can
-     happen in C macros.  Of course, Forth is a liberal language and
-     also allows to shoot yourself in the foot with text-interpreted
-     macros like
+   • ‘postpone’ などを使用して定義されたマクロは、 文字列よりも高いレベ
+     ルで言語を扱います。 名前との結び付け(name binding)はマクロ定義時に
+     行われるため、 C言語のマクロで発生する可能性のある名前の衝突の落と
+     し穴を回避できます。 もちろん、 Forth は自由主義の言語(liberal
+     language)であり、 以下のようなテキスト解釈マクロ(text-interpreted
+     macros)を使用して自分自身を攻撃することもできます
 
           : [compile-+] s" +" evaluate ; immediate
 
-     Apart from binding the name at macro use time, using ‘evaluate’
-     also makes your definition ‘state’-smart (*note state-smartness::).
+     マクロ使用時に名前を結びつける(bind)だけでなく、 ‘evaluate’ を使用
+     すると、 あなたの定義は ‘state’-smart (*note state-smartness::) に
+     なります。
 
-   You may want the macro to compile a number into a word.  The word to
-do it is ‘literal’, but you have to ‘postpone’ it, so its compilation
-semantics take effect when the macro is executed, not when it is
-compiled:
+   マクロで数値をワードにコンパイルすることが必要な場合があります。 これ
+を行うためのワードは ‘literal’ ですが、 ‘postpone’ する必要があるため、
+‘literal’ のコンパイル機能(compilation semantics)はマクロがコンパイルさ
+れる時ではなくマクロの実行時に効果を発揮します:
 
      : [compile-5] ( -- ) \ compiled code: ( -- n )
        5 POSTPONE literal ; immediate
@@ -3362,12 +3373,12 @@ compiled:
      : foo [compile-5] ;
      foo .
 
-   You may want to pass parameters to a macro, that the macro should
-compile into the current definition.  If the parameter is a number, then
-you can use ‘postpone literal’ (similar for other values).
+   マクロにパラメータを渡して、 マクロを現在の定義にコンパイルする必要が
+ある場合があります。 パラメータが数値の場合は、 ‘postpone literal’ を使
+用できます(他の値の場合も同様)。
 
-   If you want to pass a word that is to be compiled, the usual way is
-to pass an execution token and ‘compile,’ it:
+   コンパイルされるワードを渡したい場合、 通常の方法は、実行トークンと
+‘compile,’ を渡すことです:
 
      : twice1 ( xt -- ) \ compiled code: ... -- ...
        dup compile, compile, ;
@@ -3376,13 +3387,13 @@ to pass an execution token and ‘compile,’ it:
        [ ' 1+ twice1 ] ;
 
 ‘compile,’ ( xt –  ) core-ext “compile-comma”
-   Append the semantics represented by xt to the current definition.
-When the resulting code fragment is run, it behaves the same as if xt is
-‘execute’d.
+   xt で表される機能(semantics)を現在の定義に追加します。 結果のコード断
+片が実行されると、 xt が ‘execute’ されたのと同一の振る舞いをします。
 
-   An alternative available in Gforth, that allows you to pass the
-compilation semantics as parameters is to use the compilation token
-(*note Compilation token::).  The same example in this technique:
+   Gforth で利用可能な代替方法では、 コンパイル機能をパラメータ
+(compilation semantics)として渡すことができる、 コンパイル・トークンを使
+用します(*note Compilation token::)。 以下は、 上記と同じ例にこの方法を
+使ったものです:
 
      : twice ( ... ct -- ... ) \ compiled code: ... -- ...
        2dup 2>r execute 2r> execute ;
@@ -3390,19 +3401,24 @@ compilation semantics as parameters is to use the compilation token
      : 2+ ( n1 -- n2 )
        [ comp' 1+ twice ] ;
 
-   In the example above ‘2>r’ and ‘2r>’ ensure that ‘twice’ works even
-if the executed compilation semantics has an effect on the data stack.
+   この例では、 ‘2>r’ と ‘2r>’ により、 実行(execute)されるコンパイル機
+能(compilation semantics)がデータ・スタックに影響を与える場合でも、
+‘twice’ が確実に機能するようにします(訳注: 2dup ( ct ct ) 2>r ( ct r:ct
+) execute ( ??  r:ct ) 2r> ( ??  ct ) execute ( ???  )  。 最初の
+execute でデータ・スタックのTOSがどうなろうとも、 2つ目の execute のため
+に ct を tos に与えるため。 ct は 2セル単位なので、 2dupで複製、 2>r ...
+2r> で ct を1つ退避となる)
 
-   You can also define complete definitions with these words; this
-provides an alternative to using ‘does>’ (*note User-defined Defining
-Words::).  E.g., instead of
+   これらのワードを使用して完全な定義を定義することもできます。 これは、
+‘does>’ を使用する代わりの方法を提供します(*note User-defined Defining
+Words::)。 たとえば以下の代わりに
 
      : curry+ ( n1 "name" -- )
          CREATE ,
      DOES> ( n2 -- n1+n2 )
          @ + ;
 
-   you could define
+   以下のように定義することができます
 
      : curry+ ( n1 "name" -- )
        \ name execution: ( n2 -- n1+n2 )
@@ -3411,27 +3427,30 @@ Words::).  E.g., instead of
      -3 curry+ 3-
      see 3-
 
-   The sequence ‘>r : r>’ is necessary, because ‘:’ puts a colon-sys on
-the data stack that makes everything below it unaccessible.
+   n1 にアクセスするために ‘>r : r>’ というシーケンスが必要です。 なぜな
+ら、 ‘:’ はデータ・スタックに colon-sys をプッシュし、 それより下にある
+全てのモノにアクセスできなくなるためです。
 
-   This way of writing defining words is sometimes more, sometimes less
-convenient than using ‘does>’ (*note Advanced does> usage example::).
-One advantage of this method is that it can be optimized better, because
-the compiler knows that the value compiled with ‘literal’ is fixed,
-whereas the data associated with a ‘create’d word can be changed.
+   ワードを定義するこの方法は、 ‘does>’ を使用するよりも便利な場合もあれ
+ば、 そうでない場合もあります(*note Advanced does> usage example::)。 こ
+の方式の利点の 1 つは、 コンパイラは、 ‘literal’ でコンパイルされた値が
+固定されているのに対して、 ‘create’ されたワードに関連付けられたデータは
+変更可能なことを認識しているため、 より適切に最適化できることです。
 
 ‘[compile]’ ( compilation "name" – ; run-time ? – ?  ) core-ext “bracket-compile”
-   Legacy word.  Use ‘postpone’ instead.  Works like ‘postpone’ if name
-has non-default compilation semantics.  If name has default compilation
-semantics (i.e., is a normal word), compiling ‘[compile] name’ is
-equivalent to compiling name (i.e.  ‘[compile]’ is redundant in this
-case.
+   古いワード(lLegacy word)です。 代わりに ‘postpone’ を使用してください
+。 name がデフォルト以外のコンパイル機能(compilation semantics)を持つ場
+合は、 ‘postpone’ と同様に機能します。 name がデフォルトのコンパイル機能
+を持つ(つまり、 通常のワードである)場合、 ‘[compile] name’ をコンパイル
+することは、 name をコンパイルすることと同じです(つまり、 この場合
+‘[compile]’ は冗長です)。
 
    ---------- Footnotes ----------
 
-   (1) A recent RFI answer requires that compiling words should only be
-executed in compile state, so this example is not guaranteed to work on
-all standard systems, but on any decent system it will work.
+   (1) 最近の RFI の回答では、 ワードのコンパイルはコンパイル状態でのみ
+実行する必要があるとしているため、 この例はすべての標準システムで動作す
+ることは保証されませんが、 ちゃんとした(decent)システムであれば動作しま
+す
 
 
 File: gforth.info,  Node: The Text Interpreter,  Next: The Input Stream,  Prev: Compiling words,  Up: Words
@@ -3439,53 +3458,56 @@ File: gforth.info,  Node: The Text Interpreter,  Next: The Input Stream,  Prev: 
 6.14 The Text Interpreter
 =========================
 
-The text interpreter(1) is an endless loop that processes input from the
-current input device.  It is also called the outer interpreter, in
-contrast to the inner interpreter (*note Engine::) which executes the
-compiled Forth code on interpretive implementations.
+テキスト・インタプリタ(text interpreter)は、 現在の入力デバイスからの入
+力を処理する無限ループです。 インタプリタの実装上でコンパイルされた
+Forth コードを実行する内部インタプリタ(inner interpreter)(*note
+Engine::)とは対照的に、 これは外部インタプリタ(outer interpreter)とも呼
+ばれます(1)。
 
-   The text interpreter operates in one of two states: “interpret state”
-and “compile state”.  The current state is defined by the aptly-named
-variable ‘state’.
+   テキスト・インタプリタは、 インタプリタ状態(“interpret state”) と コ
+ンパイル状態(“compile state”)の 2 つの状態のいずれかで動作します。 現在
+の状態は、 それにふさわしい名前の変数である ‘state’ によって定義されます
+。
 
-   This section starts by describing how the text interpreter behaves
-when it is in interpret state, processing input from the user input
-device – the keyboard.  This is the mode that a Forth system is in after
-it starts up.
+   このセクションでは、 テキスト・インタプリタがインタプリタ状態にあると
+きに、 ユーザー入力デバイス(キーボード)からの入力処理についてどのように
+振る舞うかについて説明することから始めます。 これは Forth システムが動き
+始めた時のモードです。
 
-   The text interpreter works from an area of memory called the “input
-buffer”(2), which stores your keyboard input when you press the <RET>
-key.  Starting at the beginning of the input buffer, it skips leading
-spaces (called “delimiters”) then parses a string (a sequence of
-non-space characters) until it reaches either a space character or the
-end of the buffer.  Having parsed a string, it makes two attempts to
-process it:
+   テキスト・インタプリタは、 入力バッファ(“input buffer”)(2)と呼ばれる
+メモリ領域で動作します。 この領域には、 <RET> キーを押したときにキーボー
+ドからの入力が保存され、 入力バッファの先頭から開始して、 先頭の空白文字
+達(デリミタ(“delimiters”)と呼ばれる)をスキップし、 空白文字、 またはバッ
+ファの終わりに達するまで文字列(空白以外の文字のシーケンス)をパースします
+。 文字列をパースした後、 以下の2つの試行を行います:
 
-   • It looks for the string in a “dictionary” of definitions.  If the
-     string is found, the string names a “definition” (also known as a
-     “word”) and the dictionary search returns information that allows
-     the text interpreter to perform the word’s “interpretation
-     semantics”.  In most cases, this simply means that the word will be
-     executed.
-   • If the string is not found in the dictionary, the text interpreter
-     attempts to treat it as a number, using the rules described in
-     *note Number Conversion::.  If the string represents a legal number
-     in the current radix, the number is pushed onto a parameter stack
-     (the data stack for integers, the floating-point stack for
-     floating-point numbers).
+   • 定義のディクショナリ(“dictionary”)内でその文字列を検索します。 その
+     文字列が見つかった場合、 その文字列は、 とある定義(“definition”)(ワ
+     ード(“word”)とも呼ばれる)を指し示していて、 そして、 ディクショナリ
+     検索機能は、 テキスト・インタプリタがそのワードのインタプリタ機能
+     (“interpretation semantics”)を実行できるようにするための情報を返し
+     ます。 ほとんどの場合、 これは、 単にそのワードが execute されるこ
+     とを意味します。
+   • 文字列がディクショナリに見つからない場合、 テキスト・インタプリタは
+     *note Number Conversion:: で説明されているルールを使用して、 文字列
+     を数値として処理しようと試みます。 文字列が現在の基数で有効な数値を
+     表す場合、 その数値はパラメータ・スタック(整数の場合はデータ・スタ
+     ック、 浮動小数点数の場合は浮動小数点スタック)にプッシュされます。
 
-   If both attempts fail, the text interpreter discards the remainder of
-the input buffer, issues an error message and waits for more input.  If
-one of the attempts succeeds, the text interpreter repeats the parsing
-process until the whole of the input buffer has been processed, at which
-point it prints the status message “‘ ok’” and waits for more input.
+   上記両方の試行が失敗した場合、 テキスト・インタプリタは入力バッファの
+残りを破棄し、 そして、 エラー・メッセージを発行して、そして、 さらなる
+入力を待ちます。 いずれかの試行が成功すると、 テキスト・インタプリタは入
+力バッファ全体が処理されるまでパース処理を繰り返し、 全体が処理された時
+点でステータス・メッセージ “‘ ok’” を出力し、 そして、 さらなる入力を待
+ちます。
 
-   The text interpreter keeps track of its position in the input buffer
-by updating a variable called ‘>IN’ (pronounced “to-in”).  The value of
-‘>IN’ starts out as 0, indicating an offset of 0 from the start of the
-input buffer.  The region from offset ‘>IN @’ to the end of the input
-buffer is called the “parse area”(3).  This example shows how ‘>IN’
-changes as the text interpreter parses the input buffer:
+   テキスト・インタプリタは、 ‘>IN’ (“to-in”(トゥーイン)と発音します)と
+呼ばれる変数を更新することにより、 入力バッファ内の位置を追跡します。
+‘>IN’ の値は 0 で始まり、 入力バッファの先頭からのオフセットが 0 である
+ことを示します。 オフセット ‘>IN @’ から入力バッファの末尾までの領域は、
+パース領域(“parse area”)と呼ばれます(3)。 以下の例は、 テキスト・インタ
+プリタが入力バッファをパースする際に ‘>IN’ がどのように変化するかを示し
+ています:
 
      : remaining source >in @ /string
        cr ." ->" type ." <-" ; immediate
@@ -3494,80 +3516,80 @@ changes as the text interpreter parses the input buffer:
 
      : foo 1 2 3 remaining swap remaining ;
 
-The result is:
+これらの結果はそれぞれ以下のようになります:
 
      ->+ remaining .<-
      ->.<-5  ok
 
-     ->SWAP remaining ;-<
+     ->swap remaining ;-<
      ->;<-  ok
 
-   The value of ‘>IN’ can also be modified by a word in the input buffer
-that is executed by the text interpreter.  This means that a word can
-“trick” the text interpreter into either skipping a section of the input
-buffer(4) or into parsing a section twice.  For example:
+   ‘>IN’ の値は、 テキスト・インタプリタによって実行される入力バッファ内
+のワードによって変更することもできます。 これは、 ワードがテキスト・イン
+タプリタをだまして、 入力バッファの一節をスキップしたり(4)、 一節を 2 回
+パースしたりすることができることを意味します。 例:
 
      : lat ." <<foo>>" ;
      : flat ." <<bar>>" >IN DUP @ 3 - SWAP ! ;
 
-When ‘flat’ is executed, this output is produced(5):
+‘flat’ が実行されると、 以下の出力が生成されます(5)(訳注:ユーザーが flat
+と打ち込と、 入力バッファには flat があり、 ワード flat の実行が初まった
+ときは >IN は flatの t の次を指している。 そこから 3 戻ると >IN が 指す
+のは flat の l で、 そこからテキスト・インタプリタがパースを再開すると、
+テキスト・インタプリタに見えるのは lat である。 よって lat が実行されて
+<<foo>> が出力される):
 
      <<bar>><<foo>>
 
-   This technique can be used to work around some of the
-interoperability problems of parsing words.  Of course, it’s better to
-avoid parsing words where possible.
+   この手法を使用すると、 ワードのパースにおける相互運用性の問題
+(interoperability problems)の一部を回避できます。 もちろん、 ワードのパ
+ースは可能な限り避けた方が良いです。
 
-Two important notes about the behaviour of the text interpreter:
+テキスト・インタプリタの振る舞いに関する 2 つの重要な注意事項:
 
-   • It processes each input string to completion before parsing
-     additional characters from the input buffer.
-   • It treats the input buffer as a read-only region (and so must your
-     code).
+   • 入力バッファからの追加の文字達をパースする前に、 各入力文字列の処理
+     を完了させます。
+   • 入力バッファを読み取り専用領域(region)として扱います(そして、 コー
+     ドも同様に読み取り専用でなければなりません)。
 
-When the text interpreter is in compile state, its behaviour changes in
-these ways:
+テキスト・インタプリタがコンパイル状態にある場合、 その振る舞いは以下の
+ように変化します:
 
-   • If a parsed string is found in the dictionary, the text interpreter
-     will perform the word’s “compilation semantics”.  In most cases,
-     this simply means that the execution semantics of the word will be
-     appended to the current definition.
-   • When a number is encountered, it is compiled into the current
-     definition (as a literal) rather than being pushed onto a parameter
-     stack.
-   • If an error occurs, ‘state’ is modified to put the text interpreter
-     back into interpret state.
-   • Each time a line is entered from the keyboard, Gforth prints “‘
-     compiled’” rather than “ ‘ok’”.
+   • パースされた文字列がディクショナリ内で見つかった場合、 テキスト・イ
+     ンタプリタはそのワードのコンパイル機能(“compilation semantics”)を実
+     行します。 ほとんどの場合、これは単にそのワードの実行機能(execution
+     semantics)が現在の定義に追加されることを意味します。
+   • 数値が検出されると、 パラメータ・スタックにプッシュされるのではなく
+     、 現在の定義に(リテラルとして)コンパイルされます。
+   • エラーが発生した場合、 ‘state’ が変更され、 テキスト・インタプリタ
+     はインタプリタ状態に戻ります。
+   • キーボードから行が入力されるたびに、 Gforth は “ ‘ok’” ではなく “‘
+     compiled’” を出力します。
 
-   When the text interpreter is using an input device other than the
-keyboard, its behaviour changes in these ways:
+   テキスト・インタプリタがキーボード以外の入力デバイスを使用している場
+合、 その振る舞いは以下のように変化します:
 
-   • When the parse area is empty, the text interpreter attempts to
-     refill the input buffer from the input source.  When the input
-     source is exhausted, the input source is set back to the previous
-     input source.
-   • It doesn’t print out “‘ ok’” or “‘ compiled’” messages each time
-     the parse area is emptied.
-   • If an error occurs, the input source is set back to the user input
-     device.
+   • パース領域が空の場合、 テキスト・インタプリタは入力源(input
+     source)から入力バッファを補充(refill)しようとします。 入力源を使い
+     尽くすと、 入力源は以前の入力源に戻ります。
+   • パース領域が空になるたびに “‘ ok’” や “‘ compiled’” メッセージは出
+     力されません。
+   • エラーが発生した場合、 入力源はユーザー入力デバイスに戻されます。
 
-   You can read about this in more detail in *note Input Sources::.
+   これについて詳しくは、 *note Input Sources:: をご覧ください。
 
 ‘>in’ ( – addr  ) core “to-in”
-   ‘uvar’ variable – a-addr is the address of a cell containing the char
-offset from the start of the input buffer to the start of the parse
-area.
+   ‘uvar’ 変数 – a-addr は、 入力バッファの先頭からパース領域の先頭まで
+の char オフセットを格納するセルへのアドレスです。
 
 ‘source’ ( – addr u  ) core “source”
-   Return address addr and length u of the current input buffer
+   現在の入力バッファのアドレス addr と長さ u を返します
 
 ‘tib’ ( – addr  ) core-ext-obsolescent “t-i-b”
 
 ‘#tib’ ( – addr  ) core-ext-obsolescent “number-t-i-b”
-   ‘uvar’ variable – a-addr is the address of a cell containing the
-number of characters in the terminal input buffer.  OBSOLESCENT:
-‘source’ superceeds the function of this word.
+   ‘uvar’ 変数 – a-addr は、 端末の入力バッファ内の文字数を含むセルのア
+ドレスです。 OBSOLESCENT(時代遅れ): 代わりに ‘source’ を使ってください。
 
 ‘interpret’ ( ... – ...  ) gforth-0.2 “interpret”
 
@@ -3582,21 +3604,21 @@ number of characters in the terminal input buffer.  OBSOLESCENT:
 
    ---------- Footnotes ----------
 
-   (1) This is an expanded version of the material in *note Introducing
-the Text Interpreter::.
+   (1) このセクションは *note Introducing the Text Interpreter:: の拡大
+バージョンです
 
-   (2) When the text interpreter is processing input from the keyboard,
-this area of memory is called the “terminal input buffer” (TIB) and is
-addressed by the (obsolescent) words ‘TIB’ and ‘#TIB’.
+   (2) テキスト・インタプリタがキーボードからの入力を処理している時、 こ
+のメモリ領域はターミナル入力バッファ(“terminal input buffer” (TIB))と呼
+ばれ、 (既に廃止されていますが) ワード ‘TIB’ および ワード ‘#TIB’ によっ
+てアドレス指定されます
 
-   (3) In other words, the text interpreter processes the contents of
-the input buffer by parsing strings from the parse area until the parse
-area is empty.
+   (3) 言い換えると、 テキスト・インタプリタは、 パース領域が空になるま
+で、 パース領域からの文字列をパースすることによって、 入力バッファの内容
+を処理します
 
-   (4) This is how parsing words work.
+   (4) これがワードのパースの仕組みです
 
-   (5) Exercise for the reader: what would happen if the ‘3’ were
-replaced with ‘4’?
+   (5) 研究課題: ‘3’ を ‘4’ に置き換えたらどうなるでしょうか？
 
 
 File: gforth.info,  Node: Input Sources,  Next: Number Conversion,  Prev: The Text Interpreter,  Up: The Text Interpreter
@@ -3604,51 +3626,50 @@ File: gforth.info,  Node: Input Sources,  Next: Number Conversion,  Prev: The Te
 6.14.1 Input Sources
 --------------------
 
-By default, the text interpreter processes input from the user input
-device (the keyboard) when Forth starts up.  The text interpreter can
-process input from any of these sources:
+デフォルトでは、 テキスト・インタプリタは、 Forth の起動時にユーザー入力
+デバイス(キーボード)からの入力を処理します。 テキスト・インタプリタは、
+以下のいずれかの入力源からの入力を処理できます:
 
-   • The user input device – the keyboard.
-   • A file, using the words described in *note Forth source files::.
-   • A block, using the words described in *note Blocks::.
-   • A text string, using ‘evaluate’.
+   • ユーザー入力デバイス – つまり、キーボード。
+   • ファイル。 *note Forth source files:: で説明されているワードを使用
+     。
+   • ブロック。 *note Blocks:: で説明されているワードを使用。
+   • テキスト文字列。 ‘evaluate’ 使用。
 
-   A program can identify the current input device from the values of
-‘source-id’ and ‘blk’.
+   プログラムは、 ‘source-id’ と ‘blk’ の値から現在の入力デバイスを識別
+できます。
 
 ‘source-id’ ( – 0 | -1 | fileid  ) core-ext,file “source-i-d”
-   Return 0 (the input source is the user input device), -1 (the input
-source is a string being processed by ‘evaluate’) or a fileid (the input
-source is the file specified by fileid).
+   戻り値: 0 (入力源はユーザー入力デバイス)または、 -1 (入力源は
+‘evaluate’ によって処理されている文字列)または、 fileid (入力源は fileid
+で指定されたファイル)です。
 
 ‘blk’ ( – addr  ) block “b-l-k”
-   ‘uvar’ variable – This cell contains the current block number (or 0
-if the current input source is not a block).
+   ‘uvar’ 変数 – このセルには現在のブロック番号(現在の入力源がブロックで
+ない場合は 0)が格納されています。
 
 ‘save-input’ ( – x1 .. xn n  ) core-ext “save-input”
-   The n entries xn - x1 describe the current state of the input source
-specification, in some platform-dependent way that can be used by
-‘restore-input’.
+   n 個のエントリ xn 〜 x1 は、 ‘restore-input’ で使用できるプラットフォ
+ーム依存の方法で、 入力源仕様の現在の状態を記述します。
 
 ‘restore-input’ ( x1 .. xn n – flag  ) core-ext “restore-input”
-   Attempt to restore the input source specification to the state
-described by the n entries xn - x1.  flag is true if the restore fails.
-In Gforth with the new input code, it fails only with a flag that can be
-used to throw again; it is also possible to save and restore between
-different active input streams.  Note that closing the input streams
-must happen in the reverse order as they have been opened, but in
-between everything is allowed.
+   入力源仕様を n 個のエントリ xn 〜 x1 で記述された状態に復元しようとし
+ます。 復元が失敗した場合は flag が true になります。 新しい入力プログラ
+ムを使用した Gforth では、 再度 throw するために使用できるフラグがある場
+合にのみ失敗します。 異なるアクティブな入力ストリーム間で保存および復元
+することも可能です。 注意: 入力ストリームを閉じる場合は、 開いたときとは
+逆の順序で行う必要がありますが、 その間はすべて許可されます。
 
 ‘evaluate’ ( ... addr u – ...  ) core,block “evaluate”
-   Save the current input source specification.  Store ‘-1’ in
-‘source-id’ and ‘0’ in ‘blk’.  Set ‘>IN’ to ‘0’ and make the string
-c-addr u the input source and input buffer.  Interpret.  When the parse
-area is empty, restore the input source specification.
+   現在の入力源の仕様を保存します。 そして、 ‘-1’ を ‘source-id’ に保存
+し、 かつ、 ‘0’ を ‘blk’ に保存します。 それから、 ‘>IN’ を ‘0’ に設定し
+、 文字列 c-addr u を入力源および入力バッファにし、 解釈(interpret)しま
+す。 そしてパース領域が空になったら、 入力源の仕様を復元します。
 
 ‘query’ ( –  ) core-ext-obsolescent “query”
-   Make the user input device the input source.  Receive input into the
-Terminal Input Buffer.  Set ‘>IN’ to zero.  OBSOLESCENT: superceeded by
-‘accept’.
+   ユーザー入力デバイスを入力源にします。 入力を端末入力バッファ
+(Terminal Input Buffer)で受け取ります。 ‘>IN’ をゼロに設定します。
+OBSOLESCENT(時代遅れ): 代わりに ‘accept’ を使ってください。
 
 
 File: gforth.info,  Node: Number Conversion,  Next: Interpret/Compile states,  Prev: Input Sources,  Up: The Text Interpreter
@@ -6087,222 +6108,4 @@ OBSOLESCENT: superceeded by ‘accept’.
 ‘span’ ( – c-addr  ) core-ext-obsolescent “span”
    ‘Variable’ – c-addr is the address of a cell that stores the length
 of the last string received by ‘expect’.  OBSOLESCENT.
-
-
-File: gforth.info,  Node: Pipes,  Next: Xchars and Unicode,  Prev: Line input and conversion,  Up: Other I/O
-
-6.20.9 Pipes
-------------
-
-In addition to using Gforth in pipes created by other processes (*note
-Gforth in pipes::), you can create your own pipe with ‘open-pipe’, and
-read from or write to it.
-
-‘open-pipe’ ( c-addr u wfam – wfileid wior ) gforth-0.2 “open-pipe”
-
-‘close-pipe’ ( wfileid – wretval wior ) gforth-0.2 “close-pipe”
-
-   If you write to a pipe, Gforth can throw a ‘broken-pipe-error’; if
-you don’t catch this exception, Gforth will catch it and exit, usually
-silently (*note Gforth in pipes::).  Since you probably do not want
-this, you should wrap a ‘catch’ or ‘try’ block around the code from
-‘open-pipe’ to ‘close-pipe’, so you can deal with the problem yourself,
-and then return to regular processing.
-
-‘broken-pipe-error’ ( – n  ) gforth-0.6 “broken-pipe-error”
-   the error number for a broken pipe
-
-
-File: gforth.info,  Node: Xchars and Unicode,  Next: i18n and l10n,  Prev: Pipes,  Up: Other I/O
-
-6.20.10 Xchars and Unicode
---------------------------
-
-ASCII is only appropriate for the English language.  Most western
-languages however fit somewhat into the Forth frame, since a byte is
-sufficient to encode the few special characters in each (though not
-always the same encoding can be used; latin-1 is most widely used,
-though).  For other languages, different char-sets have to be used,
-several of them variable-width.  To deal with this problem, characters
-are often represented as Unicode codepoints on the stack, and as UTF-8
-byte strings in memory.  An Unicode codepoint often represents one
-application-level character, but Unicode also supports decomposed
-characters that consist of several code points, e.g., a base letter and
-a combining diacritical mark.
-
-   An Unicode codepoint can consume more than one byte in memory, so we
-adjust our terminology: A char is a raw byte in memory or a value in the
-range 0-255 on the stack.  An xchar (for extended char) stands for one
-codepoint; it is represented by one or more bytes in memory and may have
-larger values on the stack.  ASCII characters are the same as chars and
-as xchars: values in the range 0-127, and a single byte with that value
-in memory.
-
-   When using UTF-8 encoding, all other codepoints take more than one
-byte/char.  In most cases, you can just treat such characters as strings
-in memory and don’t need to use the following words, but if you want to
-deal with individual codepoints, the following words are useful.  We
-currently have no words for dealing with decomposed characters.
-
-   The xchar words add a few data types:
-
-   • XC is an extended char (xchar) on the stack.  It occupies one cell,
-     and is a subset of unsigned cell.  On 16 bit systems, only the BMP
-     subset of the Unicode character set (i.e., codepoints <65536) can
-     be represented on the stack.  If you represent your application
-     characters as strings at all times, you can avoid this limitation.
-
-   • XC-ADDR is the address of an xchar in memory.  Alignment
-     requirements are the same as C-ADDR.  The memory representation of
-     an xchar differs from the stack representation, and depends on the
-     encoding used.  An xchar may use a variable number of chars in
-     memory.
-
-   • XC-ADDR U is a buffer of xchars in memory, starting at XC-ADDR, U
-     chars (i.e., bytes, not xchars) long.
-
-‘xc-size’ ( xc – u  ) xchar “x-c-size”
-   Computes the memory size of the xchar XC in chars.
-
-‘x-size’ ( xc-addr u1 – u2  ) xchar “x-size”
-   Computes the memory size of the first xchar stored at XC-ADDR in
-chars.
-
-‘xc@’ ( xc-addr – xc  ) xchar-ext “xc-fetch”
-   Fetchs the xchar XC at XC-ADDR1.
-
-‘xc@+’ ( xc-addr1 – xc-addr2 xc  ) xchar “x-c-fetch-plus”
-   Fetchs the xchar XC at XC-ADDR1.  XC-ADDR2 points to the first memory
-location after XC.
-
-‘xc@+?’ ( xc-addr1 u1 – xc-addr2 u2 xc  ) gforth-experimental “x-c-fetch-plus-query”
-   Fetchs the first xchar XC of the string XC-ADDR1 U1.  XC-ADDR2 U2 is
-the remaining string after XC.
-
-‘xc!+?’ ( xc xc-addr1 u1 – xc-addr2 u2 f  ) xchar “x-c-store-plus-query”
-   Stores the xchar XC into the buffer starting at address XC-ADDR1, U1
-chars large.  XC-ADDR2 points to the first memory location after XC, U2
-is the remaining size of the buffer.  If the xchar XC did fit into the
-buffer, F is true, otherwise F is false, and XC-ADDR2 U2 equal XC-ADDR1
-U1.  XC!+?  is safe for buffer overflows, and therefore preferred over
-XC!+.
-
-‘xc!+’ ( xc xc-addr1 – xc-addr2  ) xchar “x-c-store”
-   Stores the xchar XC at XC-ADDR1.  XC-ADDR2 is the next unused address
-in the buffer.  Note that this writes up to 4 bytes, so you need at
-least 3 bytes of padding after the end of the buffer to avoid
-overwriting useful data if you only check the address against the end of
-the buffer.
-
-‘xchar+’ ( xc-addr1 – xc-addr2  ) xchar “x-char-plus”
-   Adds the size of the xchar stored at XC-ADDR1 to this address, giving
-XC-ADDR2.
-
-‘xchar-’ ( xc-addr1 – xc-addr2  ) xchar-ext “x-char-minus”
-   Goes backward from XC_ADDR1 until it finds an xchar so that the size
-of this xchar added to XC_ADDR2 gives XC_ADDR1.
-
-‘+x/string’ ( xc-addr1 u1 – xc-addr2 u2  ) xchar-ext “plus-x-slash-string”
-   Step forward by one xchar in the buffer defined by address XC-ADDR1,
-size U1 chars.  XC-ADDR2 is the address and u2 the size in chars of the
-remaining buffer after stepping over the first xchar in the buffer.
-
-‘x\string-’ ( xc-addr u1 – xc-addr u2  ) xchar-ext “x-backslash-string-minus”
-   Step backward by one xchar in the buffer defined by address XC-ADDR
-and size U1 in chars, starting at the end of the buffer.  XC-ADDR is the
-address and U2 the size in chars of the remaining buffer after stepping
-backward over the last xchar in the buffer.
-
-‘-trailing-garbage’ ( xc-addr u1 – xc-addr u2  ) xchar-ext “minus-trailing-garbage”
-   Examine the last XCHAR in the buffer XC-ADDR U1—if the encoding is
-correct and it repesents a full char, U2 equals U1, otherwise, U2
-represents the string without the last (garbled) xchar.
-
-‘x-width’ ( xc-addr u – n  ) xchar-ext “x-width”
-   N is the number of monospace ASCII chars that take the same space to
-display as the the xchar string starting at XC-ADDR, using U chars;
-assuming a monospaced display font, i.e.  char width is always an
-integer multiple of the width of an ASCII char.
-
-‘xkey’ ( – xc  ) xchar “x-key”
-   Reads an xchar from the terminal.  This will discard all input events
-up to the completion of the xchar.
-
-‘xc-width’ ( xc – n  ) xchar-ext “x-c-width”
-   XC has a width of N times the width of a normal fixed-width glyph.
-
-‘xhold’ ( xc –  ) xchar-ext “x-hold”
-   Used between ‘<<#’ and ‘#>’.  Prepend XC to the pictured numeric
-output string.  Alternatively, use ‘holds’.
-
-‘xc,’ ( xchar –  ) xchar “x-c-comma”
-
-
-File: gforth.info,  Node: i18n and l10n,  Next: Substitute,  Prev: Xchars and Unicode,  Up: Other I/O
-
-6.20.11 国際化(I18n)とローカライズ
-----------------------------------
-
-Programs for end users require to address those in their native
-language.  There is a decades old proposal for such a facility that has
-been split from other proposals for international character sets like
-Xchars (*note Xchars and Unicode::) and Substitute (*note Substitute::).
-Messages displayed on the screen need to be translated from the native
-language of the developers to the local languages of the user.
-
-   Strings subject to translation are declared with ‘L" ’STRING‘"’.
-This returns a locale string identifier (LSID). LSIDs are opaque types,
-taking a cell on the stack.  LSIDs can be translated into a locale;
-locales are languages and country-specific variants of that language.
-
-‘L"’ ( "lsid<">" – lsid  ) gforth-experimental “l-quote”
-   Parse a string and define a new lsid, if the string is uniquely new.
-Identical strings result in identical lsids, which allows to refer to
-the same lsid from multiple locations using the same string.
-
-‘LU"’ ( "lsid<">" – lsid  ) gforth-experimental “l-unique-quote”
-   Parse a string and always define a new lsid, even if the string is
-not unique.
-
-‘native@’ ( lsid – addr u  ) gforth-experimental “native-fetch”
-   fetch native string from an LSID
-
-‘locale@’ ( lsid – addr u  ) gforth-experimental “locale-fetch”
-   fetch the localized string in the current language and country
-
-‘locale!’ ( addr u lsid –  ) gforth-experimental “locale-store”
-   Store localized string ADDR U for the current locale and country in
-LSID.
-
-‘Language’ ( "name" –  ) gforth-experimental “Language”
-   define a locale.  Executing that locale makes it the current locale.
-
-‘Country’ ( <lang> "name" –  ) gforth-experimental “Country”
-   define a variant (typical: country) for the current locale.
-Executing that locale makes it the current locale.  You can create
-variants of variants (a country may have variants within, e.g.  think of
-how many words for rolls/buns there are in many languages).
-
-‘locale-file’ ( fid –  ) gforth-experimental “locale-file”
-   read lines from FID into the current locale.
-
-‘included-locale’ ( addr u –  ) gforth-experimental “included-locale”
-   read lines from the file ADDR U into the current locale.
-
-‘include-locale’ ( "name" –  ) gforth-experimental “include-locale”
-   read lines from the file "NAME" into the current locale.
-
-‘locale-csv’ ( "name" –  ) gforth-experimental “locale-csv”
-   import comma-separated value table into locales.  first line contains
-locale names, “program” and “default” are special entries; generic
-languages must preceed translations for specific countries.  Entries
-under “program” (must be leftmost) are used to search for the lsid; if
-empty, the line number-1 is the lsid index.
-
-‘.locale-csv’ ( –  ) gforth-experimental “dot-locale-csv”
-   write the locale database in CSV format to the terminal output.
-
-‘locale-csv-out’ ( "name" –  ) gforth-experimental “locale-csv”
-   Create file "NAME" and write the locale database out to the file
-"NAME" in CSV format.
 

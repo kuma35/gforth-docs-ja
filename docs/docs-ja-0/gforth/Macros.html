@@ -71,9 +71,8 @@ Previous: <a href="Literals.html" accesskey="p" rel="prev">Literals</a>, Up: <a 
 <span id="index-Macros"></span>
 <span id="index-compiling-compilation-semantics"></span>
 
-<p><code>Literal</code> and friends compile data values into the current definition.
-You can also write words that compile other words into the current
-definition.  E.g.,
+<p><code>Literal</code> とその仲間たちは、 データ値を現在の定義にコンパイルします。
+他のワードを現在の定義にコンパイルするワードを記述することもできます。 例えば:
 </p>
 <div class="example">
 <pre class="example">: compile-+ ( -- ) \ compiled code: ( n1 n2 -- n )
@@ -84,11 +83,11 @@ definition.  E.g.,
 1 2 foo .
 </pre></div>
 
-<p>This is equivalent to <code>: foo + ;</code> (<code>see foo</code> to check this).  What
-happens in this example? <code>Postpone</code> compiles the compilation semantics
-of <code>+</code> into <code>compile-+</code>; later the text interpreter executes
-<code>compile-+</code> and thus the compilation semantics of +, which compile (the
-execution semantics of) <code>+</code> into <code>foo</code>.<a id="DOCF23" href="#FOOT23"><sup>23</sup></a>
+<p>これは <code>: foo + ;</code> と同等です(確認するには <code>see foo</code> としてください)。
+この例では何が起こっているのでしょうか? <code>Postpone</code> は、 <code>+</code> のコンパイル機能(compilation
+semantics)を <code>compile-+</code> にコンパイルします。 その後、 テキスト・インタプリタは <code>compile-+</code>
+を実行し、 + のコンパイル機能(compilation semantics)を実行します。 これにより、<code>+</code>
+(の実行機能(execution semantics)) が <code>foo</code> にコンパイルされます<a id="DOCF23" href="#FOOT23"><sup>23</sup></a>。
 </p>
 <span id="index-postpone-_0028--_0022name_0022-_002d_002d--_0029-core"></span>
 <span id="index-postpone"></span>
@@ -96,13 +95,13 @@ execution semantics of) <code>+</code> into <code>foo</code>.<a id="DOCF23" href
 <div class="format">
 <pre class="format"><code>postpone</code> ( <i>&quot;name&quot; &ndash;  </i>) core &ldquo;postpone&rdquo;
 </pre></div>
-<p>Compiles the compilation semantics of <i>name</i>.
+<p><i>name</i> の コンパイル機能(compilation semantics)をコンパイルする。
 </p>
 
 
-<p>Compiling words like <code>compile-+</code> are usually immediate (or similar)  so
-you do not have to switch to interpret state to execute them; modifying the
-last example accordingly produces:
+<p><code>compile-+</code> のようなコンパイル・ワード(compiling
+words)のコンパイルは通常即実行ワード(または即実行同様)であるため、 それらを実行するためにインタプリタ状態に切り替える必要はありません。
+最後の例をそれに応じて変更すると、 以下のようになります:
 </p>
 <div class="example">
 <pre class="example">: [compile-+] ( compilation: --; interpretation: -- )
@@ -114,10 +113,9 @@ last example accordingly produces:
 1 2 foo .
 </pre></div>
 
-<p>You will occassionally find the need to POSTPONE several words; putting
-POSTPONE before each such word is cumbersome, so Gforth provides a more
-convenient syntax: <code>]] ... [[</code>.  This allows us to write
-<code>[compile-+]</code> as:
+<p>場合によっては、 複数のワードを POSTPONE する必要があることに気づくでしょう。 このような各ワードの前に POSTPONE
+を置くのは面倒なので、 Gforth ではより便利な構文 <code>]] ... [[</code> を提供しています。  これにより、
+<code>[compile-+]</code> を以下のように記述できるようになります:
 </p>
 <div class="example">
 <pre class="example">: [compile-+] ( compilation: --; interpretation: -- )
@@ -130,22 +128,19 @@ convenient syntax: <code>]] ... [[</code>.  This allows us to write
 <div class="format">
 <pre class="format"><code>]]</code> ( <i>&ndash;  </i>) gforth-0.6 &ldquo;right-bracket-bracket&rdquo;
 </pre></div>
-<p>Switch into postpone state: All words and recognizers are processed as if
-they were preceded by <code>postpone</code>.  Postpone state ends when <code>[[</code>
-is recognized.
+<p>postpone 状態に切り替え: すべてのワードと認識器(recognizers)は、 その前に <code>postpone</code>
+があるかのように処理されます。  <code>[[</code> が認識されると、 postpone 状態は終了します。
 </p>
 
 
-<p>The unusual direction of the brackets indicates their function: <code>]]</code>
-switches from compilation to postponing (i.e., compilation of compilation),
-just like <code>]</code> switches from immediate execution (interpretation) to
-compilation.  Conversely, <code>[[</code> switches from postponing to compilation,
-ananlogous to <code>[</code> which switches from compilation to immediate
-execution.
+<p>角括弧の珍しい方向はその機能を示しています。 <code>]</code> が即時実行(インタプリタ状態)からコンパイルに切り替えるのと同じように、
+<code>]]</code> はコンパイルから postpone 状態(つまり、 コンパイル機能のコンパイル)に切り替えます。  逆に、 <code>[[</code> は
+postpone 状態からコンパイル状態に切り替えます。 これは、 コンパイル状態から即時実行(インタプリタ状態)に切り替える <code>[</code>
+に似ています。
 </p>
-<p>The real advantage of <code>]] </code>...<code> [[</code> becomes apparent when there
-are many words to POSTPONE.  E.g., the word <code>compile-map-array</code>
-(see <a href="Advanced-macros-Tutorial.html">Advanced macros</a>) can be written much shorter as follows:
+<p><code>]] </code>...<code> [[</code> の本当の利点は、 POSTPONE するワードがたくさんある場合に明らかになります。  たとえば、
+ワード <code>compile-map-array</code> (see <a href="Advanced-macros-Tutorial.html">Advanced macros</a>) は、
+以下のようにさらに短く書くことができます:
 </p>
 <div class="example">
 <pre class="example">: compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )
@@ -159,7 +154,7 @@ are many words to POSTPONE.  E.g., the word <code>compile-map-array</code>
   0 [ ' + compile-map-array ] ;
 </pre></div>
 
-<p>If you then say <code>see sum-array</code>, it shows the following code:
+<p><code>see sum-array</code> すると、 以下のコードが表示されます:
 </p>
 <div class="example">
 <pre class="example">: sum-array
@@ -168,69 +163,61 @@ are many words to POSTPONE.  E.g., the word <code>compile-map-array</code>
 ;
 </pre></div>
 
-<p>In addition to <code>]]</code>...<code>[[</code>, this example shows off some other
-features:
+<p><code>]]</code>...<code>[[</code> に加えて、 この例では他の機能もいくつかお披露目しています:
 </p>
 <ul>
-<li> It uses a defer-flavoured (defined with <code>xt:</code> local <code>xt</code>;
-mentioning the local inside <code>]]</code>...<code>[[</code> results in
-<code>compile,</code>ing the xt in the local.
+<li> (<code>xt:</code> を指定する) defer フレーバーのローカル変数 <code>xt</code> を使用しています。
+<code>]]</code>...<code>[[</code> 内でローカル変数 xt に遭遇すると、 ローカル変数 xt を <code>compile,</code> します。
 
-</li><li> It uses the literal <code>1</code> inside <code>]]</code>...<code>[[</code>.  This results in
-<code>postpone</code>ing the <code>1</code>, i.e. compiling it when
-<code>compile-map-array</code> is run.
+</li><li> <code>]]</code>...<code>[[</code> 内でリテラル <code>1</code> を使用します。  これにより、 <code>1</code> が postpone
+(延期)されます。 つまり、 <code>compile-map-array</code> の実行時にコンパイルされます。
 
-</li><li> When <code>compile-map-array</code> is run, <code>1 cells</code> is compiled and
-optimized into <code>#8</code> by Gforth&rsquo;s constant folding.
+</li><li> <code>compile-map-array</code> が実行されると、 <code>1 cells</code> がコンパイルされ、 Gforth
+の定数折りたたみによって <code>#8</code> に最適化(optimize)されます。
 
 </li></ul>
 
-<p>Note that parsing words such as <code>s\&quot;</code> don&rsquo;t parse at postpone time and
-therefore not inside <code>]]</code>...<code>[[</code>.  Instead of <code>s\&quot;
-mystring\n&quot;</code> you can use the string recognizer and write
-<code>&quot;mystring\n&quot;</code>, which works inside <code>]]</code>...<code>[[</code>.  Likewise for
-the parsing word <code>[']</code> and the recognizer notation starting with
-<code>`</code>.
+<p>注意: <code>s\&quot;</code> などのワードのパースは postpone 指定時にはパースされないため、 <code>]]</code>...<code>[[</code>
+内ではパースされないことに注意してください。 <code>s\&quot; mystring\n&quot;</code> の代わりに、 文字列認識器(string
+recognizer)を使用して、 <code>]]</code>...<code>[[</code> 内で動作する <code>&quot;mystring\n&quot;</code>
+で記述することができます。これは <code>]]</code>...<code>[[</code> 内で機能します。 同様に、 パース・ワード <code>[']</code>
+についても、  <code>`</code> で始まる認識器(recognizer)表記で記述することができます。
 </p>
-<p>But if you prefer to use <code>s\&quot;</code> (or have a parsing word that has no
-recognizer replacement), you can do it by switching back to compilation:
+<p>ただし、 あなたが <code>s\&quot;</code> を使用したい場合(または、 認識器(recognizer)置換がないパース・ワードがある場合)、
+以下のようにコンパイル状態に切り替えることで実行できます:
 </p>
 <div class="example">
 <pre class="example">]] ... [[ s\&quot; mystring\n&quot; ]] 2literal ... [[
 </pre></div>
 
-<p>Definitions of <code>]]</code> and friends in Standard Forth are provided in
-<samp>compat/macros.fs</samp>.
+<p>標準 Forth での <code>]]</code> と、 その仲間の定義は、 <samp>compat/macros.fs</samp> で提供されます。
 </p>
-<p>Immediate compiling words are similar to macros in other languages (in
-particular, Lisp).  The important differences to macros in, e.g., C are:
+<p>即時コンパイル・ワード(immediate compiling words)は、 他の言語(特に Lisp)のマクロに似ています。
+C言語などのマクロとの重要な違いは以下のとおりです:
 </p>
 <ul>
-<li> You use the same language for defining and processing macros, not a separate
-preprocessing language and processor.
+<li> マクロの定義と処理には、 別個の前処理用の言語や処理器ではなく、 同一の言語を使用します。
 
-</li><li> Consequently, the full power of Forth is available in macro definitions.
-E.g., you can perform arbitrarily complex computations, or generate
-different code conditionally or in a loop (e.g., see <a href="Advanced-macros-Tutorial.html">Advanced macros</a>).  This power is very useful when writing a parser generators or
-other code-generating software.
+</li><li> したがって、 Forth の全機能をマクロ定義で利用できます。 たとえば、 任意の複雑な計算を実行したり、
+条件付きまたはループで異なるコードを生成したりできます (例: see <a href="Advanced-macros-Tutorial.html">Advanced macros</a>)。  この能力は、
+パーサ・ジェネレータや、 その他のコード生成ソフトウェアを作成するときに非常に役立ちます。
 
-</li><li> Macros defined using <code>postpone</code> etc. deal with the language at a higher
-level than strings; name binding happens at macro definition time, so you
-can avoid the pitfalls of name collisions that can happen in C macros.  Of
-course, Forth is a liberal language and also allows to shoot yourself in the
-foot with text-interpreted macros like
+</li><li> <code>postpone</code> などを使用して定義されたマクロは、 文字列よりも高いレベルで言語を扱います。 名前との結び付け(name
+binding)はマクロ定義時に行われるため、 C言語のマクロで発生する可能性のある名前の衝突の落とし穴を回避できます。 もちろん、 Forth
+は自由主義の言語(liberal language)であり、 以下のようなテキスト解釈マクロ(text-interpreted
+macros)を使用して自分自身を攻撃することもできます
 
 <div class="example">
 <pre class="example">: [compile-+] s&quot; +&quot; evaluate ; immediate
 </pre></div>
 
-<p>Apart from binding the name at macro use time, using <code>evaluate</code> also
-makes your definition <code>state</code>-smart (see <a href="Combined-words.html#state_002dsmartness">state-smartness</a>).
+<p>マクロ使用時に名前を結びつける(bind)だけでなく、 <code>evaluate</code> を使用すると、 あなたの定義は
+<code>state</code>-smart (see <a href="Combined-words.html#state_002dsmartness">state-smartness</a>) になります。
 </p></li></ul>
 
-<p>You may want the macro to compile a number into a word.  The word to do it
-is <code>literal</code>, but you have to <code>postpone</code> it, so its compilation
-semantics take effect when the macro is executed, not when it is compiled:
+<p>マクロで数値をワードにコンパイルすることが必要な場合があります。  これを行うためのワードは <code>literal</code> ですが、
+<code>postpone</code> する必要があるため、 <code>literal</code> のコンパイル機能(compilation
+semantics)はマクロがコンパイルされる時ではなくマクロの実行時に効果を発揮します:
 </p>
 <div class="example">
 <pre class="example">: [compile-5] ( -- ) \ compiled code: ( -- n )
@@ -240,12 +227,10 @@ semantics take effect when the macro is executed, not when it is compiled:
 foo .
 </pre></div>
 
-<p>You may want to pass parameters to a macro, that the macro should compile
-into the current definition.  If the parameter is a number, then you can use
-<code>postpone literal</code> (similar for other values).
+<p>マクロにパラメータを渡して、 マクロを現在の定義にコンパイルする必要がある場合があります。  パラメータが数値の場合は、 <code>postpone
+literal</code> を使用できます(他の値の場合も同様)。
 </p>
-<p>If you want to pass a word that is to be compiled, the usual way is to pass
-an execution token and <code>compile,</code> it:
+<p>コンパイルされるワードを渡したい場合、 通常の方法は、実行トークンと <code>compile,</code> を渡すことです:
 </p>
 <div class="example">
 <pre class="example">: twice1 ( xt -- ) \ compiled code: ... -- ...
@@ -261,14 +246,13 @@ an execution token and <code>compile,</code> it:
 <div class="format">
 <pre class="format"><code>compile,</code> ( <i>xt &ndash;  </i>) core-ext &ldquo;compile-comma&rdquo;
 </pre></div>
-<p>Append the semantics represented by <i>xt</i> to the current definition.  When
-the resulting code fragment is run, it behaves the same as if <i>xt</i> is
-<code>execute</code>d.
+<p><i>xt</i> で表される機能(semantics)を現在の定義に追加します。 結果のコード断片が実行されると、 <i>xt</i> が
+<code>execute</code> されたのと同一の振る舞いをします。
 </p>
 
 
-<p>An alternative available in Gforth, that allows you to pass the compilation
-semantics as parameters is to use the compilation token (see <a href="Compilation-token.html">Compilation token</a>).  The same example in this technique:
+<p>Gforth で利用可能な代替方法では、 コンパイル機能をパラメータ(compilation semantics)として渡すことができる、
+コンパイル・トークンを使用します(see <a href="Compilation-token.html">Compilation token</a>)。 以下は、 上記と同じ例にこの方法を使ったものです:
 </p>
 <div class="example">
 <pre class="example">: twice ( ... ct -- ... ) \ compiled code: ... -- ...
@@ -278,13 +262,14 @@ semantics as parameters is to use the compilation token (see <a href="Compilatio
   [ comp' 1+ twice ] ;
 </pre></div>
 
-<p>In the example above <code>2&gt;r</code> and <code>2r&gt;</code> ensure that <code>twice</code>
-works even if the executed compilation semantics has an effect on the data
-stack.
+<p>この例では、 <code>2&gt;r</code> と <code>2r&gt;</code> により、 実行(execute)されるコンパイル機能(compilation
+semantics)がデータ・スタックに影響を与える場合でも、 <code>twice</code> が確実に機能するようにします(訳注: 2dup ( ct ct
+) 2&gt;r ( ct r:ct ) execute ( ?? r:ct ) 2r&gt; ( ?? ct ) execute ( ??? ) 。 最初の
+execute でデータ・スタックのTOSがどうなろうとも、 2つ目の execute のために ct を tos に与えるため。 ct は
+2セル単位なので、 2dupで複製、 2&gt;r ... 2r&gt; で ct を1つ退避となる)
 </p>
-<p>You can also define complete definitions with these words; this provides an
-alternative to using <code>does&gt;</code> (see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>).
-E.g., instead of
+<p>これらのワードを使用して完全な定義を定義することもできます。 これは、 <code>does&gt;</code>
+を使用する代わりの方法を提供します(see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>)。  たとえば以下の代わりに
 </p>
 <div class="example">
 <pre class="example">: curry+ ( n1 &quot;name&quot; -- )
@@ -293,7 +278,7 @@ DOES&gt; ( n2 -- n1+n2 )
     @ + ;
 </pre></div>
 
-<p>you could define
+<p>以下のように定義することができます
 </p>
 <div class="example">
 <pre class="example">: curry+ ( n1 &quot;name&quot; -- )
@@ -304,14 +289,12 @@ DOES&gt; ( n2 -- n1+n2 )
 see 3-
 </pre></div>
 
-<p>The sequence <code>&gt;r : r&gt;</code> is necessary, because <code>:</code> puts a colon-sys
-on the data stack that makes everything below it unaccessible.
+<p>n1 にアクセスするために <code>&gt;r : r&gt;</code> というシーケンスが必要です。 なぜなら、 <code>:</code> はデータ・スタックに
+colon-sys をプッシュし、 それより下にある全てのモノにアクセスできなくなるためです。
 </p>
-<p>This way of writing defining words is sometimes more, sometimes less
-convenient than using <code>does&gt;</code> (see <a href="Advanced-does_003e-usage-example.html">Advanced does&gt; usage example</a>).
-One advantage of this method is that it can be optimized better, because the
-compiler knows that the value compiled with <code>literal</code> is fixed, whereas
-the data associated with a <code>create</code>d word can be changed.
+<p>ワードを定義するこの方法は、 <code>does&gt;</code> を使用するよりも便利な場合もあれば、 そうでない場合もあります(see <a href="Advanced-does_003e-usage-example.html">Advanced does&gt; usage example</a>)。  この方式の利点の 1 つは、 コンパイラは、  <code>literal</code>
+でコンパイルされた値が固定されているのに対して、 <code>create</code> されたワードに関連付けられたデータは変更可能なことを認識しているため、
+より適切に最適化できることです。
 </p>
 <span id="index-_005bcompile_005d-_0028--compilation-_0022name_0022-_002d_002d-_003b-run_002dtime-_003f-_002d_002d-_003f--_0029-core_002dext"></span>
 <span id="index-_005bcompile_005d"></span>
@@ -319,11 +302,10 @@ the data associated with a <code>create</code>d word can be changed.
 <div class="format">
 <pre class="format"><code>[compile]</code> ( <i>compilation &quot;name&quot; &ndash; ; run-time ? &ndash; ?  </i>) core-ext &ldquo;bracket-compile&rdquo;
 </pre></div>
-<p>Legacy word.  Use <code>postpone</code> instead.  Works like <code>postpone</code> if
-<i>name</i> has non-default compilation semantics.  If <i>name</i> has default
-compilation semantics (i.e., is a normal word), compiling <code>[compile]
-<i>name</i></code> is equivalent to compiling <i>name</i> (i.e. <code>[compile]</code> is
-redundant in this case.
+<p>古いワード(lLegacy word)です。  代わりに <code>postpone</code> を使用してください。  <i>name</i>
+がデフォルト以外のコンパイル機能(compilation semantics)を持つ場合は、 <code>postpone</code> と同様に機能します。
+<i>name</i> がデフォルトのコンパイル機能を持つ(つまり、 通常のワードである)場合、 <code>[compile] <i>name</i></code>
+をコンパイルすることは、 <i>name</i> をコンパイルすることと同じです(つまり、 この場合 <code>[compile]</code> は冗長です)。
 </p>
 
 
@@ -333,10 +315,9 @@ redundant in this case.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT23" href="#DOCF23">(23)</a></h5>
-<p>A recent RFI
-answer requires that compiling words should only be executed in compile
-state, so this example is not guaranteed to work on all standard systems,
-but on any decent system it will work.</p>
+<p>最近の RFI の回答では、
+ワードのコンパイルはコンパイル状態でのみ実行する必要があるとしているため、 この例はすべての標準システムで動作することは保証されませんが、
+ちゃんとした(decent)システムであれば動作します</p>
 </div>
 <hr>
 <div class="header">

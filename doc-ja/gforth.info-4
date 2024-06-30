@@ -27,6 +27,181 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Model,  Next: Integrating Gforth,  Prev: Standard vs Extensions,  Up: Top
+
+11 Model
+********
+
+This chapter has yet to be written.  It will contain information, on
+which internal structures you can rely.
+
+
+File: gforth.info,  Node: Integrating Gforth,  Next: Emacs and Gforth,  Prev: Model,  Up: Top
+
+12 Integrating Gforth into C programs
+*************************************
+
+Several people like to use Forth as scripting language for applications
+that are otherwise written in C, C++, or some other language.
+
+   The Forth system ATLAST provides facilities for embedding it into
+applications; unfortunately it has several disadvantages: most
+importantly, it is not based on Standard Forth, and it is apparently
+dead (i.e., not developed further and not supported).  The facilities
+provided by Gforth in this area are inspired by ATLAST’s facilities, so
+making the switch should not be hard.
+
+   We also tried to design the interface such that it can easily be
+implemented by other Forth systems, so that we may one day arrive at a
+standardized interface.  Such a standard interface would allow you to
+replace the Forth system without having to rewrite C code.
+
+   You embed the Gforth interpreter by linking with the library
+‘libgforth.a’ or ‘libgforth.so’ (give the compiler the option
+‘-lgforth’, or for one of the other engines ‘-lgforth-fast’,
+‘-lgforth-itc’, or ‘-lgforth-ditc’).  All global symbols in this library
+that belong to the interface, have the prefix ‘gforth_’; if a common
+interface emerges, the functions may also be available through
+‘#define’s with the prefix ‘forth_’.
+
+   You can include the declarations of Forth types, the functions and
+variables of the interface with ‘#include <gforth.h>’.
+
+   You can now run a Gforth session by either calling ‘gforth_main’ or
+using the components:
+
+     Cell gforth_main(int argc, char **argv, char **env)
+     {
+       Cell retvalue=gforth_start(argc, argv);
+
+       if(retvalue == -56) { /* throw-code for quit */
+         retvalue = gforth_bootmessage();     // show boot message
+         if(retvalue == -56)
+           retvalue = gforth_quit(); // run quit loop
+       }
+       gforth_cleanup();
+       gforth_printmetrics();
+       // gforth_free_dict(); // if you want to restart, do this
+
+       return retvalue;
+     }
+
+   To interact with the Forth interpreter, there’s ‘Xt gforth_find(Char
+* name)’ and ‘Cell gforth_execute(Xt xt)’.
+
+   More documentation needs to be put here.
+
+12.1 Types
+==========
+
+‘Cell’, ‘UCell’: data stack elements.
+
+   ‘Float’: float stack element.
+
+   ‘Address’, ‘Xt’, ‘Label’: pointer typies to memory, Forth words, and
+Forth instructions inside the VM.
+
+12.2 Variables
+==============
+
+Data and FP Stack pointer.  Area sizes.  Accessing the Stacks
+
+   ‘gforth_SP’, ‘gforth_FP’.
+
+12.3 Functions
+==============
+
+     void *gforth_engine(Xt *, stackpointers *);
+     Cell gforth_main(int argc, char **argv, char **env);
+     int gforth_args(int argc, char **argv, char **path, char **imagename);
+     ImageHeader* gforth_loader(char* imagename, char* path);
+     user_area* gforth_stacks(Cell dsize, Cell rsize, Cell fsize, Cell lsize);
+     void gforth_free_stacks(user_area* t);
+     void gforth_setstacks(user_area * t);
+     void gforth_free_dict();
+     Cell gforth_go(Xt* ip0);
+     Cell gforth_boot(int argc, char** argv, char* path);
+     void gforth_bootmessage();
+     Cell gforth_start(int argc, char ** argv);
+     Cell gforth_quit();
+     Xt gforth_find(Char * name);
+     Cell gforth_execute(Xt xt);
+     void gforth_cleanup();
+     void gforth_printmetrics();
+     void gforth_setwinch();
+
+12.4 Signals
+============
+
+Gforth sets up signal handlers to catch exceptions and window size
+changes.  This may interfere with your C program.
+
+
+File: gforth.info,  Node: Emacs and Gforth,  Next: Image Files,  Prev: Integrating Gforth,  Up: Top
+
+13 Emacs and Gforth
+*******************
+
+Gforth comes with ‘gforth.el’, an improved version of ‘forth.el’ by
+Goran Rydqvist (included in the TILE package).  The improvements are:
+
+   • A better handling of indentation.
+   • A custom hilighting engine for Forth-code.
+   • Comment paragraph filling (‘M-q’)
+   • Commenting (‘C-x \’) and uncommenting (‘C-u C-x \’) of regions
+   • Removal of debugging tracers (‘C-x ~’, *note Debugging::).
+   • Support of the ‘info-lookup’ feature for looking up the
+     documentation of a word.
+   • Support for reading and writing blocks files.
+
+   To get a basic description of these features, enter Forth mode and
+type ‘C-h m’.
+
+   In addition, Gforth supports Emacs quite well: The source code
+locations given in error messages, debugging output (from ‘~~’) and
+failed assertion messages are in the right format for Emacs’ compilation
+mode (*note Running Compilations under Emacs: (emacs)Compilation.) so
+the source location corresponding to an error or other message is only a
+few keystrokes away (‘C-x `’ for the next error, ‘C-c C-c’ for the error
+under the cursor).
+
+   Moreover, for words documented in this manual, you can look up the
+glossary entry quickly by using ‘C-h TAB’ (‘info-lookup-symbol’, *note
+Documentation Commands: (emacs)Documentation.).  This feature requires
+Emacs 20.3 or later and does not work for words containing ‘:’.
+
+* Menu:
+
+* Installing gforth.el::     Emacs に Forth を認識させる
+* Emacs Tags::               ワードのソースを Emacs で閲覧
+* Hilighting::               Forth コードの見栄えを良くします
+* Auto-Indentation::         自動インデントのカスタマイズ
+* Blocks Files::             ブロック・ファイルの読み書き
+
+
+File: gforth.info,  Node: Installing gforth.el,  Next: Emacs Tags,  Prev: Emacs and Gforth,  Up: Emacs and Gforth
+
+13.1 Installing gforth.el
+=========================
+
+To make the features from ‘gforth.el’ available in Emacs, add the
+following lines to your ‘.emacs’ file:
+
+     (autoload 'forth-mode "gforth.el")
+     (setq auto-mode-alist (cons '("\\.fs\\'" . forth-mode)
+     			    auto-mode-alist))
+     (autoload 'forth-block-mode "gforth.el")
+     (setq auto-mode-alist (cons '("\\.fb\\'" . forth-block-mode)
+     			    auto-mode-alist))
+     (add-hook 'forth-mode-hook (function (lambda ()
+        ;; customize variables here:
+        (setq forth-indent-level 4)
+        (setq forth-minor-indent-level 2)
+        (setq forth-hilight-level 3)
+        ;;; ...
+     )))
+
+
 File: gforth.info,  Node: Emacs Tags,  Next: Hilighting,  Prev: Installing gforth.el,  Up: Emacs and Gforth
 
 13.2 Emacs Tags
@@ -2947,7 +3122,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * #tab ( -- C ) gforth-0.2:              String and character literals.
                                                               (line  82)
 * #tib ( -- ADDR ) core-ext-obsolescent: The Text Interpreter.
-                                                              (line 131)
+                                                              (line 135)
 * $! ( ADDR1 U $ADDR -- ) gforth-0.7:    $tring words.        (line  25)
 * $!len ( U $ADDR -- ) gforth-0.7:       $tring words.        (line  35)
 * $+! ( ADDR1 U $ADDR -- ) gforth-0.7:   $tring words.        (line  53)
@@ -3164,7 +3339,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 2field: ( U1 "NAME" -- U2 ) gforth-0.7: Forth200x Structures.
                                                               (line  59)
 * 2Literal ( COMPILATION W1 W2 -- ; RUN-TIME -- W1 W2 ) double: Literals.
-                                                              (line  57)
+                                                              (line  58)
 * 2nip ( W1 W2 W3 W4 -- W3 W4 ) gforth-0.2: Data stack.       (line  37)
 * 2over ( W1 W2 W3 W4 -- W1 W2 W3 W4 W1 W2 ) core: Data stack.
                                                               (line  41)
@@ -3210,7 +3385,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  32)
 * ;m ( COLON-SYS --; RUN-TIME: -- ) objects: Objects Glossary.
                                                               (line 107)
-* ;s ( R:W -- ) gforth-0.2:              Calls and returns.   (line  55)
+* ;s ( R:W -- ) gforth-0.2:              Calls and returns.   (line  56)
 * ;] ( COMPILE-TIME: QUOTATION-SYS -- ; RUN-TIME: -- XT ) gforth-1.0: Quotations.
                                                               (line  30)
 * < ( N1 N2 -- F ) core:                 Numeric comparison.  (line   9)
@@ -3247,7 +3422,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * >float1 ( C-ADDR U C -- F:... FLAG ) gforth-1.0: Line input and conversion.
                                                               (line  51)
 * >in ( -- ADDR ) core:                  The Text Interpreter.
-                                                              (line 121)
+                                                              (line 126)
 * >interpret ( TRANSLATOR -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line 107)
 * >l ( W -- ) gforth-0.2:                Locals implementation.
@@ -3278,7 +3453,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ?dup-IF ( COMPILATION -- ORIG ; RUN-TIME N -- N| ) gforth-0.2: Arbitrary control structures.
                                                               (line  79)
 * ?events ( -- ) gforth-experimental:    Message queues.      (line  21)
-* ?EXIT ( -- ) gforth-0.2:               Calls and returns.   (line  52)
+* ?EXIT ( -- ) gforth-0.2:               Calls and returns.   (line  53)
 * ?inside ( RX RY -- ACT / 0 ) minos2:   actor methods.       (line  33)
 * ?LEAVE ( COMPILATION -- ; RUN-TIME F | F LOOP-SYS -- ) gforth-0.2: Counted Loops.
                                                               (line 256)
@@ -3307,7 +3482,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * [COMP'] ( COMPILATION "NAME" -- ; RUN-TIME -- W XT ) gforth-0.2: Compilation token.
                                                               (line  23)
 * [compile] ( COMPILATION "NAME" -- ; RUN-TIME ? -- ? ) core-ext: Macros.
-                                                              (line 202)
+                                                              (line 213)
 * [current] ( COMPILE-TIME: "SELECTOR" -- ; RUN-TIME: ... OBJECT -- ... ) objects: Objects Glossary.
                                                               (line  48)
 * [defined] ( "<SPACES>NAME" -- FLAG ) tools-ext: Interpreter Directives.
@@ -3364,9 +3539,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * \^ ( ADDR -- ADDR ) regexp-pattern:    Regular Expressions. (line  96)
 * ] ( -- ) core:                         Literals.            (line  39)
 * ]L ( COMPILATION: N -- ; RUN-TIME: -- N ) gforth-0.5: Literals.
-                                                              (line  51)
+                                                              (line  52)
 * ]nocov ( -- ) gforth-1.0:              Code Coverage.       (line  20)
-* ]] ( -- ) gforth-0.6:                  Macros.              (line  46)
+* ]] ( -- ) gforth-0.6:                  Macros.              (line  48)
 * ` ( "CHAR" -- ) regexp-pattern:        Regular Expressions. (line  85)
 * `? ( "CHAR" -- ) regexp-pattern:       Regular Expressions. (line  88)
 * { ( -- HMADDR U LATEST LATESTNT WID 0 ) gforth-0.2: Locals definition words.
@@ -3508,7 +3683,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * bl ( -- C-CHAR ) core:                 String and character literals.
                                                               (line  79)
 * blank ( C-ADDR U -- ) string:          Memory Blocks.       (line  44)
-* blk ( -- ADDR ) block:                 Input Sources.       (line  23)
+* blk ( -- ADDR ) block:                 Input Sources.       (line  24)
 * block ( U -- A-ADDR ) block:           Blocks.              (line 146)
 * block-included ( A-ADDR U -- ) gforth-0.2: Blocks.          (line 205)
 * block-offset ( -- ADDR ) gforth-0.5:   Blocks.              (line 125)
@@ -3634,7 +3809,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * COMP' ( "NAME" -- W XT ) gforth-0.2:   Compilation token.   (line  27)
 * compare ( C-ADDR1 U1 C-ADDR2 U2 -- N ) string: Memory Blocks.
                                                               (line  55)
-* compile, ( XT -- ) core-ext:           Macros.              (line 157)
+* compile, ( XT -- ) core-ext:           Macros.              (line 162)
 * compile-lp+! ( N -- ) gforth-0.2:      Locals implementation.
                                                               (line  34)
 * compile-only ( -- ) gforth-0.2:        Interpretation and Compilation Semantics.
@@ -3669,7 +3844,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * create-file ( C-ADDR U WFAM -- WFILEID WIOR ) file: General files.
                                                               (line  27)
 * create-from ( NT "NAME" -- ) gforth-1.0: Creating from a prototype.
-                                                              (line  27)
+                                                              (line  28)
 * critical-section ( XT SEMAPHORE -- ) gforth-experimental: Semaphores.
                                                               (line  30)
 * CS-DROP ( DEST -- ) gforth-1.0:        Arbitrary control structures.
@@ -3871,7 +4046,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * error-color ( -- ) gforth-1.0:         Terminal output.     (line  39)
 * error-hl-inv ( -- ) gforth-1.0:        Terminal output.     (line  42)
 * error-hl-ul ( -- ) gforth-1.0:         Terminal output.     (line  45)
-* evaluate ( ... ADDR U -- ... ) core,block: Input Sources.   (line  41)
+* evaluate ( ... ADDR U -- ... ) core,block: Input Sources.   (line  40)
 * event-loop ( -- ) gforth-experimental: Message queues.      (line  25)
 * exception ( ADDR U -- N ) gforth-0.2:  Exception Handling.  (line  37)
 * exceptions ( XT N1 -- N2 ) gforth-1.0: Exception Handling.  (line  49)
@@ -3885,7 +4060,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * execute-task ( XT -- TASK ) gforth-experimental: Basic multi-tasking.
                                                               (line  59)
 * EXIT ( COMPILATION -- ; RUN-TIME NEST-SYS -- ) core: Calls and returns.
-                                                              (line  45)
+                                                              (line  46)
 * exitm ( -- ) objects:                  Objects Glossary.    (line  75)
 * expand-where ( -- ) gforth-1.0:        Locating uses of a word.
                                                               (line  43)
@@ -4000,7 +4175,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  26)
 * fkey. ( U -- ) gforth-1.0:             Single-key input.    (line 178)
 * FLiteral ( COMPILATION R -- ; RUN-TIME -- R ) floating: Literals.
-                                                              (line  61)
+                                                              (line  62)
 * fln ( R1 -- R2 ) floating-ext:         Floating Point.      (line  76)
 * flnp1 ( R1 -- R2 ) floating-ext:       Floating Point.      (line  78)
 * float ( -- U ) gforth-0.3:             Address arithmetic.  (line  76)
@@ -4165,7 +4340,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  78)
 * interface ( -- ) objects:              Objects Glossary.    (line  97)
 * interpret ( ... -- ... ) gforth-0.2:   The Text Interpreter.
-                                                              (line 136)
+                                                              (line 139)
 * interpret/compile: ( INTERP-XT COMP-XT "NAME" -- ) gforth-0.2: Combined words.
                                                               (line  10)
 * invert ( W1 -- W2 ) core:              Bitwise operations.  (line  12)
@@ -4385,7 +4560,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * noname ( -- ) gforth-0.2:              Anonymous Definitions.
                                                               (line  23)
 * noname-from ( XT -- ) gforth-1.0:      Creating from a prototype.
-                                                              (line  43)
+                                                              (line  44)
 * noop ( -- ) gforth-0.2:                Execution token.     (line 106)
 * notfound ( STATE -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  31)
@@ -4479,14 +4654,14 @@ this manual.  Each word is listed with its stack effect and wordset.
 * perform ( A-ADDR -- ) gforth-0.2:      Execution token.     (line 101)
 * pi ( -- R ) gforth-0.2:                Floating Point.      (line 141)
 * pick ( S:... U -- S:... W ) core-ext:  Data stack.          (line  22)
-* postpone ( "NAME" -- ) core:           Macros.              (line  23)
+* postpone ( "NAME" -- ) core:           Macros.              (line  24)
 * postpone, ( W XT -- ) gforth-0.2:      Compilation token.   (line  36)
 * pow2? ( U -- F ) gforth-1.0:           Bitwise operations.  (line  63)
 * precision ( -- U ) floating-ext:       Floating-point output.
                                                               (line  34)
 * prepend-where ( -- ) gforth-1.0:       Locating uses of a word.
                                                               (line  47)
-* preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 116)
+* preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 117)
 * previous ( -- ) search-ext:            Word Lists.          (line  73)
 * print ( OBJECT -- ) objects:           Objects Glossary.    (line 129)
 * printdebugdata ( -- ) gforth-0.2:      Debugging.           (line  32)
@@ -4495,7 +4670,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * protected ( -- ) objects:              Objects Glossary.    (line 133)
 * ptr ( -- ) oof:                        Class Declaration.   (line  13)
 * public ( -- ) objects:                 Objects Glossary.    (line 136)
-* query ( -- ) core-ext-obsolescent:     Input Sources.       (line  47)
+* query ( -- ) core-ext-obsolescent:     Input Sources.       (line  46)
 * quit ( ?? -- ?? ) core:                Miscellaneous Words. (line   9)
 * r/o ( -- FAM ) file:                   General files.       (line   9)
 * r/w ( -- FAM ) file:                   General files.       (line  11)
@@ -4573,7 +4748,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * return-stack-cells ( -- N ) environment: Environmental Queries.
                                                               (line  63)
 * reveal ( -- ) gforth-0.2:              Creating from a prototype.
-                                                              (line  36)
+                                                              (line  37)
 * rol ( U1 U -- U2 ) gforth-1.0:         Bitwise operations.  (line  92)
 * roll ( X0 X1 .. XN N -- X1 .. XN X0 ) core-ext: Data stack. (line  33)
 * Root ( -- ) gforth-0.2:                Word Lists.          (line 140)
@@ -4603,7 +4778,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * save-buffer ( BUFFER -- ) gforth-0.2:  Blocks.              (line 179)
 * save-buffers ( -- ) block:             Blocks.              (line 175)
 * save-cov ( -- ) gforth-experimental:   Code Coverage.       (line  65)
-* save-input ( -- X1 .. XN N ) core-ext: Input Sources.       (line  27)
+* save-input ( -- X1 .. XN N ) core-ext: Input Sources.       (line  28)
 * save-mem ( ADDR1 U -- ADDR2 U ) gforth-0.2: Heap Allocation.
                                                               (line  38)
 * savesystem ( "IMAGE" -- ) gforth-0.2:  Non-Relocatable Image Files.
@@ -4687,15 +4862,15 @@ this manual.  Each word is listed with its stack effect and wordset.
 * skip ( C-ADDR1 U1 C -- C-ADDR2 U2 ) gforth-0.2: String words.
                                                               (line  40)
 * SLiteral ( COMPILATION C-ADDR1 U ; RUN-TIME -- C-ADDR2 U ) string: Literals.
-                                                              (line  65)
+                                                              (line  67)
 * slurp-fid ( FID -- ADDR U ) gforth-0.6: General files.      (line  91)
 * slurp-file ( C-ADDR1 U1 -- C-ADDR2 U2 ) gforth-0.6: General files.
                                                               (line  88)
 * sm/rem ( D1 N1 -- N2 N3 ) core:        Integer division.    (line  82)
 * source ( -- ADDR U ) core:             The Text Interpreter.
-                                                              (line 126)
+                                                              (line 130)
 * source-id ( -- 0 | -1 | FILEID ) core-ext,file: Input Sources.
-                                                              (line  18)
+                                                              (line  19)
 * sourcefilename ( -- C-ADDR U ) gforth-0.2: Forth source files.
                                                               (line  67)
 * sourceline# ( -- U ) gforth-0.2:       Forth source files.  (line  74)
@@ -4777,7 +4952,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  10)
 * thru ( I*X N1 N2 -- J*X ) block-ext:   Blocks.              (line 187)
 * tib ( -- ADDR ) core-ext-obsolescent:  The Text Interpreter.
-                                                              (line 129)
+                                                              (line 133)
 * time&date ( -- NSEC NMIN NHOUR NDAY NMONTH NYEAR ) facility-ext: Keeping track of Time.
                                                               (line  10)
 * TO ( VALUE "NAME" -- ) core-ext:       Values.              (line  36)
@@ -5080,7 +5255,7 @@ in the Word Index (only the names are listed for the words here).
 * #tab:                                  String and character literals.
                                                               (line  82)
 * #tib:                                  The Text Interpreter.
-                                                              (line 131)
+                                                              (line 135)
 * $!:                                    $tring words.        (line  25)
 * $!len:                                 $tring words.        (line  35)
 * $+!:                                   $tring words.        (line  53)
@@ -5340,7 +5515,7 @@ in the Word Index (only the names are listed for the words here).
 * 2dup:                                  Data stack.          (line  39)
 * 2field::                               Forth200x Structures.
                                                               (line  59)
-* 2Literal:                              Literals.            (line  57)
+* 2Literal:                              Literals.            (line  58)
 * 2nip:                                  Data stack.          (line  37)
 * 2over:                                 Data stack.          (line  41)
 * 2r>:                                   Return stack.        (line  23)
@@ -5353,7 +5528,7 @@ in the Word Index (only the names are listed for the words here).
 * 2Variable:                             Variables.           (line  40)
 * 2varue:                                Varues.              (line  17)
 * ::                                     Colon Definitions.   (line  17)
-* :, passing data across:                Literals.            (line  70)
+* :, passing data across:                Literals.            (line  71)
 * :::                                    Basic Mini-OOF Usage.
                                                               (line  32)
 * :m:                                    Objects Glossary.    (line 103)
@@ -5378,7 +5553,7 @@ in the Word Index (only the names are listed for the words here).
 * ;inline:                               Colon Definitions.   (line  32)
 * ;m:                                    Objects Glossary.    (line 107)
 * ;m usage:                              Method conveniences. (line  12)
-* ;s:                                    Calls and returns.   (line  55)
+* ;s:                                    Calls and returns.   (line  56)
 * ;]:                                    Quotations.          (line  30)
 * <:                                     Numeric comparison.  (line   9)
 * <#:                                    Formatted numeric output.
@@ -5412,7 +5587,7 @@ in the Word Index (only the names are listed for the words here).
 * >float1:                               Line input and conversion.
                                                               (line  51)
 * >in:                                   The Text Interpreter.
-                                                              (line 121)
+                                                              (line 126)
 * >IN greater than input buffer:         core-ambcond.        (line 118)
 * >interpret:                            Dealing with existing Recognizers.
                                                               (line 107)
@@ -5442,7 +5617,7 @@ in the Word Index (only the names are listed for the words here).
 * ?dup-IF:                               Arbitrary control structures.
                                                               (line  79)
 * ?events:                               Message queues.      (line  21)
-* ?EXIT:                                 Calls and returns.   (line  52)
+* ?EXIT:                                 Calls and returns.   (line  53)
 * ?inside:                               actor methods.       (line  33)
 * ?LEAVE:                                Counted Loops.       (line 256)
 * ?of:                                   Arbitrary control structures.
@@ -5466,7 +5641,7 @@ in the Word Index (only the names are listed for the words here).
 * [char]:                                String and character literals.
                                                               (line  52)
 * [COMP']:                               Compilation token.   (line  23)
-* [compile]:                             Macros.              (line 202)
+* [compile]:                             Macros.              (line 213)
 * [current]:                             Objects Glossary.    (line  48)
 * [defined]:                             Interpreter Directives.
                                                               (line  44)
@@ -5522,9 +5697,9 @@ in the Word Index (only the names are listed for the words here).
 * \\\:                                   Forth source files.  (line  61)
 * \^:                                    Regular Expressions. (line  96)
 * ]:                                     Literals.            (line  39)
-* ]L:                                    Literals.            (line  51)
+* ]L:                                    Literals.            (line  52)
 * ]nocov:                                Code Coverage.       (line  20)
-* ]]:                                    Macros.              (line  46)
+* ]]:                                    Macros.              (line  48)
 * `:                                     Regular Expressions. (line  85)
 * ` prefix:                              Execution token.     (line  16)
 * ` prefix of word:                      Literals in source code.
@@ -5724,7 +5899,7 @@ in the Word Index (only the names are listed for the words here).
 * bl:                                    String and character literals.
                                                               (line  79)
 * blank:                                 Memory Blocks.       (line  44)
-* blk:                                   Input Sources.       (line  23)
+* blk:                                   Input Sources.       (line  24)
 * BLK, altering BLK:                     block-ambcond.       (line  19)
 * block:                                 Blocks.              (line 146)
 * block buffers:                         Blocks.              (line  40)
@@ -5940,7 +6115,7 @@ in the Word Index (only the names are listed for the words here).
 * colon definitions, nesting:            Quotations.          (line   6)
 * colon definitions, tutorial:           Colon Definitions Tutorial.
                                                               (line   6)
-* colon-sys, passing data across ::      Literals.            (line  70)
+* colon-sys, passing data across ::      Literals.            (line  71)
 * color-cover:                           Code Coverage.       (line  59)
 * color::                                widget methods.      (line 128)
 * combined words:                        Combined words.      (line   6)
@@ -5975,8 +6150,8 @@ in the Word Index (only the names are listed for the words here).
 * compilation word list, change before definition ends: search-ambcond.
                                                               (line   7)
 * compile state:                         The Text Interpreter.
-                                                              (line  11)
-* compile,:                              Macros.              (line 157)
+                                                              (line  12)
+* compile,:                              Macros.              (line 162)
 * compile-lp+!:                          Locals implementation.
                                                               (line  34)
 * compile-only:                          Interpretation and Compilation Semantics.
@@ -6059,7 +6234,7 @@ in the Word Index (only the names are listed for the words here).
 * CREATE and alignment:                  Address arithmetic.  (line  36)
 * create-file:                           General files.       (line  27)
 * create-from:                           Creating from a prototype.
-                                                              (line  27)
+                                                              (line  28)
 * create...does> tutorial:               Defining Words Tutorial.
                                                               (line   6)
 * creating objects:                      Creating objects.    (line   6)
@@ -6221,7 +6396,7 @@ in the Word Index (only the names are listed for the words here).
 * dict-new:                              Objects Glossary.    (line  54)
 * dict-new discussion:                   Creating objects.    (line   6)
 * dictionary:                            The Text Interpreter.
-                                                              (line  28)
+                                                              (line  29)
 * dictionary in persistent form:         Image Files.         (line   6)
 * dictionary overflow:                   core-ambcond.        (line  57)
 * dictionary size default:               Stack and Dictionary Sizes.
@@ -6401,7 +6576,7 @@ in the Word Index (only the names are listed for the words here).
 * error-hl-inv:                          Terminal output.     (line  42)
 * error-hl-ul:                           Terminal output.     (line  45)
 * etags.fs:                              Emacs Tags.          (line   6)
-* evaluate:                              Input Sources.       (line  41)
+* evaluate:                              Input Sources.       (line  40)
 * event-loop:                            Message queues.      (line  25)
 * examining data and code:               Examining data.      (line   6)
 * exception:                             Exception Handling.  (line  37)
@@ -6438,7 +6613,7 @@ in the Word Index (only the names are listed for the words here).
 * execution tokens tutorial:             Execution Tokens Tutorial.
                                                               (line   6)
 * exercises:                             Exercises.           (line   6)
-* EXIT:                                  Calls and returns.   (line  45)
+* EXIT:                                  Calls and returns.   (line  46)
 * exit in m: ... ;m:                     Method conveniences. (line  15)
 * exitm:                                 Objects Glossary.    (line  75)
 * exitm discussion:                      Method conveniences. (line  15)
@@ -6608,7 +6783,7 @@ in the Word Index (only the names are listed for the words here).
 * flags tutorial:                        Flags and Comparisons Tutorial.
                                                               (line   6)
 * flavours of locals:                    Gforth locals.       (line  42)
-* FLiteral:                              Literals.            (line  61)
+* FLiteral:                              Literals.            (line  62)
 * fln:                                   Floating Point.      (line  76)
 * FLN, float<=0:                         floating-ambcond.    (line  57)
 * flnp1:                                 Floating Point.      (line  78)
@@ -6969,7 +7144,7 @@ in the Word Index (only the names are listed for the words here).
 * inner interpreter, direct threaded:    Threading.           (line  23)
 * inner interpreter, indirect threaded:  Threading.           (line  12)
 * input buffer:                          The Text Interpreter.
-                                                              (line  20)
+                                                              (line  22)
 * input format for body-relative addresses: Literals in source code.
                                                               (line 123)
 * input format for characters/code points: Literals in source code.
@@ -7027,9 +7202,9 @@ in the Word Index (only the names are listed for the words here).
 * interface usage:                       Object Interfaces.   (line  27)
 * interfaces for objects:                Object Interfaces.   (line   6)
 * interpret:                             The Text Interpreter.
-                                                              (line 136)
+                                                              (line 139)
 * interpret state:                       The Text Interpreter.
-                                                              (line  11)
+                                                              (line  12)
 * Interpret/Compile states:              Interpret/Compile states.
                                                               (line   6)
 * interpret/compile::                    Combined words.      (line  10)
@@ -7435,7 +7610,7 @@ in the Word Index (only the names are listed for the words here).
 * noname:                                Anonymous Definitions.
                                                               (line  23)
 * noname-from:                           Creating from a prototype.
-                                                              (line  43)
+                                                              (line  44)
 * noop:                                  Execution token.     (line 106)
 * notation of glossary entries:          Notation.            (line   6)
 * notfound:                              Dealing with existing Recognizers.
@@ -7597,7 +7772,7 @@ in the Word Index (only the names are listed for the words here).
 * parent-w:                              widget methods.      (line   6)
 * parse:                                 The Input Stream.    (line  25)
 * parse area:                            The Text Interpreter.
-                                                              (line  47)
+                                                              (line  49)
 * parse-name:                            The Input Stream.    (line  35)
 * parse-word:                            The Input Stream.    (line  38)
 * parsed string overflow:                core-ambcond.        (line  80)
@@ -7605,7 +7780,7 @@ in the Word Index (only the names are listed for the words here).
 * parsing words:                         How does that work?. (line   6)
 * parsing words <1>:                     How does that work?. (line  28)
 * parsing words <2>:                     The Text Interpreter.
-                                                              (line  69)
+                                                              (line  72)
 * pass:                                  Basic multi-tasking. (line  51)
 * patching threaded code:                Dynamic Superinstructions.
                                                               (line 105)
@@ -7628,7 +7803,7 @@ in the Word Index (only the names are listed for the words here).
 * pictured numeric output string, overflow: core-ambcond.     (line  77)
 * pipes, creating your own:              Pipes.               (line   6)
 * pipes, Gforth as part of:              Gforth in pipes.     (line   6)
-* postpone:                              Macros.              (line  23)
+* postpone:                              Macros.              (line  24)
 * POSTPONE applied to [IF]:              programming-ambcond. (line  24)
 * POSTPONE or [COMPILE] applied to TO:   core-ambcond.        (line 174)
 * postpone tutorial:                     POSTPONE Tutorial.   (line   6)
@@ -7642,7 +7817,7 @@ in the Word Index (only the names are listed for the words here).
 * prefix `:                              Execution token.     (line  16)
 * prepend-where:                         Locating uses of a word.
                                                               (line  47)
-* preserve:                              Deferred Words.      (line 116)
+* preserve:                              Deferred Words.      (line 117)
 * previous:                              Word Lists.          (line  73)
 * previous, search order empty:          search-ambcond.      (line  15)
 * primitive source format:               Automatic Generation.
@@ -7685,7 +7860,7 @@ in the Word Index (only the names are listed for the words here).
 * pthread:                               Pthreads.            (line   6)
 * ptr:                                   Class Declaration.   (line  13)
 * public:                                Objects Glossary.    (line 136)
-* query:                                 Input Sources.       (line  47)
+* query:                                 Input Sources.       (line  46)
 * quit:                                  Miscellaneous Words. (line   9)
 * quotations:                            Quotations.          (line   6)
 * r, stack item type:                    Notation.            (line  99)
@@ -7802,7 +7977,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line  63)
 * returning from a definition:           Calls and returns.   (line   6)
 * reveal:                                Creating from a prototype.
-                                                              (line  36)
+                                                              (line  37)
 * rol:                                   Bitwise operations.  (line  92)
 * roll:                                  Data stack.          (line  33)
 * Root:                                  Word Lists.          (line 140)
@@ -7839,7 +8014,7 @@ in the Word Index (only the names are listed for the words here).
 * save-buffer:                           Blocks.              (line 179)
 * save-buffers:                          Blocks.              (line 175)
 * save-cov:                              Code Coverage.       (line  65)
-* save-input:                            Input Sources.       (line  27)
+* save-input:                            Input Sources.       (line  28)
 * save-mem:                              Heap Allocation.     (line  38)
 * savesystem:                            Non-Relocatable Image Files.
                                                               (line  20)
@@ -7976,19 +8151,19 @@ in the Word Index (only the names are listed for the words here).
 * size of the scratch area returned by PAD: core-idef.        (line 153)
 * size parameters for command-line options: Invoking Gforth.  (line  55)
 * skip:                                  String words.        (line  40)
-* SLiteral:                              Literals.            (line  65)
+* SLiteral:                              Literals.            (line  67)
 * slurp-fid:                             General files.       (line  91)
 * slurp-file:                            General files.       (line  88)
 * sm/rem:                                Integer division.    (line  82)
 * source:                                The Text Interpreter.
-                                                              (line 126)
+                                                              (line 130)
 * source code for exception:             Locating exception source.
                                                               (line   6)
 * source code of a word:                 Locating source code definitions.
                                                               (line   6)
 * source location of error or debugging output in Emacs: Emacs and Gforth.
                                                               (line  21)
-* source-id:                             Input Sources.       (line  18)
+* source-id:                             Input Sources.       (line  19)
 * SOURCE-ID, behaviour when BLK is non-zero: file-ambcond.    (line  31)
 * sourcefilename:                        Forth source files.  (line  67)
 * sourceline#:                           Forth source files.  (line  74)
@@ -8162,7 +8337,7 @@ in the Word Index (only the names are listed for the words here).
 * task-local data:                       Task-local data.     (line   6)
 * terminal buffer, size:                 core-idef.           (line 142)
 * terminal input buffer:                 The Text Interpreter.
-                                                              (line  20)
+                                                              (line  22)
 * terminal output:                       Terminal output.     (line   6)
 * terminal size:                         Terminal output.     (line  17)
 * terminology for object-oriented programming: Object-Oriented Terminology.
@@ -8175,7 +8350,7 @@ in the Word Index (only the names are listed for the words here).
                                                               (line   6)
 * text interpreter - effect of state:    How does that work?. (line  32)
 * text interpreter - input sources:      The Text Interpreter.
-                                                              (line 107)
+                                                              (line 114)
 * text interpreter - input sources <1>:  Input Sources.       (line   6)
 * text-color::                           widget methods.      (line 134)
 * text-emoji-color::                     widget methods.      (line 138)
@@ -8199,7 +8374,7 @@ in the Word Index (only the names are listed for the words here).
 * THROW-codes used in the system:        exception-idef.      (line   7)
 * thru:                                  Blocks.              (line 187)
 * tib:                                   The Text Interpreter.
-                                                              (line 129)
+                                                              (line 133)
 * tick (’):                              Execution token.     (line  24)
 * TILE performance:                      Performance.         (line  22)
 * time&date:                             Keeping track of Time.

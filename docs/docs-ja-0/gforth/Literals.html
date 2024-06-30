@@ -71,39 +71,34 @@ Next: <a href="Macros.html" accesskey="n" rel="next">Macros</a>, Previous: <a hr
 <span id="Literals-1"></span><h4 class="subsection">6.13.1 Literals</h4>
 <span id="index-Literals"></span>
 
-<p>The simplest and most frequent example is to compute a literal during
-compilation.  E.g., the following definition prints an array of strings, one
-string per line:
+<p>最も単純で最も頻繁に使用される例は、 コンパイル中にリテラルを計算することです。  たとえば、 以下の定義は、 文字列の配列を 1 行に 1
+つの文字列で出力します:
 </p>
 <div class="example">
 <pre class="example">: .strings ( addr u -- ) \ gforth
     2* cells bounds U+DO
-	cr i 2@ type
+        cr i 2@ type
     2 cells +LOOP ;  
 </pre></div>
 
-<p>With a simple-minded compiler like Gforth&rsquo;s, this computes <code>2 cells</code> on
-every loop iteration.  You can compute this value once and for all at
-compile time and compile it into the definition like this:
+<p>Gforth のような愚かで低能なコンパイラを使用すると、 ループ反復ごとに <code>2 cells</code> が計算されます。  あなたは、
+この値をコンパイル時に一度だけ計算し、 定義にコンパイルできます。 以下のようにします:
 </p>
 <div class="example">
 <pre class="example">: .strings ( addr u -- ) \ gforth
     2* cells bounds U+DO
-	cr i 2@ type
+        cr i 2@ type
     [ 2 cells ] literal +LOOP ;  
 </pre></div>
 
-<p><code>[</code> switches the text interpreter to interpret state (you will get an
-<code>ok</code> prompt if you type this example interactively and insert a newline
-between <code>[</code> and <code>]</code>), so it performs the interpretation semantics
-of <code>2 cells</code>; this computes a number.  <code>]</code> switches the text
-interpreter back into compile state.  It then performs <code>Literal</code>&rsquo;s
-compilation semantics, which are to compile this number into the current
-word.  You can decompile the word with <code>see .strings</code> to see the effect
-on the compiled code.
+<p><code>[</code> は、 テキスト・インタープリタをインタプリタ状態に切り替えます(この例を対話的に入力し、 <code>[</code> と <code>]</code>
+の間に改行を挿入すると、 <code>ok</code> プロンプトが表示されます)。 <code>2 cells</code>
+のインタプリタ機能(interpretation semantics)を実行します。 ここでは数値を計算します。  <code>]</code> は、
+テキスト・インタプリタをコンパイル状態に戻します。  次に、 この数値を現在のワードにコンパイルする <code>Literal</code>
+のコンパイル機能(compilation semantics)を実行します。 <code>see .strings</code>
+を使用してワードを逆コンパイルすると、 コンパイルされたコードへの影響を確認できます。
 </p>
-<p>You can also optimize the <code>2* cells</code> into <code>[ 2 cells ] literal *</code>
-in this way.
+<p>この方法で <code>2* cells</code> を <code>[ 2 cells ] literal *</code>  に最適化することもできます。
 </p>
 <span id="index-_005b-_0028--_002d_002d--_0029-core"></span>
 <span id="index-_005b"></span>
@@ -111,7 +106,7 @@ in this way.
 <div class="format">
 <pre class="format"><code>[</code> ( <i>&ndash;  </i>) core &ldquo;left-bracket&rdquo;
 </pre></div>
-<p>Enter interpretation state. Immediate word.
+<p>インタプリタ状態にします。 即実行ワードです。
 </p>
 
 <span id="index-_005d-_0028--_002d_002d--_0029-core"></span>
@@ -120,7 +115,7 @@ in this way.
 <div class="format">
 <pre class="format"><code>]</code> ( <i>&ndash;  </i>) core &ldquo;right-bracket&rdquo;
 </pre></div>
-<p>Enter compilation state.
+<p>コンパイル状態にします。
 </p>
 
 <span id="index-Literal-_0028--compilation-n-_002d_002d-_003b-run_002dtime-_002d_002d-n--_0029-core"></span>
@@ -129,8 +124,9 @@ in this way.
 <div class="format">
 <pre class="format"><code>Literal</code> ( <i>compilation n &ndash; ; run-time &ndash; n  </i>) core &ldquo;Literal&rdquo;
 </pre></div>
-<p>Compilation semantics: compile the run-time semantics.<br> Run-time Semantics:
-push <i>n</i>.<br> Interpretation semantics: undefined.
+<p>コンパイル機能(compilation semantics): 実行機能(run-time semantics)をコンパイルします。
+実行機能(run-time semantics): <i>n</i> をスタックにプッシュします。 インタプリタ機能(interpretation
+semantics): 未定義です。
 </p>
 
 <span id="index-ALiteral-_0028--compilation-addr-_002d_002d-_003b-run_002dtime-_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
@@ -139,8 +135,8 @@ push <i>n</i>.<br> Interpretation semantics: undefined.
 <div class="format">
 <pre class="format"><code>ALiteral</code> ( <i>compilation addr &ndash; ; run-time &ndash; addr  </i>) gforth-0.2 &ldquo;ALiteral&rdquo;
 </pre></div>
-<p>Works like <code>literal</code>, but (when used in cross-compiled code) tells the
-cross-compiler that the literal is an address.
+<p><code>literal</code> と同様に機能しますが、
+(クロス・コンパイルされたコードで使用される場合、)リテラルがアドレスであることをクロス・コンパイラーに伝えます。
 </p>
 
 <span id="index-_005dL-_0028--compilation_003a-n-_002d_002d-_003b-run_002dtime_003a-_002d_002d-n--_0029-gforth_002d0_002e5"></span>
@@ -149,12 +145,11 @@ cross-compiler that the literal is an address.
 <div class="format">
 <pre class="format"><code>]L</code> ( <i>compilation: n &ndash; ; run-time: &ndash; n  </i>) gforth-0.5 &ldquo;]L&rdquo;
 </pre></div>
-<p>equivalent to <code>] literal</code>
+<p><code>] literal</code> と同等。
 </p>
 
 
-<p>There are also words for compiling other data types than single cells as
-literals:
+<p>単一セル以外のデータ型をリテラルとしてコンパイルするためのワードもあります:
 </p>
 <span id="index-2Literal-_0028--compilation-w1-w2-_002d_002d-_003b-run_002dtime-_002d_002d-w1-w2--_0029-double"></span>
 <span id="index-2Literal"></span>
@@ -162,8 +157,8 @@ literals:
 <div class="format">
 <pre class="format"><code>2Literal</code> ( <i>compilation w1 w2 &ndash; ; run-time  &ndash; w1 w2  </i>) double &ldquo;two-literal&rdquo;
 </pre></div>
-<p>Compile appropriate code such that, at run-time, <i>w1 w2</i> are placed on the
-stack. Interpretation semantics are undefined.
+<p>実行時に <i>w1 w2</i> がスタックに配置されるように、 適切なコードをコンパイルします。 インタプリタ機能(interpretation
+semantics)は未定義です。
 </p>
 
 <span id="index-FLiteral-_0028--compilation-r-_002d_002d-_003b-run_002dtime-_002d_002d-r--_0029-floating"></span>
@@ -172,8 +167,8 @@ stack. Interpretation semantics are undefined.
 <div class="format">
 <pre class="format"><code>FLiteral</code> ( <i>compilation r &ndash; ; run-time &ndash; r  </i>) floating &ldquo;f-literal&rdquo;
 </pre></div>
-<p>Compile appropriate code such that, at run-time, <i>r</i> is placed on the
-(floating-point) stack. Interpretation semantics are undefined.
+<p>実行時に <i>r</i> が(浮動小数点)スタックに配置されるように、 適切なコードをコンパイルします。 インタプリタ機能(interpretation
+semantics)は未定義です。
 </p>
 
 <span id="index-SLiteral-_0028--Compilation-c_002daddr1-u-_003b-run_002dtime-_002d_002d-c_002daddr2-u--_0029-string"></span>
@@ -182,24 +177,21 @@ stack. Interpretation semantics are undefined.
 <div class="format">
 <pre class="format"><code>SLiteral</code> ( <i>Compilation c-addr1 u ; run-time &ndash; c-addr2 u  </i>) string &ldquo;SLiteral&rdquo;
 </pre></div>
-<p>Compilation: compile the string specified by <i>c-addr1</i>, <i>u</i> into the
-current definition. Run-time: return <i>c-addr2 u</i> describing the address
-and length of the string.
+<p>コンパイル時: <i>c-addr1</i>, <i>u</i> で指定された文字列を現在の定義にコンパイルします。 実行時: 文字列のアドレスと長さを記述する
+<i>c-addr2 u</i> を返します。
 </p>
 
 
 <span id="index-colon_002dsys_002c-passing-data-across-_003a"></span>
 <span id="index-_003a_002c-passing-data-across"></span>
-<p>You might be tempted to pass data from outside a colon definition to the
-inside on the data stack.  This does not work, because <code>:</code> puhes a
-colon-sys, making stuff below unaccessible.  E.g., this does not work:
+<p>データ・スタック上のコロン定義の外側から内側にデータを渡したいと思うかもしれません。  <code>:</code> がコロン colon-sys をプッシュし、
+colon-sys より下のモノのにアクセスできなくなるため、 これは機能しません。  たとえば、 以下は機能しません:
 </p>
 <div class="example">
 <pre class="example">5 : foo literal ; \ error: &quot;unstructured&quot;
 </pre></div>
 
-<p>Instead, you have to pass the value in some other way, e.g., through a
-variable:
+<p>代わりに、 変数など、 他の方法で値を渡す必要があります:
 </p>
 <div class="example">
 <pre class="example">variable temp
