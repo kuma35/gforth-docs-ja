@@ -3569,12 +3569,13 @@ Engine::)とは対照的に、 これは外部インタプリタ(outer interpret
    テキスト・インタプリタがキーボード以外の入力デバイスを使用している場
 合、 その振る舞いは以下のように変化します:
 
-   • パース領域が空の場合、 テキスト・インタプリタは入力源(input
-     source)から入力バッファを補充(refill)しようとします。 入力源を使い
-     尽くすと、 入力源は以前の入力源に戻ります。
+   • パース領域が空の場合、 テキスト・インタプリタは入力ソースから入力バ
+     ッファを再充填(refill)しようと試みます。 入力ソースを使い尽くすと、
+     入力ソースは以前の入力ソースに戻ります。
    • パース領域が空になるたびに “‘ ok’” や “‘ compiled’” メッセージは出
      力されません。
-   • エラーが発生した場合、 入力源はユーザー入力デバイスに戻されます。
+   • エラーが発生した場合、 入力ソースはユーザー入力デバイスに戻されます
+     。
 
    これについて詳しくは、 *note Input Sources:: をご覧ください。
 
@@ -3628,7 +3629,7 @@ File: gforth.info,  Node: Input Sources,  Next: Number Conversion,  Prev: The Te
 
 デフォルトでは、 テキスト・インタプリタは、 Forth の起動時にユーザー入力
 デバイス(キーボード)からの入力を処理します。 テキスト・インタプリタは、
-以下のいずれかの入力源からの入力を処理できます:
+以下のいずれかの入力ソースからの入力を処理できます:
 
    • ユーザー入力デバイス – つまり、キーボード。
    • ファイル。 *note Forth source files:: で説明されているワードを使用
@@ -3640,34 +3641,37 @@ File: gforth.info,  Node: Input Sources,  Next: Number Conversion,  Prev: The Te
 できます。
 
 ‘source-id’ ( – 0 | -1 | fileid  ) core-ext,file “source-i-d”
-   戻り値: 0 (入力源はユーザー入力デバイス)または、 -1 (入力源は
-‘evaluate’ によって処理されている文字列)または、 fileid (入力源は fileid
-で指定されたファイル)です。
+   戻り値: 0 (入力ソースはユーザー入力デバイス)または、 -1 (入力ソースは
+‘evaluate’ によって処理されている文字列)または、 fileid (入力ソースは
+fileid で指定されたファイル)です。
 
 ‘blk’ ( – addr  ) block “b-l-k”
-   ‘uvar’ 変数 – このセルには現在のブロック番号(現在の入力源がブロックで
-ない場合は 0)が格納されています。
+   ‘uvar’ 変数 – このセルには現在のブロック番号(現在の入力ソースがブロッ
+クでない場合は 0)が格納されています。
 
 ‘save-input’ ( – x1 .. xn n  ) core-ext “save-input”
    n 個のエントリ xn 〜 x1 は、 ‘restore-input’ で使用できるプラットフォ
-ーム依存の方法で、 入力源仕様の現在の状態を記述します。
+ーム依存の方法で、 入力ソース仕様(input source specification)の現在の状
+態を記述します。
 
 ‘restore-input’ ( x1 .. xn n – flag  ) core-ext “restore-input”
-   入力源仕様を n 個のエントリ xn 〜 x1 で記述された状態に復元しようとし
-ます。 復元が失敗した場合は flag が true になります。 新しい入力プログラ
-ムを使用した Gforth では、 再度 throw するために使用できるフラグがある場
-合にのみ失敗します。 異なるアクティブな入力ストリーム間で保存および復元
-することも可能です。 注意: 入力ストリームを閉じる場合は、 開いたときとは
-逆の順序で行う必要がありますが、 その間はすべて許可されます。
+   入力ソース仕様(input source specification)を n 個のエントリ xn 〜 x1
+で記述された状態に復元しようとします。 復元が失敗した場合は flag が true
+になります。 新しい入力プログラムを使用した Gforth では、 再度 throw す
+るために使用できるフラグがある場合にのみ失敗します。 異なるアクティブな
+入力ストリーム間で保存および復元することも可能です。 注意: 入力ストリー
+ムを閉じる場合は、 開いたときとは逆の順序で行う必要がありますが、 その間
+はすべて許可されます。
 
 ‘evaluate’ ( ... addr u – ...  ) core,block “evaluate”
-   現在の入力源の仕様を保存します。 そして、 ‘-1’ を ‘source-id’ に保存
-し、 かつ、 ‘0’ を ‘blk’ に保存します。 それから、 ‘>IN’ を ‘0’ に設定し
-、 文字列 c-addr u を入力源および入力バッファにし、 解釈(interpret)しま
-す。 そしてパース領域が空になったら、 入力源の仕様を復元します。
+   現在の入力ソース仕様(input source specification)を保存します。 そして
+、 ‘-1’ を ‘source-id’ に保存し、 かつ、 ‘0’ を ‘blk’ に保存します。 そ
+れから、 ‘>IN’ を ‘0’ に設定し、 文字列 c-addr u を入力ソースおよび入力
+バッファにし、 解釈(interpret)します。 そしてパース領域が空になったら、
+入力ソース仕様を復元します。
 
 ‘query’ ( –  ) core-ext-obsolescent “query”
-   ユーザー入力デバイスを入力源にします。 入力を端末入力バッファ
+   ユーザー入力デバイスを入力ソースにします。 入力を端末入力バッファ
 (Terminal Input Buffer)で受け取ります。 ‘>IN’ をゼロに設定します。
 OBSOLESCENT(時代遅れ): 代わりに ‘accept’ を使ってください。
 
@@ -3677,57 +3681,54 @@ File: gforth.info,  Node: Number Conversion,  Next: Interpret/Compile states,  P
 6.14.2 Number Conversion
 ------------------------
 
-You get an overview of how the text interpreter converts its numeric
-input in *note Literals in source code::.  This section describes some
-related words.
+テキスト・インタプリタが数値入力をどのように変換するかの概要は *note
+Literals in source code:: にあります。 このセクションでは、 関連するいく
+つかのワードについて説明します。
 
-   By default, the number base used for integer number conversion is
-given by the contents of the variable ‘base’.  Note that a lot of
-confusion can result from unexpected values of ‘base’.  If you change
-‘base’ anywhere, make sure to save the old value and restore it
-afterwards; better yet, use ‘base-execute’, which does this for you.  In
-general I recommend keeping ‘base’ decimal, and using the prefixes
-described in *note Literals in source code:: for the popular non-decimal
-bases.
+   デフォルトでは、 整数変換に使用される基数は変数 ‘base’ の内容によって
+与えられます。 注意: 予期しない ‘base’ の値によって多くの混乱が生じる可
+能性があることに注意してください。 ‘base’ を変更する場合、 必ず古い値を
+保存し、 後で復元してください。 さらに良いのは、これを自動的に実行する
+‘base-execute’ を使用することです。 一般に、 ‘base’ を 10 進数のままにし
+、 一般的な 10 進数以外の基数については *note Literals in source code::
+で説明されている接頭辞を使用することをお勧めします。
 
 ‘base-execute’ ( i*x xt u – j*x  ) gforth-0.7 “base-execute”
-   execute xt with the content of ‘BASE’ being u, and restoring the
-original ‘BASE’ afterwards.
+   ‘BASE’ の内容を u にして xt を実行し、 その後元の ‘BASE’ を復元します
+。
 
 ‘base’ ( – a-addr  ) core “base”
-   ‘User’ variable – a-addr is the address of a cell that stores the
-number base used by default for number conversion during input and
-output.  Don’t store to ‘base’, use ‘base-execute’ instead.
+   ‘User’ 変数 – a-addr は、 入出力時の数値変換にデフォルトで使用される
+基数を格納するセルへのアドレスです。 ‘base’ に保存せず、 代わりに
+‘base-execute’ を使用してください。
 
 ‘hex’ ( –  ) core-ext “hex”
-   Set ‘base’ to &16 (hexadecimal).  Don’t use ‘hex’, use ‘base-execute’
-instead.
+   ‘base’ を &16 (16 進数) に設定します。 ‘hex’ を使用せず、 代わりに
+‘base-execute’ を使用してください。
 
 ‘decimal’ ( –  ) core “decimal”
-   Set ‘base’ to &10 (decimal).  Don’t use ‘decimal’, use ‘base-execute’
-instead.
+   ‘base’ を &10 (10 進数) に設定します。 ‘10 進数’ を使用せず、 代わり
+に ‘base-execute’ を使用してください。
 
 ‘dpl’ ( – a-addr  ) gforth-0.2 “Decimal-PLace”
-   ‘User’ variable – a-addr is the address of a cell that stores the
-position of the decimal point in the most recent numeric conversion.
-Initialised to -1.  After the conversion of a number containing no
-decimal point, ‘dpl’ is -1.  After the conversion of ‘2.’ it holds 0.
-After the conversion of 234123.9 it contains 1, and so forth.
+   ‘User’ 変数 – a-addr は、 最新の数値変換における小数点の位置を格納す
+るセルのアドレスです。 -1 に初期化されます。 小数点を含まない数値を変換
+すると、 ‘dpl’ は -1 になります。 ‘2.’ の変換後は 0 が保持されます。
+234123.9 の変換後は 1 が保持されます。
 
-Number conversion has a number of traps for the unwary:
+数値変換は、 不注意な人にとっては多くの罠があります:
 
-   • You cannot determine the current number base using the code
-     sequence ‘base @ .’ – the number base is always 10 in the current
-     number base.  Instead, use something like ‘base @ dec.’
+   • コード・シーケンス ‘base @ .’ を使用して現在の基数を測定することは
+     できません。 これは現在の基数では常に 10 と表示されます。 代わりに
+     、 ‘base @ dec.’ なととしてください。
    • There is a word ‘bin’ but it does not set the number base!  (*note
      General files::).
-   • Standard Forth requires the ‘.’ of a double-precision number to be
-     the final character in the string.  Gforth allows the ‘.’ to be
-     anywhere.
-   • The number conversion process does not check for overflow.
+   • 標準 Forth では、 2倍長数値の ‘.’ が文字列の最後の文字である必要が
+     あります。 Gforth では ‘.’ をどこにでも置くことができます。
+   • 数値変換プロセスではオーバーフローはチェックされません。
 
-   You can read numbers into your programs with the words described in
-*note Line input and conversion::.
+   *note Line input and conversion:: で説明されているワードを使用して、
+プログラムに数値を読み込むことができます。
 
 
 File: gforth.info,  Node: Interpret/Compile states,  Next: Interpreter Directives,  Prev: Number Conversion,  Up: The Text Interpreter
@@ -3735,16 +3736,15 @@ File: gforth.info,  Node: Interpret/Compile states,  Next: Interpreter Directive
 6.14.3 Interpret/Compile states
 -------------------------------
 
-A standard program is not permitted to change ‘state’ explicitly.
-However, it can change ‘state’ implicitly, using the words ‘[’ and ‘]’.
-When ‘[’ is executed it switches ‘state’ to interpret state, and
-therefore the text interpreter starts interpreting.  When ‘]’ is
-executed it switches ‘state’ to compile state and therefore the text
-interpreter starts compiling.  The most common usage for these words is
-for switching into interpret state and back from within a colon
-definition; this technique can be used to compile a literal (for an
-example, *note Literals::) or for conditional compilation (for an
-example, *note Interpreter Directives::).
+標準のプログラムでは ‘state’ を明示的に変更することは許可されていません
+。 ただし、‘[’ と ‘]’ というワードを使用して、 ‘state’ を暗黙的に変更で
+きます。 ‘[’ が実行されると、 ‘state’ がインタプリタ状態に切り替わり、 テ
+キスト・インタプリタが解釈(interpret)を開始します。 ‘]’ が実行されると、
+‘state’ がコンパイル状態に切り替わり、 テキスト・インタプリタはコンパイ
+ルを開始します。 これらのワードの最も一般的な使用法は、コロン定義内でイ
+ンタプリタ状態に切り替えたり、 元の状態に戻したりすることです。 この手法
+は、 リテラルのコンパイル(*note Literals:: の例参照)または条件付きコンパ
+イル(例: *note Interpreter Directives:: の例を参照)に使用できます。
 
 
 File: gforth.info,  Node: Interpreter Directives,  Next: Recognizers,  Prev: Interpret/Compile states,  Up: The Text Interpreter
@@ -3752,59 +3752,58 @@ File: gforth.info,  Node: Interpreter Directives,  Next: Recognizers,  Prev: Int
 6.14.4 Interpreter Directives
 -----------------------------
 
-These words are usually used in interpret state; typically to control
-which parts of a source file are processed by the text interpreter.
-There are only a few Standard Forth Standard words, but Gforth
-supplements these with a rich set of immediate control structure words
-to compensate for the fact that the non-immediate versions can only be
-used in compile state (*note Control Structures::).  Typical usage:
+以下のワード群は通常、 インタプリタ状態で使用されます。 通常は、 ソース
+・ファイルのどの部分がテキスト・インタプリタによって処理されるかを制御し
+ます。 これらは、 標準 Forth のワードには少数しかありませんが、 Gforth で
+は、 非即実行バージョンがコンパイル状態でのみ使用できるという事実を補う
+ために、 豊富な即実行制御構造ワードのセットでこれらを補っています(*note
+Control Structures::)。 一般的な使用法は以下のとおりです:
 
      [undefined] \G [if]
        : \G ... ; immediate
      [endif]
 
-   So if the system does not define ‘\G’, compile some replacement code
-(with possibly reduced functionality).
+   これは、 システムが ‘\G’ を定義していない場合は、 幾つかの置き換えプ
+ログラムをコンパイルします(機能が制限される可能性があります)。
 
 ‘[IF]’ ( flag –  ) tools-ext “bracket-if”
-   If flag is ‘TRUE’ do nothing (and therefore execute subsequent words
-as normal).  If flag is ‘FALSE’, parse and discard words from the parse
-area (refilling it if necessary using ‘REFILL’) including nested
-instances of ‘[IF]’..  ‘[ELSE]’..  ‘[THEN]’ and ‘[IF]’..  ‘[THEN]’ until
-the balancing ‘[ELSE]’ or ‘[THEN]’ has been parsed and discarded.
-Immediate word.
+   flag が ‘TRUE’ の場合は何もしません(したがって、 後続のワードは通常ど
+おり実行されます)。 flag が ‘FALSE’ の場合、 対になる ‘[ELSE]’ または
+‘[THEN]’ がパースされて破棄されるまで、 ‘[IF]’..  ‘[ELSE]’..  ‘[THEN]’ や
+‘[IF]’..  ‘[THEN]’ の入れ子になったモノを含むパース領域(入力バッファ/パ
+ース領域 は、 必要に応じて ‘REFILL’ を使用して再充填します)からワードを
+パースして破棄します。 即実行ワードです。
 
 ‘[ELSE]’ ( –  ) tools-ext “bracket-else”
-   Parse and discard words from the parse area (refilling it if
-necessary using ‘REFILL’) including nested instances of ‘[IF]’..
-‘[ELSE]’..  ‘[THEN]’ and ‘[IF]’..  ‘[THEN]’ until the balancing ‘[THEN]’
-has been parsed and discarded.  ‘[ELSE]’ only gets executed if the
-balancing ‘[IF]’ was ‘TRUE’; if it was ‘FALSE’, ‘[IF]’ would have parsed
-and discarded the ‘[ELSE]’, leaving the subsequent words to be executed
-as normal.  Immediate word.
+   対になる ‘[THEN]’ がパースされて破棄されるまで、 ‘[IF]’..  ‘[ELSE]’..
+‘[THEN]’ や ‘[IF]’..  ‘[THEN]’ の入れ子になったモノを含むパース領域(入力
+バッファ/パース領域 は、 必要に応じて ‘REFILL’ を使用して再充填します)か
+らワードをパースして破棄します。 ‘FALSE’ の場合、‘[IF]’ は ‘[ELSE]’ を解
+析して破棄し、後続のワードは通常どおり実行されたままになります。 即実行
+ワードです。
 
 ‘[THEN]’ ( –  ) tools-ext “bracket-then”
-   Do nothing; used as a marker for other words to parse and discard up
-to.  Immediate word.
+   何もしない。 パースして破棄する他のワードのマーカーとして使用されます
+。 即実行ワードです。
 
 ‘[ENDIF]’ ( –  ) gforth-0.2 “bracket-end-if”
-   Do nothing; synonym for ‘[THEN]’
+   何もしません。 ‘[THEN]’ の同義語(synonym)です。
 
 ‘[defined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-defined”
-   returns true if name is found in current search order
+   現在の検索順序(search order)で名前が見つかった場合は true を返します
 
 ‘[undefined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-undefined”
-   returns false if name is found in current search order
+   現在の検索順序(search order)で名前が見つかった場合は false を返します
 
 ‘[IFDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-def”
-   If name is found in the current search-order, behave like ‘[IF]’ with
-a ‘TRUE’ flag, otherwise behave like ‘[IF]’ with a ‘FALSE’ flag.
-Immediate word.
+   現在の検索順序(search-order)で name が見つかった場合は、 ‘TRUE’ フラ
+グを伴った ‘[IF]’ のように振る舞いし、 そうでない場合は、 ‘FALSE’ フラグ
+を伴った ‘[IF]’ のように動作します。 即実行ワードです。
 
 ‘[IFUNDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-un-def”
-   If name is not found in the current search-order, behave like ‘[IF]’
-with a ‘TRUE’ flag, otherwise behave like ‘[IF]’ with a ‘FALSE’ flag.
-Immediate word.
+   現在の検索順序(search-order)で name が見つからない場合は、 ‘TRUE’ フ
+ラグを伴った ‘[IF]’ のように動作し、 それ以外の場合は、‘FALSE’ フラグを
+伴った ‘[IF]’ のように動作します。 即実行ワード。
 
 ‘[?DO]’ ( n-limit n-index –  ) gforth-0.2 “bracket-question-do”
 
@@ -3819,14 +3818,14 @@ Immediate word.
 ‘[NEXT]’ ( n –  ) gforth-0.2 “bracket-next”
 
 ‘[I]’ ( run-time – n  ) gforth-0.2 “bracket-i”
-   At run-time, ‘[I]’ pushes the loop index of the
-text-interpretation-time ‘[do]’ iteration.  If you want to process the
-index at interpretation time, interpret ‘[I]’ interpretevely, or use
-‘INT-[I]’.
+   実行時、 ‘[I]’ はテキスト・インタプリタ時の ‘[do]’ の反復
+(iteration)のループ・インデックスをプッシュします。 インタプリタ時にイン
+デックスを処理したい場合は、 ‘[I]’ を対話的に解釈(interpret)するか、 ま
+たは ‘INT-[I]’ を使用します。
 
 ‘INT-[I]’ ( – n  ) gforth-1.0 “int-bracket-i”
-   Push the loop index of the ‘[do]’ iteration at text interpretation
-time.
+   テキスト・インタプリタ時に ‘[do]’ 反復のループ・インデックスをプッシ
+ュします。
 
 ‘[BEGIN]’ ( –  ) gforth-0.2 “bracket-begin”
 
@@ -3838,16 +3837,16 @@ time.
 
 ‘[REPEAT]’ ( –  ) gforth-0.2 “bracket-repeat”
 
-   You can use ‘#line’ to change Gforth’s idea about the current source
-line number and source file.  This is useful in cases where the Forth
-file is generated from some other source code file, and you want to get,
-e.g.  error messages etc.  that refer to the original source code; then
-the Forth-code generator needs to insert ‘#line’ lines in the Forth code
-wherever appropriate.
+   ‘#line’ を使用すると、 現在のソース行番号とソース・ファイルに関する
+Gforth の認識を変更できます。 これは、 Forth ファイルが他のソース・コー
+ド・ファイルから生成されており、 たとえば、 オリジナルのソース・コードを
+参照するエラー・メッセージなどを取得したい場合に便利です。 その場合、
+Forth コード・ジェネレーターは、 必要に応じて Forth コードに ‘#line’ 行
+を挿入する必要があります。
 
 ‘#line’ ( "u" "["file"]" –  ) gforth-1.0 “#line”
-   Set the line number to u and (if present) the file name to file.
-Consumes the rest of the line.
+   行番号を u に設定し、 (存在する場合)ファイル名を file に設定します。
+行の残りの部分を消費します。
 
 
 File: gforth.info,  Node: Recognizers,  Next: Text Interpreter Hooks,  Prev: Interpreter Directives,  Up: The Text Interpreter
@@ -3961,86 +3960,94 @@ File: gforth.info,  Node: Dealing with existing Recognizers,  Next: Defining Rec
 6.14.5.2 Dealing with existing Recognizers
 ..........................................
 
-A recognizer is a word to which you pass a string.  If the recognizer
-recognizes the string, it typically returns some data and the xt of a
-word for processing the data; this word is called the translator.  If
-the recognizer does not recognize the string, it returns the xt of
-‘notfound’.
+認識器(recognizer)は、 あなたが文字列を渡すワードです。 認識器が文字列を
+認識すると、 通常はデータとそのデータを処理するためのワードの xt を返し
+ます。 このワードはトランスレーター(translator)と呼ばれます。 認識器が文
+字列を認識しない場合は、 ‘notfound’ の xt を返します。
 
-   All recognizers have the stack effect ( c-addr u – ...  xt ).
+   すべての認識器(recognizers)のスタック効果は ( c-addr u – ...  xt ) で
+す。
 
-   Recognizers take a string and return some data and a translator for
-interpreting that data.  Gforth implements that translator as xt
-(executing it will perform the appropriate action to handle the token in
-the current state), but other Forth systems may implement it as actual
-table, with three xts inside.  The first xt is the
-interpretation/run-time xt, it performs the interpretation semantics on
-the data (usually, this means it just leaves the data on the stack).
-The second xt performs the compilation semantics, it gets the data and
-the run-time semantics xt.  The third xt perfoms the postpone semantics,
-it also gets the data and the run-time semantics xt.  You can use
-‘>postpone’ to postpone the run-time xt.
+   認識器は文字列を受け取り、 いくつかのデータと、 そのデータを解釈
+(interpret)するためのトランスレーターを返します。 Gforth はそのトランス
+レーターを xt として実装します(これを実行すると、 現在の状態でトークンを
+処理するための適切なアクションが実行されます)。 ただし、 他の Forth シス
+テムでは、 内部に 3 つの xt を含むテーブルとして実装する場合があります。
+最初の xt は インタプリタ時/実行時 xt で、 データのインタプリタ機能
+(interpretation semantics)を実行します(通常はデータをスタックに置くだけ
+です)。 2 番目の xt はコンパイル機能(compilation semantics)を実行し、 デ
+ータと実行時機能(run-time semantics)の xt を取得します。 3 番目の xt は
+postpone 機能(postpone semantics)を実行し、 データと実行時機能の xt も取
+得します。 ‘>postpone’ を使用すると、 実行時機能の xt を postpone できま
+す。
 
-   Recognizers are organized as stack, so you can arrange the sequence
-of recognizers in the same way as the vocabulary stack.  Recognizer
-stacks are themselves recognizers, i.e.  they are executable, take a
-string and return a translator.
+   認識器群はスタックとして編成されるため、 ボキャブラリ・スタックと同じ
+方法で認識器群のシーケンスを配置できます。 認識器スタックはそれ自体が認
+識器群です。 つまり、 認識器スタックは実行可能であり、 文字列を受け取り
+、 トランスレーターを返します。
 
 ‘notfound’ ( state –  ) gforth-experimental “notfound”
-   If a recognizer fails, it returns ‘notfound’
+   認識器の認識が失敗すると、 ‘notfound’ の認識器トークン(訳注: 現状では
+‘notfound’ の xt )を返します
 
 ‘rec-nt’ ( addr u – nt translate-nt | notfound  ) gforth-experimental “rec-nt”
-   recognize a name token
+   名前トークンを認識します
 
 ‘rec-num’ ( addr u – n/d table | notfound  ) gforth-experimental “rec-num”
-   converts a number to a single/double integer
+   数値を 1倍長/2倍長 整数に変換します
 
 ‘rec-float’ ( addr u – r translate-float | notfound  ) gforth-experimental “rec-float”
-   recognize floating point numbers
+   浮動小数点数を認識します
 
 ‘rec-string’ ( addr u – addr u’ r:string | rectype-null  ) gforth-experimental “rec-string”
-   Convert strings enclosed in double quotes into string literals,
-escapes are treated as in ‘S\"’.
+   二重引用符(double quotes)で囲まれた文字列(strings)を文字列リテラルに
+変換します。 エスケープは ‘S\"’ と同様に扱われます。
 
 ‘rec-to’ ( addr u – xt n r:to | rectype-null  ) gforth-experimental “rec-to”
-   words prefixed with ‘->’ are treated as if preceeded by ‘TO’, with
-‘+>’ as ‘+TO’, with ‘'>’ as ‘ADDR’, with ‘@>’ as ‘ACTION-OF’, and with
-‘=>’ as ‘IS’.
+   ‘->’ で始まるワードは、 ‘TO’ が前にあるものとして扱い、 ‘+>’ で始まる
+ワードは ‘+TO’ が前にあるものとして扱い、 ‘'>’ で始まるワードは ‘ADDR’ が
+前にあるものとして扱い、 ‘@>’ で始まるワードは ‘ACTION-OF’ が前にあるも
+のとして扱い、 ‘=>’ で始まるワードは ‘IS’ が前にあるものとして扱います。
 
 ‘rec-tick’ ( addr u – xt rectype-num | rectype-null  ) gforth-experimental “rec-tick”
-   words prefixed with ‘`’ return their xt.  Example: ‘`dup’ gives the
-xt of dup
+   ‘`’ (バッククォート)の接頭辞が付いたワードはその xt を返します。 例:
+‘`dup’ は dup の xt を返します
 
 ‘rec-dtick’ ( addr u – nt rectype-num | rectype-null  ) gforth-experimental “rec-dtick”
-   words prefixed with ‘``’ return their nt.  Example: ‘``S"’ gives the
-nt of ‘S"’
+   ‘``’ (バッククォート2つ)で始まるワードは、 その nt を返します。 例:
+‘``S"’ は ‘S"’ の nt を返します。
 
 ‘rec-body’ ( addr u – xt translate-tick | translate-null  ) gforth-experimental “rec-body”
-   words bracketed with ‘'<'’ ‘'>'’ return their body.  Example: ‘<dup>’
-gives the body of dup
+   ‘'<'’ ‘'>'’ で囲まれたワードはその本体(body)を返します。 例: ‘<dup>’
+は dup の本体(body)を返します
 
 ‘get-recognizers’ ( – xt1 .. xtn n  ) gforth-experimental “get-recognizers”
-   push the content on the recognizer stack
+   認識器スタックの内容(content)をスタックにプッシュします。 n は xt の
+個数です。
 
 ‘set-recognizers’ ( xt1 .. xtn n –  ) gforth-experimental “set-recognizers”
-   set the recognizer stack from content on the stack
+   スタック上の内容(content)を認識器スタックに設定します。 n は xt の個
+数です。
 
 ‘recognize’ ( addr u rec-addr – ... rectype  ) gforth-experimental “recognize”
-   apply a recognizer stack to a string, delivering a token
+   訳注: 認識器スタック rec-addr の認識器を順に文字列 addr u に適用し、
+認識したら、 そのトランスレーター rectype (の xt ) を得ます。 何も適用で
+きなかった場合はトランスレーター ‘notfound’ (の xt )を返します
 
 ‘recognizer-sequence:’ ( xt1 .. xtn n "name" –  ) gforth-experimental “recognizer-sequence:”
-   concatenate a stack of recognizers to one recognizer with the name
-"name".  xtn is tried first, xt1 last, just like on the recognizer stack
+   訳注: xt1 ..  xtn n という内容で "name" という名前の認識器スタックを
+作成します。
 
 ‘forth-recognize’ ( c-addr u – ... translate-xt  ) recognizer “forth-recognize”
-   The system recognizer
+   システム認識器スタックです。
 
 ‘forth-recognizer’ ( – xt  ) gforth-experimental “forth-recognizer”
-   backward compatible to Matthias Trute recognizer API. This construct
-turns a deferred word into a value-like word.
+   backward compatible to Matthias Trute recognizer API との下位互換性が
+あります。 この構造は、 defer されたワードを value のようなワードに変換
+します。
 
 ‘set-forth-recognize’ ( xt –  ) recognizer “set-forth-recognize”
-   Change the system recognizer
+   システム認識器を変更する
 
 ‘translate:’ ( int-xt comp-xt post-xt "name" –  ) gforth-experimental “translate:”
    create a new recognizer table.  Items are in order of STATE value,
@@ -4055,7 +4062,7 @@ which are 0 or negative.  Up to 7 slots are available for extensions.
 ‘translate-dnum’ ( dx – | dx  ) gforth-experimental “translate-dnum”
    translate a double number
 
-   doc-translate-float
+   doc-translate-float(訳注: まだ説明書いて無いっぽい)
 ‘try-recognize’ ( addr u xt – results | false  ) gforth-experimental “try-recognize”
    For nested recognizers: try to recognize ADDR U, and execute XT to
 check if the result is desired.  If XT returns false, clean up all side
@@ -4085,6 +4092,8 @@ File: gforth.info,  Node: Defining Recognizers,  Prev: Dealing with existing Rec
 
 6.14.5.3 Defining Recognizers
 .............................
+
+doc-defining-recognizers(訳注: まだ説明書けて無いっぽい)
 
 
 File: gforth.info,  Node: Text Interpreter Hooks,  Prev: Recognizers,  Up: The Text Interpreter
@@ -4156,17 +4165,17 @@ string.  OBSOLESCENT: the counted string has a trailing space that is
 not included in its length.
 
 ‘refill’ ( – flag  ) core-ext,block-ext,file-ext “refill”
-   Attempt to fill the input buffer from the input source.  When the
-input source is the user input device, attempt to receive input into the
-terminal input device.  If successful, make the result the input buffer,
-set ‘>IN’ to 0 and return true; otherwise return false.  When the input
-source is a block, add 1 to the value of ‘BLK’ to make the next block
-the input source and current input buffer, and set ‘>IN’ to 0; return
-true if the new value of ‘BLK’ is a valid block number, false otherwise.
-When the input source is a text file, attempt to read the next line from
-the file.  If successful, make the result the current input buffer, set
-‘>IN’ to 0 and return true; otherwise, return false.  A successful
-result includes receipt of a line containing 0 characters.
+   入力ソースにより入力バッファを満たすことを試みます。 入力ソースがユー
+ザー入力デバイスの場合、 端末入力デバイスからの入力の受け取りを試みます
+。 成功した場合は、 結果を入力バッファにし、 ‘>IN’ を 0 に設定して true
+を返します。 それ以外の場合は false を返します。 入力ソースがブロックの
+場合、 ‘BLK’ の値に 1 を加算して、 次のブロックを入力ソースかつ現在の入
+力バッファにし、 ‘>IN’ を 0 に設定します。 ‘BLK’ の新しい値が有効なブロ
+ック番号の場合は true を返し、 それ以外の場合は false を返します。 入力
+ソースがテキスト・ファイルの場合、 ファイルから次の行を読み取ろうと試み
+ます。 成功した場合は、 結果を現在の入力バッファにし、 ‘>IN’ を 0 に設定
+して true を返します。 それ以外の場合は false を返します。 いずれの場合
+も、 成功した結果には、0 文字を含む行の受け取りが含まれます。
 
    If you have to deal with a parsing word that does not have a
 non-parsing factor, you can use ‘execute-parsing’ to pass a string to
@@ -6032,80 +6041,4 @@ exception.
    c-addr u is the string name of the function key u1.  Only works for
 simple function keys without modifier masks.  Any u1 that does not
 correspond to a simple function key currently produces an exception.
-
-
-File: gforth.info,  Node: Line input and conversion,  Next: Pipes,  Prev: Single-key input,  Up: Other I/O
-
-6.20.8 Line input and conversion
---------------------------------
-
-For ways of storing character strings in memory see *note String
-representations::.
-
-   Words for inputting one line from the keyboard:
-
-‘accept’ ( c-addr +n1 – +n2  ) core “accept”
-   Get a string of up to N1 characters from the user input device and
-store it at C-ADDR.  N2 is the length of the received string.  The user
-indicates the end by pressing <RET>.  Gforth supports all the editing
-functions available on the Forth command line (including history and
-word completion) in ‘accept’.
-
-‘edit-line’ ( c-addr n1 n2 – n3  ) gforth-0.6 “edit-line”
-   edit the string with length N2 in the buffer C-ADDR N1, like
-‘accept’.
-
-   Conversion words:
-
-‘s>number?’ ( addr u – d f  ) gforth-0.5 “s>number?”
-   converts string addr u into d, flag indicates success
-
-‘s>unumber?’ ( c-addr u – ud flag  ) gforth-0.5 “s>unumber?”
-   converts string c-addr u into ud, flag indicates success
-
-‘>number’ ( ud1 c-addr1 u1 – ud2 c-addr2 u2  ) core “to-number”
-   Attempt to convert the character string C-ADDR1 U1 to an unsigned
-number in the current number base.  The double UD1 accumulates the
-result of the conversion to form UD2.  Conversion continues,
-left-to-right, until the whole string is converted or a character that
-is not convertable in the current number base is encountered (including
-+ or -).  For each convertable character, UD1 is first multiplied by the
-value in ‘BASE’ and then incremented by the value represented by the
-character.  C-ADDR2 is the location of the first unconverted character
-(past the end of the string if the whole string was converted).  U2 is
-the number of unconverted characters in the string.  Overflow is not
-detected.
-
-‘>float’ ( c-addr u – f:... flag ) floating “to-float”
-   Actual stack effect: ( c_addr u – r t | f ).  Attempt to convert the
-character string c-addr u to internal floating-point representation.  If
-the string represents a valid floating-point number, r is placed on the
-floating-point stack and flag is true.  Otherwise, flag is false.  A
-string of blanks is a special case and represents the floating-point
-number 0.
-
-‘>float1’ ( c-addr u c – f:... flag ) gforth-1.0 “to-float1”
-   Actual stack effect: ( c_addr u c – r t | f ).  Attempt to convert
-the character string c-addr u to internal floating-point representation,
-with c being the decimal separator.  If the string represents a valid
-floating-point number, r is placed on the floating-point stack and flag
-is true.  Otherwise, flag is false.  A string of blanks is a special
-case and represents the floating-point number 0.
-
-   Obsolescent input and conversion words:
-
-‘convert’ ( ud1 c-addr1 – ud2 c-addr2  ) core-ext-obsolescent “convert”
-   Obsolescent: superseded by ‘>number’.
-
-‘expect’ ( c-addr +n –  ) core-ext-obsolescent “expect”
-   Receive a string of at most +n characters, and store it in memory
-starting at c-addr.  The string is displayed.  Input terminates when the
-<return> key is pressed or +n characters have been received.  The normal
-Gforth line editing capabilites are available.  The length of the string
-is stored in ‘span’; it does not include the <return> character.
-OBSOLESCENT: superceeded by ‘accept’.
-
-‘span’ ( – c-addr  ) core-ext-obsolescent “span”
-   ‘Variable’ – c-addr is the address of a cell that stores the length
-of the last string received by ‘expect’.  OBSOLESCENT.
 

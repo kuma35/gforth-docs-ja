@@ -27,6 +27,82 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Line input and conversion,  Next: Pipes,  Prev: Single-key input,  Up: Other I/O
+
+6.20.8 Line input and conversion
+--------------------------------
+
+For ways of storing character strings in memory see *note String
+representations::.
+
+   Words for inputting one line from the keyboard:
+
+‘accept’ ( c-addr +n1 – +n2  ) core “accept”
+   Get a string of up to N1 characters from the user input device and
+store it at C-ADDR.  N2 is the length of the received string.  The user
+indicates the end by pressing <RET>.  Gforth supports all the editing
+functions available on the Forth command line (including history and
+word completion) in ‘accept’.
+
+‘edit-line’ ( c-addr n1 n2 – n3  ) gforth-0.6 “edit-line”
+   edit the string with length N2 in the buffer C-ADDR N1, like
+‘accept’.
+
+   Conversion words:
+
+‘s>number?’ ( addr u – d f  ) gforth-0.5 “s>number?”
+   converts string addr u into d, flag indicates success
+
+‘s>unumber?’ ( c-addr u – ud flag  ) gforth-0.5 “s>unumber?”
+   converts string c-addr u into ud, flag indicates success
+
+‘>number’ ( ud1 c-addr1 u1 – ud2 c-addr2 u2  ) core “to-number”
+   Attempt to convert the character string C-ADDR1 U1 to an unsigned
+number in the current number base.  The double UD1 accumulates the
+result of the conversion to form UD2.  Conversion continues,
+left-to-right, until the whole string is converted or a character that
+is not convertable in the current number base is encountered (including
++ or -).  For each convertable character, UD1 is first multiplied by the
+value in ‘BASE’ and then incremented by the value represented by the
+character.  C-ADDR2 is the location of the first unconverted character
+(past the end of the string if the whole string was converted).  U2 is
+the number of unconverted characters in the string.  Overflow is not
+detected.
+
+‘>float’ ( c-addr u – f:... flag ) floating “to-float”
+   Actual stack effect: ( c_addr u – r t | f ).  Attempt to convert the
+character string c-addr u to internal floating-point representation.  If
+the string represents a valid floating-point number, r is placed on the
+floating-point stack and flag is true.  Otherwise, flag is false.  A
+string of blanks is a special case and represents the floating-point
+number 0.
+
+‘>float1’ ( c-addr u c – f:... flag ) gforth-1.0 “to-float1”
+   Actual stack effect: ( c_addr u c – r t | f ).  Attempt to convert
+the character string c-addr u to internal floating-point representation,
+with c being the decimal separator.  If the string represents a valid
+floating-point number, r is placed on the floating-point stack and flag
+is true.  Otherwise, flag is false.  A string of blanks is a special
+case and represents the floating-point number 0.
+
+   Obsolescent input and conversion words:
+
+‘convert’ ( ud1 c-addr1 – ud2 c-addr2  ) core-ext-obsolescent “convert”
+   Obsolescent: superseded by ‘>number’.
+
+‘expect’ ( c-addr +n –  ) core-ext-obsolescent “expect”
+   Receive a string of at most +n characters, and store it in memory
+starting at c-addr.  The string is displayed.  Input terminates when the
+<return> key is pressed or +n characters have been received.  The normal
+Gforth line editing capabilites are available.  The length of the string
+is stored in ‘span’; it does not include the <return> character.
+OBSOLESCENT: superceeded by ‘accept’.
+
+‘span’ ( – c-addr  ) core-ext-obsolescent “span”
+   ‘Variable’ – c-addr is the address of a cell that stores the length
+of the last string received by ‘expect’.  OBSOLESCENT.
+
+
 File: gforth.info,  Node: Pipes,  Next: Xchars and Unicode,  Prev: Line input and conversion,  Up: Other I/O
 
 6.20.9 Pipes
@@ -373,17 +449,17 @@ File: gforth.info,  Node: Locals,  Next: Structures,  Prev: OS command line argu
 6.22 Locals
 ===========
 
-Local variables can make Forth programming more enjoyable and Forth
-programs easier to read.  Unfortunately, the locals of Standard Forth
-are laden with restrictions.  Therefore, we provide not only the
-Standard Forth locals wordset, but also our own, more powerful locals
-wordset (we implemented the Standard Forth locals wordset through our
-locals wordset).
+ローカル変数を使用すると、 Forth プログラミングがより楽しくなり、 Forth
+プログラムが読みやすくなります。 残念ながら、 標準 Forth の ローカル変数
+には制限がたくさんあります。 したがって、 標準 Forth のローカル変数ワー
+ドセットだけでなく、 Gforth 独自のより強力なローカル変数ワードセットも提
+供します(標準Forthのローカル変数ワードセットは、 Gforth のローカル変数ワ
+ードセットで実装しました)。
 
-   The ideas in this section have also been published in M. Anton Ertl,
-‘Automatic Scoping of Local Variables
-(https://www.complang.tuwien.ac.at/papers/ertl94l.ps.gz)’, EuroForth
-’94.
+   このセクションのアイデアは、 M. Anton Ertl, ‘Automatic Scoping of
+Local Variables
+(https://www.complang.tuwien.ac.at/papers/ertl94l.ps.gz)’, EuroForth ’94
+でも公開されています。
 
 * Menu:
 
@@ -396,7 +472,7 @@ File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Lo
 6.22.1 Gforth locals
 --------------------
 
-Locals can be defined with
+ローカル変数は以下のように定義できます
 
      {: local1 local2 ... -- comment :}
    or
@@ -404,7 +480,7 @@ Locals can be defined with
    or
      {: local1 local2 ... | ulocal0 ulocal1 -- comment :}
 
-   E.g.,
+   例えば、 以下のように使います
      : max {: n1 n2 -- n3 :}
       n1 n2 > if
         n1
@@ -744,7 +820,7 @@ control-flow stack item was created.
 
 ‘ASSUME-LIVE’ ( orig – orig  ) gforth-0.2 “ASSUME-LIVE”
 
-E.g.,
+例えば、 以下のように使います
      IF
        {: x :}
        AHEAD
@@ -871,13 +947,14 @@ File: gforth.info,  Node: Locals implementation,  Next: Closures,  Prev: Locals 
 6.22.1.5 Locals implementation
 ..............................
 
-Gforth uses an extra locals stack.  The most compelling reason for this
-is that the return stack is not float-aligned; using an extra stack also
-eliminates the problems and restrictions of using the return stack as
-locals stack.  Like the other stacks, the locals stack grows toward
-lower addresses.  A few primitives allow an efficient implementation;
-you should not use them directly, but they appear in the output of
-‘see’, so they are documented here:
+Gforth は追加のローカル変数・スタックを使用します。 この最も説得力のある
+理由は、 リターン・スタックが浮動小数点数に整列されていないことです。 こ
+の追加のスタックを使用すると、 リターン・スタックをローカル変数・スタッ
+クとして使用する場合の問題や制限も解消されます。 他のスタックと同様に、
+ローカル変数スタックは下位アドレスに向かって成長します。 いくつかのプリ
+ミティブにより効率的な実装になっています。 あなたは、 これらを直接使用す
+るべきではありませんが、 ‘see’ の出力には表示されるため、 以下に文書化し
+ておきます:
 
 ‘@localn’ ( noffset – w ) gforth-internal “fetch-local-n”
 
@@ -886,18 +963,20 @@ you should not use them directly, but they appear in the output of
 ‘lp@’ ( – c-addr ) gforth-0.2 “lp-fetch”
    C_addr は、 ローカル・スタック・ポインタの現在の値です。
 
-   doc-lp+!#
+   doc-lp+!#(訳注: まだ説明書いて無いっぽい)
 ‘lp!’ ( c-addr – ) gforth-internal “lp-store”
 
-‘>l’ ( w – ) gforth-0.2 “to-l”
+‘>l’ ( w – ) gforth-0.2 “to-l” \ 訳注: w をローカル変数スタックにプッシュ
 
 ‘f>l’ ( r – ) gforth-0.2 “f-to-l”
 
-   In addition to these primitives, some specializations of these
-primitives for commonly occurring inline arguments are provided for
-efficiency reasons, e.g., ‘@local0’ as specialization of ‘0 @localn’.
-The following compiling words compile the right specialized version, or
-the general version, as appropriate:
+   これらのプリミティブに加えて、 一般的に発生するインライン引数に対する
+これらのプリミティブのいくつかの特殊化が、 効率上の理由から提供されてい
+ます(例: ‘0 @localn’ の特殊化として ‘@local0’ )。 以下のコンパイル・ワー
+ド(compiling words)は、 適切な特殊バージョン、 または一般バージョンを適
+切にコンパイルします(訳注: ‘@local0’ シリーズは、 ‘@local0’ ローカル変数
+スタックのTOS(のコピー)をスタックに積む、 ‘@local1’ ローカル変数スタック
+の2nd(のコピー)をスタックに積む、 〜 ‘@local4’ まである):
 
 ‘compile-lp+!’ ( n –  ) gforth-0.2 “compile-l-p-plus-store”
 
@@ -7018,189 +7097,4 @@ values and meaning of ior:
      intended as throw codes.  They typically are in the range
      -512−-2047 of OS errors.  The mapping from OS error numbers to iors
      is -512−errno.
-
-
-File: gforth.info,  Node: The optional Programming-Tools word set,  Next: The optional Search-Order word set,  Prev: The optional Memory-Allocation word set,  Up: Standard conformance
-
-9.10 The optional Programming-Tools word set
-============================================
-
-* Menu:
-
-* programming-idef::         Implementation Defined Options
-* programming-ambcond::      あいまいな条件
-
-
-File: gforth.info,  Node: programming-idef,  Next: programming-ambcond,  Prev: The optional Programming-Tools word set,  Up: The optional Programming-Tools word set
-
-9.10.1 Implementation Defined Options
--------------------------------------
-
-ending sequence for input following ‘;CODE’ and ‘CODE’:
-     ‘END-CODE’
-
-manner of processing input following ‘;CODE’ and ‘CODE’:
-     The ‘ASSEMBLER’ vocabulary is pushed on the search order stack, and
-     the input is processed by the text interpreter, (starting) in
-     interpret state.
-
-search order capability for ‘EDITOR’ and ‘ASSEMBLER’:
-     The Search-Order word set.
-
-source and format of display by ‘SEE’:
-     The source for ‘see’ is the executable code used by the inner
-     interpreter.  The current ‘see’ tries to output Forth source code
-     (and on some platforms, assembly code for primitives) as well as
-     possible.
-
-
-File: gforth.info,  Node: programming-ambcond,  Prev: programming-idef,  Up: The optional Programming-Tools word set
-
-9.10.2 Ambiguous conditions
----------------------------
-
-deleting the compilation word list (‘FORGET’):
-     Not implemented (yet).
-
-fewer than u+1 items on the control-flow stack (‘CS-PICK’, ‘CS-ROLL’):
-     This typically results in an ‘abort"’ with a descriptive error
-     message (may change into a ‘-22 throw’ (Control structure mismatch)
-     in the future).  You may also get a memory access error.  If you
-     are unlucky, this ambiguous condition is not caught.
-
-name can’t be found (‘FORGET’):
-     Not implemented (yet).
-
-name not defined via ‘CREATE’:
-     ‘;CODE’ behaves like ‘DOES>’ in this respect, i.e., it changes the
-     execution semantics of the last defined word no matter how it was
-     defined.
-
-‘POSTPONE’ applied to ‘[IF]’:
-     After defining ‘: X POSTPONE [IF] ; IMMEDIATE’.  ‘X’ is equivalent
-     to ‘[IF]’.
-
-reaching the end of the input source before matching ‘[ELSE]’ or ‘[THEN]’:
-     Continue in the same state of conditional compilation in the next
-     outer input source.  Currently there is no warning to the user
-     about this.
-
-removing a needed definition (‘FORGET’):
-     Not implemented (yet).
-
-
-File: gforth.info,  Node: The optional Search-Order word set,  Prev: The optional Programming-Tools word set,  Up: Standard conformance
-
-9.11 The optional Search-Order word set
-=======================================
-
-* Menu:
-
-* search-idef::              Implementation Defined Options
-* search-ambcond::           あいまいな条件
-
-
-File: gforth.info,  Node: search-idef,  Next: search-ambcond,  Prev: The optional Search-Order word set,  Up: The optional Search-Order word set
-
-9.11.1 Implementation Defined Options
--------------------------------------
-
-maximum number of word lists in search order:
-     ‘s" wordlists" environment? drop .’.  Currently 16.
-
-minimum search order:
-     ‘root root’.
-
-
-File: gforth.info,  Node: search-ambcond,  Prev: search-idef,  Up: The optional Search-Order word set
-
-9.11.2 Ambiguous conditions
----------------------------
-
-changing the compilation word list (during compilation):
-     The word is entered into the word list that was the compilation
-     word list at the start of the definition.  Any changes to the name
-     field (e.g., ‘immediate’) or the code field (e.g., when executing
-     ‘DOES>’) are applied to the latest defined word (as reported by
-     ‘latest’ or ‘latestxt’), if possible, irrespective of the
-     compilation word list.
-
-search order empty (‘previous’):
-     ‘abort" Vocstack empty"’.
-
-too many word lists in search order (‘also’):
-     ‘abort" Vocstack full"’.
-
-
-File: gforth.info,  Node: Standard vs Extensions,  Next: Model,  Prev: Standard conformance,  Up: Top
-
-10 Should I use Gforth extensions?
-**********************************
-
-As you read through the rest of this manual, you will see documentation
-for Standard words, and documentation for some appealing Gforth
-extensions.  You might ask yourself the question: “Should I restrict
-myself to the standard, or should I use the extensions?”
-
-   The answer depends on the goals you have for the program you are
-working on:
-
-   • Is it just for yourself or do you want to share it with others?
-
-   • If you want to share it, do the others all use Gforth?
-
-   • If it is just for yourself, do you want to restrict yourself to
-     Gforth?
-
-   If restricting the program to Gforth is ok, then there is no reason
-not to use extensions.  It is still a good idea to keep to the standard
-where it is easy, in case you want to reuse these parts in another
-program that you want to be portable.
-
-   If you want to be able to port the program to other Forth systems,
-there are the following points to consider:
-
-   • Most Forth systems that are being maintained support Standard
-     Forth.  So if your program complies with the standard, it will be
-     portable among many systems.
-
-   • A number of the Gforth extensions can be implemented in Standard
-     Forth using public-domain files provided in the ‘compat/’
-     directory.  These are mentioned in the text in passing.  There is
-     no reason not to use these extensions, your program will still be
-     Standard Forth compliant; just include the appropriate compat files
-     with your program.
-
-   • The tool ‘ans-report.fs’ (*note Standard Report::) makes it easy to
-     analyse your program and determine what non-Standard words it
-     relies upon.  However, it does not check whether you use standard
-     words in a non-standard way.
-
-   • Some techniques are not standardized by Standard Forth, and are
-     hard or impossible to implement in a standard way, but can be
-     implemented in most Forth systems easily, and usually in similar
-     ways (e.g., accessing word headers).  Forth has a rich historical
-     precedent for programmers taking advantage of
-     implementation-dependent features of their tools (for example,
-     relying on a knowledge of the dictionary structure).  Sometimes
-     these techniques are necessary to extract every last bit of
-     performance from the hardware, sometimes they are just a
-     programming shorthand.
-
-   • Does using a Gforth extension save more work than the porting this
-     part to other Forth systems (if any) will cost?
-
-   • Is the additional functionality worth the reduction in portability
-     and the additional porting problems?
-
-   In order to perform these considerations, you need to know what’s
-standard and what’s not.  This manual generally states if something is
-non-standard, but the authoritative source is the standard document
-(https://forth-standard.org/standard/words).  Appendix A of the Standard
-(RATIONALE) provides a valuable insight into the thought processes of
-the technical committee.
-
-   Note also that portability between Forth systems is not the only
-portability issue; there is also the issue of portability between
-different platforms (processor/OS combinations).
 

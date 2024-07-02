@@ -13242,12 +13242,12 @@ semantics)が現在の定義に追加されることを意味します。
 
 @itemize @bullet
 @item
-パース領域が空の場合、 テキスト・インタプリタは入力源(input source)から入力バッファを補充(refill)しようとします。
-入力源を使い尽くすと、 入力源は以前の入力源に戻ります。
+パース領域が空の場合、 テキスト・インタプリタは入力ソースから入力バッファを再充填(refill)しようと試みます。 入力ソースを使い尽くすと、
+入力ソースは以前の入力ソースに戻ります。
 @item
 パース領域が空になるたびに ``@code{ ok}'' や ``@code{ compiled}'' メッセージは出力されません。
 @item
-エラーが発生した場合、 入力源はユーザー入力デバイスに戻されます。
+エラーが発生した場合、 入力ソースはユーザー入力デバイスに戻されます。
 @end itemize
 
 これについて詳しくは、 @ref{Input Sources} をご覧ください。
@@ -13313,7 +13313,7 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @cindex text interpreter - input sources
 
 デフォルトでは、 テキスト・インタプリタは、 Forth の起動時にユーザー入力デバイス(キーボード)からの入力を処理します。
-テキスト・インタプリタは、 以下のいずれかの入力源からの入力を処理できます:
+テキスト・インタプリタは、 以下のいずれかの入力ソースからの入力を処理できます:
 
 @itemize @bullet
 @item
@@ -13335,8 +13335,8 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @format
 @code{source-id} ( @i{-- 0 | -1 | fileid  }) core-ext,file ``source-i-d''
 @end format
-戻り値: 0 (入力源はユーザー入力デバイス)または、 -1 (入力源は @code{evaluate} によって処理されている文字列)または、
-@i{fileid} (入力源は @i{fileid} で指定されたファイル)です。
+戻り値: 0 (入力ソースはユーザー入力デバイス)または、 -1 (入力ソースは @code{evaluate} によって処理されている文字列)または、
+@i{fileid} (入力ソースは @i{fileid} で指定されたファイル)です。
 
 
 @findex blk ( @var{ -- addr   } ) block
@@ -13345,7 +13345,7 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @format
 @code{blk} ( @i{-- addr  }) block ``b-l-k''
 @end format
-@code{uvar} 変数 -- このセルには現在のブロック番号(現在の入力源がブロックでない場合は 0)が格納されています。
+@code{uvar} 変数 -- このセルには現在のブロック番号(現在の入力ソースがブロックでない場合は 0)が格納されています。
 
 
 
@@ -13356,7 +13356,7 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @code{save-input} ( @i{-- x1 .. xn n  }) core-ext ``save-input''
 @end format
 @i{n} 個のエントリ @i{xn 〜 x1} は、 @code{restore-input} で使用できるプラットフォーム依存の方法で、
-入力源仕様の現在の状態を記述します。
+入力ソース仕様(input source specification)の現在の状態を記述します。
 
 
 @findex restore-input ( @var{ x1 .. xn n -- flag   } ) core-ext
@@ -13365,10 +13365,10 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @format
 @code{restore-input} ( @i{x1 .. xn n -- flag  }) core-ext ``restore-input''
 @end format
-入力源仕様を @i{n} 個のエントリ @i{xn 〜 x1} で記述された状態に復元しようとします。 復元が失敗した場合は @i{flag} が
-true になります。 新しい入力プログラムを使用した Gforth では、 再度 throw するために使用できるフラグがある場合にのみ失敗します。
-異なるアクティブな入力ストリーム間で保存および復元することも可能です。 注意: 入力ストリームを閉じる場合は、
-開いたときとは逆の順序で行う必要がありますが、 その間はすべて許可されます。
+入力ソース仕様(input source specification)を @i{n} 個のエントリ @i{xn 〜 x1}
+で記述された状態に復元しようとします。 復元が失敗した場合は @i{flag} が true になります。 新しい入力プログラムを使用した Gforth
+では、 再度 throw するために使用できるフラグがある場合にのみ失敗します。 異なるアクティブな入力ストリーム間で保存および復元することも可能です。
+注意: 入力ストリームを閉じる場合は、 開いたときとは逆の順序で行う必要がありますが、 その間はすべて許可されます。
 
 
 
@@ -13378,9 +13378,10 @@ true になります。 新しい入力プログラムを使用した Gforth で
 @format
 @code{evaluate} ( @i{... addr u -- ...  }) core,block ``evaluate''
 @end format
-現在の入力源の仕様を保存します。 そして、 @code{-1} を @code{source-id} に保存し、 かつ、 @code{0} を
-@code{blk} に保存します。 それから、 @code{>IN} を @code{0} に設定し、 文字列 @i{c-addr u}
-を入力源および入力バッファにし、 解釈(interpret)します。 そしてパース領域が空になったら、 入力源の仕様を復元します。
+現在の入力ソース仕様(input source specification)を保存します。 そして、 @code{-1} を
+@code{source-id} に保存し、 かつ、 @code{0} を @code{blk} に保存します。 それから、 @code{>IN} を
+@code{0} に設定し、 文字列 @i{c-addr u} を入力ソースおよび入力バッファにし、 解釈(interpret)します。
+そしてパース領域が空になったら、 入力ソース仕様を復元します。
 
 
 @findex query ( @var{ --   } ) core-ext-obsolescent
@@ -13389,7 +13390,7 @@ true になります。 新しい入力プログラムを使用した Gforth で
 @format
 @code{query} ( @i{--  }) core-ext-obsolescent ``query''
 @end format
-ユーザー入力デバイスを入力源にします。 入力を端末入力バッファ(Terminal Input Buffer)で受け取ります。 @code{>IN}
+ユーザー入力デバイスを入力ソースにします。 入力を端末入力バッファ(Terminal Input Buffer)で受け取ります。 @code{>IN}
 をゼロに設定します。 OBSOLESCENT(時代遅れ): 代わりに @code{accept} を使ってください。
 
 
@@ -13400,17 +13401,14 @@ true になります。 新しい入力プログラムを使用した Gforth で
 @subsection Number Conversion
 @cindex number conversion
 
-You get an overview of how the text interpreter converts its numeric input
-in @ref{Literals in source code}.  This section describes some related
-words.
+テキスト・インタプリタが数値入力をどのように変換するかの概要は @ref{Literals in source code} にあります。
+このセクションでは、 関連するいくつかのワードについて説明します。
 
-By default, the number base used for integer number conversion is given by
-the contents of the variable @code{base}.  Note that a lot of confusion can
-result from unexpected values of @code{base}.  If you change @code{base}
-anywhere, make sure to save the old value and restore it afterwards; better
-yet, use @code{base-execute}, which does this for you.  In general I
-recommend keeping @code{base} decimal, and using the prefixes described in
-@ref{Literals in source code} for the popular non-decimal bases.
+デフォルトでは、 整数変換に使用される基数は変数 @code{base} の内容によって与えられます。 注意: 予期しない @code{base}
+の値によって多くの混乱が生じる可能性があることに注意してください。  @code{base} を変更する場合、 必ず古い値を保存し、
+後で復元してください。 さらに良いのは、これを自動的に実行する @code{base-execute} を使用することです。  一般に、
+@code{base} を 10 進数のままにし、 一般的な 10 進数以外の基数については @ref{Literals in source code}
+で説明されている接頭辞を使用することをお勧めします。
 
 @findex base-execute ( @var{ i*x xt u -- j*x   } ) gforth-0.7
 @cindex @code{base-execute}
@@ -13418,8 +13416,7 @@ recommend keeping @code{base} decimal, and using the prefixes described in
 @format
 @code{base-execute} ( @i{i*x xt u -- j*x  }) gforth-0.7 ``base-execute''
 @end format
-execute @i{xt} with the content of @code{BASE} being @i{u}, and restoring
-the original @code{BASE} afterwards.
+@code{BASE} の内容を @i{u} にして @i{xt} を実行し、 その後元の @code{BASE} を復元します。
 
 
 @findex base ( @var{ -- a-addr   } ) core
@@ -13428,9 +13425,8 @@ the original @code{BASE} afterwards.
 @format
 @code{base} ( @i{-- a-addr  }) core ``base''
 @end format
-@code{User} variable -- @i{a-addr} is the address of a cell that stores the
-number base used by default for number conversion during input and output.
-Don't store to @code{base}, use @code{base-execute} instead.
+@code{User} 変数 -- @i{a-addr} は、 入出力時の数値変換にデフォルトで使用される基数を格納するセルへのアドレスです。
+@code{base} に保存せず、 代わりに @code{base-execute} を使用してください。
 
 
 @findex hex ( @var{ --   } ) core-ext
@@ -13439,8 +13435,8 @@ Don't store to @code{base}, use @code{base-execute} instead.
 @format
 @code{hex} ( @i{--  }) core-ext ``hex''
 @end format
-Set @code{base} to &16 (hexadecimal).  Don't use @code{hex}, use
-@code{base-execute} instead.
+@code{base} を &16 (16 進数) に設定します。  @code{hex} を使用せず、 代わりに
+@code{base-execute} を使用してください。
 
 
 @findex decimal ( @var{ --   } ) core
@@ -13449,8 +13445,8 @@ Set @code{base} to &16 (hexadecimal).  Don't use @code{hex}, use
 @format
 @code{decimal} ( @i{--  }) core ``decimal''
 @end format
-Set @code{base} to &10 (decimal).  Don't use @code{decimal}, use
-@code{base-execute} instead.
+@code{base} を &10 (10 進数) に設定します。  @code{10 進数} を使用せず、 代わりに
+@code{base-execute} を使用してください。
 
 
 @findex dpl ( @var{ -- a-addr   } ) gforth-0.2
@@ -13459,50 +13455,43 @@ Set @code{base} to &10 (decimal).  Don't use @code{decimal}, use
 @format
 @code{dpl} ( @i{-- a-addr  }) gforth-0.2 ``Decimal-PLace''
 @end format
-@code{User} variable -- @i{a-addr} is the address of a cell that stores the
-		 position of the decimal point in the most recent numeric conversion.
-Initialised to -1. After the conversion of a number containing no decimal
-point, @code{dpl} is -1. After the conversion of @code{2.} it holds 0. After
-the conversion of 234123.9 it contains 1, and so forth.
+@code{User} 変数 -- @i{a-addr} は、 最新の数値変換における小数点の位置を格納するセルのアドレスです。  -1
+に初期化されます。 小数点を含まない数値を変換すると、 @code{dpl} は -1 になります。 @code{2.} の変換後は 0
+が保持されます。 234123.9 の変換後は 1 が保持されます。
 
 
 
 @cindex number conversion - traps for the unwary
 @noindent
-Number conversion has a number of traps for the unwary:
+数値変換は、 不注意な人にとっては多くの罠があります:
 
 @itemize @bullet
 @item
-You cannot determine the current number base using the code sequence
-@code{base @@ .} -- the number base is always 10 in the current number
-base. Instead, use something like @code{base @@ dec.}
+コード・シーケンス @code{base @@ .} を使用して現在の基数を測定することはできません。 これは現在の基数では常に 10 と表示されます。
+代わりに、 @code{base @@ dec.} なととしてください。
 @item
 There is a word @code{bin} but it does @i{not} set the number base!
 (@pxref{General files}).
 @item
-Standard Forth requires the @code{.} of a double-precision number to be the
-final character in the string.  Gforth allows the @code{.} to be anywhere.
+標準 Forth では、 2倍長数値の @code{.} が文字列の最後の文字である必要があります。  Gforth では @code{.}
+をどこにでも置くことができます。
 @item
-The number conversion process does not check for overflow.
+数値変換プロセスではオーバーフローはチェックされません。
 @end itemize
 
-You can read numbers into your programs with the words described in
-@ref{Line input and conversion}.
+@ref{Line input and conversion} で説明されているワードを使用して、 プログラムに数値を読み込むことができます。
 
 @node Interpret/Compile states, Interpreter Directives, Number Conversion, The Text Interpreter
 @subsection Interpret/Compile states
 @cindex Interpret/Compile states
 
-A standard program is not permitted to change @code{state}
-explicitly. However, it can change @code{state} implicitly, using the words
-@code{[} and @code{]}. When @code{[} is executed it switches @code{state} to
-interpret state, and therefore the text interpreter starts
-interpreting. When @code{]} is executed it switches @code{state} to compile
-state and therefore the text interpreter starts compiling. The most common
-usage for these words is for switching into interpret state and back from
-within a colon definition; this technique can be used to compile a literal
-(for an example, @pxref{Literals}) or for conditional compilation (for an
-example, @pxref{Interpreter Directives}).
+標準のプログラムでは @code{state} を明示的に変更することは許可されていません。 ただし、@code{[} と @code{]}
+というワードを使用して、 @code{state} を暗黙的に変更できます。 @code{[} が実行されると、 @code{state}
+がインタプリタ状態に切り替わり、 テキスト・インタプリタが解釈(interpret)を開始します。  @code{]} が実行されると、
+@code{state} がコンパイル状態に切り替わり、 テキスト・インタプリタはコンパイルを開始します。
+これらのワードの最も一般的な使用法は、コロン定義内でインタプリタ状態に切り替えたり、 元の状態に戻したりすることです。 この手法は、
+リテラルのコンパイル(@pxref{Literals} の例参照)または条件付きコンパイル(例: @pxref{Interpreter
+Directives} の例を参照)に使用できます。
 
 
 @c This is a bad example: It's non-standard, and it's not necessary.
@@ -13566,12 +13555,10 @@ example, @pxref{Interpreter Directives}).
 @cindex interpreter directives
 @cindex conditional compilation
 
-These words are usually used in interpret state; typically to control which
-parts of a source file are processed by the text interpreter. There are only
-a few Standard Forth Standard words, but Gforth supplements these with a
-rich set of immediate control structure words to compensate for the fact
-that the non-immediate versions can only be used in compile state
-(@pxref{Control Structures}). Typical usage:
+以下のワード群は通常、 インタプリタ状態で使用されます。 通常は、 ソース・ファイルのどの部分がテキスト・インタプリタによって処理されるかを制御します。
+これらは、 標準 Forth のワードには少数しかありませんが、 Gforth では、
+非即実行バージョンがコンパイル状態でのみ使用できるという事実を補うために、
+豊富な即実行制御構造ワードのセットでこれらを補っています(@pxref{Control Structures})。 一般的な使用法は以下のとおりです:
 
 @example
 [undefined] \G [if]
@@ -13579,8 +13566,7 @@ that the non-immediate versions can only be used in compile state
 [endif]
 @end example
 
-So if the system does not define @code{\G}, compile some replacement code
-(with possibly reduced functionality).
+これは、 システムが @code{\G} を定義していない場合は、 幾つかの置き換えプログラムをコンパイルします(機能が制限される可能性があります)。
 
 
 @findex [IF] ( @var{ flag --   } ) tools-ext
@@ -13589,12 +13575,11 @@ So if the system does not define @code{\G}, compile some replacement code
 @format
 @code{[IF]} ( @i{flag --  }) tools-ext ``bracket-if''
 @end format
-If flag is @code{TRUE} do nothing (and therefore execute subsequent words as
-normal). If flag is @code{FALSE}, parse and discard words from the parse
-area (refilling it if necessary using @code{REFILL}) including nested
-instances of @code{[IF]}..  @code{[ELSE]}.. @code{[THEN]} and
-@code{[IF]}.. @code{[THEN]} until the balancing @code{[ELSE]} or
-@code{[THEN]} has been parsed and discarded. Immediate word.
+flag が @code{TRUE} の場合は何もしません(したがって、 後続のワードは通常どおり実行されます)。 flag が
+@code{FALSE} の場合、 対になる @code{[ELSE]} または @code{[THEN]} がパースされて破棄されるまで、
+@code{[IF]}..  @code{[ELSE]}.. @code{[THEN]} や @code{[IF]}.. @code{[THEN]}
+の入れ子になったモノを含むパース領域(入力バッファ/パース領域 は、 必要に応じて @code{REFILL}
+を使用して再充填します)からワードをパースして破棄します。 即実行ワードです。
 
 
 @findex [ELSE] ( @var{ --   } ) tools-ext
@@ -13603,13 +13588,11 @@ instances of @code{[IF]}..  @code{[ELSE]}.. @code{[THEN]} and
 @format
 @code{[ELSE]} ( @i{--  }) tools-ext ``bracket-else''
 @end format
-Parse and discard words from the parse area (refilling it if necessary using
-@code{REFILL}) including nested instances of @code{[IF]}..
-@code{[ELSE]}.. @code{[THEN]} and @code{[IF]}.. @code{[THEN]} until the
-balancing @code{[THEN]} has been parsed and discarded.  @code{[ELSE]} only
-gets executed if the balancing @code{[IF]} was @code{TRUE}; if it was
-@code{FALSE}, @code{[IF]} would have parsed and discarded the @code{[ELSE]},
-leaving the subsequent words to be executed as normal.  Immediate word.
+対になる @code{[THEN]} がパースされて破棄されるまで、 @code{[IF]}..
+@code{[ELSE]}.. @code{[THEN]} や @code{[IF]}.. @code{[THEN]}
+の入れ子になったモノを含むパース領域(入力バッファ/パース領域 は、 必要に応じて @code{REFILL}
+を使用して再充填します)からワードをパースして破棄します。 @code{FALSE} の場合、@code{[IF]} は @code{[ELSE]}
+を解析して破棄し、後続のワードは通常どおり実行されたままになります。 即実行ワードです。
 
 
 @findex [THEN] ( @var{ --   } ) tools-ext
@@ -13618,8 +13601,7 @@ leaving the subsequent words to be executed as normal.  Immediate word.
 @format
 @code{[THEN]} ( @i{--  }) tools-ext ``bracket-then''
 @end format
-Do nothing; used as a marker for other words to parse and discard up
-to. Immediate word.
+何もしない。 パースして破棄する他のワードのマーカーとして使用されます。 即実行ワードです。
 
 
 @findex [ENDIF] ( @var{ --   } ) gforth-0.2
@@ -13628,7 +13610,7 @@ to. Immediate word.
 @format
 @code{[ENDIF]} ( @i{--  }) gforth-0.2 ``bracket-end-if''
 @end format
-Do nothing; synonym for @code{[THEN]}
+何もしません。 @code{[THEN]} の同義語(synonym)です。
 
 
 
@@ -13638,7 +13620,7 @@ Do nothing; synonym for @code{[THEN]}
 @format
 @code{[defined]} ( @i{"<spaces>name" -- flag  }) tools-ext ``bracket-defined''
 @end format
-returns true if name is found in current search order
+現在の検索順序(search order)で名前が見つかった場合は true を返します
 
 
 @findex [undefined] ( @var{ "<spaces>name" -- flag   } ) tools-ext
@@ -13647,7 +13629,7 @@ returns true if name is found in current search order
 @format
 @code{[undefined]} ( @i{"<spaces>name" -- flag  }) tools-ext ``bracket-undefined''
 @end format
-returns false if name is found in current search order
+現在の検索順序(search order)で名前が見つかった場合は false を返します
 
 
 
@@ -13657,9 +13639,8 @@ returns false if name is found in current search order
 @format
 @code{[IFDEF]} ( @i{"<spaces>name" --  }) gforth-0.2 ``bracket-if-def''
 @end format
-If name is found in the current search-order, behave like @code{[IF]} with a
-@code{TRUE} flag, otherwise behave like @code{[IF]} with a @code{FALSE}
-flag. Immediate word.
+現在の検索順序(search-order)で name が見つかった場合は、 @code{TRUE} フラグを伴った @code{[IF]}
+のように振る舞いし、 そうでない場合は、 @code{FALSE} フラグを伴った @code{[IF]} のように動作します。 即実行ワードです。
 
 
 @findex [IFUNDEF] ( @var{ "<spaces>name" --   } ) gforth-0.2
@@ -13668,9 +13649,8 @@ flag. Immediate word.
 @format
 @code{[IFUNDEF]} ( @i{"<spaces>name" --  }) gforth-0.2 ``bracket-if-un-def''
 @end format
-If name is not found in the current search-order, behave like @code{[IF]}
-with a @code{TRUE} flag, otherwise behave like @code{[IF]} with a
-@code{FALSE} flag. Immediate word.
+現在の検索順序(search-order)で name が見つからない場合は、 @code{TRUE} フラグを伴った @code{[IF]}
+のように動作し、 それ以外の場合は、@code{FALSE} フラグを伴った @code{[IF]} のように動作します。 即実行ワード。
 
 
 
@@ -13722,10 +13702,9 @@ with a @code{TRUE} flag, otherwise behave like @code{[IF]} with a
 @format
 @code{[I]} ( @i{run-time -- n  }) gforth-0.2 ``bracket-i''
 @end format
-At run-time, @code{[I]} pushes the loop index of the
-text-interpretation-time @code{[do]} iteration.  If you want to process the
-index at interpretation time, interpret @code{[I]} interpretevely, or use
-@code{INT-[I]}.
+実行時、 @code{[I]} はテキスト・インタプリタ時の @code{[do]}
+の反復(iteration)のループ・インデックスをプッシュします。  インタプリタ時にインデックスを処理したい場合は、 @code{[I]}
+を対話的に解釈(interpret)するか、 または @code{INT-[I]} を使用します。
 
 
 @findex INT-[I] ( @var{ -- n   } ) gforth-1.0
@@ -13734,8 +13713,7 @@ index at interpretation time, interpret @code{[I]} interpretevely, or use
 @format
 @code{INT-[I]} ( @i{-- n  }) gforth-1.0 ``int-bracket-i''
 @end format
-Push the loop index of the @code{[do]} iteration at text interpretation
-time.
+テキスト・インタプリタ時に @code{[do]} 反復のループ・インデックスをプッシュします。
 
 
 
@@ -13775,12 +13753,10 @@ time.
 @end format
 
 
-You can use @code{#line} to change Gforth's idea about the current source
-line number and source file.  This is useful in cases where the Forth file
-is generated from some other source code file, and you want to get,
-e.g. error messages etc. that refer to the original source code; then the
-Forth-code generator needs to insert @code{#line} lines in the Forth code
-wherever appropriate.
+@code{#line} を使用すると、 現在のソース行番号とソース・ファイルに関する Gforth の認識を変更できます。  これは、 Forth
+ファイルが他のソース・コード・ファイルから生成されており、 たとえば、
+オリジナルのソース・コードを参照するエラー・メッセージなどを取得したい場合に便利です。 その場合、 Forth コード・ジェネレーターは、 必要に応じて
+Forth コードに @code{#line} 行を挿入する必要があります。
 
 @findex #line ( @var{ "u" "["file"]" --   } ) gforth-1.0
 @cindex @code{#line}
@@ -13788,8 +13764,7 @@ wherever appropriate.
 @format
 @code{#line} ( @i{"u" "["file"]" --  }) gforth-1.0 ``#line''
 @end format
-Set the line number to @i{u} and (if present) the file name to @i{file}.
-Consumes the rest of the line.
+行番号を @i{u} に設定し、 (存在する場合)ファイル名を @i{file} に設定します。 行の残りの部分を消費します。
 
 
 
@@ -13914,31 +13889,24 @@ Forth で書かれたコードを読み込むと、 非標準的な振る舞い�
 @subsubsection Dealing with existing Recognizers
 @cindex Recognizers, dealing with
 
-A recognizer is a word to which you pass a string.  If the recognizer
-recognizes the string, it typically returns some data and the xt of a word
-for processing the data; this word is called the translator.  If the
-recognizer does not recognize the string, it returns the xt of
-@code{notfound}.
+認識器(recognizer)は、 あなたが文字列を渡すワードです。 認識器が文字列を認識すると、 通常はデータとそのデータを処理するためのワードの
+xt を返します。 このワードはトランスレーター(translator)と呼ばれます。 認識器が文字列を認識しない場合は、
+@code{notfound} の xt を返します。
 
-All recognizers have the stack effect ( c-addr u -- ... xt ).
+すべての認識器(recognizers)のスタック効果は ( c-addr u -- ... xt ) です。
 
 
 
-Recognizers take a string and return some data and a translator for
-interpreting that data.  Gforth implements that translator as xt (executing
-it will perform the appropriate action to handle the token in the current
-state), but other Forth systems may implement it as actual table, with three
-xts inside.  The first xt is the interpretation/run-time xt, it performs the
-interpretation semantics on the data (usually, this means it just leaves the
-data on the stack).  The second xt performs the compilation semantics, it
-gets the data and the run-time semantics xt.  The third xt perfoms the
-postpone semantics, it also gets the data and the run-time semantics xt.
-You can use @code{>postpone} to postpone the run-time xt.
+認識器は文字列を受け取り、 いくつかのデータと、 そのデータを解釈(interpret)するためのトランスレーターを返します。  Gforth
+はそのトランスレーターを xt として実装します(これを実行すると、 現在の状態でトークンを処理するための適切なアクションが実行されます)。 ただし、
+他の Forth システムでは、 内部に 3 つの xt を含むテーブルとして実装する場合があります。  最初の xt は インタプリタ時/実行時 xt
+で、 データのインタプリタ機能(interpretation semantics)を実行します(通常はデータをスタックに置くだけです)。  2 番目の
+xt はコンパイル機能(compilation semantics)を実行し、 データと実行時機能(run-time semantics)の xt
+を取得します。  3 番目の xt は postpone 機能(postpone semantics)を実行し、 データと実行時機能の xt
+も取得します。  @code{>postpone} を使用すると、 実行時機能の xt を postpone できます。
 
-Recognizers are organized as stack, so you can arrange the sequence of
-recognizers in the same way as the vocabulary stack.  Recognizer stacks are
-themselves recognizers, i.e. they are executable, take a string and return a
-translator.
+認識器群はスタックとして編成されるため、 ボキャブラリ・スタックと同じ方法で認識器群のシーケンスを配置できます。
+認識器スタックはそれ自体が認識器群です。 つまり、 認識器スタックは実行可能であり、 文字列を受け取り、 トランスレーターを返します。
 
 @findex notfound ( @var{ state --   } ) gforth-experimental
 @cindex @code{notfound}
@@ -13946,7 +13914,7 @@ translator.
 @format
 @code{notfound} ( @i{state --  }) gforth-experimental ``notfound''
 @end format
-If a recognizer fails, it returns @code{notfound}
+認識器の認識が失敗すると、 @code{notfound} の認識器トークン(訳注: 現状では @code{notfound} の xt )を返します
 
 
 @findex rec-nt ( @var{ addr u -- nt translate-nt | notfound   } ) gforth-experimental
@@ -13955,7 +13923,7 @@ If a recognizer fails, it returns @code{notfound}
 @format
 @code{rec-nt} ( @i{addr u -- nt translate-nt | notfound  }) gforth-experimental ``rec-nt''
 @end format
-recognize a name token
+名前トークンを認識します
 
 
 @findex rec-num ( @var{ addr u -- n/d table | notfound   } ) gforth-experimental
@@ -13964,7 +13932,7 @@ recognize a name token
 @format
 @code{rec-num} ( @i{addr u -- n/d table | notfound  }) gforth-experimental ``rec-num''
 @end format
-converts a number to a single/double integer
+数値を 1倍長/2倍長 整数に変換します
 
 
 @findex rec-float ( @var{ addr u -- r translate-float | notfound   } ) gforth-experimental
@@ -13973,7 +13941,7 @@ converts a number to a single/double integer
 @format
 @code{rec-float} ( @i{addr u -- r translate-float | notfound  }) gforth-experimental ``rec-float''
 @end format
-recognize floating point numbers
+浮動小数点数を認識します
 
 
 @findex rec-string ( @var{ addr u -- addr u' r:string | rectype-null   } ) gforth-experimental
@@ -13982,8 +13950,8 @@ recognize floating point numbers
 @format
 @code{rec-string} ( @i{addr u -- addr u' r:string | rectype-null  }) gforth-experimental ``rec-string''
 @end format
-Convert strings enclosed in double quotes into string literals, escapes are
-treated as in @code{S\"}.
+二重引用符(double quotes)で囲まれた文字列(strings)を文字列リテラルに変換します。 エスケープは @code{S\"}
+と同様に扱われます。
 
 
 @findex rec-to ( @var{ addr u -- xt n r:to | rectype-null   } ) gforth-experimental
@@ -13992,9 +13960,10 @@ treated as in @code{S\"}.
 @format
 @code{rec-to} ( @i{addr u -- xt n r:to | rectype-null  }) gforth-experimental ``rec-to''
 @end format
-words prefixed with @code{->} are treated as if preceeded by @code{TO}, with
-@code{+>} as @code{+TO}, with @code{'>} as @code{ADDR}, with @code{@@>} as
-@code{ACTION-OF}, and with @code{=>} as @code{IS}.
+@code{->} で始まるワードは、 @code{TO} が前にあるものとして扱い、 @code{+>} で始まるワードは @code{+TO}
+が前にあるものとして扱い、 @code{'>} で始まるワードは @code{ADDR} が前にあるものとして扱い、 @code{@@>}
+で始まるワードは @code{ACTION-OF} が前にあるものとして扱い、 @code{=>} で始まるワードは @code{IS}
+が前にあるものとして扱います。
 
 
 @findex rec-tick ( @var{ addr u -- xt rectype-num | rectype-null   } ) gforth-experimental
@@ -14003,8 +13972,7 @@ words prefixed with @code{->} are treated as if preceeded by @code{TO}, with
 @format
 @code{rec-tick} ( @i{addr u -- xt rectype-num | rectype-null  }) gforth-experimental ``rec-tick''
 @end format
-words prefixed with @code{`} return their xt.  Example: @code{`dup} gives
-the xt of dup
+@code{`} (バッククォート)の接頭辞が付いたワードはその xt を返します。  例: @code{`dup} は dup の xt を返します
 
 
 @findex rec-dtick ( @var{ addr u -- nt rectype-num | rectype-null   } ) gforth-experimental
@@ -14013,8 +13981,8 @@ the xt of dup
 @format
 @code{rec-dtick} ( @i{addr u -- nt rectype-num | rectype-null  }) gforth-experimental ``rec-dtick''
 @end format
-words prefixed with @code{``} return their nt.  Example: @code{``S"} gives
-the nt of @code{S"}
+@code{``} (バッククォート2つ)で始まるワードは、 その nt を返します。  例: @code{``S"} は @code{S"} の nt
+を返します。
 
 
 @findex rec-body ( @var{ addr u -- xt translate-tick | translate-null   } ) gforth-experimental
@@ -14023,8 +13991,8 @@ the nt of @code{S"}
 @format
 @code{rec-body} ( @i{addr u -- xt translate-tick | translate-null  }) gforth-experimental ``rec-body''
 @end format
-words bracketed with @code{'<'} @code{'>'} return their body.  Example:
-@code{<dup>} gives the body of dup
+@code{'<'} @code{'>'} で囲まれたワードはその本体(body)を返します。  例: @code{<dup>} は dup
+の本体(body)を返します
 
 
 @findex get-recognizers ( @var{ -- xt1 .. xtn n   } ) gforth-experimental
@@ -14033,7 +14001,7 @@ words bracketed with @code{'<'} @code{'>'} return their body.  Example:
 @format
 @code{get-recognizers} ( @i{-- xt1 .. xtn n  }) gforth-experimental ``get-recognizers''
 @end format
-push the content on the recognizer stack
+認識器スタックの内容(content)をスタックにプッシュします。 @i{n} は xt の個数です。
 
 
 @findex set-recognizers ( @var{ xt1 .. xtn n --   } ) gforth-experimental
@@ -14042,7 +14010,7 @@ push the content on the recognizer stack
 @format
 @code{set-recognizers} ( @i{xt1 .. xtn n --  }) gforth-experimental ``set-recognizers''
 @end format
-set the recognizer stack from content on the stack
+スタック上の内容(content)を認識器スタックに設定します。 @i{n} は xt の個数です。
 
 
 @findex recognize ( @var{ addr u rec-addr -- ... rectype   } ) gforth-experimental
@@ -14051,7 +14019,8 @@ set the recognizer stack from content on the stack
 @format
 @code{recognize} ( @i{addr u rec-addr -- ... rectype  }) gforth-experimental ``recognize''
 @end format
-apply a recognizer stack to a string, delivering a token
+訳注: 認識器スタック @i{rec-addr} の認識器を順に文字列 @i{addr u} に適用し、 認識したら、 そのトランスレーター
+@i{rectype} (の xt ) を得ます。 何も適用できなかった場合はトランスレーター @code{notfound} (の xt )を返します
 
 
 @findex recognizer-sequence: ( @var{ xt1 .. xtn n "name" --   } ) gforth-experimental
@@ -14060,9 +14029,7 @@ apply a recognizer stack to a string, delivering a token
 @format
 @code{recognizer-sequence:} ( @i{xt1 .. xtn n "name" --  }) gforth-experimental ``recognizer-sequence:''
 @end format
-concatenate a stack of recognizers to one recognizer with the name
-@i{"name"}.  @i{xtn} is tried first, @i{xt1} last, just like on the
-recognizer stack
+訳注: @i{xt1 .. xtn n } という内容で @i{"name"} という名前の認識器スタックを作成します。 
 
 
 @findex forth-recognize ( @var{ c-addr u -- ... translate-xt   } ) recognizer
@@ -14071,7 +14038,7 @@ recognizer stack
 @format
 @code{forth-recognize} ( @i{c-addr u -- ... translate-xt  }) recognizer ``forth-recognize''
 @end format
-The system recognizer
+システム認識器スタックです。
 
 
 @findex forth-recognizer ( @var{ -- xt   } ) gforth-experimental
@@ -14080,8 +14047,8 @@ The system recognizer
 @format
 @code{forth-recognizer} ( @i{-- xt  }) gforth-experimental ``forth-recognizer''
 @end format
-backward compatible to Matthias Trute recognizer API.  This construct turns
-a deferred word into a value-like word.
+backward compatible to Matthias Trute recognizer API との下位互換性があります。  この構造は、
+defer されたワードを value のようなワードに変換します。
 
 
 @findex set-forth-recognize ( @var{ xt --   } ) recognizer
@@ -14090,7 +14057,7 @@ a deferred word into a value-like word.
 @format
 @code{set-forth-recognize} ( @i{xt --  }) recognizer ``set-forth-recognize''
 @end format
-Change the system recognizer
+システム認識器を変更する
 
 
 @findex translate: ( @var{ int-xt comp-xt post-xt "name" --   } ) gforth-experimental
@@ -14130,7 +14097,7 @@ translate a number
 translate a double number
 
 
-doc-translate-float
+doc-translate-float(訳注: まだ説明書いて無いっぽい)
 @findex try-recognize ( @var{ addr u xt -- results | false   } ) gforth-experimental
 @cindex @code{try-recognize}
 @kindex try-recognize
@@ -14195,7 +14162,7 @@ matches the translate-method passsed as @var{xt}
 @node Defining Recognizers, , Dealing with existing Recognizers, Recognizers
 @subsubsection Defining Recognizers
 
-
+doc-defining-recognizers(訳注: まだ説明書けて無いっぽい)
 
 @node Text Interpreter Hooks, , Recognizers, The Text Interpreter
 @subsection Text Interpreter Hooks
@@ -14322,17 +14289,13 @@ counted string has a trailing space that is not included in its length.
 @format
 @code{refill} ( @i{-- flag  }) core-ext,block-ext,file-ext ``refill''
 @end format
-Attempt to fill the input buffer from the input source.  When the input
-source is the user input device, attempt to receive input into the terminal
-input device. If successful, make the result the input buffer, set
-@code{>IN} to 0 and return true; otherwise return false. When the input
-source is a block, add 1 to the value of @code{BLK} to make the next block
-the input source and current input buffer, and set @code{>IN} to 0; return
-true if the new value of @code{BLK} is a valid block number, false
-otherwise. When the input source is a text file, attempt to read the next
-line from the file. If successful, make the result the current input buffer,
-set @code{>IN} to 0 and return true; otherwise, return false.  A successful
-result includes receipt of a line containing 0 characters.
+入力ソースにより入力バッファを満たすことを試みます。 入力ソースがユーザー入力デバイスの場合、 端末入力デバイスからの入力の受け取りを試みます。
+成功した場合は、 結果を入力バッファにし、 @code{>IN} を 0 に設定して true を返します。 それ以外の場合は false を返します。
+入力ソースがブロックの場合、 @code{BLK} の値に 1 を加算して、 次のブロックを入力ソースかつ現在の入力バッファにし、 @code{>IN}
+を 0 に設定します。 @code{BLK} の新しい値が有効なブロック番号の場合は true を返し、 それ以外の場合は false を返します。
+入力ソースがテキスト・ファイルの場合、 ファイルから次の行を読み取ろうと試みます。 成功した場合は、 結果を現在の入力バッファにし、
+@code{>IN} を 0 に設定して true を返します。 それ以外の場合は false を返します。 いずれの場合も、 成功した結果には、0
+文字を含む行の受け取りが含まれます。
 
 
 
@@ -18589,15 +18552,14 @@ C-style zero-terminated string.  Changed by @code{next-arg} and
 @section Locals
 @cindex locals
 
-Local variables can make Forth programming more enjoyable and Forth programs
-easier to read. Unfortunately, the locals of Standard Forth are laden with
-restrictions. Therefore, we provide not only the Standard Forth locals
-wordset, but also our own, more powerful locals wordset (we implemented the
-Standard Forth locals wordset through our locals wordset).
+ローカル変数を使用すると、 Forth プログラミングがより楽しくなり、 Forth プログラムが読みやすくなります。 残念ながら、 標準 Forth
+の ローカル変数には制限がたくさんあります。 したがって、 標準 Forth のローカル変数ワードセットだけでなく、 Gforth
+独自のより強力なローカル変数ワードセットも提供します(標準Forthのローカル変数ワードセットは、 Gforth
+のローカル変数ワードセットで実装しました)。
 
-The ideas in this section have also been published in M. Anton Ertl,
+このセクションのアイデアは、 M. Anton Ertl,
 @cite{@uref{https://www.complang.tuwien.ac.at/papers/ertl94l.ps.gz,
-Automatic Scoping of Local Variables}}, EuroForth '94.
+Automatic Scoping of Local Variables}}, EuroForth '94 でも公開されています。
 
 @menu
 * Gforth locals::
@@ -18609,7 +18571,7 @@ Automatic Scoping of Local Variables}}, EuroForth '94.
 @cindex Gforth locals
 @cindex locals, Gforth style
 
-Locals can be defined with
+ローカル変数は以下のように定義できます
 
 @example
 @{: local1 local2 ... -- comment :@}
@@ -18623,7 +18585,7 @@ or
 @{: local1 local2 ... | ulocal0 ulocal1 -- comment :@}
 @end example
 
-E.g.,
+例えば、 以下のように使います
 @example
 : max @{: n1 n2 -- n3 :@}
  n1 n2 > if
@@ -19154,7 +19116,7 @@ control-flow stack item was created.
 
 
 @noindent
-E.g.,
+例えば、 以下のように使います
 @example
 IF
   @{: x :@}
@@ -19281,13 +19243,10 @@ every loop iteration.
 @cindex implementation of locals
 
 @cindex locals stack
-Gforth uses an extra locals stack. The most compelling reason for this is
-that the return stack is not float-aligned; using an extra stack also
-eliminates the problems and restrictions of using the return stack as locals
-stack. Like the other stacks, the locals stack grows toward lower
-addresses. A few primitives allow an efficient implementation; you should
-not use them directly, but they appear in the output of @code{see}, so they
-are documented here:
+Gforth は追加のローカル変数・スタックを使用します。 この最も説得力のある理由は、 リターン・スタックが浮動小数点数に整列されていないことです。
+この追加のスタックを使用すると、 リターン・スタックをローカル変数・スタックとして使用する場合の問題や制限も解消されます。 他のスタックと同様に、
+ローカル変数スタックは下位アドレスに向かって成長します。 いくつかのプリミティブにより効率的な実装になっています。 あなたは、
+これらを直接使用するべきではありませんが、 @code{see} の出力には表示されるため、 以下に文書化しておきます:
 
 @findex @@localn ( @var{ noffset -- w  } ) gforth-internal
 @cindex @code{@@localn}
@@ -19311,7 +19270,7 @@ are documented here:
 @end format
 @i{C_addr} は、 ローカル・スタック・ポインタの現在の値です。
 
-doc-lp+!#
+doc-lp+!#(訳注: まだ説明書いて無いっぽい)
 @findex lp! ( @var{ c-addr --  } ) gforth-internal
 @cindex @code{lp!}
 @kindex lp!
@@ -19323,7 +19282,7 @@ doc-lp+!#
 @cindex @code{>l}
 @kindex >l
 @format
-@code{>l} ( @i{w -- }) gforth-0.2 ``to-l''
+@code{>l} ( @i{w -- }) gforth-0.2 ``to-l'' \ 訳注: w をローカル変数スタックにプッシュ
 @end format
 
 @findex f>l ( @var{ r --  } ) gforth-0.2
@@ -19335,11 +19294,11 @@ doc-lp+!#
 
 
 
-In addition to these primitives, some specializations of these primitives
-for commonly occurring inline arguments are provided for efficiency reasons,
-e.g., @code{@@local0} as specialization of @code{0 @@localn}. The following
-compiling words compile the right specialized version, or the general
-version, as appropriate:
+これらのプリミティブに加えて、 一般的に発生するインライン引数に対するこれらのプリミティブのいくつかの特殊化が、 効率上の理由から提供されています(例:
+@code{0 @@localn} の特殊化として @code{@@local0} )。 以下のコンパイル・ワード(compiling words)は、
+適切な特殊バージョン、 または一般バージョンを適切にコンパイルします(訳注: @code{@@local0} シリーズは、
+@code{@@local0} ローカル変数スタックのTOS(のコピー)をスタックに積む、 @code{@@local1}
+ローカル変数スタックの2nd(のコピー)をスタックに積む、 〜 @code{@@local4} まである):
 
 
 @c doc-compile-@local

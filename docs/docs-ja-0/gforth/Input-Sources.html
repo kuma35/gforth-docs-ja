@@ -73,7 +73,7 @@ Next: <a href="Number-Conversion.html" accesskey="n" rel="next">Number Conversio
 <span id="index-text-interpreter-_002d-input-sources-1"></span>
 
 <p>デフォルトでは、 テキスト・インタプリタは、 Forth の起動時にユーザー入力デバイス(キーボード)からの入力を処理します。
-テキスト・インタプリタは、 以下のいずれかの入力源からの入力を処理できます:
+テキスト・インタプリタは、 以下のいずれかの入力ソースからの入力を処理できます:
 </p>
 <ul>
 <li> ユーザー入力デバイス &ndash; つまり、キーボード。
@@ -91,8 +91,8 @@ Next: <a href="Number-Conversion.html" accesskey="n" rel="next">Number Conversio
 <div class="format">
 <pre class="format"><code>source-id</code> ( <i>&ndash; 0 | -1 | fileid  </i>) core-ext,file &ldquo;source-i-d&rdquo;
 </pre></div>
-<p>戻り値: 0 (入力源はユーザー入力デバイス)または、 -1 (入力源は <code>evaluate</code> によって処理されている文字列)または、
-<i>fileid</i> (入力源は <i>fileid</i> で指定されたファイル)です。
+<p>戻り値: 0 (入力ソースはユーザー入力デバイス)または、 -1 (入力ソースは <code>evaluate</code> によって処理されている文字列)または、
+<i>fileid</i> (入力ソースは <i>fileid</i> で指定されたファイル)です。
 </p>
 
 <span id="index-blk-_0028--_002d_002d-addr--_0029-block"></span>
@@ -101,7 +101,7 @@ Next: <a href="Number-Conversion.html" accesskey="n" rel="next">Number Conversio
 <div class="format">
 <pre class="format"><code>blk</code> ( <i>&ndash; addr  </i>) block &ldquo;b-l-k&rdquo;
 </pre></div>
-<p><code>uvar</code> 変数 &ndash; このセルには現在のブロック番号(現在の入力源がブロックでない場合は 0)が格納されています。
+<p><code>uvar</code> 変数 &ndash; このセルには現在のブロック番号(現在の入力ソースがブロックでない場合は 0)が格納されています。
 </p>
 
 
@@ -112,7 +112,7 @@ Next: <a href="Number-Conversion.html" accesskey="n" rel="next">Number Conversio
 <pre class="format"><code>save-input</code> ( <i>&ndash; x1 .. xn n  </i>) core-ext &ldquo;save-input&rdquo;
 </pre></div>
 <p><i>n</i> 個のエントリ <i>xn 〜 x1</i> は、 <code>restore-input</code> で使用できるプラットフォーム依存の方法で、
-入力源仕様の現在の状態を記述します。
+入力ソース仕様(input source specification)の現在の状態を記述します。
 </p>
 
 <span id="index-restore_002dinput-_0028--x1-_002e_002e-xn-n-_002d_002d-flag--_0029-core_002dext"></span>
@@ -121,10 +121,10 @@ Next: <a href="Number-Conversion.html" accesskey="n" rel="next">Number Conversio
 <div class="format">
 <pre class="format"><code>restore-input</code> ( <i>x1 .. xn n &ndash; flag  </i>) core-ext &ldquo;restore-input&rdquo;
 </pre></div>
-<p>入力源仕様を <i>n</i> 個のエントリ <i>xn 〜 x1</i> で記述された状態に復元しようとします。 復元が失敗した場合は <i>flag</i> が
-true になります。 新しい入力プログラムを使用した Gforth では、 再度 throw するために使用できるフラグがある場合にのみ失敗します。
-異なるアクティブな入力ストリーム間で保存および復元することも可能です。 注意: 入力ストリームを閉じる場合は、
-開いたときとは逆の順序で行う必要がありますが、 その間はすべて許可されます。
+<p>入力ソース仕様(input source specification)を <i>n</i> 個のエントリ <i>xn 〜 x1</i>
+で記述された状態に復元しようとします。 復元が失敗した場合は <i>flag</i> が true になります。 新しい入力プログラムを使用した Gforth
+では、 再度 throw するために使用できるフラグがある場合にのみ失敗します。 異なるアクティブな入力ストリーム間で保存および復元することも可能です。
+注意: 入力ストリームを閉じる場合は、 開いたときとは逆の順序で行う必要がありますが、 その間はすべて許可されます。
 </p>
 
 
@@ -134,9 +134,10 @@ true になります。 新しい入力プログラムを使用した Gforth で
 <div class="format">
 <pre class="format"><code>evaluate</code> ( <i>... addr u &ndash; ...  </i>) core,block &ldquo;evaluate&rdquo;
 </pre></div>
-<p>現在の入力源の仕様を保存します。 そして、 <code>-1</code> を <code>source-id</code> に保存し、 かつ、 <code>0</code> を
-<code>blk</code> に保存します。 それから、 <code>&gt;IN</code> を <code>0</code> に設定し、 文字列 <i>c-addr u</i>
-を入力源および入力バッファにし、 解釈(interpret)します。 そしてパース領域が空になったら、 入力源の仕様を復元します。
+<p>現在の入力ソース仕様(input source specification)を保存します。 そして、 <code>-1</code> を
+<code>source-id</code> に保存し、 かつ、 <code>0</code> を <code>blk</code> に保存します。 それから、 <code>&gt;IN</code> を
+<code>0</code> に設定し、 文字列 <i>c-addr u</i> を入力ソースおよび入力バッファにし、 解釈(interpret)します。
+そしてパース領域が空になったら、 入力ソース仕様を復元します。
 </p>
 
 <span id="index-query-_0028--_002d_002d--_0029-core_002dext_002dobsolescent"></span>
@@ -145,7 +146,7 @@ true になります。 新しい入力プログラムを使用した Gforth で
 <div class="format">
 <pre class="format"><code>query</code> ( <i>&ndash;  </i>) core-ext-obsolescent &ldquo;query&rdquo;
 </pre></div>
-<p>ユーザー入力デバイスを入力源にします。 入力を端末入力バッファ(Terminal Input Buffer)で受け取ります。 <code>&gt;IN</code>
+<p>ユーザー入力デバイスを入力ソースにします。 入力を端末入力バッファ(Terminal Input Buffer)で受け取ります。 <code>&gt;IN</code>
 をゼロに設定します。 OBSOLESCENT(時代遅れ): 代わりに <code>accept</code> を使ってください。
 </p>
 

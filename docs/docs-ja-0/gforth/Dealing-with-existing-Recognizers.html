@@ -71,31 +71,24 @@ Next: <a href="Defining-Recognizers.html" accesskey="n" rel="next">Defining Reco
 <span id="Dealing-with-existing-Recognizers-1"></span><h4 class="subsubsection">6.14.5.2 Dealing with existing Recognizers</h4>
 <span id="index-Recognizers_002c-dealing-with"></span>
 
-<p>A recognizer is a word to which you pass a string.  If the recognizer
-recognizes the string, it typically returns some data and the xt of a word
-for processing the data; this word is called the translator.  If the
-recognizer does not recognize the string, it returns the xt of
-<code>notfound</code>.
+<p>認識器(recognizer)は、 あなたが文字列を渡すワードです。 認識器が文字列を認識すると、 通常はデータとそのデータを処理するためのワードの
+xt を返します。 このワードはトランスレーター(translator)と呼ばれます。 認識器が文字列を認識しない場合は、
+<code>notfound</code> の xt を返します。
 </p>
-<p>All recognizers have the stack effect ( c-addr u &ndash; ... xt ).
+<p>すべての認識器(recognizers)のスタック効果は ( c-addr u &ndash; ... xt ) です。
 </p>
 
 
-<p>Recognizers take a string and return some data and a translator for
-interpreting that data.  Gforth implements that translator as xt (executing
-it will perform the appropriate action to handle the token in the current
-state), but other Forth systems may implement it as actual table, with three
-xts inside.  The first xt is the interpretation/run-time xt, it performs the
-interpretation semantics on the data (usually, this means it just leaves the
-data on the stack).  The second xt performs the compilation semantics, it
-gets the data and the run-time semantics xt.  The third xt perfoms the
-postpone semantics, it also gets the data and the run-time semantics xt.
-You can use <code>&gt;postpone</code> to postpone the run-time xt.
+<p>認識器は文字列を受け取り、 いくつかのデータと、 そのデータを解釈(interpret)するためのトランスレーターを返します。  Gforth
+はそのトランスレーターを xt として実装します(これを実行すると、 現在の状態でトークンを処理するための適切なアクションが実行されます)。 ただし、
+他の Forth システムでは、 内部に 3 つの xt を含むテーブルとして実装する場合があります。  最初の xt は インタプリタ時/実行時 xt
+で、 データのインタプリタ機能(interpretation semantics)を実行します(通常はデータをスタックに置くだけです)。  2 番目の
+xt はコンパイル機能(compilation semantics)を実行し、 データと実行時機能(run-time semantics)の xt
+を取得します。  3 番目の xt は postpone 機能(postpone semantics)を実行し、 データと実行時機能の xt
+も取得します。  <code>&gt;postpone</code> を使用すると、 実行時機能の xt を postpone できます。
 </p>
-<p>Recognizers are organized as stack, so you can arrange the sequence of
-recognizers in the same way as the vocabulary stack.  Recognizer stacks are
-themselves recognizers, i.e. they are executable, take a string and return a
-translator.
+<p>認識器群はスタックとして編成されるため、 ボキャブラリ・スタックと同じ方法で認識器群のシーケンスを配置できます。
+認識器スタックはそれ自体が認識器群です。 つまり、 認識器スタックは実行可能であり、 文字列を受け取り、 トランスレーターを返します。
 </p>
 <span id="index-notfound-_0028--state-_002d_002d--_0029-gforth_002dexperimental"></span>
 <span id="index-notfound"></span>
@@ -103,7 +96,7 @@ translator.
 <div class="format">
 <pre class="format"><code>notfound</code> ( <i>state &ndash;  </i>) gforth-experimental &ldquo;notfound&rdquo;
 </pre></div>
-<p>If a recognizer fails, it returns <code>notfound</code>
+<p>認識器の認識が失敗すると、 <code>notfound</code> の認識器トークン(訳注: 現状では <code>notfound</code> の xt )を返します
 </p>
 
 <span id="index-rec_002dnt-_0028--addr-u-_002d_002d-nt-translate_002dnt-_007c-notfound--_0029-gforth_002dexperimental"></span>
@@ -112,7 +105,7 @@ translator.
 <div class="format">
 <pre class="format"><code>rec-nt</code> ( <i>addr u &ndash; nt translate-nt | notfound  </i>) gforth-experimental &ldquo;rec-nt&rdquo;
 </pre></div>
-<p>recognize a name token
+<p>名前トークンを認識します
 </p>
 
 <span id="index-rec_002dnum-_0028--addr-u-_002d_002d-n_002fd-table-_007c-notfound--_0029-gforth_002dexperimental"></span>
@@ -121,7 +114,7 @@ translator.
 <div class="format">
 <pre class="format"><code>rec-num</code> ( <i>addr u &ndash; n/d table | notfound  </i>) gforth-experimental &ldquo;rec-num&rdquo;
 </pre></div>
-<p>converts a number to a single/double integer
+<p>数値を 1倍長/2倍長 整数に変換します
 </p>
 
 <span id="index-rec_002dfloat-_0028--addr-u-_002d_002d-r-translate_002dfloat-_007c-notfound--_0029-gforth_002dexperimental"></span>
@@ -130,7 +123,7 @@ translator.
 <div class="format">
 <pre class="format"><code>rec-float</code> ( <i>addr u &ndash; r translate-float | notfound  </i>) gforth-experimental &ldquo;rec-float&rdquo;
 </pre></div>
-<p>recognize floating point numbers
+<p>浮動小数点数を認識します
 </p>
 
 <span id="index-rec_002dstring-_0028--addr-u-_002d_002d-addr-u_0027-r_003astring-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
@@ -139,8 +132,8 @@ translator.
 <div class="format">
 <pre class="format"><code>rec-string</code> ( <i>addr u &ndash; addr u&rsquo; r:string | rectype-null  </i>) gforth-experimental &ldquo;rec-string&rdquo;
 </pre></div>
-<p>Convert strings enclosed in double quotes into string literals, escapes are
-treated as in <code>S\&quot;</code>.
+<p>二重引用符(double quotes)で囲まれた文字列(strings)を文字列リテラルに変換します。 エスケープは <code>S\&quot;</code>
+と同様に扱われます。
 </p>
 
 <span id="index-rec_002dto-_0028--addr-u-_002d_002d-xt-n-r_003ato-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
@@ -149,9 +142,10 @@ treated as in <code>S\&quot;</code>.
 <div class="format">
 <pre class="format"><code>rec-to</code> ( <i>addr u &ndash; xt n r:to | rectype-null  </i>) gforth-experimental &ldquo;rec-to&rdquo;
 </pre></div>
-<p>words prefixed with <code>-&gt;</code> are treated as if preceeded by <code>TO</code>, with
-<code>+&gt;</code> as <code>+TO</code>, with <code>'&gt;</code> as <code>ADDR</code>, with <code>@&gt;</code> as
-<code>ACTION-OF</code>, and with <code>=&gt;</code> as <code>IS</code>.
+<p><code>-&gt;</code> で始まるワードは、 <code>TO</code> が前にあるものとして扱い、 <code>+&gt;</code> で始まるワードは <code>+TO</code>
+が前にあるものとして扱い、 <code>'&gt;</code> で始まるワードは <code>ADDR</code> が前にあるものとして扱い、 <code>@&gt;</code>
+で始まるワードは <code>ACTION-OF</code> が前にあるものとして扱い、 <code>=&gt;</code> で始まるワードは <code>IS</code>
+が前にあるものとして扱います。
 </p>
 
 <span id="index-rec_002dtick-_0028--addr-u-_002d_002d-xt-rectype_002dnum-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
@@ -160,8 +154,7 @@ treated as in <code>S\&quot;</code>.
 <div class="format">
 <pre class="format"><code>rec-tick</code> ( <i>addr u &ndash; xt rectype-num | rectype-null  </i>) gforth-experimental &ldquo;rec-tick&rdquo;
 </pre></div>
-<p>words prefixed with <code>`</code> return their xt.  Example: <code>`dup</code> gives
-the xt of dup
+<p><code>`</code> (バッククォート)の接頭辞が付いたワードはその xt を返します。  例: <code>`dup</code> は dup の xt を返します
 </p>
 
 <span id="index-rec_002ddtick-_0028--addr-u-_002d_002d-nt-rectype_002dnum-_007c-rectype_002dnull--_0029-gforth_002dexperimental"></span>
@@ -170,8 +163,8 @@ the xt of dup
 <div class="format">
 <pre class="format"><code>rec-dtick</code> ( <i>addr u &ndash; nt rectype-num | rectype-null  </i>) gforth-experimental &ldquo;rec-dtick&rdquo;
 </pre></div>
-<p>words prefixed with <code>``</code> return their nt.  Example: <code>``S&quot;</code> gives
-the nt of <code>S&quot;</code>
+<p><code>``</code> (バッククォート2つ)で始まるワードは、 その nt を返します。  例: <code>``S&quot;</code> は <code>S&quot;</code> の nt
+を返します。
 </p>
 
 <span id="index-rec_002dbody-_0028--addr-u-_002d_002d-xt-translate_002dtick-_007c-translate_002dnull--_0029-gforth_002dexperimental"></span>
@@ -180,8 +173,8 @@ the nt of <code>S&quot;</code>
 <div class="format">
 <pre class="format"><code>rec-body</code> ( <i>addr u &ndash; xt translate-tick | translate-null  </i>) gforth-experimental &ldquo;rec-body&rdquo;
 </pre></div>
-<p>words bracketed with <code>'&lt;'</code> <code>'&gt;'</code> return their body.  Example:
-<code>&lt;dup&gt;</code> gives the body of dup
+<p><code>'&lt;'</code> <code>'&gt;'</code> で囲まれたワードはその本体(body)を返します。  例: <code>&lt;dup&gt;</code> は dup
+の本体(body)を返します
 </p>
 
 <span id="index-get_002drecognizers-_0028--_002d_002d-xt1-_002e_002e-xtn-n--_0029-gforth_002dexperimental"></span>
@@ -190,7 +183,7 @@ the nt of <code>S&quot;</code>
 <div class="format">
 <pre class="format"><code>get-recognizers</code> ( <i>&ndash; xt1 .. xtn n  </i>) gforth-experimental &ldquo;get-recognizers&rdquo;
 </pre></div>
-<p>push the content on the recognizer stack
+<p>認識器スタックの内容(content)をスタックにプッシュします。 <i>n</i> は xt の個数です。
 </p>
 
 <span id="index-set_002drecognizers-_0028--xt1-_002e_002e-xtn-n-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -199,7 +192,7 @@ the nt of <code>S&quot;</code>
 <div class="format">
 <pre class="format"><code>set-recognizers</code> ( <i>xt1 .. xtn n &ndash;  </i>) gforth-experimental &ldquo;set-recognizers&rdquo;
 </pre></div>
-<p>set the recognizer stack from content on the stack
+<p>スタック上の内容(content)を認識器スタックに設定します。 <i>n</i> は xt の個数です。
 </p>
 
 <span id="index-recognize-_0028--addr-u-rec_002daddr-_002d_002d-_002e_002e_002e-rectype--_0029-gforth_002dexperimental"></span>
@@ -208,7 +201,8 @@ the nt of <code>S&quot;</code>
 <div class="format">
 <pre class="format"><code>recognize</code> ( <i>addr u rec-addr &ndash; ... rectype  </i>) gforth-experimental &ldquo;recognize&rdquo;
 </pre></div>
-<p>apply a recognizer stack to a string, delivering a token
+<p>訳注: 認識器スタック <i>rec-addr</i> の認識器を順に文字列 <i>addr u</i> に適用し、 認識したら、 そのトランスレーター
+<i>rectype</i> (の xt ) を得ます。 何も適用できなかった場合はトランスレーター <code>notfound</code> (の xt )を返します
 </p>
 
 <span id="index-recognizer_002dsequence_003a-_0028--xt1-_002e_002e-xtn-n-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -217,9 +211,7 @@ the nt of <code>S&quot;</code>
 <div class="format">
 <pre class="format"><code>recognizer-sequence:</code> ( <i>xt1 .. xtn n &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;recognizer-sequence:&rdquo;
 </pre></div>
-<p>concatenate a stack of recognizers to one recognizer with the name
-<i>&quot;name&quot;</i>.  <i>xtn</i> is tried first, <i>xt1</i> last, just like on the
-recognizer stack
+<p>訳注: <i>xt1 .. xtn n </i> という内容で <i>&quot;name&quot;</i> という名前の認識器スタックを作成します。 
 </p>
 
 <span id="index-forth_002drecognize-_0028--c_002daddr-u-_002d_002d-_002e_002e_002e-translate_002dxt--_0029-recognizer"></span>
@@ -228,7 +220,7 @@ recognizer stack
 <div class="format">
 <pre class="format"><code>forth-recognize</code> ( <i>c-addr u &ndash; ... translate-xt  </i>) recognizer &ldquo;forth-recognize&rdquo;
 </pre></div>
-<p>The system recognizer
+<p>システム認識器スタックです。
 </p>
 
 <span id="index-forth_002drecognizer-_0028--_002d_002d-xt--_0029-gforth_002dexperimental"></span>
@@ -237,8 +229,8 @@ recognizer stack
 <div class="format">
 <pre class="format"><code>forth-recognizer</code> ( <i>&ndash; xt  </i>) gforth-experimental &ldquo;forth-recognizer&rdquo;
 </pre></div>
-<p>backward compatible to Matthias Trute recognizer API.  This construct turns
-a deferred word into a value-like word.
+<p>backward compatible to Matthias Trute recognizer API との下位互換性があります。  この構造は、
+defer されたワードを value のようなワードに変換します。
 </p>
 
 <span id="index-set_002dforth_002drecognize-_0028--xt-_002d_002d--_0029-recognizer"></span>
@@ -247,7 +239,7 @@ a deferred word into a value-like word.
 <div class="format">
 <pre class="format"><code>set-forth-recognize</code> ( <i>xt &ndash;  </i>) recognizer &ldquo;set-forth-recognize&rdquo;
 </pre></div>
-<p>Change the system recognizer
+<p>システム認識器を変更する
 </p>
 
 <span id="index-translate_003a-_0028--int_002dxt-comp_002dxt-post_002dxt-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -287,7 +279,7 @@ which are 0 or negative.  Up to 7 slots are available for extensions.
 <p>translate a double number
 </p>
 
-<p>doc-translate-float
+<p>doc-translate-float(訳注: まだ説明書いて無いっぽい)
 <span id="index-try_002drecognize-_0028--addr-u-xt-_002d_002d-results-_007c-false--_0029-gforth_002dexperimental"></span>
 <span id="index-try_002drecognize"></span>
 <span id="index-try_002drecognize-1"></span>
