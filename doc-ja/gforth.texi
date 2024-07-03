@@ -4403,11 +4403,10 @@ and character literals})。 この文字列構文の欠点は、 標準ではな
 @cindex input format for body-relative addresses
 ワードの本体アドレスを @code{<} と @code{>} で囲むことで取得できます (例: @code{<spaces>})。 ワード名と末尾の
 @code{>} の間に @code{+} と数値を入れることで、
-本体アドレスから正のオフセットのアドレス(通常はそのワードの本体内のアドレス)を取得することもできます(例: @code{<spaces+$15>},
-@code{spaces+-3})。 ワード名と終わりの @code{ の間に @code{+} と数字 (上記の構文を参照)
-を入れることで、本文のアドレスから正のオフセットにあるアドレス (通常はその本文内のアドレス) を入力することもできます。 >} (例:
-@code{<spaces+$15>}、@code{spaces+-3})。  あなたは、 本体アドレスと数値を取得するでしょう。 この非標準機能は、
-@code{...} の出力をコピーして貼り付けることを可能にするために存在します(@pxref{Examining data})。
+その本体アドレスから正のオフセットのアドレス(通常はそのワードの本体内のアドレス)を取得することもできます(例:
+@code{<spaces+$15>}, @code{spaces+-3})。  例えば @code{<spaces+$15>} とか
+@code{<spaces+-3>}) とすると、 その本体アドレスに数値を足したのを得るでしょう。 この非標準機能は、 @code{...}
+の出力をコピーして貼り付けることを可能にするために存在します(@pxref{Examining data})。
 
 @c !! rec-scope rec-meta rec-to
 
@@ -11160,7 +11159,7 @@ def-word name
 の子供(@dfn{child})と呼ばれることもあります。
 
 @code{name} を実行すると、 @code{name} の本体のアドレスがデータ・スタックに置かれ、 @i{code2}
-が実行されます(@code{name} の本文のアドレスは、 @code{CREATE} の直後に @code{HERE} が返すアドレス、 つまり、
+が実行されます(@code{name} の本体のアドレスは、 @code{CREATE} の直後に @code{HERE} が返すアドレス、 つまり、
 @code{create} されたワードがデフォルトで返すアドレスです)。
 
 @code{def-word} を使用して、 同様に動作する一連の子ワード達を定義できます。 つまり、 これらはすべて @i{code2}
@@ -11227,15 +11226,15 @@ DOES> ( -- w )
 @comment it does in the Forthwrite 100th edition.. as well as an elegant
 @comment commentary on the Counting Fruits problem.
 
-@code{5 CONSTANT four} を使用して定数を作成すると、 一連の定義時アクションが実行されます。 最初に新しいワード
+@code{5 CONSTANT five} を使用して定数を作成すると、 一連の定義時アクションが実行されます。 最初に新しいワード
 @code{five} が作成され、 次に @code{,} を使用して @code{five} の本体に値 5 が配置されます。
-@code{five} が実行されると、 本文のアドレスがスタックに置かれ、 @code{@@} は値 5 を取得します。 ワード
-@code{five} にはそれ自体のコードはありません。 ワード @code{five} には、データ・フィールドと、 引用(quotation) の
-xt または @code{@@} の xt が含まれるだけです。
+@code{five} が実行されると、 その本体のアドレスがスタックに置かれ、 @code{@@} は値 5 を取得します。 ワード
+@code{five} にはそれ自体のコードはありません。 ワード @code{five} には、 データ・フィールドと、 引用(quotation)
+の xt または @code{@@} の xt が含まれるだけです。
 
 このセクションの最後の例は、 @code{CREATE} されたワードで予約されている空間はデータ空間であるため、
 標準プログラムによる読み取りと書き込みの両方が可能であることを思い出していただくことを目的としています@footnote{研究課題: この例は
-@code{Value} と @code{TO} をあなた独自に実装するための出発点として使って見ましょう。 -- あなたが行き詰まった場合は、
+@code{Value} と @code{TO} をあなた独自に実装するための出発点として使って見ましょう。 もし、 あなたが行き詰まった場合は、
 @code{'} と @code{[']} の振る舞いを調べてください。}:
 
 @example
@@ -11259,9 +11258,10 @@ foo second-word
 
 @cindex stack effect of @code{DOES>}-parts
 @cindex @code{DOES>}-parts, stack effect
-上記の例では、 @code{DOES>} の後のスタック・コメントは、 次のコードのスタック効果ではなく、
-定義されたワードのスタック効果を指定しています(次のコードは、 スタックの先頭にある本体のアドレスを期待しています。
-スタックコメントには反映されません)。 これは私が使用し、 推奨している規則です(スタック効果の指定にローカル変数宣言を使うのと少々衝突する)。
+上記の例では、 @code{DOES>} の後のスタック・コメントは、  @code{DOES>} に続くコードのスタック効果ではなく、
+定義されたワードのスタック効果を指定しています(@code{DOES>}  に続くコードは、 本体のアドレスがスタックの先頭にある事を期待しています。
+これはスタック・コメントには反映されません)。 これは著者の私が使用し、 推奨している規則です(ただし、
+スタック効果の指定にローカル変数宣言を使うのと少々衝突する)。
 
 
 @node CREATE..DOES> applications, CREATE..DOES> details, User-defined defining words using CREATE, User-defined Defining Words
@@ -11295,7 +11295,7 @@ DOES> ( reg-target reg-source n -- )
 
 @cindex currying
 @code{CREATE..DOES>} の別の観点は、
-これをワードのパラメータの一部を提供する粗雑な方法(関数型言語コミュニティではカリー化(@dfn{currying})として知られています)とみなすことです。
+これをワードのパラメータの一部を提供する素朴な方法(関数型言語コミュニティではカリー化(@dfn{currying})として知られています)とみなすことです。
 たとえば、 @code{+} には 2 つのパラメータが必要ですが、そのうち 1 つのパラメータを固定した @code{+}
 のバージョンを作成するには、 以下のようにします:
 
@@ -11323,7 +11323,7 @@ DOES> ( n2 -- n1+n2 )
 
 
 @cindex @code{DOES>} in a separate definition
-これは、 一つの定義内で @code{CREATE} と @code{DOES>} の両方を使用する必要がないことを意味します。
+以下は、 一つの定義内で @code{CREATE} と @code{DOES>} の両方を使用する必要がないことを意味します。
 @code{DOES>} 部分を別の定義に置くことができます。 これにより、 たとえば、 さまざまな @code{DOES>}
 部分から選択するようにすることができます:
 @example
@@ -11666,17 +11666,17 @@ execute} と同等である必要があることに注意してください。 �
 @code{foo} 内のコンパイル済み @code{five} は、 @code{five} の一般的な呼び出しではなく、 literal 5
 とコンパイルされるようになりました。  引用(quotation)には、 @code{compile,} と同じスタック効果があり、 それは
 @code{( xt -- )} です。  渡された xt は @code{compile,} されたワード、 つまりこの例では @code{five}
-に属します。 この例では、 まず xt が本文アドレスに変換され、 次にその場所の値 5 がフェッチされ、 その値が @code{postpone
+に属します。 この例では、 まず xt が本体アドレスに変換され、 次にその場所の値 5 が取り出され、 その値が @code{postpone
 literal} でコンパイルされます(@pxref{Literals})。
 
-この @code{set-optimizer} の使用は、 ユーザーが、 例えば @code{6 ' four >body !}
+この @code{set-optimizer} の使用は、 ユーザーが、 例えば @code{6 ' five >body !}
 などして定数の値を変更しないことを前提としています。  @code{five} は @code{create} で定義されていますが、 これは
 @code{CONSTANT} の実装の詳細であり、 それを文書化しない場合、 ユーザーはそれに依存してはなりません。  また、
-h本体が変更されないことを前提とした方法で @code{set-optimizer} を使用する場合、 (ここで行われているように)
+本体(body)が変更されないことを前提とした方法で @code{set-optimizer} を使用する場合、 (ここで行われているように)
 @code{create} が使用されていることを文書化してはなりません。 逆に、 それを文書化する場合は、 本体の変更を処理できるように
 @code{compile,} 実装を記述する必要があります。
 
-別の例は、 上記の @code{fvalue} の例をさらに最適化したものです:
+もう一つの例は、 前述の @code{fvalue} の例をさらに最適化したものです:
 
 @example
 : compile-fvalue-to ( xt-value-to -- )
@@ -11801,8 +11801,8 @@ latestnt constant noname-fvalue-prototype
 @cindex Modifying a word defined earlier
 
 @code{immediate} や @code{set-optimizer} など、
-上記の多くのワードは、「現在の」ワードまたは「一番最近定義された」ワードを変更します。 しばしば以前のワードを変更したい場合があります。
-これは以下のようにして行うことができます
+上記の多くのワードは、「現在の」(current)ワードまたは「一番最近定義された」(most recently defined)ワードを変更します。
+しばしば以前のワードを変更したい場合があると思います。  その場合は以下のようにして行うことができます
 
 @findex make-latest ( @var{ nt --   } ) gforth-1.0
 @cindex @code{make-latest}
@@ -11901,8 +11901,8 @@ Defer greet ( -- )
 ' greet2 IS greet  \ make greet behave like greet2
 @end example
 
-@progstyle すべての defer された ワードに対してスタック・コメントを記述し、 かつ、 そのスタック効果に一致する XT
-のみを延期ワードに入れる必要があります。 そうしないと、  defer された ワードを使用するのは非常に困難です。
+@progstyle すべての defer された ワードに対してスタック・コメントを記述し、 かつ、 そのスタック効果に一致する XT のみを
+defer されたワードに入れる必要があります。 そうしないと、  defer されたワードを使用するのは非常に困難です。
 
 defer された ワードを使用すると、 @ref{User-defined Defining Words}
 の統計収集の例(statistics-gathering example)を改善できます。 アプリケーションのソース・コードを編集してすべての
@@ -12005,7 +12005,7 @@ Gforth は以下を提供します:
 @code{defers} ( @i{compilation "name" -- ; run-time ... -- ...  }) gforth-0.2 ``defers''
 @end format
 defer された ワード @i{name} の現在の内容を現在の定義にコンパイルします。  つまり、 これにより、 @i{name} が defer
-されなかったかのように静的バインディングが生成されます。
+されなかったかのように静的結び付け(static binding)が生成されます。
 
 
 @findex wrap-xt ( @var{ xt1 xt2 xt: xt3 -- ...   } ) gforth-1.0
@@ -12014,10 +12014,11 @@ defer された ワード @i{name} の現在の内容を現在の定義にコン
 @format
 @code{wrap-xt} ( @i{xt1 xt2 xt: xt3 -- ...  }) gforth-1.0 ``wrap-xt''
 @end format
-defer された ワード xt2 の現在の xt を退避して xt1 に設定した上で、 xt3 を実行し、 xt3 実行後、 退避した xt を
-延期ワード xt2 に戻します(訳注: xt3 の内部のどこかで xt2 を使っているとして、 その実行機能を一時的に xt1 に設定してから xt3
-を実行し、 実行後に xt2 の実行機能を元に戻しておく。 元に戻すのは try ... restore ... endtry で囲まれた部分なので
-xt3 実行中にエラーがあっても確実に復旧される。 詳しくはソースコード見て下さい)
+defer された ワード xt2 の現在の xt-current をどこかに退避して xt1 に設定した上で、 xt3 を実行し、 xt3 実行後、
+退避した xt-current を defer されたワード xt2 に戻します(訳注: xt3 の内部のどこかで defer されたワード xt2
+を使っているとして、 xt2 の実行機能を一時的に xt1 に設定してから xt3 を実行し、 実行後に xt2 の実行機能を元に戻しておく。
+元に戻すのは try ... restore ... endtry で囲まれた部分なので xt3 実行中にエラーがあっても確実に復旧される。
+詳しくはソースコード見て下さい。 なお、  xt: は xt3 を deferフレーバーに設定する)
 
 
 @findex preserve ( @var{ "name" --   } ) gforth-1.0

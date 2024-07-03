@@ -1876,7 +1876,7 @@ File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREAT
 (“child”)と呼ばれることもあります。
 
    ‘name’ を実行すると、 ‘name’ の本体のアドレスがデータ・スタックに置か
-れ、 code2 が実行されます(‘name’ の本文のアドレスは、 ‘CREATE’ の直後に
+れ、 code2 が実行されます(‘name’ の本体のアドレスは、 ‘CREATE’ の直後に
 ‘HERE’ が返すアドレス、 つまり、 ‘create’ されたワードがデフォルトで返す
 アドレスです)。
 
@@ -1932,12 +1932,12 @@ File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREAT
          create ,
          ['] @ set-does> ;
 
-   ‘5 CONSTANT four’ を使用して定数を作成すると、 一連の定義時アクション
+   ‘5 CONSTANT five’ を使用して定数を作成すると、 一連の定義時アクション
 が実行されます。 最初に新しいワード ‘five’ が作成され、 次に ‘,’ を使用
-して ‘five’ の本体に値 5 が配置されます。 ‘five’ が実行されると、 本文の
-アドレスがスタックに置かれ、 ‘@’ は値 5 を取得します。 ワード ‘five’ に
-はそれ自体のコードはありません。 ワード ‘five’ には、データ・フィールド
-と、 引用(quotation) の xt または ‘@’ の xt が含まれるだけです。
+して ‘five’ の本体に値 5 が配置されます。 ‘five’ が実行されると、 その本
+体のアドレスがスタックに置かれ、 ‘@’ は値 5 を取得します。 ワード ‘five’
+にはそれ自体のコードはありません。 ワード ‘five’ には、 データ・フィール
+ドと、 引用(quotation) の xt または ‘@’ の xt が含まれるだけです。
 
    このセクションの最後の例は、 ‘CREATE’ されたワードで予約されている空
 間はデータ空間であるため、 標準プログラムによる読み取りと書き込みの両方
@@ -1962,19 +1962,20 @@ File: gforth.info,  Node: User-defined defining words using CREATE,  Next: CREAT
 ‘first-word’ を実行すると、 ‘123’ が表示されます。 ‘second-word’ を実行
 すると、‘-1’ が表示されます。
 
-   上記の例では、 ‘DOES>’ の後のスタック・コメントは、 次のコードのスタ
-ック効果ではなく、 定義されたワードのスタック効果を指定しています(次のコ
-ードは、 スタックの先頭にある本体のアドレスを期待しています。 スタックコ
-メントには反映されません)。 これは私が使用し、 推奨している規則です(スタ
-ック効果の指定にローカル変数宣言を使うのと少々衝突する)。
+   上記の例では、 ‘DOES>’ の後のスタック・コメントは、 ‘DOES>’ に続くコ
+ードのスタック効果ではなく、 定義されたワードのスタック効果を指定してい
+ます(‘DOES>’ に続くコードは、 本体のアドレスがスタックの先頭にある事を期
+待しています。 これはスタック・コメントには反映されません)。 これは著者
+の私が使用し、 推奨している規則です(ただし、 スタック効果の指定にローカ
+ル変数宣言を使うのと少々衝突する)。
 
    ---------- Footnotes ----------
 
    (1) このデータ領域への読み取りと書き込みは両方とも正当です。
 
    (2) 研究課題: この例は ‘Value’ と ‘TO’ をあなた独自に実装するための出
-発点として使って見ましょう。 – あなたが行き詰まった場合は、 ‘'’ と ‘[']’
-の振る舞いを調べてください。
+発点として使って見ましょう。 もし、 あなたが行き詰まった場合は、 ‘'’ と
+‘[']’ の振る舞いを調べてください。
 
 
 File: gforth.info,  Node: CREATE..DOES> applications,  Next: CREATE..DOES> details,  Prev: User-defined defining words using CREATE,  Up: User-defined Defining Words
@@ -2004,7 +2005,7 @@ File: gforth.info,  Node: CREATE..DOES> applications,  Next: CREATE..DOES> detai
      1 reg-reg-imm andi,
 
    ‘CREATE..DOES>’ の別の観点は、 これをワードのパラメータの一部を提供す
-る粗雑な方法(関数型言語コミュニティではカリー化(“currying”)として知られ
+る素朴な方法(関数型言語コミュニティではカリー化(“currying”)として知られ
 ています)とみなすことです。 たとえば、 ‘+’ には 2 つのパラメータが必要で
 すが、そのうち 1 つのパラメータを固定した ‘+’ のバージョンを作成するには
 、 以下のようにします:
@@ -2025,7 +2026,7 @@ File: gforth.info,  Node: CREATE..DOES> details,  Next: Advanced does> usage exa
 
 ‘DOES>’ ( compilation colon-sys1 – colon-sys2  ) core “does”
 
-   これは、 一つの定義内で ‘CREATE’ と ‘DOES>’ の両方を使用する必要がな
+   以下は、 一つの定義内で ‘CREATE’ と ‘DOES>’ の両方を使用する必要がな
 いことを意味します。 ‘DOES>’ 部分を別の定義に置くことができます。 これに
 より、 たとえば、 さまざまな ‘DOES>’ 部分から選択するようにすることがで
 きます:
@@ -2318,20 +2319,20 @@ postpone execute’ と同等である必要があることに注意してくだ
 く、 literal 5 とコンパイルされるようになりました。 引用(quotation)には
 、 ‘compile,’ と同じスタック効果があり、 それは ‘( xt -- )’ です。 渡さ
 れた xt は ‘compile,’ されたワード、 つまりこの例では ‘five’ に属します
-。 この例では、 まず xt が本文アドレスに変換され、 次にその場所の値 5 が
-フェッチされ、 その値が ‘postpone literal’ でコンパイルされます(*note
+。 この例では、 まず xt が本体アドレスに変換され、 次にその場所の値 5 が
+取り出され、 その値が ‘postpone literal’ でコンパイルされます(*note
 Literals::)。
 
-   この ‘set-optimizer’ の使用は、 ユーザーが、 例えば ‘6 ' four >body
+   この ‘set-optimizer’ の使用は、 ユーザーが、 例えば ‘6 ' five >body
 !’ などして定数の値を変更しないことを前提としています。 ‘five’ は
 ‘create’ で定義されていますが、 これは ‘CONSTANT’ の実装の詳細であり、 そ
-れを文書化しない場合、 ユーザーはそれに依存してはなりません。 また、 h本
-体が変更されないことを前提とした方法で ‘set-optimizer’ を使用する場合、
-(ここで行われているように) ‘create’ が使用されていることを文書化してはな
-りません。 逆に、 それを文書化する場合は、 本体の変更を処理できるように
-‘compile,’ 実装を記述する必要があります。
+れを文書化しない場合、 ユーザーはそれに依存してはなりません。 また、 本
+体(body)が変更されないことを前提とした方法で ‘set-optimizer’ を使用する
+場合、 (ここで行われているように) ‘create’ が使用されていることを文書化
+してはなりません。 逆に、 それを文書化する場合は、 本体の変更を処理でき
+るように ‘compile,’ 実装を記述する必要があります。
 
-   別の例は、 上記の ‘fvalue’ の例をさらに最適化したものです:
+   もう一つの例は、 前述の ‘fvalue’ の例をさらに最適化したものです:
 
      : compile-fvalue-to ( xt-value-to -- )
        drop ]] >body f! [[ ;
@@ -2441,9 +2442,10 @@ File: gforth.info,  Node: Making a word current,  Next: Const-does>,  Prev: Crea
 6.10.10.9 Making a word current
 ...............................
 
-‘immediate’ や ‘set-optimizer’ など、 上記の多くのワードは、「現在の」ワ
-ードまたは「一番最近定義された」ワードを変更します。 しばしば以前のワー
-ドを変更したい場合があります。 これは以下のようにして行うことができます
+‘immediate’ や ‘set-optimizer’ など、 上記の多くのワードは、「現在の」
+(current)ワードまたは「一番最近定義された」(most recently defined)ワード
+を変更します。 しばしば以前のワードを変更したい場合があると思います。 そ
+の場合は以下のようにして行うことができます
 
 ‘make-latest’ ( nt –  ) gforth-1.0 “make-latest”
    nt を最新の定義にし、 ‘immediate’ および ‘set-*’ 操作で操作できるよう
@@ -2529,8 +2531,8 @@ File: gforth.info,  Node: Deferred Words,  Next: Forward,  Prev: User-defined De
 
    プログラミング・スタイル・メモ: すべての defer された ワードに対して
 スタック・コメントを記述し、 かつ、 そのスタック効果に一致する XT のみを
-延期ワードに入れる必要があります。 そうしないと、 defer された ワードを
-使用するのは非常に困難です。
+defer されたワードに入れる必要があります。 そうしないと、 defer されたワ
+ードを使用するのは非常に困難です。
 
    defer された ワードを使用すると、 *note User-defined Defining Words::
 の統計収集の例(statistics-gathering example)を改善できます。 アプリケー
@@ -2595,17 +2597,18 @@ semantics)は ‘defer!’ または ‘is’ で設定できます(最初に na
 
 ‘defers’ ( compilation "name" – ; run-time ... – ...  ) gforth-0.2 “defers”
    defer された ワード name の現在の内容を現在の定義にコンパイルします。
-つまり、 これにより、 name が defer されなかったかのように静的バインディ
-ングが生成されます。
+つまり、 これにより、 name が defer されなかったかのように静的結び付け
+(static binding)が生成されます。
 
 ‘wrap-xt’ ( xt1 xt2 xt: xt3 – ...  ) gforth-1.0 “wrap-xt”
-   defer された ワード xt2 の現在の xt を退避して xt1 に設定した上で、
-xt3 を実行し、 xt3 実行後、 退避した xt を 延期ワード xt2 に戻します(訳
-注: xt3 の内部のどこかで xt2 を使っているとして、 その実行機能を一時的に
-xt1 に設定してから xt3 を実行し、 実行後に xt2 の実行機能を元に戻してお
-く。 元に戻すのは try ...  restore ...  endtry で囲まれた部分なので xt3
-実行中にエラーがあっても確実に復旧される。 詳しくはソースコード見て下さ
-い)
+   defer された ワード xt2 の現在の xt-current をどこかに退避して xt1 に
+設定した上で、 xt3 を実行し、 xt3 実行後、 退避した xt-current を defer
+されたワード xt2 に戻します(訳注: xt3 の内部のどこかで defer されたワー
+ド xt2 を使っているとして、 xt2 の実行機能を一時的に xt1 に設定してから
+xt3 を実行し、 実行後に xt2 の実行機能を元に戻しておく。 元に戻すのは
+try ...  restore ...  endtry で囲まれた部分なので xt3 実行中にエラーがあ
+っても確実に復旧される。 詳しくはソースコード見て下さい。 なお、 xt: は
+xt3 を deferフレーバーに設定する)
 
 ‘preserve’ ( "name" –  ) gforth-1.0 “preserve”
    指定の defer された ワード name で、 現在設定されている実行機能 xt を
