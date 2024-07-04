@@ -1103,7 +1103,7 @@ gforth 内から表示するのに使っているようだ)
 ます。 ‘throw’ は動的に最も内側の例外ハンドラー(the dynamically
 innermost exception handler)にジャンプすることに注意してください。 シス
 テムの例外ハンドラーは最も外側にあり、 エラーを出力してコマンド・ライン
-の解釈(interpretation)を再開するだけです(または、 バッチ・モード(つまり
+の通訳(interpretation)を再開するだけです(または、 バッチ・モード(つまり
 、 シェル・コマンド・ラインの処理中)では Gforth を終了します)。
 
    例外をキャッチする標準 Forth での方法は ‘catch’ です:
@@ -2689,7 +2689,7 @@ File: gforth.info,  Node: Interpretation and Compilation Semantics,  Next: Token
 です。 これは他の文脈でも表れます。 たとえば、 ‘' word’ によって返される
 実行トークンは、 word のインタプリタ機能(“interpretation semantics”)を識
 別します(つまり、 ‘' word execute’ は、 ‘word’ のインタプリタ状態でのテ
-キスト解釈(interpretation)と同等です)。
+キスト通訳(interpretation)と同等です)。
 
    (名前付き)ワード(word)のコンパイル機能(“compilation semantics”)は、 テ
 キスト・インタプリタがコンパイル状態でワードに遭遇したときに行うことです
@@ -2706,9 +2706,8 @@ semantics)があります。 つまり実行機能(execution semantics)(スタ�
 準では、 両方が定義されている場合はインタプリタ機能(interpretation
 semantics)と異なることはありませんが、 一方が定義されていない、 または、
 両方とも定義されていない場合もあります。 Gforth ではインタプリタ機能
-(interpretation semantics)解釈セマンティクスと実行機能(execution
-semantics)実行セマンティクスには違いがないため、 これらの用語は同じ意味
-で使用されます。
+(interpretation semantics)と実行機能(execution semantics)には違いがない
+ため、 これらの用語は同じ意味で使用されます。
 
    Gforth (1.0 以降)では、 すべてのワードに インタプリタ機能/実行機能 が
 定義されています。 標準でインタプリタ機能も実行機能も定義されていない多
@@ -2879,8 +2878,8 @@ Words::) があります。
 ードにインタプリタ機能が無い場合、 ‘-14 throw’ を実行します。
 
    これらはパース・ワード(parsing words)であるため(なお、 ‘`x’ は認識器
-(recognizer)によってリテラルとして扱われます)、 インタプリタで解釈された
-りコンパイルされたコードの振る舞いが直感的ではない場合があります:
+(recognizer)によってリテラルとして扱われます)、 通訳(interpret)されたり
+コンパイルされたコードの振る舞いが直感的ではない場合があります:
 
      5 ' .   ( n xt )
      execute ( -- )      \ execute the xt of .
@@ -3670,7 +3669,7 @@ fileid で指定されたファイル)です。
    現在の入力ソース仕様(input source specification)を保存します。 そして
 、 ‘-1’ を ‘source-id’ に保存し、 かつ、 ‘0’ を ‘blk’ に保存します。 そ
 れから、 ‘>IN’ を ‘0’ に設定し、 文字列 c-addr u を入力ソースおよび入力
-バッファにし、 解釈(interpret)します。 そしてパース領域が空になったら、
+バッファにし、 通訳(interpret)します。 そしてパース領域が空になったら、
 入力ソース仕様を復元します。
 
 ‘query’ ( –  ) core-ext-obsolescent “query”
@@ -3742,7 +3741,7 @@ File: gforth.info,  Node: Interpret/Compile states,  Next: Interpreter Directive
 標準のプログラムでは ‘state’ を明示的に変更することは許可されていません
 。 ただし、‘[’ と ‘]’ というワードを使用して、 ‘state’ を暗黙的に変更で
 きます。 ‘[’ が実行されると、 ‘state’ がインタプリタ状態に切り替わり、 テ
-キスト・インタプリタが解釈(interpret)を開始します。 ‘]’ が実行されると、
+キスト・インタプリタが通訳(interpret)を開始します。 ‘]’ が実行されると、
 ‘state’ がコンパイル状態に切り替わり、 テキスト・インタプリタはコンパイ
 ルを開始します。 これらのワードの最も一般的な使用法は、コロン定義内でイ
 ンタプリタ状態に切り替えたり、 元の状態に戻したりすることです。 この手法
@@ -3823,7 +3822,7 @@ Control Structures::)。 一般的な使用法は以下のとおりです:
 ‘[I]’ ( run-time – n  ) gforth-0.2 “bracket-i”
    実行時、 ‘[I]’ はテキスト・インタプリタ時の ‘[do]’ の反復
 (iteration)のループ・インデックスをプッシュします。 インタプリタ時にイン
-デックスを処理したい場合は、 ‘[I]’ を対話的に解釈(interpret)するか、 ま
+デックスを処理したい場合は、 ‘[I]’ を対話的に通訳(interpret)するか、 ま
 たは ‘INT-[I]’ を使用します。
 
 ‘INT-[I]’ ( – n  ) gforth-1.0 “int-bracket-i”
@@ -3971,18 +3970,18 @@ File: gforth.info,  Node: Dealing with existing Recognizers,  Next: Defining Rec
    すべての認識器(recognizers)のスタック効果は ( c-addr u – ...  xt ) で
 す。
 
-   認識器は文字列を受け取り、 いくつかのデータと、 そのデータを解釈
-(interpret)するためのトランスレーターを返します。 Gforth はそのトランス
-レーターを xt として実装します(これを実行すると、 現在の状態でトークンを
-処理するための適切なアクションが実行されます)。 ただし、 他の Forth シス
-テムでは、 内部に 3 つの xt を含むテーブルとして実装する場合があります。
-最初の xt は インタプリタ時/実行時 xt で、 データのインタプリタ機能
-(interpretation semantics)を実行します(通常はデータをスタックに置くだけ
-です)。 2 番目の xt はコンパイル機能(compilation semantics)を実行し、 デ
-ータと実行時機能(run-time semantics)の xt を取得します。 3 番目の xt は
-postpone 機能(postpone semantics)を実行し、 データと実行時機能の xt も取
-得します。 ‘>postpone’ を使用すると、 実行時機能の xt を postpone できま
-す。
+   認識器は文字列を受け取り、 いくつかのデータと、 そのデータを通訳
+(interpret)するためのトランスレーター(翻訳器)を返します。 Gforth はその
+トランスレーターを xt として実装します(これを実行すると、 現在の state で
+その文字列を処理する適切なアクションが実行されます)。 しかし、 他の
+Forth システムでは、 内部に 3 つの xt を含む実際のテーブルとして実装する
+可能性があります。 最初の xt は 通訳時(interpretation)/実行時(run-time)
+xt で、 データのインタプリタ機能(interpretation semantics)を実行します
+(通常はデータをスタックに置くだけです)。 2 番目の xt はコンパイル機能
+(compilation semantics)を実行し、 データと実行時機能(run-time
+semantics)の xt を取得します。 3 番目の xt は postpone 機能(postpone
+semantics)を実行し、 データと実行時機能の xt も取得します。 ‘>postpone’
+を使用すると、 実行時機能の xt を postpone できます。
 
    認識器群はスタックとして編成されるため、 ボキャブラリ・スタックと同じ
 方法で認識器群のシーケンスを配置できます。 認識器スタックはそれ自体が認
@@ -4045,50 +4044,62 @@ postpone 機能(postpone semantics)を実行し、 データと実行時機能�
    システム認識器スタックです。
 
 ‘forth-recognizer’ ( – xt  ) gforth-experimental “forth-recognizer”
-   backward compatible to Matthias Trute recognizer API との下位互換性が
-あります。 この構造は、 defer されたワードを value のようなワードに変換
-します。
+   Matthias Trute recognizer API との下位互換性があります。 この構造は、
+defer されたワードを value のようなワードに変換します。
 
 ‘set-forth-recognize’ ( xt –  ) recognizer “set-forth-recognize”
-   システム認識器を変更する
+   システム認識器スタックを変更する
 
 ‘translate:’ ( int-xt comp-xt post-xt "name" –  ) gforth-experimental “translate:”
-   create a new recognizer table.  Items are in order of STATE value,
-which are 0 or negative.  Up to 7 slots are available for extensions.
+   name という名前のトランスレーター(トランスレーター・テーブル)を作成し
+、 トランスレーターのインタプリンタ機能アクション int-xt と、 トランスレ
+ーターのコンパイル機能アクション comp-xt と、 トランスレーターの
+postpone 機能アクション post-xt を格納します。 加えて拡張機能
+(extensions)用に 7 つのスロットを用意します(拡張機能スロット初期値は
+no.extensions の xt で埋めます)。 実行時: name の 実行時は state の値に
+応じてアクションが実行されます。 state が 0 (インタプリンタ状態)ならばイ
+ンタプリンタ機能アクションを実行し、 stete が -1 (コンパイル状態) ならば
+コンパイル機能アクションを実行し、 state が -2 (通常無い値。このために特
+別にセットする。アクション実行後は以前の値復元の事) ならばpostpone 機能
+アクションを実行します。
 
 ‘translate-nt’ ( i*x nt – j*x  ) gforth-experimental “translate-nt”
-   translate a name token
+   名前トークンのトランスレーター
 
 ‘translate-num’ ( x – | x  ) gforth-experimental “translate-num”
-   translate a number
+   数値のトランスレーター
 
 ‘translate-dnum’ ( dx – | dx  ) gforth-experimental “translate-dnum”
-   translate a double number
+   2倍長整数のトランスレーター
 
    doc-translate-float(訳注: まだ説明書いて無いっぽい)
 ‘try-recognize’ ( addr u xt – results | false  ) gforth-experimental “try-recognize”
-   For nested recognizers: try to recognize ADDR U, and execute XT to
-check if the result is desired.  If XT returns false, clean up all side
-effects of the recognizer, and return false.  Otherwise return the
-results of the call to XT, of which the topmost is non-zero.
+   入れ子(nested)になった認識器(recognizers)用です: ADDR U の認識を試み
+、 XT を実行して結果が望ましいかどうかを確認します。 XT が false を返し
+た場合は、 認識器の副作用をすべてクリーンアップして false を返します。 そ
+れ以外の場合は、 XT 呼び出しの結果をスタックに返し、 そのTOSはゼロ以外で
+なければなりません。
 
 ‘>interpret’ ( translator –  ) gforth-experimental “>interpret”
-   perform interpreter action of translator
+   指定のトランスレーターのインタプリンタ機能アクションを実行します。
 
 ‘>compile’ ( translator –  ) gforth-experimental “>compile”
-   perform compile action of translator
+   指定のトランスレーターのコンパイル機能アクションを実行します。
 
 ‘>postpone’ ( translator –  ) gforth-experimental “>postpone”
-   perform postpone action of translator
+   指定のトランスレーターの postpone 機能アクションを実行します
 
 ‘translate-method:’ ( "name" –  ) gforth-experimental “translate-method:”
-   create a new translate method, extending the translator table.  You
-can assign an xt to an existing rectype by using XT RECTYPE ‘to’
-TRANSLATOR.
+   新しいトランスレーター・メソッドを作成し、 トランスレーター・テーブル
+を拡張します。 XT RECTYPE ‘to’ TRANSLATOR を使用して、 xt を既存の
+rectypeに割り当てることができます(訳注: ‘>interpret’ や ‘>compile’ や
+‘>postpone’ 定義用。 あなたが更に トランスレーター・メソッドを定義した場
+合はこれ以降の新規 state 値に対するアクションとなる。 現時点で 7 つまで
+追加可能)
 
 ‘translate-state’ ( xt –  ) gforth-experimental “translate-state”
-   change the current state of the system so that executing a translator
-matches the translate-method passsed as XT
+   XT として渡された translate-method に一致するトランスレーターのアクシ
+ョンを実行するように、 システムの現在の state を変更します。
 
 
 File: gforth.info,  Node: Defining Recognizers,  Prev: Dealing with existing Recognizers,  Up: Recognizers
@@ -4105,13 +4116,16 @@ File: gforth.info,  Node: Text Interpreter Hooks,  Prev: Recognizers,  Up: The T
 -----------------------------
 
 ‘before-line’ ( –  ) gforth-1.0 “before-line”
-   Deferred word called before the text interpreter parses the next line
+   テキスト・インタプリタが次の行をパースする前に呼び出される defer され
+たワード(訳注: 初期値 ‘noop’ 。 ‘interpret’ 実行開始時にも呼び出される)
 
 ‘before-word’ ( –  ) gforth-0.7 “before-word”
-   Deferred word called before the text interpreter parses the next word
+   テキスト・インタプリタが次のワードをパースする前に呼び出される deferd
+されたワード(訳注: 初期値 ‘noop’)
 
 ‘line-end-hook’ ( –  ) gforth-0.7 “line-end-hook”
-   called at every end-of-line when text-interpreting from a file
+   ファイルからテキスト通訳(text-interpreting)するときに行末ごとに呼び出
+される defer されたワード(訳注: 初期値 ‘noop’ )
 
 
 File: gforth.info,  Node: The Input Stream,  Next: Word Lists,  Prev: The Text Interpreter,  Up: Words
@@ -4119,53 +4133,55 @@ File: gforth.info,  Node: The Input Stream,  Next: Word Lists,  Prev: The Text I
 6.15 The Input Stream
 =====================
 
-The text interpreter reads from the input stream, which can come from
-several sources (*note Input Sources::).  Some words, in particular
-defining words, but also words like ‘'’, read parameters from the input
-stream instead of from the stack.
+テキスト・インタプリタは、 複数のソース(*note Input Sources::)が利用可能
+な入力ストリームから読み取ります。 いくつかのワード、特に定義ワードや
+‘'’ のようなワードは、 スタックからではなく入力ストリームからパラメータ
+を読み込みます。
 
-   Such words are called parsing words, because they parse the input
-stream.  Parsing words are hard to use in other words, because it is
-hard to pass program-generated parameters through the input stream.
-They also usually have an unintuitive combination of interpretation and
-compilation semantics when implemented naively, leading to various
-approaches that try to produce a more intuitive behaviour (*note
-Combined words::).
+   このようなワードは入力ストリームをパース(parse)するため、 パース・ワ
+ードと呼ばれます。 パース・ワードの使用は困難です。 なぜならプログラムで
+生成されたパラメーターを入力ストリームを通じて渡すのが難しいからです。 ま
+た、 素朴な実装をすると、 インタプリタ機能(interpretation semantics)とコ
+ンパイル機能(compilation semantics)の組み合わせが直感的でないことが多く
+、 より直感的な振る舞いを実現しようとする様々なアプローチが生まれていま
+す(*note Combined words::)。
 
-   It should be obvious by now that parsing words are a bad idea.  If
-you want to implement a parsing word for convenience, also provide a
-factor of the word that does not parse, but takes the parameters on the
-stack.  To implement the parsing word on top if it, you can use the
-following words:
+   ワードをパースするのは悪い考えであることは、 最早明らかです。 あなた
+が、 利便性のためにパース・ワードを実装したいなら、 非パースのバリエーシ
+ョン、 つまり、 パースを行わずスタック上のパラメータを受け取るワードも提
+供してください。 もし、 その上でパース・ワードを実装するなら、 以下のワ
+ード群を使用できます:
 
 ‘parse’ ( xchar "ccc<xchar>" – c-addr u  ) core-ext,xchar-ext “parse”
-   Parse ccc, delimited by xchar, in the parse area.  c-addr u specifies
-the parsed string within the parse area.  If the parse area was empty, u
-is 0.
+   パース領域で xchar で区切られた ccc をパースします。 c-addr u は、 パ
+ース領域内でパースされた文字列を指します。 パース領域が空の場合、 u は 0
+です(訳注: ‘bl parse ccc type ccc ok’ 。 直後でENTERキーを押して行を終了
+すると(‘parse’ ENTER)、 長さ0の文字列をスタックに積む)
 
 ‘string-parse’ ( c-addr1 u1 "ccc<string>" – c-addr2 u2  ) gforth-1.0 “string-parse”
-   Parse ccc, delimited by the string c-addr1 u1, in the parse area.
-c-addr2 u2 specifies the parsed string within the parse area.  If the
-parse area was empty, u2 is 0.
+   文字列 c-addr1 u1 で区切られた ccc をパース領域でパースします。
+c-addr2 u2 は、 パース領域内のパースされた文字列を指します。 パース領域
+が空の場合、 u2 は 0 です(訳注: ‘" " string-parse ccc type ccc ok’)
 
 ‘parse-name’ ( "name" – c-addr u  ) core-ext “parse-name”
-   Get the next word from the input buffer
+   入力バッファから次の単語(word)を取得します(訳注: ‘parse-name ccc type
+ccc ok’)
 
 ‘parse-word’ ( – c-addr u  ) gforth-obsolete “parse-word”
-   old name for ‘parse-name’; this word has a conflicting behaviour in
-some other systems.
+   ‘parse-name’ の古い名前。 このワード語は、他の一部のシステムでは矛盾
+する振る舞いをします。
 
 ‘name’ ( – c-addr u  ) gforth-obsolete “name”
-   old name for ‘parse-name’
+   ‘parse-name’ の古い名前
 
 ‘word’ ( char "<chars>ccc<char>– c-addr  ) core “word”
-   Skip leading delimiters.  Parse ccc, delimited by char, in the parse
-area.  c-addr is the address of a transient region containing the parsed
-string in counted-string format.  If the parse area was empty or
-contained no characters other than delimiters, the resulting string has
-zero length.  A program may replace characters within the counted
-string.  OBSOLESCENT: the counted string has a trailing space that is
-not included in its length.
+   先頭の区切り文字をスキップします。 パース領域で char で区切られた ccc
+をパースします。 c-addr は、 カウンタ付き文字列形式で、 パースされた文字
+列を格納する一時領域のアドレスです。 パース領域が空であるか、 区切り文字
+以外の文字が含まれてい無い場合、 結果の文字列の長さはゼロになります。 プ
+ログラムは、 カウンタ付き文字列内の文字を置き換える場合があります。
+OBSOLESCENT(時代遅れ): カウンタ付き文字列の末尾に、 その長さに含まれない
+スペースがあります。
 
 ‘refill’ ( – flag  ) core-ext,block-ext,file-ext “refill”
    入力ソースにより入力バッファを満たすことを試みます。 入力ソースがユー
@@ -4180,29 +4196,29 @@ not included in its length.
 して true を返します。 それ以外の場合は false を返します。 いずれの場合
 も、 成功した結果には、0 文字を含む行の受け取りが含まれます。
 
-   If you have to deal with a parsing word that does not have a
-non-parsing factor, you can use ‘execute-parsing’ to pass a string to
-it:
+   非パースなバリエーションが無いパース・ワードを取り扱う必要がある場合
+、 ‘execute-parsing’ を使用して(スタック経由で)文字列を渡すことができま
+す:
 
 ‘execute-parsing’ ( ... addr u xt – ...  ) gforth-0.6 “execute-parsing”
-   Make addr u the current input source, execute xt ‘( ... -- ... )’,
-then restore the previous input source.
+   addr u を現在の入力ソースにして xt ‘( ... -- ... )’ を実行してから、
+以前の入力ソースを復元します。
 
    Example:
 
      5 s" foo" ' constant execute-parsing
-     \ equivalent to
+     \ これは、以下と同等です
      5 constant foo
 
-   A definition of this word in Standard Forth is provided in
-‘compat/execute-parsing.fs’.
+   標準 Forth でのこのワードの定義は ‘compat/execute-parsing.fs’ で提供
+されます。
 
-   If you want to run a parsing word on a file, the following word
-should help:
+   ファイルに対してワードのパースを実行したい場合は、 以下のワードが役に
+立ちます:
 
 ‘execute-parsing-file’ ( i*x fileid xt – j*x  ) gforth-0.6 “execute-parsing-file”
-   Make fileid the current input source, execute xt ‘( i*x -- j*x )’,
-then restore the previous input source.
+   fileid を現在の入力ソースにして、 xt ‘( i*x -- j*x )’ を実行してから
+、 以前の入力ソースを復元します。
 
 
 File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The Input Stream,  Up: Words

@@ -79,13 +79,14 @@ xt を返します。 このワードはトランスレーター(translator)と�
 </p>
 
 
-<p>認識器は文字列を受け取り、 いくつかのデータと、 そのデータを解釈(interpret)するためのトランスレーターを返します。  Gforth
-はそのトランスレーターを xt として実装します(これを実行すると、 現在の状態でトークンを処理するための適切なアクションが実行されます)。 ただし、
-他の Forth システムでは、 内部に 3 つの xt を含むテーブルとして実装する場合があります。  最初の xt は インタプリタ時/実行時 xt
-で、 データのインタプリタ機能(interpretation semantics)を実行します(通常はデータをスタックに置くだけです)。  2 番目の
-xt はコンパイル機能(compilation semantics)を実行し、 データと実行時機能(run-time semantics)の xt
-を取得します。  3 番目の xt は postpone 機能(postpone semantics)を実行し、 データと実行時機能の xt
-も取得します。  <code>&gt;postpone</code> を使用すると、 実行時機能の xt を postpone できます。
+<p>認識器は文字列を受け取り、 いくつかのデータと、 そのデータを通訳(interpret)するためのトランスレーター(翻訳器)を返します。  Gforth
+はそのトランスレーターを xt として実装します(これを実行すると、 現在の state でその文字列を処理する適切なアクションが実行されます)。
+しかし、 他の Forth システムでは、 内部に 3 つの xt を含む実際のテーブルとして実装する可能性があります。  最初の xt は
+通訳時(interpretation)/実行時(run-time) xt で、 データのインタプリタ機能(interpretation
+semantics)を実行します(通常はデータをスタックに置くだけです)。  2 番目の xt はコンパイル機能(compilation
+semantics)を実行し、 データと実行時機能(run-time semantics)の xt を取得します。  3 番目の xt は
+postpone 機能(postpone semantics)を実行し、 データと実行時機能の xt も取得します。  <code>&gt;postpone</code>
+を使用すると、 実行時機能の xt を postpone できます。
 </p>
 <p>認識器群はスタックとして編成されるため、 ボキャブラリ・スタックと同じ方法で認識器群のシーケンスを配置できます。
 認識器スタックはそれ自体が認識器群です。 つまり、 認識器スタックは実行可能であり、 文字列を受け取り、 トランスレーターを返します。
@@ -229,8 +230,8 @@ xt はコンパイル機能(compilation semantics)を実行し、 データと�
 <div class="format">
 <pre class="format"><code>forth-recognizer</code> ( <i>&ndash; xt  </i>) gforth-experimental &ldquo;forth-recognizer&rdquo;
 </pre></div>
-<p>backward compatible to Matthias Trute recognizer API との下位互換性があります。  この構造は、
-defer されたワードを value のようなワードに変換します。
+<p>Matthias Trute recognizer API との下位互換性があります。  この構造は、 defer されたワードを value
+のようなワードに変換します。
 </p>
 
 <span id="index-set_002dforth_002drecognize-_0028--xt-_002d_002d--_0029-recognizer"></span>
@@ -239,7 +240,7 @@ defer されたワードを value のようなワードに変換します。
 <div class="format">
 <pre class="format"><code>set-forth-recognize</code> ( <i>xt &ndash;  </i>) recognizer &ldquo;set-forth-recognize&rdquo;
 </pre></div>
-<p>システム認識器を変更する
+<p>システム認識器スタックを変更する
 </p>
 
 <span id="index-translate_003a-_0028--int_002dxt-comp_002dxt-post_002dxt-_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -248,8 +249,13 @@ defer されたワードを value のようなワードに変換します。
 <div class="format">
 <pre class="format"><code>translate:</code> ( <i>int-xt comp-xt post-xt &quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;translate:&rdquo;
 </pre></div>
-<p>create a new recognizer table.  Items are in order of <var>STATE</var> value,
-which are 0 or negative.  Up to 7 slots are available for extensions.
+<p><i>name</i> という名前のトランスレーター(トランスレーター・テーブル)を作成し、 トランスレーターのインタプリンタ機能アクション
+<i>int-xt</i> と、 トランスレーターのコンパイル機能アクション <i>comp-xt</i> と、 トランスレーターの postpone
+機能アクション <i>post-xt</i> を格納します。 加えて拡張機能(extensions)用に 7
+つのスロットを用意します(拡張機能スロット初期値は no.extensions の xt で埋めます)。 実行時: <i>name</i> の 実行時は
+state の値に応じてアクションが実行されます。 state が 0 (インタプリンタ状態)ならばインタプリンタ機能アクションを実行し、 stete
+が -1 (コンパイル状態) ならばコンパイル機能アクションを実行し、 state が -2
+(通常無い値。このために特別にセットする。アクション実行後は以前の値復元の事) ならばpostpone 機能アクションを実行します。
 </p>
 
 <span id="index-translate_002dnt-_0028--i_002ax-nt-_002d_002d-j_002ax--_0029-gforth_002dexperimental"></span>
@@ -258,7 +264,7 @@ which are 0 or negative.  Up to 7 slots are available for extensions.
 <div class="format">
 <pre class="format"><code>translate-nt</code> ( <i>i*x nt &ndash; j*x  </i>) gforth-experimental &ldquo;translate-nt&rdquo;
 </pre></div>
-<p>translate a name token
+<p>名前トークンのトランスレーター
 </p>
 
 <span id="index-translate_002dnum-_0028--x-_002d_002d-_007c-x--_0029-gforth_002dexperimental"></span>
@@ -267,7 +273,7 @@ which are 0 or negative.  Up to 7 slots are available for extensions.
 <div class="format">
 <pre class="format"><code>translate-num</code> ( <i>x &ndash; | x  </i>) gforth-experimental &ldquo;translate-num&rdquo;
 </pre></div>
-<p>translate a number
+<p>数値のトランスレーター
 </p>
 
 <span id="index-translate_002ddnum-_0028--dx-_002d_002d-_007c-dx--_0029-gforth_002dexperimental"></span>
@@ -276,7 +282,7 @@ which are 0 or negative.  Up to 7 slots are available for extensions.
 <div class="format">
 <pre class="format"><code>translate-dnum</code> ( <i>dx &ndash; | dx  </i>) gforth-experimental &ldquo;translate-dnum&rdquo;
 </pre></div>
-<p>translate a double number
+<p>2倍長整数のトランスレーター
 </p>
 
 <p>doc-translate-float(訳注: まだ説明書いて無いっぽい)
@@ -286,10 +292,9 @@ which are 0 or negative.  Up to 7 slots are available for extensions.
 </p><div class="format">
 <pre class="format"><code>try-recognize</code> ( <i>addr u xt &ndash; results | false  </i>) gforth-experimental &ldquo;try-recognize&rdquo;
 </pre></div>
-<p>For nested recognizers: try to recognize <var>addr u</var>, and execute <var>xt</var>
-to check if the result is desired.  If <var>xt</var> returns false, clean up all
-side effects of the recognizer, and return false.  Otherwise return the
-results of the call to <var>xt</var>, of which the topmost is non-zero.
+<p>入れ子(nested)になった認識器(recognizers)用です: <var>addr u</var> の認識を試み、 <var>xt</var>
+を実行して結果が望ましいかどうかを確認します。  <var>xt</var> が false を返した場合は、 認識器の副作用をすべてクリーンアップして
+false を返します。  それ以外の場合は、 <var>xt</var> 呼び出しの結果をスタックに返し、 そのTOSはゼロ以外でなければなりません。
 </p>
 
 <span id="index-_003einterpret-_0028--translator-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -298,7 +303,7 @@ results of the call to <var>xt</var>, of which the topmost is non-zero.
 <div class="format">
 <pre class="format"><code>&gt;interpret</code> ( <i>translator &ndash;  </i>) gforth-experimental &ldquo;&gt;interpret&rdquo;
 </pre></div>
-<p>perform interpreter action of translator
+<p>指定のトランスレーターのインタプリンタ機能アクションを実行します。
 </p>
 
 <span id="index-_003ecompile-_0028--translator-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -307,7 +312,7 @@ results of the call to <var>xt</var>, of which the topmost is non-zero.
 <div class="format">
 <pre class="format"><code>&gt;compile</code> ( <i>translator &ndash;  </i>) gforth-experimental &ldquo;&gt;compile&rdquo;
 </pre></div>
-<p>perform compile action of translator
+<p>指定のトランスレーターのコンパイル機能アクションを実行します。
 </p>
 
 <span id="index-_003epostpone-_0028--translator-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -316,7 +321,7 @@ results of the call to <var>xt</var>, of which the topmost is non-zero.
 <div class="format">
 <pre class="format"><code>&gt;postpone</code> ( <i>translator &ndash;  </i>) gforth-experimental &ldquo;&gt;postpone&rdquo;
 </pre></div>
-<p>perform postpone action of translator
+<p>指定のトランスレーターの postpone 機能アクションを実行します
 </p>
 
 <span id="index-translate_002dmethod_003a-_0028--_0022name_0022-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -325,9 +330,10 @@ results of the call to <var>xt</var>, of which the topmost is non-zero.
 <div class="format">
 <pre class="format"><code>translate-method:</code> ( <i>&quot;name&quot; &ndash;  </i>) gforth-experimental &ldquo;translate-method:&rdquo;
 </pre></div>
-<p>create a new translate method, extending the translator table.  You can
-assign an xt to an existing rectype by using <var>xt rectype</var> <code>to</code>
-<var>translator</var>.
+<p>新しいトランスレーター・メソッドを作成し、 トランスレーター・テーブルを拡張します。  <var>xt rectype</var> <code>to</code>
+<var>translator</var> を使用して、 xt を既存のrectypeに割り当てることができます(訳注: <code>&gt;interpret</code> や
+<code>&gt;compile</code> や <code>&gt;postpone</code> 定義用。 あなたが更に トランスレーター・メソッドを定義した場合はこれ以降の新規
+state 値に対するアクションとなる。 現時点で 7 つまで追加可能)
 </p>
 
 <span id="index-translate_002dstate-_0028--xt-_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -336,8 +342,8 @@ assign an xt to an existing rectype by using <var>xt rectype</var> <code>to</cod
 <div class="format">
 <pre class="format"><code>translate-state</code> ( <i>xt &ndash;  </i>) gforth-experimental &ldquo;translate-state&rdquo;
 </pre></div>
-<p>change the current state of the system so that executing a translator
-matches the translate-method passsed as <var>xt</var>
+<p><var>xt</var> として渡された translate-method に一致するトランスレーターのアクションを実行するように、 システムの現在の
+state を変更します。
 </p>
 
 
