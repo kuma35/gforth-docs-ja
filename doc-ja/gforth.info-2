@@ -2982,8 +2982,8 @@ synonym と、 aliase と、 ‘interpret/compile:’ で定義されたワー�
 得します
 
 ‘find-name’ ( c-addr u – nt | 0  ) gforth-0.2 “find-name”
-   現在の検索順序(search order)で名前 c-addr u を見つけます。 nt が見つ
-かった場合はそれを返し、 それ以外の場合は 0 を返します。
+   現在のサーチ・オーダーで名前 c-addr u を見つけます。 nt が見つかった
+場合はそれを返し、 それ以外の場合は 0 を返します。
 
 ‘find-name-in’ ( c-addr u wid – nt | 0  ) gforth-1.0 “find-name-in”
    wid で識別されるワードリストで、 c-addr u の文字列で指定された定義を
@@ -3792,20 +3792,20 @@ Control Structures::)。 一般的な使用法は以下のとおりです:
    何もしません。 ‘[THEN]’ の同義語(synonym)です。
 
 ‘[defined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-defined”
-   現在の検索順序(search order)で名前が見つかった場合は true を返します
+   現在のサーチ・オーダーで名前が見つかった場合は true を返します
 
 ‘[undefined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-undefined”
-   現在の検索順序(search order)で名前が見つかった場合は false を返します
+   現在のサーチ・オーダーで名前が見つかった場合は false を返します
 
 ‘[IFDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-def”
-   現在の検索順序(search-order)で name が見つかった場合は、 ‘TRUE’ フラ
-グを伴った ‘[IF]’ のように振る舞いし、 そうでない場合は、 ‘FALSE’ フラグ
-を伴った ‘[IF]’ のように動作します。 即実行ワードです。
+   現在のサーチ・オーダーで name が見つかった場合は、 ‘TRUE’ フラグを伴
+った ‘[IF]’ のように振る舞いし、 そうでない場合は、 ‘FALSE’ フラグを伴っ
+た ‘[IF]’ のように動作します。 即実行ワードです。
 
 ‘[IFUNDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-un-def”
-   現在の検索順序(search-order)で name が見つからない場合は、 ‘TRUE’ フ
-ラグを伴った ‘[IF]’ のように動作し、 それ以外の場合は、‘FALSE’ フラグを
-伴った ‘[IF]’ のように動作します。 即実行ワード。
+   現在のサーチ・オーダーで name が見つからない場合は、 ‘TRUE’ フラグを
+伴った ‘[IF]’ のように動作し、 それ以外の場合は、‘FALSE’ フラグを伴った
+‘[IF]’ のように動作します。 即実行ワード。
 
 ‘[?DO]’ ( n-limit n-index –  ) gforth-0.2 “bracket-question-do”
 
@@ -3879,7 +3879,7 @@ File: gforth.info,  Node: Default Recognizers,  Next: Dealing with existing Reco
 6.14.5.1 Default Recognizers
 ............................
 
-標準の Forth テキスト・インタプリタは、 検索順序(search order)内のワード
+標準の Forth テキスト・インタプリタは、 サーチ・オーダー内のワード
 (‘rec-nt’) と、 整数(‘rec-num’)と、 浮動小数点数(‘rec-float’)を認識しま
 す。 デフォルトでは、 Gforth は 以下の構文も認識します
 
@@ -3928,8 +3928,8 @@ locate はそのワードを表示します。
 。 ただし、 このポリシーにはいくつかの例外があります:
 
    • ワード名には任意の名前を付けることができるため、 他の認識器と競合す
-     る可能性があります(また、 検索順序(search order)は他の認識器よりも
-     前に検索されます)。
+     る可能性があります(また、 サーチ・オーダーは他の認識器よりも前に検
+     索されます)。
 
      ただし、 名前は ‘0’ (ゼロ)で始まらない傾向がある(そして ‘0’ (ゼロ)
      で始まる場合は特殊文字が含まれる傾向がある)ため、 base が ‘hex’ の
@@ -4226,167 +4226,177 @@ File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The I
 6.16 Word Lists
 ===============
 
-A wordlist is a list of named words; you can add new words and look up
-words by name (and you can remove words in a restricted way with
-markers).  Every named (and ‘reveal’ed) word is in one wordlist.
+ワードリスト(wordlist)は名前付きワードのリストです。 新しいワードを追加
+したり、 ワードを名前で探したりできます(マーカー(markers)を使用して制限
+された方法でワードを削除することもできます)。 全ての名前付き(および
+‘reveal’ された)ワードは 1 つのワードリスト内にあります。
 
-   The text interpreter searches the wordlists present in the search
-order (a stack of wordlists), from the top to the bottom.  Within each
-wordlist, the search starts conceptually at the newest word; i.e., if
-two words in a wordlist have the same name, the newer word is found.
+   テキスト・インタプリタは、 サーチ・オーダー(検索順序)(ワードリストの
+スタック)に存在するワードリストを頂上から下へ検索します。 各ワードリスト
+内では、 概念的には最新のワードから検索が開始されます。 つまり、 ワード
+リスト内に同一の名前の 2 つのワードがある場合、 新しいワードが検索にヒッ
+トします。
 
-   New words are added to the “compilation wordlist” (aka current
-wordlist).
+   新しいワードは「コンパイル・ワードリスト」(“compilation wordlist”)(現
+在のワードリスト(current wordlist)とも呼ばれます)に追加されます。
 
-   A word list is identified by a cell-sized word list identifier (wid)
-in much the same way as a file is identified by a file handle.  The
-numerical value of the wid has no (portable) meaning, and might change
-from session to session.
+   ファイルがファイル・ハンドルによって識別されるのとほぼ同じ方法で、 ワ
+ードリストはセル・サイズのワードリスト識別子(word list identifier; wid)に
+よって識別されます。 wid の数値には(移植可能な)意味はなく、 セッションご
+とに変わる可能性があります。
 
-   The Standard Forth “Search order” word set is intended to provide a
-set of low-level tools that allow various different schemes to be
-implemented.  Gforth also provides ‘vocabulary’, a traditional Forth
-word.  ‘compat/vocabulary.fs’ provides an implementation in Standard
-Forth.
+   標準 Forth の “Search order” ワード・セットは、 さまざまな異なるスキ
+ームの実装を可能にする低レベル・ツールのセットを提供することを目的として
+います。 Gforth は、 伝統的な Forth ワードである ‘vocabulary’ も提供しま
+す。 ‘compat/vocabulary.fs’ は、 標準 Forth での実装を提供します。
 
 ‘forth-wordlist’ ( – wid  ) search “forth-wordlist”
-   ‘Constant’ – wid identifies the word list that includes all of the
-standard words provided by Gforth.  When Gforth is invoked, this word
-list is the compilation word list and is at the top of the search order.
+   定数(‘Constant’) – wid は、Gforth が提供するすべての標準のワードを含
+むワードリストを識別します。 Gforth が呼び出されると、 このワードリスト
+がコンパイル・ワードリストとなり、 サーチ・オーダーの最上位になります。
 
 ‘definitions’ ( –  ) search “definitions”
-   Set the compilation word list to be the same as the word list that is
-currently at the top of the search order.
+   現在サーチ・オーダーの先頭にあるワードリストをコンパイル・ワードリス
+トにします(訳注: : ‘definitions context  current ! ;’ )
 
 ‘get-current’ ( – wid  ) search “get-current”
-   wid is the identifier of the current compilation word list.
+   wid は、 現在のコンパイル・ワードリストのワードリスト識別子です。
 
 ‘set-current’ ( wid –  ) search “set-current”
-   Set the compilation word list to the word list identified by wid.
+   wid で識別されるワードリストをコンパイル・ワードリストに設定します。
 
 ‘get-order’ ( – widn .. wid1 n  ) search “get-order”
-   Copy the search order to the data stack.  The current search order
-has n entries, of which wid1 represents the wordlist that is searched
-first (the word list at the top of the search order) and widn represents
-the wordlist that is searched last.
+   サーチ・オーダーをデータ・スタックにコピーします。 現在のサーチ・オー
+ダーには n 個のエントリがあり、 そのうち wid1 は最初に検索されるワードリ
+スト(サーチ・オーダーの先頭にあるワードリスト) を表し、 widn は最後に検
+索されるワードリストを表します。
 
 ‘set-order’ ( widn .. wid1 n –  ) search “set-order”
-   If N=0, empty the search order.  If N=-1, set the search order to the
-implementation-defined minimum search order (for Gforth, this is the
-word list ‘Root’).  Otherwise, replace the existing search order with
-the N wid entries such that WID1 represents the word list that will be
-searched first and WIDN represents the word list that will be searched
-last.
+   N=0 の場合、 サーチ・オーダーを空(empty)にします。 N=-1 の場合、 サー
+チ・オーダーを実装定義の最小サーチ・オーダーに設定します (Gforth の場合
+、 これはワードリスト ‘Root’ です)。 それ以外の場合は、 N 個の wid エン
+トリを持ち、 WID1 が最初に検索されるワードリストを表し、 WIDN が最後に検
+索されるワードリストを表すように、 既存のサーチ・オーダーを置き換えます
+。
 
 ‘wordlist’ ( – wid  ) search “wordlist”
-   Create a new, empty word list represented by wid.
+   wid で表される新しい空(empty)のワードリストを作成します。
 
 ‘table’ ( – wid  ) gforth-0.2 “table”
-   Create a lookup table (case-sensitive, no warnings).
+   検索テーブル(lookup table)を作成します(英大文字と小文字を区別し、 警
+告なし)。
 
 ‘cs-wordlist’ ( – wid  ) gforth-1.0 “cs-wordlist”
-   Create a case-sensitive wordlist.
+   英大文字小文字を区別するワードリストを作成する。
 
 ‘cs-vocabulary’ ( "name" –  ) gforth-1.0 “cs-vocabulary”
-   Create a case-sensitive vocabulary
+   英大文字小文字を区別するボキャブラリを作成する
 
 ‘>order’ ( wid –  ) gforth-0.5 “to-order”
-   Push WID on the search order.
+   サーチ・オーダーというワードリストのスタックにワードリスト WID をプッ
+シュする(訳注: WID が サーチ・オーダー の TOS になる)。
 
 ‘previous’ ( –  ) search-ext “previous”
-   Drop the wordlist at the top of the search order.
+   サーチ・オーダーというワードリスト・スタックのTOSを捨てる
 
 ‘also’ ( –  ) search-ext “also”
-   Like ‘DUP’ for the search order.  Usually used before a vocabulary
-(e.g., ‘also Forth’); the combined effect is to push the wordlist
-represented by the vocabulary on the search order.
+   サーチ・オーダーでTOSを ‘DUP’ するかのように振る舞います(訳注: ‘:
+also context  >order ;’)。 通常はボキャブラリの前で使います(例えば ‘also
+Forth’)。 これにより、 ボキャブラリによって表されるワードリストがサーチ
+・オーダーへプッシュされるという複合的な効果が得られます(訳注:サーチ・オ
+ーダーの先頭を指定のボキャブラリで置き換えるのではなくて、 サーチ・オー
+ダーの先頭にさらにプッシュする形にして、 ボキャブラリの次が以前のサーチ
+オーダーの先頭になるようにする)
 
 ‘Forth’ ( –  ) search-ext “Forth”
-   Replace the wid at the top of the search order with the wid
-associated with the word list ‘forth-wordlist’.
+   サーチ・オーダーの先頭にある wid を、 ワードリスト ‘forth-wordlist’ に
+関連付けられた wid に置き換えます。
 
 ‘Only’ ( –  ) search-ext “Only”
-   Set the search order to the implementation-defined minimum search
-order (for Gforth, this is the word list ‘Root’).
+   サーチ・オーダーを実装定義の最小サーチ・オーダーにします(Gforth の場
+合、 これはワードリスト ‘Root’ です)。
 
 ‘order’ ( –  ) search-ext “order”
-   Print the search order and the compilation word list.  The word lists
-are printed in the order in which they are searched (which is reversed
-with respect to the conventional way of displaying stacks).  The
-compilation word list is displayed last.
+   サーチ・オーダーとコンパイル・ワードリストを出力します。 サーチ・オー
+ダーのワードリストは検索される順序で出力されます(従来のスタック表示方法
+とは逆になります)。 続けて、 コンパイル・ワードリストが最後に表示されま
+す。
 
 ‘.voc’ ( wid –  ) gforth-0.2 “dot-voc”
-   print the name of the wordlist represented by WID.  Can only print
-names defined with ‘vocabulary’ or ‘wordlist constant’, otherwise prints
-‘address’.
+   WID で表されるワードリストの名前を出力します。 ‘vocabulary’ または
+‘wordlist constant’ で定義された名前のみ出力できます。 それ以外の場合は
+アドレスを出力します。
 
 ‘find’ ( c-addr – xt +-1 | c-addr 0  ) core,search “find”
-   Search all word lists in the current search order for the definition
-named by the counted string at c-addr.  If the definition is not found,
-return 0.  If the definition is found return 1 (if the definition has
-non-default compilation semantics) or -1 (if the definition has default
-compilation semantics).  The xt returned in interpret state represents
-the interpretation semantics.  The xt returned in compile state
-represented either the compilation semantics (for non-default
-compilation semantics) or the run-time semantics that the compilation
-semantics would ‘compile,’ (for default compilation semantics).  The ANS
-Forth standard does not specify clearly what the returned xt represents
-(and also talks about immediacy instead of non-default compilation
-semantics), so this word is questionable in portable programs.  If
-non-portability is ok, ‘find-name’ and friends are better (*note Name
-token::).
+   カウンタ付き文字列 c-addr によって指定された定義の名前を現在のサーチ
+・オーダー内の全てのワードリストで検索します。 定義が見つからない場合、
+0 を返します。 定義が見つかった場合は、 1 (定義にデフォルト以外のコンパ
+イル機能(compilation semantics)ある場合)または、 -1 (定義にデフォルトの
+コンパイル機能(compilation semantics)がある場合)を返します。 インタプリ
+タ状態で返される xt はインタプリタ機能(interpretation semantics)を表しま
+す。 コンパイル状態で返される xt は、 コンパイル機能(デフォルト以外のコ
+ンパイル機能の場合)を表すか、または、 コンパイル機能が ‘compile,’ (デフ
+ォルトのコンパイル機能の場合)となる実行時機能(run-time semantics)を表し
+ます。 ANS Forth 標準では、 返される xt が何を表すかを明確に規定していな
+い(または、 デフォルト以外のコンパイル機能ではなく即実行性についても言及
+している)ため、 このワードは移植可能なプログラムでは問題があります。 移
+植性がなくても問題ない場合には、 ‘find-name’ とその友達の方が優れていま
+す(*note Name token::)。
 
 ‘search-wordlist’ ( c-addr count wid – 0 | xt +-1  ) search “search-wordlist”
-   Search the word list identified by wid for the definition named by
-the string at c-addr count.  If the definition is not found, return 0.
-If the definition is found return 1 (if the definition is immediate) or
--1 (if the definition is not immediate) together with the xt.  In
-Gforth, the xt returned represents the interpretation semantics.  ANS
-Forth does not specify clearly what xt represents.
+   wid で識別されるワードリスト内で、 c-addr count の文字列で指定された
+定義を検索します。 定義が見つからない場合は 0 を返します。 定義が見つか
+った場合は、 xt とともに 1 (定義が即実行である場合)または、 -1 (定義が即
+実行でない場合)を返します。 Gforth では、返される xt はインタプリタ機能
+(interpretation semantics)を表します。 ANS Forth では、 xt が何を表すか
+明確に規定していません。
 
 ‘words’ ( –  ) tools “words”
-   Display a list of all of the definitions in the word list at the top
-of the search order.
+   サーチ・オーダーの先頭にあるワードリスト内のすべての定義のリストを表
+示します。
 
 ‘vlist’ ( –  ) gforth-0.2 “vlist”
-   Old (pre-Forth-83) name for ‘WORDS’.
+   ‘WORDS’ の古い(Forth-83 より前の)名前。
 
 ‘wordlist-words’ ( wid –  ) gforth-0.6 “wordlist-words”
-   Display the contents of the wordlist wid.
+   ワードリスト wid の内容を表示します(訳注: ワードリストに含まれている
+ワードをリストする)。
 
 ‘mwords’ ( ["pattern"] –  ) gforth-1.0 “mwords”
-   list all words matching the optional parameter PATTERN; if none, all
-words match.  Words are listed old to new.  Pattern match like ‘search’
-(default), you can switch to globbing with ‘' mword-filename-match is
-mword-match’.
+   オプションのパラメータ PATTERN にマッチするすべてのワードをリストしま
+す。 指定しない場合合、 すべてのワードが一致します。 ワードは古い方から
+新しい方へとリストされます。 ‘search’ のようなパターン・マッチ(デフォル
+ト)ですが、 ‘' mword-filename-match is mword-match’ を使用してワイルドカ
+ード(globbing)に切り替えることができます(訳注: ‘mwords’ ENTER で全部リス
+ト、 ‘mwords value’ で value を含む名前をリスト)。
 
 ‘Root’ ( –  ) gforth-0.2 “Root”
-   Add the root wordlist to the search order stack.  This vocabulary
-makes up the minimum search order and contains only a search-order
-words.
+   ルート・ワードリストをサーチ・オーダー・スタックに追加します。 このボ
+キャブラリは最小の検索順序を構成し、 search-order のワードのみが含まれま
+す。
 
 ‘Vocabulary’ ( "name" –  ) gforth-0.2 “Vocabulary”
-   Create a definition "name" and associate a new word list with it.
-The run-time effect of "name" is to replace the wid at the top of the
-search order with the wid associated with the new word list.
+   "name" の定義を作成し、 それに新しいワードリストを関連付けます。
+"name" の実行時の効果は、 サーチ・オーダーの先頭にある wid を、 "name" に
+関連付けられた wid に置き換えることです。
 
 ‘seal’ ( –  ) gforth-0.2 “seal”
-   Remove all word lists from the search order stack other than the word
-list that is currently on the top of the search order stack.
+   現在サーチ・オーダー・スタックの最上位にあるワードリスト以外のすべて
+のワードリストをサーチ・オーダー・スタックから削除します。
 
 ‘vocs’ ( –  ) gforth-0.2 “vocs”
-   List vocabularies and wordlists defined in the system.
+   システムで定義されているボキャブラリとワードリストをリストします。
 
 ‘current’ ( – addr  ) gforth-0.2 “current”
-   ‘Variable’ – holds the wid of the compilation word list.
+   変数(‘Variable’) – コンパイル・ワードリストの wid を保持。
 
 ‘context’ ( – addr  ) gforth-0.2 “context”
-   ‘context’ ‘@’ is the wid of the word list at the top of the search
-order.
+   ‘context’ ‘@’ すると、 サーチ・オーダーの先頭にあるワードリストの wid
+が得られます。
 
 ‘map-vocs’ ( ... xt – ...  ) gforth-1.0 “map-vocs”
-   Perform xt ( ...  wid – ...  )  for all wordlists (including tables
-and cs-wordlists) in the system.
+   システム内のすべてのワードリスト(テーブルと cs-wordlist を含む)に対し
+て xt ( ...  wid – ...)  を実行します。
 
 * Menu:
 
@@ -4400,8 +4410,8 @@ File: gforth.info,  Node: Vocabularies,  Next: Why use word lists?,  Prev: Word 
 6.16.1 Vocabularies
 -------------------
 
-Here is an example of creating and using a new wordlist using Standard
-Forth words:
+以下は、 標準の Forth ワード群を使用して新しいワードリストを作成および使
+用する例です:
 
      wordlist constant my-new-words-wordlist
      : my-new-words get-order nip my-new-words-wordlist swap set-order ;
@@ -5872,192 +5882,4 @@ colors-theme can be changed by:
 
 ‘magenta-input’ ( –  ) gforth-1.0 “magenta-input”
    make input color easily recognizable (useful in presentations)
-
-
-File: gforth.info,  Node: Single-key input,  Next: Line input and conversion,  Prev: Terminal output,  Up: Other I/O
-
-6.20.7 Single-key input
------------------------
-
-If you want to get a single printable character, you can use ‘key’; to
-check whether a character is available for ‘key’, you can use ‘key?’.
-
-‘key’ ( – char  ) core “key”
-   Receive (but do not display) one character, CHAR.
-
-‘key-ior’ ( – char|ior  ) gforth-1.0 “key-ior”
-   Receive (but do not display) one character, CHAR, in case of an error
-or interrupt, return the negative IOR instead.
-
-‘key?’ ( – flag  ) facility “key-question”
-   Determine whether a character is available.  If a character is
-available, FLAG is true; the next call to ‘key’ will yield the
-character.  Once ‘key?’ returns true, subsequent calls to ‘key?’ before
-calling ‘key’ or ‘ekey’ will also return true.
-
-‘xkey?’ ( – flag  ) xchar “x-key-query”
-
-   If you want to process a mix of printable and non-printable
-characters, you can do that with ‘ekey’ and friends.  ‘Ekey’ produces a
-keyboard event that you have to convert into a character with
-‘ekey>char’ or into a key identifier with ‘ekey>fkey’.
-
-   Typical code for using EKEY looks like this:
-
-     ekey ekey>xchar if ( xc )
-       ... \ do something with the character
-     else ekey>fkey if ( key-id )
-       case
-         k-up                                  of ... endof
-         k-f1                                  of ... endof
-         k-left k-shift-mask or k-ctrl-mask or of ... endof
-         ...
-       endcase
-     else ( keyboard-event )
-       drop \ just ignore an unknown keyboard event type
-     then then
-
-‘ekey’ ( – u  ) facility-ext “e-key”
-   Receive a keyboard event U (encoding implementation-defined).
-
-‘ekey>xchar’ ( u – u false | xc true  ) xchar-ext “e-key-to-x-char”
-   Convert keyboard event U into xchar ‘xc’ if possible.
-
-‘ekey>char’ ( u – u false | c true  ) facility-ext “e-key-to-char”
-   Convert keyboard event U into character ‘c’ if possible.  Note that
-non-ASCII characters produce ‘false’ from both ‘ekey>char’ and
-‘ekey>fkey’.  Instead of ‘ekey>char’, use ‘ekey>xchar’ if available.
-
-‘ekey>fkey’ ( u1 – u2 f  ) facility-ext “e-key-to-f-key”
-   If u1 is a keyboard event in the special key set, convert keyboard
-event U1 into key id U2 and return true; otherwise return U1 and false.
-
-‘ekey?’ ( – flag  ) facility-ext “e-key-question”
-   True if a keyboard event is available.
-
-   The key identifiers for cursor keys are:
-
-‘k-left’ ( – u  ) facility-ext “k-left”
-
-‘k-right’ ( – u  ) facility-ext “k-right”
-
-‘k-up’ ( – u  ) facility-ext “k-up”
-
-‘k-down’ ( – u  ) facility-ext “k-down”
-
-‘k-home’ ( – u  ) facility-ext “k-home”
-   aka Pos1
-
-‘k-end’ ( – u  ) facility-ext “k-end”
-
-‘k-prior’ ( – u  ) facility-ext “k-prior”
-   aka PgUp
-
-‘k-next’ ( – u  ) facility-ext “k-next”
-   aka PgDn
-
-‘k-insert’ ( – u  ) facility-ext “k-insert”
-
-‘k-delete’ ( – u  ) facility-ext “k-delete”
-   the <DEL> key on my xterm, not backspace
-
-   The key identifiers for function keys (aka keypad keys) are:
-
-‘k-f1’ ( – u  ) facility-ext “k-f-1”
-
-‘k-f2’ ( – u  ) facility-ext “k-f-2”
-
-‘k-f3’ ( – u  ) facility-ext “k-f-3”
-
-‘k-f4’ ( – u  ) facility-ext “k-f-4”
-
-‘k-f5’ ( – u  ) facility-ext “k-f-5”
-
-‘k-f6’ ( – u  ) facility-ext “k-f-6”
-
-‘k-f7’ ( – u  ) facility-ext “k-f-7”
-
-‘k-f8’ ( – u  ) facility-ext “k-f-8”
-
-‘k-f9’ ( – u  ) facility-ext “k-f-9”
-
-‘k-f10’ ( – u  ) facility-ext “k-f-10”
-
-‘k-f11’ ( – u  ) facility-ext “k-f-11”
-
-‘k-f12’ ( – u  ) facility-ext “k-f-12”
-
-   Note that ‘k-f11’ and ‘k-f12’ are not as widely available.
-
-   You can combine these key identifiers with masks for various shift
-keys:
-
-‘k-shift-mask’ ( – u  ) facility-ext “k-shift-mask”
-
-‘k-ctrl-mask’ ( – u  ) facility-ext “k-ctrl-mask”
-
-‘k-alt-mask’ ( – u  ) facility-ext “k-alt-mask”
-
-   There are a number of keys that have ASCII values, and therefore are
-unlikely to be reported as special keys, but the combination of these
-keys with shift keys may be reported as a special key:
-
-‘k-enter’ ( – u  ) gforth-1.0 “k-enter”
-
-‘k-backspace’ ( – u  ) gforth-1.0 “k-backspace”
-
-‘k-tab’ ( – u  ) gforth-1.0 “k-tab”
-
-   Moreover, there the following key codes for keys and other events:
-
-‘k-winch’ ( – u  ) gforth-1.0 “k-winch”
-   A key code that may be generated when the user changes the window
-size.
-
-‘k-pause’ ( – u  ) gforth-1.0 “k-pause”
-
-‘k-mute’ ( – u  ) gforth-1.0 “k-mute”
-
-‘k-volup’ ( – u  ) gforth-1.0 “k-volup”
-
-‘k-voldown’ ( – u  ) gforth-1.0 “k-voldown”
-
-‘k-sel’ ( – u  ) gforth-1.0 “k-sel”
-   keycode for Android selections
-
-‘k-eof’ ( – u  ) gforth-1.0 “k-eof”
-
-   Note that, even if a Forth system has ‘ekey>fkey’ and the key
-identifier words, the keys are not necessarily available or it may not
-necessarily be able to report all the keys and all the possible
-combinations with shift masks.  Therefore, write your programs in such a
-way that they are still useful even if the keys and key combinations
-cannot be pressed or are not recognized.
-
-   Examples: Older keyboards often do not have an F11 and F12 key.  If
-you run Gforth in an xterm, the xterm catches a number of combinations
-(e.g., <Shift-Up>), and never passes it to Gforth.  Finally, Gforth
-currently does not recognize and report combinations with multiple shift
-keys (so the <shift-ctrl-left> case in the example above would never be
-entered).
-
-   Gforth recognizes various keys available on ANSI terminals (in MS-DOS
-you need the ANSI.SYS driver to get that behaviour); it works by
-recognizing the escape sequences that ANSI terminals send when such a
-key is pressed.  If you have a terminal that sends other escape
-sequences, you will not get useful results on Gforth.  Other Forth
-systems may work in a different way.
-
-   Gforth also provides a few words for outputting names of function
-keys:
-
-‘fkey.’ ( u –  ) gforth-1.0 “fkey-dot”
-   Print a string representation for the function key u.  U must be a
-function key (possibly with modifier masks), otherwise there may be an
-exception.
-
-‘simple-fkey-string’ ( u1 – c-addr u  ) gforth-1.0 “simple-fkey-string”
-   c-addr u is the string name of the function key u1.  Only works for
-simple function keys without modifier masks.  Any u1 that does not
-correspond to a simple function key currently produces an exception.
 

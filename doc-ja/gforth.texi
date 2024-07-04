@@ -3456,9 +3456,8 @@ comp' if .s 2drop
 最も新しいワードから検索を開始し、 古いワードに向かって進みます(実際には、 最近のほとんどのシステムはハッシュ・テーブルを使用します)。 つまり、
 古いワードと同一の名前のワードを定義すると、 新しいワードが古いワードを隠します。
 
-どのワードリストがどの順序で検索されるかは、 検索順序(search order)によって決まります。  @code{order}
-で検索順を表示できます。  まず、 最初に検索されたワード・リスト(wordlist)から始まる検索順序が表示され、
-次に新しく定義されたワードを含むワード・リスト(wordlist)が表示されます:
+どのワードリストがどの順序で検索されるかは、 サーチ・オーダー(検索順序)によって決まります。  @code{order} で検索順序を表示できます。
+検索順序を、 最初に検索されるワードリストから順に表示し、 その次に、 新しく定義されるワードを含むワードリストを表示します。
 
 @code{wordlist ( -- wid )} を使用して、 新しい空のワード・リスト(wordlist)を作成できます:
 
@@ -3486,8 +3485,8 @@ create someword
 ( wid ) set-current
 @end example
 
-検索順序は @code{set-order ( wid1 .. widn n -- )} で記述し、 @code{get-order ( -- wid1
-.. widn n )} で読み取ることができます。  最初に検索されたワード・リストが最上位(topmost)になります。
+サーチ・オーダーは @code{set-order ( wid1 .. widn n -- )} で記述し、 @code{get-order ( --
+wid1 .. widn n )} で読み取ることができます。  ( n を除いて) もっとも TOS 側のワード・リストが最初に検索されます。
 
 @example
 get-order mywords swap 1+ set-order
@@ -3499,12 +3498,12 @@ order
 
 @quotation 研究課題(assignment)
 @code{>order ( wid -- )} を定義して、 最初に検索されるワード・リスト(wordlist)として @code{wid}
-を検索順序に追加してみましょう。 @code{previous ( -- )} を定義してみましょう。 これは、
-最初に検索されたワードリスト(wordlist)を検索順序から削除(search order)するものです。 定義したら、
+をサーチ・オーダーに追加してみましょう。 @code{previous ( -- )} を定義してみましょう。 これは、
+最初に検索されたワードリスト(wordlist)をサーチ・オーダーから削除(search order)するものです。 定義したら、
 境界条件を試してみましょう(クラッシュや、 そこから抜け出すことが困難または不可能な状況がいくつか見られる事でしょう)。
 @end quotation
 
-検索順序(search order)は、 Modula-2 モジュールや、 C++ の名前空間と同様の機能を提供するための強力な基盤です。  ただし、
+サーチ・オーダー(検索順序)は、 Modula-2 モジュールや、 C++ の名前空間と同様の機能を提供するための強力な基盤です。  ただし、
 この方法でプログラムをモジュール化しようとすると、 デバッグや 再利用/ファクタリング に関しては、
 (大規模なプロジェクトの経験はありませんけれども、)私の経験では利点を上回る欠点があります。  他の言語/プログラミング環境では、
 デバッグや再利用がそれほど強力ではないため、 これらの欠点はそれほど目立ちません。
@@ -12467,8 +12466,7 @@ nt)です)。  ただし、 synonym と、 aliase と、 @code{interpret/compile
 @format
 @code{find-name} ( @i{c-addr u -- nt | 0  }) gforth-0.2 ``find-name''
 @end format
-現在の検索順序(search order)で名前 @i{c-addr u} を見つけます。 @i{nt} が見つかった場合はそれを返し、
-それ以外の場合は 0 を返します。
+現在のサーチ・オーダーで名前 @i{c-addr u} を見つけます。 @i{nt} が見つかった場合はそれを返し、 それ以外の場合は 0 を返します。
 
 
 @findex find-name-in ( @var{ c-addr u wid -- nt | 0   } ) gforth-1.0
@@ -13619,7 +13617,7 @@ flag が @code{TRUE} の場合は何もしません(したがって、 後続の
 @format
 @code{[defined]} ( @i{"<spaces>name" -- flag  }) tools-ext ``bracket-defined''
 @end format
-現在の検索順序(search order)で名前が見つかった場合は true を返します
+現在のサーチ・オーダーで名前が見つかった場合は true を返します
 
 
 @findex [undefined] ( @var{ "<spaces>name" -- flag   } ) tools-ext
@@ -13628,7 +13626,7 @@ flag が @code{TRUE} の場合は何もしません(したがって、 後続の
 @format
 @code{[undefined]} ( @i{"<spaces>name" -- flag  }) tools-ext ``bracket-undefined''
 @end format
-現在の検索順序(search order)で名前が見つかった場合は false を返します
+現在のサーチ・オーダーで名前が見つかった場合は false を返します
 
 
 
@@ -13638,8 +13636,8 @@ flag が @code{TRUE} の場合は何もしません(したがって、 後続の
 @format
 @code{[IFDEF]} ( @i{"<spaces>name" --  }) gforth-0.2 ``bracket-if-def''
 @end format
-現在の検索順序(search-order)で name が見つかった場合は、 @code{TRUE} フラグを伴った @code{[IF]}
-のように振る舞いし、 そうでない場合は、 @code{FALSE} フラグを伴った @code{[IF]} のように動作します。 即実行ワードです。
+現在のサーチ・オーダーで name が見つかった場合は、 @code{TRUE} フラグを伴った @code{[IF]} のように振る舞いし、
+そうでない場合は、 @code{FALSE} フラグを伴った @code{[IF]} のように動作します。 即実行ワードです。
 
 
 @findex [IFUNDEF] ( @var{ "<spaces>name" --   } ) gforth-0.2
@@ -13648,8 +13646,8 @@ flag が @code{TRUE} の場合は何もしません(したがって、 後続の
 @format
 @code{[IFUNDEF]} ( @i{"<spaces>name" --  }) gforth-0.2 ``bracket-if-un-def''
 @end format
-現在の検索順序(search-order)で name が見つからない場合は、 @code{TRUE} フラグを伴った @code{[IF]}
-のように動作し、 それ以外の場合は、@code{FALSE} フラグを伴った @code{[IF]} のように動作します。 即実行ワード。
+現在のサーチ・オーダーで name が見つからない場合は、 @code{TRUE} フラグを伴った @code{[IF]} のように動作し、
+それ以外の場合は、@code{FALSE} フラグを伴った @code{[IF]} のように動作します。 即実行ワード。
 
 
 
@@ -13790,9 +13788,8 @@ Recognizers})。 ただし、 それらを操作したり(@pxref{Dealing with ex
 @subsubsection Default Recognizers
 @cindex Recognizers normal usage
 
-標準の Forth テキスト・インタプリタは、 検索順序(search order)内のワード(@code{rec-nt}) と、
-整数(@code{rec-num})と、 浮動小数点数(@code{rec-float})を認識します。  デフォルトでは、 Gforth は
-以下の構文も認識します
+標準の Forth テキスト・インタプリタは、 サーチ・オーダー内のワード(@code{rec-nt}) と、 整数(@code{rec-num})と、
+浮動小数点数(@code{rec-float})を認識します。  デフォルトでは、 Gforth は 以下の構文も認識します
 
 @itemize @bullet
 
@@ -13857,8 +13854,7 @@ locate ->mydefer
 @itemize @bullet
 
 @item
-ワード名には任意の名前を付けることができるため、 他の認識器と競合する可能性があります(また、 検索順序(search
-order)は他の認識器よりも前に検索されます)。
+ワード名には任意の名前を付けることができるため、 他の認識器と競合する可能性があります(また、 サーチ・オーダーは他の認識器よりも前に検索されます)。
 
 ただし、 名前は @code{0} (ゼロ)で始まらない傾向がある(そして @code{0} (ゼロ)
 で始まる場合は特殊文字が含まれる傾向がある)ため、 base が @code{hex} の場合は、 数値を @code{0}
@@ -14342,31 +14338,27 @@ Example:
 @cindex word lists
 @cindex header space
 
-A wordlist is a list of named words; you can add new words and look up words
-by name (and you can remove words in a restricted way with markers).  Every
-named (and @code{reveal}ed) word is in one wordlist.
+ワードリスト(wordlist)は名前付きワードのリストです。 新しいワードを追加したり、
+ワードを名前で探したりできます(マーカー(markers)を使用して制限された方法でワードを削除することもできます)。  全ての名前付き(および
+@code{reveal} された)ワードは 1 つのワードリスト内にあります。
 
 @cindex search order stack
-The text interpreter searches the wordlists present in the search order (a
-stack of wordlists), from the top to the bottom.  Within each wordlist, the
-search starts conceptually at the newest word; i.e., if two words in a
-wordlist have the same name, the newer word is found.
+テキスト・インタプリタは、 サーチ・オーダー(検索順序)(ワードリストのスタック)に存在するワードリストを頂上から下へ検索します。
+各ワードリスト内では、 概念的には最新のワードから検索が開始されます。 つまり、 ワードリスト内に同一の名前の 2 つのワードがある場合、
+新しいワードが検索にヒットします。
 
 @cindex compilation word list
-New words are added to the @dfn{compilation wordlist} (aka current
-wordlist).
+新しいワードは「コンパイル・ワードリスト」(@dfn{compilation wordlist})(現在のワードリスト(current
+wordlist)とも呼ばれます)に追加されます。
 
 @cindex wid
-A word list is identified by a cell-sized word list identifier (@i{wid})  in
-much the same way as a file is identified by a file handle. The numerical
-value of the wid has no (portable) meaning, and might change from session to
-session.
+ファイルがファイル・ハンドルによって識別されるのとほぼ同じ方法で、 ワードリストはセル・サイズのワードリスト識別子(word list
+identifier; @i{wid})によって識別されます。 wid の数値には(移植可能な)意味はなく、 セッションごとに変わる可能性があります。
 
-The Standard Forth ``Search order'' word set is intended to provide a set of
-low-level tools that allow various different schemes to be
-implemented. Gforth also provides @code{vocabulary}, a traditional Forth
-word.  @file{compat/vocabulary.fs} provides an implementation in Standard
-Forth.
+標準 Forth の ``Search order'' ワード・セットは、
+さまざまな異なるスキームの実装を可能にする低レベル・ツールのセットを提供することを目的としています。 Gforth は、 伝統的な Forth
+ワードである @code{vocabulary} も提供します。  @file{compat/vocabulary.fs} は、 標準 Forth
+での実装を提供します。
 
 @comment TODO: locals section refers to here, saying that every word list (aka
 @comment vocabulary) has its own methods for searching etc. Need to document that.
@@ -14383,9 +14375,8 @@ Forth.
 @format
 @code{forth-wordlist} ( @i{-- wid  }) search ``forth-wordlist''
 @end format
-@code{Constant} -- @i{wid} identifies the word list that includes all of the
-standard words provided by Gforth. When Gforth is invoked, this word list is
-the compilation word list and is at the top of the search order.
+定数(@code{Constant}) -- @i{wid} は、Gforth が提供するすべての標準のワードを含むワードリストを識別します。
+Gforth が呼び出されると、 このワードリストがコンパイル・ワードリストとなり、 サーチ・オーダーの最上位になります。
 
 
 @findex definitions ( @var{ --   } ) search
@@ -14394,8 +14385,8 @@ the compilation word list and is at the top of the search order.
 @format
 @code{definitions} ( @i{--  }) search ``definitions''
 @end format
-Set the compilation word list to be the same as the word list that is
-currently at the top of the search order.
+現在サーチ・オーダーの先頭にあるワードリストをコンパイル・ワードリストにします(訳注: : @code{definitions  context @
+current ! ;} )
 
 
 @findex get-current ( @var{ -- wid   } ) search
@@ -14404,7 +14395,7 @@ currently at the top of the search order.
 @format
 @code{get-current} ( @i{-- wid  }) search ``get-current''
 @end format
-@i{wid} is the identifier of the current compilation word list.
+@i{wid} は、 現在のコンパイル・ワードリストのワードリスト識別子です。
 
 
 @findex set-current ( @var{ wid --   } ) search
@@ -14413,7 +14404,7 @@ currently at the top of the search order.
 @format
 @code{set-current} ( @i{wid --  }) search ``set-current''
 @end format
-Set the compilation word list to the word list identified by @i{wid}.
+@i{wid} で識別されるワードリストをコンパイル・ワードリストに設定します。
 
 
 @findex get-order ( @var{ -- widn .. wid1 n   } ) search
@@ -14422,10 +14413,8 @@ Set the compilation word list to the word list identified by @i{wid}.
 @format
 @code{get-order} ( @i{-- widn .. wid1 n  }) search ``get-order''
 @end format
-Copy the search order to the data stack. The current search order has @i{n}
-entries, of which @i{wid1} represents the wordlist that is searched first
-(the word list at the top of the search order) and @i{widn} represents the
-wordlist that is searched last.
+サーチ・オーダーをデータ・スタックにコピーします。 現在のサーチ・オーダーには @i{n} 個のエントリがあり、 そのうち @i{wid1}
+は最初に検索されるワードリスト(サーチ・オーダーの先頭にあるワードリスト) を表し、 @i{widn} は最後に検索されるワードリストを表します。
 
 
 @findex set-order ( @var{ widn .. wid1 n --   } ) search
@@ -14434,12 +14423,10 @@ wordlist that is searched last.
 @format
 @code{set-order} ( @i{widn .. wid1 n --  }) search ``set-order''
 @end format
-If @var{n}=0, empty the search order.  If @var{n}=-1, set the search order
-to the implementation-defined minimum search order (for Gforth, this is the
-word list @code{Root}). Otherwise, replace the existing search order with
-the @var{n} wid entries such that @var{wid1} represents the word list that
-will be searched first and @var{widn} represents the word list that will be
-searched last.
+@var{n}=0 の場合、 サーチ・オーダーを空(empty)にします。  @var{n}=-1 の場合、
+サーチ・オーダーを実装定義の最小サーチ・オーダーに設定します (Gforth の場合、 これはワードリスト @code{Root} です)。
+それ以外の場合は、 @var{n} 個の wid エントリを持ち、 @var{wid1} が最初に検索されるワードリストを表し、 @var{widn}
+が最後に検索されるワードリストを表すように、 既存のサーチ・オーダーを置き換えます。
 
 
 @findex wordlist ( @var{ -- wid   } ) search
@@ -14448,7 +14435,7 @@ searched last.
 @format
 @code{wordlist} ( @i{-- wid  }) search ``wordlist''
 @end format
-Create a new, empty word list represented by @i{wid}.
+@i{wid} で表される新しい空(empty)のワードリストを作成します。
 
 
 @findex table ( @var{ -- wid   } ) gforth-0.2
@@ -14457,7 +14444,7 @@ Create a new, empty word list represented by @i{wid}.
 @format
 @code{table} ( @i{-- wid  }) gforth-0.2 ``table''
 @end format
-Create a lookup table (case-sensitive, no warnings).
+検索テーブル(lookup table)を作成します(英大文字と小文字を区別し、 警告なし)。
 
 
 @findex cs-wordlist ( @var{ -- wid   } ) gforth-1.0
@@ -14466,7 +14453,7 @@ Create a lookup table (case-sensitive, no warnings).
 @format
 @code{cs-wordlist} ( @i{-- wid  }) gforth-1.0 ``cs-wordlist''
 @end format
-Create a case-sensitive wordlist.
+英大文字小文字を区別するワードリストを作成する。
 
 
 @findex cs-vocabulary ( @var{ "name" --   } ) gforth-1.0
@@ -14475,7 +14462,7 @@ Create a case-sensitive wordlist.
 @format
 @code{cs-vocabulary} ( @i{"name" --  }) gforth-1.0 ``cs-vocabulary''
 @end format
-Create a case-sensitive vocabulary
+英大文字小文字を区別するボキャブラリを作成する
 
 
 @findex >order ( @var{ wid --   } ) gforth-0.5
@@ -14484,7 +14471,8 @@ Create a case-sensitive vocabulary
 @format
 @code{>order} ( @i{wid --  }) gforth-0.5 ``to-order''
 @end format
-Push @var{wid} on the search order.
+サーチ・オーダーというワードリストのスタックにワードリスト @var{wid} をプッシュする(訳注: @var{wid} が サーチ・オーダー の
+TOS になる)。
 
 
 @findex previous ( @var{ --   } ) search-ext
@@ -14493,7 +14481,7 @@ Push @var{wid} on the search order.
 @format
 @code{previous} ( @i{--  }) search-ext ``previous''
 @end format
-Drop the wordlist at the top of the search order.
+サーチ・オーダーというワードリスト・スタックのTOSを捨てる
 
 
 @findex also ( @var{ --   } ) search-ext
@@ -14502,9 +14490,10 @@ Drop the wordlist at the top of the search order.
 @format
 @code{also} ( @i{--  }) search-ext ``also''
 @end format
-Like @code{DUP} for the search order. Usually used before a vocabulary
-(e.g., @code{also Forth}); the combined effect is to push the wordlist
-represented by the vocabulary on the search order.
+サーチ・オーダーでTOSを @code{DUP} するかのように振る舞います(訳注: @code{: also   context @ >order
+;})。 通常はボキャブラリの前で使います(例えば @code{also Forth})。 これにより、
+ボキャブラリによって表されるワードリストがサーチ・オーダーへプッシュされるという複合的な効果が得られます(訳注:サーチ・オーダーの先頭を指定のボキャブラリで置き換えるのではなくて、
+サーチ・オーダーの先頭にさらにプッシュする形にして、 ボキャブラリの次が以前のサーチオーダーの先頭になるようにする)
 
 
 @findex Forth ( @var{ --   } ) search-ext
@@ -14513,8 +14502,8 @@ represented by the vocabulary on the search order.
 @format
 @code{Forth} ( @i{--  }) search-ext ``Forth''
 @end format
-Replace the @i{wid} at the top of the search order with the @i{wid}
-associated with the word list @code{forth-wordlist}.
+サーチ・オーダーの先頭にある @i{wid} を、 ワードリスト @code{forth-wordlist} に関連付けられた @i{wid}
+に置き換えます。
 
 
 @findex Only ( @var{ --   } ) search-ext
@@ -14523,8 +14512,7 @@ associated with the word list @code{forth-wordlist}.
 @format
 @code{Only} ( @i{--  }) search-ext ``Only''
 @end format
-Set the search order to the implementation-defined minimum search order (for
-Gforth, this is the word list @code{Root}).
+サーチ・オーダーを実装定義の最小サーチ・オーダーにします(Gforth の場合、 これはワードリスト @code{Root} です)。
 
 
 @findex order ( @var{ --   } ) search-ext
@@ -14533,10 +14521,9 @@ Gforth, this is the word list @code{Root}).
 @format
 @code{order} ( @i{--  }) search-ext ``order''
 @end format
-Print the search order and the compilation word list.  The word lists are
-printed in the order in which they are searched (which is reversed with
-respect to the conventional way of displaying stacks). The compilation word
-list is displayed last.
+サーチ・オーダーとコンパイル・ワードリストを出力します。
+サーチ・オーダーのワードリストは検索される順序で出力されます(従来のスタック表示方法とは逆になります)。 続けて、
+コンパイル・ワードリストが最後に表示されます。
 
 
 @findex .voc ( @var{ wid --   } ) gforth-0.2
@@ -14545,9 +14532,8 @@ list is displayed last.
 @format
 @code{.voc} ( @i{wid --  }) gforth-0.2 ``dot-voc''
 @end format
-print the name of the wordlist represented by @var{wid}.  Can only print
-names defined with @code{vocabulary} or @code{wordlist constant}, otherwise
-prints @samp{address}.
+@var{wid} で表されるワードリストの名前を出力します。  @code{vocabulary} または @code{wordlist
+constant} で定義された名前のみ出力できます。 それ以外の場合はアドレスを出力します。
 
 
 
@@ -14557,19 +14543,15 @@ prints @samp{address}.
 @format
 @code{find} ( @i{c-addr -- xt +-1 | c-addr 0  }) core,search ``find''
 @end format
-Search all word lists in the current search order for the definition named
-by the counted string at @i{c-addr}.  If the definition is not found, return
-0. If the definition is found return 1 (if the definition has non-default
-compilation semantics) or -1 (if the definition has default compilation
-semantics).  The @i{xt} returned in interpret state represents the
-interpretation semantics.  The @i{xt} returned in compile state represented
-either the compilation semantics (for non-default compilation semantics) or
-the run-time semantics that the compilation semantics would @code{compile,}
-(for default compilation semantics).  The ANS Forth standard does not
-specify clearly what the returned @i{xt} represents (and also talks about
-immediacy instead of non-default compilation semantics), so this word is
-questionable in portable programs.  If non-portability is ok,
-@code{find-name} and friends are better (@pxref{Name token}).
+カウンタ付き文字列 @i{c-addr} によって指定された定義の名前を現在のサーチ・オーダー内の全てのワードリストで検索します。
+定義が見つからない場合、 0 を返します。 定義が見つかった場合は、 1 (定義にデフォルト以外のコンパイル機能(compilation
+semantics)ある場合)または、 -1 (定義にデフォルトのコンパイル機能(compilation semantics)がある場合)を返します。
+インタプリタ状態で返される @i{xt} はインタプリタ機能(interpretation semantics)を表します。  コンパイル状態で返される
+@i{xt} は、 コンパイル機能(デフォルト以外のコンパイル機能の場合)を表すか、または、 コンパイル機能が @code{compile,}
+(デフォルトのコンパイル機能の場合)となる実行時機能(run-time semantics)を表します。  ANS Forth 標準では、 返される
+@i{xt} が何を表すかを明確に規定していない(または、 デフォルト以外のコンパイル機能ではなく即実行性についても言及している)ため、
+このワードは移植可能なプログラムでは問題があります。 移植性がなくても問題ない場合には、 @code{find-name}
+とその友達の方が優れています(@pxref{Name token})。
 
 
 @findex search-wordlist ( @var{ c-addr count wid -- 0 | xt +-1   } ) search
@@ -14578,12 +14560,10 @@ questionable in portable programs.  If non-portability is ok,
 @format
 @code{search-wordlist} ( @i{c-addr count wid -- 0 | xt +-1  }) search ``search-wordlist''
 @end format
-Search the word list identified by @i{wid} for the definition named by the
-string at @i{c-addr count}.  If the definition is not found, return 0. If
-the definition is found return 1 (if the definition is immediate) or -1 (if
-the definition is not immediate) together with the @i{xt}.  In Gforth, the
-@i{xt} returned represents the interpretation semantics.  ANS Forth does not
-specify clearly what @i{xt} represents.
+@i{wid} で識別されるワードリスト内で、 @i{c-addr count} の文字列で指定された定義を検索します。 定義が見つからない場合は 0
+を返します。 定義が見つかった場合は、 @i{xt} とともに 1 (定義が即実行である場合)または、  -1 (定義が即実行でない場合)を返します。
+Gforth では、返される @i{xt} はインタプリタ機能(interpretation semantics)を表します。  ANS Forth
+では、 @i{xt} が何を表すか明確に規定していません。
 
 
 
@@ -14593,8 +14573,7 @@ specify clearly what @i{xt} represents.
 @format
 @code{words} ( @i{--  }) tools ``words''
 @end format
-Display a list of all of the definitions in the word list at the top of the
-search order.
+サーチ・オーダーの先頭にあるワードリスト内のすべての定義のリストを表示します。
 
 
 @findex vlist ( @var{ --   } ) gforth-0.2
@@ -14603,7 +14582,7 @@ search order.
 @format
 @code{vlist} ( @i{--  }) gforth-0.2 ``vlist''
 @end format
-Old (pre-Forth-83) name for @code{WORDS}.
+@code{WORDS} の古い(Forth-83 より前の)名前。
 
 
 @findex wordlist-words ( @var{ wid --   } ) gforth-0.6
@@ -14612,7 +14591,7 @@ Old (pre-Forth-83) name for @code{WORDS}.
 @format
 @code{wordlist-words} ( @i{wid --  }) gforth-0.6 ``wordlist-words''
 @end format
-Display the contents of the wordlist wid.
+ワードリスト wid の内容を表示します(訳注: ワードリストに含まれているワードをリストする)。
 
 
 @findex mwords ( @var{ ["pattern"] --   } ) gforth-1.0
@@ -14621,10 +14600,10 @@ Display the contents of the wordlist wid.
 @format
 @code{mwords} ( @i{["pattern"] --  }) gforth-1.0 ``mwords''
 @end format
-list all words matching the optional parameter @var{pattern}; if none, all
-words match.  Words are listed old to new.  Pattern match like @code{search}
-(default), you can switch to globbing with @code{' mword-filename-match is
-mword-match}.
+オプションのパラメータ @var{pattern} にマッチするすべてのワードをリストします。 指定しない場合合、 すべてのワードが一致します。
+ワードは古い方から新しい方へとリストされます。  @code{search} のようなパターン・マッチ(デフォルト)ですが、 @code{'
+mword-filename-match is mword-match} を使用してワイルドカード(globbing)に切り替えることができます(訳注:
+@code{mwords} ENTER で全部リスト、 @code{mwords value} で value を含む名前をリスト)。
 
 
 @c doc-words-deferred
@@ -14636,8 +14615,8 @@ mword-match}.
 @format
 @code{Root} ( @i{--  }) gforth-0.2 ``Root''
 @end format
-Add the root wordlist to the search order stack.  This vocabulary makes up
-the minimum search order and contains only a search-order words.
+ルート・ワードリストをサーチ・オーダー・スタックに追加します。  このボキャブラリは最小の検索順序を構成し、 search-order
+のワードのみが含まれます。
 
 
 @findex Vocabulary ( @var{ "name" --   } ) gforth-0.2
@@ -14646,9 +14625,8 @@ the minimum search order and contains only a search-order words.
 @format
 @code{Vocabulary} ( @i{"name" --  }) gforth-0.2 ``Vocabulary''
 @end format
-Create a definition "name" and associate a new word list with it.  The
-run-time effect of "name" is to replace the @i{wid} at the top of the search
-order with the @i{wid} associated with the new word list.
+"name" の定義を作成し、 それに新しいワードリストを関連付けます。  "name" の実行時の効果は、 サーチ・オーダーの先頭にある
+@i{wid} を、 "name" に関連付けられた @i{wid} に置き換えることです。
 
 
 @findex seal ( @var{ --   } ) gforth-0.2
@@ -14657,8 +14635,7 @@ order with the @i{wid} associated with the new word list.
 @format
 @code{seal} ( @i{--  }) gforth-0.2 ``seal''
 @end format
-Remove all word lists from the search order stack other than the word list
-that is currently on the top of the search order stack.
+現在サーチ・オーダー・スタックの最上位にあるワードリスト以外のすべてのワードリストをサーチ・オーダー・スタックから削除します。
 
 
 @findex vocs ( @var{ --   } ) gforth-0.2
@@ -14667,7 +14644,7 @@ that is currently on the top of the search order stack.
 @format
 @code{vocs} ( @i{--  }) gforth-0.2 ``vocs''
 @end format
-List vocabularies and wordlists defined in the system.
+システムで定義されているボキャブラリとワードリストをリストします。
 
 
 @findex current ( @var{ -- addr   } ) gforth-0.2
@@ -14676,7 +14653,7 @@ List vocabularies and wordlists defined in the system.
 @format
 @code{current} ( @i{-- addr  }) gforth-0.2 ``current''
 @end format
-@code{Variable} -- holds the @i{wid} of the compilation word list.
+変数(@code{Variable}) -- コンパイル・ワードリストの @i{wid} を保持。
 
 
 @findex context ( @var{ -- addr   } ) gforth-0.2
@@ -14685,8 +14662,7 @@ List vocabularies and wordlists defined in the system.
 @format
 @code{context} ( @i{-- addr  }) gforth-0.2 ``context''
 @end format
-@code{context} @code{@@} is the @i{wid} of the word list at the top of the
-search order.
+@code{context} @code{@@} すると、 サーチ・オーダーの先頭にあるワードリストの @i{wid} が得られます。
 
 
 
@@ -14696,8 +14672,7 @@ search order.
 @format
 @code{map-vocs} ( @i{... xt -- ...  }) gforth-1.0 ``map-vocs''
 @end format
-Perform xt ( ... wid -- ... ) for all wordlists (including tables and
-cs-wordlists) in the system.
+システム内のすべてのワードリスト(テーブルと cs-wordlist を含む)に対して xt ( ... wid -- ...) を実行します。
 
 
 
@@ -14711,8 +14686,7 @@ cs-wordlists) in the system.
 @subsection Vocabularies
 @cindex Vocabularies, detailed explanation
 
-Here is an example of creating and using a new wordlist using Standard Forth
-words:
+以下は、 標準の Forth ワード群を使用して新しいワードリストを作成および使用する例です:
 
 @example
 wordlist constant my-new-words-wordlist
@@ -25292,8 +25266,7 @@ Gforth は、 アセンブリ言語でワードを実装する方法(@code{abi-c
 @format
 @code{assembler} ( @i{--  }) tools-ext ``assembler''
 @end format
-ボキャブラリ: 検索順序の先頭(the top of the search order)のワードリストを assembler
-ワードリストに置き換えます。
+ボキャブラリ: サーチオーダーの先頭のワードリストを assembler ワードリストに置き換えます。
 
 
 @findex init-asm ( @var{ --   } ) gforth-0.2
@@ -25302,7 +25275,7 @@ Gforth は、 アセンブリ言語でワードを実装する方法(@code{abi-c
 @format
 @code{init-asm} ( @i{--  }) gforth-0.2 ``init-asm''
 @end format
-assembler ワードリストを検索順序(the search order)にプッシュします。
+assembler ワードリストをサーチ・オーダーのにプッシュします(訳注:つまり assembler ワードリストがサーチ・オーダーの先頭になる)。
 
 
 @findex abi-code ( @var{ "name" -- colon-sys   } ) gforth-1.0

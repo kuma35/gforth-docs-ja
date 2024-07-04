@@ -27,6 +27,194 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Single-key input,  Next: Line input and conversion,  Prev: Terminal output,  Up: Other I/O
+
+6.20.7 Single-key input
+-----------------------
+
+If you want to get a single printable character, you can use ‘key’; to
+check whether a character is available for ‘key’, you can use ‘key?’.
+
+‘key’ ( – char  ) core “key”
+   Receive (but do not display) one character, CHAR.
+
+‘key-ior’ ( – char|ior  ) gforth-1.0 “key-ior”
+   Receive (but do not display) one character, CHAR, in case of an error
+or interrupt, return the negative IOR instead.
+
+‘key?’ ( – flag  ) facility “key-question”
+   Determine whether a character is available.  If a character is
+available, FLAG is true; the next call to ‘key’ will yield the
+character.  Once ‘key?’ returns true, subsequent calls to ‘key?’ before
+calling ‘key’ or ‘ekey’ will also return true.
+
+‘xkey?’ ( – flag  ) xchar “x-key-query”
+
+   If you want to process a mix of printable and non-printable
+characters, you can do that with ‘ekey’ and friends.  ‘Ekey’ produces a
+keyboard event that you have to convert into a character with
+‘ekey>char’ or into a key identifier with ‘ekey>fkey’.
+
+   Typical code for using EKEY looks like this:
+
+     ekey ekey>xchar if ( xc )
+       ... \ do something with the character
+     else ekey>fkey if ( key-id )
+       case
+         k-up                                  of ... endof
+         k-f1                                  of ... endof
+         k-left k-shift-mask or k-ctrl-mask or of ... endof
+         ...
+       endcase
+     else ( keyboard-event )
+       drop \ just ignore an unknown keyboard event type
+     then then
+
+‘ekey’ ( – u  ) facility-ext “e-key”
+   Receive a keyboard event U (encoding implementation-defined).
+
+‘ekey>xchar’ ( u – u false | xc true  ) xchar-ext “e-key-to-x-char”
+   Convert keyboard event U into xchar ‘xc’ if possible.
+
+‘ekey>char’ ( u – u false | c true  ) facility-ext “e-key-to-char”
+   Convert keyboard event U into character ‘c’ if possible.  Note that
+non-ASCII characters produce ‘false’ from both ‘ekey>char’ and
+‘ekey>fkey’.  Instead of ‘ekey>char’, use ‘ekey>xchar’ if available.
+
+‘ekey>fkey’ ( u1 – u2 f  ) facility-ext “e-key-to-f-key”
+   If u1 is a keyboard event in the special key set, convert keyboard
+event U1 into key id U2 and return true; otherwise return U1 and false.
+
+‘ekey?’ ( – flag  ) facility-ext “e-key-question”
+   True if a keyboard event is available.
+
+   The key identifiers for cursor keys are:
+
+‘k-left’ ( – u  ) facility-ext “k-left”
+
+‘k-right’ ( – u  ) facility-ext “k-right”
+
+‘k-up’ ( – u  ) facility-ext “k-up”
+
+‘k-down’ ( – u  ) facility-ext “k-down”
+
+‘k-home’ ( – u  ) facility-ext “k-home”
+   aka Pos1
+
+‘k-end’ ( – u  ) facility-ext “k-end”
+
+‘k-prior’ ( – u  ) facility-ext “k-prior”
+   aka PgUp
+
+‘k-next’ ( – u  ) facility-ext “k-next”
+   aka PgDn
+
+‘k-insert’ ( – u  ) facility-ext “k-insert”
+
+‘k-delete’ ( – u  ) facility-ext “k-delete”
+   the <DEL> key on my xterm, not backspace
+
+   The key identifiers for function keys (aka keypad keys) are:
+
+‘k-f1’ ( – u  ) facility-ext “k-f-1”
+
+‘k-f2’ ( – u  ) facility-ext “k-f-2”
+
+‘k-f3’ ( – u  ) facility-ext “k-f-3”
+
+‘k-f4’ ( – u  ) facility-ext “k-f-4”
+
+‘k-f5’ ( – u  ) facility-ext “k-f-5”
+
+‘k-f6’ ( – u  ) facility-ext “k-f-6”
+
+‘k-f7’ ( – u  ) facility-ext “k-f-7”
+
+‘k-f8’ ( – u  ) facility-ext “k-f-8”
+
+‘k-f9’ ( – u  ) facility-ext “k-f-9”
+
+‘k-f10’ ( – u  ) facility-ext “k-f-10”
+
+‘k-f11’ ( – u  ) facility-ext “k-f-11”
+
+‘k-f12’ ( – u  ) facility-ext “k-f-12”
+
+   Note that ‘k-f11’ and ‘k-f12’ are not as widely available.
+
+   You can combine these key identifiers with masks for various shift
+keys:
+
+‘k-shift-mask’ ( – u  ) facility-ext “k-shift-mask”
+
+‘k-ctrl-mask’ ( – u  ) facility-ext “k-ctrl-mask”
+
+‘k-alt-mask’ ( – u  ) facility-ext “k-alt-mask”
+
+   There are a number of keys that have ASCII values, and therefore are
+unlikely to be reported as special keys, but the combination of these
+keys with shift keys may be reported as a special key:
+
+‘k-enter’ ( – u  ) gforth-1.0 “k-enter”
+
+‘k-backspace’ ( – u  ) gforth-1.0 “k-backspace”
+
+‘k-tab’ ( – u  ) gforth-1.0 “k-tab”
+
+   Moreover, there the following key codes for keys and other events:
+
+‘k-winch’ ( – u  ) gforth-1.0 “k-winch”
+   A key code that may be generated when the user changes the window
+size.
+
+‘k-pause’ ( – u  ) gforth-1.0 “k-pause”
+
+‘k-mute’ ( – u  ) gforth-1.0 “k-mute”
+
+‘k-volup’ ( – u  ) gforth-1.0 “k-volup”
+
+‘k-voldown’ ( – u  ) gforth-1.0 “k-voldown”
+
+‘k-sel’ ( – u  ) gforth-1.0 “k-sel”
+   keycode for Android selections
+
+‘k-eof’ ( – u  ) gforth-1.0 “k-eof”
+
+   Note that, even if a Forth system has ‘ekey>fkey’ and the key
+identifier words, the keys are not necessarily available or it may not
+necessarily be able to report all the keys and all the possible
+combinations with shift masks.  Therefore, write your programs in such a
+way that they are still useful even if the keys and key combinations
+cannot be pressed or are not recognized.
+
+   Examples: Older keyboards often do not have an F11 and F12 key.  If
+you run Gforth in an xterm, the xterm catches a number of combinations
+(e.g., <Shift-Up>), and never passes it to Gforth.  Finally, Gforth
+currently does not recognize and report combinations with multiple shift
+keys (so the <shift-ctrl-left> case in the example above would never be
+entered).
+
+   Gforth recognizes various keys available on ANSI terminals (in MS-DOS
+you need the ANSI.SYS driver to get that behaviour); it works by
+recognizing the escape sequences that ANSI terminals send when such a
+key is pressed.  If you have a terminal that sends other escape
+sequences, you will not get useful results on Gforth.  Other Forth
+systems may work in a different way.
+
+   Gforth also provides a few words for outputting names of function
+keys:
+
+‘fkey.’ ( u –  ) gforth-1.0 “fkey-dot”
+   Print a string representation for the function key u.  U must be a
+function key (possibly with modifier masks), otherwise there may be an
+exception.
+
+‘simple-fkey-string’ ( u1 – c-addr u  ) gforth-1.0 “simple-fkey-string”
+   c-addr u is the string name of the function key u1.  Only works for
+simple function keys without modifier masks.  Any u1 that does not
+correspond to a simple function key currently produces an exception.
+
+
 File: gforth.info,  Node: Line input and conversion,  Next: Pipes,  Prev: Single-key input,  Up: Other I/O
 
 6.20.8 Line input and conversion
@@ -4739,11 +4927,12 @@ Gforth は、 アセンブリ言語でワードを実装する方法(‘abi-code
 意味し、 しばしば OS の境を越えることができます。
 
 ‘assembler’ ( –  ) tools-ext “assembler”
-   ボキャブラリ: 検索順序の先頭(the top of the search order)のワードリス
-トを assembler ワードリストに置き換えます。
+   ボキャブラリ: サーチオーダーの先頭のワードリストを assembler ワードリ
+ストに置き換えます。
 
 ‘init-asm’ ( –  ) gforth-0.2 “init-asm”
-   assembler ワードリストを検索順序(the search order)にプッシュします。
+   assembler ワードリストをサーチ・オーダーのにプッシュします(訳注:つま
+り assembler ワードリストがサーチ・オーダーの先頭になる)。
 
 ‘abi-code’ ( "name" – colon-sys  ) gforth-1.0 “abi-code”
    C言語プロトタイプ(C-prototype)に対応するプラットフォームの ABI 規則を
@@ -6922,120 +7111,4 @@ requesting an unmapped block number:
 using ‘source-id’ when ‘blk’ is non-zero:
      ‘source-id’ performs its function.  Typically it will give the id
      of the source which loaded the block.  (Better ideas?)
-
-
-File: gforth.info,  Node: The optional Floating-Point word set,  Next: The optional Locals word set,  Prev: The optional File-Access word set,  Up: Standard conformance
-
-9.7 The optional Floating-Point word set
-========================================
-
-* Menu:
-
-* floating-idef::            Implementation Defined Options
-* floating-ambcond::         あいまいな条件
-
-
-File: gforth.info,  Node: floating-idef,  Next: floating-ambcond,  Prev: The optional Floating-Point word set,  Up: The optional Floating-Point word set
-
-9.7.1 Implementation Defined Options
-------------------------------------
-
-format and range of floating point numbers:
-     System-dependent; the ‘double’ type of C.
-
-results of ‘REPRESENT’ when float is out of range:
-     System dependent; ‘REPRESENT’ is implemented using the C library
-     function ‘ecvt()’ and inherits its behaviour in this respect.
-
-rounding or truncation of floating-point numbers:
-     System dependent; the rounding behaviour is inherited from the
-     hosting C compiler.  IEEE-FP-based (i.e., most) systems by default
-     round to nearest, and break ties by rounding to even (i.e., such
-     that the last bit of the mantissa is 0).
-
-size of floating-point stack:
-     ‘s" FLOATING-STACK" environment? drop .’ gives the total size of
-     the floating-point stack (in floats).  You can specify this on
-     startup with the command-line option ‘-f’ (*note Invoking
-     Gforth::).
-
-width of floating-point stack:
-     ‘1 floats’.
-
-
-File: gforth.info,  Node: floating-ambcond,  Prev: floating-idef,  Up: The optional Floating-Point word set
-
-9.7.2 Ambiguous conditions
---------------------------
-
-‘df@’ or ‘df!’ used with an address that is not double-float aligned:
-     System-dependent.  Typically results in a ‘-23 THROW’ like other
-     alignment violations.
-
-‘f@’ or ‘f!’ used with an address that is not float aligned:
-     System-dependent.  Typically results in a ‘-23 THROW’ like other
-     alignment violations.
-
-floating-point result out of range:
-     System-dependent.  Can result in a ‘-43 throw’ (floating point
-     overflow), ‘-54 throw’ (floating point underflow), ‘-41 throw’
-     (floating point inexact result), ‘-55 THROW’ (Floating-point
-     unidentified fault), or can produce a special value representing,
-     e.g., Infinity.
-
-‘sf@’ or ‘sf!’ used with an address that is not single-float aligned:
-     System-dependent.  Typically results in an alignment fault like
-     other alignment violations.
-
-‘base’ is not decimal (‘REPRESENT’, ‘F.’, ‘FE.’, ‘FS.’):
-     The floating-point number is converted into decimal nonetheless.
-
-Both arguments are equal to zero (‘FATAN2’):
-     System-dependent.  ‘FATAN2’ is implemented using the C library
-     function ‘atan2()’.
-
-Using ‘FTAN’ on an argument r1 where cos(r1) is zero:
-     System-dependent.  Anyway, typically the cos of r1 will not be zero
-     because of small errors and the tan will be a very large (or very
-     small) but finite number.
-
-d cannot be presented precisely as a float in ‘D>F’:
-     The result is rounded to the nearest float.
-
-dividing by zero:
-     Platform-dependent; can produce an Infinity, NaN, ‘-42 throw’
-     (floating point divide by zero) or ‘-55 throw’ (Floating-point
-     unidentified fault).
-
-exponent too big for conversion (‘DF!’, ‘DF@’, ‘SF!’, ‘SF@’):
-     System dependent.  On IEEE-FP based systems the number is converted
-     into an infinity.
-
-float<1 (‘FACOSH’):
-     Platform-dependent; on IEEE-FP systems typically produces a NaN.
-
-float<=-1 (‘FLNP1’):
-     Platform-dependent; on IEEE-FP systems typically produces a NaN (or
-     a negative infinity for float=-1).
-
-float<=0 (‘FLN’, ‘FLOG’):
-     Platform-dependent; on IEEE-FP systems typically produces a NaN (or
-     a negative infinity for float=0).
-
-float<0 (‘FASINH’, ‘FSQRT’):
-     Platform-dependent; for ‘fsqrt’ this typically gives a NaN, for
-     ‘fasinh’ some platforms produce a NaN, others a number (bug in the
-     C library?).
-
-|float|>1 (‘FACOS’, ‘FASIN’, ‘FATANH’):
-     Platform-dependent; IEEE-FP systems typically produce a NaN.
-
-integer part of float cannot be represented by d in ‘F>D’:
-     Platform-dependent; typically, some double number is produced and
-     no error is reported.
-
-string larger than pictured numeric output area (‘f.’, ‘fe.’, ‘fs.’):
-     ‘Precision’ characters of the numeric output area are used.  If
-     ‘precision’ is too high, these words will smash the data or code
-     close to ‘here’.
 
