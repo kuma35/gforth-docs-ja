@@ -27,6 +27,283 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Floating-point output,  Next: Miscellaneous output,  Prev: Formatted numeric output,  Up: Other I/O
+
+6.20.3 Floating-point output
+----------------------------
+
+Floating-point output is always displayed using base 10.
+
+‘f.’ ( r –  ) floating-ext “f-dot”
+   Display (the floating-point number) r without exponent, followed by a
+space.
+
+‘fe.’ ( r –  ) floating-ext “f-e-dot”
+   Display r using engineering notation (with exponent dividable by 3),
+followed by a space.
+
+‘fs.’ ( r –  ) floating-ext “f-s-dot”
+   Display r using scientific notation (with exponent), followed by a
+space.
+
+‘fp.’ ( r –  ) floating-ext “f-e-dot”
+   Display r using SI prefix notation (with exponent dividable by 3,
+converted into SI prefixes if available), followed by a space.
+
+   Examples of printing the number 1234.5678E23 in the different
+floating-point output formats are shown below.
+
+     f. 123456780000000000000000000.
+     fe. 123.456780000000E24
+     fs. 1.23456780000000E26
+     fp. 123.456780000000Y
+
+   The length of the output is influenced by:
+
+‘precision’ ( – u  ) floating-ext “precision”
+   u is the number of significant digits currently used by ‘F.’ ‘FE.’
+and ‘FS.’
+
+‘set-precision’ ( u –  ) floating-ext “set-precision”
+   Set the number of significant digits currently used by ‘F.’ ‘FE.’ and
+‘FS.’ to u.
+
+   You can control the output in more detail with:
+
+‘f.rdp’ ( rf +nr +nd +np –  ) gforth-0.6 “f.rdp”
+   Print float rf formatted.  The total width of the output is nr.  For
+fixed-point notation, the number of digits after the decimal point is
++nd and the minimum number of significant digits is np.  ‘Set-precision’
+has no effect on ‘f.rdp’.  Fixed-point notation is used if the number of
+siginicant digits would be at least np and if the number of digits
+before the decimal point would fit.  If fixed-point notation is not
+used, exponential notation is used, and if that does not fit, asterisks
+are printed.  We recommend using nr>=7 to avoid the risk of numbers not
+fitting at all.  We recommend nr>=np+5 to avoid cases where ‘f.rdp’
+switches to exponential notation because fixed-point notation would have
+too few significant digits, yet exponential notation offers fewer
+significant digits.  We recommend nr>=nd+2, if you want to have
+fixed-point notation for some numbers; the smaller the value of np, the
+more cases are shown in fixed-point notation (cases where few or no
+significant digits remain in fixed-point notation).  We recommend np>nr,
+if you want to have exponential notation for all numbers.
+
+   To give you a better intuition of how they influence the output, here
+are some examples of parameter combinations; in each line the same
+number is printed, in each column the same parameter combination is used
+for printing:
+
+         12 13 0    7 3 4   7 3 0   7 3 1   7 5 1   7 7 1   7 0 2  4 2 1
+     |-1.234568E-6|-1.2E-6| -0.000|-1.2E-6|-1.2E-6|-1.2E-6|-1.2E-6|****|
+     |-1.234568E-5|-1.2E-5| -0.000|-1.2E-5|-.00001|-1.2E-5|-1.2E-5|****|
+     |-1.234568E-4|-1.2E-4| -0.000|-1.2E-4|-.00012|-1.2E-4|-1.2E-4|****|
+     |-1.234568E-3|-1.2E-3| -0.001| -0.001|-.00123|-1.2E-3|-1.2E-3|****|
+     |-1.234568E-2|-1.2E-2| -0.012| -0.012|-.01235|-1.2E-2|-1.2E-2|-.01|
+     |-1.234568E-1|-1.2E-1| -0.123| -0.123|-.12346|-1.2E-1|-1.2E-1|-.12|
+     |-1.2345679E0| -1.235| -1.235| -1.235|-1.23E0|-1.23E0|-1.23E0|-1E0|
+     |-1.2345679E1|-12.346|-12.346|-12.346|-1.23E1|-1.23E1|   -12.|-1E1|
+     |-1.2345679E2|-1.23E2|-1.23E2|-1.23E2|-1.23E2|-1.23E2|  -123.|-1E2|
+     |-1.2345679E3|-1.23E3|-1.23E3|-1.23E3|-1.23E3|-1.23E3| -1235.|-1E3|
+     |-1.2345679E4|-1.23E4|-1.23E4|-1.23E4|-1.23E4|-1.23E4|-12346.|-1E4|
+     |-1.2345679E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1E5|
+
+   You can generate a string instead of displaying the number with:
+
+‘f>str-rdp’ ( rf +nr +nd +np – c-addr nr  ) gforth-0.6 “f>str-rdp”
+   Convert rf into a string at c-addr nr.  The conversion rules and the
+meanings of nr +nd np are the same as for ‘f.rdp’.  The result in in the
+pictured numeric output buffer and will be destroyed by anything
+destroying that buffer.
+
+‘f>buf-rdp’ ( rf c-addr +nr +nd +np –  ) gforth-0.6 “f>buf-rdp”
+   Convert rf into a string at c-addr nr.  The conversion rules and the
+meanings of nr nd np are the same as for ‘f.rdp’.
+
+   There is also a primitive used for implementing higher-level
+FP-to-string words:
+
+‘represent’ ( r c-addr u – n f1 f2 ) floating “represent”
+   Convert the decimal significand (aka mantissa) of r into a string in
+buffer c-addr u; n is the exponent, f1 is true if r is negative, and f2
+is true if r is valid (a finite number in Gforth).
+
+
+File: gforth.info,  Node: Miscellaneous output,  Next: Displaying characters and strings,  Prev: Floating-point output,  Up: Other I/O
+
+6.20.4 Miscellaneous output
+---------------------------
+
+‘cr’ ( –  ) core “c-r”
+   Output a newline (of the favourite kind of the host OS). Note that
+due to the way the Forth command line interpreter inserts newlines, the
+preferred way to use ‘cr’ is at the start of a piece of text; e.g., ‘cr
+." hello, world"’.
+
+‘space’ ( –  ) core “space”
+   Display one space.
+
+‘spaces’ ( u –  ) core “spaces”
+   Display U spaces.
+
+‘out’ ( – addr  ) gforth-1.0 “out”
+   ‘Addr’ contains a number that tries to give the position of the
+cursor within the current line on the user output device: It resets to 0
+on ‘cr’, increases by the number of characters by ‘type’ and ‘emit’, and
+decreases on ‘backspaces’.  Unfortunately, it does not take into account
+tabs, multi-byte characters, or the existence of Unicode characters with
+width 0 and 2, so it only works for simple cases.
+
+‘.\"’ ( compilation ’ccc"’ – ; run-time –  ) gforth-0.6 “dot-backslash-quote”
+   Like ‘."’, but translates C-like \-escape-sequences (see ‘S\"’).
+
+‘."’ ( compilation ’ccc"’ – ; run-time –  ) core “dot-quote”
+   Compilation: Parse a string ccc delimited by a " (double quote).  At
+run-time, display the string.  Interpretation semantics for this word
+are undefined in standard Forth.  Gforth’s interpretation semantics are
+to display the string.
+
+‘.(’ ( compilation&interpretation "ccc<paren>" –  ) core-ext “dot-paren”
+   Compilation and interpretation semantics: Parse a string ccc
+delimited by a ‘)’ (right parenthesis).  Display the string.  This is
+often used to display progress information during compilation; see
+examples below.
+
+   If you don’t want to worry about wether to use ‘.( hello)’ or ‘."
+hello"’, you can write ‘"hello" type’, which gives you what you usually
+want (but is less portable to other Forth systems).
+
+As an example, consider the following text, stored in a file ‘test.fs’:
+
+     .( text-1)
+     : my-word
+       ." text-2" cr
+       .( text-3)
+       "text-4" type
+     ;
+
+     ." text-5"
+     "text-6" type
+
+   When you load this code into Gforth, the following output is
+generated:
+
+     include test.fs <RET> text-1text-3text-5text-6 ok
+
+   • Messages ‘text-1’ and ‘text-3’ are displayed because ‘.(’ is an
+     immediate word; it behaves in the same way whether it is used
+     inside or outside a colon definition.
+   • Message ‘text-5’ is displayed because of Gforth’s added
+     interpretation semantics for ‘."’.
+   • Message ‘text-6’ is displayed because ‘"text-6" type’ is
+     interpreted.
+   • Message ‘text-2’ is not displayed, because the text interpreter
+     performs the compilation semantics for ‘."’ within the definition
+     of ‘my-word’.
+   • Message ‘text-4’ is not displayed, because ‘"text-4" type’ is
+     compiled into ‘my-word’.
+
+
+File: gforth.info,  Node: Displaying characters and strings,  Next: Terminal output,  Prev: Miscellaneous output,  Up: Other I/O
+
+6.20.5 Displaying characters and strings
+----------------------------------------
+
+‘type’ ( c-addr u –  ) core “type”
+   If U>0, display U characters from a string starting with the
+character stored at C-ADDR.
+
+‘xemit’ ( xc –  ) xchar “x-emit”
+   Prints an xchar on the terminal.
+
+‘emit’ ( c –  ) core “emit”
+   Send the byte c to the current output; for ASCII characters, ‘emit’
+is equivalent to ‘xemit’.
+
+‘typewhite’ ( addr n –  ) gforth-0.2 “typewhite”
+   Like type, but white space is printed instead of the characters.
+
+
+File: gforth.info,  Node: Terminal output,  Next: Single-key input,  Prev: Displaying characters and strings,  Up: Other I/O
+
+6.20.6 Terminal output
+----------------------
+
+If you are outputting to a terminal, you may want to control the
+positioning of the cursor:
+
+‘at-xy’ ( x y –  ) facility “at-x-y”
+   Put the curser at position x y.  The top left-hand corner of the
+display is at 0 0.
+
+‘at-deltaxy’ ( dx dy –  ) gforth-0.7 “at-deltaxy”
+   With the current position at x y, put the cursor at x+dx y+dy.
+
+   In order to know where to position the cursor, it is often helpful to
+know the size of the screen:
+
+‘form’ ( – nlines ncols  ) gforth-0.2 “form”
+
+   And sometimes you want to use:
+
+‘page’ ( –  ) facility “page”
+   Clear the screen
+
+   Note that on non-terminals you should use ‘12 emit’, not ‘page’, to
+get a form feed.
+
+6.20.6.1 Color output
+.....................
+
+The following words are used to create (semantic) colorful output;
+further output is produced in the color and style given by the word; the
+actual color and style depends on the theme (see below).
+
+‘default-color’ ( –  ) gforth-1.0 “default-color”
+   use system-default color
+
+‘error-color’ ( –  ) gforth-1.0 “error-color”
+   error color: red
+
+‘error-hl-inv’ ( –  ) gforth-1.0 “error-hl-inv”
+   color mod for error highlight inverse
+
+‘error-hl-ul’ ( –  ) gforth-1.0 “error-hl-ul”
+   color mod for error highlight underline
+
+‘warning-color’ ( –  ) gforth-1.0 “warning-color”
+   color for warnings: blue/yellow on black terminals
+
+‘info-color’ ( –  ) gforth-1.0 “info-color”
+   color for info: green/cyan on black terminals
+
+‘success-color’ ( –  ) gforth-1.0 “success-color”
+   color for success: green
+
+‘input-color’ ( –  ) gforth-1.0 “input-color”
+   color for user-input: black/white (both bold)
+
+‘status-color’ ( –  ) gforth-1.0 “status-color”
+   color mod for error highlight inverse
+
+6.20.6.2 Color themes
+.....................
+
+Depending on wether you prefer bright or dark background the foreground
+colors-theme can be changed by:
+
+‘light-mode’ ( –  ) gforth-1.0 “light-mode”
+   color theme for white background
+
+‘dark-mode’ ( –  ) gforth-1.0 “dark-mode”
+   color theme for black background
+
+‘uncolored-mode’ ( –  ) gforth-1.0 “uncolored-mode”
+   This mode does not set colors, but uses the default ones.
+
+‘magenta-input’ ( –  ) gforth-1.0 “magenta-input”
+   make input color easily recognizable (useful in presentations)
+
+
 File: gforth.info,  Node: Single-key input,  Next: Line input and conversion,  Prev: Terminal output,  Up: Other I/O
 
 6.20.7 Single-key input
@@ -6853,262 +7130,4 @@ stack space available:
 system dictionary space required, in address units:
      Type ‘here forthstart - .’ after startup.  At the time of this
      writing, this gives 80080 (bytes) on a 32-bit system.
-
-
-File: gforth.info,  Node: The optional Block word set,  Next: The optional Double Number word set,  Prev: The Core Words,  Up: Standard conformance
-
-9.2 The optional Block word set
-===============================
-
-* Menu:
-
-* block-idef::               Implementation Defined Options
-* block-ambcond::            あいまいな条件
-* block-other::              その他のシステム・ドキュメント
-
-
-File: gforth.info,  Node: block-idef,  Next: block-ambcond,  Prev: The optional Block word set,  Up: The optional Block word set
-
-9.2.1 Implementation Defined Options
-------------------------------------
-
-the format for display by ‘LIST’:
-     First the screen number is displayed, then 16 lines of 64
-     characters, each line preceded by the line number.
-
-the length of a line affected by ‘\’:
-     64 characters.
-
-
-File: gforth.info,  Node: block-ambcond,  Next: block-other,  Prev: block-idef,  Up: The optional Block word set
-
-9.2.2 Ambiguous conditions
---------------------------
-
-correct block read was not possible:
-     Typically results in a ‘throw’ of some OS-derived value (between
-     -512 and -2048).  If the blocks file was just not long enough,
-     blanks are supplied for the missing portion.
-
-I/O exception in block transfer:
-     Typically results in a ‘throw’ of some OS-derived value (between
-     -512 and -2048).
-
-invalid block number:
-     ‘-35 throw’ (Invalid block number)
-
-a program directly alters the contents of ‘BLK’:
-     The input stream is switched to that other block, at the same
-     position.  If the storing to ‘BLK’ happens when interpreting
-     non-block input, the system will get quite confused when the block
-     ends.
-
-no current block buffer for ‘UPDATE’:
-     ‘UPDATE’ has no effect.
-
-
-File: gforth.info,  Node: block-other,  Prev: block-ambcond,  Up: The optional Block word set
-
-9.2.3 Other system documentation
---------------------------------
-
-any restrictions a multiprogramming system places on the use of buffer addresses:
-     No restrictions (yet).
-
-the number of blocks available for source and data:
-     depends on your disk space.
-
-
-File: gforth.info,  Node: The optional Double Number word set,  Next: The optional Exception word set,  Prev: The optional Block word set,  Up: Standard conformance
-
-9.3 The optional Double Number word set
-=======================================
-
-* Menu:
-
-* double-ambcond::           あいまいな条件
-
-
-File: gforth.info,  Node: double-ambcond,  Prev: The optional Double Number word set,  Up: The optional Double Number word set
-
-9.3.1 Ambiguous conditions
---------------------------
-
-d outside of range of n in ‘D>S’:
-     The least significant cell of d is produced.
-
-
-File: gforth.info,  Node: The optional Exception word set,  Next: The optional Facility word set,  Prev: The optional Double Number word set,  Up: Standard conformance
-
-9.4 The optional Exception word set
-===================================
-
-* Menu:
-
-* exception-idef::           Implementation Defined Options
-
-
-File: gforth.info,  Node: exception-idef,  Prev: The optional Exception word set,  Up: The optional Exception word set
-
-9.4.1 Implementation Defined Options
-------------------------------------
-
-‘THROW’-codes used in the system:
-     The codes -256−-511 are used for reporting signals.  The mapping
-     from OS signal numbers to throw codes is -256−signal.  The codes
-     -512−-2047 are used for OS errors (for file and memory allocation
-     operations).  The mapping from OS error numbers to throw codes is
-     -512−‘errno’.  One side effect of this mapping is that undefined OS
-     errors produce a message with a strange number; e.g., ‘-1000 THROW’
-     results in ‘Unknown error 488’ on my system.
-
-
-File: gforth.info,  Node: The optional Facility word set,  Next: The optional File-Access word set,  Prev: The optional Exception word set,  Up: Standard conformance
-
-9.5 The optional Facility word set
-==================================
-
-* Menu:
-
-* facility-idef::            Implementation Defined Options
-* facility-ambcond::         あいまいな条件
-
-
-File: gforth.info,  Node: facility-idef,  Next: facility-ambcond,  Prev: The optional Facility word set,  Up: The optional Facility word set
-
-9.5.1 Implementation Defined Options
-------------------------------------
-
-encoding of keyboard events (‘EKEY’):
-     Keys corresponding to ASCII characters are encoded as ASCII
-     characters.  Other keys are encoded with the constants ‘k-left’,
-     ‘k-right’, ‘k-up’, ‘k-down’, ‘k-home’, ‘k-end’, ‘k1’, ‘k2’, ‘k3’,
-     ‘k4’, ‘k5’, ‘k6’, ‘k7’, ‘k8’, ‘k9’, ‘k10’, ‘k11’, ‘k12’, ‘k-winch’,
-     ‘k-eof’.
-
-duration of a system clock tick:
-     System dependent.  With respect to ‘MS’, the time is specified in
-     microseconds.  How well the OS and the hardware implement this, is
-     another question.
-
-repeatability to be expected from the execution of ‘MS’:
-     System dependent.  On Unix, a lot depends on load.  If the system
-     is lightly loaded, and the delay is short enough that Gforth does
-     not get swapped out, the performance should be acceptable.  Under
-     MS-DOS and other single-tasking systems, it should be good.
-
-
-File: gforth.info,  Node: facility-ambcond,  Prev: facility-idef,  Up: The optional Facility word set
-
-9.5.2 Ambiguous conditions
---------------------------
-
-‘AT-XY’ can’t be performed on user output device:
-     Largely terminal dependent.  No range checks are done on the
-     arguments.  No errors are reported.  You may see some garbage
-     appearing, you may see simply nothing happen.
-
-
-File: gforth.info,  Node: The optional File-Access word set,  Next: The optional Floating-Point word set,  Prev: The optional Facility word set,  Up: Standard conformance
-
-9.6 The optional File-Access word set
-=====================================
-
-* Menu:
-
-* file-idef::                Implementation Defined Options
-* file-ambcond::             あいまいな条件
-
-
-File: gforth.info,  Node: file-idef,  Next: file-ambcond,  Prev: The optional File-Access word set,  Up: The optional File-Access word set
-
-9.6.1 Implementation Defined Options
-------------------------------------
-
-file access methods used:
-     ‘R/O’, ‘R/W’ and ‘BIN’ work as you would expect.  ‘W/O’ translates
-     into the C file opening mode ‘w’ (or ‘wb’): The file is cleared, if
-     it exists, and created, if it does not (with both ‘open-file’ and
-     ‘create-file’).  Under Unix ‘create-file’ creates a file with 666
-     permissions modified by your umask.
-
-file exceptions:
-     The file words do not raise exceptions (except, perhaps, memory
-     access faults when you pass illegal addresses or file-ids).
-
-file line terminator:
-     System-dependent.  Gforth uses C’s newline character as line
-     terminator.  What the actual character code(s) of this are is
-     system-dependent.
-
-file name format:
-     System dependent.  Gforth just uses the file name format of your
-     OS.
-
-information returned by ‘FILE-STATUS’:
-     ‘FILE-STATUS’ returns the most powerful file access mode allowed
-     for the file: Either ‘R/O’, ‘W/O’ or ‘R/W’.  If the file cannot be
-     accessed, ‘R/O BIN’ is returned.  ‘BIN’ is applicable along with
-     the returned mode.
-
-input file state after an exception when including source:
-     All files that are left via the exception are closed.
-
-ior values and meaning:
-     The iors returned by the file and memory allocation words are
-     intended as throw codes.  They typically are in the range
-     -512−-2047 of OS errors.  The mapping from OS error numbers to iors
-     is -512−errno.
-
-maximum depth of file input nesting:
-     limited by the amount of return stack, locals/TIB stack, and the
-     number of open files available.  This should not give you troubles.
-
-maximum size of input line:
-     ‘/line’.  Currently 255.
-
-methods of mapping block ranges to files:
-     By default, blocks are accessed in the file ‘blocks.fb’ in the
-     current working directory.  The file can be switched with ‘USE’.
-
-number of string buffers provided by ‘S"’:
-     As many as memory available; the strings are stored in memory
-     blocks allocated with ALLOCATE indefinitely.
-
-size of string buffer used by ‘S"’:
-     ‘/line’.  currently 255.
-
-
-File: gforth.info,  Node: file-ambcond,  Prev: file-idef,  Up: The optional File-Access word set
-
-9.6.2 Ambiguous conditions
---------------------------
-
-attempting to position a file outside its boundaries:
-     ‘REPOSITION-FILE’ is performed as usual: Afterwards,
-     ‘FILE-POSITION’ returns the value given to ‘REPOSITION-FILE’.
-
-attempting to read from file positions not yet written:
-     End-of-file, i.e., zero characters are read and no error is
-     reported.
-
-file-id is invalid (‘INCLUDE-FILE’):
-     An appropriate exception may be thrown, but a memory fault or other
-     problem is more probable.
-
-I/O exception reading or closing file-id (‘INCLUDE-FILE’, ‘INCLUDED’):
-     The ior produced by the operation, that discovered the problem, is
-     thrown.
-
-named file cannot be opened (‘INCLUDED’):
-     The ior produced by ‘open-file’ is thrown.
-
-requesting an unmapped block number:
-     There are no unmapped legal block numbers.  On some operating
-     systems, writing a block with a large number may overflow the file
-     system and have an error message as consequence.
-
-using ‘source-id’ when ‘blk’ is non-zero:
-     ‘source-id’ performs its function.  Typically it will give the id
-     of the source which loaded the block.  (Better ideas?)
 

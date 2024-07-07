@@ -11468,7 +11468,7 @@ does> ( addr w -- )
 私はこのスキームに従ってたくさんのワードを書き、 すぐにそれらの共通点を取り出すことを考えました。  これは 2 レベルの定義ワード、
 つまり通常の定義ワードを定義するワードを使用していることに注意してください。
 
-今回は、 @code{postpone} とその友人が関与する解決策はより困難に思えたので(研究課題として試してみましょう)、
+今回は、 @code{postpone} とそのファミリーが関与する解決策はより困難に思えたので(研究課題として試してみましょう)、
 @code{create}/@code{does>} というワードを使用することにしました。 私はすでにそれを行っていたので、 下位レベルにも
 @code{create}/@code{does>} を使用しました(研究課題として @code{postpone} などを使用してみましょう)。
 その結果、 以下の定義が得られました:
@@ -13467,8 +13467,7 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 コード・シーケンス @code{base @@ .} を使用して現在の基数を測定することはできません。 これは現在の基数では常に 10 と表示されます。
 代わりに、 @code{base @@ dec.} なととしてください。
 @item
-There is a word @code{bin} but it does @i{not} set the number base!
-(@pxref{General files}).
+@code{bin} というワードがありますが、 これは基数を設定するものではありません(@pxref{General files})。
 @item
 標準 Forth では、 2倍長数値の @code{.} が文字列の最後の文字である必要があります。  Gforth では @code{.}
 をどこにでも置くことができます。
@@ -13819,7 +13818,10 @@ value への格納または defered word の変更 例: @code{->myvalue} (@code{
 ボキャブラリ内のワード 例: @code{myvoc1:myvoc2:myword} (@code{rec-scope})
 
 @item
-指定の認識器(recognizer)使用して何かを認識する 例: @code{float?1.} (@code{rec-meta})
+指定の認識器(recognizer)使用して何かを認識する(訳注: @var{recognizer}@code{?}
+というプレフィックスが付いたワードは、 @code{rec-}@var{recognizer} によって処理され、 認識器の曖昧さを排除します。 例:
+@code{hex num?cafe num?add} rec-num としてのみパースさせる、 @code{float?1.}
+rec-floatとしてパースさせる)(@code{rec-meta})
 
 @end itemize
 
@@ -13876,7 +13878,8 @@ Forth で書かれたコードを読み込むと、 非標準的な振る舞い�
 
 @item
 @code{->} で始まるワードをいくつか見てきました。  @code{to myvalue} または @code{to?->myvalue}
-を使用すると競合を回避できます(後者は @code{postpone} で機能します)。
+(訳注: rec-meta 構文で rec-to を指定の上で ->myvalue を評価)を使用すると競合を回避できます(後者は
+@code{postpone} で機能します)。
 
 @end itemize
 
@@ -14746,54 +14749,41 @@ my-new-words definitions
 @c systems.
 
 @item
-To prevent a set of words from being used outside the context in which they
-are valid. Two classic examples of this are an integrated editor (all of the
-edit commands are defined in a separate word list; the search order is set
-to the editor word list when the editor is invoked; the old search order is
-restored when the editor is terminated) and an integrated assembler (the
-op-codes for the machine are defined in a separate word list which is used
-when a @code{CODE} word is defined).
+一連のワードが、 それらが有効なコンテキスト外で使用されるのを防ぐため。 この典型的な 2 つの例が、
+統合エディター(すべての編集コマンドは別個のワードリストで定義されます。 エディターの起動時にサーチ・オーダーがエディターのワードリストに設定されます。
+エディターが終了すると古いサーチ・オーダーが復元されます)。 )と、 統合されたアセンブラ(マシンのオペコードは、@code{CODE}
+ワードが定義されるときに使用される別のワードリストで定義されます)。
 
 @item
-To organize the words of an application or library into a user-visible set
-(in @code{forth-wordlist} or some other common wordlist) and a set of helper
-words used just for the implementation (hidden in a separate wordlist).
-This keeps @code{words}' output smaller, separates implementation and
-interface, and reduces the chance of name conflicts within the common
-wordlist.
+アプリケーションまたはライブラリのワードを、 ユーザーに表示される組(@code{forth-wordlist} または、
+他の一般的なワードリスト内)と、 実装のためだけに使用されるヘルパー・ワードの組(別のワードリストに隠されている)に編成します。 これにより、
+@code{words} の出力が少なくなり、 実装とインターフェイスが分離され、 共通のワードリスト内で名前が競合する可能性が減ります。
 
 @item
-To prevent a name-space clash between multiple definitions with the same
-name. For example, when building a cross-compiler you might have a word
-@code{IF} that generates conditional code for your target system. By placing
-this definition in a different word list you can control whether the host
-system's @code{IF} or the target system's @code{IF} get used in any
-particular context by controlling the order of the word lists on the search
-order stack.
+同じ名前を持つ複数の定義間の名前空間の衝突を防ぐため。 たとえば、 クロス・コンパイラを構築する場合、
+ターゲット・システムの条件付きコードを生成するワード @code{IF} が存在する場合があります。 この定義を別のワードリストに配置すると、
+サーチ・オーダー・スタック上のワードリストの順序を制御することで、 ホスト・システムの @code{IF} またはターゲット・システムの
+@code{IF} を特定の文脈で使用するかどうかを制御できます。 
 
 @end itemize
 
-The downsides of using wordlists are:
+ワードリストを使用する場合の欠点は以下のとおりです:
 
 @itemize
 
 @item
-Debugging becomes more cumbersome.
+デバッグがさらに面倒になります。
 
 @item
-Name conflicts worked around with wordlists are still there, and you have to
-arrange the search order carefully to get the desired results; if you forget
-to do that, you get hard-to-find errors (as in any case where you read the
-code differently from the compiler; @code{see} can help seeing which of
-several possible words the name resolves to in such cases).  @code{See}
-displays just the name of the words, not what wordlist they belong to, so it
-might be misleading.  Using unique names is a better approach to avoid name
-conflicts.
+ワードリストを使用して回避された名前の競合は依然として存在しており、 望ましい結果を得るには検索順序を慎重に調整する必要があります。 これを怠ると、
+見つけにくいエラーが発生します(コンパイラとは異なる方法でコードを読み取る場合と同様に、 @code{see} は、 そのような場合に、
+名前がいくつかの考えられるワードのうちのどれに解決(resolve)されるかを確認するのに役立ちます）。  @code{see}
+はワードの名前だけを表示し、 ワードがどのワードリストに属しているかを表示しないため、 誤解を招く可能性があります。  一意の名前を使用することは、
+名前の競合を避けるためのより良いアプローチです。
 
 @item
-You have to explicitly undo any changes to the search order.  In many cases
-it would be more convenient if this happened implicitly.  Gforth currently
-does not provide such a feature, but it may do so in the future.
+あなたは、 サーチ・オーダーの変更を明示的に元に戻す必要があります。  多くの場合、 これは暗黙的に行われた方が便利です。  Gforth
+は現在そのような機能を提供していませんが、 将来的には提供される可能性があります。
 @end itemize
 
 
@@ -14801,10 +14791,8 @@ does not provide such a feature, but it may do so in the future.
 @subsection Word list example
 @cindex word lists - example
 
-The following example is from the
-@uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip,
-garbage collector} and uses wordlists to separate public words from helper
-words:
+以下の例は @uref{https://www.complang.tuwien.ac.at/forth/garbage-collection.zip,
+garbage collector} からのもので、 ワードリストを使用してパブリック・ワードとヘルパー・ワードを分離しています:
 
 @example
 get-current ( wid )
@@ -14821,10 +14809,8 @@ previous \ restore original search order (helper words become invisible)
 @section Environmental Queries
 @cindex environmental queries
 
-Forth-94 introduced the idea of ``environmental queries'' as a way for a
-program running on a system to determine certain characteristics of the
-system.  The Standard specifies a number of strings that might be recognised
-by a system, and a way of querying them:
+Forth-94 は、システム上で実行されているプログラムがシステムの特定の特性を判断する方法として「環境問い合わせ」(``environmental
+query'')という概念を導入しました。  標準では、 システムが認識できるたくさんの文字列と、 それらを問い合わせする方法が指定されています。
 
 @findex environment? ( @var{ c-addr u -- false / ... true   } ) core
 @cindex @code{environment?}
@@ -14832,23 +14818,20 @@ by a system, and a way of querying them:
 @format
 @code{environment?} ( @i{c-addr u -- false / ... true  }) core ``environment-query''
 @end format
-@i{c-addr, u} specify a counted string. If the string is not recognised,
-return a @code{false} flag. Otherwise return a @code{true} flag and some
-(string-specific) information about the queried string.
+文字列 @i{c-addr, u} を指定します。 文字列が認識されない場合は、 @code{false} フラグを返します。
+それ以外の場合は、@code{true} フラグと、 問い合わせした文字列に関する(それ固有の)情報を返します。
 
 
 
-Note that, whilst the documentation for (e.g.)  @code{ADDRESS-UNIT-BITS}
-shows it returning one cell on the stack, querying it using
-@code{environment?} will return an additional item; the @code{true} flag
-that shows that the string was recognised; so for querying
-@code{ADDRESS-UNIT-BITS} the stack effect of @code{environment?} is @code{(
-c-addr u -- n true )}.
+注意: 例えば @code{ADDRESS-UNIT-BITS} のドキュメントではスタック上に 1 つのセルを返すことが示されていますが、
+@code{environment?} を使用して問い合わせすると、 文字列が認識されたことを示す @code{true}
+フラグという追加の項目が返されることに注意してください。 @code{ADDRESS-UNIT-BITS} を問い合わせた場合、
+@code{environment?} のスタック効果は @code{( c-addr u -- n true )} です。
 
 @c Get all the words in environment-wordlist:
 @c gforth -e "environment-wordlist wordlist-words cr bye"|sed 's/[ ]/\n/g'|sed '/^$/d'|tac
 
-Several environmental queries deal with the system's limits:
+いくつかの環境問い合わせ(environmental query)はシステムの制限を取り扱います:
 
 @findex ADDRESS-UNIT-BITS ( @var{ -- n   } ) environment
 @cindex @code{ADDRESS-UNIT-BITS}
@@ -14856,7 +14839,7 @@ Several environmental queries deal with the system's limits:
 @format
 @code{ADDRESS-UNIT-BITS} ( @i{-- n  }) environment ``ADDRESS-UNIT-BITS''
 @end format
-Size of one address unit, in bits.
+1 つのアドレス単位のサイズ(ビット単位)。
 
 
 @findex MAX-CHAR ( @var{ -- u   } ) environment
@@ -14865,7 +14848,7 @@ Size of one address unit, in bits.
 @format
 @code{MAX-CHAR} ( @i{-- u  }) environment ``MAX-CHAR''
 @end format
-Maximum value of any character in the character set
+文字セット内の任意の文字の最大値
 
 
 @findex /COUNTED-STRING ( @var{ -- n   } ) environment
@@ -14874,7 +14857,7 @@ Maximum value of any character in the character set
 @format
 @code{/COUNTED-STRING} ( @i{-- n  }) environment ``slash-counted-string''
 @end format
-Maximum size of a counted string, in characters.
+カウンタ付き文字列の最大サイズ(文字単位)。
 
 
 @findex /HOLD ( @var{ -- n   } ) environment
@@ -14883,7 +14866,7 @@ Maximum size of a counted string, in characters.
 @format
 @code{/HOLD} ( @i{-- n  }) environment ``slash-hold''
 @end format
-Size of the pictured numeric string output buffer, in characters.
+描写された数値文字列の出力バッファのサイズ(文字単位)。
 
 
 @findex /PAD ( @var{ -- n   } ) environment
@@ -14892,7 +14875,7 @@ Size of the pictured numeric string output buffer, in characters.
 @format
 @code{/PAD} ( @i{-- n  }) environment ``slash-pad''
 @end format
-Size of the scratch area pointed to by @code{PAD}, in characters.
+@code{PAD} が指すスクラッチ領域のサイズ(文字数)。
 
 
 @findex CORE ( @var{ -- f   } ) environment
@@ -14901,7 +14884,7 @@ Size of the scratch area pointed to by @code{PAD}, in characters.
 @format
 @code{CORE} ( @i{-- f  }) environment ``CORE''
 @end format
-True if the complete core word set is present. Always true for Gforth.
+完全なコア・ワード・セットが存在する場合は true。 Gforth では常に当てはまります。
 
 
 @findex CORE-EXT ( @var{ -- f   } ) environment
@@ -14910,8 +14893,7 @@ True if the complete core word set is present. Always true for Gforth.
 @format
 @code{CORE-EXT} ( @i{-- f  }) environment ``CORE-EXT''
 @end format
-True if the complete core extension word set is present. Always true for
-Gforth.
+完全なコア拡張ワード・セットが存在する場合は true。 Gforth では常に当てはまります。
 
 
 @findex FLOORED ( @var{ -- f   } ) environment
@@ -14920,7 +14902,7 @@ Gforth.
 @format
 @code{FLOORED} ( @i{-- f  }) environment ``FLOORED''
 @end format
-True if @code{/} etc. perform floored division
+true ならば、 @code{/} などで、 フロア除算(floored division)を実行します。
 
 
 @findex MAX-N ( @var{ -- n   } ) environment
@@ -14929,7 +14911,7 @@ True if @code{/} etc. perform floored division
 @format
 @code{MAX-N} ( @i{-- n  }) environment ``MAX-N''
 @end format
-Largest usable signed integer.
+使用可能な符号付き整数の最大値。
 
 
 @findex MAX-U ( @var{ -- u   } ) environment
@@ -14938,7 +14920,7 @@ Largest usable signed integer.
 @format
 @code{MAX-U} ( @i{-- u  }) environment ``MAX-U''
 @end format
-Largest usable unsigned integer.
+使用可能な符号なし整数の最大値。
 
 
 @findex MAX-D ( @var{ -- d   } ) environment
@@ -14947,7 +14929,7 @@ Largest usable unsigned integer.
 @format
 @code{MAX-D} ( @i{-- d  }) environment ``MAX-D''
 @end format
-Largest usable signed double.
+使用可能な符号付き2倍長数の最大値。
 
 
 @findex MAX-UD ( @var{ -- ud   } ) environment
@@ -14956,7 +14938,7 @@ Largest usable signed double.
 @format
 @code{MAX-UD} ( @i{-- ud  }) environment ``MAX-UD''
 @end format
-Largest usable unsigned double.
+使用可能な符号なし2倍長数の最大値。
 
 
 @findex return-stack-cells ( @var{ -- n   } ) environment
@@ -14965,7 +14947,7 @@ Largest usable unsigned double.
 @format
 @code{return-stack-cells} ( @i{-- n  }) environment ``return-stack-cells''
 @end format
-Maximum size of the return stack, in cells.
+リターン・スタックの最大サイズ(セル単位)。
 
 
 @findex stack-cells ( @var{ -- n   } ) environment
@@ -14974,7 +14956,7 @@ Maximum size of the return stack, in cells.
 @format
 @code{stack-cells} ( @i{-- n  }) environment ``stack-cells''
 @end format
-Maximum size of the data stack, in cells.
+データ・スタックの最大サイズ(セル単位)。
 
 
 @findex floating-stack ( @var{ -- n   } ) environment
@@ -14983,8 +14965,7 @@ Maximum size of the data stack, in cells.
 @format
 @code{floating-stack} ( @i{-- n  }) environment ``floating-stack''
 @end format
-@var{n} is non-zero, showing that Gforth maintains a separate floating-point
-stack of depth @var{n}.
+@var{n} はゼロ以外で、 Gforth が深さ @var{n} の別個の浮動小数点スタックを維持していることを示しています。
 
 
 @findex #locals ( @var{ -- n   } ) environment
@@ -14993,7 +14974,7 @@ stack of depth @var{n}.
 @format
 @code{#locals} ( @i{-- n  }) environment ``number-locals''
 @end format
-The maximum number of locals in a definition
+定義内のローカル変数の最大数
 
 
 @findex wordlists ( @var{ -- n   } ) environment
@@ -15002,7 +14983,7 @@ The maximum number of locals in a definition
 @format
 @code{wordlists} ( @i{-- n  }) environment ``wordlists''
 @end format
-the maximum number of wordlists usable in the search order
+サーチ・オーダーで使用できるワード・リストの最大数
 
 
 @findex max-float ( @var{ -- r   } ) environment
@@ -15011,8 +14992,7 @@ the maximum number of wordlists usable in the search order
 @format
 @code{max-float} ( @i{-- r  }) environment ``max-float''
 @end format
-The largest usable floating-point number (implemented as largest finite
-number in Gforth)
+使用可能な浮動小数点数の最大値(Gforth では最大の有限数(finite number)として実装)
 
 
 @findex XCHAR-ENCODING ( @var{ -- addr u   } ) environment
@@ -15021,11 +15001,9 @@ number in Gforth)
 @format
 @code{XCHAR-ENCODING} ( @i{-- addr u  }) environment ``XCHAR-ENCODING''
 @end format
-Returns a printable ASCII string that reperesents the encoding, and use the
-preferred MIME name (if any) or the name in
-@url{http://www.iana.org/assignments/character-sets} like ``ISO-LATIN-1'' or
-``UTF-8'', with the exception of ``ASCII'', where we prefer the alias
-``ASCII''.
+エンコーディングを表す印刷可能なASCII文字列を返し、 (あれば)、 優先されるMIME名、 または ``ISO-LATIN-1'' や
+``UTF-8'' のような @url{http://www.iana.org/assignments/character-sets}
+の名前を使用します。 ただし、``ASCII'' の場合は、 エイリアスの ``ASCII'' を優先します。
 
 
 @findex MAX-XCHAR ( @var{ -- xchar   } ) environment
@@ -15034,7 +15012,7 @@ preferred MIME name (if any) or the name in
 @format
 @code{MAX-XCHAR} ( @i{-- xchar  }) environment ``MAX-XCHAR''
 @end format
-Maximal value for xchar.  This depends on the encoding.
+xchar の最大値。  これはエンコーディングによって異なります。
 
 
 @findex XCHAR-MAXMEM ( @var{ -- u   } ) environment
@@ -15043,39 +15021,34 @@ Maximal value for xchar.  This depends on the encoding.
 @format
 @code{XCHAR-MAXMEM} ( @i{-- u  }) environment ``XCHAR-MAXMEM''
 @end format
-Maximal memory consumed by an xchar in address units
+1 つの xchar によって消費される最大メモリをアドレス単位で返します。
 
 
 
-Several environemtal queries are there for determining the presence of the
-Forth-94 version of a wordset; they all have the stack effect @code{( -- f
-)} if the string is present (so the @code{environment?} stack effect for
-these queries is @code{( c-addr u -- false / f true )}.
+Forth-94 バージョンのワードセットの存在を確認するための環境問い合わせ(environemtal query)がいくつかあります。
+当該文字列が存在する場合、 それらはすべて @code{( -- f )} のスタック効果を持ちます(つまり、 これらの問い合わせの
+@code{environment?} のスタック効果は @code{( c-addr u -- false / f true )} です)。
 
 @code{block block-ext double double-ext exception exception-ext facility
 facility-ext file file-ext floating floating-ext locals locals-ext
 memory-alloc memory-alloc-ext tools tools-ext search-order search-order-ext
 string string-ext}
 
-These wordset queries were rarely used and implemented, so Forth-2012 did
-not introduce a way to query for the Forth-2012 variants of the wordsets.
-Instead, the idea is that you use @code{[defined]} (@pxref{Interpreter
-Directives}) instead.
+上記ワードセットの問い合わせは、 ほとんど使用および実装されなかったため、 Forth-2012 ではこれらのワードセットの Forth-2012
+バリエーションを問い合わせする方法が導入されませんでした。  代わりに、  @code{[defined]} (@pxref{Interpreter
+Directives}) を使用するというアイディアです。
 
-Forth-200x (a group that works on the next standard; the documents that they
-produce are also called Forth-200x) defines extension queries for the
-extension proposals once they finish changing (CfV stage), so programs using
-these proposals can check whether a system has them, and maybe load the
-reference implementation (if one exists).  If @code{environment?} finds such
-a query, then the corresponding proposal on @url{www.forth200x.org} is
-implemented on the system (but the absence tells you nothing, as usual with
-@code{environment?}).  These queries have the stack effect @code{( -- )},
-which means that for them @code{environment?} has the stack effect @code{(
-c-addr u -- false / true )}, which is more convenient than that of wordset
-queries.  A number of these proposals have been incorporated into
-Forth-2012.  The extension queries are also not particularly popular among
-Forth system implementors, so going for @code{[defined]} may be the better
-approach.  Anyway, Gforth implements the following extension queries:
+Forth-200x (次の標準に取り組むグループ。 このグループが作成するドキュメントも Forth-200x と呼ばれます)は、
+提案された拡張機能(extension proposals)の変更が完了すると(CfV 段階)、
+提案された拡張機能に対する拡張機能問い合わせ(extension query)を定義します。 そのため、 これらの提案を採用するプログラムは、
+提案された拡張機能が適切かどうかを確認できます。 システムにはそれらがあり、 おそらくリファレンス実装(存在する場合)をロードします。
+@code{environment?} がそのような問い合わせを見つけた場合、 @url{www.forth200x.org}
+上の対応する提案がシステムに実装されます(ただし、 @code{environment?} の場合と同様、 存在しないモノは何も分かりません)。
+これらの問い合わせにはスタック効果 @code{( -- )} があります。 つまり、 問い合わせに対して @code{environment?}
+ではスタック効果 @code{( c-addr u -- false / true )} があり、 これはワードセット問い合わせよりも便利です。。
+これらの提案の多くは Forth-2012 に組み込まれています。  拡張機能問い合わせも Forth
+システム実装者の間で特に人気があるわけではないため、 @code{[define]} を使用する方が良いアプローチである可能性があります。
+とにもかくにも、 Gforth は以下の拡張機能問い合わせ(extension query)を実装します:
 
 @code{X:2value X:buffer X:deferred X:defined X:ekeys X:escaped-strings
 X:extension-query X:fp-stack X:ftrunc X:fvalue X:locals X:n-to-r
@@ -15083,7 +15056,7 @@ X:number-prefixes X:parse-name X:required X:s-escape-quote X:s-to-f
 X:structures X:synonym X:text-substitution X:throw-iors X:traverse-wordlist
 X:xchar}
 
-In addition, Gforth implements the following Gforth-specific queries:
+さらに、 Gforth は以下の Gforth 固有の問い合わせを実装します:
 
 @findex gforth ( @var{ -- c-addr u   } ) gforth-environment
 @cindex @code{gforth}
@@ -15091,9 +15064,8 @@ In addition, Gforth implements the following Gforth-specific queries:
 @format
 @code{gforth} ( @i{-- c-addr u  }) gforth-environment ``gforth''
 @end format
-Counted string representing a version string for this version of Gforth (for
-versions>0.3.0).  The version strings of the various versions are guaranteed
-to be ordered lexicographically.
+Gforth のこのバージョン(バージョン > 0.3.0)のバージョン文字列を表す文字列。 さまざまなバージョンのバージョン文字列は、
+辞書順(lexicographically)に並べることができることが保証されています。
 
 
 @findex os-class ( @var{ -- c-addr u   } ) gforth-environment
@@ -15102,7 +15074,7 @@ to be ordered lexicographically.
 @format
 @code{os-class} ( @i{-- c-addr u  }) gforth-environment ``os-class''
 @end format
-Counted string representing a description of the host operating system.
+ホスト・オペレーティング・システムを説明する文字列。
 
 
 @findex os-type ( @var{ -- c-addr u   } ) gforth-environment
@@ -15111,20 +15083,18 @@ Counted string representing a description of the host operating system.
 @format
 @code{os-type} ( @i{-- c-addr u  }) gforth-environment ``os-type''
 @end format
-Counted string equal to "$host_os"
+$host_os に等しい文字列
 
 
 
-The Standard requires that the header space used for environmental queries
-be distinct from the header space used for definitions.
+標準の問い合わせでは、 環境問い合わせ(environmental query)に使用されるヘッダー・スペース(header space)が、
+定義に使用されるヘッダー・スペースとは異なることが要求されます。
 
-Typically, a Forth system supports environmental queries by creating a set
-of definitions in a wordlist that is @i{only} used for environmental
-queries; that is what Gforth does. There is no Standard way of adding
-definitions to the set of recognised environmental queries, but in Gforth
-and other systems that use the wordlist mechanism, the wordlist used to
-honour environmental queries can be manipulated just like any other word
-list.
+通常、 Forth システムは、 環境問い合わせ(environmental query)「だけ」に使用されるワードリスト内に定義を作成することにより、
+環境問い合わせをサポートします。 それが Gforth のやっていることです。
+認知されている環境問い合わせのセットに定義を追加する標準的な方法はありませんが、 Gforth や、
+ワードリスト・メカニズムを使用するその他のシステムでは、 環境問い合わせを受け入れるために使用されるワードリストは、
+他のワードリストと同様に操作できます。
 
 @findex environment-wordlist ( @var{ -- wid   } ) gforth-0.2
 @cindex @code{environment-wordlist}
@@ -15132,8 +15102,8 @@ list.
 @format
 @code{environment-wordlist} ( @i{-- wid  }) gforth-0.2 ``environment-wordlist''
 @end format
-@i{wid} identifies the word list that is searched by environmental queries
-(present in SwiftForth and VFX).
+@i{wid} は、 環境問い合わせ(environmental query)によって検索されるワードリストを識別します(SwiftForth および
+VFX に存在)。
 
 
 @findex environment ( @var{ --   } ) gforth-0.6
@@ -15142,14 +15112,13 @@ list.
 @format
 @code{environment} ( @i{--  }) gforth-0.6 ``environment''
 @end format
-A vocabulary for @code{environment-wordlist} (present in Win32Forth and
-VFX).
+@code{environment-wordlist} のボキャブラリ (Win32Forth および VFX に存在)。
 
 
 
 @comment TODO Document the standard strings or note where they are documented herein
 
-Here are some examples of using environmental queries:
+以下に、 環境問い合わせ(environmental query)の使用例をいくつか示します:
 
 @example
 s" address-unit-bits" environment? 0=
@@ -15159,7 +15128,8 @@ s" address-unit-bits" environment? 0=
      drop \ ensure balanced stack effect
 [THEN]
 
-\ this might occur in the prelude of a standard program that uses THROW
+\ 標準で throw を使うときにプログラムの冒頭でありそうなコード断片
+\ 訳注: throw をサポートしていなければ @code{abort"} に置き換え
 s" exception" environment? [IF]
    0= [IF]
       : throw abort" exception thrown" ;
@@ -15186,7 +15156,7 @@ s" gforth" environment? [IF]
 [THEN]
 @end example
 
-Here is an example of adding a definition to the environment word list:
+以下は、  environment ワードリストに定義を追加する例です:
 
 @example
 get-current environment-wordlist set-current
@@ -15195,7 +15165,7 @@ true constant block-ext
 set-current
 @end example
 
-You can see what definitions are in the environment word list like this:
+以下のようにして、 environment ワードリストどのような定義があるかを確認できます:
 
 @example
 environment-wordlist wordlist-words
@@ -15208,15 +15178,14 @@ environment-wordlist wordlist-words
 @cindex files
 @cindex I/O - file-handling
 
-Gforth provides facilities for accessing files that are stored in the host
-operating system's file-system. Files that are processed by Gforth can be
-divided into two categories:
+Gforth は、 ホスト・オペレーティング・システムのファイル・ システムに保存されているファイルにアクセスするための機能を提供します。 Gforth
+によって処理されるファイルは、 以下の 2 つのカテゴリに分類できます:
 
 @itemize @bullet
 @item
-Files that are processed by the Text Interpreter (@dfn{Forth source files}).
+テキスト・インタプリタによって処理されるファイル(@dfn{Forth source files})
 @item
-Files that are processed by some other program (@dfn{general files}).
+他のプログラムによって処理されるファイル(@dfn{general files})。
 @end itemize
 
 @menu
@@ -15233,17 +15202,15 @@ Files that are processed by some other program (@dfn{general files}).
 @cindex including files
 @cindex Forth source files
 
-The simplest way to interpret the contents of a file is to use one of these
-two formats:
+ファイルの内容を通訳(interpret)する最も簡単な方法は、 以下の 2 つの形式のいずれかを使用することです:
 
 @example
 include mysource.fs
 s" mysource.fs" included
 @end example
 
-You usually want to include a file only if it is not included already (by,
-say, another source file). In that case, you can use one of these three
-formats:
+通常、 ファイルをインクルードする必要があるのは、 そのファイルがまだインクルードされていない場合(たとえば、 別のソース・ファイルなど)です。
+その場合、 以下の 3 つの形式のいずれかを使用できます:
 
 @example
 require mysource.fs
@@ -15253,19 +15220,18 @@ s" mysource.fs" required
 
 @cindex stack effect of included files
 @cindex including files, stack effect
-It is good practice to write your source files such that interpreting them
-does not change the stack. Source files designed in this way can be used
-with @code{required} and friends without complications. For example:
+ソース・ファイルを通訳(interpret)してもスタックが変更されないようにソース・ファイルを作成することをお勧めします。
+この方法で設計されたソース・ファイルは、 @code{required} やそのファミリーと一緒に問題なく使用できます。 例:
 
 @example
 1024 require foo.fs drop
 @end example
 
-Here you want to pass the argument 1024 (e.g., a buffer size) to
-@file{foo.fs}.  Interpreting @file{foo.fs} has the stack effect ( n -- n ),
-which allows its use with @code{require}.  Of course with such parameters to
-required files, you have to ensure that the first @code{require} fits for
-all uses (i.e., @code{require} it early in the master load file).
+ここでは、 引数 1024 (バ​​ッファ・サイズなど) を @file{foo.fs} に渡しています。  @file{foo.fs}
+の通訳(interpret)にはスタック効果 ( n -- n ) があり、 @code{require} での使用が可能になります。  もちろん、
+require されるファイルにこのようなパラメーターを指定する場合は、 最初の @code{require}
+がすべての用途に適合することを確認する必要があります(つまり、 マスター・ロード・ファイルの早い段階で @code{require}
+することになります)。
 
 @findex include-file ( @var{ i*x wfileid -- j*x   } ) file
 @cindex @code{include-file}
@@ -15273,8 +15239,7 @@ all uses (i.e., @code{require} it early in the master load file).
 @format
 @code{include-file} ( @i{i*x wfileid -- j*x  }) file ``include-file''
 @end format
-Interpret (process using the text interpreter) the contents of the file
-@var{wfileid}.
+ファイル @var{wfileid} の内容を通訳(interpret)します(テキスト・インタプリタを使用して処理します)。
 
 
 @findex included ( @var{ i*x c-addr u -- j*x   } ) file
@@ -15283,8 +15248,7 @@ Interpret (process using the text interpreter) the contents of the file
 @format
 @code{included} ( @i{i*x c-addr u -- j*x  }) file ``included''
 @end format
-@code{include-file} the file whose name is given by the string @var{c-addr
-u}.
+文字列 @var{c-addr u} で指定される名前のファイルを @code{include-file} します。
 
 
 @findex included? ( @var{ c-addr u -- f   } ) gforth-0.2
@@ -15293,11 +15257,9 @@ u}.
 @format
 @code{included?} ( @i{c-addr u -- f  }) gforth-0.2 ``included?''
 @end format
-True only if the file @var{c-addr u} is in the list of earlier included
-files. If the file has been loaded, it may have been specified as, say,
-@file{foo.fs} and found somewhere on the Forth search path. To return
-@code{true} from @code{included?}, you must specify the exact path to the
-file, even if that is @file{./foo.fs}
+ファイル @var{c-addr u} が以前にインクルードされたファイルのリストにある場合にのみ true。 ファイルがロードされている場合、
+たとえば @file{foo.fs} として指定されたのが Forth 検索パスのどこかで見つかった可能性があります。  @code{include?}
+から @code{true} を返すには、 ファイルへの正確なパス (@file{./foo.fs}< であっても) を指定する必要があります。
 
 
 @findex include ( @var{ ... "file" -- ...   } ) file-ext
@@ -15306,7 +15268,7 @@ file, even if that is @file{./foo.fs}
 @format
 @code{include} ( @i{... "file" -- ...  }) file-ext ``include''
 @end format
-@code{include-file} the file @var{file}.
+@var{file} を @code{include-file} する。
 
 
 @findex required ( @var{ i*x addr u -- i*x   } ) file-ext
@@ -15315,10 +15277,9 @@ file, even if that is @file{./foo.fs}
 @format
 @code{required} ( @i{i*x addr u -- i*x  }) file-ext ``required''
 @end format
-@code{include-file} the file with the name given by @var{addr u}, if it is
-not @code{included} (or @code{required})  already. Currently this works by
-comparing the name of the file (with path) against the names of earlier
-included files.
+既に @code{include} (または @code{required} ) されてないなら、 @var{addr u} で指定した名前のファイルを
+@code{include-file} します。 現状では、
+これは(パス(path)付きの)ファイル名を以前にインクルードしたファイルの名前と比較することによって機能します。
 
 
 @findex require ( @var{ ... "file" -- ...   } ) file-ext
@@ -15327,7 +15288,7 @@ included files.
 @format
 @code{require} ( @i{... "file" -- ...  }) file-ext ``require''
 @end format
-@code{include-file} @var{file} only if it is not included already.
+ @var{file} がまだインクルードされていない場合のみ、 @code{include-file} します。
 
 
 @findex needs ( @var{ ... "name" -- ...   } ) gforth-0.2
@@ -15336,7 +15297,7 @@ included files.
 @format
 @code{needs} ( @i{... "name" -- ...  }) gforth-0.2 ``needs''
 @end format
-An alias for @code{require}; exists on other systems (e.g., Win32Forth).
+@code{require} のエイリアス。 他のシステム(Win32Forth など)に存在します。
 
 
 @findex \\\ ( @var{ --   } ) gforth-1.0
@@ -15345,7 +15306,7 @@ An alias for @code{require}; exists on other systems (e.g., Win32Forth).
 @format
 @code{\\\} ( @i{--  }) gforth-1.0 ``\\\''
 @end format
-skip remaining source file
+ソース・ファイルの残りをEOFまでスキップする
 
 
 @findex .included ( @var{ --   } ) gforth-0.5
@@ -15354,7 +15315,7 @@ skip remaining source file
 @format
 @code{.included} ( @i{--  }) gforth-0.5 ``.included''
 @end format
-List the names of the files that have been @code{included}.
+インクルードされたファイルの名前をリストします。
 
 
 @c doc-init-included-files @c internal
@@ -15364,10 +15325,9 @@ List the names of the files that have been @code{included}.
 @format
 @code{sourcefilename} ( @i{-- c-addr u  }) gforth-0.2 ``sourcefilename''
 @end format
-The name of the source file which is currently the input source.  The result
-is valid only while the file is being loaded.  If the current input source
-is no (stream) file, the result is undefined.  In Gforth, the result is
-valid during the whole session (but not across @code{savesystem} etc.).
+現在入力ソースとなっているソース・ファイルの名前。  結果は、 ファイルがロードされている間のみ有効です。
+現在の入力ソースが(ストリーム)ファイルでない場合、 結果は未定義です。  Gforth では、 結果はセッション全体で有効です(ただし、
+@code{savesystem} などを跨いで有効ではありません)。
 
 
 @findex sourceline# ( @var{ -- u   } ) gforth-0.2
@@ -15376,14 +15336,12 @@ valid during the whole session (but not across @code{savesystem} etc.).
 @format
 @code{sourceline#} ( @i{-- u  }) gforth-0.2 ``sourceline-number''
 @end format
-The line number of the line that is currently being interpreted from a
-(stream) file. The first line has the number 1. If the current input source
-is not a (stream) file, the result is undefined.
+(ストリーム)ファイルから現在通訳(interpret)されている行の行番号。 最初の行は番号 1 です。
+現在の入力ソースが(ストリーム)ファイルでない場合、 結果は未定義です。
 
 
 
-A definition in Standard Forth for @code{required} is provided in
-@file{compat/required.fs}.
+@code{required} の標準 Forth の定義は @file{compat/required.fs} で提供されます。
 
 @c -------------------------------------------------------------
 @node General files, Redirection, Forth source files, Files
@@ -15391,8 +15349,7 @@ A definition in Standard Forth for @code{required} is provided in
 @cindex general files
 @cindex file-handling
 
-Files are opened/created by name and type. The following file access methods
-(FAMs) are recognised:
+ファイルは名前と種類によって開かれたり作成されたりします。 以下のファイル・アクセス・メソッド(FAM)が認識されます:
 
 @cindex fam (file access method)
 @findex r/o ( @var{ -- fam   } ) file
@@ -15429,15 +15386,15 @@ Files are opened/created by name and type. The following file access methods
 @format
 @code{+fmode} ( @i{fam1 rwxrwxrwx -- fam2  }) gforth-1.0 ``plus-f-mode''
 @end format
-add file access mode to fam - for create-file only
+ファイル・アクセス・モードを fam に追加 - create-file のみ(訳注: @i{rwxrwxrwx} は chmod と同様 777 とか
+666 。 ただし gforth には直接 8進数記述する方法が無い)
 
 
 
 
-When a file is opened/created, it returns a file identifier, @i{wfileid}
-that is used for all other file commands. All file commands also return a
-status value, @i{wior}, that is 0 for a successful operation and an
-implementation-defined non-zero value in the case of an error.
+ファイルを開いたり作成したりすると、 他のすべてのファイル・コマンドに使用されるファイル識別子 @i{wfileid} が返されます。
+すべてのファイル・コマンドは、 ステータス値 @i{wior} も返します。 これは、 操作が成功した場合は 0 を返し、
+エラーの場合は実装で定義されたゼロ以外の値を返します。
 
 
 @findex open-file ( @var{ c-addr u wfam -- wfileid wior  } ) file
@@ -15475,7 +15432,7 @@ implementation-defined non-zero value in the case of an error.
 @format
 @code{rename-file} ( @i{c-addr1 u1 c-addr2 u2 -- wior }) file-ext ``rename-file''
 @end format
-Rename file @i{c_addr1 u1} to new name @i{c_addr2 u2}
+ファイル @i{c_addr1 u1} のファイル名を新しい名前 @i{c_addr2 u2} に変更します(rename)
 
 @findex read-file ( @var{ c-addr u1 wfileid -- u2 wior  } ) file
 @cindex @code{read-file}
@@ -15483,10 +15440,9 @@ Rename file @i{c_addr1 u1} to new name @i{c_addr2 u2}
 @format
 @code{read-file} ( @i{c-addr u1 wfileid -- u2 wior }) file ``read-file''
 @end format
-Read @i{u1} characters from file @i{wfileid} into the buffer at @i{c_addr}.
-A non-zero @i{wior} indicates an error.  @i{U2} indicates the length of the
-read data.  End-of-file is not an error and is indicated by @i{u2}$<$@i{u1}
-and @i{wior}=0.
+ファイル @i{wfileid} から @i{u1} 文字を @i{c_addr} からのバッファーに読み取ります。  ゼロ以外の @i{wior}
+はエラーを示します。  @i{U2}は読み出したデータの長さを示します。  ファイルの終わりはエラーではなく、 @i{u2}$<$@i{u1} かつ
+@i{wior}=0 によって示されます。
 
 @findex read-line ( @var{ c_addr u1 wfileid -- u2 flag wior   } ) file
 @cindex @code{read-line}
@@ -15494,30 +15450,26 @@ and @i{wior}=0.
 @format
 @code{read-line} ( @i{c_addr u1 wfileid -- u2 flag wior  }) file ``read-line''
 @end format
-Reads a line from @i{wfileid} into the buffer at @i{c_addr u1}.  Gforth
-supports all three common line terminators: LF, CR and CRLF.  A non-zero
-@i{wior} indicates an error.  A false @i{flag} indicates that
-@code{read-line} has been invoked at the end of the file. @i{u2} indicates
-the line length (without terminator): @i{u2}$<$@i{u1} indicates that the
-line is @i{u2} chars long; @i{u2}=@i{u1} indicates that the line is at least
-@i{u1} chars long, the @i{u1} chars of the buffer have been filled with
-chars from the line, and the next slice of the line with be read with the
-next @code{read-line}.  If the line is @i{u1} chars long, the first
-@code{read-line} returns @i{u2}=@i{u1} and the next read-line returns
-@i{u2}=0.
+@i{wfileid} から @i{c_addr u1} のバッファに行を読み取ります。  Gforth は、 LF と CR と CRLFの 3
+つの一般的な行終端文字をすべてサポートします。  ゼロ以外の @i{wior} はエラーを示します。  false の @i{flag}
+は、ファイルの最後(end of the file)で @code{read-line} が呼び出されたことを示します。 @i{u2}
+は行の長さ(ターミネータなし)を示します。 @i{u2}$<$@i{u1} は行の長さが @i{u2} 文字であることを示します。
+@i{u2}=@i{u1} は、 行が少なくとも @i{u1} 文字長であり、 バッファの @i{u1} 文字がその行の文字で埋められており、 そして、
+その行の次のスライスは次の @code{read-line} で読み取られます。 行の長さが @i{u1} 文字の場合、最初の
+@code{read-line} は @i{u2}=@i{u1} を返し、 次の read-line は @i{u2}=0 を返します。
 
 
 @findex key-file ( @var{ fd -- key   } ) gforth-0.4
 @cindex @code{key-file}
 @kindex key-file
 @format
-@code{key-file} ( @i{fd -- key  }) gforth-0.4 ``key-file''
+@code{key-file} ( @i{wfileid -- n  }) gforth-0.4 ``key-file''
 @end format
-Read one character @i{n} from @i{wfileid}.  This word disables buffering for
-@i{wfileid}.  If you want to read characters from a terminal in
-non-canonical (raw) mode, you have to put the terminal in non-canonical mode
-yourself (using the C interface); the exception is @code{stdin}: Gforth
-automatically puts it into non-canonical mode.
+@i{wfileid} から 1 文字 @i{n} を読み取ります。  このワードは @i{wfileid} のバッファリングを無効にします。
+あなたが端末から非標準モード(non-canonical
+mode)(RAWモード)で文字を読み取りたい場合は、(C言語インターフェイスを使用して)自分で端末を非標準モード(non-canonical
+mode)にする必要があります。 例外は @code{stdin} で、 この場合 Gforth は自動的に非正規モード(non-canonical
+mode)に設定します。
 
 
 @findex key?-file ( @var{ wfileid -- f  } ) gforth-0.4
@@ -15526,10 +15478,10 @@ automatically puts it into non-canonical mode.
 @format
 @code{key?-file} ( @i{wfileid -- f }) gforth-0.4 ``key-q-file''
 @end format
-@i{f} is true if at least one character can be read from @i{wfileid} without
-blocking.  If you also want to use @code{read-file} or @code{read-line} on
-the file, you have to call @code{key?-file} or @code{key-file} first (these
-two words disable buffering).
+@i{f} は、 ブロッキング無しに @i{wfileid} から少なくとも 1 文字を読み取ることができる場合に true になります。
+ファイルに対して @code{read-file} または @code{read-line} も使用したい場合は、 最初に
+@code{key?-file} または @code{key-file} を呼び出す必要があります(これら 2
+つのワードはバッファリングを無効にします)。
 
 @findex file-eof? ( @var{ wfileid -- flag  } ) gforth-0.6
 @cindex @code{file-eof?}
@@ -15537,7 +15489,8 @@ two words disable buffering).
 @format
 @code{file-eof?} ( @i{wfileid -- flag }) gforth-0.6 ``file-eof-query''
 @end format
-@var{Flag} is true if the end-of-file indicator for @var{wfileid} is set.
+@var{wfileid} のファイル終了インジケーター(end-of-file indicator)がセットされている場合、 @var{Flag} は
+true です。
 
 @findex write-file ( @var{ c-addr u1 wfileid -- wior  } ) file
 @cindex @code{write-file}
@@ -15572,7 +15525,7 @@ two words disable buffering).
 @cindex @code{file-status}
 @kindex file-status
 @format
-@code{file-status} ( @i{c-addr u -- wfam wior }) file-ext ``file-status''
+@code{file-status} ( @i{c-addr u -- wfam wior }) file-ext ``file-status'' \ 訳注: @i{wior} <> 0 ;ファイルが存在しない(@i{wfam}は未定義の値)、 @i{wior}=0 かつ  ( @i{wfam}=2 r/w 、 @i{wfam}=0 r/o 、 @i{wfam}=4 w/o 、 @i{wfam}=1 r/o bin いずれのacessモードチェックもエラーになった時。便宜的に読み込み専用かつバイナリとして返す)
 @end format
 
 @findex file-position ( @var{ wfileid -- ud wior  } ) file
@@ -15610,7 +15563,7 @@ two words disable buffering).
 @format
 @code{slurp-file} ( @i{c-addr1 u1 -- c-addr2 u2  }) gforth-0.6 ``slurp-file''
 @end format
-@var{c-addr1 u1} is the filename, @var{c-addr2 u2} is the file's contents
+@var{c-addr1 u1} はファイル名、 @var{c-addr2 u2} はファイルの内容です(訳注: slurp;音を立ててすする の意味)
 
 
 @findex slurp-fid ( @var{ fid -- addr u   } ) gforth-0.6
@@ -15619,7 +15572,7 @@ two words disable buffering).
 @format
 @code{slurp-fid} ( @i{fid -- addr u  }) gforth-0.6 ``slurp-fid''
 @end format
-@var{addr u} is the content of the file @var{fid}
+@var{addr u} はファイル @var{fid} の内容です(訳注: slurp;音を立ててすする の意味)
 
 
 @findex stdin ( @var{ -- wfileid  } ) gforth-0.4
@@ -15628,7 +15581,7 @@ two words disable buffering).
 @format
 @code{stdin} ( @i{-- wfileid }) gforth-0.4 ``stdin''
 @end format
-The standard input file of the Gforth process.
+Gforth プロセスの標準入力ファイル。
 
 @findex stdout ( @var{ -- wfileid  } ) gforth-0.2
 @cindex @code{stdout}
@@ -15636,7 +15589,7 @@ The standard input file of the Gforth process.
 @format
 @code{stdout} ( @i{-- wfileid }) gforth-0.2 ``stdout''
 @end format
-The standard output file of the Gforth process.
+Gforth プロセスの標準出力ファイル。
 
 @findex stderr ( @var{ -- wfileid  } ) gforth-0.2
 @cindex @code{stderr}
@@ -15644,7 +15597,7 @@ The standard output file of the Gforth process.
 @format
 @code{stderr} ( @i{-- wfileid }) gforth-0.2 ``stderr''
 @end format
-The standard error output file of the Gforth process.
+Gforth プロセスの標準エラー出力ファイル。
 
 
 @c ---------------------------------------------------------
@@ -15654,9 +15607,9 @@ The standard error output file of the Gforth process.
 @cindex Input Redirection
 @cindex Output Redirection
 
-You can redirect the output of @code{type} and @code{emit} and all the words
-that use them (all output words that don't have an explicit target file) to
-an arbitrary file with the @code{outfile-execute}, used like this:
+@code{type} や @code{emit} の出力と、
+それらを使用するすべてのワード(明示的なターゲット・ファイルを持たないすべての出力用ワード)を、 @code{outfile-execute}
+を使用して任意のファイルにリダイレクトできます。 以下のように使用します:
 
 @example
 : some-warning ( n -- )
@@ -15666,10 +15619,9 @@ an arbitrary file with the @code{outfile-execute}, used like this:
     ['] some-warning stderr outfile-execute ;
 @end example
 
-After @code{some-warning} is executed, the original output direction is
-restored; this construct is safe against exceptions.  Similarly, there is
-@code{infile-execute} for redirecting the input of @code{key} and its users
-(any input word that does not take a file explicitly).
+これは、 @code{some-warning} を execute した後、 元の出力先を復元します。 この構造は例外に対して安全です。 同様に、
+@code{key} からの入力と、 それを利用した入力(明示的にファイルを指定しない入力用ワード)をリダイレクトするための
+@code{infile-execute} があります。
 
 @findex outfile-execute ( @var{ ... xt file-id -- ...   } ) gforth-0.7
 @cindex @code{outfile-execute}
@@ -15677,8 +15629,7 @@ restored; this construct is safe against exceptions.  Similarly, there is
 @format
 @code{outfile-execute} ( @i{... xt file-id -- ...  }) gforth-0.7 ``outfile-execute''
 @end format
-execute @i{xt} with the output of @code{type} etc. redirected to
-@i{file-id}.
+@code{type} などの出力を @i{file-id} にリダイレクトして @i{xt} を execute します。
 
 
 @findex outfile-id ( @var{ -- file-id   } ) gforth-0.2
@@ -15687,9 +15638,9 @@ execute @i{xt} with the output of @code{type} etc. redirected to
 @format
 @code{outfile-id} ( @i{-- file-id  }) gforth-0.2 ``outfile-id''
 @end format
-@i{File-id} is used by @code{emit}, @code{type}, and any output word that
-does not take a file-id as input.  By default @code{outfile-id} produces the
-process's @code{stdout}, unless changed with @code{outfile-execute}.
+@i{File-id} は、 @code{emit} や、 @code{type} や、 入力として file-id
+を受け取らない出力用ワードによって使用されます。  @code{outfile-execute} で変更しない限り、 デフォルトでは
+@code{outfile-id} は実行中のプロセスの @code{stdout} を生成します。
 
 
 @findex infile-execute ( @var{ ... xt file-id -- ...   } ) gforth-0.7
@@ -15698,7 +15649,7 @@ process's @code{stdout}, unless changed with @code{outfile-execute}.
 @format
 @code{infile-execute} ( @i{... xt file-id -- ...  }) gforth-0.7 ``infile-execute''
 @end format
-execute @i{xt} with the input of @code{key} etc. redirected to @i{file-id}.
+@code{key} などの入力を @i{file-id} にリダイレクトして @i{xt} を実行します。
 
 
 @findex infile-id ( @var{ -- file-id   } ) gforth-0.4
@@ -15707,25 +15658,23 @@ execute @i{xt} with the input of @code{key} etc. redirected to @i{file-id}.
 @format
 @code{infile-id} ( @i{-- file-id  }) gforth-0.4 ``infile-id''
 @end format
-@i{File-id} is used by @code{key}, @code{?key}, and anything that refers to
-the "user input device".  By default @code{infile-id} produces the process's
-@code{stdin}, unless changed with @code{infile-execute}.
+@i{File-id} は、 @code{key} や、 @code{?key} や、 「ユーザー入力デバイス」(user input
+device)を参照するものすべてによって使用されます。  デフォルトでは、 @code{infile-execute}
+で変更しない限り、@code{infile-id} は実行中のプロセスの @code{stdin} を生成します。
 
 
 
-If you do not want to redirect the input or output to a file, you can also
-make use of the fact that @code{key}, @code{emit} and @code{type} are
-deferred words (@pxref{Deferred Words}).  However, in that case you have to
-worry about the restoration and the protection against exceptions yourself;
-also, note that for redirecting the output in this way, you have to redirect
-both @code{emit} and @code{type}.
+あなたが、 入力または出力をファイルにリダイレクトしたくない場合は、 @code{key} や @code{emit} や @code{type} が
+defer されたワードであるという事実を利用することもできます(@pxref{Deferred Words})。  ただし、 その場合は、 復元と、
+例外からの保護について、 自分で心配する必要があります。 また、 この方法で出力をリダイレクトするには、 @code{emit} と
+@code{type} の両方をリダイレクトする必要があることに注意してください。
 
 @c ---------------------------------------------------------
 @node Directories, Search Paths, Redirection, Files
 @subsection Directories
 @cindex Directories
 
-You can split a file name into a directory and base component:
+あなたは、 ファイル名をディレクトリとベース・コンポーネントに分割できます:
 
 @findex basename ( @var{ c-addr1 u1 -- c-addr2 u2   } ) gforth-0.7
 @cindex @code{basename}
@@ -15733,8 +15682,9 @@ You can split a file name into a directory and base component:
 @format
 @code{basename} ( @i{c-addr1 u1 -- c-addr2 u2  }) gforth-0.7 ``basename''
 @end format
-Given a file name @i{c-addr1 u1}, @i{c-addr2 u2} is the part of it with any
-leading directory components removed.
+ファイル名が @i{c-addr1 u1} の場合、 @i{c-addr2 u2} は、 先頭のディレクトリ・コンポーネントが削除された部分です(訳注:
+"os-class" environment? type unix ok な環境では動いたが、 Windows系では不明('/'
+を区切り文字としてハードコーディングしてあるっぽい)。
 
 
 @findex dirname ( @var{ c-addr1 u1 -- c-addr1 u2   } ) gforth-0.7
@@ -15743,15 +15693,14 @@ leading directory components removed.
 @format
 @code{dirname} ( @i{c-addr1 u1 -- c-addr1 u2  }) gforth-0.7 ``dirname''
 @end format
-@i{C-addr1 u2} is the directory name of the file name @i{c-addr1 u1},
-including the final @code{/}.  If @i{caddr1 u1} does not contain a @code{/},
-@i{u2}=0.
+@i{C-addr1 u2} は、 ファイル名 @i{c-addr1 u1} のディレクトリ名部分で、 末尾の @code{/} も含まれます。
+@i{caddr1 u1} に @code{/} が含まれていない場合、 @i{u2}=0 です(訳注: pathの区切り文字として @code{/}
+をハードコーディングしているので、 Windows系で動くかどうか不明)。
 
 
 
-You can open and read directories similar to files.  Reading gives you one
-directory entry at a time; you can match that to a filename (with
-wildcards).
+ファイルと同様に、 ディレクトリを開いて読み取ることができます。  読むと、 一度に 1 つのディレクトリ・エントリが得られます。 これを、
+(ワイルドカードを使用して)ファイル名とマッチングさせることができます。
 
 @findex open-dir ( @var{ c-addr u -- wdirid wior  } ) gforth-0.5
 @cindex @code{open-dir}
@@ -15759,8 +15708,7 @@ wildcards).
 @format
 @code{open-dir} ( @i{c-addr u -- wdirid wior }) gforth-0.5 ``open-dir''
 @end format
-Open the directory specified by @i{c-addr, u} and return @i{dir-id} for
-futher access to it.
+@i{c-addr, u} で指定されたディレクトリを開き、 さらにそこにアクセスするために @i{dir-id} を返します。
 
 @findex read-dir ( @var{ c-addr u1 wdirid -- u2 flag wior  } ) gforth-0.5
 @cindex @code{read-dir}
@@ -15768,16 +15716,13 @@ futher access to it.
 @format
 @code{read-dir} ( @i{c-addr u1 wdirid -- u2 flag wior }) gforth-0.5 ``read-dir''
 @end format
-Attempt to read the next entry from the directory specified by @i{dir-id} to
-the buffer of length @i{u1} at address @i{c-addr}.  If the attempt fails
-because there is no more entries, @i{ior}=0, @i{flag}=0, @i{u2}=0, and the
-buffer is unmodified.  If the attempt to read the next entry fails because
-of any other reason, return @i{ior}<>0.  If the attempt succeeds, store file
-name to the buffer at @i{c-addr} and return @i{ior}=0, @i{flag}=true and
-@i{u2} equal to the size of the file name.  If the length of the file name
-is greater than @i{u1}, store first @i{u1} characters from file name into
-the buffer and indicate "name too long" with @i{ior}, @i{flag}=true, and
-@i{u2}=@i{u1}.
+@i{dir-id} で指定されたディレクトリから、 アドレス @i{c-addr} にある長さ @i{u1} のバッファへ、
+次のエントリの読み取りを試みます。 これ以上エントリがないために試行が失敗した場合は、 @i{ior}=0 かつ @i{flag}=0 かつ
+@i{u2}=0 となり、 バッファは変更されません。  他の理由で次のエントリの読み取りに失敗した場合は、 @i{ior}<>0 を返します。
+試行が成功した場合、 ファイル名を @i{c-addr} からのバッファに保存し、 @i{ior}=0 かつ @i{flag}=true かつ
+ファイル名のサイズに等しい @i{u2} を返します。  ファイル名の長さが @i{u1} より長い場合は、 ファイル名の最初の @i{u1}
+文字をバッファに格納し、 @i{ior} はエラー "name too long" を示し(訳注: @i{ior}= -548 日本語環境では
+"ファイル名が長すぎます")、 かつ @i{flag}=true かつ @i{u2}=@i{u1} です。
 
 @findex close-dir ( @var{ wdirid -- wior  } ) gforth-0.5
 @cindex @code{close-dir}
@@ -15785,7 +15730,7 @@ the buffer and indicate "name too long" with @i{ior}, @i{flag}=true, and
 @format
 @code{close-dir} ( @i{wdirid -- wior }) gforth-0.5 ``close-dir''
 @end format
-Close the directory specified by @i{dir-id}.
+@i{dir-id} で指定されたディレクトリを閉じます。
 
 @findex filename-match ( @var{ c-addr1 u1 c-addr2 u2 -- flag  } ) gforth-0.5
 @cindex @code{filename-match}
@@ -15793,9 +15738,9 @@ Close the directory specified by @i{dir-id}.
 @format
 @code{filename-match} ( @i{c-addr1 u1 c-addr2 u2 -- flag }) gforth-0.5 ``match-file''
 @end format
-match the file name @var{c_addr1 u1} with the pattern @var{c_addr2 u2}.
-Patterns match char by char except for the special characters '*' and '?',
-which are wildcards for several ('*') or one ('?') character.
+ファイル名 @var{c_addr1 u1} とパターン @var{c_addr2 u2} のマッチングを行います。  パターンは、複数の文字
+('*') または 1 つの文字 ('?') のワイルドカードである特殊文字 '*' と '?' を除き、 文字ごとにマッチします。
+マッチングできた場合は true
 
 @findex get-dir ( @var{ c-addr1 u1 -- c-addr2 u2  } ) gforth-0.7
 @cindex @code{get-dir}
@@ -15803,8 +15748,8 @@ which are wildcards for several ('*') or one ('?') character.
 @format
 @code{get-dir} ( @i{c-addr1 u1 -- c-addr2 u2 }) gforth-0.7 ``get-dir''
 @end format
-Store the current directory in the buffer specified by @i{c-addr1, u1}.  If
-the buffer size is not sufficient, return 0 0
+@i{c-addr1, u1}で指定されたバッファにカレント・ディレクトリのパス(path)を格納します。  バッファサイズが十分でない場合は、 0 0
+を返します。
 
 @findex set-dir ( @var{ c-addr u -- wior  } ) gforth-0.7
 @cindex @code{set-dir}
@@ -15812,8 +15757,8 @@ the buffer size is not sufficient, return 0 0
 @format
 @code{set-dir} ( @i{c-addr u -- wior }) gforth-0.7 ``set-dir''
 @end format
-Change the current directory to @i{c-addr, u}.  Return an error if this is
-not possible
+現在のディレクトリを @i{c-addr, u} に変更します。  これが不可能な場合はエラーを返します(訳注: 例えば @i{ior} = -514
+; "そのようなファイルやディレクトリはありません")
 
 @findex =mkdir ( @var{ c-addr u wmode -- wior  } ) gforth-0.7
 @cindex @code{=mkdir}
@@ -15821,7 +15766,7 @@ not possible
 @format
 @code{=mkdir} ( @i{c-addr u wmode -- wior }) gforth-0.7 ``equals-mkdir''
 @end format
-Create directory @i{c-addr u} with mode @i{wmode}.
+モード @i{wmode} でディレクトリ @i{c-addr u} を作成します。
 
 @findex mkdir-parents ( @var{ c-addr u mode -- ior   } ) gforth-0.7
 @cindex @code{mkdir-parents}
@@ -15829,8 +15774,12 @@ Create directory @i{c-addr u} with mode @i{wmode}.
 @format
 @code{mkdir-parents} ( @i{c-addr u mode -- ior  }) gforth-0.7 ``mkdir-parents''
 @end format
-create the directory @i{c-addr u} and all its parents with mode @i{mode}
-(modified by umask)
+ディレクトリ @i{c-addr u} とそのすべての親をモード @i{mode} (umask が掛けられます)で作成します(訳注:
+フルパスで指定したディレクトリを作成する。 @code{aaa/bbb/ccc} というディレクトリを指定すればそれを一気に作る。 ここで、
+@i{ccc} というファイルが既にある場合は何もせず @i{ior}=-529 「ファイルが存在します」エラーとなる。 注意: @i{aaa} または
+@i{bbb} がファイルの場合は「削除」してからディレクトリを作成するので注意。  @i{ior}=-525 なら「許可がありません」(aaa ,
+aaa/bbb , aaa/bbb/ccc のいずれで許可が無かったのかは不明)。 注意: gforth には8進数リテラルが無いので注意。
+2進数(%0111111101 ; -rwxrwxr-x )がおすすめ。 ディレクトリの作成であるので実行権限(x)の付与を行うこと)
 
 
 

@@ -72,8 +72,7 @@ Next: <a href="Redirection.html" accesskey="n" rel="next">Redirection</a>, Previ
 <span id="index-general-files"></span>
 <span id="index-file_002dhandling"></span>
 
-<p>Files are opened/created by name and type. The following file access methods
-(FAMs) are recognised:
+<p>ファイルは名前と種類によって開かれたり作成されたりします。 以下のファイル・アクセス・メソッド(FAM)が認識されます:
 </p>
 <span id="index-fam-_0028file-access-method_0029"></span>
 <span id="index-r_002fo-_0028--_002d_002d-fam--_0029-file"></span>
@@ -110,15 +109,15 @@ Next: <a href="Redirection.html" accesskey="n" rel="next">Redirection</a>, Previ
 <div class="format">
 <pre class="format"><code>+fmode</code> ( <i>fam1 rwxrwxrwx &ndash; fam2  </i>) gforth-1.0 &ldquo;plus-f-mode&rdquo;
 </pre></div>
-<p>add file access mode to fam - for create-file only
+<p>ファイル・アクセス・モードを fam に追加 - create-file のみ(訳注: <i>rwxrwxrwx</i> は chmod と同様 777 とか
+666 。 ただし gforth には直接 8進数記述する方法が無い)
 </p>
 
 
 
-<p>When a file is opened/created, it returns a file identifier, <i>wfileid</i>
-that is used for all other file commands. All file commands also return a
-status value, <i>wior</i>, that is 0 for a successful operation and an
-implementation-defined non-zero value in the case of an error.
+<p>ファイルを開いたり作成したりすると、 他のすべてのファイル・コマンドに使用されるファイル識別子 <i>wfileid</i> が返されます。
+すべてのファイル・コマンドは、 ステータス値 <i>wior</i> も返します。 これは、 操作が成功した場合は 0 を返し、
+エラーの場合は実装で定義されたゼロ以外の値を返します。
 </p>
 
 <span id="index-open_002dfile-_0028--c_002daddr-u-wfam-_002d_002d-wfileid-wior--_0029-file"></span>
@@ -156,7 +155,7 @@ implementation-defined non-zero value in the case of an error.
 <div class="format">
 <pre class="format"><code>rename-file</code> ( <i>c-addr1 u1 c-addr2 u2 &ndash; wior </i>) file-ext &ldquo;rename-file&rdquo;
 </pre></div>
-<p>Rename file <i>c_addr1 u1</i> to new name <i>c_addr2 u2</i>
+<p>ファイル <i>c_addr1 u1</i> のファイル名を新しい名前 <i>c_addr2 u2</i> に変更します(rename)
 </p>
 <span id="index-read_002dfile-_0028--c_002daddr-u1-wfileid-_002d_002d-u2-wior--_0029-file"></span>
 <span id="index-read_002dfile"></span>
@@ -164,10 +163,9 @@ implementation-defined non-zero value in the case of an error.
 <div class="format">
 <pre class="format"><code>read-file</code> ( <i>c-addr u1 wfileid &ndash; u2 wior </i>) file &ldquo;read-file&rdquo;
 </pre></div>
-<p>Read <i>u1</i> characters from file <i>wfileid</i> into the buffer at <i>c_addr</i>.
-A non-zero <i>wior</i> indicates an error.  <i>U2</i> indicates the length of the
-read data.  End-of-file is not an error and is indicated by <i>u2</i>$&lt;$<i>u1</i>
-and <i>wior</i>=0.
+<p>ファイル <i>wfileid</i> から <i>u1</i> 文字を <i>c_addr</i> からのバッファーに読み取ります。  ゼロ以外の <i>wior</i>
+はエラーを示します。  <i>U2</i>は読み出したデータの長さを示します。  ファイルの終わりはエラーではなく、 <i>u2</i>$&lt;$<i>u1</i> かつ
+<i>wior</i>=0 によって示されます。
 </p>
 <span id="index-read_002dline-_0028--c_005faddr-u1-wfileid-_002d_002d-u2-flag-wior--_0029-file"></span>
 <span id="index-read_002dline"></span>
@@ -175,30 +173,26 @@ and <i>wior</i>=0.
 <div class="format">
 <pre class="format"><code>read-line</code> ( <i>c_addr u1 wfileid &ndash; u2 flag wior  </i>) file &ldquo;read-line&rdquo;
 </pre></div>
-<p>Reads a line from <i>wfileid</i> into the buffer at <i>c_addr u1</i>.  Gforth
-supports all three common line terminators: LF, CR and CRLF.  A non-zero
-<i>wior</i> indicates an error.  A false <i>flag</i> indicates that
-<code>read-line</code> has been invoked at the end of the file. <i>u2</i> indicates
-the line length (without terminator): <i>u2</i>$&lt;$<i>u1</i> indicates that the
-line is <i>u2</i> chars long; <i>u2</i>=<i>u1</i> indicates that the line is at least
-<i>u1</i> chars long, the <i>u1</i> chars of the buffer have been filled with
-chars from the line, and the next slice of the line with be read with the
-next <code>read-line</code>.  If the line is <i>u1</i> chars long, the first
-<code>read-line</code> returns <i>u2</i>=<i>u1</i> and the next read-line returns
-<i>u2</i>=0.
+<p><i>wfileid</i> から <i>c_addr u1</i> のバッファに行を読み取ります。  Gforth は、 LF と CR と CRLFの 3
+つの一般的な行終端文字をすべてサポートします。  ゼロ以外の <i>wior</i> はエラーを示します。  false の <i>flag</i>
+は、ファイルの最後(end of the file)で <code>read-line</code> が呼び出されたことを示します。 <i>u2</i>
+は行の長さ(ターミネータなし)を示します。 <i>u2</i>$&lt;$<i>u1</i> は行の長さが <i>u2</i> 文字であることを示します。
+<i>u2</i>=<i>u1</i> は、 行が少なくとも <i>u1</i> 文字長であり、 バッファの <i>u1</i> 文字がその行の文字で埋められており、 そして、
+その行の次のスライスは次の <code>read-line</code> で読み取られます。 行の長さが <i>u1</i> 文字の場合、最初の
+<code>read-line</code> は <i>u2</i>=<i>u1</i> を返し、 次の read-line は <i>u2</i>=0 を返します。
 </p>
 
 <span id="index-key_002dfile-_0028--fd-_002d_002d-key--_0029-gforth_002d0_002e4"></span>
 <span id="index-key_002dfile"></span>
 <span id="index-key_002dfile-1"></span>
 <div class="format">
-<pre class="format"><code>key-file</code> ( <i>fd &ndash; key  </i>) gforth-0.4 &ldquo;key-file&rdquo;
+<pre class="format"><code>key-file</code> ( <i>wfileid &ndash; n  </i>) gforth-0.4 &ldquo;key-file&rdquo;
 </pre></div>
-<p>Read one character <i>n</i> from <i>wfileid</i>.  This word disables buffering for
-<i>wfileid</i>.  If you want to read characters from a terminal in
-non-canonical (raw) mode, you have to put the terminal in non-canonical mode
-yourself (using the C interface); the exception is <code>stdin</code>: Gforth
-automatically puts it into non-canonical mode.
+<p><i>wfileid</i> から 1 文字 <i>n</i> を読み取ります。  このワードは <i>wfileid</i> のバッファリングを無効にします。
+あなたが端末から非標準モード(non-canonical
+mode)(RAWモード)で文字を読み取りたい場合は、(C言語インターフェイスを使用して)自分で端末を非標準モード(non-canonical
+mode)にする必要があります。 例外は <code>stdin</code> で、 この場合 Gforth は自動的に非正規モード(non-canonical
+mode)に設定します。
 </p>
 
 <span id="index-key_003f_002dfile-_0028--wfileid-_002d_002d-f--_0029-gforth_002d0_002e4"></span>
@@ -207,10 +201,10 @@ automatically puts it into non-canonical mode.
 <div class="format">
 <pre class="format"><code>key?-file</code> ( <i>wfileid &ndash; f </i>) gforth-0.4 &ldquo;key-q-file&rdquo;
 </pre></div>
-<p><i>f</i> is true if at least one character can be read from <i>wfileid</i> without
-blocking.  If you also want to use <code>read-file</code> or <code>read-line</code> on
-the file, you have to call <code>key?-file</code> or <code>key-file</code> first (these
-two words disable buffering).
+<p><i>f</i> は、 ブロッキング無しに <i>wfileid</i> から少なくとも 1 文字を読み取ることができる場合に true になります。
+ファイルに対して <code>read-file</code> または <code>read-line</code> も使用したい場合は、 最初に
+<code>key?-file</code> または <code>key-file</code> を呼び出す必要があります(これら 2
+つのワードはバッファリングを無効にします)。
 </p>
 <span id="index-file_002deof_003f-_0028--wfileid-_002d_002d-flag--_0029-gforth_002d0_002e6"></span>
 <span id="index-file_002deof_003f"></span>
@@ -218,7 +212,8 @@ two words disable buffering).
 <div class="format">
 <pre class="format"><code>file-eof?</code> ( <i>wfileid &ndash; flag </i>) gforth-0.6 &ldquo;file-eof-query&rdquo;
 </pre></div>
-<p><var>Flag</var> is true if the end-of-file indicator for <var>wfileid</var> is set.
+<p><var>wfileid</var> のファイル終了インジケーター(end-of-file indicator)がセットされている場合、 <var>Flag</var> は
+true です。
 </p>
 <span id="index-write_002dfile-_0028--c_002daddr-u1-wfileid-_002d_002d-wior--_0029-file"></span>
 <span id="index-write_002dfile"></span>
@@ -253,7 +248,7 @@ two words disable buffering).
 <span id="index-file_002dstatus"></span>
 <span id="index-file_002dstatus-1"></span>
 <div class="format">
-<pre class="format"><code>file-status</code> ( <i>c-addr u &ndash; wfam wior </i>) file-ext &ldquo;file-status&rdquo;
+<pre class="format"><code>file-status</code> ( <i>c-addr u &ndash; wfam wior </i>) file-ext &ldquo;file-status&rdquo; \ 訳注: <i>wior</i> &lt;&gt; 0 ;ファイルが存在しない(<i>wfam</i>は未定義の値)、 <i>wior</i>=0 かつ  ( <i>wfam</i>=2 r/w 、 <i>wfam</i>=0 r/o 、 <i>wfam</i>=4 w/o 、 <i>wfam</i>=1 r/o bin いずれのacessモードチェックもエラーになった時。便宜的に読み込み専用かつバイナリとして返す)
 </pre></div>
 
 <span id="index-file_002dposition-_0028--wfileid-_002d_002d-ud-wior--_0029-file"></span>
@@ -291,7 +286,7 @@ two words disable buffering).
 <div class="format">
 <pre class="format"><code>slurp-file</code> ( <i>c-addr1 u1 &ndash; c-addr2 u2  </i>) gforth-0.6 &ldquo;slurp-file&rdquo;
 </pre></div>
-<p><var>c-addr1 u1</var> is the filename, <var>c-addr2 u2</var> is the file&rsquo;s contents
+<p><var>c-addr1 u1</var> はファイル名、 <var>c-addr2 u2</var> はファイルの内容です(訳注: slurp;音を立ててすする の意味)
 </p>
 
 <span id="index-slurp_002dfid-_0028--fid-_002d_002d-addr-u--_0029-gforth_002d0_002e6"></span>
@@ -300,7 +295,7 @@ two words disable buffering).
 <div class="format">
 <pre class="format"><code>slurp-fid</code> ( <i>fid &ndash; addr u  </i>) gforth-0.6 &ldquo;slurp-fid&rdquo;
 </pre></div>
-<p><var>addr u</var> is the content of the file <var>fid</var>
+<p><var>addr u</var> はファイル <var>fid</var> の内容です(訳注: slurp;音を立ててすする の意味)
 </p>
 
 <span id="index-stdin-_0028--_002d_002d-wfileid--_0029-gforth_002d0_002e4"></span>
@@ -309,7 +304,7 @@ two words disable buffering).
 <div class="format">
 <pre class="format"><code>stdin</code> ( <i>&ndash; wfileid </i>) gforth-0.4 &ldquo;stdin&rdquo;
 </pre></div>
-<p>The standard input file of the Gforth process.
+<p>Gforth プロセスの標準入力ファイル。
 </p>
 <span id="index-stdout-_0028--_002d_002d-wfileid--_0029-gforth_002d0_002e2"></span>
 <span id="index-stdout"></span>
@@ -317,7 +312,7 @@ two words disable buffering).
 <div class="format">
 <pre class="format"><code>stdout</code> ( <i>&ndash; wfileid </i>) gforth-0.2 &ldquo;stdout&rdquo;
 </pre></div>
-<p>The standard output file of the Gforth process.
+<p>Gforth プロセスの標準出力ファイル。
 </p>
 <span id="index-stderr-_0028--_002d_002d-wfileid--_0029-gforth_002d0_002e2"></span>
 <span id="index-stderr"></span>
@@ -325,7 +320,7 @@ two words disable buffering).
 <div class="format">
 <pre class="format"><code>stderr</code> ( <i>&ndash; wfileid </i>) gforth-0.2 &ldquo;stderr&rdquo;
 </pre></div>
-<p>The standard error output file of the Gforth process.
+<p>Gforth プロセスの標準エラー出力ファイル。
 </p>
 
 </div>

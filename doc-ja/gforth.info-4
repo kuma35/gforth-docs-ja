@@ -27,6 +27,264 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: The optional Block word set,  Next: The optional Double Number word set,  Prev: The Core Words,  Up: Standard conformance
+
+9.2 The optional Block word set
+===============================
+
+* Menu:
+
+* block-idef::               Implementation Defined Options
+* block-ambcond::            あいまいな条件
+* block-other::              その他のシステム・ドキュメント
+
+
+File: gforth.info,  Node: block-idef,  Next: block-ambcond,  Prev: The optional Block word set,  Up: The optional Block word set
+
+9.2.1 Implementation Defined Options
+------------------------------------
+
+the format for display by ‘LIST’:
+     First the screen number is displayed, then 16 lines of 64
+     characters, each line preceded by the line number.
+
+the length of a line affected by ‘\’:
+     64 characters.
+
+
+File: gforth.info,  Node: block-ambcond,  Next: block-other,  Prev: block-idef,  Up: The optional Block word set
+
+9.2.2 Ambiguous conditions
+--------------------------
+
+correct block read was not possible:
+     Typically results in a ‘throw’ of some OS-derived value (between
+     -512 and -2048).  If the blocks file was just not long enough,
+     blanks are supplied for the missing portion.
+
+I/O exception in block transfer:
+     Typically results in a ‘throw’ of some OS-derived value (between
+     -512 and -2048).
+
+invalid block number:
+     ‘-35 throw’ (Invalid block number)
+
+a program directly alters the contents of ‘BLK’:
+     The input stream is switched to that other block, at the same
+     position.  If the storing to ‘BLK’ happens when interpreting
+     non-block input, the system will get quite confused when the block
+     ends.
+
+no current block buffer for ‘UPDATE’:
+     ‘UPDATE’ has no effect.
+
+
+File: gforth.info,  Node: block-other,  Prev: block-ambcond,  Up: The optional Block word set
+
+9.2.3 Other system documentation
+--------------------------------
+
+any restrictions a multiprogramming system places on the use of buffer addresses:
+     No restrictions (yet).
+
+the number of blocks available for source and data:
+     depends on your disk space.
+
+
+File: gforth.info,  Node: The optional Double Number word set,  Next: The optional Exception word set,  Prev: The optional Block word set,  Up: Standard conformance
+
+9.3 The optional Double Number word set
+=======================================
+
+* Menu:
+
+* double-ambcond::           あいまいな条件
+
+
+File: gforth.info,  Node: double-ambcond,  Prev: The optional Double Number word set,  Up: The optional Double Number word set
+
+9.3.1 Ambiguous conditions
+--------------------------
+
+d outside of range of n in ‘D>S’:
+     The least significant cell of d is produced.
+
+
+File: gforth.info,  Node: The optional Exception word set,  Next: The optional Facility word set,  Prev: The optional Double Number word set,  Up: Standard conformance
+
+9.4 The optional Exception word set
+===================================
+
+* Menu:
+
+* exception-idef::           Implementation Defined Options
+
+
+File: gforth.info,  Node: exception-idef,  Prev: The optional Exception word set,  Up: The optional Exception word set
+
+9.4.1 Implementation Defined Options
+------------------------------------
+
+‘THROW’-codes used in the system:
+     The codes -256−-511 are used for reporting signals.  The mapping
+     from OS signal numbers to throw codes is -256−signal.  The codes
+     -512−-2047 are used for OS errors (for file and memory allocation
+     operations).  The mapping from OS error numbers to throw codes is
+     -512−‘errno’.  One side effect of this mapping is that undefined OS
+     errors produce a message with a strange number; e.g., ‘-1000 THROW’
+     results in ‘Unknown error 488’ on my system.
+
+
+File: gforth.info,  Node: The optional Facility word set,  Next: The optional File-Access word set,  Prev: The optional Exception word set,  Up: Standard conformance
+
+9.5 The optional Facility word set
+==================================
+
+* Menu:
+
+* facility-idef::            Implementation Defined Options
+* facility-ambcond::         あいまいな条件
+
+
+File: gforth.info,  Node: facility-idef,  Next: facility-ambcond,  Prev: The optional Facility word set,  Up: The optional Facility word set
+
+9.5.1 Implementation Defined Options
+------------------------------------
+
+encoding of keyboard events (‘EKEY’):
+     Keys corresponding to ASCII characters are encoded as ASCII
+     characters.  Other keys are encoded with the constants ‘k-left’,
+     ‘k-right’, ‘k-up’, ‘k-down’, ‘k-home’, ‘k-end’, ‘k1’, ‘k2’, ‘k3’,
+     ‘k4’, ‘k5’, ‘k6’, ‘k7’, ‘k8’, ‘k9’, ‘k10’, ‘k11’, ‘k12’, ‘k-winch’,
+     ‘k-eof’.
+
+duration of a system clock tick:
+     System dependent.  With respect to ‘MS’, the time is specified in
+     microseconds.  How well the OS and the hardware implement this, is
+     another question.
+
+repeatability to be expected from the execution of ‘MS’:
+     System dependent.  On Unix, a lot depends on load.  If the system
+     is lightly loaded, and the delay is short enough that Gforth does
+     not get swapped out, the performance should be acceptable.  Under
+     MS-DOS and other single-tasking systems, it should be good.
+
+
+File: gforth.info,  Node: facility-ambcond,  Prev: facility-idef,  Up: The optional Facility word set
+
+9.5.2 Ambiguous conditions
+--------------------------
+
+‘AT-XY’ can’t be performed on user output device:
+     Largely terminal dependent.  No range checks are done on the
+     arguments.  No errors are reported.  You may see some garbage
+     appearing, you may see simply nothing happen.
+
+
+File: gforth.info,  Node: The optional File-Access word set,  Next: The optional Floating-Point word set,  Prev: The optional Facility word set,  Up: Standard conformance
+
+9.6 The optional File-Access word set
+=====================================
+
+* Menu:
+
+* file-idef::                Implementation Defined Options
+* file-ambcond::             あいまいな条件
+
+
+File: gforth.info,  Node: file-idef,  Next: file-ambcond,  Prev: The optional File-Access word set,  Up: The optional File-Access word set
+
+9.6.1 Implementation Defined Options
+------------------------------------
+
+file access methods used:
+     ‘R/O’, ‘R/W’ and ‘BIN’ work as you would expect.  ‘W/O’ translates
+     into the C file opening mode ‘w’ (or ‘wb’): The file is cleared, if
+     it exists, and created, if it does not (with both ‘open-file’ and
+     ‘create-file’).  Under Unix ‘create-file’ creates a file with 666
+     permissions modified by your umask.
+
+file exceptions:
+     The file words do not raise exceptions (except, perhaps, memory
+     access faults when you pass illegal addresses or file-ids).
+
+file line terminator:
+     System-dependent.  Gforth uses C’s newline character as line
+     terminator.  What the actual character code(s) of this are is
+     system-dependent.
+
+file name format:
+     System dependent.  Gforth just uses the file name format of your
+     OS.
+
+information returned by ‘FILE-STATUS’:
+     ‘FILE-STATUS’ returns the most powerful file access mode allowed
+     for the file: Either ‘R/O’, ‘W/O’ or ‘R/W’.  If the file cannot be
+     accessed, ‘R/O BIN’ is returned.  ‘BIN’ is applicable along with
+     the returned mode.
+
+input file state after an exception when including source:
+     All files that are left via the exception are closed.
+
+ior values and meaning:
+     The iors returned by the file and memory allocation words are
+     intended as throw codes.  They typically are in the range
+     -512−-2047 of OS errors.  The mapping from OS error numbers to iors
+     is -512−errno.
+
+maximum depth of file input nesting:
+     limited by the amount of return stack, locals/TIB stack, and the
+     number of open files available.  This should not give you troubles.
+
+maximum size of input line:
+     ‘/line’.  Currently 255.
+
+methods of mapping block ranges to files:
+     By default, blocks are accessed in the file ‘blocks.fb’ in the
+     current working directory.  The file can be switched with ‘USE’.
+
+number of string buffers provided by ‘S"’:
+     As many as memory available; the strings are stored in memory
+     blocks allocated with ALLOCATE indefinitely.
+
+size of string buffer used by ‘S"’:
+     ‘/line’.  currently 255.
+
+
+File: gforth.info,  Node: file-ambcond,  Prev: file-idef,  Up: The optional File-Access word set
+
+9.6.2 Ambiguous conditions
+--------------------------
+
+attempting to position a file outside its boundaries:
+     ‘REPOSITION-FILE’ is performed as usual: Afterwards,
+     ‘FILE-POSITION’ returns the value given to ‘REPOSITION-FILE’.
+
+attempting to read from file positions not yet written:
+     End-of-file, i.e., zero characters are read and no error is
+     reported.
+
+file-id is invalid (‘INCLUDE-FILE’):
+     An appropriate exception may be thrown, but a memory fault or other
+     problem is more probable.
+
+I/O exception reading or closing file-id (‘INCLUDE-FILE’, ‘INCLUDED’):
+     The ior produced by the operation, that discovered the problem, is
+     thrown.
+
+named file cannot be opened (‘INCLUDED’):
+     The ior produced by ‘open-file’ is thrown.
+
+requesting an unmapped block number:
+     There are no unmapped legal block numbers.  On some operating
+     systems, writing a block with a large number may overflow the file
+     system and have an error message as consequence.
+
+using ‘source-id’ when ‘blk’ is non-zero:
+     ‘source-id’ performs its function.  Typically it will give the id
+     of the source which loaded the block.  (Better ideas?)
+
+
 File: gforth.info,  Node: The optional Floating-Point word set,  Next: The optional Locals word set,  Prev: The optional File-Access word set,  Up: Standard conformance
 
 9.7 The optional Floating-Point word set
@@ -3632,14 +3890,14 @@ this manual.  Each word is listed with its stack effect and wordset.
 * .fpath ( -- ) gforth-0.4:              Source Search Paths. (line  12)
 * .hm ( NT -- ) gforth-1.0:              Header methods.      (line  24)
 * .id ( NT -- ) gforth-0.6:              Name token.          (line  78)
-* .included ( -- ) gforth-0.5:           Forth source files.  (line  64)
+* .included ( -- ) gforth-0.5:           Forth source files.  (line  66)
 * .locale-csv ( -- ) gforth-experimental: i18n and l10n.      (line  62)
 * .path ( PATH-ADDR -- ) gforth-0.4:     General Search Paths.
                                                               (line  29)
 * .r ( N1 N2 -- ) core-ext:              Simple numeric output.
                                                               (line  30)
 * .recognizers ( -- ) gforth-experimental: Default Recognizers.
-                                                              (line  44)
+                                                              (line  47)
 * .s ( -- ) tools:                       Examining data.      (line  11)
 * .substitute ( ADDR1 LEN1 -- N / IOR ) gforth-experimental: Substitute.
                                                               (line  21)
@@ -3764,7 +4022,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * <{: ( -- HMADDR U LATEST LATESTNT WID 0 ) gforth-experimental: Closures.
                                                               (line  90)
 * = ( N1 N2 -- F ) core:                 Numeric comparison.  (line  15)
-* =mkdir ( C-ADDR U WMODE -- WIOR ) gforth-0.7: Directories.  (line  51)
+* =mkdir ( C-ADDR U WMODE -- WIOR ) gforth-0.7: Directories.  (line  59)
 * > ( N1 N2 -- F ) core:                 Numeric comparison.  (line  17)
 * >= ( N1 N2 -- F ) gforth-0.2:          Numeric comparison.  (line  19)
 * >> ( ADDR -- ADDR ) regexp-replace:    Regular Expressions. (line 168)
@@ -3895,7 +4153,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * \G ( COMPILATION 'CCC<NEWLINE>' -- ; RUN-TIME -- ) gforth-0.2: Comments.
                                                               (line  22)
 * \s ( ADDR -- ADDR' ) regexp-pattern:   Regular Expressions. (line  73)
-* \\\ ( -- ) gforth-1.0:                 Forth source files.  (line  61)
+* \\\ ( -- ) gforth-1.0:                 Forth source files.  (line  63)
 * \^ ( ADDR -- ADDR ) regexp-pattern:    Regular Expressions. (line  96)
 * ] ( -- ) core:                         Literals.            (line  39)
 * ]L ( COMPILATION: N -- ; RUN-TIME: -- N ) gforth-0.5: Literals.
@@ -4024,7 +4282,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  18)
 * baseline ( -- R ) minos2:              widget methods.      (line  33)
 * basename ( C-ADDR1 U1 -- C-ADDR2 U2 ) gforth-0.7: Directories.
-                                                              (line   8)
+                                                              (line   9)
 * before-line ( -- ) gforth-1.0:         Text Interpreter Hooks.
                                                               (line   6)
 * before-locate ( -- U ) gforth-1.0:     Locating source code definitions.
@@ -4153,8 +4411,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * clearstack ( ... -- ) gforth-0.2:      Examining data.      (line  43)
 * clearstacks ( ... -- ) gforth-0.7:     Examining data.      (line  49)
 * clicked ( RX RY BMASK N -- ) minos2:   actor methods.       (line  15)
-* close-dir ( WDIRID -- WIOR ) gforth-0.5: Directories.       (line  35)
-* close-file ( WFILEID -- WIOR ) file:   General files.       (line  29)
+* close-dir ( WDIRID -- WIOR ) gforth-0.5: Directories.       (line  41)
+* close-file ( WFILEID -- WIOR ) file:   General files.       (line  31)
 * close-pipe ( WFILEID -- WRETVAL WIOR ) gforth-0.2: Pipes.   (line  12)
 * cmove ( C-FROM C-TO U -- ) string:     Memory Blocks.       (line  26)
 * cmove> ( C-FROM C-TO U -- ) string:    Memory Blocks.       (line  32)
@@ -4202,7 +4460,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line   6)
 * Create ( "NAME" -- ) core:             CREATE.              (line  19)
 * create-file ( C-ADDR U WFAM -- WFILEID WIOR ) file: General files.
-                                                              (line  27)
+                                                              (line  29)
 * create-from ( NT "NAME" -- ) gforth-1.0: Creating from a prototype.
                                                               (line  28)
 * critical-section ( XT SEMAPHORE -- ) gforth-experimental: Semaphores.
@@ -4276,7 +4534,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * definitions ( -- ) search:             Word Lists.          (line  35)
 * defocus ( -- ) minos2:                 actor methods.       (line  39)
 * delete ( BUFFER SIZE U -- ) gforth-0.7: Memory Blocks.      (line  51)
-* delete-file ( C-ADDR U -- WIOR ) file: General files.       (line  31)
+* delete-file ( C-ADDR U -- WIOR ) file: General files.       (line  33)
 * delta-i ( R:ULIMIT R:U -- R:ULIMIT R:U U2 ) gforth-1.0: Counted Loops.
                                                               (line 250)
 * depth ( -- +N ) core:                  Examining data.      (line  35)
@@ -4297,7 +4555,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dglue@ ( -- RTYP RSUB RADD ) minos2:   widget methods.      (line  81)
 * dict-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  54)
 * dirname ( C-ADDR1 U1 -- C-ADDR1 U2 ) gforth-0.7: Directories.
-                                                              (line  12)
+                                                              (line  15)
 * discode ( ADDR U -- ) gforth-0.2:      Common Disassembler. (line   9)
 * dispose-widget ( -- ) minos2:          widget methods.      (line  99)
 * dlshift ( UD1 U -- UD2 ) gforth-1.0:   Bitwise operations.  (line  30)
@@ -4362,7 +4620,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  59)
 * emit ( C -- ) core:                    Displaying characters and strings.
                                                               (line  13)
-* emit-file ( C WFILEID -- WIOR ) gforth-0.2: General files.  (line  74)
+* emit-file ( C WFILEID -- WIOR ) gforth-0.2: General files.  (line  79)
 * empty-buffer ( BUFFER -- ) gforth-0.2: Blocks.              (line 166)
 * empty-buffers ( -- ) block-ext:        Blocks.              (line 162)
 * end-c-library ( -- ) gforth-0.7:       Defining library interfaces.
@@ -4397,9 +4655,9 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 224)
 * entered ( -- ) minos2:                 actor methods.       (line  42)
 * environment ( -- ) gforth-0.6:         Environmental Queries.
-                                                              (line 162)
+                                                              (line 163)
 * environment-wordlist ( -- WID ) gforth-0.2: Environmental Queries.
-                                                              (line 158)
+                                                              (line 159)
 * environment? ( C-ADDR U -- FALSE / ... TRUE ) core: Environmental Queries.
                                                               (line  11)
 * erase ( ADDR U -- ) core-ext:          Memory Blocks.       (line  41)
@@ -4516,17 +4774,17 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  37)
 * field: ( U1 "NAME" -- U2 ) facility-ext: Forth200x Structures.
                                                               (line  56)
-* file-eof? ( WFILEID -- FLAG ) gforth-0.6: General files.    (line  67)
-* file-position ( WFILEID -- UD WIOR ) file: General files.   (line  80)
-* file-size ( WFILEID -- UD WIOR ) file: General files.       (line  84)
+* file-eof? ( WFILEID -- FLAG ) gforth-0.6: General files.    (line  71)
+* file-position ( WFILEID -- UD WIOR ) file: General files.   (line  85)
+* file-size ( WFILEID -- UD WIOR ) file: General files.       (line  89)
 * file-status ( C-ADDR U -- WFAM WIOR ) file-ext: General files.
-                                                              (line  78)
+                                                              (line  83)
 * file>fpath ( ADDR1 U1 -- ADDR2 U2 ) gforth-1.0: Source Search Paths.
                                                               (line  15)
 * file>path ( C-ADDR1 U1 PATH-ADDR -- C-ADDR2 U2 ) gforth-1.0: General Search Paths.
                                                               (line  17)
 * filename-match ( C-ADDR1 U1 C-ADDR2 U2 -- FLAG ) gforth-0.5: Directories.
-                                                              (line  38)
+                                                              (line  44)
 * fill ( C-ADDR U C -- ) core:           Memory Blocks.       (line  38)
 * find ( C-ADDR -- XT +-1 | C-ADDR 0 ) core,search: Word Lists.
                                                               (line 107)
@@ -4550,7 +4808,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * FLOORED ( -- F ) environment:          Environmental Queries.
                                                               (line  48)
 * flush ( -- ) block:                    Blocks.              (line 181)
-* flush-file ( WFILEID -- WIOR ) file-ext: General files.     (line  76)
+* flush-file ( WFILEID -- WIOR ) file-ext: General files.     (line  81)
 * flush-icache ( C-ADDR U -- ) gforth-0.2: Assembler Definitions.
                                                               (line  75)
 * fm/mod ( D1 N1 -- N2 N3 ) core:        Integer division.    (line  79)
@@ -4624,14 +4882,14 @@ this manual.  Each word is listed with its stack effect and wordset.
 * get-block-fid ( -- WFILEID ) gforth-0.2: Blocks.            (line 131)
 * get-current ( -- WID ) search:         Word Lists.          (line  39)
 * get-dir ( C-ADDR1 U1 -- C-ADDR2 U2 ) gforth-0.7: Directories.
-                                                              (line  43)
+                                                              (line  50)
 * get-order ( -- WIDN .. WID1 N ) search: Word Lists.         (line  45)
 * get-recognizers ( -- XT1 .. XTN N ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  67)
 * getenv ( C-ADDR1 U1 -- C-ADDR2 U2 ) gforth-0.2: Passing Commands to the OS.
                                                               (line  29)
 * gforth ( -- C-ADDR U ) gforth-environment: Environmental Queries.
-                                                              (line 135)
+                                                              (line 136)
 * gg ( -- ) gforth-1.0:                  Locating uses of a word.
                                                               (line  25)
 * h ( -- R ) minos2:                     widget methods.      (line  24)
@@ -4665,18 +4923,18 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  48)
 * immediate? ( NT -- FLAG ) gforth-1.0:  Header methods.      (line 168)
 * implementation ( INTERFACE -- ) objects: Objects Glossary.  (line  81)
-* include ( ... "FILE" -- ... ) file-ext: Forth source files. (line  46)
+* include ( ... "FILE" -- ... ) file-ext: Forth source files. (line  48)
 * include-file ( I*X WFILEID -- J*X ) file: Forth source files.
-                                                              (line  32)
+                                                              (line  34)
 * include-locale ( "NAME" -- ) gforth-experimental: i18n and l10n.
                                                               (line  52)
-* included ( I*X C-ADDR U -- J*X ) file: Forth source files.  (line  36)
+* included ( I*X C-ADDR U -- J*X ) file: Forth source files.  (line  38)
 * included-locale ( ADDR U -- ) gforth-experimental: i18n and l10n.
                                                               (line  49)
-* included? ( C-ADDR U -- F ) gforth-0.2: Forth source files. (line  39)
+* included? ( C-ADDR U -- F ) gforth-0.2: Forth source files. (line  41)
 * infile-execute ( ... XT FILE-ID -- ... ) gforth-0.7: Redirection.
-                                                              (line  29)
-* infile-id ( -- FILE-ID ) gforth-0.4:   Redirection.         (line  32)
+                                                              (line  30)
+* infile-id ( -- FILE-ID ) gforth-0.4:   Redirection.         (line  33)
 * infinity ( -- R ) gforth-1.0:          Floating Point.      (line 189)
 * info-color ( -- ) gforth-1.0:          Terminal output.     (line  51)
 * init-asm ( -- ) gforth-0.2:            Assembler Definitions.
@@ -4746,10 +5004,10 @@ this manual.  Each word is listed with its stack effect and wordset.
 * k-winch ( -- U ) gforth-1.0:           Single-key input.    (line 137)
 * kerning ( -- R ) minos2:               widget methods.      (line  36)
 * key ( -- CHAR ) core:                  Single-key input.    (line   9)
-* key-file ( FD -- KEY ) gforth-0.4:     General files.       (line  54)
+* key-file ( FD -- KEY ) gforth-0.4:     General files.       (line  56)
 * key-ior ( -- CHAR|IOR ) gforth-1.0:    Single-key input.    (line  12)
 * key? ( -- FLAG ) facility:             Single-key input.    (line  16)
-* key?-file ( WFILEID -- F ) gforth-0.4: General files.       (line  61)
+* key?-file ( WFILEID -- F ) gforth-0.4: General files.       (line  64)
 * kill ( TASK -- ) gforth-experimental:  Basic multi-tasking. (line  70)
 * kill-task ( -- ) gforth-experimental:  Basic multi-tasking. (line  67)
 * l ( -- ) gforth-1.0:                   Locating source code definitions.
@@ -4853,7 +5111,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * MAX-UD ( -- UD ) environment:          Environmental Queries.
                                                               (line  60)
 * MAX-XCHAR ( -- XCHAR ) environment:    Environmental Queries.
-                                                              (line  90)
+                                                              (line  89)
 * maxalign ( -- ) gforth-0.2:            Dictionary allocation.
                                                               (line 101)
 * maxaligned ( ADDR1 -- ADDR2 ) gforth-0.2: Address arithmetic.
@@ -4872,7 +5130,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * methods ( CLASS -- ) objects:          Objects Glossary.    (line 114)
 * min ( N1 N2 -- N ) core:               Single precision.    (line  32)
 * mkdir-parents ( C-ADDR U MODE -- IOR ) gforth-0.7: Directories.
-                                                              (line  54)
+                                                              (line  62)
 * mod ( N1 N2 -- N ) core:               Integer division.    (line  53)
 * modf ( N1 N2 -- N ) gforth-1.0:        Integer division.    (line  58)
 * modf-stage2m ( N1 A-RECI -- UMODULUS ) gforth-1.0: Two-stage integer division.
@@ -4897,7 +5155,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * NaN ( -- R ) gforth-1.0:               Floating Point.      (line 195)
 * native@ ( LSID -- ADDR U ) gforth-experimental: i18n and l10n.
                                                               (line  27)
-* needs ( ... "NAME" -- ... ) gforth-0.2: Forth source files. (line  58)
+* needs ( ... "NAME" -- ... ) gforth-0.2: Forth source files. (line  60)
 * negate ( N1 -- N2 ) core:              Single precision.    (line  28)
 * new ( CLASS -- O ) mini-oof:           Basic Mini-OOF Usage.
                                                               (line  29)
@@ -4970,9 +5228,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * Only ( -- ) search-ext:                Word Lists.          (line  92)
 * open-blocks ( C-ADDR U -- ) gforth-0.2: Blocks.             (line 119)
 * open-dir ( C-ADDR U -- WDIRID WIOR ) gforth-0.5: Directories.
-                                                              (line  20)
-* open-file ( C-ADDR U WFAM -- WFILEID WIOR ) file: General files.
                                                               (line  25)
+* open-file ( C-ADDR U WFAM -- WFILEID WIOR ) file: General files.
+                                                              (line  27)
 * open-lib ( C-ADDR1 U1 -- U2 ) gforth-0.4: Low-Level C Interface Words.
                                                               (line   6)
 * open-path-file ( ADDR1 U1 PATH-ADDR -- WFILEID ADDR2 U2 0 | IOR ) gforth-0.2: General Search Paths.
@@ -4984,7 +5242,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * or ( W1 W2 -- W ) core:                Bitwise operations.  (line   8)
 * order ( -- ) search-ext:               Word Lists.          (line  96)
 * os-class ( -- C-ADDR U ) gforth-environment: Environmental Queries.
-                                                              (line 140)
+                                                              (line 141)
 * os-type ( -- C-ADDR U ) gforth-environment: Environmental Queries.
                                                               (line 144)
 * out ( -- ADDR ) gforth-1.0:            Miscellaneous output.
@@ -5048,11 +5306,11 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 170)
 * read-csv ( ADDR U XT -- ) gforth-experimental: CSV Reader.  (line   9)
 * read-dir ( C-ADDR U1 WDIRID -- U2 FLAG WIOR ) gforth-0.5: Directories.
-                                                              (line  24)
+                                                              (line  29)
 * read-file ( C-ADDR U1 WFILEID -- U2 WIOR ) file: General files.
-                                                              (line  36)
+                                                              (line  39)
 * read-line ( C_ADDR U1 WFILEID -- U2 FLAG WIOR ) file: General files.
-                                                              (line  42)
+                                                              (line  45)
 * rec-body ( ADDR U -- XT TRANSLATE-TICK | TRANSLATE-NULL ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  63)
 * rec-dtick ( ADDR U -- NT RECTYPE-NUM | RECTYPE-NULL ) gforth-experimental: Dealing with existing Recognizers.
@@ -5081,21 +5339,21 @@ this manual.  Each word is listed with its stack effect and wordset.
 * refill ( -- FLAG ) core-ext,block-ext,file-ext: The Input Stream.
                                                               (line  56)
 * rename-file ( C-ADDR1 U1 C-ADDR2 U2 -- WIOR ) file-ext: General files.
-                                                              (line  33)
+                                                              (line  35)
 * REPEAT ( COMPILATION ORIG DEST -- ; RUN-TIME -- ) core: Arbitrary control structures.
                                                               (line  69)
 * replace-word ( XT1 XT2 -- ) gforth-1.0: Debugging.          (line  65)
 * replaces ( ADDR1 LEN1 ADDR2 LEN2 -- ) string-ext: Substitute.
                                                               (line  17)
-* reposition-file ( UD WFILEID -- WIOR ) file: General files. (line  82)
+* reposition-file ( UD WFILEID -- WIOR ) file: General files. (line  87)
 * represent ( R C-ADDR U -- N F1 F2 ) floating: Floating-point output.
                                                               (line  96)
-* require ( ... "FILE" -- ... ) file-ext: Forth source files. (line  55)
+* require ( ... "FILE" -- ... ) file-ext: Forth source files. (line  57)
 * required ( I*X ADDR U -- I*X ) file-ext: Forth source files.
-                                                              (line  49)
+                                                              (line  51)
 * resize ( A_ADDR1 U -- A_ADDR2 WIOR ) memory: Heap Allocation.
                                                               (line  28)
-* resize-file ( UD WFILEID -- WIOR ) file: General files.     (line  86)
+* resize-file ( UD WFILEID -- WIOR ) file: General files.     (line  91)
 * resized ( -- ) minos2:                 widget methods.      (line 108)
 * restart ( TASK -- ) gforth-experimental: Basic multi-tasking.
                                                               (line  87)
@@ -5171,7 +5429,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * set->comp ( XT -- ) gforth-1.0:        Header methods.      (line 164)
 * set->int ( XT -- ) gforth-1.0:         Header methods.      (line 152)
 * set-current ( WID -- ) search:         Word Lists.          (line  42)
-* set-dir ( C-ADDR U -- WIOR ) gforth-0.7: Directories.       (line  47)
+* set-dir ( C-ADDR U -- WIOR ) gforth-0.7: Directories.       (line  54)
 * set-does> ( XT -- ) gforth-1.0:        CREATE..DOES> details.
                                                               (line  69)
 * set-execute ( CA -- ) gforth-1.0:      Header methods.      (line  41)
@@ -5223,17 +5481,17 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  40)
 * SLiteral ( COMPILATION C-ADDR1 U ; RUN-TIME -- C-ADDR2 U ) string: Literals.
                                                               (line  67)
-* slurp-fid ( FID -- ADDR U ) gforth-0.6: General files.      (line  91)
+* slurp-fid ( FID -- ADDR U ) gforth-0.6: General files.      (line  97)
 * slurp-file ( C-ADDR1 U1 -- C-ADDR2 U2 ) gforth-0.6: General files.
-                                                              (line  88)
+                                                              (line  93)
 * sm/rem ( D1 N1 -- N2 N3 ) core:        Integer division.    (line  82)
 * source ( -- ADDR U ) core:             The Text Interpreter.
                                                               (line 131)
 * source-id ( -- 0 | -1 | FILEID ) core-ext,file: Input Sources.
                                                               (line  19)
 * sourcefilename ( -- C-ADDR U ) gforth-0.2: Forth source files.
-                                                              (line  67)
-* sourceline# ( -- U ) gforth-0.2:       Forth source files.  (line  74)
+                                                              (line  69)
+* sourceline# ( -- U ) gforth-0.2:       Forth source files.  (line  75)
 * sp! ( A-ADDR -- S:... ) gforth-0.2:    Stack pointer manipulation.
                                                               (line  11)
 * sp0 ( -- A-ADDR ) gforth-0.4:          Stack pointer manipulation.
@@ -5263,9 +5521,9 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  50)
 * static ( -- ) oof:                     Class Declaration.   (line  34)
 * status-color ( -- ) gforth-1.0:        Terminal output.     (line  60)
-* stderr ( -- WFILEID ) gforth-0.2:      General files.       (line 100)
-* stdin ( -- WFILEID ) gforth-0.4:       General files.       (line  94)
-* stdout ( -- WFILEID ) gforth-0.2:      General files.       (line  97)
+* stderr ( -- WFILEID ) gforth-0.2:      General files.       (line 106)
+* stdin ( -- WFILEID ) gforth-0.4:       General files.       (line 100)
+* stdout ( -- WFILEID ) gforth-0.2:      General files.       (line 103)
 * stop ( -- ) gforth-experimental:       Basic multi-tasking. (line  78)
 * stop-ns ( TIMEOUT -- ) gforth-experimental: Basic multi-tasking.
                                                               (line  81)
@@ -5478,8 +5736,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * wrap-xt ( XT1 XT2 XT: XT3 -- ... ) gforth-1.0: Deferred Words.
                                                               (line 108)
 * write-file ( C-ADDR U1 WFILEID -- WIOR ) file: General files.
-                                                              (line  70)
-* write-line ( C-ADDR U WFILEID -- IOR ) file: General files. (line  72)
+                                                              (line  75)
+* write-line ( C-ADDR U WFILEID -- IOR ) file: General files. (line  77)
 * wrol ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  76)
 * wror ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  80)
 * WTF?? ( -- ) gforth-1.0:               Debugging.           (line  59)
@@ -5518,7 +5776,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * XCHAR-ENCODING ( -- ADDR U ) environment: Environmental Queries.
                                                               (line  83)
 * XCHAR-MAXMEM ( -- U ) environment:     Environmental Queries.
-                                                              (line  93)
+                                                              (line  92)
 * xd! ( UD C-ADDR -- ) gforth-1.0:       Special Memory Accesses.
                                                               (line  59)
 * xd, ( XD -- ) gforth-1.0:              Dictionary allocation.
