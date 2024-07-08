@@ -2982,8 +2982,8 @@ synonym と、 aliase と、 ‘interpret/compile:’ で定義されたワー�
 得します
 
 ‘find-name’ ( c-addr u – nt | 0  ) gforth-0.2 “find-name”
-   現在のサーチ・オーダーで名前 c-addr u を見つけます。 nt が見つかった
-場合はそれを返し、 それ以外の場合は 0 を返します。
+   現在の検索順序スタック(the search order)で名前 c-addr u を見つけます
+。 nt が見つかった場合はそれを返し、 それ以外の場合は 0 を返します。
 
 ‘find-name-in’ ( c-addr u wid – nt | 0  ) gforth-1.0 “find-name-in”
    wid で識別されるワードリストで、 c-addr u の文字列で指定された定義を
@@ -3792,20 +3792,22 @@ Control Structures::)。 一般的な使用法は以下のとおりです:
    何もしません。 ‘[THEN]’ の同義語(synonym)です。
 
 ‘[defined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-defined”
-   現在のサーチ・オーダーで名前が見つかった場合は true を返します
+   現在の検索順序スタック(the search order)で名前が見つかった場合は true
+を返します
 
 ‘[undefined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-undefined”
-   現在のサーチ・オーダーで名前が見つかった場合は false を返します
+   現在の検索順序スタック(the search order)で名前が見つかった場合は
+false を返します
 
 ‘[IFDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-def”
-   現在のサーチ・オーダーで name が見つかった場合は、 ‘TRUE’ フラグを伴
-った ‘[IF]’ のように振る舞いし、 そうでない場合は、 ‘FALSE’ フラグを伴っ
-た ‘[IF]’ のように動作します。 即実行ワードです。
+   現在の検索順序スタック(the search order)で name が見つかった場合は、
+‘TRUE’ フラグを伴った ‘[IF]’ のように振る舞いし、 そうでない場合は、
+‘FALSE’ フラグを伴った ‘[IF]’ のように動作します。 即実行ワードです。
 
 ‘[IFUNDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-un-def”
-   現在のサーチ・オーダーで name が見つからない場合は、 ‘TRUE’ フラグを
-伴った ‘[IF]’ のように動作し、 それ以外の場合は、‘FALSE’ フラグを伴った
-‘[IF]’ のように動作します。 即実行ワード。
+   現在の検索順序スタック(the search order)で name が見つからない場合は
+、 ‘TRUE’ フラグを伴った ‘[IF]’ のように動作し、 それ以外の場合は、
+‘FALSE’ フラグを伴った ‘[IF]’ のように動作します。 即実行ワード。
 
 ‘[?DO]’ ( n-limit n-index –  ) gforth-0.2 “bracket-question-do”
 
@@ -3879,9 +3881,10 @@ File: gforth.info,  Node: Default Recognizers,  Next: Dealing with existing Reco
 6.14.5.1 Default Recognizers
 ............................
 
-標準の Forth テキスト・インタプリタは、 サーチ・オーダー内のワード
-(‘rec-nt’) と、 整数(‘rec-num’)と、 浮動小数点数(‘rec-float’)を認識しま
-す。 デフォルトでは、 Gforth は 以下の構文も認識します
+標準の Forth テキスト・インタプリタは、 検索順序スタック(the search
+order)内のワード(‘rec-nt’) と、 整数(‘rec-num’)と、 浮動小数点数
+(‘rec-float’)を認識します。 デフォルトでは、 Gforth は 以下の構文も認識
+します
 
    • 文字列 例: ‘"mystring"’ (‘rec-string’)
 
@@ -3931,8 +3934,8 @@ locate はそのワードを表示します。
 。 ただし、 このポリシーにはいくつかの例外があります:
 
    • ワード名には任意の名前を付けることができるため、 他の認識器と競合す
-     る可能性があります(また、 サーチ・オーダーは他の認識器よりも前に検
-     索されます)。
+     る可能性があります(また、 検索順序スタック(the search order)は他の
+     認識器よりも前に検索されます)。
 
      ただし、 名前は ‘0’ (ゼロ)で始まらない傾向がある(そして ‘0’ (ゼロ)
      で始まる場合は特殊文字が含まれる傾向がある)ため、 base が ‘hex’ の
@@ -4235,11 +4238,11 @@ File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The I
 された方法でワードを削除することもできます)。 全ての名前付き(および
 ‘reveal’ された)ワードは 1 つのワードリスト内にあります。
 
-   テキスト・インタプリタは、 サーチ・オーダー(検索順序)(ワードリストの
-スタック)に存在するワードリストを頂上から下へ検索します。 各ワードリスト
-内では、 概念的には最新のワードから検索が開始されます。 つまり、 ワード
-リスト内に同一の名前の 2 つのワードがある場合、 新しいワードが検索にヒッ
-トします。
+   テキスト・インタプリタは、 検索順序スタック(the search order;ワードリ
+ストのスタック)に存在するワードリストをTOSから下へ検索します。 各ワード
+リスト内では、 概念的には最新のワードから検索が開始されます。 つまり、 ワ
+ードリスト内に同一の名前の 2 つのワードがある場合、 新しいワードが検索に
+ヒットします。
 
    新しいワードは「コンパイル・ワードリスト」(“compilation wordlist”)(現
 在のワードリスト(current wordlist)とも呼ばれます)に追加されます。
@@ -4257,11 +4260,12 @@ File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The I
 ‘forth-wordlist’ ( – wid  ) search “forth-wordlist”
    定数(‘Constant’) – wid は、Gforth が提供するすべての標準のワードを含
 むワードリストを識別します。 Gforth が呼び出されると、 このワードリスト
-がコンパイル・ワードリストとなり、 サーチ・オーダーの最上位になります。
+がコンパイル・ワードリストとなり、 検索順序スタック(the search order)の
+TOSになります。
 
 ‘definitions’ ( –  ) search “definitions”
-   現在サーチ・オーダーの先頭にあるワードリストをコンパイル・ワードリス
-トにします(訳注: : ‘definitions context  current ! ;’ )
+   現在検索順序スタック(the search order)のTOSにあるワードリストをコンパ
+イル・ワードリストにします(訳注: : ‘definitions context  current ! ;’ )
 
 ‘get-current’ ( – wid  ) search “get-current”
    wid は、 現在のコンパイル・ワードリストのワードリスト識別子です。
@@ -4270,18 +4274,17 @@ File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The I
    wid で識別されるワードリストをコンパイル・ワードリストに設定します。
 
 ‘get-order’ ( – widn .. wid1 n  ) search “get-order”
-   サーチ・オーダーをデータ・スタックにコピーします。 現在のサーチ・オー
-ダーには n 個のエントリがあり、 そのうち wid1 は最初に検索されるワードリ
-スト(サーチ・オーダーの先頭にあるワードリスト) を表し、 widn は最後に検
-索されるワードリストを表します。
+   検索順序スタック(the search order)の内容をデータ・スタックにコピーし
+ます。 現在の検索順序スタックには n 個のエントリがあり、 そのうち wid1 は
+最初に検索されるワードリスト(検索順序スタックのTOSにあるワードリスト) を
+表し、 widn は最後に検索されるワードリストを表します。
 
 ‘set-order’ ( widn .. wid1 n –  ) search “set-order”
-   N=0 の場合、 サーチ・オーダーを空(empty)にします。 N=-1 の場合、 サー
-チ・オーダーを実装定義の最小サーチ・オーダーに設定します (Gforth の場合
-、 これはワードリスト ‘Root’ です)。 それ以外の場合は、 N 個の wid エン
-トリを持ち、 WID1 が最初に検索されるワードリストを表し、 WIDN が最後に検
-索されるワードリストを表すように、 既存のサーチ・オーダーを置き換えます
-。
+   N=0 の場合、 検索順序スタック(the search order)を空(empty)にします。
+N=-1 の場合、 検索順序スタックを実装定義で最小化します (Gforth の場合、
+これはワードリスト ‘Root’ です)。 それ以外の場合は、 N 個の wid エントリ
+を持ち、 WID1 が最初に検索されるワードリストを表し、 WIDN が最後に検索さ
+れるワードリストを表すように、 既存の検索順序スタックを置き換えます。
 
 ‘wordlist’ ( – wid  ) search “wordlist”
    wid で表される新しい空(empty)のワードリストを作成します。
@@ -4297,34 +4300,36 @@ File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The I
    英大文字小文字を区別するボキャブラリを作成する
 
 ‘>order’ ( wid –  ) gforth-0.5 “to-order”
-   サーチ・オーダーというワードリストのスタックにワードリスト WID をプッ
-シュする(訳注: WID が サーチ・オーダー の TOS になる)。
+   検索順序スタック(the search order)というワードリストのスタックにワー
+ドリスト WID をプッシュする(訳注: WID が 検索順序スタックの TOS になる
+)。
 
 ‘previous’ ( –  ) search-ext “previous”
-   サーチ・オーダーというワードリスト・スタックのTOSを捨てる
+   検索順序スタック(the search order)というワードリスト・スタックのTOSを
+捨てる
 
 ‘also’ ( –  ) search-ext “also”
-   サーチ・オーダーでTOSを ‘DUP’ するかのように振る舞います(訳注: ‘:
-also context  >order ;’)。 通常はボキャブラリの前で使います(例えば ‘also
-Forth’)。 これにより、 ボキャブラリによって表されるワードリストがサーチ
-・オーダーへプッシュされるという複合的な効果が得られます(訳注:サーチ・オ
-ーダーの先頭を指定のボキャブラリで置き換えるのではなくて、 サーチ・オー
-ダーの先頭にさらにプッシュする形にして、 ボキャブラリの次が以前のサーチ
-オーダーの先頭になるようにする)
+   検索順序スタック(the search order)でTOSを ‘DUP’ するかのように振る舞
+います(訳注: ‘: also context  >order ;’)。 通常はボキャブラリの前で使い
+ます(例えば ‘also Forth’)。 これにより、 ボキャブラリによって表されるワ
+ードリストが検索順序スタックへプッシュされるという複合的な効果が得られま
+す(訳注:検索順序スタックのTOSを指定のボキャブラリで置き換えるのではなく
+て、 検索順序スタックのTOSにさらにプッシュする形にして、 ボキャブラリの
+次が以前の検索順序スタックのTOSになるようにする)
 
 ‘Forth’ ( –  ) search-ext “Forth”
-   サーチ・オーダーの先頭にある wid を、 ワードリスト ‘forth-wordlist’ に
-関連付けられた wid に置き換えます。
+   検索順序スタック(the search order)の先頭にある wid を、 ワードリスト
+‘forth-wordlist’ に関連付けられた wid に置き換えます。
 
 ‘Only’ ( –  ) search-ext “Only”
-   サーチ・オーダーを実装定義の最小サーチ・オーダーにします(Gforth の場
-合、 これはワードリスト ‘Root’ です)。
+   検索順序スタック(the search order)を実装定義で最小化します(Gforth の
+場合、 これはワードリスト ‘Root’ です)。
 
 ‘order’ ( –  ) search-ext “order”
-   サーチ・オーダーとコンパイル・ワードリストを出力します。 サーチ・オー
-ダーのワードリストは検索される順序で出力されます(従来のスタック表示方法
-とは逆になります)。 続けて、 コンパイル・ワードリストが最後に表示されま
-す。
+   検索順序スタック(the search order)とコンパイル・ワードリストを出力し
+ます。 検索順序スタックのワードリストは検索される順序で出力されます(従来
+のスタック表示方法とは逆になります)。 続けて、 コンパイル・ワードリスト
+が最後に表示されます。
 
 ‘.voc’ ( wid –  ) gforth-0.2 “dot-voc”
    WID で表されるワードリストの名前を出力します。 ‘vocabulary’ または
@@ -4332,20 +4337,20 @@ Forth’)。 これにより、 ボキャブラリによって表されるワー
 アドレスを出力します。
 
 ‘find’ ( c-addr – xt +-1 | c-addr 0  ) core,search “find”
-   カウンタ付き文字列 c-addr によって指定された定義の名前を現在のサーチ
-・オーダー内の全てのワードリストで検索します。 定義が見つからない場合、
-0 を返します。 定義が見つかった場合は、 1 (定義にデフォルト以外のコンパ
-イル機能(compilation semantics)ある場合)または、 -1 (定義にデフォルトの
-コンパイル機能(compilation semantics)がある場合)を返します。 インタプリ
-タ状態で返される xt はインタプリタ機能(interpretation semantics)を表しま
-す。 コンパイル状態で返される xt は、 コンパイル機能(デフォルト以外のコ
-ンパイル機能の場合)を表すか、または、 コンパイル機能が ‘compile,’ (デフ
-ォルトのコンパイル機能の場合)となる実行時機能(run-time semantics)を表し
-ます。 ANS Forth 標準では、 返される xt が何を表すかを明確に規定していな
-い(または、 デフォルト以外のコンパイル機能ではなく即実行性についても言及
-している)ため、 このワードは移植可能なプログラムでは問題があります。 移
-植性がなくても問題ない場合には、 ‘find-name’ とその友達の方が優れていま
-す(*note Name token::)。
+   カウンタ付き文字列 c-addr によって指定された定義の名前を現在の検索順
+序スタック(the search order)内の全てのワードリストで検索します。 定義が
+見つからない場合、 0 を返します。 定義が見つかった場合は、 1 (定義にデフ
+ォルト以外のコンパイル機能(compilation semantics)ある場合)または、 -1 (定
+義にデフォルトのコンパイル機能(compilation semantics)がある場合)を返しま
+す。 インタプリタ状態で返される xt はインタプリタ機能(interpretation
+semantics)を表します。 コンパイル状態で返される xt は、 コンパイル機能
+(デフォルト以外のコンパイル機能の場合)を表すか、または、 コンパイル機能
+が ‘compile,’ (デフォルトのコンパイル機能の場合)となる実行時機能
+(run-time semantics)を表します。 ANS Forth 標準では、 返される xt が何を
+表すかを明確に規定していない(または、 デフォルト以外のコンパイル機能では
+なく即実行性についても言及している)ため、 このワードは移植可能なプログラ
+ムでは問題があります。 移植性がなくても問題ない場合には、 ‘find-name’ と
+その友達の方が優れています(*note Name token::)。
 
 ‘search-wordlist’ ( c-addr count wid – 0 | xt +-1  ) search “search-wordlist”
    wid で識別されるワードリスト内で、 c-addr count の文字列で指定された
@@ -4356,8 +4361,8 @@ Forth’)。 これにより、 ボキャブラリによって表されるワー
 明確に規定していません。
 
 ‘words’ ( –  ) tools “words”
-   サーチ・オーダーの先頭にあるワードリスト内のすべての定義のリストを表
-示します。
+   検索順序スタック(the search order)の先頭にあるワードリスト内のすべて
+の定義のリストを表示します。
 
 ‘vlist’ ( –  ) gforth-0.2 “vlist”
    ‘WORDS’ の古い(Forth-83 より前の)名前。
@@ -4375,18 +4380,18 @@ Forth’)。 これにより、 ボキャブラリによって表されるワー
 ト、 ‘mwords value’ で value を含む名前をリスト)。
 
 ‘Root’ ( –  ) gforth-0.2 “Root”
-   ルート・ワードリストをサーチ・オーダー・スタックに追加します。 このボ
-キャブラリは最小の検索順序を構成し、 search-order のワードのみが含まれま
-す。
+   root ワードリストを検索順序スタック(the search order)に追加します。 こ
+のボキャブラリは最小の検索順序を構成し、 search-order のワードのみが含ま
+れます。
 
 ‘Vocabulary’ ( "name" –  ) gforth-0.2 “Vocabulary”
    "name" の定義を作成し、 それに新しいワードリストを関連付けます。
-"name" の実行時の効果は、 サーチ・オーダーの先頭にある wid を、 "name" に
-関連付けられた wid に置き換えることです。
+"name" の実行時の効果は、 検索順序スタック(the search order)のTOSにある
+wid を、 "name" に関連付けられた wid に置き換えることです。
 
 ‘seal’ ( –  ) gforth-0.2 “seal”
-   現在サーチ・オーダー・スタックの最上位にあるワードリスト以外のすべて
-のワードリストをサーチ・オーダー・スタックから削除します。
+   現在検索順序スタック(the search order)のTOSにあるワードリスト以外のす
+べてのワードリストを検索順序スタックから削除します。
 
 ‘vocs’ ( –  ) gforth-0.2 “vocs”
    システムで定義されているボキャブラリとワードリストをリストします。
@@ -4395,8 +4400,8 @@ Forth’)。 これにより、 ボキャブラリによって表されるワー
    変数(‘Variable’) – コンパイル・ワードリストの wid を保持。
 
 ‘context’ ( – addr  ) gforth-0.2 “context”
-   ‘context’ ‘@’ すると、 サーチ・オーダーの先頭にあるワードリストの wid
-が得られます。
+   ‘context’ ‘@’ すると、 検索順序スタック(the search order)のTOSにある
+ワードリストの wid が得られます。
 
 ‘map-vocs’ ( ... xt – ...  ) gforth-1.0 “map-vocs”
    システム内のすべてのワードリスト(テーブルと cs-wordlist を含む)に対し
@@ -4456,11 +4461,11 @@ File: gforth.info,  Node: Why use word lists?,  Next: Word list example,  Prev: 
 
    • 一連のワードが、 それらが有効なコンテキスト外で使用されるのを防ぐた
      め。 この典型的な 2 つの例が、 統合エディター(すべての編集コマンド
-     は別個のワードリストで定義されます。 エディターの起動時にサーチ・オ
-     ーダーがエディターのワードリストに設定されます。 エディターが終了す
-     ると古いサーチ・オーダーが復元されます)。 )と、 統合されたアセンブ
-     ラ(マシンのオペコードは、‘CODE’ ワードが定義されるときに使用される
-     別のワードリストで定義されます)。
+     は別個のワードリストで定義されます。 エディターの起動時に検索順序ス
+     タック(the search order)がエディターのワードリストに設定されます。
+     エディターが終了すると古い検索順序スタックが復元されます)。 )と、 統
+     合されたアセンブラ(マシンのオペコードは、‘CODE’ ワードが定義される
+     ときに使用される別のワードリストで定義されます)。
 
    • アプリケーションまたはライブラリのワードを、 ユーザーに表示される組
      (‘forth-wordlist’ または、 他の一般的なワードリスト内)と、 実装のた
@@ -4472,9 +4477,9 @@ File: gforth.info,  Node: Why use word lists?,  Next: Word list example,  Prev: 
    • 同じ名前を持つ複数の定義間の名前空間の衝突を防ぐため。 たとえば、 ク
      ロス・コンパイラを構築する場合、 ターゲット・システムの条件付きコー
      ドを生成するワード ‘IF’ が存在する場合があります。 この定義を別のワ
-     ードリストに配置すると、 サーチ・オーダー・スタック上のワードリスト
-     の順序を制御することで、 ホスト・システムの ‘IF’ またはターゲット・
-     システムの ‘IF’ を特定の文脈で使用するかどうかを制御できます。
+     ードリストに配置すると、 検索順序スタック上のワードリストの順序を制
+     御することで、 ホスト・システムの ‘IF’ またはターゲット・システムの
+     ‘IF’ を特定の文脈で使用するかどうかを制御できます。
 
    ワードリストを使用する場合の欠点は以下のとおりです:
 
@@ -4490,10 +4495,10 @@ File: gforth.info,  Node: Why use word lists?,  Next: Word list example,  Prev: 
      性があります。 一意の名前を使用することは、 名前の競合を避けるため
      のより良いアプローチです。
 
-   • あなたは、 サーチ・オーダーの変更を明示的に元に戻す必要があります。
-     多くの場合、 これは暗黙的に行われた方が便利です。 Gforth は現在その
-     ような機能を提供していませんが、 将来的には提供される可能性がありま
-     す。
+   • あなたは、 検索順序スタック(the search order)の変更を明示的に元に戻
+     す必要があります。 多くの場合、 これは暗黙的に行われた方が便利です
+     。 Gforth は現在そのような機能を提供していませんが、 将来的には提供
+     される可能性があります。
 
 
 File: gforth.info,  Node: Word list example,  Prev: Why use word lists?,  Up: Word Lists
@@ -4591,7 +4596,7 @@ Forth-94 は、システム上で実行されているプログラムがシス�
    定義内のローカル変数の最大数
 
 ‘wordlists’ ( – n  ) environment “wordlists”
-   サーチ・オーダーで使用できるワード・リストの最大数
+   検索順序スタック(the search order)で使用できるワード・リストの最大数
 
 ‘max-float’ ( – r  ) environment “max-float”
    使用可能な浮動小数点数の最大値(Gforth では最大の有限数(finite
@@ -5069,9 +5074,10 @@ File: gforth.info,  Node: Search Paths,  Prev: Directories,  Up: Files
 6.18.5 Search Paths
 -------------------
 
-If you specify an absolute filename (i.e., a filename starting with ‘/’
-or ‘~’, or with ‘:’ in the second position (as in ‘C:...’)) for
-‘included’ and friends, that file is included just as you would expect.
+あなたが、 ‘included’ やそのファミリーのために、 直接ファイル名を指定す
+る場合(つまり、 ‘/’ や ‘~’ で始まるファイル名、 または 2 番目の位置に
+‘:’ が付くファイル名 (‘C:...’ など))、 そのファイルは、 あなたの期待どお
+りにインクルードされます。
 
    If the filename starts with ‘./’, this refers to the directory that
 the present file was ‘included’ from.  This allows files to include
