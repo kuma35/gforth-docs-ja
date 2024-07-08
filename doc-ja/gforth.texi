@@ -15802,30 +15802,25 @@ aaa/bbb , aaa/bbb/ccc のいずれで許可が無かったのかは不明)。 �
 @cindex @code{include} search path
 @cindex search path for files
 
-あなたが、 @code{included} やそのファミリーのために、 直接ファイル名を指定する場合(つまり、  @file{/} や @file{~}
-で始まるファイル名、 または 2 番目の位置に @file{:} が付くファイル名 (@samp{C:...} など))、 そのファイルは、
-あなたの期待どおりにインクルードされます。
+あなたが、 @code{included} や、 そのファミリーのために、 直接ファイル名を指定する場合(つまり、  @file{/} や
+@file{~} で始まるファイル名、 または 2 番目の位置に @file{:} が付くファイル名 (@samp{C:...} など))、
+そのファイルは、 あなたの期待どおりにインクルードされます。
 
-If the filename starts with @file{./}, this refers to the directory that the
-present file was @code{included} from.  This allows files to include other
-files relative to their own position (irrespective of the current working
-directory or the absolute position).  This feature is essential for
-libraries consisting of several files, where a file may include other files
-from the library.  It corresponds to @code{#include "..."} in C. If the
-current input source is not a file, @file{.} refers to the directory of the
-innermost file being included, or, if there is no file being included, to
-the current working directory.
+ファイル名が @file{./} で始まる場合、 これは「現在の」ファイルがインクルードされたディレクトリを指します。  これにより、
+(現在の作業ディレクトリや絶対位置に関係なく)ファイル自体の位置を基準にして他のファイルを含めることができます。  この機能は、
+ファイルにライブラリの他のファイルが含まれる可能性がある、 複数のファイルで構成されるライブラリにとって不可欠です。  C言語の
+@code{#include "..."} に相当します。 現在の入力ソースがファイルでない場合、 @file{.}
+はインクルードされた最も内側のファイルのディレクトリを参照します。 インクルードされたファイルがない場合は、
+現在の作業ディレクトリからインクルードされます。
 
-For relative filenames (not starting with @file{./}), Gforth uses a search
-path similar to Forth's search order (@pxref{Word Lists}). It tries to find
-the given filename in the directories present in the path, and includes the
-first one it finds. There are separate search paths for Forth source files
-and general files.  If the search path contains the directory @file{.}, this
-refers to the directory of the current file, or the working directory, as if
-the file had been specified with @file{./}.
+(@file{./} で始まらない)相対ファイル名の場合、 Gforth は検索パス(a search path)を使用します。
+検索パスに書かれた各ディレクトリ内で、 指定のファイル名を検索し、 最初に見つかったファイル名をインクルードします。  Forth
+のソース・ファイルと一般ファイルには別個の検索パスがあります。  検索パスにディレクトリ @file{.} が含まれている場合、 ファイルが
+@file{./} で指定されているかのように、 「現在のファイルのディレクトリ」または作業ディレクトリを参照します。
 
-Use @file{~+} to refer to the current working directory (as in the
-@code{bash}).
+@file{~+} を使用して、 (@code{bash} の Tilde Expansion @code{~+/foo} →
+@code{$PWD/foo} のように)現在の作業ディレクトリを参照します(訳注: "~+/my-mkdir-parents.fs"
+file-status .s <2> 2 0  ok 2 )
 
 @findex absolute-file? ( @var{ addr u -- flag   } ) gforth-1.0
 @cindex @code{absolute-file?}
@@ -15833,9 +15828,12 @@ Use @file{~+} to refer to the current working directory (as in the
 @format
 @code{absolute-file?} ( @i{addr u -- flag  }) gforth-1.0 ``absolute-file?''
 @end format
-A filename is absolute if it starts with a / or a ~ (~ expansion), or if it
-is in the form ./*, extended regexp: ^[/~]|./, or if it has a colon as
-second character ("C:...").  Paths simply containing a / are not absolute!
+ファイル名が @code{/} または @code{~} (チルダ拡張) で始まる場合、 または @code{./*} 拡張正規表現:
+@code{^[/~]|./} の形式である場合、 または 2 番目の文字としてコロンが含まれる場合(@code{C:...})、
+絶対(absolute)ファイル名です( true を返す)。  パスが @code{/} を含んでいるだけでは絶対ファイル名ではありません(訳注:
+厳密にファイル名として成立するかどうかチェックしている訳では無い事に注意、 例えば @code{"~ccc.txt" absolute-file?
+. -1  ok} 、また @code{./} 形式を絶対と見なすことも注意。 @code{"./aaa/bbb/ccc.txt"
+absolute-file? . -1  ok} )
 
 
 
@@ -15851,9 +15849,8 @@ second character ("C:...").  Paths simply containing a / are not absolute!
 @subsubsection Source Search Paths
 @cindex search path control, source files
 
-The search path is initialized when you start Gforth (@pxref{Invoking
-Gforth}). You can display it and change it using @code{fpath} in combination
-with the general path handling words.
+検索パス(the search path)は、 Gforth の起動時に初期化されます(@pxref{Invoking Gforth})。
+@code{fpath} を一般的なパス処理ワードと組み合わせて使用​​すると、これを表示したり変更したりできます。
 
 @findex fpath ( @var{ -- path-addr   } ) gforth-0.4
 @cindex @code{fpath}
@@ -15868,7 +15865,7 @@ with the general path handling words.
 @format
 @code{.fpath} ( @i{--  }) gforth-0.4 ``.fpath''
 @end format
-Display the contents of the Forth search path.
+Forth 検索パスの内容を表示します。
 
 
 @findex file>fpath ( @var{ addr1 u1 -- addr2 u2   } ) gforth-1.0
@@ -15877,10 +15874,9 @@ Display the contents of the Forth search path.
 @format
 @code{file>fpath} ( @i{addr1 u1 -- addr2 u2  }) gforth-1.0 ``file>fpath''
 @end format
-Searches for a file with the name @i{c-addr1 u1} in the @code{fpath}.  If
-successful, @i{c-addr u2} is the absolute file name or the file name
-relative to the current working directory.  Throws an exception if the file
-cannot be opened.
+@code{fpath} で @i{c-addr1 u1} という名前のファイルを検索します。 成功した場合、 @i{c-addr u2}
+は絶対ファイル名または現在の作業ディレクトリからの相対ファイル名になります。  ファイルを開けない場合(ファイルが見つからない場合)は例外を throw
+します。
 
 
 @c the functionality of the following words is easily available through
@@ -15890,7 +15886,7 @@ cannot be opened.
 @c doc-open-fpath-file
 
 @noindent
-Here is an example of using @code{fpath} and @code{require}:
+@code{fpath} と @code{require} の使用例を以下に示します:
 
 @example
 fpath path= /usr/lib/forth/|./
@@ -15903,10 +15899,9 @@ require timer.fs
 @subsubsection General Search Paths
 @cindex search path control, source files
 
-Your application may need to search files in several directories, like
-@code{included} does. To facilitate this, Gforth allows you to define and
-use your own search paths, by providing generic equivalents of the Forth
-search path words:
+あなたのアプリケーションでは、 @code{included} のように、 複数のディレクトリ内のファイルを探さなければならない場合があります。
+これを容易にするために、 Gforth では、 Forth 検索パスを一般化した等価なモノを提供することで、
+あなた独自の検索パスを定義して使用できます。
 
 @findex open-path-file ( @var{ addr1 u1 path-addr -- wfileid addr2 u2 0 | ior   } ) gforth-0.2
 @cindex @code{open-path-file}
@@ -15914,10 +15909,11 @@ search path words:
 @format
 @code{open-path-file} ( @i{addr1 u1 path-addr -- wfileid addr2 u2 0 | ior  }) gforth-0.2 ``open-path-file''
 @end format
-Look in path @var{path-addr} for the file specified by @var{addr1 u1}.  If
-found, the resulting path and an (read-only) open file descriptor are
-returned. If the file is not found, @var{ior} is what came back from the
-last attempt at opening the file (in the current implementation).
+パス @var{path-addr} で、 指定のファイル @var{addr1 u1} を探します。  見つかった場合(@var{ior}=0)は、
+結果のパス(@i{addr2 u2})と、 (読み取り専用の)ファイル・デスクリプタ(open file
+descriptor)(@i{wfileid})を返します。 ファイルが見つからない場合、 @var{ior}
+は(現在の実装では)ファイルを開こうとした最後の試行時点で返されたものです(訳注:ファイルが見つからない場合、 つまり @var{ior}<>0
+の場合、返されるのは @var{ior} のみです @i{( addr1 u1 path-addr -- ior )} )。
 
 
 @findex file>path ( @var{ c-addr1 u1 path-addr -- c-addr2 u2   } ) gforth-1.0
@@ -15926,10 +15922,8 @@ last attempt at opening the file (in the current implementation).
 @format
 @code{file>path} ( @i{c-addr1 u1 path-addr -- c-addr2 u2  }) gforth-1.0 ``file>path''
 @end format
-Searches for a file with the name @i{c-addr1 u1} in path stored in
-@i{path-addr}.  If successful, @i{c-addr u2} is the absolute file name or
-the file name relative to the current working directory.  Throws an
-exception if the file cannot be opened.
+@i{path-addr} に保存されたパス内で @i{c-addr1 u1} という名前のファイルを検索します。  成功した場合、@i{c-addr
+u2} は絶対ファイル名または現在の作業ディレクトリからの相対ファイル名になります。  ファイルを開けない場合は例外をスローします。
 
 
 @findex clear-path ( @var{ path-addr --   } ) gforth-0.5
@@ -15938,7 +15932,7 @@ exception if the file cannot be opened.
 @format
 @code{clear-path} ( @i{path-addr --  }) gforth-0.5 ``clear-path''
 @end format
-Set the path @i{path-addr} to empty.
+パス @i{path-addr} を空(empty)にします。
 
 
 @findex also-path ( @var{ c-addr len path-addr --   } ) gforth-0.4
@@ -15947,7 +15941,7 @@ Set the path @i{path-addr} to empty.
 @format
 @code{also-path} ( @i{c-addr len path-addr --  }) gforth-0.4 ``also-path''
 @end format
-add the directory @i{c-addr len} to @i{path-addr}.
+ディレクトリ @i{c-addr len} を @i{path-addr} に追加します。
 
 
 @findex .path ( @var{ path-addr --   } ) gforth-0.4
@@ -15956,7 +15950,7 @@ add the directory @i{c-addr len} to @i{path-addr}.
 @format
 @code{.path} ( @i{path-addr --  }) gforth-0.4 ``.path''
 @end format
-Display the contents of the search path @var{path-addr}.
+検索パス @var{path-addr} の内容を表示します。
 
 
 @findex path+ ( @var{ path-addr  "dir" --   } ) gforth-0.4
@@ -15965,7 +15959,7 @@ Display the contents of the search path @var{path-addr}.
 @format
 @code{path+} ( @i{path-addr  "dir" --  }) gforth-0.4 ``path+''
 @end format
-Add the directory @var{dir} to the search path @var{path-addr}.
+ディレクトリ @var{dir} を検索パス @var{path-addr} に追加します(訳注: 検索パスの後ろに追加する)。
 
 
 @findex path= ( @var{ path-addr "dir1|dir2|dir3" --   } ) gforth-0.4
@@ -15974,12 +15968,12 @@ Add the directory @var{dir} to the search path @var{path-addr}.
 @format
 @code{path=} ( @i{path-addr "dir1|dir2|dir3" --  }) gforth-0.4 ``path-equals''
 @end format
-Make a complete new search path; the path separator is |.
+パス @i{path-addr} に、 完全に新しい検索パスを作成します。 パス区切り文字は @code{|} です。
 
 
 
 @c
-Here's an example of creating a custom search path:
+カスタム検索パスの作成例を以下に示します:
 @example
 variable mypath \ no special allocation required, just a variable
 mypath path= /lib|/usr/lib \ assign initial directories
@@ -15987,7 +15981,8 @@ mypath path+ /usr/local/lib \ append directory
 mypath .path \ output:"/lib /usr/lib /usr/local/lib"
 @end example
 
-Search file and show resulting path:
+ファイルを検索し、 結果のパスを表示します(訳注: @code{file>path} だと内部で throw しちゃうので、代わりに
+@code{opne-path-file} を使った例…だと思う):
 @example
 s" libm.so" mypath open-path-file throw type close-file \ output:"/lib/libm.so"
 @end example

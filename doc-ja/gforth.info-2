@@ -5074,37 +5074,41 @@ File: gforth.info,  Node: Search Paths,  Prev: Directories,  Up: Files
 6.18.5 Search Paths
 -------------------
 
-あなたが、 ‘included’ やそのファミリーのために、 直接ファイル名を指定す
-る場合(つまり、 ‘/’ や ‘~’ で始まるファイル名、 または 2 番目の位置に
+あなたが、 ‘included’ や、 そのファミリーのために、 直接ファイル名を指定
+する場合(つまり、 ‘/’ や ‘~’ で始まるファイル名、 または 2 番目の位置に
 ‘:’ が付くファイル名 (‘C:...’ など))、 そのファイルは、 あなたの期待どお
 りにインクルードされます。
 
-   If the filename starts with ‘./’, this refers to the directory that
-the present file was ‘included’ from.  This allows files to include
-other files relative to their own position (irrespective of the current
-working directory or the absolute position).  This feature is essential
-for libraries consisting of several files, where a file may include
-other files from the library.  It corresponds to ‘#include "..."’ in C.
-If the current input source is not a file, ‘.’ refers to the directory
-of the innermost file being included, or, if there is no file being
-included, to the current working directory.
+   ファイル名が ‘./’ で始まる場合、 これは「現在の」ファイルがインクルー
+ドされたディレクトリを指します。 これにより、 (現在の作業ディレクトリや
+絶対位置に関係なく)ファイル自体の位置を基準にして他のファイルを含めるこ
+とができます。 この機能は、 ファイルにライブラリの他のファイルが含まれる
+可能性がある、 複数のファイルで構成されるライブラリにとって不可欠です。
+C言語の ‘#include "..."’ に相当します。 現在の入力ソースがファイルでない
+場合、 ‘.’ はインクルードされた最も内側のファイルのディレクトリを参照し
+ます。 インクルードされたファイルがない場合は、 現在の作業ディレクトリか
+らインクルードされます。
 
-   For relative filenames (not starting with ‘./’), Gforth uses a search
-path similar to Forth’s search order (*note Word Lists::).  It tries to
-find the given filename in the directories present in the path, and
-includes the first one it finds.  There are separate search paths for
-Forth source files and general files.  If the search path contains the
-directory ‘.’, this refers to the directory of the current file, or the
-working directory, as if the file had been specified with ‘./’.
+   (‘./’ で始まらない)相対ファイル名の場合、 Gforth は検索パス(a search
+path)を使用します。 検索パスに書かれた各ディレクトリ内で、 指定のファイ
+ル名を検索し、 最初に見つかったファイル名をインクルードします。 Forth の
+ソース・ファイルと一般ファイルには別個の検索パスがあります。 検索パスに
+ディレクトリ ‘.’ が含まれている場合、 ファイルが ‘./’ で指定されているか
+のように、 「現在のファイルのディレクトリ」または作業ディレクトリを参照
+します。
 
-   Use ‘~+’ to refer to the current working directory (as in the
-‘bash’).
+   ‘~+’ を使用して、 (‘bash’ の Tilde Expansion ‘~+/foo’ → ‘$PWD/foo’ の
+ように)現在の作業ディレクトリを参照します(訳注: "~+/my-mkdir-parents.fs"
+file-status .s <2> 2 0 ok 2 )
 
 ‘absolute-file?’ ( addr u – flag  ) gforth-1.0 “absolute-file?”
-   A filename is absolute if it starts with a / or a ~ (~ expansion), or
-if it is in the form ./*, extended regexp: ^[/~]|./, or if it has a
-colon as second character ("C:...").  Paths simply containing a / are
-not absolute!
+   ファイル名が ‘/’ または ‘~’ (チルダ拡張) で始まる場合、 または ‘./*’
+拡張正規表現: ‘^[/~]|./’ の形式である場合、 または 2 番目の文字としてコ
+ロンが含まれる場合(‘C:...’)、 絶対(absolute)ファイル名です( true を返す
+)。 パスが ‘/’ を含んでいるだけでは絶対ファイル名ではありません(訳注: 厳
+密にファイル名として成立するかどうかチェックしている訳では無い事に注意、
+例えば ‘"~ccc.txt" absolute-file? . -1 ok’ 、また ‘./’ 形式を絶対と見な
+すことも注意。 ‘"./aaa/bbb/ccc.txt" absolute-file? . -1 ok’ )
 
 * Menu:
 
@@ -5117,22 +5121,22 @@ File: gforth.info,  Node: Source Search Paths,  Next: General Search Paths,  Pre
 6.18.5.1 Source Search Paths
 ............................
 
-The search path is initialized when you start Gforth (*note Invoking
-Gforth::).  You can display it and change it using ‘fpath’ in
-combination with the general path handling words.
+検索パス(the search path)は、 Gforth の起動時に初期化されます(*note
+Invoking Gforth::)。 ‘fpath’ を一般的なパス処理ワードと組み合わせて使用
+​​すると、これを表示したり変更したりできます。
 
 ‘fpath’ ( – path-addr  ) gforth-0.4 “fpath”
 
 ‘.fpath’ ( –  ) gforth-0.4 “.fpath”
-   Display the contents of the Forth search path.
+   Forth 検索パスの内容を表示します。
 
 ‘file>fpath’ ( addr1 u1 – addr2 u2  ) gforth-1.0 “file>fpath”
-   Searches for a file with the name c-addr1 u1 in the ‘fpath’.  If
-successful, c-addr u2 is the absolute file name or the file name
-relative to the current working directory.  Throws an exception if the
-file cannot be opened.
+   ‘fpath’ で c-addr1 u1 という名前のファイルを検索します。 成功した場合
+、 c-addr u2 は絶対ファイル名または現在の作業ディレクトリからの相対ファ
+イル名になります。 ファイルを開けない場合(ファイルが見つからない場合)は
+例外を throw します。
 
-Here is an example of using ‘fpath’ and ‘require’:
+‘fpath’ と ‘require’ の使用例を以下に示します:
 
      fpath path= /usr/lib/forth/|./
      require timer.fs
@@ -5143,45 +5147,50 @@ File: gforth.info,  Node: General Search Paths,  Prev: Source Search Paths,  Up:
 6.18.5.2 General Search Paths
 .............................
 
-Your application may need to search files in several directories, like
-‘included’ does.  To facilitate this, Gforth allows you to define and
-use your own search paths, by providing generic equivalents of the Forth
-search path words:
+あなたのアプリケーションでは、 ‘included’ のように、 複数のディレクトリ
+内のファイルを探さなければならない場合があります。 これを容易にするため
+に、 Gforth では、 Forth 検索パスを一般化した等価なモノを提供することで
+、 あなた独自の検索パスを定義して使用できます。
 
 ‘open-path-file’ ( addr1 u1 path-addr – wfileid addr2 u2 0 | ior  ) gforth-0.2 “open-path-file”
-   Look in path PATH-ADDR for the file specified by ADDR1 U1.  If found,
-the resulting path and an (read-only) open file descriptor are returned.
-If the file is not found, IOR is what came back from the last attempt at
-opening the file (in the current implementation).
+   パス PATH-ADDR で、 指定のファイル ADDR1 U1 を探します。 見つかった場
+合(IOR=0)は、 結果のパス(addr2 u2)と、 (読み取り専用の)ファイル・デスク
+リプタ(open file descriptor)(wfileid)を返します。 ファイルが見つからない
+場合、 IOR は(現在の実装では)ファイルを開こうとした最後の試行時点で返さ
+れたものです(訳注:ファイルが見つからない場合、 つまり IOR<>0 の場合、返
+されるのは IOR のみです ( addr1 u1 path-addr – ior ) )。
 
 ‘file>path’ ( c-addr1 u1 path-addr – c-addr2 u2  ) gforth-1.0 “file>path”
-   Searches for a file with the name c-addr1 u1 in path stored in
-path-addr.  If successful, c-addr u2 is the absolute file name or the
-file name relative to the current working directory.  Throws an
-exception if the file cannot be opened.
+   path-addr に保存されたパス内で c-addr1 u1 という名前のファイルを検索
+します。 成功した場合、c-addr u2 は絶対ファイル名または現在の作業ディレ
+クトリからの相対ファイル名になります。 ファイルを開けない場合は例外をス
+ローします。
 
 ‘clear-path’ ( path-addr –  ) gforth-0.5 “clear-path”
-   Set the path path-addr to empty.
+   パス path-addr を空(empty)にします。
 
 ‘also-path’ ( c-addr len path-addr –  ) gforth-0.4 “also-path”
-   add the directory c-addr len to path-addr.
+   ディレクトリ c-addr len を path-addr に追加します。
 
 ‘.path’ ( path-addr –  ) gforth-0.4 “.path”
-   Display the contents of the search path PATH-ADDR.
+   検索パス PATH-ADDR の内容を表示します。
 
 ‘path+’ ( path-addr  "dir" –  ) gforth-0.4 “path+”
-   Add the directory DIR to the search path PATH-ADDR.
+   ディレクトリ DIR を検索パス PATH-ADDR に追加します(訳注: 検索パスの後
+ろに追加する)。
 
 ‘path=’ ( path-addr "dir1|dir2|dir3" –  ) gforth-0.4 “path-equals”
-   Make a complete new search path; the path separator is |.
+   パス path-addr に、 完全に新しい検索パスを作成します。 パス区切り文字
+は ‘|’ です。
 
-   Here’s an example of creating a custom search path:
+   カスタム検索パスの作成例を以下に示します:
      variable mypath \ no special allocation required, just a variable
      mypath path= /lib|/usr/lib \ assign initial directories
      mypath path+ /usr/local/lib \ append directory
      mypath .path \ output:"/lib /usr/lib /usr/local/lib"
 
-   Search file and show resulting path:
+   ファイルを検索し、 結果のパスを表示します(訳注: ‘file>path’ だと内部
+で throw しちゃうので、代わりに ‘opne-path-file’ を使った例…だと思う):
      s" libm.so" mypath open-path-file throw type close-file \ output:"/lib/libm.so"
 
 

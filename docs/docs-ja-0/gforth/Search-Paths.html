@@ -73,30 +73,25 @@ Previous: <a href="Directories.html" accesskey="p" rel="prev">Directories</a>, U
 <span id="index-include-search-path"></span>
 <span id="index-search-path-for-files"></span>
 
-<p>あなたが、 <code>included</code> やそのファミリーのために、 直接ファイル名を指定する場合(つまり、  <samp>/</samp> や <samp>~</samp>
-で始まるファイル名、 または 2 番目の位置に <samp>:</samp> が付くファイル名 (&lsquo;<samp>C:...</samp>&rsquo; など))、 そのファイルは、
-あなたの期待どおりにインクルードされます。
+<p>あなたが、 <code>included</code> や、 そのファミリーのために、 直接ファイル名を指定する場合(つまり、  <samp>/</samp> や
+<samp>~</samp> で始まるファイル名、 または 2 番目の位置に <samp>:</samp> が付くファイル名 (&lsquo;<samp>C:...</samp>&rsquo; など))、
+そのファイルは、 あなたの期待どおりにインクルードされます。
 </p>
-<p>If the filename starts with <samp>./</samp>, this refers to the directory that the
-present file was <code>included</code> from.  This allows files to include other
-files relative to their own position (irrespective of the current working
-directory or the absolute position).  This feature is essential for
-libraries consisting of several files, where a file may include other files
-from the library.  It corresponds to <code>#include &quot;...&quot;</code> in C. If the
-current input source is not a file, <samp>.</samp> refers to the directory of the
-innermost file being included, or, if there is no file being included, to
-the current working directory.
+<p>ファイル名が <samp>./</samp> で始まる場合、 これは「現在の」ファイルがインクルードされたディレクトリを指します。  これにより、
+(現在の作業ディレクトリや絶対位置に関係なく)ファイル自体の位置を基準にして他のファイルを含めることができます。  この機能は、
+ファイルにライブラリの他のファイルが含まれる可能性がある、 複数のファイルで構成されるライブラリにとって不可欠です。  C言語の
+<code>#include &quot;...&quot;</code> に相当します。 現在の入力ソースがファイルでない場合、 <samp>.</samp>
+はインクルードされた最も内側のファイルのディレクトリを参照します。 インクルードされたファイルがない場合は、
+現在の作業ディレクトリからインクルードされます。
 </p>
-<p>For relative filenames (not starting with <samp>./</samp>), Gforth uses a search
-path similar to Forth&rsquo;s search order (see <a href="Word-Lists.html">Word Lists</a>). It tries to find
-the given filename in the directories present in the path, and includes the
-first one it finds. There are separate search paths for Forth source files
-and general files.  If the search path contains the directory <samp>.</samp>, this
-refers to the directory of the current file, or the working directory, as if
-the file had been specified with <samp>./</samp>.
+<p>(<samp>./</samp> で始まらない)相対ファイル名の場合、 Gforth は検索パス(a search path)を使用します。
+検索パスに書かれた各ディレクトリ内で、 指定のファイル名を検索し、 最初に見つかったファイル名をインクルードします。  Forth
+のソース・ファイルと一般ファイルには別個の検索パスがあります。  検索パスにディレクトリ <samp>.</samp> が含まれている場合、 ファイルが
+<samp>./</samp> で指定されているかのように、 「現在のファイルのディレクトリ」または作業ディレクトリを参照します。
 </p>
-<p>Use <samp>~+</samp> to refer to the current working directory (as in the
-<code>bash</code>).
+<p><samp>~+</samp> を使用して、 (<code>bash</code> の Tilde Expansion <code>~+/foo</code> →
+<code>$PWD/foo</code> のように)現在の作業ディレクトリを参照します(訳注: &quot;~+/my-mkdir-parents.fs&quot;
+file-status .s &lt;2&gt; 2 0  ok 2 )
 </p>
 <span id="index-absolute_002dfile_003f-_0028--addr-u-_002d_002d-flag--_0029-gforth_002d1_002e0"></span>
 <span id="index-absolute_002dfile_003f"></span>
@@ -104,9 +99,12 @@ the file had been specified with <samp>./</samp>.
 <div class="format">
 <pre class="format"><code>absolute-file?</code> ( <i>addr u &ndash; flag  </i>) gforth-1.0 &ldquo;absolute-file?&rdquo;
 </pre></div>
-<p>A filename is absolute if it starts with a / or a ~ (~ expansion), or if it
-is in the form ./*, extended regexp: ^[/~]|./, or if it has a colon as
-second character (&quot;C:...&quot;).  Paths simply containing a / are not absolute!
+<p>ファイル名が <code>/</code> または <code>~</code> (チルダ拡張) で始まる場合、 または <code>./*</code> 拡張正規表現:
+<code>^[/~]|./</code> の形式である場合、 または 2 番目の文字としてコロンが含まれる場合(<code>C:...</code>)、
+絶対(absolute)ファイル名です( true を返す)。  パスが <code>/</code> を含んでいるだけでは絶対ファイル名ではありません(訳注:
+厳密にファイル名として成立するかどうかチェックしている訳では無い事に注意、 例えば <code>&quot;~ccc.txt&quot; absolute-file?
+. -1  ok</code> 、また <code>./</code> 形式を絶対と見なすことも注意。 <code>&quot;./aaa/bbb/ccc.txt&quot;
+absolute-file? . -1  ok</code> )
 </p>
 
 
@@ -116,11 +114,6 @@ second character (&quot;C:...&quot;).  Paths simply containing a / are not absol
 <li><a href="Source-Search-Paths.html" accesskey="1">Source Search Paths</a></li>
 <li><a href="General-Search-Paths.html" accesskey="2">General Search Paths</a></li>
 </ul>
-</div>
-<hr>
-<div class="header">
-<p>
-Previous: <a href="Directories.html">Directories</a>, Up: <a href="Files.html">Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
