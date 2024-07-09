@@ -27,6 +27,160 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Formatted numeric output,  Next: Floating-point output,  Prev: Simple numeric output,  Up: Other I/O
+
+6.20.2 Formatted numeric output
+-------------------------------
+
+Forth traditionally uses a technique called “pictured numeric output”
+for formatted printing of integers.  In this technique, digits are
+extracted from the number (using the current output radix defined by
+‘base’, *note Number Conversion::), converted to ASCII codes and
+prepended to a string that is built in a scratch-pad area of memory
+(*note Implementation-defined options: core-idef.).  Arbitrary
+characters can be prepended to the string during the extraction process.
+The completed string is specified by an address and length and can be
+manipulated (‘TYPE’ed, copied, modified) under program control.
+
+   All of the integer output words described in the previous section
+(*note Simple numeric output::) are implemented in Gforth using pictured
+numeric output.
+
+   Three important things to remember about pictured numeric output:
+
+   • It always operates on double-precision numbers; to display a
+     single-precision number, convert it first (for ways of doing this
+     *note Double precision::).
+   • It always treats the double-precision number as though it were
+     unsigned.  The examples below show ways of printing signed numbers.
+   • The string is built up from right to left; least significant digit
+     first.
+
+   Standard Forth supports a single output buffer (aka hold area) that
+you empty and initialize with ‘<#’ and for which you get the result
+string with ‘#>’.
+
+   Gforth additionally supports nested usage of this buffer, allowing,
+e.g., to nest output from the debugging tracer ‘~~’ inside code dealing
+with the hold area: ‘<<#’ starts a new nest, ‘#>’ produces the result
+string, and ‘#>>’ unnests: the hold area for the nest is reclaimed, and
+‘#>’ now produces the string for the next-outer nest.  All of Gforth’s
+higher-level numeric output words use ‘<<#’ ...  ‘#>’ ...  ‘#>>’ and can
+be nested inside other users of the hold area.
+
+‘<#’ ( –  ) core “less-number-sign”
+   Initialise/clear the pictured numeric output string.
+
+‘<<#’ ( –  ) gforth-0.5 “less-less-number-sign”
+   Start a hold area that ends with ‘#>>’.  Can be nested in each other
+and in ‘<#’.  Note: if you do not match up the ‘<<#’s with ‘#>>’s, you
+will eventually run out of hold area; you can reset the hold area to
+empty with ‘<#’.
+
+‘#’ ( ud1 – ud2  ) core “number-sign”
+   Used between ‘<<#’ and ‘#>’.  Prepend the least-significant digit
+(according to ‘base’) of UD1 to the pictured numeric output string.  UD2
+is UD1/BASE, i.e., the number representing the remaining digits.
+
+‘#s’ ( ud – 0 0  ) core “number-sign-s”
+   Used between ‘<<#’ and ‘#>’.  Prepend all digits of UD to the
+pictured numeric output string.  ‘#s’ will convert at least one digit.
+Therefore, if UD is 0, ‘#s’ will prepend a “0” to the pictured numeric
+output string.
+
+‘hold’ ( char –  ) core “hold”
+   Used between ‘<<#’ and ‘#>’.  Prepend the character CHAR to the
+pictured numeric output string.
+
+‘holds’ ( addr u –  ) core-ext “holds”
+   Used between ‘<<#’ and ‘#>’.  Prepend the string ‘addr u’ to the
+pictured numeric output string.
+
+‘sign’ ( n –  ) core “sign”
+   Used between ‘<<#’ and ‘#>’.  If N (a SINGLE number) is negative,
+prepend “‘-’” to the pictured numeric output string.
+
+‘#>’ ( xd – addr u  ) core “number-sign-greater”
+   Complete the pictured numeric output string by discarding XD and
+returning ADDR U; the address and length of the formatted string.  A
+Standard program may modify characters within the string.  Does not
+release the hold area; use ‘#>>’ to release a hold area started with
+‘<<#’, or ‘<#’ to release all hold areas.
+
+‘#>>’ ( –  ) gforth-0.5 “number-sign-greater-greater”
+   Release the hold area started with ‘<<#’.
+
+Here are some examples of using pictured numeric output:
+
+     : my-u. ( u -- )
+       \ Simplest use of pns.. behaves like Standard u.
+       0              \ convert to unsigned double
+       <<#            \ start conversion
+       #s             \ convert all digits
+       #>             \ complete conversion
+       TYPE SPACE     \ display, with trailing space
+       #>> ;          \ release hold area
+
+     : cents-only ( u -- )
+       0              \ convert to unsigned double
+       <<#            \ start conversion
+       # #            \ convert two least-significant digits
+       #>             \ complete conversion, discard other digits
+       TYPE SPACE     \ display, with trailing space
+       #>> ;          \ release hold area
+
+     : dollars-and-cents ( u -- )
+       0              \ convert to unsigned double
+       <<#            \ start conversion
+       # #            \ convert two least-significant digits
+       '.' hold       \ insert decimal point
+       #s             \ convert remaining digits
+       '$' hold       \ append currency symbol
+       #>             \ complete conversion
+       TYPE SPACE     \ display, with trailing space
+       #>> ;          \ release hold area
+
+     : my-. ( n -- )
+       \ handling negatives.. behaves like Standard .
+       s>d            \ convert to signed double
+       swap over dabs \ leave sign byte followed by unsigned double
+       <<#            \ start conversion
+       #s             \ convert all digits
+       rot sign       \ get at sign byte, append "-" if needed
+       #>             \ complete conversion
+       TYPE SPACE     \ display, with trailing space
+       #>> ;          \ release hold area
+
+     : account. ( n -- )
+       \ accountants don't like minus signs, they use parentheses
+       \ for negative numbers
+       s>d            \ convert to signed double
+       swap over dabs \ leave sign byte followed by unsigned double
+       <<#            \ start conversion
+       2 pick         \ get copy of sign byte
+       0< IF ')' hold THEN \ right-most character of output
+       #s             \ convert all digits
+       rot            \ get at sign byte
+       0< IF '(' hold THEN
+       #>             \ complete conversion
+       TYPE SPACE     \ display, with trailing space
+       #>> ;          \ release hold area
+
+
+   Here are some examples of using these words:
+
+     1 my-u. 1
+     hex -1 my-u. decimal FFFFFFFF
+     1 cents-only 01
+     1234 cents-only 34
+     2 dollars-and-cents $0.02
+     1234 dollars-and-cents $12.34
+     123 my-. 123
+     -123 my. -123
+     123 account. 123
+     -456 account. (456)
+
+
 File: gforth.info,  Node: Floating-point output,  Next: Miscellaneous output,  Prev: Formatted numeric output,  Up: Other I/O
 
 6.20.3 Floating-point output

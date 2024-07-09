@@ -72,125 +72,103 @@ Next: <a href="Other-I_002fO.html" accesskey="n" rel="next">Other I/O</a>, Previ
 <span id="index-I_002fO-_002d-blocks"></span>
 <span id="index-blocks"></span>
 
-<p>When you run Gforth on a modern desk-top computer, it runs under the control
-of an operating system which provides certain services.  One of these
-services is <var>file services</var>, which allows Forth source code and data to
-be stored in files and read into Gforth (see <a href="Files.html">Files</a>).
+<p>今どきのデスクトップ・コンピューターで Gforth を実行すると、 特定のサービスを提供するオペレーティング・システムの制御下で Gforth
+が実行されます。 これらのサービスの 1 つはファイル・サービスです。 これにより、Forth のソース・コードとデータをファイルに保存し、
+Gforth に読み込むことができます(see <a href="Files.html">Files</a>)。
 </p>
-<p>Traditionally, Forth has been an important programming language on systems
-where it has interfaced directly to the underlying hardware with no
-intervening operating system. Forth provides a mechanism, called
-<em>blocks</em>, for accessing mass storage on such systems.
+<p>伝統的に、 Forth は、
+オペレーティング・システムを介さずに基盤となるハードウェアと直接インターフェイスするシステム上で有用なプログラミング言語でした。 Forth は、
+そのようなシステム上で大容量ストレージにアクセスするためのブロック(<em>blocks</em>)と呼ばれるメカニズムを提供します。
 </p>
-<p>A block is a 1024-byte data area, which can be used to hold data or Forth
-source code. No structure is imposed on the contents of the block. A block
-is identified by its number; blocks are numbered contiguously from 1 to an
-implementation-defined maximum.
+<p>ブロックは 1024 バイトのデータ領域であり、 データまたは Forth ソース・コードを保持するために使用できます。
+ブロックの内容に構造は課されません。 ブロックはその番号によって識別されます。 ブロックには、1 から実装定義の最大値まで連続した番号が付けられます。
 </p>
-<p>A typical system that used blocks but no operating system might use a single
-floppy-disk drive for mass storage, with the disks formatted to provide
-256-byte sectors. Blocks would be implemented by assigning the first four
-sectors of the disk to block 1, the second four sectors to block 2 and so
-on, up to the limit of the capacity of the disk. The disk would not contain
-any file system information, just the set of blocks.
+<p>ブロックを使用するが、 オペレーティング・ステムを使用しない一般的なシステムでは、 大容量ストレージとして 1
+台のフロッピー・ディスク・ドライブを使用し、 ディスクは 256 バイトのセクターを提供するようにフォーマットされます。 ブロックは、
+ディスクの容量の制限まで、 ディスクの最初の 4 セクタをブロック 1 に割り当て、 次の 4 セクタをブロック 2
+に割り当てることによって実装されます。 ディスクにはファイル・システム情報は含まれず、 ブロック達のみが含まれます。
 </p>
 <span id="index-blocks-file"></span>
-<p>On systems that do provide file services, blocks are typically implemented
-by storing a sequence of blocks within a single <em>blocks file</em>.  The size
-of the blocks file will be an exact multiple of 1024 bytes, corresponding to
-the number of blocks it contains. This is the mechanism that Gforth uses.
+<p>ファイル・サービスを提供するシステムでは、 ブロックは通常、単一のブロック・ファイル内に一連のブロックを格納することによって実装されます。
+ブロック・ファイルのサイズは、 含まれるブロックの数に対応する 1024 バイトの正確な倍数になります。 これが Gforth
+が使用するメカニズムです。
 </p>
 <span id="index-blocks_002efb"></span>
-<p>Only one blocks file can be open at a time. If you use block words without
-having specified a blocks file, Gforth defaults to the blocks file
-<samp>blocks.fb</samp>. Gforth uses the Forth search path when attempting to
-locate a blocks file (see <a href="Source-Search-Paths.html">Source Search Paths</a>).
+<p>一度に開くことができるブロック・ファイルは 1 つだけです。 ブロック・ファイルを指定せずにブロック・ワードを使用すると、 Gforth
+はデフォルトでブロック・ファイル <samp>blocks.fb</samp> を使用します。 Gforth は、 ブロック・ファイルを見つけようとするときに
+Forth 検索パスを使用します(see <a href="Source-Search-Paths.html">Source Search Paths</a>)。
 </p>
 <span id="index-block-buffers"></span>
-<p>When you read and write blocks under program control, Gforth uses a number
-of <em>block buffers</em> as intermediate storage. These buffers are not used
-when you use <code>load</code> to interpret the contents of a block.
+<p>プログラム制御下でブロックの読み取りと書き込みを行う場合、 Gforth は中間ストレージとして多数のブロック・バッファー(<em>block
+buffers</em>)を使用します。 <code>load</code> を使用してブロックの内容を解釈する場合は、 これらのバッファーは使用されません。
 </p>
-<p>The behaviour of the block buffers is analagous to that of a cache.  Each
-block buffer has three states:
+<p>ブロック・バッファーの動作はキャッシュ(cache)の動作に似ています。  各ブロック・バッファーには 3 つの状態(state)があります:
 </p>
 <ul>
-<li> Unassigned
-</li><li> Assigned-clean
-</li><li> Assigned-dirty
+<li> 未割り当て(unassigned)
+</li><li> 割り当て済・未変更(assigned-clean)
+</li><li> 割り当て済・変更中(assigned-dirty)
 </li></ul>
 
-<p>Initially, all block buffers are <i>unassigned</i>. In order to access a block,
-the block (specified by its block number) must be assigned to a block
-buffer.
+<p>最初は、すべてのブロック・バッファーは「未割り当て」(<i>unassigned</i>)です。 ブロックにアクセスするには、
+ブロック(ブロック番号で指定)をブロック・バッファーに割り当てる必要があります。
 </p>
-<p>The assignment of a block to a block buffer is performed by <code>block</code> or
-<code>buffer</code>. Use <code>block</code> when you wish to modify the existing
-contents of a block. Use <code>buffer</code> when you don&rsquo;t care about the
-existing contents of the block<a id="DOCF29" href="#FOOT29"><sup>29</sup></a>.
+<p>ブロック・バッファーへのブロックの割り当ては、 <code>block</code> または <code>buffer</code> によって行われます。
+ブロックの既存の内容を変更する場合は、 <code>block</code> を使用します。 ブロックの既存の内容を気にしない場合は、 <code>buffer</code>
+を使用します<a id="DOCF29" href="#FOOT29"><sup>29</sup></a>。
 </p>
-<p>Once a block has been assigned to a block buffer using <code>block</code> or
-<code>buffer</code>, that block buffer becomes the <i>current block buffer</i>. Data
-may only be manipulated (read or written) within the current block buffer.
+<p><code>block</code> または <code>buffer</code> を使用してブロックをブロック・バッファーに割り当てると、
+そのブロック・バッファーが「現在のブロック・バッファー」(<i>current block buffer</i>)になります。
+データは「現在のブロック・バッファー」内でのみ操作(読み取りまたは書き込み)できます。
 </p>
-<p>When the contents of the current block buffer has been modified it is
-necessary, <em>before calling <code>block</code> or <code>buffer</code> again</em>, to
-either abandon the changes (by doing nothing) or mark the block as changed
-(assigned-dirty), using <code>update</code>. Using <code>update</code> does not change
-the blocks file; it simply changes a block buffer&rsquo;s state to
-<i>assigned-dirty</i>.  The block will be written implicitly when it&rsquo;s buffer
-is needed for another block, or explicitly by <code>flush</code> or
-<code>save-buffers</code>.
+<p>「現在のブロック・バッファー」の内容が変更されている場合は、 「<code>block</code> または <code>buffer</code>
+を再度呼び出す前に、」(何もせずに)変更を破棄するか、 <code>update</code> を使用して、
+ブロックを変更済みとしてマークする必要があります(割り当て済・変更中;assigned-dirty)。 <code>update</code>
+を使用してもブロック・ファイルは変更されません。
+ブロック・バッファーの状態を「割り当て済・変更中」(<i>assigned-dirty</i>)に変更するだけです。 そのブロックは、
+そのブロック・バッファーが別のブロックで必要なときに暗黙的に書き込まれるか、 または、 <code>flush</code> や
+<code>save-buffers</code> によって明示的に書き込まれます。
 </p>
-<p>word <code>Flush</code> writes all <i>assigned-dirty</i> blocks back to the blocks
-file on disk. Leaving Gforth with <code>bye</code> also performs a <code>flush</code>.
+<p>word <code>flush</code> は、 すべての「割り当て済・変更中」(<i>assigned-dirty</i>)の
+ブロックをディスク上のブロック・ファイルに書き込みます。 <code>bye</code> を指定して Gforth を終了するときは、 <code>flush</code>
+も実行されます。
 </p>
-<p>In Gforth, <code>block</code> and <code>buffer</code> use a <i>direct-mapped</i> algorithm
-to assign a block buffer to a block. That means that any particular block
-can only be assigned to one specific block buffer, called (for the
-particular operation) the <i>victim buffer</i>. If the victim buffer is
-<i>unassigned</i> or <i>assigned-clean</i> it is allocated to the new block
-immediately. If it is <i>assigned-dirty</i> its current contents are written
-back to the blocks file on disk before it is allocated to the new block.
+<p>Gforth では、<code>block</code> と <code>buffer</code> は <i>direct-mapped</i>
+アルゴリズムを使用してブロック・バッファーをブロックに割り当てます。 つまり、 特定のブロックは、
+(特定の操作に対して)「いけにえ・バッファー」(<i>victim buffer</i>)と呼ばれる 1
+つの特定のブロック・バッファーにのみ割り当てることができます。
+いけにえ・バッファーが「未割り当て」(<i>unassigned</i>)状態または「割り当て済・未編集」(<i>assigned-clean</i>)状態の場合、
+直ちに新しいブロックが割り当てられます。 「割り当て済・編集中」(<i>assigned-dirty</i>)の場合、 その現在の内容は、
+新しいブロックが割り当てられる前に、 ディスク上のブロック・ファイルに書き戻されます。
 </p>
-<p>Although no structure is imposed on the contents of a block, it is
-traditional to display the contents as 16 lines each of 64 characters.  A
-block provides a single, continuous stream of input (for example, it acts as
-a single parse area) &ndash; there are no end-of-line characters within a block,
-and no end-of-file character at the end of a block. There are two
-consequences of this:
+<p>ブロックの内容に構造は課されていませんが、 伝統的に内容は 1 行当たり 64 文字の 16 行として表示します。  一つのブロックは、
+単一の連続した入力ストリームを提供します(たとえば、単一のパース領域として機能します) &ndash; ブロック内に行末文字はなく、
+ブロックの末尾にファイル終端文字もありません。 これは以下の 2 つの結果をもたらします:
 </p>
 <ul>
-<li> The last character of one line wraps straight into the first character of
-the following line
-</li><li> The word <code>\</code> &ndash; comment to end of line &ndash; requires special treatment;
-in the context of a block it causes all characters until the end of the
-current 64-character &ldquo;line&rdquo; to be ignored.
+<li> ある行の最後の文字は、そのまま次の行の最初の文字に折り返される(訳注: 繋がっています)。
+</li><li> <code>\</code> というワード &ndash; 行末までのコメント &ndash; は特別な処理を行います。 ブロックでは、 現在の 64
+文字の「1行分」の終わりまでのすべての文字が無視されます。
 </li></ul>
 
-<p>In Gforth, when you use <code>block</code> with a non-existent block number, the
-current blocks file will be extended to the appropriate size and the block
-buffer will be initialised with spaces.
+<p>Gforth では、 存在しないブロック番号を指定して <code>block</code> を使用すると、 現在のブロック・ファイルが適切なサイズに拡張され、
+ブロック・バッファーがスペースで初期化されます。
 </p>
-<p>Gforth includes a simple block editor (type <code>use blocked.fb 0 list</code> for
-details) but doesn&rsquo;t encourage the use of blocks; the mechanism is only
-provided for backward compatibility.
+<p>Gforth にはシンプルなブロック・エディターが含まれています(詳細については <code>use blocked.fb 0 list</code>
+と入力してください)。 ただし、ブロックの使用は推奨されません。 このメカニズムは下位互換性のためにのみ提供されています。
 </p>
-<p>Common techniques that are used when working with blocks include:
+<p>ブロックを取り扱うときに使用される一般的な手法は以下のとおりです:
 </p>
 <ul>
-<li> A screen editor that allows you to edit blocks without leaving the Forth
-environment.
-</li><li> Shadow screens; where every code block has an associated block containing
-comments (for example: code in odd block numbers, comments in even block
-numbers). Typically, the block editor provides a convenient mechanism to
-toggle between code and comments.
-</li><li> Load blocks; a single block (typically block 1) contains a number of
-<code>thru</code> commands which <code>load</code> the whole of the application.
+<li> Forth 環境を離れずにブロックを編集できるスクリーン・エディター。
+</li><li> シャドウ・スクリーン。 ここで、 すべてのコード・ブロックには、 コメントを含むブロックが関連付けられています(例: 奇数のブロック番号のコード、
+偶数のブロック番号のコメント)。 通常、 ブロック・エディターは、 コードとコメントを切り替える便利なメカニズムを提供します。
+</li><li> ロード・ブロック。 単一のブロック(通常はブロック 1) には、 アプリケーション全体を <code>load</code> する多数の <code>thru</code>
+コマンドが含まれています。
 </li></ul>
 
-<p>See Frank Sergeant&rsquo;s Pygmy Forth to see just how well blocks can be
-integrated into a Forth programming environment.
+<p>ブロックが Forth プログラミング環境にどの程度うまく統合できるかを確認するには、 Frank Sergeant の Pygmy Forth
+を参照してください。
 </p>
 
 <span id="index-open_002dblocks-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -199,7 +177,7 @@ integrated into a Forth programming environment.
 <div class="format">
 <pre class="format"><code>open-blocks</code> ( <i>c-addr u &ndash;  </i>) gforth-0.2 &ldquo;open-blocks&rdquo;
 </pre></div>
-<p>Use the file, whose name is given by <i>c-addr u</i>, as the blocks file.
+<p><i>c-addr u</i> で指定された名前のファイルをブロック・ファイルとして使用します(訳注: エラーの場合はその時点で throw されます)。
 </p>
 
 <span id="index-use-_0028--_0022file_0022-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -208,7 +186,7 @@ integrated into a Forth programming environment.
 <div class="format">
 <pre class="format"><code>use</code> ( <i>&quot;file&quot; &ndash;  </i>) gforth-0.2 &ldquo;use&rdquo;
 </pre></div>
-<p>Use <i>file</i> as the blocks file.
+<p><i>file</i> をブロック・ファイルとして使用します。
 </p>
 
 <span id="index-block_002doffset-_0028--_002d_002d-addr--_0029-gforth_002d0_002e5"></span>
@@ -217,10 +195,9 @@ integrated into a Forth programming environment.
 <div class="format">
 <pre class="format"><code>block-offset</code> ( <i>&ndash; addr  </i>) gforth-0.5 &ldquo;block-offset&rdquo;
 </pre></div>
-<p>User variable containing the number of the first block (default since 0.5.0:
-0).  Block files created with Gforth versions before 0.5.0 have the offset
-1.  If you use these files you can: <code>1 offset !</code>; or add 1 to every
-block number used; or prepend 1024 characters to the file.
+<p>最初のブロックの番号を含むユーザー変数(0.5.0 以降のデフォルト: 0)。  0.5.0 より前のバージョンの Gforth
+で作成されたブロックファイルのオフセットは 1 からです。 これらのファイルを使用する場合は、次のことができます。 <code>1 offset !</code>
+または、 使用されるすべてのブロック番号に 1 を加算します。 または、 ファイルの先頭に 1024 文字追加します。
 </p>
 
 <span id="index-get_002dblock_002dfid-_0028--_002d_002d-wfileid--_0029-gforth_002d0_002e2"></span>
@@ -229,8 +206,9 @@ block number used; or prepend 1024 characters to the file.
 <div class="format">
 <pre class="format"><code>get-block-fid</code> ( <i>&ndash; wfileid  </i>) gforth-0.2 &ldquo;get-block-fid&rdquo;
 </pre></div>
-<p>Return the file-id of the current blocks file. If no blocks file has been
-opened, use <samp>blocks.fb</samp> as the default blocks file.
+<p>現在のブロック・ファイルのファイル ID を返します。 まだブロック・ファイルが開かれていない場合は、 <samp>blocks.fb</samp>
+をデフォルトのブロック・ファイルとして <code>open-blocks</code> し、
+そのファイルID(現在のブロック・ファイルのファイルID)を返します。
 </p>
 
 <span id="index-block_002dposition-_0028--u-_002d_002d--_0029-block"></span>
@@ -239,7 +217,7 @@ opened, use <samp>blocks.fb</samp> as the default blocks file.
 <div class="format">
 <pre class="format"><code>block-position</code> ( <i>u &ndash;  </i>) block &ldquo;block-position&rdquo;
 </pre></div>
-<p>Position the block file to the start of block <i>u</i>.
+<p>ブロック・ファイル内のファイル位置をブロック番号 <i>u</i> のブロックの先頭に合わせます。
 </p>
 
 
@@ -249,8 +227,8 @@ opened, use <samp>blocks.fb</samp> as the default blocks file.
 <div class="format">
 <pre class="format"><code>list</code> ( <i>u &ndash;  </i>) block-ext &ldquo;list&rdquo;
 </pre></div>
-<p>Display block <i>u</i>. In Gforth, the block is displayed as 16 numbered lines,
-each of 64 characters.
+<p>ブロック番号 <i>u</i> のブロックの内容を表示します。  Gforth では、ブロックは 1行 64 文字からなる 16
+行の行番号付きで表示されます。
 </p>
 
 <span id="index-scr-_0028--_002d_002d-a_002daddr--_0029-block_002dext"></span>
@@ -259,8 +237,7 @@ each of 64 characters.
 <div class="format">
 <pre class="format"><code>scr</code> ( <i>&ndash; a-addr  </i>) block-ext &ldquo;s-c-r&rdquo;
 </pre></div>
-<p><code>User</code> variable containing the block number of the block most recently
-processed by <code>list</code>.
+<p>このユーザー変数には、 <code>list</code> によって最後に処理されたブロックのブロック番号が含まれます。
 </p>
 
 
@@ -270,11 +247,13 @@ processed by <code>list</code>.
 <div class="format">
 <pre class="format"><code>block</code> ( <i>u &ndash; a-addr  </i>) block &ldquo;block&rdquo;
 </pre></div>
-<p>If a block buffer is assigned for block <i>u</i>, return its start address,
-<i>a-addr</i>. Otherwise, assign a block buffer for block <i>u</i> (if the
-assigned block buffer has been <code>update</code>d, transfer the contents to mass
-storage), read the block into the block buffer and return its start address,
-<i>a-addr</i>.
+<p>ブロック番号 <i>u</i> のブロックにブロック・バッファーが既に割り当てられている場合、
+そのブロック・バッファーが更新(「割り当て済・変更中」(assigned-dirty)とマークされているか)されているなら、
+そのブロック・バッファー内容を当該ブロック(大容量ストレージ)に上書きしてから、 当該ブロックの内容をそのブロック・バッファーに読み込み、
+そのブロック・バッファーを「割り当て済・未変更」(assigned-clean)とマークして、 そのブロック・バッファーの開始アドレス
+<i>a-addr</i> を返します。 それ以外の場合は、 ブロック <i>u</i> にブロック・バッファーを新たに割り当て、
+その新たに割り当てたブロック・バッファーの開始アドレス <i>a-addr</i> を返します。 Gforth では、 <code>buffer</code> は単に
+<code>block</code> を呼び出します。
 </p>
 
 <span id="index-buffer-_0028--u-_002d_002d-a_002daddr--_0029-block"></span>
@@ -283,13 +262,7 @@ storage), read the block into the block buffer and return its start address,
 <div class="format">
 <pre class="format"><code>buffer</code> ( <i>u &ndash; a-addr  </i>) block &ldquo;buffer&rdquo;
 </pre></div>
-<p>If a block buffer is assigned for block <i>u</i>, return its start address,
-<i>a-addr</i>. Otherwise, assign a block buffer for block <i>u</i> (if the
-assigned block buffer has been <code>update</code>d, transfer the contents to mass
-storage) and return its start address, <i>a-addr</i>.  The subtle difference
-between <code>buffer</code> and <code>block</code> mean that you should only use
-<code>buffer</code> if you don&rsquo;t care about the previous contents of block
-<i>u</i>. In Gforth, this simply calls <code>block</code>.
+<p>Gforth では、 <code>buffer</code> は単に <code>block</code> を呼び出します。
 </p>
 
 
@@ -299,8 +272,8 @@ between <code>buffer</code> and <code>block</code> mean that you should only use
 <div class="format">
 <pre class="format"><code>empty-buffers</code> ( <i>&ndash;  </i>) block-ext &ldquo;empty-buffers&rdquo;
 </pre></div>
-<p>Mark all block buffers as unassigned; if any had been marked as
-assigned-dirty (by <code>update</code>), the changes to those blocks will be lost.
+<p>すべてのブロック・バッファーを「未割り当て」(unassigned)としてマークします。 (<code>update</code>
+によって)「割り当て済・変更中」(assigned-dirty)としてマークされているブロックがある場合、 それらのブロックへの変更は失われます。
 </p>
 
 <span id="index-empty_002dbuffer-_0028--buffer-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -316,7 +289,7 @@ assigned-dirty (by <code>update</code>), the changes to those blocks will be los
 <div class="format">
 <pre class="format"><code>update</code> ( <i>&ndash;  </i>) block &ldquo;update&rdquo;
 </pre></div>
-<p>Mark the state of the current block buffer as assigned-dirty.
+<p>現在のブロック・バッファー(current block buffer)の状態を「割り当て・ダーティ」(assigned-dirty)としてマークします。
 </p>
 
 <span id="index-updated_003f-_0028--n-_002d_002d-f--_0029-gforth_002d0_002e2"></span>
@@ -325,8 +298,8 @@ assigned-dirty (by <code>update</code>), the changes to those blocks will be los
 <div class="format">
 <pre class="format"><code>updated?</code> ( <i>n &ndash; f  </i>) gforth-0.2 &ldquo;updated?&rdquo;
 </pre></div>
-<p>Return true if <code>updated</code> has been used to mark block <i>n</i> as
-assigned-dirty.
+<p>ブロック番号 <i>n</i> のブロックが更新されている(割り当て済・編集中」(assigned-dirty)としてマークされている)なら true
+を返す。
 </p>
 
 <span id="index-save_002dbuffers-_0028--_002d_002d--_0029-block"></span>
@@ -335,8 +308,8 @@ assigned-dirty.
 <div class="format">
 <pre class="format"><code>save-buffers</code> ( <i>&ndash;  </i>) block &ldquo;save-buffers&rdquo;
 </pre></div>
-<p>Transfer the contents of each <code>update</code>d block buffer to mass storage,
-then mark all block buffers as assigned-clean.
+<p>更新されている(「割り当て済・変更中」(assigned-dirty)とマークされている)各ブロック・バッファーの内容を大容量ストレージに転送(上書き)し、
+すべてのブロック・バッファーを「割当済み・未編集」(assigned-clean)としてマークします。
 </p>
 
 <span id="index-save_002dbuffer-_0028--buffer-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -352,7 +325,7 @@ then mark all block buffers as assigned-clean.
 <div class="format">
 <pre class="format"><code>flush</code> ( <i>&ndash;  </i>) block &ldquo;flush&rdquo;
 </pre></div>
-<p>Perform the functions of <code>save-buffers</code> then <code>empty-buffers</code>.
+<p><code>save-buffers</code> の機能を実行してから <code>empty-buffers</code> を実行します。
 </p>
 
 
@@ -362,7 +335,8 @@ then mark all block buffers as assigned-clean.
 <div class="format">
 <pre class="format"><code>load</code> ( <i>i*x u &ndash; j*x  </i>) block &ldquo;load&rdquo;
 </pre></div>
-<p>Text-interpret block <i>u</i>.  Block 0 cannot be <code>load</code>ed.
+<p>ブロック番号 <i>u</i> のブロックをテキスト通訳(Text-interpret)します。 ブロック番号 0 のブロックは <code>load</code>
+できません。
 </p>
 
 <span id="index-thru-_0028--i_002ax-n1-n2-_002d_002d-j_002ax--_0029-block_002dext"></span>
@@ -371,7 +345,7 @@ then mark all block buffers as assigned-clean.
 <div class="format">
 <pre class="format"><code>thru</code> ( <i>i*x n1 n2 &ndash; j*x  </i>) block-ext &ldquo;thru&rdquo;
 </pre></div>
-<p><code>load</code> the blocks <i>n1</i> through <i>n2</i> in sequence.
+<p>ブロック <i>n1</i> 〜 <i>n2</i> を順番に <code>load</code> します。
 </p>
 
 <span id="index-_002bload-_0028--i_002ax-n-_002d_002d-j_002ax--_0029-gforth_002d0_002e2"></span>
@@ -380,8 +354,7 @@ then mark all block buffers as assigned-clean.
 <div class="format">
 <pre class="format"><code>+load</code> ( <i>i*x n &ndash; j*x  </i>) gforth-0.2 &ldquo;+load&rdquo;
 </pre></div>
-<p>Used within a block to load the block specified as the current block +
-<i>n</i>.
+<p>現在のブロック番号に <i>n</i> を足した番号のブロックをロードします。 ブロック内で使います。
 </p>
 
 <span id="index-_002bthru-_0028--i_002ax-n1-n2-_002d_002d-j_002ax--_0029-gforth_002d0_002e2"></span>
@@ -390,8 +363,7 @@ then mark all block buffers as assigned-clean.
 <div class="format">
 <pre class="format"><code>+thru</code> ( <i>i*x n1 n2 &ndash; j*x  </i>) gforth-0.2 &ldquo;+thru&rdquo;
 </pre></div>
-<p>Used within a block to load the range of blocks specified as the current
-block + <i>n1</i> thru the current block + <i>n2</i>.
+<p>現在のブロック番号 + <i>n1</i> の番号 〜 現在のブロック + <i>n2</i> の番号の、 ブロックの範囲をロードします。 ブロック内で使います。
 </p>
 
 <span id="index-_002d_002d_003e-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -400,11 +372,9 @@ block + <i>n1</i> thru the current block + <i>n2</i>.
 <div class="format">
 <pre class="format"><code>--&gt;</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;chain&rdquo;
 </pre></div>
-<p>If this symbol is encountered whilst loading block <i>n</i>, discard the
-remainder of the block and load block <i>n+1</i>. Used for chaining multiple
-blocks together as a single loadable unit.  Not recommended, because it
-destroys the independence of loading.  Use <code>thru</code> (which is standard)
-or <code>+thru</code> instead.
+<p>ブロック番号 <i>n</i> のブロックのロード中にこのシンボルが見つかった場合、 そのブロックの残りを破棄してブロック <i>n+1</i> をロードします。
+複数のブロックを単一のロード可能なユニットとして連鎖させるために使用されます。  これは ロードの独立性が損なわれるため、 お勧めできません。
+代わりに(標準の) <code>thru</code> または <code>+thru</code> を使用してください。
 </p>
 
 <span id="index-block_002dincluded-_0028--a_002daddr-u-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -413,11 +383,9 @@ or <code>+thru</code> instead.
 <div class="format">
 <pre class="format"><code>block-included</code> ( <i>a-addr u &ndash;  </i>) gforth-0.2 &ldquo;block-included&rdquo;
 </pre></div>
-<p>Use within a block that is to be processed by <code>load</code>. Save the current
-blocks file specification, open the blocks file specified by <i>a-addr u</i>
-and <code>load</code> block 1 from that file (which may in turn chain or load
-other blocks). Finally, close the blocks file and restore the original
-blocks file.
+<p><code>load</code> によって処理されるブロック内で使用します。 現在のブロック・ファイル仕様を保存し、 <i>a-addr u</i>
+で指定されたブロック・ファイルを開き、 そのファイルからブロック番号 1 のブロックを <code>load</code> します(これにより、
+他のブロックがチェーンまたはロードされる可能性があります)。 そして最後に、 ブロック・ファイルを閉じて、 元のブロック・ファイルを復元します。
 </p>
 
 
@@ -428,12 +396,10 @@ blocks file.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT29" href="#DOCF29">(29)</a></h5>
-<p>The Standard Forth definition of
-<code>buffer</code> is intended not to cause disk I/O; if the data associated with
-the particular block is already stored in a block buffer due to an earlier
-<code>block</code> command, <code>buffer</code> will return that block buffer and the
-existing contents of the block will be available. Otherwise, <code>buffer</code>
-will simply assign a new, empty block buffer for the block.</p>
+<p><code>buffer</code> の標準 Forth での定義は、 ディスク I/O を発生させないことを目的としています。
+以前の <code>block</code> コマンドにより、 特定のブロックに関連付けられたデータがすでにブロック・バッファーに格納されている場合、
+<code>buffer</code> はそのブロック・バッファーを返し、 ブロックの既存のコンテンツが利用可能になります。 それ以外の場合、
+<code>buffer</code> は単にそのブロックに新しい空のブロック・バッファーを割り当てます</p>
 </div>
 <hr>
 <div class="header">
