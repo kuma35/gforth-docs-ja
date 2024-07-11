@@ -27,6 +27,201 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: core-ambcond,  Next: core-other,  Prev: core-idef,  Up: The Core Words
+
+9.1.2 Ambiguous conditions
+--------------------------
+
+a name is neither a word nor a number:
+     ‘-13 throw’ (Undefined word).
+
+a definition name exceeds the maximum length allowed:
+     ‘-19 throw’ (Word name too long)
+
+addressing a region not inside the various data spaces of the forth system:
+     The stacks, code space and header space are accessible.  Machine
+     code space is typically readable.  Accessing other addresses gives
+     results dependent on the operating system.  On decent systems: ‘-9
+     throw’ (Invalid memory address).
+
+argument type incompatible with parameter:
+     This is usually not caught.  Some words perform checks, e.g., the
+     control flow words, and issue a ‘ABORT"’ or ‘-12 THROW’ (Argument
+     type mismatch).
+
+attempting to obtain the execution token of a word with undefined execution semantics:
+     The execution token represents the interpretation semantics of the
+     word.  Gforth defines interpretation semantics for all words; for
+     words where the standard does not define interpretation semantics,
+     but defines the execution semantics (except ‘LEAVE’), the
+     interpretation semantics are to perform the execution semantics.
+     For words where the standard defines no interprtation semantics,
+     but defined compilation semantics (plus ‘LEAVE’), the
+     interpretation semantics are to perform the compilation semantics.
+     Some words are marked as compile-only, and ‘'’ gives a warning for
+     these words.
+
+dividing by zero:
+     On some platforms, this produces a ‘-10 throw’ (Division by zero);
+     on other systems, this typically results in a ‘-55 throw’
+     (Floating-point unidentified fault).
+
+insufficient data stack or return stack space:
+     Depending on the operating system, the installation, and the
+     invocation of Gforth, this is either checked by the memory
+     management hardware, or it is not checked.  If it is checked, you
+     typically get a ‘-3 throw’ (Stack overflow), ‘-5 throw’ (Return
+     stack overflow), or ‘-9 throw’ (Invalid memory address) (depending
+     on the platform and how you achieved the overflow) as soon as the
+     overflow happens.  If it is not checked, overflows typically result
+     in mysterious illegal memory accesses, producing ‘-9 throw’
+     (Invalid memory address) or ‘-23 throw’ (Address alignment
+     exception); they might also destroy the internal data structure of
+     ‘ALLOCATE’ and friends, resulting in various errors in these words.
+
+insufficient space for loop control parameters:
+     Like other return stack overflows.
+
+insufficient space in the dictionary:
+     If you try to allot (either directly with ‘allot’, or indirectly
+     with ‘,’, ‘create’ etc.)  more memory than available in the
+     dictionary, you get a ‘-8 throw’ (Dictionary overflow).  If you try
+     to access memory beyond the end of the dictionary, the results are
+     similar to stack overflows.
+
+interpreting a word with undefined interpretation semantics:
+     Gforth defines interpretation semantics for all words; for words
+     where the standard defines execution semantics (except ‘LEAVE’),
+     the interpretation semantics are to perform the execution
+     semantics.  For words where the standard defines no interprtation
+     semantics, but defined compilation semantics (plus ‘LEAVE’), the
+     interpretation semantics are to perform the compilation semantics.
+     Some words are marked as compile-only, and text-interpreting them
+     gives a warning.
+
+modifying the contents of the input buffer or a string literal:
+     These are located in writable memory and can be modified.
+
+overflow of the pictured numeric output string:
+     ‘-17 throw’ (Pictured numeric ouput string overflow).
+
+parsed string overflow:
+     ‘PARSE’ cannot overflow.  ‘WORD’ does not check for overflow.
+
+producing a result out of range:
+     On two’s complement machines, arithmetic is performed modulo
+     2**bits-per-cell for single arithmetic and 4**bits-per-cell for
+     double arithmetic (with appropriate mapping for signed types).
+     Division by zero typically results in a ‘-10 throw’ (divide by
+     zero) or ‘-55 throw’ (floating point unidentified fault).  Overflow
+     on division may result in these errors or in ‘-11 throw’ (result
+     out of range).  ‘Gforth-fast’ may silently produce bogus results on
+     division overflow or division by zero.  ‘Convert’ and ‘>number’
+     currently overflow silently.
+
+reading from an empty data or return stack:
+     The data stack is checked by the outer (aka text) interpreter after
+     every word executed.  If it has underflowed, a ‘-4 throw’ (Stack
+     underflow) is performed.  Apart from that, stacks may be checked or
+     not, depending on operating system, installation, and invocation.
+     If they are caught by a check, they typically result in ‘-4 throw’
+     (Stack underflow), ‘-6 throw’ (Return stack underflow) or ‘-9
+     throw’ (Invalid memory address), depending on the platform and
+     which stack underflows and by how much.  Note that even if the
+     system uses checking (through the MMU), your program may have to
+     underflow by a significant number of stack items to trigger the
+     reaction (the reason for this is that the MMU, and therefore the
+     checking, works with a page-size granularity).  If there is no
+     checking, the symptoms resulting from an underflow are similar to
+     those from an overflow.  Unbalanced return stack errors can result
+     in a variety of symptoms, including ‘-9 throw’ (Invalid memory
+     address) and Illegal Instruction (typically ‘-260 throw’).
+
+unexpected end of the input buffer, resulting in an attempt to use a zero-length string as a name:
+     ‘Create’ and its descendants perform a ‘-16 throw’ (Attempt to use
+     zero-length string as a name).  Words like ‘'’ probably will not
+     find what they search.  Note that it is possible to create
+     zero-length names with ‘nextname’ (should it not?).
+
+‘>IN’ greater than input buffer:
+     The next invocation of a parsing word returns a string with length
+     0.
+
+‘RECURSE’ appears after ‘DOES>’:
+     Compiles a recursive call to the code after ‘DOES>’.
+
+argument input source different than current input source for ‘RESTORE-INPUT’:
+     ‘-12 THROW’.  Note that, once an input file is closed (e.g.,
+     because the end of the file was reached), its source-id may be
+     reused.  Therefore, restoring an input source specification
+     referencing a closed file may lead to unpredictable results instead
+     of a ‘-12 THROW’.
+
+     In the future, Gforth may be able to restore input source
+     specifications from other than the current input source.
+
+data space containing definitions gets de-allocated:
+     Deallocation with ‘allot’ is not checked.  This typically results
+     in memory access faults or execution of illegal instructions.
+
+data space read/write with incorrect alignment:
+     Processor-dependent.  Typically results in a ‘-23 throw’ (Address
+     alignment exception).  Under Linux-Intel on a 486 or later
+     processor with alignment turned on, incorrect alignment results in
+     a ‘-9 throw’ (Invalid memory address).  There are reportedly some
+     processors with alignment restrictions that do not report
+     violations.
+
+data space pointer not properly aligned, ‘,’, ‘C,’:
+     Like other alignment errors.
+
+less than u+2 stack items (‘PICK’ and ‘ROLL’):
+     Like other stack underflows.
+
+loop control parameters not available:
+     Not checked.  The counted loop words simply assume that the top of
+     return stack items are loop control parameters and behave
+     accordingly.
+
+most recent definition does not have a name (‘IMMEDIATE’):
+     ‘abort" last word was headerless"’.
+
+name not defined by ‘VALUE’ used by ‘TO’:
+     ‘-32 throw’ (Invalid name argument) (unless name is a local or was
+     defined by ‘CONSTANT’; in the latter case it just changes the
+     constant).
+
+name not found (‘'’, ‘POSTPONE’, ‘[']’, ‘[COMPILE]’):
+     ‘-13 throw’ (Undefined word)
+
+parameters are not of the same type (‘DO’, ‘?DO’, ‘WITHIN’):
+     Gforth behaves as if they were of the same type.  I.e., you can
+     predict the behaviour by interpreting all parameters as, e.g.,
+     signed.
+
+‘POSTPONE’ or ‘[COMPILE]’ applied to ‘TO’:
+     Assume ‘: X POSTPONE TO ; IMMEDIATE’.  ‘X’ performs the compilation
+     semantics of ‘TO’.
+
+String longer than a counted string returned by ‘WORD’:
+     Not checked.  The string will be ok, but the count will, of course,
+     contain only the least significant bits of the length.
+
+u greater than or equal to the number of bits in a cell (‘LSHIFT’, ‘RSHIFT’):
+     Processor-dependent.  Typical behaviours are returning 0 and using
+     only the low bits of the shift count.
+
+word not defined via ‘CREATE’:
+     ‘>BODY’ produces the PFA of the word no matter how it was defined.
+
+     ‘DOES>’ changes the execution semantics of the last defined word no
+     matter how it was defined.  E.g., ‘CONSTANT DOES>’ is equivalent to
+     ‘CREATE , DOES>’.
+
+words improperly used outside ‘<#’ and ‘#>’:
+     Not checked.  As usual, you can expect memory faults.
+
+
 File: gforth.info,  Node: core-other,  Prev: core-ambcond,  Up: The Core Words
 
 9.1.3 Other system documentation
@@ -3742,12 +3937,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * !resize ( RX RY RW RH RD -- ) minos2:  widget methods.      (line  93)
 * !size ( -- ) minos2:                   widget methods.      (line  96)
 * # ( UD1 -- UD2 ) core:                 Formatted numeric output.
-                                                              (line  51)
+                                                              (line  48)
 * #! ( -- ) gforth-0.2:                  Running Image Files. (line  68)
 * #> ( XD -- ADDR U ) core:              Formatted numeric output.
-                                                              (line  74)
+                                                              (line  71)
 * #>> ( -- ) gforth-0.5:                 Formatted numeric output.
-                                                              (line  81)
+                                                              (line  78)
 * #bell ( -- C ) gforth-0.2:             String and character literals.
                                                               (line  94)
 * #bs ( -- C ) gforth-0.2:               String and character literals.
@@ -3770,7 +3965,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * #locals ( -- N ) environment:          Environmental Queries.
                                                               (line  73)
 * #s ( UD -- 0 0 ) core:                 Formatted numeric output.
-                                                              (line  56)
+                                                              (line  53)
 * #tab ( -- C ) gforth-0.2:              String and character literals.
                                                               (line  82)
 * #tib ( -- ADDR ) core-ext-obsolescent: The Text Interpreter.
@@ -4042,12 +4237,12 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  30)
 * < ( N1 N2 -- F ) core:                 Numeric comparison.  (line   9)
 * <# ( -- ) core:                        Formatted numeric output.
-                                                              (line  42)
+                                                              (line  39)
 * << ( RUN-ADDR ADDR U -- RUN-ADDR ) regexp-replace: Regular Expressions.
                                                               (line 172)
 * <<" ( "STRING<">" -- ) regexp-replace: Regular Expressions. (line 175)
 * <<# ( -- ) gforth-0.5:                 Formatted numeric output.
-                                                              (line  45)
+                                                              (line  42)
 * <= ( N1 N2 -- F ) gforth-0.2:          Numeric comparison.  (line  11)
 * <> ( N1 N2 -- F ) core-ext:            Numeric comparison.  (line  13)
 * <bind> ( CLASS SELECTOR-XT -- XT ) objects: Objects Glossary.
@@ -4734,7 +4929,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * f. ( R -- ) floating-ext:              Floating-point output.
                                                               (line   8)
 * f.rdp ( RF +NR +ND +NP -- ) gforth-0.6: Floating-point output.
-                                                              (line  44)
+                                                              (line  41)
 * f.s ( -- ) gforth-0.2:                 Examining data.      (line  16)
 * f.s-precision ( -- U ) gforth-1.0:     Examining data.      (line  21)
 * f/ ( R1 R2 -- R3 ) floating:           Floating Point.      (line  42)
@@ -4755,13 +4950,13 @@ this manual.  Each word is listed with its stack effect and wordset.
 * f> ( R1 R2 -- F ) gforth-0.2:          Floating Point.      (line 169)
 * f>= ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 171)
 * f>buf-rdp ( RF C-ADDR +NR +ND +NP -- ) gforth-0.6: Floating-point output.
-                                                              (line  89)
+                                                              (line  84)
 * f>d ( R -- D ) floating:               Floating Point.      (line  32)
 * f>l ( R -- ) gforth-0.2:               Locals implementation.
                                                               (line  27)
 * f>s ( R -- N ) floating-ext:           Floating Point.      (line  30)
 * f>str-rdp ( RF +NR +ND +NP -- C-ADDR NR ) gforth-0.6: Floating-point output.
-                                                              (line  83)
+                                                              (line  77)
 * f@ ( F-ADDR -- R ) floating:           Memory Access.       (line  28)
 * f@localn ( NOFFSET -- R ) gforth-1.0:  Locals implementation.
                                                               (line  17)
@@ -4797,7 +4992,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fdup ( R -- R R ) floating:            Floating point stack.
                                                               (line  10)
 * fe. ( R -- ) floating-ext:             Floating-point output.
-                                                              (line  12)
+                                                              (line  11)
 * fexp ( R1 -- R2 ) floating-ext:        Floating Point.      (line  71)
 * fexpm1 ( R1 -- R2 ) floating-ext:      Floating Point.      (line  73)
 * ffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
@@ -4871,7 +5066,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fp! ( F-ADDR -- F:... ) gforth-0.2:    Stack pointer manipulation.
                                                               (line  18)
 * fp. ( R -- ) floating-ext:             Floating-point output.
-                                                              (line  20)
+                                                              (line  17)
 * fp0 ( -- A-ADDR ) gforth-0.4:          Stack pointer manipulation.
                                                               (line  13)
 * fp@ ( F:... -- F-ADDR ) gforth-0.2:    Stack pointer manipulation.
@@ -4887,7 +5082,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  25)
 * fround ( R1 -- R2 ) floating:          Floating Point.      (line  59)
 * fs. ( R -- ) floating-ext:             Floating-point output.
-                                                              (line  16)
+                                                              (line  14)
 * fsin ( R1 -- R2 ) floating-ext:        Floating Point.      (line 109)
 * fsincos ( R1 -- R2 R3 ) floating-ext:  Floating Point.      (line 113)
 * fsinh ( R1 -- R2 ) floating-ext:       Floating Point.      (line 129)
@@ -4942,9 +5137,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * hide ( -- ) minos2:                    actor methods.       (line  51)
 * hmcopy, ( XT -- ) gforth-experimental: Threading Words.     (line  28)
 * hold ( CHAR -- ) core:                 Formatted numeric output.
-                                                              (line  62)
+                                                              (line  59)
 * holds ( ADDR U -- ) core-ext:          Formatted numeric output.
-                                                              (line  66)
+                                                              (line  63)
 * how: ( -- ) oof:                       Class Declaration.   (line  39)
 * i ( R:N -- R:N N ) core:               Counted Loops.       (line 237)
 * i' ( R:W R:W2 -- R:W R:W2 W ) gforth-0.2: Counted Loops.    (line 247)
@@ -5310,7 +5505,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * postpone, ( W XT -- ) gforth-0.2:      Compilation token.   (line  36)
 * pow2? ( U -- F ) gforth-1.0:           Bitwise operations.  (line  63)
 * precision ( -- U ) floating-ext:       Floating-point output.
-                                                              (line  34)
+                                                              (line  31)
 * prepend-where ( -- ) gforth-1.0:       Locating uses of a word.
                                                               (line  47)
 * preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 118)
@@ -5381,7 +5576,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  17)
 * reposition-file ( UD WFILEID -- WIOR ) file: General files. (line  87)
 * represent ( R C-ADDR U -- N F1 F2 ) floating: Floating-point output.
-                                                              (line  96)
+                                                              (line  91)
 * require ( ... "FILE" -- ... ) file-ext: Forth source files. (line  57)
 * required ( I*X ADDR U -- I*X ) file-ext: Forth source files.
                                                               (line  51)
@@ -5475,7 +5670,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line   9)
 * set-order ( WIDN .. WID1 N -- ) search: Word Lists.         (line  52)
 * set-precision ( U -- ) floating-ext:   Floating-point output.
-                                                              (line  38)
+                                                              (line  35)
 * set-recognizers ( XT1 .. XTN N -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  71)
 * set-to ( TO-XT -- ) gforth-1.0:        User-defined TO and DEFER@.
@@ -5504,7 +5699,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * show ( -- ) minos2:                    actor methods.       (line  48)
 * show-you ( -- ) minos2:                actor methods.       (line  60)
 * sign ( N -- ) core:                    Formatted numeric output.
-                                                              (line  70)
+                                                              (line  67)
 * simple-fkey-string ( U1 -- C-ADDR U ) gforth-1.0: Single-key input.
                                                               (line 183)
 * simple-see ( "NAME" -- ) gforth-0.6:   Examining compiled code.

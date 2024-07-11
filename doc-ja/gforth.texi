@@ -14613,10 +14613,10 @@ Gforth では、返される @i{xt} はインタプリタ機能(interpretation s
 @format
 @code{mwords} ( @i{["pattern"] --  }) gforth-1.0 ``mwords''
 @end format
-オプションのパラメータ @var{pattern} にマッチするすべてのワードをリストします。 指定しない場合合、 すべてのワードが一致します。
+オプションのパラメータ @var{pattern} にマッチするすべてのワードをリストします。 指定しない場合、 すべてのワードが一致します。
 ワードは古い方から新しい方へとリストされます。  @code{search} のようなパターン・マッチ(デフォルト)ですが、 @code{'
 mword-filename-match is mword-match} を使用してワイルドカード(globbing)に切り替えることができます(訳注:
-@code{mwords} ENTER で全部リスト、 @code{mwords value} で value を含む名前をリスト)。
+@code{mwords} ENTER で全部リスト、 例えば @code{mwords value} で value を含む名前をリスト)。
 
 
 @c doc-words-deferred
@@ -16056,7 +16056,7 @@ buffers})を使用します。 @code{load} を使用してブロックの内容�
 そのブロック・バッファーが別のブロックで必要なときに暗黙的に書き込まれるか、 または、 @code{flush} や
 @code{save-buffers} によって明示的に書き込まれます。
 
-word @code{flush} は、 すべての「割り当て済・変更中」(@i{assigned-dirty})の
+ワード @code{flush} は、 すべての「割り当て済・変更中」(@i{assigned-dirty})の
 ブロックをディスク上のブロック・ファイルに書き込みます。 @code{bye} を指定して Gforth を終了するときは、 @code{flush}
 も実行されます。
 
@@ -16472,45 +16472,36 @@ radix)で表示されます。
 @cindex pictured numeric output
 @cindex numeric output - formatted
 
-Forth traditionally uses a technique called @dfn{pictured numeric output}
-for formatted printing of integers.  In this technique, digits are extracted
-from the number (using the current output radix defined by @code{base},
-@pxref{Number Conversion}), converted to ASCII codes and prepended to a
-string that is built in a scratch-pad area of memory (@pxref{core-idef,
-Implementation-defined options, Implementation-defined options}). Arbitrary
-characters can be prepended to the string during the extraction process. The
-completed string is specified by an address and length and can be
-manipulated (@code{TYPE}ed, copied, modified) under program control.
+Forth は伝統的に、 整数の書式設定された出力に「表示数値出力」(@dfn{pictured numeric Output})
+と呼ばれる手法を使用しています。  この手法では、 数値から数字桁(digits)が抽出され(@code{base} で定義された現在の出力基数を使用
+@pxref{Number Conversion})、 ASCII コードに変換され、 メモリのスクラッチパッド領域(@pxref{core-idef,
+Implementation-defined options, Implementation-defined
+options})に構築される文字列の先頭に付加されます。 抽出プロセス中に、 文字列の先頭に任意の文字を追加できます。
+完成した文字列はアドレスと長さによって指定され、 プログラム制御の下で操作(@code{TYPE} や、 コピーや、 変更)できます。
 
-All of the integer output words described in the previous section
-(@pxref{Simple numeric output}) are implemented in Gforth using pictured
-numeric output.
+前のセクションで説明したすべての整数出力ワード (@pxref{Simple numeric output}) は、 Gforth
+では表示数値出力(pictured numeric output)を使用して実装されています。
 
-Three important things to remember about pictured numeric output:
+表示数値出力(pictured numeric output)について覚えておくべき 3 つの重要な点:
 
 @itemize @bullet
 @item
-It always operates on double-precision numbers; to display a
-single-precision number, convert it first (for ways of doing this
-@pxref{Double precision}).
+常に2倍長数を処理します。 1倍長数を表示するには、 まず最初に2倍長に変換します (これを行う方法は @pxref{Double
+precision})。
 @item
-It always treats the double-precision number as though it were unsigned. The
-examples below show ways of printing signed numbers.
+倍精度数は常に符号無しであるかのように扱われます。 下記の例は、 符号付き数値を出力する方法を示しています。
 @item
-The string is built up from right to left; least significant digit first.
+文字列は右から左に構築されます。 最下位桁が最初です。
 @end itemize
 
-Standard Forth supports a single output buffer (aka hold area) that you
-empty and initialize with @code{<#} and for which you get the result string
-with @code{#>}.
+標準 Forth は、 @code{<#} で空にして初期化し、 @code{#>}
+で結果文字列を取得する単一の出力バッファー(別名ホールド領域;hold area)をサポートします。
 
-Gforth additionally supports nested usage of this buffer, allowing, e.g., to
-nest output from the debugging tracer @code{~~} inside code dealing with the
-hold area: @code{<<#} starts a new nest, @code{#>} produces the result
-string, and @code{#>>} unnests: the hold area for the nest is reclaimed, and
-@code{#>} now produces the string for the next-outer nest.  All of Gforth's
-higher-level numeric output words use @code{<<#} ... @code{#>}
-... @code{#>>} and can be nested inside other users of the hold area.
+Gforth はさらに、 このバッファーの入れ子になった使用をサポートしており、 たとえば、 ホールド領域を処理するコード内でデバッグ・トレーサー
+@code{~~} からの出力を入れ子にすることができます。 @code{<<#} は新しい入れ子を開始し、  @code{#>}
+は結果文字列を生成し、 @code{#>>} は入れ子を解除します。 入れ子の保ホールド領域が再利用され、@code{#>}
+は次に外側の入れ子の文字列を生成します。  Gforth の高レベルの数値出力ワードはすべて @code{<<#} ... @code{#>}
+... @code{#>>} を使用し、 ホールド領域の他のユーザー内に入れ子にできます。
 
 @findex <# ( @var{ --   } ) core
 @cindex @code{<#}
@@ -16518,7 +16509,7 @@ higher-level numeric output words use @code{<<#} ... @code{#>}
 @format
 @code{<#} ( @i{--  }) core ``less-number-sign''
 @end format
-Initialise/clear the pictured numeric output string.
+表示数値出力文字列を 初期化/クリア します。
 
 
 @findex <<# ( @var{ --   } ) gforth-0.5
@@ -16527,10 +16518,9 @@ Initialise/clear the pictured numeric output string.
 @format
 @code{<<#} ( @i{--  }) gforth-0.5 ``less-less-number-sign''
 @end format
-Start a hold area that ends with @code{#>>}. Can be nested in each other and
-in @code{<#}.  Note: if you do not match up the @code{<<#}s with
-@code{#>>}s, you will eventually run out of hold area; you can reset the
-hold area to empty with @code{<#}.
+@code{#>>} で終わるホールド領域を開始します。 相互に入れ子にすることも、 @code{<#} で入れ子にすることもできます。  注:
+@code{<<#} と @code{#>>} を一致させないと、 最終的にホールド領域が不足します。 @code{<#}
+を使用してホールド領域を空にリセットできます。
 
 
 @findex # ( @var{ ud1 -- ud2   } ) core
@@ -16539,10 +16529,8 @@ hold area to empty with @code{<#}.
 @format
 @code{#} ( @i{ud1 -- ud2  }) core ``number-sign''
 @end format
-Used between @code{<<#} and @code{#>}. Prepend the least-significant digit
-(according to @code{base}) of @var{ud1} to the pictured numeric output
-string.  @var{ud2} is @var{ud1/base}, i.e., the number representing the
-remaining digits.
+@code{<<#} と @code{#>} の間で使用されます。  @var{ud1} の最下位桁(@code{base} による)を、
+表示数値出力文字列の先頭に追加します。  @var{ud2} は @var{ud1/base}、 つまり残りの桁を表す数値です。
 
 
 @findex #s ( @var{ ud -- 0 0   } ) core
@@ -16551,10 +16539,9 @@ remaining digits.
 @format
 @code{#s} ( @i{ud -- 0 0  }) core ``number-sign-s''
 @end format
-Used between @code{<<#} and @code{#>}.  Prepend all digits of @var{ud} to
-the pictured numeric output string.  @code{#s} will convert at least one
-digit. Therefore, if @var{ud} is 0, @code{#s} will prepend a ``0'' to the
-pictured numeric output string.
+@code{<<#} と @code{#>} の間で使用されます。  @var{ud} のすべての数字を表示数値出力文字列の先頭に追加します。
+@code{#s} は少なくとも 1 つの数字を変換します。 したがって、 @var{ud} が 0 の場合、 @code{#s}
+は表示数値出力文字列の先頭に `0` を追加します。
 
 
 @findex hold ( @var{ char --   } ) core
@@ -16563,8 +16550,7 @@ pictured numeric output string.
 @format
 @code{hold} ( @i{char --  }) core ``hold''
 @end format
-Used between @code{<<#} and @code{#>}. Prepend the character @var{char} to
-the pictured numeric output string.
+@code{<<#} と @code{#>} の間で使用されます。 表示数値出力文字列の前に文字 @var{char} を追加します。
 
 
 @findex holds ( @var{ addr u --   } ) core-ext
@@ -16573,8 +16559,7 @@ the pictured numeric output string.
 @format
 @code{holds} ( @i{addr u --  }) core-ext ``holds''
 @end format
-Used between @code{<<#} and @code{#>}. Prepend the string @code{addr u} to
-the pictured numeric output string.
+@code{<<#} と @code{#>} の間で使用されます。 表示数値出力文字列の前に文字列 @code{addr u} を追加します。
 
 
 @findex sign ( @var{ n --   } ) core
@@ -16583,8 +16568,8 @@ the pictured numeric output string.
 @format
 @code{sign} ( @i{n --  }) core ``sign''
 @end format
-Used between @code{<<#} and @code{#>}. If @var{n} (a @var{single} number) is
-negative, prepend ``@code{-}'' to the pictured numeric output string.
+@code{<<#} と @code{#>} の間で使用されます。 @var{n} (1倍長数) が負の場合、 表示数値出力文字列の先頭に
+@code{-} を追加します。
 
 
 @findex #> ( @var{ xd -- addr u   } ) core
@@ -16593,11 +16578,10 @@ negative, prepend ``@code{-}'' to the pictured numeric output string.
 @format
 @code{#>} ( @i{xd -- addr u  }) core ``number-sign-greater''
 @end format
-Complete the pictured numeric output string by discarding @var{xd} and
-returning @var{addr u}; the address and length of the formatted string. A
-Standard program may modify characters within the string.  Does not release
-the hold area; use @code{#>>} to release a hold area started with
-@code{<<#}, or @code{<#} to release all hold areas.
+@var{xd} を破棄し、 フォーマットされた文字列のアドレスと長さを示す @var{addr u} を返すことで、
+表示数値出力文字列を完成させます。 標準のプログラムでは、 文字列内の文字を変更する場合があります。  ホールド領域は解放されません。
+@code{#>>} を使用して @code{<<#} で始まるホールド領域を解放するか、 @code{<#}
+を使用してすべてのホールド領域を解放します。
 
 
 @findex #>> ( @var{ --   } ) gforth-0.5
@@ -16606,83 +16590,84 @@ the hold area; use @code{#>>} to release a hold area started with
 @format
 @code{#>>} ( @i{--  }) gforth-0.5 ``number-sign-greater-greater''
 @end format
-Release the hold area started with @code{<<#}.
+@code{<<#} で始まるホールド領域を解放します。
 
 
 
 @noindent
-Here are some examples of using pictured numeric output:
+以下に、 表示数値出力の使用例をいくつか示します:
 
 @example
 : my-u. ( u -- )
-  \ Simplest use of pns.. behaves like Standard u. 
-  0              \ convert to unsigned double
-  <<#            \ start conversion
-  #s             \ convert all digits
-  #>             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #>> ;          \ release hold area
+  \ PNS(Pictured Number String)の最も単純な使用法。標準の u. のように振る舞います。
+  0              \ 上記 u を 2倍長にする
+  <<#            \ 変換開始
+  #s             \ 全桁を変換
+  #>             \ 変換終了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #>> ;          \ ホールド領域を開放
 
 : cents-only ( u -- )
-  0              \ convert to unsigned double
-  <<#            \ start conversion
-  # #            \ convert two least-significant digits
-  #>             \ complete conversion, discard other digits
-  TYPE SPACE     \ display, with trailing space
-  #>> ;          \ release hold area
+  0              \ 上記 u を 2倍長数に変換
+  <<#            \ 変換開始
+  # #            \ 最下位と最下位からの次の 2 桁のみ変換
+  #>             \ 変換完了。他の桁は破棄
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #>> ;          \ ホールド領域を開放
 
 : dollars-and-cents ( u -- )
-  0              \ convert to unsigned double
-  <<#            \ start conversion
-  # #            \ convert two least-significant digits
-  '.' hold       \ insert decimal point
-  #s             \ convert remaining digits
-  '$' hold       \ append currency symbol
-  #>             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #>> ;          \ release hold area
+  0              \ 上記 u を符号無し2倍長数に変換
+  <<#            \ 変換開始
+  # #            \ 下位2桁を変換
+  '.' hold       \ 小数点を打つ
+  #s             \ 残りの桁を変換
+  '$' hold       \ 通貨記号を打つ
+  #>             \ 変換完了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #>> ;          \ ホールド領域を開放
 
 : my-. ( n -- )
-  \ handling negatives.. behaves like Standard .
-  s>d            \ convert to signed double
-  swap over dabs \ leave sign byte followed by unsigned double
-  <<#            \ start conversion
-  #s             \ convert all digits
-  rot sign       \ get at sign byte, append "-" if needed
-  #>             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #>> ;          \ release hold area
+  \ 負数も処理する標準の . のように振る舞う
+  s>d            \ 符号付き2倍長数に変換
+  swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
+  <<#            \ 変換開始
+  #s             \ 全桁を変換
+  rot sign       \ 符号チェック。必要なら "-" 付加
+  #>             \ 変換完了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #>> ;          \ ホールド領域を開放
 
 : account. ( n -- )
-  \ accountants don't like minus signs, they use parentheses
-  \ for negative numbers
-  s>d            \ convert to signed double
-  swap over dabs \ leave sign byte followed by unsigned double
-  <<#            \ start conversion
-  2 pick         \ get copy of sign byte
-  0< IF ')' hold THEN \ right-most character of output
-  #s             \ convert all digits
-  rot            \ get at sign byte
+  \ (会計風出力)会計士はマイナス記号が嫌いで、
+  \ 負の数には括弧を使用します
+  s>d            \ 符号付き2倍長数に変換
+  swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
+  <<#            \ 変換開始
+  2 pick         \ 符号バイトのコピーを得る
+  0< IF ')' hold THEN \ これが(あれば)出力の右端の文字
+  #s             \ 全桁を変換
+  rot            \ 符号バイトを得る
   0< IF '(' hold THEN
-  #>             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #>> ;          \ release hold area
+  #>             \ 変換完了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #>> ;          \ ホールド領域を開放
 
 @end example
 
-Here are some examples of using these words:
+これらのワードの利用例をいくつか示します:
 
 @example
-1 my-u. 1
-hex -1 my-u. decimal FFFFFFFF
-1 cents-only 01
-1234 cents-only 34
-2 dollars-and-cents $0.02
-1234 dollars-and-cents $12.34
-123 my-. 123
--123 my. -123
-123 account. 123
--456 account. (456)
+1 my-u. 1  ok
+hex -1 my-u. decimal FFFFFFFFFFFFFFFF  ok
+1 cents-only 01  ok
+1234 cents-only 34  ok
+2 dollars-and-cents  $0.02  ok
+1234 dollars-and-cents  $12.34  ok
+123 my-. 123  ok
+-123 my-. -123  ok
+123 account. 123  ok
+-456 account. (456)  ok
+
 @end example
 
 @node Floating-point output, Miscellaneous output, Formatted numeric output, Other I/O
@@ -16691,7 +16676,7 @@ hex -1 my-u. decimal FFFFFFFF
 @cindex FP output
 @cindex floating-point output
 
-Floating-point output is always displayed using base 10.
+浮動小数点数出力は常に基数 10 を使用して表示されます。
 
 @findex f. ( @var{ r --   } ) floating-ext
 @cindex @code{f.}
@@ -16699,8 +16684,7 @@ Floating-point output is always displayed using base 10.
 @format
 @code{f.} ( @i{r --  }) floating-ext ``f-dot''
 @end format
-Display (the floating-point number) @i{r} without exponent, followed by a
-space.
+(浮動小数点数) @i{r} を指数なしで表示し、 その後に空白1つ続けます。
 
 
 @findex fe. ( @var{ r --   } ) floating-ext
@@ -16709,8 +16693,7 @@ space.
 @format
 @code{fe.} ( @i{r --  }) floating-ext ``f-e-dot''
 @end format
-Display @i{r} using engineering notation (with exponent dividable by 3),
-followed by a space.
+@i{r} を工学表記(3 で割り切れる指数) で表示し、 その後に空白1つ続けます。
 
 
 @findex fs. ( @var{ r --   } ) floating-ext
@@ -16719,23 +16702,20 @@ followed by a space.
 @format
 @code{fs.} ( @i{r --  }) floating-ext ``f-s-dot''
 @end format
-Display @i{r} using scientific notation (with exponent), followed by a
-space.
+@i{r} を科学表記(指数付き)で表示し、 その後に空白1つ続けます。
 
 
 @findex fp. ( @var{ r --   } ) floating-ext
 @cindex @code{fp.}
 @kindex fp.
 @format
-@code{fp.} ( @i{r --  }) floating-ext ``f-e-dot''
+@code{fp.} ( @i{r --  }) floating-ext ``f-p-dot''
 @end format
-Display @i{r} using SI prefix notation (with exponent dividable by 3,
-converted into SI prefixes if available), followed by a space.
+@i{r} を SI 接頭辞表記(3 で割れる指数を使用し、 可能な場合は SI 接頭辞に変換)で表示し、 その後に空白1つ続けます。
 
 
 
-Examples of printing the number 1234.5678E23 in the different floating-point
-output formats are shown below.
+数値 1234.5678E23 をさまざまな浮動小数点数出力形式で出力する例を以下に示します。
 
 @example
 f. 123456780000000000000000000.
@@ -16744,7 +16724,7 @@ fs. 1.23456780000000E26
 fp. 123.456780000000Y
 @end example
 
-The length of the output is influenced by:
+出力桁幅は以下の影響を受けます:
 
 @findex precision ( @var{ -- u   } ) floating-ext
 @cindex @code{precision}
@@ -16752,8 +16732,7 @@ The length of the output is influenced by:
 @format
 @code{precision} ( @i{-- u  }) floating-ext ``precision''
 @end format
-@i{u} is the number of significant digits currently used by @code{F.}
-@code{FE.} and @code{FS.} 
+@i{u} は、 @code{f.} や @code{fe.} や @code{fs.} や @code{fp.} で現在使用されている有効桁数です。 
 
 
 @findex set-precision ( @var{ u --   } ) floating-ext
@@ -16762,12 +16741,12 @@ The length of the output is influenced by:
 @format
 @code{set-precision} ( @i{u --  }) floating-ext ``set-precision''
 @end format
-Set the number of significant digits currently used by @code{F.} @code{FE.}
-and @code{FS.} to @i{u}.
+@code{f.} や @code{fe.} や @code{fs.} や @code{fp.} で現在使用されている有効桁数を @i{u}
+に設定します。
 
 
 
-You can control the output in more detail with:
+以下のコマンドを使用して、 出力をより詳細に制御できます:
 
 @findex f.rdp ( @var{ rf +nr +nd +np --   } ) gforth-0.6
 @cindex @code{f.rdp}
@@ -16775,28 +16754,21 @@ You can control the output in more detail with:
 @format
 @code{f.rdp} ( @i{rf +nr +nd +np --  }) gforth-0.6 ``f.rdp''
 @end format
-Print float @i{rf} formatted.  The total width of the output is @i{nr}.  For
-fixed-point notation, the number of digits after the decimal point is
-@i{+nd} and the minimum number of significant digits is @i{np}.
-@code{Set-precision} has no effect on @code{f.rdp}.  Fixed-point notation is
-used if the number of siginicant digits would be at least @i{np} and if the
-number of digits before the decimal point would fit.  If fixed-point
-notation is not used, exponential notation is used, and if that does not
-fit, asterisks are printed.  We recommend using @i{nr}>=7 to avoid the risk
-of numbers not fitting at all.  We recommend @i{nr}>=@i{np}+5 to avoid cases
-where @code{f.rdp} switches to exponential notation because fixed-point
-notation would have too few significant digits, yet exponential notation
-offers fewer significant digits.  We recommend @i{nr}>=@i{nd}+2, if you want
-to have fixed-point notation for some numbers; the smaller the value of
-@i{np}, the more cases are shown in fixed-point notation (cases where few or
-no significant digits remain in fixed-point notation).  We recommend
-@i{np}>@i{nr}, if you want to have exponential notation for all numbers.
+浮動小数点数 @i{rf} を書式化して表示します。 出力の合計幅は @i{nr} です。  固定小数点表記の場合、 小数点以下の桁数は
+@i{+nd}、 有効桁数の最小値は @i{np} です。  @code{Set-precision} は @code{f.rdp} には影響しません。
+固定小数点表記は、 有効桁数が少なくとも @i{np} の場合で、 かつ、 小数点以下の桁数が収まる場合に、 使用されます。
+固定小数点表記が使用されない場合は指数表記が使用され、 それでも適合しない場合はアスタリスクが出力されます。
+数値がまったく適合しないリスクを避けるために、 @i{nr}>=7 を使用することをお勧めします。 @code{f.rdp}
+が指数表記に切り替わるケースを避けるために、 @i{nr}>=@i{np}+5 をお勧めします。 どうしてかというと、
+固定小数点表記でも有効桁数が少なすぎるのに、 指数表記では有効桁数が更に少なくなるためです。 一部の数値を固定小数点表記しなければならない場合は、
+@i{nr}>=@i{nd}+2 をお勧めします。 @i{np} の値が小さいほど、 より多くの場合で固定小数点表記で表示されます
+(固定小数点表記に有効数字がほとんどまたはまったく残っていない場合)。  すべての数値を指数表記したい場合は、@i{np}>@i{nr}
+をお勧めします。
 
 
 
-To give you a better intuition of how they influence the output, here are
-some examples of parameter combinations; in each line the same number is
-printed, in each column the same parameter combination is used for printing:
+出力にどのような影響を与えるかをより直感的に理解できるように、 パラメーターの組み合わせの例をいくつか示します。 各行内は同じ数値が出力されていて、
+各列には同じパラメータの組み合わせが出力に使用されています:
 
 @example
     12 13 0    7 3 4   7 3 0   7 3 1   7 5 1   7 7 1   7 0 2  4 2 1
@@ -16814,7 +16786,7 @@ printed, in each column the same parameter combination is used for printing:
 |-1.2345679E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1E5|
 @end example
 
-You can generate a string instead of displaying the number with:
+以下を使用して、 数値を表示する代わりに文字列を生成できます:
 
 @findex f>str-rdp ( @var{ rf +nr +nd +np -- c-addr nr   } ) gforth-0.6
 @cindex @code{f>str-rdp}
@@ -16822,10 +16794,10 @@ You can generate a string instead of displaying the number with:
 @format
 @code{f>str-rdp} ( @i{rf +nr +nd +np -- c-addr nr  }) gforth-0.6 ``f>str-rdp''
 @end format
-Convert @i{rf} into a string at @i{c-addr nr}.  The conversion rules and the
-meanings of @i{nr +nd np} are the same as for @code{f.rdp}.  The result in
-in the pictured numeric output buffer and will be destroyed by anything
-destroying that buffer.
+@i{rf} を @i{c-addr nr} の文字列に変換します。  @i{nr +nd np} の変換規則と意味は @code{f.rdp}
+と同じです。  結果は表示数値出力(pictured numeric output)バッファーに格納され、
+そのバッファを破壊するものによって破壊されます(訳注: このバッファーは、 他の 表示数値出力(pictured numeric output)
+と共用であるということ)。
 
 
 @findex f>buf-rdp ( @var{ rf c-addr +nr +nd +np --   } ) gforth-0.6
@@ -16834,13 +16806,12 @@ destroying that buffer.
 @format
 @code{f>buf-rdp} ( @i{rf c-addr +nr +nd +np --  }) gforth-0.6 ``f>buf-rdp''
 @end format
-Convert @i{rf} into a string at @i{c-addr nr}.  The conversion rules and the
-meanings of @i{nr nd np} are the same as for @code{f.rdp}.
+@i{rf} を @i{c-addr nr} の文字列に変換します。  @i{nr nd np} の変換規則と意味は @code{f.rdp}
+と同じです(
 
 
 
-There is also a primitive used for implementing higher-level FP-to-string
-words:
+以下のような、 高レベルの FP-to-string ワードを実装するために使用されるプリミティブもあります:
 
 @findex represent ( @var{ r c-addr u -- n f1 f2  } ) floating
 @cindex @code{represent}
@@ -16848,9 +16819,9 @@ words:
 @format
 @code{represent} ( @i{r c-addr u -- n f1 f2 }) floating ``represent''
 @end format
-Convert the decimal significand (aka mantissa) of @i{r} into a string in
-buffer @i{c-addr u}; @i{n} is the exponent, @i{f1} is true if @i{r} is
-negative, and @i{f2} is true if @i{r} is valid (a finite number in Gforth).
+@i{r} の 10 進仮数部(別名 mantissa)をバッファ @i{c-addr u} 内の文字列に変換します。 @i{n} は指数で、@i{r}
+が負の場合は @i{f1} が true、 @i{r} が有効(Gforth の有限数)の場合は @i{f2} が true です(訳注: 仮数部が u
+の桁数になるようそれ以下を四捨五入するっぽい)。
 
 
 @node Miscellaneous output, Displaying characters and strings, Floating-point output, Other I/O

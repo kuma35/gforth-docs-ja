@@ -32,153 +32,151 @@ File: gforth.info,  Node: Formatted numeric output,  Next: Floating-point output
 6.20.2 Formatted numeric output
 -------------------------------
 
-Forth traditionally uses a technique called “pictured numeric output”
-for formatted printing of integers.  In this technique, digits are
-extracted from the number (using the current output radix defined by
-‘base’, *note Number Conversion::), converted to ASCII codes and
-prepended to a string that is built in a scratch-pad area of memory
-(*note Implementation-defined options: core-idef.).  Arbitrary
-characters can be prepended to the string during the extraction process.
-The completed string is specified by an address and length and can be
-manipulated (‘TYPE’ed, copied, modified) under program control.
+Forth は伝統的に、 整数の書式設定された出力に「表示数値出力」(“pictured
+numeric Output”) と呼ばれる手法を使用しています。 この手法では、 数値か
+ら数字桁(digits)が抽出され(‘base’ で定義された現在の出力基数を使用 *note
+Number Conversion::)、 ASCII コードに変換され、 メモリのスクラッチパッド
+領域(*note Implementation-defined options: core-idef.)に構築される文字列
+の先頭に付加されます。 抽出プロセス中に、 文字列の先頭に任意の文字を追加
+できます。 完成した文字列はアドレスと長さによって指定され、 プログラム制
+御の下で操作(‘TYPE’ や、 コピーや、 変更)できます。
 
-   All of the integer output words described in the previous section
-(*note Simple numeric output::) are implemented in Gforth using pictured
-numeric output.
+   前のセクションで説明したすべての整数出力ワード (*note Simple numeric
+output::) は、 Gforth では表示数値出力(pictured numeric output)を使用し
+て実装されています。
 
-   Three important things to remember about pictured numeric output:
+   表示数値出力(pictured numeric output)について覚えておくべき 3 つの重
+要な点:
 
-   • It always operates on double-precision numbers; to display a
-     single-precision number, convert it first (for ways of doing this
-     *note Double precision::).
-   • It always treats the double-precision number as though it were
-     unsigned.  The examples below show ways of printing signed numbers.
-   • The string is built up from right to left; least significant digit
-     first.
+   • 常に2倍長数を処理します。 1倍長数を表示するには、 まず最初に2倍長に
+     変換します (これを行う方法は *note Double precision::)。
+   • 倍精度数は常に符号無しであるかのように扱われます。 下記の例は、 符
+     号付き数値を出力する方法を示しています。
+   • 文字列は右から左に構築されます。 最下位桁が最初です。
 
-   Standard Forth supports a single output buffer (aka hold area) that
-you empty and initialize with ‘<#’ and for which you get the result
-string with ‘#>’.
+   標準 Forth は、 ‘<#’ で空にして初期化し、 ‘#>’ で結果文字列を取得する
+単一の出力バッファー(別名ホールド領域;hold area)をサポートします。
 
-   Gforth additionally supports nested usage of this buffer, allowing,
-e.g., to nest output from the debugging tracer ‘~~’ inside code dealing
-with the hold area: ‘<<#’ starts a new nest, ‘#>’ produces the result
-string, and ‘#>>’ unnests: the hold area for the nest is reclaimed, and
-‘#>’ now produces the string for the next-outer nest.  All of Gforth’s
-higher-level numeric output words use ‘<<#’ ...  ‘#>’ ...  ‘#>>’ and can
-be nested inside other users of the hold area.
+   Gforth はさらに、 このバッファーの入れ子になった使用をサポートしてお
+り、 たとえば、 ホールド領域を処理するコード内でデバッグ・トレーサー
+‘~~’ からの出力を入れ子にすることができます。 ‘<<#’ は新しい入れ子を開始
+し、 ‘#>’ は結果文字列を生成し、 ‘#>>’ は入れ子を解除します。 入れ子の保
+ホールド領域が再利用され、‘#>’ は次に外側の入れ子の文字列を生成します。
+Gforth の高レベルの数値出力ワードはすべて ‘<<#’ ...  ‘#>’ ...  ‘#>>’ を
+使用し、 ホールド領域の他のユーザー内に入れ子にできます。
 
 ‘<#’ ( –  ) core “less-number-sign”
-   Initialise/clear the pictured numeric output string.
+   表示数値出力文字列を 初期化/クリア します。
 
 ‘<<#’ ( –  ) gforth-0.5 “less-less-number-sign”
-   Start a hold area that ends with ‘#>>’.  Can be nested in each other
-and in ‘<#’.  Note: if you do not match up the ‘<<#’s with ‘#>>’s, you
-will eventually run out of hold area; you can reset the hold area to
-empty with ‘<#’.
+   ‘#>>’ で終わるホールド領域を開始します。 相互に入れ子にすることも、
+‘<#’ で入れ子にすることもできます。 注: ‘<<#’ と ‘#>>’ を一致させないと
+、 最終的にホールド領域が不足します。 ‘<#’ を使用してホールド領域を空に
+リセットできます。
 
 ‘#’ ( ud1 – ud2  ) core “number-sign”
-   Used between ‘<<#’ and ‘#>’.  Prepend the least-significant digit
-(according to ‘base’) of UD1 to the pictured numeric output string.  UD2
-is UD1/BASE, i.e., the number representing the remaining digits.
+   ‘<<#’ と ‘#>’ の間で使用されます。 UD1 の最下位桁(‘base’ による)を、
+表示数値出力文字列の先頭に追加します。 UD2 は UD1/BASE、 つまり残りの桁
+を表す数値です。
 
 ‘#s’ ( ud – 0 0  ) core “number-sign-s”
-   Used between ‘<<#’ and ‘#>’.  Prepend all digits of UD to the
-pictured numeric output string.  ‘#s’ will convert at least one digit.
-Therefore, if UD is 0, ‘#s’ will prepend a “0” to the pictured numeric
-output string.
+   ‘<<#’ と ‘#>’ の間で使用されます。 UD のすべての数字を表示数値出力文
+字列の先頭に追加します。 ‘#s’ は少なくとも 1 つの数字を変換します。 した
+がって、 UD が 0 の場合、 ‘#s’ は表示数値出力文字列の先頭に ‘0‘ を追加し
+ます。
 
 ‘hold’ ( char –  ) core “hold”
-   Used between ‘<<#’ and ‘#>’.  Prepend the character CHAR to the
-pictured numeric output string.
+   ‘<<#’ と ‘#>’ の間で使用されます。 表示数値出力文字列の前に文字 CHAR
+を追加します。
 
 ‘holds’ ( addr u –  ) core-ext “holds”
-   Used between ‘<<#’ and ‘#>’.  Prepend the string ‘addr u’ to the
-pictured numeric output string.
+   ‘<<#’ と ‘#>’ の間で使用されます。 表示数値出力文字列の前に文字列
+‘addr u’ を追加します。
 
 ‘sign’ ( n –  ) core “sign”
-   Used between ‘<<#’ and ‘#>’.  If N (a SINGLE number) is negative,
-prepend “‘-’” to the pictured numeric output string.
+   ‘<<#’ と ‘#>’ の間で使用されます。 N (1倍長数) が負の場合、 表示数値
+出力文字列の先頭に ‘-’ を追加します。
 
 ‘#>’ ( xd – addr u  ) core “number-sign-greater”
-   Complete the pictured numeric output string by discarding XD and
-returning ADDR U; the address and length of the formatted string.  A
-Standard program may modify characters within the string.  Does not
-release the hold area; use ‘#>>’ to release a hold area started with
-‘<<#’, or ‘<#’ to release all hold areas.
+   XD を破棄し、 フォーマットされた文字列のアドレスと長さを示す ADDR U を
+返すことで、 表示数値出力文字列を完成させます。 標準のプログラムでは、 文
+字列内の文字を変更する場合があります。 ホールド領域は解放されません。
+‘#>>’ を使用して ‘<<#’ で始まるホールド領域を解放するか、 ‘<#’ を使用し
+てすべてのホールド領域を解放します。
 
 ‘#>>’ ( –  ) gforth-0.5 “number-sign-greater-greater”
-   Release the hold area started with ‘<<#’.
+   ‘<<#’ で始まるホールド領域を解放します。
 
-Here are some examples of using pictured numeric output:
+以下に、 表示数値出力の使用例をいくつか示します:
 
      : my-u. ( u -- )
-       \ Simplest use of pns.. behaves like Standard u.
-       0              \ convert to unsigned double
-       <<#            \ start conversion
-       #s             \ convert all digits
-       #>             \ complete conversion
-       TYPE SPACE     \ display, with trailing space
-       #>> ;          \ release hold area
+       \ PNS(Pictured Number String)の最も単純な使用法。標準の u. のように振る舞います。
+       0              \ 上記 u を 2倍長にする
+       <<#            \ 変換開始
+       #s             \ 全桁を変換
+       #>             \ 変換終了
+       TYPE SPACE     \ 表示、続けて空白1つ
+       #>> ;          \ ホールド領域を開放
 
      : cents-only ( u -- )
-       0              \ convert to unsigned double
-       <<#            \ start conversion
-       # #            \ convert two least-significant digits
-       #>             \ complete conversion, discard other digits
-       TYPE SPACE     \ display, with trailing space
-       #>> ;          \ release hold area
+       0              \ 上記 u を 2倍長数に変換
+       <<#            \ 変換開始
+       # #            \ 最下位と最下位からの次の 2 桁のみ変換
+       #>             \ 変換完了。他の桁は破棄
+       TYPE SPACE     \ 表示、続けて空白1つ
+       #>> ;          \ ホールド領域を開放
 
      : dollars-and-cents ( u -- )
-       0              \ convert to unsigned double
-       <<#            \ start conversion
-       # #            \ convert two least-significant digits
-       '.' hold       \ insert decimal point
-       #s             \ convert remaining digits
-       '$' hold       \ append currency symbol
-       #>             \ complete conversion
-       TYPE SPACE     \ display, with trailing space
-       #>> ;          \ release hold area
+       0              \ 上記 u を符号無し2倍長数に変換
+       <<#            \ 変換開始
+       # #            \ 下位2桁を変換
+       '.' hold       \ 小数点を打つ
+       #s             \ 残りの桁を変換
+       '$' hold       \ 通貨記号を打つ
+       #>             \ 変換完了
+       TYPE SPACE     \ 表示、続けて空白1つ
+       #>> ;          \ ホールド領域を開放
 
      : my-. ( n -- )
-       \ handling negatives.. behaves like Standard .
-       s>d            \ convert to signed double
-       swap over dabs \ leave sign byte followed by unsigned double
-       <<#            \ start conversion
-       #s             \ convert all digits
-       rot sign       \ get at sign byte, append "-" if needed
-       #>             \ complete conversion
-       TYPE SPACE     \ display, with trailing space
-       #>> ;          \ release hold area
+       \ 負数も処理する標準の . のように振る舞う
+       s>d            \ 符号付き2倍長数に変換
+       swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
+       <<#            \ 変換開始
+       #s             \ 全桁を変換
+       rot sign       \ 符号チェック。必要なら "-" 付加
+       #>             \ 変換完了
+       TYPE SPACE     \ 表示、続けて空白1つ
+       #>> ;          \ ホールド領域を開放
 
      : account. ( n -- )
-       \ accountants don't like minus signs, they use parentheses
-       \ for negative numbers
-       s>d            \ convert to signed double
-       swap over dabs \ leave sign byte followed by unsigned double
-       <<#            \ start conversion
-       2 pick         \ get copy of sign byte
-       0< IF ')' hold THEN \ right-most character of output
-       #s             \ convert all digits
-       rot            \ get at sign byte
+       \ (会計風出力)会計士はマイナス記号が嫌いで、
+       \ 負の数には括弧を使用します
+       s>d            \ 符号付き2倍長数に変換
+       swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
+       <<#            \ 変換開始
+       2 pick         \ 符号バイトのコピーを得る
+       0< IF ')' hold THEN \ これが(あれば)出力の右端の文字
+       #s             \ 全桁を変換
+       rot            \ 符号バイトを得る
        0< IF '(' hold THEN
-       #>             \ complete conversion
-       TYPE SPACE     \ display, with trailing space
-       #>> ;          \ release hold area
+       #>             \ 変換完了
+       TYPE SPACE     \ 表示、続けて空白1つ
+       #>> ;          \ ホールド領域を開放
 
 
-   Here are some examples of using these words:
+   これらのワードの利用例をいくつか示します:
 
-     1 my-u. 1
-     hex -1 my-u. decimal FFFFFFFF
-     1 cents-only 01
-     1234 cents-only 34
-     2 dollars-and-cents $0.02
-     1234 dollars-and-cents $12.34
-     123 my-. 123
-     -123 my. -123
-     123 account. 123
-     -456 account. (456)
+     1 my-u. 1  ok
+     hex -1 my-u. decimal FFFFFFFFFFFFFFFF  ok
+     1 cents-only 01  ok
+     1234 cents-only 34  ok
+     2 dollars-and-cents  $0.02  ok
+     1234 dollars-and-cents  $12.34  ok
+     123 my-. 123  ok
+     -123 my-. -123  ok
+     123 account. 123  ok
+     -456 account. (456)  ok
+
 
 
 File: gforth.info,  Node: Floating-point output,  Next: Miscellaneous output,  Prev: Formatted numeric output,  Up: Other I/O
@@ -186,66 +184,60 @@ File: gforth.info,  Node: Floating-point output,  Next: Miscellaneous output,  P
 6.20.3 Floating-point output
 ----------------------------
 
-Floating-point output is always displayed using base 10.
+浮動小数点数出力は常に基数 10 を使用して表示されます。
 
 ‘f.’ ( r –  ) floating-ext “f-dot”
-   Display (the floating-point number) r without exponent, followed by a
-space.
+   (浮動小数点数) r を指数なしで表示し、 その後に空白1つ続けます。
 
 ‘fe.’ ( r –  ) floating-ext “f-e-dot”
-   Display r using engineering notation (with exponent dividable by 3),
-followed by a space.
+   r を工学表記(3 で割り切れる指数) で表示し、 その後に空白1つ続けます。
 
 ‘fs.’ ( r –  ) floating-ext “f-s-dot”
-   Display r using scientific notation (with exponent), followed by a
-space.
+   r を科学表記(指数付き)で表示し、 その後に空白1つ続けます。
 
-‘fp.’ ( r –  ) floating-ext “f-e-dot”
-   Display r using SI prefix notation (with exponent dividable by 3,
-converted into SI prefixes if available), followed by a space.
+‘fp.’ ( r –  ) floating-ext “f-p-dot”
+   r を SI 接頭辞表記(3 で割れる指数を使用し、 可能な場合は SI 接頭辞に
+変換)で表示し、 その後に空白1つ続けます。
 
-   Examples of printing the number 1234.5678E23 in the different
-floating-point output formats are shown below.
+   数値 1234.5678E23 をさまざまな浮動小数点数出力形式で出力する例を以下
+に示します。
 
      f. 123456780000000000000000000.
      fe. 123.456780000000E24
      fs. 1.23456780000000E26
      fp. 123.456780000000Y
 
-   The length of the output is influenced by:
+   出力桁幅は以下の影響を受けます:
 
 ‘precision’ ( – u  ) floating-ext “precision”
-   u is the number of significant digits currently used by ‘F.’ ‘FE.’
-and ‘FS.’
+   u は、 ‘f.’ や ‘fe.’ や ‘fs.’ や ‘fp.’ で現在使用されている有効桁数で
+す。
 
 ‘set-precision’ ( u –  ) floating-ext “set-precision”
-   Set the number of significant digits currently used by ‘F.’ ‘FE.’ and
-‘FS.’ to u.
+   ‘f.’ や ‘fe.’ や ‘fs.’ や ‘fp.’ で現在使用されている有効桁数を u に設
+定します。
 
-   You can control the output in more detail with:
+   以下のコマンドを使用して、 出力をより詳細に制御できます:
 
 ‘f.rdp’ ( rf +nr +nd +np –  ) gforth-0.6 “f.rdp”
-   Print float rf formatted.  The total width of the output is nr.  For
-fixed-point notation, the number of digits after the decimal point is
-+nd and the minimum number of significant digits is np.  ‘Set-precision’
-has no effect on ‘f.rdp’.  Fixed-point notation is used if the number of
-siginicant digits would be at least np and if the number of digits
-before the decimal point would fit.  If fixed-point notation is not
-used, exponential notation is used, and if that does not fit, asterisks
-are printed.  We recommend using nr>=7 to avoid the risk of numbers not
-fitting at all.  We recommend nr>=np+5 to avoid cases where ‘f.rdp’
-switches to exponential notation because fixed-point notation would have
-too few significant digits, yet exponential notation offers fewer
-significant digits.  We recommend nr>=nd+2, if you want to have
-fixed-point notation for some numbers; the smaller the value of np, the
-more cases are shown in fixed-point notation (cases where few or no
-significant digits remain in fixed-point notation).  We recommend np>nr,
-if you want to have exponential notation for all numbers.
+   浮動小数点数 rf を書式化して表示します。 出力の合計幅は nr です。 固
+定小数点表記の場合、 小数点以下の桁数は +nd、 有効桁数の最小値は np です
+。 ‘Set-precision’ は ‘f.rdp’ には影響しません。 固定小数点表記は、 有効
+桁数が少なくとも np の場合で、 かつ、 小数点以下の桁数が収まる場合に、 使
+用されます。 固定小数点表記が使用されない場合は指数表記が使用され、 それ
+でも適合しない場合はアスタリスクが出力されます。 数値がまったく適合しな
+いリスクを避けるために、 nr>=7 を使用することをお勧めします。 ‘f.rdp’ が
+指数表記に切り替わるケースを避けるために、 nr>=np+5 をお勧めします。 ど
+うしてかというと、 固定小数点表記でも有効桁数が少なすぎるのに、 指数表記
+では有効桁数が更に少なくなるためです。 一部の数値を固定小数点表記しなけ
+ればならない場合は、 nr>=nd+2 をお勧めします。 np の値が小さいほど、 よ
+り多くの場合で固定小数点表記で表示されます (固定小数点表記に有効数字がほ
+とんどまたはまったく残っていない場合)。 すべての数値を指数表記したい場合
+は、np>nr をお勧めします。
 
-   To give you a better intuition of how they influence the output, here
-are some examples of parameter combinations; in each line the same
-number is printed, in each column the same parameter combination is used
-for printing:
+   出力にどのような影響を与えるかをより直感的に理解できるように、 パラメ
+ーターの組み合わせの例をいくつか示します。 各行内は同じ数値が出力されて
+いて、 各列には同じパラメータの組み合わせが出力に使用されています:
 
          12 13 0    7 3 4   7 3 0   7 3 1   7 5 1   7 7 1   7 0 2  4 2 1
      |-1.234568E-6|-1.2E-6| -0.000|-1.2E-6|-1.2E-6|-1.2E-6|-1.2E-6|****|
@@ -261,25 +253,27 @@ for printing:
      |-1.2345679E4|-1.23E4|-1.23E4|-1.23E4|-1.23E4|-1.23E4|-12346.|-1E4|
      |-1.2345679E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1.23E5|-1E5|
 
-   You can generate a string instead of displaying the number with:
+   以下を使用して、 数値を表示する代わりに文字列を生成できます:
 
 ‘f>str-rdp’ ( rf +nr +nd +np – c-addr nr  ) gforth-0.6 “f>str-rdp”
-   Convert rf into a string at c-addr nr.  The conversion rules and the
-meanings of nr +nd np are the same as for ‘f.rdp’.  The result in in the
-pictured numeric output buffer and will be destroyed by anything
-destroying that buffer.
+   rf を c-addr nr の文字列に変換します。 nr +nd np の変換規則と意味は
+‘f.rdp’ と同じです。 結果は表示数値出力(pictured numeric output)バッファ
+ーに格納され、 そのバッファを破壊するものによって破壊されます(訳注: この
+バッファーは、 他の 表示数値出力(pictured numeric output) と共用であると
+いうこと)。
 
 ‘f>buf-rdp’ ( rf c-addr +nr +nd +np –  ) gforth-0.6 “f>buf-rdp”
-   Convert rf into a string at c-addr nr.  The conversion rules and the
-meanings of nr nd np are the same as for ‘f.rdp’.
+   rf を c-addr nr の文字列に変換します。 nr nd np の変換規則と意味は
+‘f.rdp’ と同じです(
 
-   There is also a primitive used for implementing higher-level
-FP-to-string words:
+   以下のような、 高レベルの FP-to-string ワードを実装するために使用され
+るプリミティブもあります:
 
 ‘represent’ ( r c-addr u – n f1 f2 ) floating “represent”
-   Convert the decimal significand (aka mantissa) of r into a string in
-buffer c-addr u; n is the exponent, f1 is true if r is negative, and f2
-is true if r is valid (a finite number in Gforth).
+   r の 10 進仮数部(別名 mantissa)をバッファ c-addr u 内の文字列に変換し
+ます。 n は指数で、r が負の場合は f1 が true、 r が有効(Gforth の有限数
+)の場合は f2 が true です(訳注: 仮数部が u の桁数になるようそれ以下を四
+捨五入するっぽい)。
 
 
 File: gforth.info,  Node: Miscellaneous output,  Next: Displaying characters and strings,  Prev: Floating-point output,  Up: Other I/O
@@ -7056,199 +7050,4 @@ values returned after arithmetic overflow:
 
 whether the current definition can be found after DOES>:
      No.
-
-
-File: gforth.info,  Node: core-ambcond,  Next: core-other,  Prev: core-idef,  Up: The Core Words
-
-9.1.2 Ambiguous conditions
---------------------------
-
-a name is neither a word nor a number:
-     ‘-13 throw’ (Undefined word).
-
-a definition name exceeds the maximum length allowed:
-     ‘-19 throw’ (Word name too long)
-
-addressing a region not inside the various data spaces of the forth system:
-     The stacks, code space and header space are accessible.  Machine
-     code space is typically readable.  Accessing other addresses gives
-     results dependent on the operating system.  On decent systems: ‘-9
-     throw’ (Invalid memory address).
-
-argument type incompatible with parameter:
-     This is usually not caught.  Some words perform checks, e.g., the
-     control flow words, and issue a ‘ABORT"’ or ‘-12 THROW’ (Argument
-     type mismatch).
-
-attempting to obtain the execution token of a word with undefined execution semantics:
-     The execution token represents the interpretation semantics of the
-     word.  Gforth defines interpretation semantics for all words; for
-     words where the standard does not define interpretation semantics,
-     but defines the execution semantics (except ‘LEAVE’), the
-     interpretation semantics are to perform the execution semantics.
-     For words where the standard defines no interprtation semantics,
-     but defined compilation semantics (plus ‘LEAVE’), the
-     interpretation semantics are to perform the compilation semantics.
-     Some words are marked as compile-only, and ‘'’ gives a warning for
-     these words.
-
-dividing by zero:
-     On some platforms, this produces a ‘-10 throw’ (Division by zero);
-     on other systems, this typically results in a ‘-55 throw’
-     (Floating-point unidentified fault).
-
-insufficient data stack or return stack space:
-     Depending on the operating system, the installation, and the
-     invocation of Gforth, this is either checked by the memory
-     management hardware, or it is not checked.  If it is checked, you
-     typically get a ‘-3 throw’ (Stack overflow), ‘-5 throw’ (Return
-     stack overflow), or ‘-9 throw’ (Invalid memory address) (depending
-     on the platform and how you achieved the overflow) as soon as the
-     overflow happens.  If it is not checked, overflows typically result
-     in mysterious illegal memory accesses, producing ‘-9 throw’
-     (Invalid memory address) or ‘-23 throw’ (Address alignment
-     exception); they might also destroy the internal data structure of
-     ‘ALLOCATE’ and friends, resulting in various errors in these words.
-
-insufficient space for loop control parameters:
-     Like other return stack overflows.
-
-insufficient space in the dictionary:
-     If you try to allot (either directly with ‘allot’, or indirectly
-     with ‘,’, ‘create’ etc.)  more memory than available in the
-     dictionary, you get a ‘-8 throw’ (Dictionary overflow).  If you try
-     to access memory beyond the end of the dictionary, the results are
-     similar to stack overflows.
-
-interpreting a word with undefined interpretation semantics:
-     Gforth defines interpretation semantics for all words; for words
-     where the standard defines execution semantics (except ‘LEAVE’),
-     the interpretation semantics are to perform the execution
-     semantics.  For words where the standard defines no interprtation
-     semantics, but defined compilation semantics (plus ‘LEAVE’), the
-     interpretation semantics are to perform the compilation semantics.
-     Some words are marked as compile-only, and text-interpreting them
-     gives a warning.
-
-modifying the contents of the input buffer or a string literal:
-     These are located in writable memory and can be modified.
-
-overflow of the pictured numeric output string:
-     ‘-17 throw’ (Pictured numeric ouput string overflow).
-
-parsed string overflow:
-     ‘PARSE’ cannot overflow.  ‘WORD’ does not check for overflow.
-
-producing a result out of range:
-     On two’s complement machines, arithmetic is performed modulo
-     2**bits-per-cell for single arithmetic and 4**bits-per-cell for
-     double arithmetic (with appropriate mapping for signed types).
-     Division by zero typically results in a ‘-10 throw’ (divide by
-     zero) or ‘-55 throw’ (floating point unidentified fault).  Overflow
-     on division may result in these errors or in ‘-11 throw’ (result
-     out of range).  ‘Gforth-fast’ may silently produce bogus results on
-     division overflow or division by zero.  ‘Convert’ and ‘>number’
-     currently overflow silently.
-
-reading from an empty data or return stack:
-     The data stack is checked by the outer (aka text) interpreter after
-     every word executed.  If it has underflowed, a ‘-4 throw’ (Stack
-     underflow) is performed.  Apart from that, stacks may be checked or
-     not, depending on operating system, installation, and invocation.
-     If they are caught by a check, they typically result in ‘-4 throw’
-     (Stack underflow), ‘-6 throw’ (Return stack underflow) or ‘-9
-     throw’ (Invalid memory address), depending on the platform and
-     which stack underflows and by how much.  Note that even if the
-     system uses checking (through the MMU), your program may have to
-     underflow by a significant number of stack items to trigger the
-     reaction (the reason for this is that the MMU, and therefore the
-     checking, works with a page-size granularity).  If there is no
-     checking, the symptoms resulting from an underflow are similar to
-     those from an overflow.  Unbalanced return stack errors can result
-     in a variety of symptoms, including ‘-9 throw’ (Invalid memory
-     address) and Illegal Instruction (typically ‘-260 throw’).
-
-unexpected end of the input buffer, resulting in an attempt to use a zero-length string as a name:
-     ‘Create’ and its descendants perform a ‘-16 throw’ (Attempt to use
-     zero-length string as a name).  Words like ‘'’ probably will not
-     find what they search.  Note that it is possible to create
-     zero-length names with ‘nextname’ (should it not?).
-
-‘>IN’ greater than input buffer:
-     The next invocation of a parsing word returns a string with length
-     0.
-
-‘RECURSE’ appears after ‘DOES>’:
-     Compiles a recursive call to the code after ‘DOES>’.
-
-argument input source different than current input source for ‘RESTORE-INPUT’:
-     ‘-12 THROW’.  Note that, once an input file is closed (e.g.,
-     because the end of the file was reached), its source-id may be
-     reused.  Therefore, restoring an input source specification
-     referencing a closed file may lead to unpredictable results instead
-     of a ‘-12 THROW’.
-
-     In the future, Gforth may be able to restore input source
-     specifications from other than the current input source.
-
-data space containing definitions gets de-allocated:
-     Deallocation with ‘allot’ is not checked.  This typically results
-     in memory access faults or execution of illegal instructions.
-
-data space read/write with incorrect alignment:
-     Processor-dependent.  Typically results in a ‘-23 throw’ (Address
-     alignment exception).  Under Linux-Intel on a 486 or later
-     processor with alignment turned on, incorrect alignment results in
-     a ‘-9 throw’ (Invalid memory address).  There are reportedly some
-     processors with alignment restrictions that do not report
-     violations.
-
-data space pointer not properly aligned, ‘,’, ‘C,’:
-     Like other alignment errors.
-
-less than u+2 stack items (‘PICK’ and ‘ROLL’):
-     Like other stack underflows.
-
-loop control parameters not available:
-     Not checked.  The counted loop words simply assume that the top of
-     return stack items are loop control parameters and behave
-     accordingly.
-
-most recent definition does not have a name (‘IMMEDIATE’):
-     ‘abort" last word was headerless"’.
-
-name not defined by ‘VALUE’ used by ‘TO’:
-     ‘-32 throw’ (Invalid name argument) (unless name is a local or was
-     defined by ‘CONSTANT’; in the latter case it just changes the
-     constant).
-
-name not found (‘'’, ‘POSTPONE’, ‘[']’, ‘[COMPILE]’):
-     ‘-13 throw’ (Undefined word)
-
-parameters are not of the same type (‘DO’, ‘?DO’, ‘WITHIN’):
-     Gforth behaves as if they were of the same type.  I.e., you can
-     predict the behaviour by interpreting all parameters as, e.g.,
-     signed.
-
-‘POSTPONE’ or ‘[COMPILE]’ applied to ‘TO’:
-     Assume ‘: X POSTPONE TO ; IMMEDIATE’.  ‘X’ performs the compilation
-     semantics of ‘TO’.
-
-String longer than a counted string returned by ‘WORD’:
-     Not checked.  The string will be ok, but the count will, of course,
-     contain only the least significant bits of the length.
-
-u greater than or equal to the number of bits in a cell (‘LSHIFT’, ‘RSHIFT’):
-     Processor-dependent.  Typical behaviours are returning 0 and using
-     only the low bits of the shift count.
-
-word not defined via ‘CREATE’:
-     ‘>BODY’ produces the PFA of the word no matter how it was defined.
-
-     ‘DOES>’ changes the execution semantics of the last defined word no
-     matter how it was defined.  E.g., ‘CONSTANT DOES>’ is equivalent to
-     ‘CREATE , DOES>’.
-
-words improperly used outside ‘<#’ and ‘#>’:
-     Not checked.  As usual, you can expect memory faults.
 
