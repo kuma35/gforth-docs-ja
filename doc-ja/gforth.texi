@@ -15536,7 +15536,11 @@ true です。
 @cindex @code{file-status}
 @kindex file-status
 @format
-@code{file-status} ( @i{c-addr u -- wfam wior }) file-ext ``file-status'' \ 訳注: @i{wior} <> 0 ;ファイルが存在しない(@i{wfam}は未定義の値)、 @i{wior}=0 かつ  ( @i{wfam}=2 r/w 、 @i{wfam}=0 r/o 、 @i{wfam}=4 w/o 、 @i{wfam}=1 r/o bin いずれのacessモードチェックもエラーになった時。便宜的に読み込み専用かつバイナリとして返す)
+@code{file-status} ( @i{c-addr u -- wfam wior }) file-ext ``file-status''
+\ 訳注: @i{wior} <> 0 ;ファイルが存在しない(@i{wfam}は未定義の値)、
+\       @i{wior}=0 かつ  ( @i{wfam}=2 r/w 、 @i{wfam}=0 r/o 、 @i{wfam}=4 w/o 、
+\       @i{wfam}=1 r/o bin いずれのacessモードチェックもエラーになった時。
+\       便宜的に読み込み専用かつバイナリとして返す)
 @end format
 
 @findex file-position ( @var{ wfileid -- ud wior  } ) file
@@ -16718,10 +16722,10 @@ hex -1 my-u. decimal FFFFFFFFFFFFFFFF  ok
 数値 1234.5678E23 をさまざまな浮動小数点数出力形式で出力する例を以下に示します。
 
 @example
-f. 123456780000000000000000000.
-fe. 123.456780000000E24
-fs. 1.23456780000000E26
-fp. 123.456780000000Y
+1234.5678E23 f. 123456780000000000000000000.  ok
+1234.5678E23 fe. 123.456780000000E24  ok
+1234.5678E23 fs. 1.23456780000000E26  ok
+1234.5678E23 fp. 123.456780000000Y  ok
 @end example
 
 出力桁幅は以下の影響を受けます:
@@ -16834,10 +16838,9 @@ fp. 123.456780000000Y
 @format
 @code{cr} ( @i{--  }) core ``c-r''
 @end format
-Output a newline (of the favourite kind of the host OS).  Note that due to
-the way the Forth command line interpreter inserts newlines, the preferred
-way to use @code{cr} is at the start of a piece of text; e.g., @code{cr ."
-hello, world"}.
+(ホスト OS の好みの種類の)改行(newline)を出力します。 注意: Forth
+コマンド・ライン・インタプリタの改行(newline)挿入のクセのため、 @code{cr} をテキストの先頭で使用することをお勧めします。 例:
+@code{cr ." hello, world"}.
 
 
 @findex space ( @var{ --   } ) core
@@ -16846,7 +16849,7 @@ hello, world"}.
 @format
 @code{space} ( @i{--  }) core ``space''
 @end format
-Display one space.
+空白を1つ表示する。
 
 
 @findex spaces ( @var{ u --   } ) core
@@ -16855,7 +16858,7 @@ Display one space.
 @format
 @code{spaces} ( @i{u --  }) core ``spaces''
 @end format
-Display @var{u} spaces. 
+@var{u} 個の空白を表示します。 
 
 
 @findex out ( @var{ -- addr   } ) gforth-1.0
@@ -16864,12 +16867,9 @@ Display @var{u} spaces.
 @format
 @code{out} ( @i{-- addr  }) gforth-1.0 ``out''
 @end format
-@code{Addr} contains a number that tries to give the position of the cursor
-within the current line on the user output device: It resets to 0 on
-@code{cr}, increases by the number of characters by @code{type} and
-@code{emit}, and decreases on @code{backspaces}.  Unfortunately, it does not
-take into account tabs, multi-byte characters, or the existence of Unicode
-characters with width 0 and 2, so it only works for simple cases.
+@code{addr} には、 ユーザー出力デバイス上の現在行内のカーソルの位置を指定しようと試みる数値が含まれています。 @code{cr} で 0
+にリセットされ、 @code{type} によって文字数ずつ増加、 @code{emit} で増加、 @code{backspaces} で減少します。
+残念ながら、 タブ文字や、マルチバイト文字や、 幅 0 と 幅2 のユニコード文字の存在は考慮されていないため、 単純な場合にのみ機能します。
 
 
 @findex .\" ( @var{ compilation 'ccc"' -- ; run-time --   } ) gforth-0.6
@@ -16878,7 +16878,8 @@ characters with width 0 and 2, so it only works for simple cases.
 @format
 @code{.\"} ( @i{compilation 'ccc"' -- ; run-time --  }) gforth-0.6 ``dot-backslash-quote''
 @end format
-Like @code{."}, but translates C-like \-escape-sequences (see @code{S\"}).
+@code{."} と似ていますが、
+C言語のようなバックスラッシュによるエスケープ・シーケンス(\-escape-sequences)を認識します(詳しくは @code{S\"} 参照)。
 
 
 @findex ." ( @var{ compilation 'ccc"' -- ; run-time --   } ) core
@@ -16887,10 +16888,9 @@ Like @code{."}, but translates C-like \-escape-sequences (see @code{S\"}).
 @format
 @code{."} ( @i{compilation 'ccc"' -- ; run-time --  }) core ``dot-quote''
 @end format
-Compilation: Parse a string @i{ccc} delimited by a " (double quote). At
-run-time, display the string. Interpretation semantics for this word are
-undefined in standard Forth. Gforth's interpretation semantics are to
-display the string.
+コンパイル時: `"` (二重引用符)で区切られた文字列 @i{ccc} を解析します。 実行時、 その文字列を表示します。
+このワードのインタプリタ機能(interpretation semantics)は、 標準 Forth では定義されていません。 Gforth
+でのインタプリタ機能(interpretation semantics)は、 その文字列を表示することです。
 
 
 @findex .( ( @var{ compilation&interpretation "ccc<paren>" --   } ) core-ext
@@ -16899,18 +16899,18 @@ display the string.
 @format
 @code{.(} ( @i{compilation&interpretation "ccc<paren>" --  }) core-ext ``dot-paren''
 @end format
-Compilation and interpretation semantics: Parse a string @i{ccc} delimited
-by a @code{)} (right parenthesis). Display the string. This is often used to
-display progress information during compilation; see examples below.
+コンパイル時(compilation semantics)とインタプリタ時(interpretation semantics):
+@code{)}(右括弧)で区切られた文字列 @i{ccc} を解析します。 その文字列を表示します。 これは、
+コンパイル中に進行状況情報を表示するためによく使用されます。 下記の例を参照してください。
 
 
 
-If you don't want to worry about wether to use @code{.( hello)} or @code{."
-hello"}, you can write @code{"hello" type}, which gives you what you usually
-want (but is less portable to other Forth systems).
+あなたが @code{.( hello)} を使用するべきか @code{." hello"} を使用するべきかを気に掛けたくない場合は、
+@code{"hello" type} と書くことができます。 これにより、 通常必要なものが得られます(ただし、他の Forth
+システムへの移植性は低くなります)。
 
 @noindent
-As an example, consider the following text, stored in a file @file{test.fs}:
+例として、 ファイル @file{test.fs} に保存されている以下のテキストについて考えてみましょう:
 
 @example
 .( text-1)
@@ -16924,7 +16924,7 @@ As an example, consider the following text, stored in a file @file{test.fs}:
 "text-6" type
 @end example
 
-When you load this code into Gforth, the following output is generated:
+このコードを Gforth にロードすると、 以下の出力が生成されます:
 
 @example
 @kbd{include test.fs @key{RET}} text-1text-3text-5text-6 ok
@@ -16932,22 +16932,19 @@ When you load this code into Gforth, the following output is generated:
 
 @itemize @bullet
 @item
-Messages @code{text-1} and @code{text-3} are displayed because @code{.(} is
-an immediate word; it behaves in the same way whether it is used inside or
-outside a colon definition.
+@code{.(} は即実行ワードであるため、 メッセージ @code{text-1} と @code{text-3} が表示されます。
+コロン定義の内側でも外側でも、 全く同じに振る舞います。
 @item
-Message @code{text-5} is displayed because of Gforth's added interpretation
-semantics for @code{."}.
+@code{."} に対する Gforth の追加インタプリタ機能(interpretation semantics)により、 メッセージ
+@code{text-5} が表示されます。
 @item
-Message @code{text-6} is displayed because @code{"text-6" type} is
-interpreted.
+@code{"text-6" type} が通訳(interpret)され、 メッセージ @code{text-6} が表示されます。
 @item
-Message @code{text-2} is @i{not} displayed, because the text interpreter
-performs the compilation semantics for @code{."} within the definition of
-@code{my-word}.
+テキスト・インタプリタが @code{my-word} の定義内で @code{."} のコンパイル機能(compilation
+semantics)を実行するため、 メッセージ @code{text-2} は「表示されません」。
 @item
-Message @code{text-4} is @i{not} displayed, because @code{"text-4" type} is
-compiled into @code{my-word}.
+@code{"text-4" type} は @code{my-word} 内にコンパイルされるため、 メッセージ @code{text-4}
+は「表示されません」。
 @end itemize
 
 
@@ -16962,8 +16959,8 @@ compiled into @code{my-word}.
 @format
 @code{type} ( @i{c-addr u --  }) core ``type''
 @end format
-If @var{u}>0, display @var{u} characters from a string starting with the
-character stored at @var{c-addr}.
+@var{u}>0 なら、 @var{c-addr} からに格納されている文字列から @var{u} 文字を表示します(訳注:
+日本語(UTF-8)の出力も対応)。
 
 
 @findex xemit ( @var{ xc --   } ) xchar
@@ -16972,7 +16969,7 @@ character stored at @var{c-addr}.
 @format
 @code{xemit} ( @i{xc --  }) xchar ``x-emit''
 @end format
-Prints an xchar on the terminal.
+端末に xchar を出力します。
 
 
 @findex emit ( @var{ c --   } ) core
@@ -16981,8 +16978,7 @@ Prints an xchar on the terminal.
 @format
 @code{emit} ( @i{c --  }) core ``emit''
 @end format
-Send the byte @i{c} to the current output; for ASCII characters, @code{emit}
-is equivalent to @code{xemit}.
+バイト値 @i{c} を現在の出力に送信します。 ASCII 文字の場合、 @code{emit} は @code{xemit} と同等です。
 
 
 @findex typewhite ( @var{ addr n --   } ) gforth-0.2
@@ -16991,7 +16987,8 @@ is equivalent to @code{xemit}.
 @format
 @code{typewhite} ( @i{addr n --  }) gforth-0.2 ``typewhite''
 @end format
-Like type, but white space is printed instead of the characters.
+type と似ていますが、 文字の代わりに空白が表示されます(訳注: 指定の文字数 @i{n}
+だけ空白出すだけなので日本語(UTF-8)だと表示幅がズレる)。
 
 
 
@@ -17001,8 +16998,7 @@ Like type, but white space is printed instead of the characters.
 @cindex output to terminal
 @cindex terminal output
 
-If you are outputting to a terminal, you may want to control the positioning
-of the cursor:
+端末に出力している場合、 カーソル位置を制御することができます:
 @cindex cursor positioning
 
 @findex at-xy ( @var{ x y --   } ) facility
@@ -17011,8 +17007,7 @@ of the cursor:
 @format
 @code{at-xy} ( @i{x y --  }) facility ``at-x-y''
 @end format
-Put the curser at position @i{x y}.  The top left-hand corner of the display
-is at 0 0.
+カーソルを位置 @i{x y} に置きます。  ディスプレイの左上角は 0 0 です。
 
 
 @findex at-deltaxy ( @var{ dx dy --   } ) gforth-0.7
@@ -17021,12 +17016,11 @@ is at 0 0.
 @format
 @code{at-deltaxy} ( @i{dx dy --  }) gforth-0.7 ``at-deltaxy''
 @end format
-With the current position at @i{x y}, put the cursor at @i{x+dx y+dy}.
+現在の位置を @i{x y} として、 カーソルを @i{x+dx y+dy} に置きます。
 
 
 
-In order to know where to position the cursor, it is often helpful to know
-the size of the screen:
+カーソルをどこに置くかを知るには、 以下のように、 画面(screen)のサイズを知っておくと役立つことがよくあります:
 @cindex terminal size
 
 @findex form ( @var{ -- nlines ncols   } ) gforth-0.2
@@ -17034,10 +17028,11 @@ the size of the screen:
 @kindex form
 @format
 @code{form} ( @i{-- nlines ncols  }) gforth-0.2 ``form''
+\ 訳注:画面のサイズを得る
 @end format
 
 
-And sometimes you want to use:
+また、 以下のようなものを使用したい場合もあります:
 @cindex clear screen
 
 @findex page ( @var{ --   } ) facility
@@ -17046,17 +17041,16 @@ And sometimes you want to use:
 @format
 @code{page} ( @i{--  }) facility ``page''
 @end format
-Clear the screen
+画面(screen)をクリアする
 
 
 
-Note that on non-terminals you should use @code{12 emit}, not @code{page},
-to get a form feed.
+注意: ターミナル以外では、フォーム・フィード(form feed;FF)を取得するには @code{page} ではなく @code{12 Emit}
+を使用する必要があることに注意してください。
 
 @subsubsection Color output
-The following words are used to create (semantic) colorful output; further
-output is produced in the color and style given by the word; the actual
-color and style depends on the theme (see below).
+以下のワード群は、 意味・理由ごとに色を変えるために使用されます。 更に細かい設定は、 ワードによって指定された色とスタイルで生成されます。
+実際の色とスタイルはテーマによって異なります(下記を参照)。
 
 @findex default-color ( @var{ --   } ) gforth-1.0
 @cindex @code{default-color}
@@ -17064,7 +17058,7 @@ color and style depends on the theme (see below).
 @format
 @code{default-color} ( @i{--  }) gforth-1.0 ``default-color''
 @end format
-use system-default color
+システムのデフォルト用の色
 
 
 @findex error-color ( @var{ --   } ) gforth-1.0
@@ -17073,7 +17067,7 @@ use system-default color
 @format
 @code{error-color} ( @i{--  }) gforth-1.0 ``error-color''
 @end format
-error color: red
+エラー用の色: (通常は)赤
 
 
 @findex error-hl-inv ( @var{ --   } ) gforth-1.0
@@ -17082,7 +17076,7 @@ error color: red
 @format
 @code{error-hl-inv} ( @i{--  }) gforth-1.0 ``error-hl-inv''
 @end format
-color mod for error highlight inverse
+エラー用にハイライトとして反転表示するカラーモード
 
 
 @findex error-hl-ul ( @var{ --   } ) gforth-1.0
@@ -17091,7 +17085,7 @@ color mod for error highlight inverse
 @format
 @code{error-hl-ul} ( @i{--  }) gforth-1.0 ``error-hl-ul''
 @end format
-color mod for error highlight underline
+エラー用にアンダーラインでハイライトする色変更モード
 
 
 @findex warning-color ( @var{ --   } ) gforth-1.0
@@ -17100,7 +17094,7 @@ color mod for error highlight underline
 @format
 @code{warning-color} ( @i{--  }) gforth-1.0 ``warning-color''
 @end format
-color for warnings: blue/yellow on black terminals
+警告(warning)の色: 背景が黒の端末では 青/黄
 
 
 @findex info-color ( @var{ --   } ) gforth-1.0
@@ -17109,7 +17103,7 @@ color for warnings: blue/yellow on black terminals
 @format
 @code{info-color} ( @i{--  }) gforth-1.0 ``info-color''
 @end format
-color for info: green/cyan on black terminals
+情報(info)用の色: 黒色の背景の端末では 緑/シアン 
 
 
 @findex success-color ( @var{ --   } ) gforth-1.0
@@ -17118,7 +17112,7 @@ color for info: green/cyan on black terminals
 @format
 @code{success-color} ( @i{--  }) gforth-1.0 ``success-color''
 @end format
-color for success: green
+成功(success)の色: 緑
 
 
 @findex input-color ( @var{ --   } ) gforth-1.0
@@ -17127,7 +17121,7 @@ color for success: green
 @format
 @code{input-color} ( @i{--  }) gforth-1.0 ``input-color''
 @end format
-color for user-input: black/white (both bold)
+ユーザー入力の色: 黒/白 (両方ともボールド)
 
 
 @findex status-color ( @var{ --   } ) gforth-1.0
@@ -17136,7 +17130,7 @@ color for user-input: black/white (both bold)
 @format
 @code{status-color} ( @i{--  }) gforth-1.0 ``status-color''
 @end format
-color mod for error highlight inverse
+エラー用にハイライトとして反転表示するカラーモード
 
 
 @c !! Commented out, because it makes no sense to document attr! without
@@ -17144,8 +17138,7 @@ color mod for error highlight inverse
 @c doc-attr!
 
 @subsubsection Color themes
-Depending on wether you prefer bright or dark background the foreground
-colors-theme can be changed by:
+あなたが、 明るい背景を好むか暗い背景を好むかに応じて、 前景の色テーマ(foreground colors-theme)を以下のように変更できます:
 
 @findex light-mode ( @var{ --   } ) gforth-1.0
 @cindex @code{light-mode}
@@ -17153,7 +17146,7 @@ colors-theme can be changed by:
 @format
 @code{light-mode} ( @i{--  }) gforth-1.0 ``light-mode''
 @end format
-color theme for white background
+白背景用の色テーマ
 
 
 @findex dark-mode ( @var{ --   } ) gforth-1.0
@@ -17162,7 +17155,7 @@ color theme for white background
 @format
 @code{dark-mode} ( @i{--  }) gforth-1.0 ``dark-mode''
 @end format
-color theme for black background
+黒背景用の色テーマ
 
 
 @findex uncolored-mode ( @var{ --   } ) gforth-1.0
@@ -17171,7 +17164,7 @@ color theme for black background
 @format
 @code{uncolored-mode} ( @i{--  }) gforth-1.0 ``uncolored-mode''
 @end format
-This mode does not set colors, but uses the default ones.
+このモードでは色は設定されませんが、 デフォルトの色が使用されます。
 
 
 @findex magenta-input ( @var{ --   } ) gforth-1.0
@@ -17180,7 +17173,7 @@ This mode does not set colors, but uses the default ones.
 @format
 @code{magenta-input} ( @i{--  }) gforth-1.0 ``magenta-input''
 @end format
-make input color easily recognizable (useful in presentations)
+入力色(input color)を認識しやすくします(プレゼンテーションに役立ちます)
 
 
 
@@ -17189,9 +17182,8 @@ make input color easily recognizable (useful in presentations)
 @cindex single-key input
 @cindex input, single-key
 
-If you want to get a single printable character, you can use @code{key}; to
-check whether a character is available for @code{key}, you can use
-@code{key?}.
+単一の印刷可能な文字を取得したい場合は、 @code{key} を使用できます。 文字が @code{key} に使用できるかどうかを確認するには、
+@code{key?} を使用できます。
 
 @findex key ( @var{ -- char   } ) core
 @cindex @code{key}
@@ -17199,7 +17191,7 @@ check whether a character is available for @code{key}, you can use
 @format
 @code{key} ( @i{-- char  }) core ``key''
 @end format
-Receive (but do not display) one character, @var{char}.
+1 文字 @var{char} を受け取ります(ただし表示はされません)。
 
 
 @findex key-ior ( @var{ -- char|ior   } ) gforth-1.0
@@ -17208,8 +17200,8 @@ Receive (but do not display) one character, @var{char}.
 @format
 @code{key-ior} ( @i{-- char|ior  }) gforth-1.0 ``key-ior''
 @end format
-Receive (but do not display) one character, @var{char}, in case of an error
-or interrupt, return the negative @var{ior} instead.
+1 文字 @var{char} を受け取ります (ただし表示はされません)。 エラーまたは割り込みの場合は、 代わりに、 負数の @var{ior}
+を返します。
 
 
 @findex key? ( @var{ -- flag   } ) facility
@@ -17218,10 +17210,9 @@ or interrupt, return the negative @var{ior} instead.
 @format
 @code{key?} ( @i{-- flag  }) facility ``key-question''
 @end format
-Determine whether a character is available. If a character is available,
-@var{flag} is true; the next call to @code{key} will yield the
-character. Once @code{key?} returns true, subsequent calls to @code{key?}
-before calling @code{key} or @code{ekey} will also return true.
+文字が @code{key} で使用可能かどうかを判断します。 文字が使用可能な場合、@var{flag} は true です。 次に
+@code{key} を呼び出すと、 文字が生成されます。 一度 @code{key?} が true を返すと、 その後に @code{key}
+または @code{ekey} を呼び出す前に @code{key?} を呼び出した場合も true が返されます。
 
 
 @findex xkey? ( @var{ -- flag   } ) xchar
@@ -17229,15 +17220,16 @@ before calling @code{key} or @code{ekey} will also return true.
 @kindex xkey?
 @format
 @code{xkey?} ( @i{-- flag  }) xchar ``x-key-query''
+\ 訳注: UTF-8 な環境では key? は xkey? のエイリアスです。
+\ xchar 文字が xkey で使用可能かどうかを判断します(たぶん) 
 @end format
 
 
-If you want to process a mix of printable and non-printable characters, you
-can do that with @code{ekey} and friends.  @code{Ekey} produces a keyboard
-event that you have to convert into a character with @code{ekey>char} or
-into a key identifier with @code{ekey>fkey}.
+印刷可能な文字と印刷不可能な文字を組み合わせて処理したい場合は、@code{ekey} とそのファミリーを使用して実行できます。
+@code{ekey} は、 @code{ekey>char} で文字に変換するか、 @code{ekey>fkey}
+でキー識別子に変換する必要があるキーボード・イベントを生成します。
 
-Typical code for using EKEY looks like this:
+ekey を使用するための一般的なコードは以下のようになります:
 
 @example
 ekey ekey>xchar if ( xc )
@@ -17260,7 +17252,7 @@ then then
 @format
 @code{ekey} ( @i{-- u  }) facility-ext ``e-key''
 @end format
-Receive a keyboard event @var{u} (encoding implementation-defined).
+キーボード・イベント @var{u} を受信します(実装定義のエンコーディングです) 。
 
 
 @findex ekey>xchar ( @var{ u -- u false | xc true   } ) xchar-ext
@@ -17269,7 +17261,7 @@ Receive a keyboard event @var{u} (encoding implementation-defined).
 @format
 @code{ekey>xchar} ( @i{u -- u false | xc true  }) xchar-ext ``e-key-to-x-char''
 @end format
-Convert keyboard event @var{u} into xchar @code{xc} if possible.
+可能であれば、 キーボード・イベント @var{u} を xchar @code{xc} に変換します。
 
 
 @findex ekey>char ( @var{ u -- u false | c true   } ) facility-ext
@@ -17278,10 +17270,9 @@ Convert keyboard event @var{u} into xchar @code{xc} if possible.
 @format
 @code{ekey>char} ( @i{u -- u false | c true  }) facility-ext ``e-key-to-char''
 @end format
-Convert keyboard event @var{u} into character @code{c} if possible.  Note
-that non-ASCII characters produce @code{false} from both @code{ekey>char}
-and @code{ekey>fkey}.  Instead of @code{ekey>char}, use @code{ekey>xchar} if
-available.
+可能であれば、 キーボード・イベント @var{u} を文字 @code{c} に変換します。  注意: 非 ASCII 文字は、
+@code{ekey>char} と @code{ekey>fkey} の両方から @code{false} が返ることに注意してください。
+利用可能な場合は、 @code{ekey>char} の代わりに @code{ekey>xchar} を使用します。
 
 
 @findex ekey>fkey ( @var{ u1 -- u2 f   } ) facility-ext
@@ -17290,9 +17281,8 @@ available.
 @format
 @code{ekey>fkey} ( @i{u1 -- u2 f  }) facility-ext ``e-key-to-f-key''
 @end format
-If u1 is a keyboard event in the special key set, convert keyboard event
-@var{u1} into key id @var{u2} and return true; otherwise return @var{u1} and
-false.
+u1 が特殊キー(special key)セット内のキーボード・イベントの場合、 キーボード・イベント @var{u1} をキー ID @var{u2}
+に変換し、 true を返します。それ以外の場合は、 @var{u1} と false を返します。
 
 
 @findex ekey? ( @var{ -- flag   } ) facility-ext
@@ -17301,11 +17291,11 @@ false.
 @format
 @code{ekey?} ( @i{-- flag  }) facility-ext ``e-key-question''
 @end format
-True if a keyboard event is available.
+キーボード・イベントが利用可能な場合は True。
 
 
 
-The key identifiers for cursor keys are:
+カーソル・キーのキー識別子は以下のとおりです:
 
 @findex k-left ( @var{ -- u   } ) facility-ext
 @cindex @code{k-left}
@@ -17341,7 +17331,7 @@ The key identifiers for cursor keys are:
 @format
 @code{k-home} ( @i{-- u  }) facility-ext ``k-home''
 @end format
-aka Pos1
+別名 Pos1
 
 
 @findex k-end ( @var{ -- u   } ) facility-ext
@@ -17357,7 +17347,7 @@ aka Pos1
 @format
 @code{k-prior} ( @i{-- u  }) facility-ext ``k-prior''
 @end format
-aka PgUp
+別名 PgUp
 
 
 @findex k-next ( @var{ -- u   } ) facility-ext
@@ -17366,7 +17356,7 @@ aka PgUp
 @format
 @code{k-next} ( @i{-- u  }) facility-ext ``k-next''
 @end format
-aka PgDn    
+別名 PgDn    
 
 
 @findex k-insert ( @var{ -- u   } ) facility-ext
@@ -17382,11 +17372,11 @@ aka PgDn
 @format
 @code{k-delete} ( @i{-- u  }) facility-ext ``k-delete''
 @end format
-the @key{DEL} key on my xterm, not backspace
+著者の xterm 上では@key{DEL} キーで、 Backspace ではありません
 
 
 
-The key identifiers for function keys (aka keypad keys) are:
+ファンクション・キー(別名キーパッド・キー)のキー識別子は以下のとおりです:
 
 @findex k-f1 ( @var{ -- u   } ) facility-ext
 @cindex @code{k-f1}
@@ -17473,9 +17463,9 @@ The key identifiers for function keys (aka keypad keys) are:
 @end format
 
 
-Note that @code{k-f11} and @code{k-f12} are not as widely available.
+@code{k-f11} と @code{k-f12} はそれほど広くには利用可能ではないことに注意してください。
 
-You can combine these key identifiers with masks for various shift keys:
+これらのキー識別子をさまざまなシフト・キーのマスクと組み合わせることができます:
 
 @findex k-shift-mask ( @var{ -- u   } ) facility-ext
 @cindex @code{k-shift-mask}
@@ -17499,9 +17489,8 @@ You can combine these key identifiers with masks for various shift keys:
 @end format
 
 
-There are a number of keys that have ASCII values, and therefore are
-unlikely to be reported as special keys, but the combination of these keys
-with shift keys may be reported as a special key:
+ASCII 値を持つキーが多数あるため、 特殊キーとして報告される可能性は低いですが、
+以下のキーとシフト・キーの組み合わせは特殊キーとして報告される可能性があります:
 
 @findex k-enter ( @var{ -- u   } ) gforth-1.0
 @cindex @code{k-enter}
@@ -17525,7 +17514,7 @@ with shift keys may be reported as a special key:
 @end format
 
 
-Moreover, there the following key codes for keys and other events:
+さらに、 キーおよびその他のイベントには以下のキー・コードがあります:
 
 @findex k-winch ( @var{ -- u   } ) gforth-1.0
 @cindex @code{k-winch}
@@ -17533,7 +17522,7 @@ Moreover, there the following key codes for keys and other events:
 @format
 @code{k-winch} ( @i{-- u  }) gforth-1.0 ``k-winch''
 @end format
-A key code that may be generated when the user changes the window size.
+ユーザーがウィンドウ・サイズを変更したときに生成される可能性のあるキー・コード。
 
 
 @findex k-pause ( @var{ -- u   } ) gforth-1.0
@@ -17570,7 +17559,7 @@ A key code that may be generated when the user changes the window size.
 @format
 @code{k-sel} ( @i{-- u  }) gforth-1.0 ``k-sel''
 @end format
-keycode for Android selections
+Androidでの選択(selections)のキー・コード
 
 
 @findex k-eof ( @var{ -- u   } ) gforth-1.0
@@ -17581,26 +17570,21 @@ keycode for Android selections
 @end format
 
 
-Note that, even if a Forth system has @code{ekey>fkey} and the key
-identifier words, the keys are not necessarily available or it may not
-necessarily be able to report all the keys and all the possible combinations
-with shift masks.  Therefore, write your programs in such a way that they
-are still useful even if the keys and key combinations cannot be pressed or
-are not recognized.
+注意: Forth システムに @code{ekey>fkey} とキー識別子のワードがある場合でも、 そのキーが必ずしも利用可能であるとは限らず、
+すべてのキーとシフト・マスクとの可能なすべての組み合わせを報告できるとは限らないことに注意してください。
+したがって、キーやキーの組み合わせが押せない場合や認識されない場合でも、プログラムが使えるようにプログラムを作成してください。
 
-Examples: Older keyboards often do not have an F11 and F12 key.  If you run
-Gforth in an xterm, the xterm catches a number of combinations (e.g.,
-@key{Shift-Up}), and never passes it to Gforth.  Finally, Gforth currently
-does not recognize and report combinations with multiple shift keys (so the
-@key{shift-ctrl-left} case in the example above would never be entered).
+例: 古いキーボードには F11 キーと F12 キーがないことがよくあります。  xterm で Gforth を実行すると、xterm
+は多数の組み合わせ(例: @key{Shift-Up})を捕捉しますが、それを Gforth に渡すことはありません。  最後に、Gforth は現在、
+複数の Shift キーの組み合わせを認識して報告しません(そのため、上記の例の @key{shift-ctrl-left}
+のケースは決して入力されません)。
 
-Gforth recognizes various keys available on ANSI terminals (in MS-DOS you
-need the ANSI.SYS driver to get that behaviour); it works by recognizing the
-escape sequences that ANSI terminals send when such a key is pressed.  If
-you have a terminal that sends other escape sequences, you will not get
-useful results on Gforth.  Other Forth systems may work in a different way.
+Gforth は、ANSI 端末で利用可能なさまざまなキーを認識します(MS-DOS では、 その動作を実現するには ANSI.SYS
+ドライバーが必要です)。 これは、 そのようなキーが押されたときに ANSI 端末が送信するエスケープ・シーケンスを認識することによって機能します。
+他のエスケープ・シーケンスを送信する端末を使用している場合、 Gforth では有益な結果は得られません。  他の Forth
+システムは異なる方法で動作する可能性があります。
 
-Gforth also provides a few words for outputting names of function keys:
+Gforth には、 ファンクション・キーの名前を出力するためのいくつかのワードも用意されています:
 
 @findex fkey. ( @var{ u --   } ) gforth-1.0
 @cindex @code{fkey.}
@@ -17608,9 +17592,8 @@ Gforth also provides a few words for outputting names of function keys:
 @format
 @code{fkey.} ( @i{u --  }) gforth-1.0 ``fkey-dot''
 @end format
-Print a string representation for the function key @i{u}.  @i{U} must be a
-function key (possibly with modifier masks), otherwise there may be an
-exception.
+ファンクション・キー @i{u} の文字列表現を出力します。  @i{U} はファンクション・キー(おそらく修飾子マスク付き)でなければなりません。
+そうでない場合は例外が発生する可能性があります。
 
 
 @findex simple-fkey-string ( @var{ u1 -- c-addr u   } ) gforth-1.0
@@ -17619,9 +17602,8 @@ exception.
 @format
 @code{simple-fkey-string} ( @i{u1 -- c-addr u  }) gforth-1.0 ``simple-fkey-string''
 @end format
-@i{c-addr u} is the string name of the function key @i{u1}.  Only works for
-simple function keys without modifier masks.  Any @i{u1} that does not
-correspond to a simple function key currently produces an exception.
+@i{c-addr u} は、ファンクション・キー @i{u1} の文字列名です。 修飾子マスクのない単純なファンクション・キーに対してのみ機能します。
+現在、 単純なファンクション・キーでない @i{u1} では例外を生成します。
 
 
 
@@ -19131,7 +19113,8 @@ doc-lp+!#(訳注: まだ説明書いて無いっぽい)
 @cindex @code{>l}
 @kindex >l
 @format
-@code{>l} ( @i{w -- }) gforth-0.2 ``to-l'' \ 訳注: w をローカル変数スタックにプッシュ
+@code{>l} ( @i{w -- }) gforth-0.2 ``to-l''
+\ 訳注: w をローカル変数スタックにプッシュ
 @end format
 
 @findex f>l ( @var{ r --  } ) gforth-0.2

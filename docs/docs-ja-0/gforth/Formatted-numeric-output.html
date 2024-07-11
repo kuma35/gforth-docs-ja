@@ -73,41 +73,31 @@ Next: <a href="Floating_002dpoint-output.html" accesskey="n" rel="next">Floating
 <span id="index-pictured-numeric-output"></span>
 <span id="index-numeric-output-_002d-formatted"></span>
 
-<p>Forth traditionally uses a technique called <em>pictured numeric output</em>
-for formatted printing of integers.  In this technique, digits are extracted
-from the number (using the current output radix defined by <code>base</code>,
-see <a href="Number-Conversion.html">Number Conversion</a>), converted to ASCII codes and prepended to a
-string that is built in a scratch-pad area of memory (see <a href="core_002didef.html">Implementation-defined options</a>). Arbitrary
-characters can be prepended to the string during the extraction process. The
-completed string is specified by an address and length and can be
-manipulated (<code>TYPE</code>ed, copied, modified) under program control.
+<p>Forth は伝統的に、 整数の書式設定された出力に「表示数値出力」(<em>pictured numeric Output</em>)
+と呼ばれる手法を使用しています。  この手法では、 数値から数字桁(digits)が抽出され(<code>base</code> で定義された現在の出力基数を使用
+see <a href="Number-Conversion.html">Number Conversion</a>)、 ASCII コードに変換され、 メモリのスクラッチパッド領域(see <a href="core_002didef.html">Implementation-defined
+options</a>)に構築される文字列の先頭に付加されます。 抽出プロセス中に、 文字列の先頭に任意の文字を追加できます。
+完成した文字列はアドレスと長さによって指定され、 プログラム制御の下で操作(<code>TYPE</code> や、 コピーや、 変更)できます。
 </p>
-<p>All of the integer output words described in the previous section
-(see <a href="Simple-numeric-output.html">Simple numeric output</a>) are implemented in Gforth using pictured
-numeric output.
+<p>前のセクションで説明したすべての整数出力ワード (see <a href="Simple-numeric-output.html">Simple numeric output</a>) は、 Gforth
+では表示数値出力(pictured numeric output)を使用して実装されています。
 </p>
-<p>Three important things to remember about pictured numeric output:
+<p>表示数値出力(pictured numeric output)について覚えておくべき 3 つの重要な点:
 </p>
 <ul>
-<li> It always operates on double-precision numbers; to display a
-single-precision number, convert it first (for ways of doing this
-see <a href="Double-precision.html">Double precision</a>).
-</li><li> It always treats the double-precision number as though it were unsigned. The
-examples below show ways of printing signed numbers.
-</li><li> The string is built up from right to left; least significant digit first.
+<li> 常に2倍長数を処理します。 1倍長数を表示するには、 まず最初に2倍長に変換します (これを行う方法は see <a href="Double-precision.html">Double precision</a>)。
+</li><li> 倍精度数は常に符号無しであるかのように扱われます。 下記の例は、 符号付き数値を出力する方法を示しています。
+</li><li> 文字列は右から左に構築されます。 最下位桁が最初です。
 </li></ul>
 
-<p>Standard Forth supports a single output buffer (aka hold area) that you
-empty and initialize with <code>&lt;#</code> and for which you get the result string
-with <code>#&gt;</code>.
+<p>標準 Forth は、 <code>&lt;#</code> で空にして初期化し、 <code>#&gt;</code>
+で結果文字列を取得する単一の出力バッファー(別名ホールド領域;hold area)をサポートします。
 </p>
-<p>Gforth additionally supports nested usage of this buffer, allowing, e.g., to
-nest output from the debugging tracer <code>~~</code> inside code dealing with the
-hold area: <code>&lt;&lt;#</code> starts a new nest, <code>#&gt;</code> produces the result
-string, and <code>#&gt;&gt;</code> unnests: the hold area for the nest is reclaimed, and
-<code>#&gt;</code> now produces the string for the next-outer nest.  All of Gforth&rsquo;s
-higher-level numeric output words use <code>&lt;&lt;#</code> ... <code>#&gt;</code>
-... <code>#&gt;&gt;</code> and can be nested inside other users of the hold area.
+<p>Gforth はさらに、 このバッファーの入れ子になった使用をサポートしており、 たとえば、 ホールド領域を処理するコード内でデバッグ・トレーサー
+<code>~~</code> からの出力を入れ子にすることができます。 <code>&lt;&lt;#</code> は新しい入れ子を開始し、  <code>#&gt;</code>
+は結果文字列を生成し、 <code>#&gt;&gt;</code> は入れ子を解除します。 入れ子の保ホールド領域が再利用され、<code>#&gt;</code>
+は次に外側の入れ子の文字列を生成します。  Gforth の高レベルの数値出力ワードはすべて <code>&lt;&lt;#</code> ... <code>#&gt;</code>
+... <code>#&gt;&gt;</code> を使用し、 ホールド領域の他のユーザー内に入れ子にできます。
 </p>
 <span id="index-_003c_0023-_0028--_002d_002d--_0029-core"></span>
 <span id="index-_003c_0023"></span>
@@ -115,7 +105,7 @@ higher-level numeric output words use <code>&lt;&lt;#</code> ... <code>#&gt;</co
 <div class="format">
 <pre class="format"><code>&lt;#</code> ( <i>&ndash;  </i>) core &ldquo;less-number-sign&rdquo;
 </pre></div>
-<p>Initialise/clear the pictured numeric output string.
+<p>表示数値出力文字列を 初期化/クリア します。
 </p>
 
 <span id="index-_003c_003c_0023-_0028--_002d_002d--_0029-gforth_002d0_002e5"></span>
@@ -124,10 +114,9 @@ higher-level numeric output words use <code>&lt;&lt;#</code> ... <code>#&gt;</co
 <div class="format">
 <pre class="format"><code>&lt;&lt;#</code> ( <i>&ndash;  </i>) gforth-0.5 &ldquo;less-less-number-sign&rdquo;
 </pre></div>
-<p>Start a hold area that ends with <code>#&gt;&gt;</code>. Can be nested in each other and
-in <code>&lt;#</code>.  Note: if you do not match up the <code>&lt;&lt;#</code>s with
-<code>#&gt;&gt;</code>s, you will eventually run out of hold area; you can reset the
-hold area to empty with <code>&lt;#</code>.
+<p><code>#&gt;&gt;</code> で終わるホールド領域を開始します。 相互に入れ子にすることも、 <code>&lt;#</code> で入れ子にすることもできます。  注:
+<code>&lt;&lt;#</code> と <code>#&gt;&gt;</code> を一致させないと、 最終的にホールド領域が不足します。 <code>&lt;#</code>
+を使用してホールド領域を空にリセットできます。
 </p>
 
 <span id="index-_0023-_0028--ud1-_002d_002d-ud2--_0029-core"></span>
@@ -136,10 +125,8 @@ hold area to empty with <code>&lt;#</code>.
 <div class="format">
 <pre class="format"><code>#</code> ( <i>ud1 &ndash; ud2  </i>) core &ldquo;number-sign&rdquo;
 </pre></div>
-<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>. Prepend the least-significant digit
-(according to <code>base</code>) of <var>ud1</var> to the pictured numeric output
-string.  <var>ud2</var> is <var>ud1/base</var>, i.e., the number representing the
-remaining digits.
+<p><code>&lt;&lt;#</code> と <code>#&gt;</code> の間で使用されます。  <var>ud1</var> の最下位桁(<code>base</code> による)を、
+表示数値出力文字列の先頭に追加します。  <var>ud2</var> は <var>ud1/base</var>、 つまり残りの桁を表す数値です。
 </p>
 
 <span id="index-_0023s-_0028--ud-_002d_002d-0-0--_0029-core"></span>
@@ -148,10 +135,9 @@ remaining digits.
 <div class="format">
 <pre class="format"><code>#s</code> ( <i>ud &ndash; 0 0  </i>) core &ldquo;number-sign-s&rdquo;
 </pre></div>
-<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>.  Prepend all digits of <var>ud</var> to
-the pictured numeric output string.  <code>#s</code> will convert at least one
-digit. Therefore, if <var>ud</var> is 0, <code>#s</code> will prepend a &ldquo;0&rdquo; to the
-pictured numeric output string.
+<p><code>&lt;&lt;#</code> と <code>#&gt;</code> の間で使用されます。  <var>ud</var> のすべての数字を表示数値出力文字列の先頭に追加します。
+<code>#s</code> は少なくとも 1 つの数字を変換します。 したがって、 <var>ud</var> が 0 の場合、 <code>#s</code>
+は表示数値出力文字列の先頭に &lsquo;0&lsquo; を追加します。
 </p>
 
 <span id="index-hold-_0028--char-_002d_002d--_0029-core"></span>
@@ -160,8 +146,7 @@ pictured numeric output string.
 <div class="format">
 <pre class="format"><code>hold</code> ( <i>char &ndash;  </i>) core &ldquo;hold&rdquo;
 </pre></div>
-<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>. Prepend the character <var>char</var> to
-the pictured numeric output string.
+<p><code>&lt;&lt;#</code> と <code>#&gt;</code> の間で使用されます。 表示数値出力文字列の前に文字 <var>char</var> を追加します。
 </p>
 
 <span id="index-holds-_0028--addr-u-_002d_002d--_0029-core_002dext"></span>
@@ -170,8 +155,7 @@ the pictured numeric output string.
 <div class="format">
 <pre class="format"><code>holds</code> ( <i>addr u &ndash;  </i>) core-ext &ldquo;holds&rdquo;
 </pre></div>
-<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>. Prepend the string <code>addr u</code> to
-the pictured numeric output string.
+<p><code>&lt;&lt;#</code> と <code>#&gt;</code> の間で使用されます。 表示数値出力文字列の前に文字列 <code>addr u</code> を追加します。
 </p>
 
 <span id="index-sign-_0028--n-_002d_002d--_0029-core"></span>
@@ -180,8 +164,8 @@ the pictured numeric output string.
 <div class="format">
 <pre class="format"><code>sign</code> ( <i>n &ndash;  </i>) core &ldquo;sign&rdquo;
 </pre></div>
-<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>. If <var>n</var> (a <var>single</var> number) is
-negative, prepend &ldquo;<code>-</code>&rdquo; to the pictured numeric output string.
+<p><code>&lt;&lt;#</code> と <code>#&gt;</code> の間で使用されます。 <var>n</var> (1倍長数) が負の場合、 表示数値出力文字列の先頭に
+<code>-</code> を追加します。
 </p>
 
 <span id="index-_0023_003e-_0028--xd-_002d_002d-addr-u--_0029-core"></span>
@@ -190,11 +174,10 @@ negative, prepend &ldquo;<code>-</code>&rdquo; to the pictured numeric output st
 <div class="format">
 <pre class="format"><code>#&gt;</code> ( <i>xd &ndash; addr u  </i>) core &ldquo;number-sign-greater&rdquo;
 </pre></div>
-<p>Complete the pictured numeric output string by discarding <var>xd</var> and
-returning <var>addr u</var>; the address and length of the formatted string. A
-Standard program may modify characters within the string.  Does not release
-the hold area; use <code>#&gt;&gt;</code> to release a hold area started with
-<code>&lt;&lt;#</code>, or <code>&lt;#</code> to release all hold areas.
+<p><var>xd</var> を破棄し、 フォーマットされた文字列のアドレスと長さを示す <var>addr u</var> を返すことで、
+表示数値出力文字列を完成させます。 標準のプログラムでは、 文字列内の文字を変更する場合があります。  ホールド領域は解放されません。
+<code>#&gt;&gt;</code> を使用して <code>&lt;&lt;#</code> で始まるホールド領域を解放するか、 <code>&lt;#</code>
+を使用してすべてのホールド領域を解放します。
 </p>
 
 <span id="index-_0023_003e_003e-_0028--_002d_002d--_0029-gforth_002d0_002e5"></span>
@@ -203,82 +186,83 @@ the hold area; use <code>#&gt;&gt;</code> to release a hold area started with
 <div class="format">
 <pre class="format"><code>#&gt;&gt;</code> ( <i>&ndash;  </i>) gforth-0.5 &ldquo;number-sign-greater-greater&rdquo;
 </pre></div>
-<p>Release the hold area started with <code>&lt;&lt;#</code>.
+<p><code>&lt;&lt;#</code> で始まるホールド領域を解放します。
 </p>
 
 
-<p>Here are some examples of using pictured numeric output:
+<p>以下に、 表示数値出力の使用例をいくつか示します:
 </p>
 <div class="example">
 <pre class="example">: my-u. ( u -- )
-  \ Simplest use of pns.. behaves like Standard u. 
-  0              \ convert to unsigned double
-  &lt;&lt;#            \ start conversion
-  #s             \ convert all digits
-  #&gt;             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #&gt;&gt; ;          \ release hold area
+  \ PNS(Pictured Number String)の最も単純な使用法。標準の u. のように振る舞います。
+  0              \ 上記 u を 2倍長にする
+  &lt;&lt;#            \ 変換開始
+  #s             \ 全桁を変換
+  #&gt;             \ 変換終了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #&gt;&gt; ;          \ ホールド領域を開放
 
 : cents-only ( u -- )
-  0              \ convert to unsigned double
-  &lt;&lt;#            \ start conversion
-  # #            \ convert two least-significant digits
-  #&gt;             \ complete conversion, discard other digits
-  TYPE SPACE     \ display, with trailing space
-  #&gt;&gt; ;          \ release hold area
+  0              \ 上記 u を 2倍長数に変換
+  &lt;&lt;#            \ 変換開始
+  # #            \ 最下位と最下位からの次の 2 桁のみ変換
+  #&gt;             \ 変換完了。他の桁は破棄
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #&gt;&gt; ;          \ ホールド領域を開放
 
 : dollars-and-cents ( u -- )
-  0              \ convert to unsigned double
-  &lt;&lt;#            \ start conversion
-  # #            \ convert two least-significant digits
-  '.' hold       \ insert decimal point
-  #s             \ convert remaining digits
-  '$' hold       \ append currency symbol
-  #&gt;             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #&gt;&gt; ;          \ release hold area
+  0              \ 上記 u を符号無し2倍長数に変換
+  &lt;&lt;#            \ 変換開始
+  # #            \ 下位2桁を変換
+  '.' hold       \ 小数点を打つ
+  #s             \ 残りの桁を変換
+  '$' hold       \ 通貨記号を打つ
+  #&gt;             \ 変換完了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #&gt;&gt; ;          \ ホールド領域を開放
 
 : my-. ( n -- )
-  \ handling negatives.. behaves like Standard .
-  s&gt;d            \ convert to signed double
-  swap over dabs \ leave sign byte followed by unsigned double
-  &lt;&lt;#            \ start conversion
-  #s             \ convert all digits
-  rot sign       \ get at sign byte, append &quot;-&quot; if needed
-  #&gt;             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #&gt;&gt; ;          \ release hold area
+  \ 負数も処理する標準の . のように振る舞う
+  s&gt;d            \ 符号付き2倍長数に変換
+  swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
+  &lt;&lt;#            \ 変換開始
+  #s             \ 全桁を変換
+  rot sign       \ 符号チェック。必要なら &quot;-&quot; 付加
+  #&gt;             \ 変換完了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #&gt;&gt; ;          \ ホールド領域を開放
 
 : account. ( n -- )
-  \ accountants don't like minus signs, they use parentheses
-  \ for negative numbers
-  s&gt;d            \ convert to signed double
-  swap over dabs \ leave sign byte followed by unsigned double
-  &lt;&lt;#            \ start conversion
-  2 pick         \ get copy of sign byte
-  0&lt; IF ')' hold THEN \ right-most character of output
-  #s             \ convert all digits
-  rot            \ get at sign byte
+  \ (会計風出力)会計士はマイナス記号が嫌いで、
+  \ 負の数には括弧を使用します
+  s&gt;d            \ 符号付き2倍長数に変換
+  swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
+  &lt;&lt;#            \ 変換開始
+  2 pick         \ 符号バイトのコピーを得る
+  0&lt; IF ')' hold THEN \ これが(あれば)出力の右端の文字
+  #s             \ 全桁を変換
+  rot            \ 符号バイトを得る
   0&lt; IF '(' hold THEN
-  #&gt;             \ complete conversion
-  TYPE SPACE     \ display, with trailing space
-  #&gt;&gt; ;          \ release hold area
+  #&gt;             \ 変換完了
+  TYPE SPACE     \ 表示、続けて空白1つ
+  #&gt;&gt; ;          \ ホールド領域を開放
 
 </pre></div>
 
-<p>Here are some examples of using these words:
+<p>これらのワードの利用例をいくつか示します:
 </p>
 <div class="example">
-<pre class="example">1 my-u. 1
-hex -1 my-u. decimal FFFFFFFF
-1 cents-only 01
-1234 cents-only 34
-2 dollars-and-cents $0.02
-1234 dollars-and-cents $12.34
-123 my-. 123
--123 my. -123
-123 account. 123
--456 account. (456)
+<pre class="example">1 my-u. 1  ok
+hex -1 my-u. decimal FFFFFFFFFFFFFFFF  ok
+1 cents-only 01  ok
+1234 cents-only 34  ok
+2 dollars-and-cents  $0.02  ok
+1234 dollars-and-cents  $12.34  ok
+123 my-. 123  ok
+-123 my-. -123  ok
+123 account. 123  ok
+-456 account. (456)  ok
+
 </pre></div>
 
 </div>

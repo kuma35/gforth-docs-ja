@@ -202,10 +202,10 @@ File: gforth.info,  Node: Floating-point output,  Next: Miscellaneous output,  P
    数値 1234.5678E23 をさまざまな浮動小数点数出力形式で出力する例を以下
 に示します。
 
-     f. 123456780000000000000000000.
-     fe. 123.456780000000E24
-     fs. 1.23456780000000E26
-     fp. 123.456780000000Y
+     1234.5678E23 f. 123456780000000000000000000.  ok
+     1234.5678E23 fe. 123.456780000000E24  ok
+     1234.5678E23 fs. 1.23456780000000E26  ok
+     1234.5678E23 fp. 123.456780000000Y  ok
 
    出力桁幅は以下の影響を受けます:
 
@@ -282,45 +282,47 @@ File: gforth.info,  Node: Miscellaneous output,  Next: Displaying characters and
 ---------------------------
 
 ‘cr’ ( –  ) core “c-r”
-   Output a newline (of the favourite kind of the host OS). Note that
-due to the way the Forth command line interpreter inserts newlines, the
-preferred way to use ‘cr’ is at the start of a piece of text; e.g., ‘cr
-." hello, world"’.
+   (ホスト OS の好みの種類の)改行(newline)を出力します。 注意: Forth コ
+マンド・ライン・インタプリタの改行(newline)挿入のクセのため、 ‘cr’ をテ
+キストの先頭で使用することをお勧めします。 例: ‘cr ." hello, world"’.
 
 ‘space’ ( –  ) core “space”
-   Display one space.
+   空白を1つ表示する。
 
 ‘spaces’ ( u –  ) core “spaces”
-   Display U spaces.
+   U 個の空白を表示します。
 
 ‘out’ ( – addr  ) gforth-1.0 “out”
-   ‘Addr’ contains a number that tries to give the position of the
-cursor within the current line on the user output device: It resets to 0
-on ‘cr’, increases by the number of characters by ‘type’ and ‘emit’, and
-decreases on ‘backspaces’.  Unfortunately, it does not take into account
-tabs, multi-byte characters, or the existence of Unicode characters with
-width 0 and 2, so it only works for simple cases.
+   ‘addr’ には、 ユーザー出力デバイス上の現在行内のカーソルの位置を指定
+しようと試みる数値が含まれています。 ‘cr’ で 0 にリセットされ、 ‘type’ に
+よって文字数ずつ増加、 ‘emit’ で増加、 ‘backspaces’ で減少します。 残念
+ながら、 タブ文字や、マルチバイト文字や、 幅 0 と 幅2 のユニコード文字の
+存在は考慮されていないため、 単純な場合にのみ機能します。
 
 ‘.\"’ ( compilation ’ccc"’ – ; run-time –  ) gforth-0.6 “dot-backslash-quote”
-   Like ‘."’, but translates C-like \-escape-sequences (see ‘S\"’).
+   ‘."’ と似ていますが、 C言語のようなバックスラッシュによるエスケープ・
+シーケンス(\-escape-sequences)を認識します(詳しくは ‘S\"’ 参照)。
 
 ‘."’ ( compilation ’ccc"’ – ; run-time –  ) core “dot-quote”
-   Compilation: Parse a string ccc delimited by a " (double quote).  At
-run-time, display the string.  Interpretation semantics for this word
-are undefined in standard Forth.  Gforth’s interpretation semantics are
-to display the string.
+   コンパイル時: ‘"‘ (二重引用符)で区切られた文字列 ccc を解析します。 実
+行時、 その文字列を表示します。 このワードのインタプリタ機能
+(interpretation semantics)は、 標準 Forth では定義されていません。
+Gforth でのインタプリタ機能(interpretation semantics)は、 その文字列を表
+示することです。
 
 ‘.(’ ( compilation&interpretation "ccc<paren>" –  ) core-ext “dot-paren”
-   Compilation and interpretation semantics: Parse a string ccc
-delimited by a ‘)’ (right parenthesis).  Display the string.  This is
-often used to display progress information during compilation; see
-examples below.
+   コンパイル時(compilation semantics)とインタプリタ時(interpretation
+semantics): ‘)’(右括弧)で区切られた文字列 ccc を解析します。 その文字列
+を表示します。 これは、 コンパイル中に進行状況情報を表示するためによく使
+用されます。 下記の例を参照してください。
 
-   If you don’t want to worry about wether to use ‘.( hello)’ or ‘."
-hello"’, you can write ‘"hello" type’, which gives you what you usually
-want (but is less portable to other Forth systems).
+   あなたが ‘.( hello)’ を使用するべきか ‘." hello"’ を使用するべきかを
+気に掛けたくない場合は、 ‘"hello" type’ と書くことができます。 これによ
+り、 通常必要なものが得られます(ただし、他の Forth システムへの移植性は
+低くなります)。
 
-As an example, consider the following text, stored in a file ‘test.fs’:
+例として、 ファイル ‘test.fs’ に保存されている以下のテキストについて考え
+てみましょう:
 
      .( text-1)
      : my-word
@@ -332,23 +334,22 @@ As an example, consider the following text, stored in a file ‘test.fs’:
      ." text-5"
      "text-6" type
 
-   When you load this code into Gforth, the following output is
-generated:
+   このコードを Gforth にロードすると、 以下の出力が生成されます:
 
      include test.fs <RET> text-1text-3text-5text-6 ok
 
-   • Messages ‘text-1’ and ‘text-3’ are displayed because ‘.(’ is an
-     immediate word; it behaves in the same way whether it is used
-     inside or outside a colon definition.
-   • Message ‘text-5’ is displayed because of Gforth’s added
-     interpretation semantics for ‘."’.
-   • Message ‘text-6’ is displayed because ‘"text-6" type’ is
-     interpreted.
-   • Message ‘text-2’ is not displayed, because the text interpreter
-     performs the compilation semantics for ‘."’ within the definition
-     of ‘my-word’.
-   • Message ‘text-4’ is not displayed, because ‘"text-4" type’ is
-     compiled into ‘my-word’.
+   • ‘.(’ は即実行ワードであるため、 メッセージ ‘text-1’ と ‘text-3’ が
+     表示されます。 コロン定義の内側でも外側でも、 全く同じに振る舞いま
+     す。
+   • ‘."’ に対する Gforth の追加インタプリタ機能(interpretation
+     semantics)により、 メッセージ ‘text-5’ が表示されます。
+   • ‘"text-6" type’ が通訳(interpret)され、 メッセージ ‘text-6’ が表示
+     されます。
+   • テキスト・インタプリタが ‘my-word’ の定義内で ‘."’ のコンパイル機能
+     (compilation semantics)を実行するため、 メッセージ ‘text-2’ は「表
+     示されません」。
+   • ‘"text-4" type’ は ‘my-word’ 内にコンパイルされるため、 メッセージ
+     ‘text-4’ は「表示されません」。
 
 
 File: gforth.info,  Node: Displaying characters and strings,  Next: Terminal output,  Prev: Miscellaneous output,  Up: Other I/O
@@ -357,18 +358,19 @@ File: gforth.info,  Node: Displaying characters and strings,  Next: Terminal out
 ----------------------------------------
 
 ‘type’ ( c-addr u –  ) core “type”
-   If U>0, display U characters from a string starting with the
-character stored at C-ADDR.
+   U>0 なら、 C-ADDR からに格納されている文字列から U 文字を表示します
+(訳注: 日本語(UTF-8)の出力も対応)。
 
 ‘xemit’ ( xc –  ) xchar “x-emit”
-   Prints an xchar on the terminal.
+   端末に xchar を出力します。
 
 ‘emit’ ( c –  ) core “emit”
-   Send the byte c to the current output; for ASCII characters, ‘emit’
-is equivalent to ‘xemit’.
+   バイト値 c を現在の出力に送信します。 ASCII 文字の場合、 ‘emit’ は
+‘xemit’ と同等です。
 
 ‘typewhite’ ( addr n –  ) gforth-0.2 “typewhite”
-   Like type, but white space is printed instead of the characters.
+   type と似ていますが、 文字の代わりに空白が表示されます(訳注: 指定の文
+字数 n だけ空白出すだけなので日本語(UTF-8)だと表示幅がズレる)。
 
 
 File: gforth.info,  Node: Terminal output,  Next: Single-key input,  Prev: Displaying characters and strings,  Up: Other I/O
@@ -376,80 +378,81 @@ File: gforth.info,  Node: Terminal output,  Next: Single-key input,  Prev: Displ
 6.20.6 Terminal output
 ----------------------
 
-If you are outputting to a terminal, you may want to control the
-positioning of the cursor:
+端末に出力している場合、 カーソル位置を制御することができます:
 
 ‘at-xy’ ( x y –  ) facility “at-x-y”
-   Put the curser at position x y.  The top left-hand corner of the
-display is at 0 0.
+   カーソルを位置 x y に置きます。 ディスプレイの左上角は 0 0 です。
 
 ‘at-deltaxy’ ( dx dy –  ) gforth-0.7 “at-deltaxy”
-   With the current position at x y, put the cursor at x+dx y+dy.
+   現在の位置を x y として、 カーソルを x+dx y+dy に置きます。
 
-   In order to know where to position the cursor, it is often helpful to
-know the size of the screen:
+   カーソルをどこに置くかを知るには、 以下のように、 画面(screen)のサイ
+ズを知っておくと役立つことがよくあります:
 
 ‘form’ ( – nlines ncols  ) gforth-0.2 “form”
+\ 訳注:画面のサイズを得る
 
-   And sometimes you want to use:
+   また、 以下のようなものを使用したい場合もあります:
 
 ‘page’ ( –  ) facility “page”
-   Clear the screen
+   画面(screen)をクリアする
 
-   Note that on non-terminals you should use ‘12 emit’, not ‘page’, to
-get a form feed.
+   注意: ターミナル以外では、フォーム・フィード(form feed;FF)を取得する
+には ‘page’ ではなく ‘12 Emit’ を使用する必要があることに注意してくださ
+い。
 
 6.20.6.1 Color output
 .....................
 
-The following words are used to create (semantic) colorful output;
-further output is produced in the color and style given by the word; the
-actual color and style depends on the theme (see below).
+以下のワード群は、 意味・理由ごとに色を変えるために使用されます。 更に細
+かい設定は、 ワードによって指定された色とスタイルで生成されます。 実際の
+色とスタイルはテーマによって異なります(下記を参照)。
 
 ‘default-color’ ( –  ) gforth-1.0 “default-color”
-   use system-default color
+   システムのデフォルト用の色
 
 ‘error-color’ ( –  ) gforth-1.0 “error-color”
-   error color: red
+   エラー用の色: (通常は)赤
 
 ‘error-hl-inv’ ( –  ) gforth-1.0 “error-hl-inv”
-   color mod for error highlight inverse
+   エラー用にハイライトとして反転表示するカラーモード
 
 ‘error-hl-ul’ ( –  ) gforth-1.0 “error-hl-ul”
-   color mod for error highlight underline
+   エラー用にアンダーラインでハイライトする色変更モード
 
 ‘warning-color’ ( –  ) gforth-1.0 “warning-color”
-   color for warnings: blue/yellow on black terminals
+   警告(warning)の色: 背景が黒の端末では 青/黄
 
 ‘info-color’ ( –  ) gforth-1.0 “info-color”
-   color for info: green/cyan on black terminals
+   情報(info)用の色: 黒色の背景の端末では 緑/シアン
 
 ‘success-color’ ( –  ) gforth-1.0 “success-color”
-   color for success: green
+   成功(success)の色: 緑
 
 ‘input-color’ ( –  ) gforth-1.0 “input-color”
-   color for user-input: black/white (both bold)
+   ユーザー入力の色: 黒/白 (両方ともボールド)
 
 ‘status-color’ ( –  ) gforth-1.0 “status-color”
-   color mod for error highlight inverse
+   エラー用にハイライトとして反転表示するカラーモード
 
 6.20.6.2 Color themes
 .....................
 
-Depending on wether you prefer bright or dark background the foreground
-colors-theme can be changed by:
+あなたが、 明るい背景を好むか暗い背景を好むかに応じて、 前景の色テーマ
+(foreground colors-theme)を以下のように変更できます:
 
 ‘light-mode’ ( –  ) gforth-1.0 “light-mode”
-   color theme for white background
+   白背景用の色テーマ
 
 ‘dark-mode’ ( –  ) gforth-1.0 “dark-mode”
-   color theme for black background
+   黒背景用の色テーマ
 
 ‘uncolored-mode’ ( –  ) gforth-1.0 “uncolored-mode”
-   This mode does not set colors, but uses the default ones.
+   このモードでは色は設定されませんが、 デフォルトの色が使用されます。
 
 ‘magenta-input’ ( –  ) gforth-1.0 “magenta-input”
-   make input color easily recognizable (useful in presentations)
+   入力色(input color)を認識しやすくします(プレゼンテーションに役立ちま
+す)
 
 
 File: gforth.info,  Node: Single-key input,  Next: Line input and conversion,  Prev: Terminal output,  Up: Other I/O
@@ -457,30 +460,32 @@ File: gforth.info,  Node: Single-key input,  Next: Line input and conversion,  P
 6.20.7 Single-key input
 -----------------------
 
-If you want to get a single printable character, you can use ‘key’; to
-check whether a character is available for ‘key’, you can use ‘key?’.
+単一の印刷可能な文字を取得したい場合は、 ‘key’ を使用できます。 文字が
+‘key’ に使用できるかどうかを確認するには、 ‘key?’ を使用できます。
 
 ‘key’ ( – char  ) core “key”
-   Receive (but do not display) one character, CHAR.
+   1 文字 CHAR を受け取ります(ただし表示はされません)。
 
 ‘key-ior’ ( – char|ior  ) gforth-1.0 “key-ior”
-   Receive (but do not display) one character, CHAR, in case of an error
-or interrupt, return the negative IOR instead.
+   1 文字 CHAR を受け取ります (ただし表示はされません)。 エラーまたは割
+り込みの場合は、 代わりに、 負数の IOR を返します。
 
 ‘key?’ ( – flag  ) facility “key-question”
-   Determine whether a character is available.  If a character is
-available, FLAG is true; the next call to ‘key’ will yield the
-character.  Once ‘key?’ returns true, subsequent calls to ‘key?’ before
-calling ‘key’ or ‘ekey’ will also return true.
+   文字が ‘key’ で使用可能かどうかを判断します。 文字が使用可能な場合、
+FLAG は true です。 次に ‘key’ を呼び出すと、 文字が生成されます。 一度
+‘key?’ が true を返すと、 その後に ‘key’ または ‘ekey’ を呼び出す前に
+‘key?’ を呼び出した場合も true が返されます。
 
 ‘xkey?’ ( – flag  ) xchar “x-key-query”
+\ 訳注: UTF-8 な環境では key? は xkey? のエイリアスです。
+\ xchar 文字が xkey で使用可能かどうかを判断します(たぶん)
 
-   If you want to process a mix of printable and non-printable
-characters, you can do that with ‘ekey’ and friends.  ‘Ekey’ produces a
-keyboard event that you have to convert into a character with
-‘ekey>char’ or into a key identifier with ‘ekey>fkey’.
+   印刷可能な文字と印刷不可能な文字を組み合わせて処理したい場合は、
+‘ekey’ とそのファミリーを使用して実行できます。 ‘ekey’ は、 ‘ekey>char’
+で文字に変換するか、 ‘ekey>fkey’ でキー識別子に変換する必要があるキーボ
+ード・イベントを生成します。
 
-   Typical code for using EKEY looks like this:
+   ekey を使用するための一般的なコードは以下のようになります:
 
      ekey ekey>xchar if ( xc )
        ... \ do something with the character
@@ -496,24 +501,26 @@ keyboard event that you have to convert into a character with
      then then
 
 ‘ekey’ ( – u  ) facility-ext “e-key”
-   Receive a keyboard event U (encoding implementation-defined).
+   キーボード・イベント U を受信します(実装定義のエンコーディングです) 。
 
 ‘ekey>xchar’ ( u – u false | xc true  ) xchar-ext “e-key-to-x-char”
-   Convert keyboard event U into xchar ‘xc’ if possible.
+   可能であれば、 キーボード・イベント U を xchar ‘xc’ に変換します。
 
 ‘ekey>char’ ( u – u false | c true  ) facility-ext “e-key-to-char”
-   Convert keyboard event U into character ‘c’ if possible.  Note that
-non-ASCII characters produce ‘false’ from both ‘ekey>char’ and
-‘ekey>fkey’.  Instead of ‘ekey>char’, use ‘ekey>xchar’ if available.
+   可能であれば、 キーボード・イベント U を文字 ‘c’ に変換します。 注意:
+非 ASCII 文字は、 ‘ekey>char’ と ‘ekey>fkey’ の両方から ‘false’ が返るこ
+とに注意してください。 利用可能な場合は、 ‘ekey>char’ の代わりに
+‘ekey>xchar’ を使用します。
 
 ‘ekey>fkey’ ( u1 – u2 f  ) facility-ext “e-key-to-f-key”
-   If u1 is a keyboard event in the special key set, convert keyboard
-event U1 into key id U2 and return true; otherwise return U1 and false.
+   u1 が特殊キー(special key)セット内のキーボード・イベントの場合、 キー
+ボード・イベント U1 をキー ID U2 に変換し、 true を返します。それ以外の
+場合は、 U1 と false を返します。
 
 ‘ekey?’ ( – flag  ) facility-ext “e-key-question”
-   True if a keyboard event is available.
+   キーボード・イベントが利用可能な場合は True。
 
-   The key identifiers for cursor keys are:
+   カーソル・キーのキー識別子は以下のとおりです:
 
 ‘k-left’ ( – u  ) facility-ext “k-left”
 
@@ -524,22 +531,23 @@ event U1 into key id U2 and return true; otherwise return U1 and false.
 ‘k-down’ ( – u  ) facility-ext “k-down”
 
 ‘k-home’ ( – u  ) facility-ext “k-home”
-   aka Pos1
+   別名 Pos1
 
 ‘k-end’ ( – u  ) facility-ext “k-end”
 
 ‘k-prior’ ( – u  ) facility-ext “k-prior”
-   aka PgUp
+   別名 PgUp
 
 ‘k-next’ ( – u  ) facility-ext “k-next”
-   aka PgDn
+   別名 PgDn
 
 ‘k-insert’ ( – u  ) facility-ext “k-insert”
 
 ‘k-delete’ ( – u  ) facility-ext “k-delete”
-   the <DEL> key on my xterm, not backspace
+   著者の xterm 上では<DEL> キーで、 Backspace ではありません
 
-   The key identifiers for function keys (aka keypad keys) are:
+   ファンクション・キー(別名キーパッド・キー)のキー識別子は以下のとおり
+です:
 
 ‘k-f1’ ( – u  ) facility-ext “k-f-1”
 
@@ -565,10 +573,11 @@ event U1 into key id U2 and return true; otherwise return U1 and false.
 
 ‘k-f12’ ( – u  ) facility-ext “k-f-12”
 
-   Note that ‘k-f11’ and ‘k-f12’ are not as widely available.
+   ‘k-f11’ と ‘k-f12’ はそれほど広くには利用可能ではないことに注意してく
+ださい。
 
-   You can combine these key identifiers with masks for various shift
-keys:
+   これらのキー識別子をさまざまなシフト・キーのマスクと組み合わせること
+ができます:
 
 ‘k-shift-mask’ ( – u  ) facility-ext “k-shift-mask”
 
@@ -576,9 +585,9 @@ keys:
 
 ‘k-alt-mask’ ( – u  ) facility-ext “k-alt-mask”
 
-   There are a number of keys that have ASCII values, and therefore are
-unlikely to be reported as special keys, but the combination of these
-keys with shift keys may be reported as a special key:
+   ASCII 値を持つキーが多数あるため、 特殊キーとして報告される可能性は低
+いですが、 以下のキーとシフト・キーの組み合わせは特殊キーとして報告され
+る可能性があります:
 
 ‘k-enter’ ( – u  ) gforth-1.0 “k-enter”
 
@@ -586,11 +595,11 @@ keys with shift keys may be reported as a special key:
 
 ‘k-tab’ ( – u  ) gforth-1.0 “k-tab”
 
-   Moreover, there the following key codes for keys and other events:
+   さらに、 キーおよびその他のイベントには以下のキー・コードがあります:
 
 ‘k-winch’ ( – u  ) gforth-1.0 “k-winch”
-   A key code that may be generated when the user changes the window
-size.
+   ユーザーがウィンドウ・サイズを変更したときに生成される可能性のあるキ
+ー・コード。
 
 ‘k-pause’ ( – u  ) gforth-1.0 “k-pause”
 
@@ -601,43 +610,41 @@ size.
 ‘k-voldown’ ( – u  ) gforth-1.0 “k-voldown”
 
 ‘k-sel’ ( – u  ) gforth-1.0 “k-sel”
-   keycode for Android selections
+   Androidでの選択(selections)のキー・コード
 
 ‘k-eof’ ( – u  ) gforth-1.0 “k-eof”
 
-   Note that, even if a Forth system has ‘ekey>fkey’ and the key
-identifier words, the keys are not necessarily available or it may not
-necessarily be able to report all the keys and all the possible
-combinations with shift masks.  Therefore, write your programs in such a
-way that they are still useful even if the keys and key combinations
-cannot be pressed or are not recognized.
+   注意: Forth システムに ‘ekey>fkey’ とキー識別子のワードがある場合でも
+、 そのキーが必ずしも利用可能であるとは限らず、 すべてのキーとシフト・マ
+スクとの可能なすべての組み合わせを報告できるとは限らないことに注意してく
+ださい。 したがって、キーやキーの組み合わせが押せない場合や認識されない
+場合でも、プログラムが使えるようにプログラムを作成してください。
 
-   Examples: Older keyboards often do not have an F11 and F12 key.  If
-you run Gforth in an xterm, the xterm catches a number of combinations
-(e.g., <Shift-Up>), and never passes it to Gforth.  Finally, Gforth
-currently does not recognize and report combinations with multiple shift
-keys (so the <shift-ctrl-left> case in the example above would never be
-entered).
+   例: 古いキーボードには F11 キーと F12 キーがないことがよくあります。
+xterm で Gforth を実行すると、xterm は多数の組み合わせ(例: <Shift-Up>)を
+捕捉しますが、それを Gforth に渡すことはありません。 最後に、Gforth は現
+在、 複数の Shift キーの組み合わせを認識して報告しません(そのため、上記
+の例の <shift-ctrl-left> のケースは決して入力されません)。
 
-   Gforth recognizes various keys available on ANSI terminals (in MS-DOS
-you need the ANSI.SYS driver to get that behaviour); it works by
-recognizing the escape sequences that ANSI terminals send when such a
-key is pressed.  If you have a terminal that sends other escape
-sequences, you will not get useful results on Gforth.  Other Forth
-systems may work in a different way.
+   Gforth は、ANSI 端末で利用可能なさまざまなキーを認識します(MS-DOS で
+は、 その動作を実現するには ANSI.SYS ドライバーが必要です)。 これは、 そ
+のようなキーが押されたときに ANSI 端末が送信するエスケープ・シーケンスを
+認識することによって機能します。 他のエスケープ・シーケンスを送信する端
+末を使用している場合、 Gforth では有益な結果は得られません。 他の Forth
+システムは異なる方法で動作する可能性があります。
 
-   Gforth also provides a few words for outputting names of function
-keys:
+   Gforth には、 ファンクション・キーの名前を出力するためのいくつかのワ
+ードも用意されています:
 
 ‘fkey.’ ( u –  ) gforth-1.0 “fkey-dot”
-   Print a string representation for the function key u.  U must be a
-function key (possibly with modifier masks), otherwise there may be an
-exception.
+   ファンクション・キー u の文字列表現を出力します。 U はファンクション
+・キー(おそらく修飾子マスク付き)でなければなりません。 そうでない場合は
+例外が発生する可能性があります。
 
 ‘simple-fkey-string’ ( u1 – c-addr u  ) gforth-1.0 “simple-fkey-string”
-   c-addr u is the string name of the function key u1.  Only works for
-simple function keys without modifier masks.  Any u1 that does not
-correspond to a simple function key currently produces an exception.
+   c-addr u は、ファンクション・キー u1 の文字列名です。 修飾子マスクの
+ない単純なファンクション・キーに対してのみ機能します。 現在、 単純なファ
+ンクション・キーでない u1 では例外を生成します。
 
 
 File: gforth.info,  Node: Line input and conversion,  Next: Pipes,  Prev: Single-key input,  Up: Other I/O
@@ -1579,7 +1586,8 @@ Gforth は追加のローカル変数・スタックを使用します。 この
    doc-lp+!#(訳注: まだ説明書いて無いっぽい)
 ‘lp!’ ( c-addr – ) gforth-internal “lp-store”
 
-‘>l’ ( w – ) gforth-0.2 “to-l” \ 訳注: w をローカル変数スタックにプッシュ
+‘>l’ ( w – ) gforth-0.2 “to-l”
+\ 訳注: w をローカル変数スタックにプッシュ
 
 ‘f>l’ ( r – ) gforth-0.2 “f-to-l”
 
