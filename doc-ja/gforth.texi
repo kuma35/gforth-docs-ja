@@ -2739,7 +2739,7 @@ FP 算術ワードには @code{F} という接頭辞が付きます。 通常の
 では @code{f~abs} と @code{f~rel} も提供しています。
 
 そしてもちろん、 メモリ内の浮動小数点数にアクセスするためのワード(@code{f@@ f!})や、 アドレス演算用のワード(@code{floats
-float+ faligned})もあります。 メモリ内の IEEE 書式の単精度および倍精度数値にアクセスするために、 @code{sf} および
+float+ faligned})もあります。 メモリ内の IEEE 書式の単精度および倍精度数にアクセスするために、 @code{sf} および
 @code{df} プレフィックスを付けた、 これらのワードのバリエーションもあります。 その主な目的は、
 外部浮動小数点数データ(ファイルから読み取られた、 またはファイルに書き込まれるデータなど)にアクセスすることです。
 
@@ -4291,9 +4291,8 @@ integer)として扱われます(例: @code{#-123.} または @code{#-.123} (こ
 
 以下にいくつかの例を示します。 なお、 同値の 10 進数が括弧内に示されています:
 
-@code{$-41} (-65), @code{%1001101} (205), @code{%1001.0001} (145 - 倍精度数(a
-double-precision number)), @code{#905} (905), @code{$abc} (2478),
-@code{$ABC} (2478)
+@code{$-41} (-65), @code{%1001101} (205), @code{%1001.0001} (145 ; 2倍長整数),
+@code{#905} (905), @code{$abc} (2478), @code{$ABC} (2478).
 
 @cindex '-prefix for characters/code points
 @cindex input format for characters/code points
@@ -4744,8 +4743,8 @@ Forth の算術演算はチェックを行いません。 つまり、 加算ま
 
 @c !! cell undefined
 
-デフォルトでは、 Forth の数値は 1 セルのサイズの単精度整数です。 扱い方に応じて、 符号付きまたは符号無しにすることができます。
-単精度整数を認識するためにテキスト・インタプリタで使用されるルールについては、 @ref{Number Conversion} を参照してください。
+デフォルトでは、 Forth の数値は 1 セルのサイズの1倍長整数です。 扱い方に応じて、 符号付きまたは符号無しにすることができます。
+1倍長整数を認識するためにテキスト・インタプリタで使用されるルールについては、 @ref{Number Conversion} を参照してください。
 
 これらのワードは、 すべて符号付きオペランドに対して定義されていますが、 一部のワードは符号無しの数値に対しても機能します: @code{+},
 @code{1+}, @code{-}, @code{1-}, @code{*}
@@ -4840,12 +4839,12 @@ Forth の算術演算はチェックを行いません。 つまり、 加算ま
 @subsection Double precision
 @cindex double precision arithmetic words
 
-テキスト・インタプリタが倍精度整数を認識するために使用するルールについては、 @ref{Number Conversion} を参照してください。
+テキスト・インタプリタが2倍長整を認識するために使用するルールについては、 @ref{Number Conversion} を参照してください。
 
 数値は 2 の補数演算を使用する Gforth で表されるため、符号付き単精度浮動小数点数を (符号付き)
 倍精度浮動小数点に変換するには、最上位セル全体で符号拡張が必要です。 倍精度整数はセルのペアで表され、 上位側のセルが TOS にあります。
-符号無しの単精度整数を倍精度整数に変換するのは簡単で、 @code{0} を TOS にプッシュするだけです。 整数値は Gforth では 2
-の補数表現を使うため、  符号付き単精度整数を(符号付き)倍精度整数に変換するには、 上位側セル全体で符号拡張が必要です。 これは @code{s>d}
+符号無しの1倍長整数を2倍長整数に変換するのは簡単で、 @code{0} を TOS にプッシュするだけです。 整数値は Gforth では 2
+の補数表現を使うため、  符号付き1倍長整数を(符号付き)2倍長整数に変換するには、 上位側セル全体で符号拡張が必要です。 これは @code{s>d}
 を使用して実現できます。 このことから分かるとおり、 それが符号無し整数を表しているのか、 符号有り整数を表しているのか分からなければ、
 数値を変換できないということです。
 
@@ -4976,7 +4975,7 @@ division では、 n1 が n2 増加すると商は常に 1 増加しますが、
 適切な接尾辞を付けた Gforth ワードか、 標準ワードの @code{fm/mod} または @code{sm/rem}
 のいずれかを使用する必要があります。 
 
-単精度セル同士の除算:
+1倍長セル同士の除算:
 
 @findex / ( @var{ n1 n2 -- n   } ) core
 @cindex @code{/}
@@ -5072,7 +5071,7 @@ n3 が余り(modulus)、 n4 が商
 u3 が余り(modulus)、 u4 が商
 
 
-倍精度セルを単精度セルで割って単精度セルの結果を得る; これらのワードは、 一部のアーキテクチャ(AMD64 など)では上記ワードとほぼ同じ速度ですが、
+2倍長セルを1倍長セルで割って1倍長セルの結果を得る; これらのワードは、 一部のアーキテクチャ(AMD64 など)では上記ワードとほぼ同じ速度ですが、
 他のアーキテクチャ(さまざまな Aarch64 CPU など)でははるかに遅くなります。
 
 @findex fm/mod ( @var{ d1 n1 -- n2 n3  } ) core
@@ -5115,7 +5114,7 @@ d=n*u+u1, 0<=u1<u; PolyForth スタイルの混合除算
 @format
 @code{*/} ( @i{( n1 n2 n3 -- n4  }) core ``star-slash''
 @end format
-n4=(n1*n2)/n3 中間結果は倍精度
+n4=(n1*n2)/n3 中間結果は2倍長
 
 
 @findex */s ( @var{ n1 n2 n3 -- n4  } ) gforth-1.0
@@ -5124,7 +5123,7 @@ n4=(n1*n2)/n3 中間結果は倍精度
 @format
 @code{*/s} ( @i{n1 n2 n3 -- n4 }) gforth-1.0 ``star-slash-s''
 @end format
-n4=(n1*n2)/n3 中間結果は倍精度
+n4=(n1*n2)/n3 中間結果は2倍長
 
 @findex */f ( @var{ n1 n2 n3 -- n4  } ) gforth-1.0
 @cindex @code{*/f}
@@ -5132,7 +5131,7 @@ n4=(n1*n2)/n3 中間結果は倍精度
 @format
 @code{*/f} ( @i{n1 n2 n3 -- n4 }) gforth-1.0 ``star-slash-f''
 @end format
-n4=(n1*n2)/n3 中間結果は倍精度
+n4=(n1*n2)/n3 中間結果は2倍長
 
 @findex u*/ ( @var{ u1 u2 u3 -- u4  } ) gforth-1.0
 @cindex @code{u*/}
@@ -5140,7 +5139,7 @@ n4=(n1*n2)/n3 中間結果は倍精度
 @format
 @code{u*/} ( @i{u1 u2 u3 -- u4 }) gforth-1.0 ``u-star-slash''
 @end format
-u4=(u1*u2)/u3 中間結果は倍精度
+u4=(u1*u2)/u3 中間結果は2倍長
 
 @findex */mod ( @var{ n1 n2 n3 -- n4 n5   } ) core
 @cindex @code{*/mod}
@@ -5148,7 +5147,7 @@ u4=(u1*u2)/u3 中間結果は倍精度
 @format
 @code{*/mod} ( @i{n1 n2 n3 -- n4 n5  }) core ``star-slash-mod''
 @end format
-n1*n2=n3*n5+n4 中間結果(n1*n2)は倍精度、 n4 は剰余、 n5 は商。
+n1*n2=n3*n5+n4 中間結果(n1*n2)は2倍長、 n4 は剰余、 n5 は商。
 
 
 @findex */mods ( @var{ n1 n2 n3 -- n4 n5  } ) gforth-1.0
@@ -5157,7 +5156,7 @@ n1*n2=n3*n5+n4 中間結果(n1*n2)は倍精度、 n4 は剰余、 n5 は商。
 @format
 @code{*/mods} ( @i{n1 n2 n3 -- n4 n5 }) gforth-1.0 ``star-slash-mod-s''
 @end format
-n1*n2=n3*n5+n4, 中間結果(n1*n2)は倍精度、 n4 は余り(remainder)、 n5 は商
+n1*n2=n3*n5+n4, 中間結果(n1*n2)は2倍長、 n4 は余り(remainder)、 n5 は商
 
 @findex */modf ( @var{ n1 n2 n3 -- n4 n5  } ) gforth-1.0
 @cindex @code{*/modf}
@@ -5165,7 +5164,7 @@ n1*n2=n3*n5+n4, 中間結果(n1*n2)は倍精度、 n4 は余り(remainder)、 n5
 @format
 @code{*/modf} ( @i{n1 n2 n3 -- n4 n5 }) gforth-1.0 ``star-slash-mod-f''
 @end format
-n1*n2=n3*n5+n4 中間結果(n1*n2)は倍精度。 n4 余り(modulus)、n5 は商
+n1*n2=n3*n5+n4 中間結果(n1*n2)は2倍長。 n4 余り(modulus)、n5 は商
 
 @findex u*/mod ( @var{ u1 u2 u3 -- u4 u5  } ) gforth-1.0
 @cindex @code{u*/mod}
@@ -5173,7 +5172,7 @@ n1*n2=n3*n5+n4 中間結果(n1*n2)は倍精度。 n4 余り(modulus)、n5 は商
 @format
 @code{u*/mod} ( @i{u1 u2 u3 -- u4 u5 }) gforth-1.0 ``u-star-slash-mod''
 @end format
-u1*u2=u3*u5+u4 中間結果(u1*u2)は倍精度。
+u1*u2=u3*u5+u4 中間結果(u1*u2)は2倍長。
 
 
 除算結果を2倍長セル(double-cell)で得ます。 以下のワード群は上記のワード群よりもはるかに遅いです。
@@ -5184,7 +5183,7 @@ u1*u2=u3*u5+u4 中間結果(u1*u2)は倍精度。
 @format
 @code{ud/mod} ( @i{ud1 u2 -- urem udquot  }) gforth-0.2 ``ud/mod''
 @end format
-符号無し倍精度 @i{ud1} を @i{u2} で割る。 結果は、符号なし倍精度の商 @i{udquot} と、 単精度の余り(remainder)
+符号無し2倍長 @i{ud1} を @i{u2} で割る。 結果は、符号なし2倍長の商 @i{udquot} と、 1倍長の余り(remainder)
 @i{urem} です。
 
 
@@ -5194,7 +5193,7 @@ u1*u2=u3*u5+u4 中間結果(u1*u2)は倍精度。
 @format
 @code{m*/} ( @i{d1 n2 u3 -- dquot  }) double ``m-star-slash''
 @end format
-dquot=(d1*n2)/u3,  中間結果は3倍精度です。 ANS Forth では u3 は正の符号付き数値のみです。
+dquot=(d1*n2)/u3,  中間結果は3倍長です。 ANS Forth では u3 は正の符号付き数値のみです。
 
 
 
@@ -8567,7 +8566,7 @@ $addr によって参照されるメモリ領域の最後に u バイト用の�
 @format
 @code{$free} ( @i{$addr --  }) gforth-1.0 ``string-free''
 @end format
-$addr が指す文字列を解放し、  $addr のポインタを 0 にします( $@ すると 0 0 を返す)
+$addr が指す文字列を解放し、  $addr のポインタを 0 にします( $@@ すると 0 0 を返す)
 
 
 @findex $init ( @var{ $addr --   } ) gforth-1.0
@@ -10492,7 +10491,7 @@ myvariable0 joe \ whilst joe is initialised to 0
 を定義する必要はありません。 標準 Forth は、 @code{Variable} が作成時に初期化されることを保証しません(つまり、
 @code{myvariableX} のように振る舞う可能性があります)。 対照的に、Gforth の @code{Variable} は変数を 0
 に初期化します(つまり、 @code{myvariable0} とまったく同じように振る舞います)。 Forth は、
-倍精度変数と浮動小数点変数に対して、 それぞれ @code{2Variable} と @code{fvariable} も提供します。
+2倍長変数と浮動小数点変数に対して、 それぞれ @code{2Variable} と @code{fvariable} も提供します。
 これらは、Gforth ではそれぞれ 0. と 0e に初期化されます。 @code{Variable} を使用してブール値を保存する場合、
 @code{on} と @code{off} を使用してその状態を切り替えることができます。
 
@@ -13285,7 +13284,7 @@ semantics)が現在の定義に追加されることを意味します。
 @code{#tib} ( @i{-- addr  }) core-ext-obsolescent ``number-t-i-b''
 @end format
 @code{uvar} 変数 -- @i{a-addr} は、 端末の入力バッファー内の文字数を含むセルのアドレスです。
-OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください。
+時代遅れ(OBSOLESCENT): @code{source} はこのワードの機能を置き換えます。
 
 
 
@@ -13390,7 +13389,7 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @code{query} ( @i{--  }) core-ext-obsolescent ``query''
 @end format
 ユーザー入力デバイスを入力ソースにします。 入力を端末入力バッファー(Terminal Input Buffer)で受け取ります。 @code{>IN}
-をゼロに設定します。 OBSOLESCENT(時代遅れ): 代わりに @code{accept} を使ってください。
+をゼロに設定します。 時代遅れ(OBSOLESCENT): @code{accept} で置き換えられました。
 
 
 
@@ -13471,7 +13470,7 @@ OBSOLESCENT(時代遅れ): 代わりに @code{source} を使ってください�
 @item
 @code{bin} というワードがありますが、 これは基数を設定するものではありません(@pxref{General files})。
 @item
-標準 Forth では、 2倍長数値の @code{.} が文字列の最後の文字である必要があります。  Gforth では @code{.}
+標準 Forth では、 2倍長整数の @code{.} が文字列の最後の文字である必要があります。  Gforth では @code{.}
 をどこにでも置くことができます。
 @item
 数値変換プロセスではオーバーフローはチェックされません。
@@ -13590,7 +13589,7 @@ flag が @code{TRUE} の場合は何もしません(したがって、 後続の
 @code{[ELSE]}.. @code{[THEN]} や @code{[IF]}.. @code{[THEN]}
 の入れ子になったモノを含むパース領域(入力バッファー/パース領域 は、 必要に応じて @code{REFILL}
 を使用して再充填します)からワードをパースして破棄します。 @code{FALSE} の場合、@code{[IF]} は @code{[ELSE]}
-を解析して破棄し、後続のワードは通常どおり実行されたままになります。 即実行ワードです。
+をパースして破棄し、後続のワードは通常どおり実行されたままになります。 即実行ワードです。
 
 
 @findex [THEN] ( @var{ --   } ) tools-ext
@@ -14284,7 +14283,7 @@ ccc type ccc ok})
 @end format
 先頭の区切り文字をスキップします。 パース領域で @i{char} で区切られた @i{ccc} をパースします。 @i{c-addr} は、
 カウンタ付き文字列形式で、 パースされた文字列を格納する一時領域のアドレスです。 パース領域が空であるか、 区切り文字以外の文字が含まれてい無い場合、
-結果の文字列の長さはゼロになります。 プログラムは、 カウンタ付き文字列内の文字を置き換える場合があります。 OBSOLESCENT(時代遅れ):
+結果の文字列の長さはゼロになります。 プログラムは、 カウンタ付き文字列内の文字を置き換える場合があります。 時代遅れ(OBSOLESCENT):
 カウンタ付き文字列の末尾に、 その長さに含まれないスペースがあります。
 
 
@@ -14940,7 +14939,7 @@ true ならば、 @code{/} などで、 フロア除算(floored division)を実�
 @format
 @code{MAX-D} ( @i{-- d  }) environment ``MAX-D''
 @end format
-使用可能な符号付き2倍長数の最大値。
+使用可能な符号付き2倍長整数の最大値。
 
 
 @findex MAX-UD ( @var{ -- ud   } ) environment
@@ -14949,7 +14948,7 @@ true ならば、 @code{/} などで、 フロア除算(floored division)を実�
 @format
 @code{MAX-UD} ( @i{-- ud  }) environment ``MAX-UD''
 @end format
-使用可能な符号なし2倍長数の最大値。
+使用可能な符号なし2倍長整数の最大値。
 
 
 @findex return-stack-cells ( @var{ -- n   } ) environment
@@ -16490,10 +16489,10 @@ options})に構築される文字列の先頭に付加されます。 抽出プ�
 
 @itemize @bullet
 @item
-常に2倍長数を処理します。 1倍長数を表示するには、 まず最初に2倍長に変換します (これを行う方法は @pxref{Double
+常に2倍長整数を処理します。 1倍長整数を表示するには、 まず最初に2倍長に変換します (これを行う方法は @pxref{Double
 precision})。
 @item
-倍精度数は常に符号無しであるかのように扱われます。 下記の例は、 符号付き数値を出力する方法を示しています。
+2倍長整数は常に符号無しであるかのように扱われます。 下記の例は、 符号付き数値を出力する方法を示しています。
 @item
 文字列は右から左に構築されます。 最下位桁が最初です。
 @end itemize
@@ -16503,7 +16502,7 @@ precision})。
 
 Gforth はさらに、 このバッファーの入れ子になった使用をサポートしており、 たとえば、 ホールド領域を処理するコード内でデバッグ・トレーサー
 @code{~~} からの出力を入れ子にすることができます。 @code{<<#} は新しい入れ子を開始し、  @code{#>}
-は結果文字列を生成し、 @code{#>>} は入れ子を解除します。 入れ子の保ホールド領域が再利用され、@code{#>}
+は結果文字列を生成し、 @code{#>>} は入れ子を解除します。 入れ子のホールド領域が再利用され、@code{#>}
 は次に外側の入れ子の文字列を生成します。  Gforth の高レベルの数値出力ワードはすべて @code{<<#} ... @code{#>}
 ... @code{#>>} を使用し、 ホールド領域の他のユーザー内に入れ子にできます。
 
@@ -16513,7 +16512,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
 @format
 @code{<#} ( @i{--  }) core ``less-number-sign''
 @end format
-表示数値出力文字列を 初期化/クリア します。
+表示数値出力文字列を 初期化/クリア します(訳注: 表示数値出力用のポインタをホールド領域の末尾(初期値)に戻すだけ。 中身は消さない。)
 
 
 @findex <<# ( @var{ --   } ) gforth-0.5
@@ -16572,7 +16571,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
 @format
 @code{sign} ( @i{n --  }) core ``sign''
 @end format
-@code{<<#} と @code{#>} の間で使用されます。 @var{n} (1倍長数) が負の場合、 表示数値出力文字列の先頭に
+@code{<<#} と @code{#>} の間で使用されます。 @var{n} (1倍長整数) が負の場合、 表示数値出力文字列の先頭に
 @code{-} を追加します。
 
 
@@ -16582,7 +16581,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
 @format
 @code{#>} ( @i{xd -- addr u  }) core ``number-sign-greater''
 @end format
-@var{xd} を破棄し、 フォーマットされた文字列のアドレスと長さを示す @var{addr u} を返すことで、
+変換対象(変換残りの)数値 @var{xd} を破棄し、 フォーマットされた文字列のアドレスと長さを示す @var{addr u} を返すことで、
 表示数値出力文字列を完成させます。 標準のプログラムでは、 文字列内の文字を変更する場合があります。  ホールド領域は解放されません。
 @code{#>>} を使用して @code{<<#} で始まるホールド領域を解放するか、 @code{<#}
 を使用してすべてのホールド領域を解放します。
@@ -16612,7 +16611,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
   #>> ;          \ ホールド領域を開放
 
 : cents-only ( u -- )
-  0              \ 上記 u を 2倍長数に変換
+  0              \ 上記 u を 2倍長整数に変換
   <<#            \ 変換開始
   # #            \ 最下位と最下位からの次の 2 桁のみ変換
   #>             \ 変換完了。他の桁は破棄
@@ -16620,7 +16619,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
   #>> ;          \ ホールド領域を開放
 
 : dollars-and-cents ( u -- )
-  0              \ 上記 u を符号無し2倍長数に変換
+  0              \ 上記 u を符号無し2倍長整数に変換
   <<#            \ 変換開始
   # #            \ 下位2桁を変換
   '.' hold       \ 小数点を打つ
@@ -16632,7 +16631,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
 
 : my-. ( n -- )
   \ 負数も処理する標準の . のように振る舞う
-  s>d            \ 符号付き2倍長数に変換
+  s>d            \ 符号付き2倍長整数に変換
   swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
   <<#            \ 変換開始
   #s             \ 全桁を変換
@@ -16644,7 +16643,7 @@ Gforth はさらに、 このバッファーの入れ子になった使用をサ
 : account. ( n -- )
   \ (会計風出力)会計士はマイナス記号が嫌いで、
   \ 負の数には括弧を使用します
-  s>d            \ 符号付き2倍長数に変換
+  s>d            \ 符号付き2倍長整数に変換
   swap over dabs \ 符号バイトを別途保存して数値は符号無し2倍長に
   <<#            \ 変換開始
   2 pick         \ 符号バイトのコピーを得る
@@ -16811,7 +16810,7 @@ hex -1 my-u. decimal FFFFFFFFFFFFFFFF  ok
 @code{f>buf-rdp} ( @i{rf c-addr +nr +nd +np --  }) gforth-0.6 ``f>buf-rdp''
 @end format
 @i{rf} を @i{c-addr nr} の文字列に変換します。  @i{nr nd np} の変換規則と意味は @code{f.rdp}
-と同じです(
+と同じです。
 
 
 
@@ -16888,7 +16887,7 @@ C言語のようなバックスラッシュによるエスケープ・シーケ�
 @format
 @code{."} ( @i{compilation 'ccc"' -- ; run-time --  }) core ``dot-quote''
 @end format
-コンパイル時: `"` (二重引用符)で区切られた文字列 @i{ccc} を解析します。 実行時、 その文字列を表示します。
+コンパイル時: `"` (二重引用符)で区切られた文字列 @i{ccc} をパースします。 実行時、 その文字列を表示します。
 このワードのインタプリタ機能(interpretation semantics)は、 標準 Forth では定義されていません。 Gforth
 でのインタプリタ機能(interpretation semantics)は、 その文字列を表示することです。
 
@@ -16900,7 +16899,7 @@ C言語のようなバックスラッシュによるエスケープ・シーケ�
 @code{.(} ( @i{compilation&interpretation "ccc<paren>" --  }) core-ext ``dot-paren''
 @end format
 コンパイル時(compilation semantics)とインタプリタ時(interpretation semantics):
-@code{)}(右括弧)で区切られた文字列 @i{ccc} を解析します。 その文字列を表示します。 これは、
+@code{)}(右括弧)で区切られた文字列 @i{ccc} をパースします。 その文字列を表示します。 これは、
 コンパイル中に進行状況情報を表示するためによく使用されます。 下記の例を参照してください。
 
 
@@ -17252,7 +17251,7 @@ then then
 @format
 @code{ekey} ( @i{-- u  }) facility-ext ``e-key''
 @end format
-キーボード・イベント @var{u} を受信します(実装定義のエンコーディングです) 。
+キーボード・イベント @var{u} を受け取りす(実装定義のエンコーディングです) 。
 
 
 @findex ekey>xchar ( @var{ u -- u false | xc true   } ) xchar-ext
@@ -17615,13 +17614,12 @@ Gforth には、 ファンクション・キーの名前を出力するための
 @cindex convertin strings to numbers
 @cindex I/O - see input
 
-For ways of storing character strings in memory see @ref{String
-representations}.
+文字列をメモリに保存する方法については、 @ref{String representations} を参照してください。
 
 @comment TODO examples for >number >float accept key key? pad parse word refill
 @comment then index them
 
-Words for inputting one line from the keyboard:
+キーボードから一行入力するためのワード群:
 
 @findex accept ( @var{ c-addr +n1 -- +n2   } ) core
 @cindex @code{accept}
@@ -17629,11 +17627,10 @@ Words for inputting one line from the keyboard:
 @format
 @code{accept} ( @i{c-addr +n1 -- +n2  }) core ``accept''
 @end format
-Get a string of up to @var{n1} characters from the user input device and
-store it at @var{c-addr}.  @var{n2} is the length of the received
-string. The user indicates the end by pressing @key{RET}.  Gforth supports
-all the editing functions available on the Forth command line (including
-history and word completion) in @code{accept}.
+ユーザー入力デバイスから最大 @var{n1} 文字の文字列を取得し、 @var{c-addr} に保存します。  @var{n2}
+は受け取った文字列の長さです。 ユーザーは @key{RET} を押して終了を指示します。  Gforth は、 @code{accept} で、
+Forth コマンド・ラインで利用できるすべての編集機能(履歴やワード補完を含む)をサポートしています(訳注:
+ターミナルでの日本語入力は受け付けない)。
 
 
 @findex edit-line ( @var{ c-addr n1 n2 -- n3   } ) gforth-0.6
@@ -17642,12 +17639,13 @@ history and word completion) in @code{accept}.
 @format
 @code{edit-line} ( @i{c-addr n1 n2 -- n3  }) gforth-0.6 ``edit-line''
 @end format
-edit the string with length @var{n2} in the buffer @var{c-addr n1}, like
-@code{accept}.
+@code{accept} のように振る舞いますが、バッファ @var{c-addr n1} の内容を先頭から長さ @i{n2} まで引用します(
+@i{n2}=0 の場合、 全く引用せず、 空の状態から入力編集開始になります)。 受け取った文字列の長さを @i{n3} に返します(訳注:
+ターミナルでの日本語入力は受け付けない)。
 
 
 
-Conversion words:
+変換ワード群:
 
 @findex s>number? ( @var{ addr u -- d f   } ) gforth-0.5
 @cindex @code{s>number?}
@@ -17655,7 +17653,9 @@ Conversion words:
 @format
 @code{s>number?} ( @i{addr u -- d f  }) gforth-0.5 ``s>number?''
 @end format
-converts string addr u into d, flag indicates success
+文字列 @i{addr u} を 符号付き2倍長整数 @i{d} に変換し、 フラグ @i{f} が true ならば成功、 false
+ならば変換失敗です( @i{d} の値は保証されません) (訳注: フラグが true の場合でも @code{-15.}
+基数プレフィックスを付けずに記述した場合、 警告が出力されます。 警告が出ないようにするには基数プレフィックスを付けて下さい @code{#-15.})
 
 
 @findex s>unumber? ( @var{ c-addr u -- ud flag   } ) gforth-0.5
@@ -17664,7 +17664,13 @@ converts string addr u into d, flag indicates success
 @format
 @code{s>unumber?} ( @i{c-addr u -- ud flag  }) gforth-0.5 ``s>unumber?''
 @end format
-converts string c-addr u into ud, flag indicates success
+文字列 @i{c-addr u} を 符号なし2倍長整数 @i{ud} に変換します。 フラグ @i{f} が true ならば成功、 false
+ならば変換失敗です( @i{d} の値は保証されません)。 (訳注: フラグが true の場合でも @code{15.}
+基数プレフィックスを付けずに記述した場合、 警告が出力されます。 警告が出ないようにするには基数プレフィックスを付けて下さい @code{#15.} 、
+注意: 負数も受け付けます; "#-15." s>unumber? .s <3> -15 -1 -1  ok  drop -15 -1
+ud. 340282366920938463463374607431768211441  ok
+"#340282366920938463463374607431768211441." s>unumber? .s <3> -15 -1 -1 ok 3
+)
 
 
 @findex >number ( @var{ ud1 c-addr1 u1 -- ud2 c-addr2 u2   } ) core
@@ -17673,17 +17679,12 @@ converts string c-addr u into ud, flag indicates success
 @format
 @code{>number} ( @i{ud1 c-addr1 u1 -- ud2 c-addr2 u2  }) core ``to-number''
 @end format
-Attempt to convert the character string @var{c-addr1 u1} to an unsigned
-number in the current number base. The double @var{ud1} accumulates the
-result of the conversion to form @var{ud2}. Conversion continues,
-left-to-right, until the whole string is converted or a character that is
-not convertable in the current number base is encountered (including + or
--). For each convertable character, @var{ud1} is first multiplied by the
-value in @code{BASE} and then incremented by the value represented by the
-character. @var{c-addr2} is the location of the first unconverted character
-(past the end of the string if the whole string was converted). @var{u2} is
-the number of unconverted characters in the string. Overflow is not
-detected.
+文字列 @var{c-addr1 u1} を現在の基数で符号なし2倍長整数に変換しようと試みます。 符号なし2倍長整数 @var{ud1}
+に変換結果を積算して @var{ud2} にします。 変換は、 文字列全体が変換されるか、 現在の基数で変換できない文字( `+` または `-`
+を含む)が検出されるまで、 左から右に続行されます。 変換可能な各文字ごとに、 @var{ud1} * @code{base} してから、
+次にその文字によって表される値を足しこみます( new ud1 = ud1 * base + digit )。  @var{c-addr2} は、
+最初の未変換文字の位置です(文字列全体が変換された場合は文字列の末尾以降)。  @var{u2} は、 文字列内の未変換の文字の数です。
+最後まで変換出来たときは 0 です。 オーバーフローは検出されません。
 
 
 @findex >float ( @var{ c-addr u -- f:... flag  } ) floating
@@ -17692,12 +17693,10 @@ detected.
 @format
 @code{>float} ( @i{c-addr u -- f:... flag }) floating ``to-float''
 @end format
-Actual stack effect: ( c_addr u -- r t | f ).  Attempt to convert the
-character string @i{c-addr u} to internal floating-point representation. If
-the string represents a valid floating-point number, @i{r} is placed on the
-floating-point stack and @i{flag} is true. Otherwise, @i{flag} is false. A
-string of blanks is a special case and represents the floating-point number
-0.
+実際のスタック効果: ( c_addr u -- r t | f )。  文字列 @i{c-addr u} を内部浮動小数点表現に変換しようとします。
+文字列が有効な浮動小数点数を表す場合、 @i{r} が浮動小数点スタックに配置され、 @i{flag} が true になります。
+それ以外の場合、@i{flag} は false になります(訳注: この場合、 浮動小数点数スタックには何も積まれない)。
+空白の文字列は特殊なケースであり、 浮動小数点数 0 を表します。
 
 @findex >float1 ( @var{ c-addr u c -- f:... flag  } ) gforth-1.0
 @cindex @code{>float1}
@@ -17705,16 +17704,15 @@ string of blanks is a special case and represents the floating-point number
 @format
 @code{>float1} ( @i{c-addr u c -- f:... flag }) gforth-1.0 ``to-float1''
 @end format
-Actual stack effect: ( c_addr u c -- r t | f ).  Attempt to convert the
-character string @i{c-addr u} to internal floating-point representation,
-with @i{c} being the decimal separator.  If the string represents a valid
-floating-point number, @i{r} is placed on the floating-point stack and
-@i{flag} is true. Otherwise, @i{flag} is false. A string of blanks is a
-special case and represents the floating-point number 0.
+実際のスタック効果: ( c_addr u c -- r t | f )  @i{c} を小数点として使用して(訳注: '.'
+が小数点とは限らない。ロケールにより異なるため、指定できるようになっている)、 文字列 @i{c-addr u}
+を内部浮動小数点表現に変換しようと試みます。  文字列が有効な浮動小数点数を表す場合、 @i{r} が浮動小数点スタックに配置され、 @i{flag}
+が true になります。 それ以外の場合、@i{flag} は false になります(この場合、浮動小数点数スタックには何も積まれません)。
+空白の文字列は特殊なケースであり、浮動小数点数 0 を表します。
 
 
 @comment obsolescent words..
-Obsolescent input and conversion words:
+時代遅れ(OBSOLESCENT)の入力ワード群と変換ワード群:
 
 @findex convert ( @var{ ud1 c-addr1 -- ud2 c-addr2   } ) core-ext-obsolescent
 @cindex @code{convert}
@@ -17722,7 +17720,7 @@ Obsolescent input and conversion words:
 @format
 @code{convert} ( @i{ud1 c-addr1 -- ud2 c-addr2  }) core-ext-obsolescent ``convert''
 @end format
-Obsolescent: superseded by @code{>number}.
+時代遅れ(OBSOLESCENT): @code{>number} に置き換えられました。
 
 
 @findex expect ( @var{ c-addr +n --   } ) core-ext-obsolescent
@@ -17731,12 +17729,10 @@ Obsolescent: superseded by @code{>number}.
 @format
 @code{expect} ( @i{c-addr +n --  }) core-ext-obsolescent ``expect''
 @end format
-Receive a string of at most @i{+n} characters, and store it in memory
-starting at @i{c-addr}. The string is displayed. Input terminates when the
-<return> key is pressed or @i{+n} characters have been received. The normal
-Gforth line editing capabilites are available. The length of the string is
-stored in @code{span}; it does not include the <return>
-character. OBSOLESCENT: superceeded by @code{accept}.
+最大 @i{+n} 文字の文字列を受け取り、@i{c-addr} から始まるメモリに保存します。 文字列は表示されます。
+<return>キーを押すか、 @i{+n} 文字を受け取ると入力が終了します。 通常の Gforth 行編集機能が利用可能です。 文字列の長さは
+@code{span} に保存されますが、 <return> 文字は含まれません。 時代遅れ(OBSOLESCENT): @code{accept}
+に置き換えられました。
 
 
 @findex span ( @var{ -- c-addr   } ) core-ext-obsolescent
@@ -17745,8 +17741,8 @@ character. OBSOLESCENT: superceeded by @code{accept}.
 @format
 @code{span} ( @i{-- c-addr  }) core-ext-obsolescent ``span''
 @end format
-@code{Variable} -- @i{c-addr} is the address of a cell that stores the
-length of the last string received by @code{expect}. OBSOLESCENT.
+変数(variable) -- @i{c-addr} は、 @code{expect}
+によって最後に受け取った文字列の長さを格納するセルのアドレスです。 時代遅れ(OBSOLESCENT)。
 
 
 
@@ -17755,9 +17751,8 @@ length of the last string received by @code{expect}. OBSOLESCENT.
 @subsection Pipes
 @cindex pipes, creating your own
 
-In addition to using Gforth in pipes created by other processes
-(@pxref{Gforth in pipes}), you can create your own pipe with
-@code{open-pipe}, and read from or write to it.
+他のプロセスによって作成されたパイプライン(@pxref{Gforth in pipes})を Gforth で使用することに加えて、 あなたは
+@code{open-pipe} を使用してあなた独自のパイプラインを作成し、 読み書きすることができます。
 
 @findex open-pipe ( @var{ c-addr u wfam -- wfileid wior  } ) gforth-0.2
 @cindex @code{open-pipe}
@@ -17774,12 +17769,11 @@ In addition to using Gforth in pipes created by other processes
 @end format
 
 
-If you write to a pipe, Gforth can throw a @code{broken-pipe-error}; if you
-don't catch this exception, Gforth will catch it and exit, usually silently
-(@pxref{Gforth in pipes}).  Since you probably do not want this, you should
-wrap a @code{catch} or @code{try} block around the code from
-@code{open-pipe} to @code{close-pipe}, so you can deal with the problem
-yourself, and then return to regular processing.
+パイプラインに書き込む場合、 Gforth は @code{broken-pipe-error} を throw する可能性があります。 あなたが、
+この例外をキャッチしない場合、 Gforth は例外をキャッチして通常は黙って(silently)に終了(exit)します(@pxref{Gforth
+in pipes})。 しかし、 おそらくこれはあなたの望む事ではないので、 @code{open-pipe} から @code{close-pipe}
+までのコードを @code{catch} または @code{try} ブロックで囲むべきです。 そして、 あなた自身で問題を解決し、
+通常の処理に戻します。
 
 @findex broken-pipe-error ( @var{ -- n   } ) gforth-0.6
 @cindex @code{broken-pipe-error}
@@ -17787,7 +17781,7 @@ yourself, and then return to regular processing.
 @format
 @code{broken-pipe-error} ( @i{-- n  }) gforth-0.6 ``broken-pipe-error''
 @end format
-the error number for a broken pipe
+壊れたパイプラインのエラー番号
 
 
 
