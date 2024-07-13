@@ -8482,7 +8482,8 @@ string;カウンタがセルサイズであるカウンタ付き文字列)への
 @format
 @code{$!} ( @i{addr1 u $addr --  }) gforth-0.7 ``string-store''
 @end format
-新しく割り当てられた文字列バッファーをアドレス($addr)が指す先に格納し、 必要に応じて以前のバッファーを解放します。
+文字列 @i{addr1 u} を、 新しく割り当てられた文字列バッファーに格納し、 その文字列バッファーのアドレスを @i{$addr}
+に格納します。 必要に応じて以前のバッファーを解放します。
 
 
 @findex $@@ ( @var{ $addr -- addr2 u   } ) gforth-0.7
@@ -17788,50 +17789,41 @@ in pipes})。 しかし、 おそらくこれはあなたの望む事ではな�
 @node Xchars and Unicode, i18n and l10n, Pipes, Other I/O
 @subsection Xchars and Unicode
 
-ASCII is only appropriate for the English language. Most western languages
-however fit somewhat into the Forth frame, since a byte is sufficient to
-encode the few special characters in each (though not always the same
-encoding can be used; latin-1 is most widely used, though). For other
-languages, different char-sets have to be used, several of them
-variable-width.  To deal with this problem, characters are often represented
-as Unicode codepoints on the stack, and as UTF-8 byte strings in memory.  An
-Unicode codepoint often represents one application-level character, but
-Unicode also supports decomposed characters that consist of several code
-points, e.g., a base letter and a combining diacritical mark.
+ASCII は英語(English language)にのみ適しています。 ただし、 ほとんどの西洋言語(western
+languages)は、それぞれの少数の特殊文字をエンコードするには 1 バイトで十分であるため、 Forth
+の枠組みにある程度適合します(ただし、常に同じエンコードを使用できるとは限りません。 ただし、 latin-1 が最も広く使用されています)。
+他の言語の場合は、 異なる文字セットを使用する必要があり、その一部は可変幅です。  この問題に対処するために、
+文字はスタック上ではユニコード・コードポイント(Unicode codepoints)として表され、 メモリ内では UTF-8
+バイト文字列として表されることがよくあります。 ユニコード・コードポイントは、 多くの場合、 1 つのアプリケーション・ レベル(one
+application-level character)の文字を表しますが、 ユニコードは、基本文字(base
+letter)と結合発音記号(combining diacritical mark)など、
+複数のコード・ポイントで構成される分解文字(combining diacritical mark)もサポートします。
 
-An Unicode codepoint can consume more than one byte in memory, so we adjust
-our terminology: A char is a raw byte in memory or a value in the range
-0-255 on the stack.  An xchar (for extended char) stands for one codepoint;
-it is represented by one or more bytes in memory and may have larger values
-on the stack.  ASCII characters are the same as chars and as xchars: values
-in the range 0-127, and a single byte with that value in memory.
+ユニコード・コードポイントはメモリ内の複数バイトを消費する可能性があるため、 ここで我々の用語をすり合わせしておきましょう: char
+はメモリ内の生のバイト、 またはスタック上の 0 ～ 255 の範囲の値です。  xchar (extended char) は 1
+つのコードポイントを表します。 これはメモリ内の 1 バイト以上で表され、 スタック上にはより大きな値が存在する可能性があります。  ASCII 文字は
+char や xchar と同一です。 つまり、0 ～ 127 の範囲の値、 かつ、 メモリ内のその値を含む 1 バイトです。
 
-When using UTF-8 encoding, all other codepoints take more than one
-byte/char.  In most cases, you can just treat such characters as strings in
-memory and don't need to use the following words, but if you want to deal
-with individual codepoints, the following words are useful.  We currently
-have no words for dealing with decomposed characters.
+UTF-8 エンコードを使用する場合、 他のすべてのコードポイントは 1 文字あたり 1 バイト以上必要になります。  ほとんどの場合、
+このような文字はメモリ内の文字列として扱うだけでよく、 以下のワード群を使用する必要はありませんが、 個々のコードポイントを処理したい場合は、
+以下のワード群が役に立ちます。  現時点では、 分解文字(decomposed characters)を扱うためのワードはありません。
 
-The xchar words add a few data types:
+xchar ワード群はいくつかのデータ型を追加します:
 
 @itemize
 
 @item
-@var{xc} is an extended char (xchar) on the stack. It occupies one cell, and
-is a subset of unsigned cell.  On 16 bit systems, only the BMP subset of the
-Unicode character set (i.e., codepoints <65536) can be represented on the
-stack.  If you represent your application characters as strings at all
-times, you can avoid this limitation.
+@var{xc} はスタック上の拡張文字(xchar)です。 これは 1 つのセルを占有し、 符号なしセルのサブセットです。  16
+ビット・システムでは、 ユニコード文字セットの BMP サブセット (つまり、 コードポイント<65536)のみがスタック上で表現できます。
+アプリケーション文字(application characters)を常に文字列として表現すると、 この制限を回避できます。
 
 @item
-@var{xc-addr} is the address of an xchar in memory. Alignment requirements
-are the same as @var{c-addr}. The memory representation of an xchar differs
-from the stack representation, and depends on the encoding used. An xchar
-may use a variable number of chars in memory.
+@var{xc-addr} はメモリ内の xchar のアドレスです。 アライメント要件は @var{c-addr} と同じです。  xchar
+のメモリ表現はスタック表現とは異なり、 使用されるエンコーディングによって異なります。 xchar はメモリ内で可変数の char を使用できます。
 
 @item
-@var{xc-addr} @var{u} is a buffer of xchars in memory, starting at
-@var{xc-addr}, @var{u} chars (i.e., bytes, not xchars) long.
+@var{xc-addr} @var{u} はメモリ内の xchar のバッファで、@var{xc-addr} で始まり @var{u} char
+(つまり、 xchar ではなくバイト)の長さになります。
 
 @end itemize
 
@@ -17841,7 +17833,7 @@ may use a variable number of chars in memory.
 @format
 @code{xc-size} ( @i{xc -- u  }) xchar ``x-c-size''
 @end format
-Computes the memory size of the xchar @var{xc} in chars.
+xchar @var{xc} のメモリ・サイズを char で計算します。
 
 
 @findex x-size ( @var{ xc-addr u1 -- u2   } ) xchar
@@ -17850,8 +17842,7 @@ Computes the memory size of the xchar @var{xc} in chars.
 @format
 @code{x-size} ( @i{xc-addr u1 -- u2  }) xchar ``x-size''
 @end format
-Computes the memory size of the first xchar stored at @var{xc-addr} in
-chars.
+@var{xc-addr} に格納されている最初の xchar のメモリ・サイズを char で計算します。
 
 
 @findex xc@@ ( @var{ xc-addr -- xc   } ) xchar-ext
@@ -17860,7 +17851,7 @@ chars.
 @format
 @code{xc@@} ( @i{xc-addr -- xc  }) xchar-ext ``xc-fetch''
 @end format
-Fetchs the xchar @var{xc} at @var{xc-addr1}.
+@var{xc-addr1} から xchar @var{xc} を取得します。
 
 
 @findex xc@@+ ( @var{ xc-addr1 -- xc-addr2 xc   } ) xchar
@@ -17869,8 +17860,8 @@ Fetchs the xchar @var{xc} at @var{xc-addr1}.
 @format
 @code{xc@@+} ( @i{xc-addr1 -- xc-addr2 xc  }) xchar ``x-c-fetch-plus''
 @end format
-Fetchs the xchar @var{xc} at @var{xc-addr1}. @var{xc-addr2} points to the
-first memory location after @var{xc}.
+@var{xc-addr1} から xchar @var{xc} を取得します。 @var{xc-addr2} は、 @var{xc}
+の後ろの最初のメモリ位置を指します。
 
 
 @findex xc@@+? ( @var{ xc-addr1 u1 -- xc-addr2 u2 xc   } ) gforth-experimental
@@ -17879,8 +17870,8 @@ first memory location after @var{xc}.
 @format
 @code{xc@@+?} ( @i{xc-addr1 u1 -- xc-addr2 u2 xc  }) gforth-experimental ``x-c-fetch-plus-query''
 @end format
-Fetchs the first xchar @var{xc} of the string @var{xc-addr1
-u1}. @var{xc-addr2 u2} is the remaining string after @var{xc}.
+文字列 @var{xc-addr1 u1} の最初の xchar @var{xc} を取得します。 @var{xc-addr2 u2} は
+@var{xc} の後ろの残りの文字列です。
 
 
 @findex xc!+? ( @var{ xc xc-addr1 u1 -- xc-addr2 u2 f   } ) xchar
@@ -17889,13 +17880,11 @@ u1}. @var{xc-addr2 u2} is the remaining string after @var{xc}.
 @format
 @code{xc!+?} ( @i{xc xc-addr1 u1 -- xc-addr2 u2 f  }) xchar ``x-c-store-plus-query''
 @end format
-Stores the xchar @var{xc} into the buffer starting at address
-@var{xc-addr1}, @var{u1} chars large. @var{xc-addr2} points to the first
-memory location after @var{xc}, @var{u2} is the remaining size of the
-buffer. If the xchar @var{xc} did fit into the buffer, @var{f} is true,
-otherwise @var{f} is false, and @var{xc-addr2} @var{u2} equal @var{xc-addr1}
-@var{u1}. XC!+? is safe for buffer overflows, and therefore preferred over
-XC!+.
+xchar @var{xc} を、 アドレス @var{xc-addr1} で始まり @var{u1} 文字分の大きさであるバッファーに格納します。
+@var{xc-addr2} は @var{xc} の後の最初のメモリ位置を指し、 @var{u2} はバッファの残りのサイズです。 xchar
+@var{xc} がバッファーに収まった場合、 @var{f} は true、 それ以外の場合は @var{f} は false で
+@var{xc-addr2} @var{u2} は @var{xc-addr1} @var{u1} と等しくなります。 @code{XC!+?}
+はバッファー・オーバーフローに対して安全であるため、 @code{XC!+} よりも推奨されます。
 
 
 @findex xc!+ ( @var{ xc xc-addr1 -- xc-addr2   } ) xchar
@@ -17904,11 +17893,9 @@ XC!+.
 @format
 @code{xc!+} ( @i{xc xc-addr1 -- xc-addr2  }) xchar ``x-c-store''
 @end format
-Stores the xchar @var{xc} at @var{xc-addr1}. @var{xc-addr2} is the next
-unused address in the buffer.  Note that this writes up to 4 bytes, so you
-need at least 3 bytes of padding after the end of the buffer to avoid
-overwriting useful data if you only check the address against the end of the
-buffer.
+xchar @var{xc} を @var{xc-addr1} に保存します。  @var{xc-addr2} は、
+バッファ内の次の未使用アドレスです。 これは最大 4 バイトを書き込むため、 アドレスをバッファの末尾と照合するだけの場合は、
+有用なデータの上書きを避けるために、 バッファの末尾の後に少なくとも 3 バイトの余裕(パディング)が必要であることに注意してください。
 
 
 @findex xchar+ ( @var{ xc-addr1 -- xc-addr2   } ) xchar
@@ -17917,8 +17904,8 @@ buffer.
 @format
 @code{xchar+} ( @i{xc-addr1 -- xc-addr2  }) xchar ``x-char-plus''
 @end format
-Adds the size of the xchar stored at @var{xc-addr1} to this address, giving
-@var{xc-addr2}.
+@var{xc-addr1} に格納されている xchar のサイズをこのアドレスに加算し、 @var{xc-addr2} を与えます(訳注: つまり、
+次の xchar 文字の位置を返す)
 
 
 @findex xchar- ( @var{ xc-addr1 -- xc-addr2   } ) xchar-ext
@@ -17927,8 +17914,8 @@ Adds the size of the xchar stored at @var{xc-addr1} to this address, giving
 @format
 @code{xchar-} ( @i{xc-addr1 -- xc-addr2  }) xchar-ext ``x-char-minus''
 @end format
-Goes backward from @var{xc_addr1} until it finds an xchar so that the size
-of this xchar added to @var{xc_addr2} gives @var{xc_addr1}.
+@var{xc-addr1} から xchar が見つかるまで逆方向に進み、 この xchar のサイズを @var{xc-addr2} に加算すると
+@var{xc-addr1} になります。
 
 
 @findex +x/string ( @var{ xc-addr1 u1 -- xc-addr2 u2   } ) xchar-ext
@@ -17937,9 +17924,9 @@ of this xchar added to @var{xc_addr2} gives @var{xc_addr1}.
 @format
 @code{+x/string} ( @i{xc-addr1 u1 -- xc-addr2 u2  }) xchar-ext ``plus-x-slash-string''
 @end format
-Step forward by one xchar in the buffer defined by address @var{xc-addr1},
-size @var{u1} chars. @var{xc-addr2} is the address and u2 the size in chars
-of the remaining buffer after stepping over the first xchar in the buffer.
+アドレス @var{xc-addr1} サイズ @var{u1} 文字で定義されたバッファーで xchar 1つ分だけ進めたアドレスを
+@var{xc-addr2} に返します。 u2 は xchar 分だけ u1 より減ります(残り文字列長さです)。 u2 が 0
+になったら末尾まで到達しています。 注意:  0 になってもそこで止まりません更に進んでしまうので注意(長さが負数になる)
 
 
 @findex x\string- ( @var{ xc-addr u1 -- xc-addr u2   } ) xchar-ext
@@ -17948,10 +17935,9 @@ of the remaining buffer after stepping over the first xchar in the buffer.
 @format
 @code{x\string-} ( @i{xc-addr u1 -- xc-addr u2  }) xchar-ext ``x-backslash-string-minus''
 @end format
-Step backward by one xchar in the buffer defined by address @var{xc-addr}
-and size @var{u1} in chars, starting at the end of the buffer. @var{xc-addr}
-is the address and @var{u2} the size in chars of the remaining buffer after
-stepping backward over the last xchar in the buffer.
+バッファの最後から開始して、 アドレス @var{xc-addr} とサイズ @var{u1} (char単位) で定義されたバッファー内で 1
+xchar ずつ後方に進みます。 @var{xc-addr} は変わらず、 @var{u2} は xchar 分ずつ短くなります。 注意: 0
+になっても止まりません。そのまま長さが負数になっていきます。
 
 
 @findex -trailing-garbage ( @var{ xc-addr u1 -- xc-addr u2   } ) xchar-ext
@@ -17960,9 +17946,9 @@ stepping backward over the last xchar in the buffer.
 @format
 @code{-trailing-garbage} ( @i{xc-addr u1 -- xc-addr u2  }) xchar-ext ``minus-trailing-garbage''
 @end format
-Examine the last XCHAR in the buffer @var{xc-addr} @var{u1}---if the
-encoding is correct and it repesents a full char, @var{u2} equals @var{u1},
-otherwise, @var{u2} represents the string without the last (garbled) xchar.
+@var{xc-addr} @var{u1} というバッファー内の最後の XCHAR を調べます --- エンコードが正しく、 完全な文字を表す場合
+@var{u2} は @var{u1} と等しいです。 それ以外の場合は @var {u2} は、 最後の(文字化けした) xchar
+を除いた文字列を表します。
 
 
 @findex x-width ( @var{ xc-addr u -- n   } ) xchar-ext
@@ -17971,10 +17957,10 @@ otherwise, @var{u2} represents the string without the last (garbled) xchar.
 @format
 @code{x-width} ( @i{xc-addr u -- n  }) xchar-ext ``x-width''
 @end format
-@var{n} is the number of monospace ASCII chars that take the same space to
-display as the the xchar string starting at @var{xc-addr}, using @var{u}
-chars; assuming a monospaced display font, i.e. char width is always an
-integer multiple of the width of an ASCII char.
+アドレス @var{xc-addr} 長さ @var{u} (char単位)の文字列に対して、同じ幅の等幅 ASCII 文字での文字数を @var{n}
+に得ます。 等幅フォントを想定しています。 つまり文字の幅はいずれも ASCII 文字の幅の整数倍であると仮定します(訳注: 含まれる xchar
+ごとにその表示幅を調べたのを積算して返します buf $@@ type abcあdef ok  buf $@@len . 9  ok  buf $@@
+x-width . 8  ok)
 
 
 @findex xkey ( @var{ -- xc   } ) xchar
@@ -17983,8 +17969,8 @@ integer multiple of the width of an ASCII char.
 @format
 @code{xkey} ( @i{-- xc  }) xchar ``x-key''
 @end format
-Reads an xchar from the terminal. This will discard all input events up to
-the completion of the xchar.
+端末から xchar を 1 つ読み取ります。 これにより、xchar の読み取りが完了するまでのすべての入力イベントが破棄されます(訳注:
+ヒストリ操作は効いたので…全ての入力イベント…?)。
 
 
 @findex xc-width ( @var{ xc -- n   } ) xchar-ext
@@ -17993,8 +17979,7 @@ the completion of the xchar.
 @format
 @code{xc-width} ( @i{xc -- n  }) xchar-ext ``x-c-width''
 @end format
-@var{xc} has a width of @var{n} times the width of a normal fixed-width
-glyph.
+@var{xc} の幅は、通常の固定幅グリフ(fixed-width glyph)の幅の @var{n} 倍です。
 
 
 @findex xhold ( @var{ xc --   } ) xchar-ext
@@ -18003,8 +17988,8 @@ glyph.
 @format
 @code{xhold} ( @i{xc --  }) xchar-ext ``x-hold''
 @end format
-Used between @code{<<#} and @code{#>}. Prepend @var{xc} to the pictured
-numeric output string.  Alternatively, use @code{holds}.
+@code{<<#} と @code{#>} の間で使用されます。 表示数値出力文字列(pictured numeric output
+string)の前に @var{xc} を追加します。  代替手段としては @code{holds} を使用することができます。
 
 
 @findex xc, ( @var{ xchar --   } ) xchar
@@ -18018,18 +18003,14 @@ numeric output string.  Alternatively, use @code{holds}.
 @node i18n and l10n, Substitute, Xchars and Unicode, Other I/O
 @subsection 国際化(I18n)とローカライズ
 
-Programs for end users require to address those in their native language.
-There is a decades old proposal for such a facility that has been split from
-other proposals for international character sets like Xchars (@pxref{Xchars
-and Unicode}) and Substitute (@pxref{Substitute}).  Messages displayed on
-the screen need to be translated from the native language of the developers
-to the local languages of the user.
+エンド・ユーザー向けのプログラムは、 エンド・ユーザーの母国語に対応する必要があります。  このような機能については古くから提案があり、 Xchars
+(@pxref{Xchars and Unicode})や Substitute (@pxref{Substitute})
+などの国際文字セットに関する他の提案から分割されました。  画面に表示されるメッセージは、 開発者の母国語(native
+language)からユーザーの現地言語(local languages)に翻訳する必要があります。
 
-Strings subject to translation are declared with @code{L"
-}@var{string}@code{"}.  This returns a locale string identifier (LSID).
-LSIDs are opaque types, taking a cell on the stack.  LSIDs can be translated
-into a locale; locales are languages and country-specific variants of that
-language.
+翻訳対象の文字列は @code{L" }@var{string}@code{"} で宣言します。  これにより、
+ロケール文字列識別子(LSID)が返されます。  LSID は不明瞭なタイプ(opaque types)であり、 スタック上のセルとして扱われます。
+LSID はロケールに変換できます。 ロケールは、 言語およびその言語の国固有のバリエーションです。
 
 @findex L" ( @var{ "lsid<">" -- lsid   } ) gforth-experimental
 @cindex @code{L"}
@@ -18037,9 +18018,8 @@ language.
 @format
 @code{L"} ( @i{"lsid<">" -- lsid  }) gforth-experimental ``l-quote''
 @end format
-Parse a string and define a new lsid, if the string is uniquely new.
-Identical strings result in identical lsids, which allows to refer to the
-same lsid from multiple locations using the same string.
+文字列が一意に新しい場合は、 文字列をパースし、 新しい lsid を定義します。  同一文字列は同一の lsid となり、
+同一文字列を使用して複数の場所から同じ lsid を参照できます。
 
 
 @findex LU" ( @var{ "lsid<">" -- lsid   } ) gforth-experimental
@@ -18048,8 +18028,7 @@ same lsid from multiple locations using the same string.
 @format
 @code{LU"} ( @i{"lsid<">" -- lsid  }) gforth-experimental ``l-unique-quote''
 @end format
-Parse a string and always define a new lsid, even if the string is not
-unique.
+文字列がユニークでない場合でも(重複してても)、 文字列をパースし、 常に新しい lsid を定義します。
 
 
 @findex native@@ ( @var{ lsid -- addr u   } ) gforth-experimental
@@ -18058,7 +18037,7 @@ unique.
 @format
 @code{native@@} ( @i{lsid -- addr u  }) gforth-experimental ``native-fetch''
 @end format
-fetch native string from an @var{lsid}
+@var{lsid} からネイティブ文字列(native string)を取得します
 
 
 @findex locale@@ ( @var{ lsid -- addr u   } ) gforth-experimental
@@ -18067,7 +18046,7 @@ fetch native string from an @var{lsid}
 @format
 @code{locale@@} ( @i{lsid -- addr u  }) gforth-experimental ``locale-fetch''
 @end format
-fetch the localized string in the current language and country
+現在の言語 かつ 現在の国(country)でローカライズされた文字列を取得します
 
 
 @findex locale! ( @var{ addr u lsid --   } ) gforth-experimental
@@ -18076,8 +18055,7 @@ fetch the localized string in the current language and country
 @format
 @code{locale!} ( @i{addr u lsid --  }) gforth-experimental ``locale-store''
 @end format
-Store localized string @var{addr u} for the current locale and country in
-@var{lsid}.
+現在のロケール かつ 現在の国の、 ローカライズされた文字列 @var{addr u} を @var{lsid} に保存します。
 
 
 @findex Language ( @var{ "name" --   } ) gforth-experimental
@@ -18086,7 +18064,7 @@ Store localized string @var{addr u} for the current locale and country in
 @format
 @code{Language} ( @i{"name" --  }) gforth-experimental ``Language''
 @end format
-define a locale.  Executing that locale makes it the current locale.
+ロケールを定義します。  そのロケールを実行すると、 それが現在のロケールになります。
 
 
 @findex Country ( @var{ <lang> "name" --   } ) gforth-experimental
@@ -18095,10 +18073,9 @@ define a locale.  Executing that locale makes it the current locale.
 @format
 @code{Country} ( @i{<lang> "name" --  }) gforth-experimental ``Country''
 @end format
-define a variant (typical: country) for the current locale.  Executing that
-locale makes it the current locale.  You can create variants of variants (a
-country may have variants within, e.g. think of how many words for
-rolls/buns there are in many languages).
+現在のロケールのバリエーション(通常: 国;country)を定義します。 そのロケールを実行すると、それが現在のロケールになります。
+バリエーションのバリエーションを作成できます(国によってはバリエーションが存在する場合があります。たとえば、 多くの言語で rolls/buns
+を表す単語が何語あるかを考えてください)。
 
 
 @findex locale-file ( @var{ fid --   } ) gforth-experimental
@@ -18107,7 +18084,7 @@ rolls/buns there are in many languages).
 @format
 @code{locale-file} ( @i{fid --  }) gforth-experimental ``locale-file''
 @end format
-read lines from @var{fid} into the current locale.
+@var{fid} から現在のロケールに行(lines)を読み取ります。
 
 
 @findex included-locale ( @var{ addr u --   } ) gforth-experimental
@@ -18116,7 +18093,7 @@ read lines from @var{fid} into the current locale.
 @format
 @code{included-locale} ( @i{addr u --  }) gforth-experimental ``included-locale''
 @end format
-read lines from the file @var{addr u} into the current locale.
+ファイル @var{addr u} から現在のロケールに行(lines)を読み取ります。
 
 
 @findex include-locale ( @var{ "name" --   } ) gforth-experimental
@@ -18125,7 +18102,7 @@ read lines from the file @var{addr u} into the current locale.
 @format
 @code{include-locale} ( @i{"name" --  }) gforth-experimental ``include-locale''
 @end format
-read lines from the file @var{"name"} into the current locale.
+指定のファイル @var{"name"} から現在のロケールに行(lines)を読み取ります。
 
 
 @findex locale-csv ( @var{ "name" --   } ) gforth-experimental
@@ -18134,11 +18111,10 @@ read lines from the file @var{"name"} into the current locale.
 @format
 @code{locale-csv} ( @i{"name" --  }) gforth-experimental ``locale-csv''
 @end format
-import comma-separated value table into locales.  first line contains locale
-names, “program” and “default” are special entries; generic languages must
-preceed translations for specific countries.  Entries under “program” (must
-be leftmost) are used to search for the lsid; if empty, the line number-1 is
-the lsid index.
+カンマ区切り値テーブルをロケールにインポートします。  最初の行にはロケール名が含まれます。 “program” と “default”
+は特別なエントリです。  generic languages は特定の国(specific
+countries)向けの翻訳よりも優先しなければなりません。  “program” の下のエントリ(一番左にある必要があります) は、 lsid
+の検索に使用されます。 空の場合、 行番号 1 は lsid インデックスです。
 
 
 @findex .locale-csv ( @var{ --   } ) gforth-experimental
@@ -18147,7 +18123,7 @@ the lsid index.
 @format
 @code{.locale-csv} ( @i{--  }) gforth-experimental ``dot-locale-csv''
 @end format
-write the locale database in CSV format to the terminal output.
+ロケール・データベースを CSV 形式で端末に出力します。
 
 
 @findex locale-csv-out ( @var{ "name" --   } ) gforth-experimental
@@ -18156,21 +18132,17 @@ write the locale database in CSV format to the terminal output.
 @format
 @code{locale-csv-out} ( @i{"name" --  }) gforth-experimental ``locale-csv''
 @end format
-Create file @var{"name"} and write the locale database out to the file
-@var{"name"} in CSV format.
+ファイル @var{"name"} を作成し、 ロケール・データベースを CSV 形式でファイル @var{"name"} に書き込みます。
 
 
 
 @node Substitute, CSV Reader, i18n and l10n, Other I/O
 @subsection Substitute
 
-This is a simple text macro replacement facility.  Texts in the form
-@code{"text %macro% text"} are processed, and the macro variables enclosed
-in @code{'%'} are replaced with their associated strings.  Two consecutive
-@code{%} are replaced by one @code{%}.  Macros are defined in a specific
-wordlist, and return a string upon execution; the standard defines only one
-way to declare macros, @code{replaces}, which creates a macro that just
-returns a string.
+これは単純なテキスト・マクロ置換機能です。  @code{"text %macro% text"} の形式のテキストが処理され、@code{'%'}
+で囲まれたマクロ変数が関連する文字列に置き換えられます。  2 つの連続する @code{%} は 1 つの @code{%} に置き換えられます。
+マクロは特定のワードリストで定義され、実行時に文字列を返します。 標準では、 マクロを宣言する方法が 1 つだけ、  @code{replaces}
+のみ定義されています。 これは文字列を返すだけのマクロを作成します。
 
 @findex macros-wordlist ( @var{ -- wid   } ) gforth-experimental
 @cindex @code{macros-wordlist}

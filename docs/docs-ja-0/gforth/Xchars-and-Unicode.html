@@ -70,46 +70,37 @@ Next: <a href="i18n-and-l10n.html" accesskey="n" rel="next">国際化(I18n)と�
 <hr>
 <span id="Xchars-and-Unicode-1"></span><h4 class="subsection">6.20.10 Xchars and Unicode</h4>
 
-<p>ASCII is only appropriate for the English language. Most western languages
-however fit somewhat into the Forth frame, since a byte is sufficient to
-encode the few special characters in each (though not always the same
-encoding can be used; latin-1 is most widely used, though). For other
-languages, different char-sets have to be used, several of them
-variable-width.  To deal with this problem, characters are often represented
-as Unicode codepoints on the stack, and as UTF-8 byte strings in memory.  An
-Unicode codepoint often represents one application-level character, but
-Unicode also supports decomposed characters that consist of several code
-points, e.g., a base letter and a combining diacritical mark.
+<p>ASCII は英語(English language)にのみ適しています。 ただし、 ほとんどの西洋言語(western
+languages)は、それぞれの少数の特殊文字をエンコードするには 1 バイトで十分であるため、 Forth
+の枠組みにある程度適合します(ただし、常に同じエンコードを使用できるとは限りません。 ただし、 latin-1 が最も広く使用されています)。
+他の言語の場合は、 異なる文字セットを使用する必要があり、その一部は可変幅です。  この問題に対処するために、
+文字はスタック上ではユニコード・コードポイント(Unicode codepoints)として表され、 メモリ内では UTF-8
+バイト文字列として表されることがよくあります。 ユニコード・コードポイントは、 多くの場合、 1 つのアプリケーション・ レベル(one
+application-level character)の文字を表しますが、 ユニコードは、基本文字(base
+letter)と結合発音記号(combining diacritical mark)など、
+複数のコード・ポイントで構成される分解文字(combining diacritical mark)もサポートします。
 </p>
-<p>An Unicode codepoint can consume more than one byte in memory, so we adjust
-our terminology: A char is a raw byte in memory or a value in the range
-0-255 on the stack.  An xchar (for extended char) stands for one codepoint;
-it is represented by one or more bytes in memory and may have larger values
-on the stack.  ASCII characters are the same as chars and as xchars: values
-in the range 0-127, and a single byte with that value in memory.
+<p>ユニコード・コードポイントはメモリ内の複数バイトを消費する可能性があるため、 ここで我々の用語をすり合わせしておきましょう: char
+はメモリ内の生のバイト、 またはスタック上の 0 ～ 255 の範囲の値です。  xchar (extended char) は 1
+つのコードポイントを表します。 これはメモリ内の 1 バイト以上で表され、 スタック上にはより大きな値が存在する可能性があります。  ASCII 文字は
+char や xchar と同一です。 つまり、0 ～ 127 の範囲の値、 かつ、 メモリ内のその値を含む 1 バイトです。
 </p>
-<p>When using UTF-8 encoding, all other codepoints take more than one
-byte/char.  In most cases, you can just treat such characters as strings in
-memory and don&rsquo;t need to use the following words, but if you want to deal
-with individual codepoints, the following words are useful.  We currently
-have no words for dealing with decomposed characters.
+<p>UTF-8 エンコードを使用する場合、 他のすべてのコードポイントは 1 文字あたり 1 バイト以上必要になります。  ほとんどの場合、
+このような文字はメモリ内の文字列として扱うだけでよく、 以下のワード群を使用する必要はありませんが、 個々のコードポイントを処理したい場合は、
+以下のワード群が役に立ちます。  現時点では、 分解文字(decomposed characters)を扱うためのワードはありません。
 </p>
-<p>The xchar words add a few data types:
+<p>xchar ワード群はいくつかのデータ型を追加します:
 </p>
 <ul>
-<li> <var>xc</var> is an extended char (xchar) on the stack. It occupies one cell, and
-is a subset of unsigned cell.  On 16 bit systems, only the BMP subset of the
-Unicode character set (i.e., codepoints &lt;65536) can be represented on the
-stack.  If you represent your application characters as strings at all
-times, you can avoid this limitation.
+<li> <var>xc</var> はスタック上の拡張文字(xchar)です。 これは 1 つのセルを占有し、 符号なしセルのサブセットです。  16
+ビット・システムでは、 ユニコード文字セットの BMP サブセット (つまり、 コードポイント&lt;65536)のみがスタック上で表現できます。
+アプリケーション文字(application characters)を常に文字列として表現すると、 この制限を回避できます。
 
-</li><li> <var>xc-addr</var> is the address of an xchar in memory. Alignment requirements
-are the same as <var>c-addr</var>. The memory representation of an xchar differs
-from the stack representation, and depends on the encoding used. An xchar
-may use a variable number of chars in memory.
+</li><li> <var>xc-addr</var> はメモリ内の xchar のアドレスです。 アライメント要件は <var>c-addr</var> と同じです。  xchar
+のメモリ表現はスタック表現とは異なり、 使用されるエンコーディングによって異なります。 xchar はメモリ内で可変数の char を使用できます。
 
-</li><li> <var>xc-addr</var> <var>u</var> is a buffer of xchars in memory, starting at
-<var>xc-addr</var>, <var>u</var> chars (i.e., bytes, not xchars) long.
+</li><li> <var>xc-addr</var> <var>u</var> はメモリ内の xchar のバッファで、<var>xc-addr</var> で始まり <var>u</var> char
+(つまり、 xchar ではなくバイト)の長さになります。
 
 </li></ul>
 
@@ -119,7 +110,7 @@ may use a variable number of chars in memory.
 <div class="format">
 <pre class="format"><code>xc-size</code> ( <i>xc &ndash; u  </i>) xchar &ldquo;x-c-size&rdquo;
 </pre></div>
-<p>Computes the memory size of the xchar <var>xc</var> in chars.
+<p>xchar <var>xc</var> のメモリ・サイズを char で計算します。
 </p>
 
 <span id="index-x_002dsize-_0028--xc_002daddr-u1-_002d_002d-u2--_0029-xchar"></span>
@@ -128,8 +119,7 @@ may use a variable number of chars in memory.
 <div class="format">
 <pre class="format"><code>x-size</code> ( <i>xc-addr u1 &ndash; u2  </i>) xchar &ldquo;x-size&rdquo;
 </pre></div>
-<p>Computes the memory size of the first xchar stored at <var>xc-addr</var> in
-chars.
+<p><var>xc-addr</var> に格納されている最初の xchar のメモリ・サイズを char で計算します。
 </p>
 
 <span id="index-xc_0040-_0028--xc_002daddr-_002d_002d-xc--_0029-xchar_002dext"></span>
@@ -138,7 +128,7 @@ chars.
 <div class="format">
 <pre class="format"><code>xc@</code> ( <i>xc-addr &ndash; xc  </i>) xchar-ext &ldquo;xc-fetch&rdquo;
 </pre></div>
-<p>Fetchs the xchar <var>xc</var> at <var>xc-addr1</var>.
+<p><var>xc-addr1</var> から xchar <var>xc</var> を取得します。
 </p>
 
 <span id="index-xc_0040_002b-_0028--xc_002daddr1-_002d_002d-xc_002daddr2-xc--_0029-xchar"></span>
@@ -147,8 +137,8 @@ chars.
 <div class="format">
 <pre class="format"><code>xc@+</code> ( <i>xc-addr1 &ndash; xc-addr2 xc  </i>) xchar &ldquo;x-c-fetch-plus&rdquo;
 </pre></div>
-<p>Fetchs the xchar <var>xc</var> at <var>xc-addr1</var>. <var>xc-addr2</var> points to the
-first memory location after <var>xc</var>.
+<p><var>xc-addr1</var> から xchar <var>xc</var> を取得します。 <var>xc-addr2</var> は、 <var>xc</var>
+の後ろの最初のメモリ位置を指します。
 </p>
 
 <span id="index-xc_0040_002b_003f-_0028--xc_002daddr1-u1-_002d_002d-xc_002daddr2-u2-xc--_0029-gforth_002dexperimental"></span>
@@ -157,8 +147,8 @@ first memory location after <var>xc</var>.
 <div class="format">
 <pre class="format"><code>xc@+?</code> ( <i>xc-addr1 u1 &ndash; xc-addr2 u2 xc  </i>) gforth-experimental &ldquo;x-c-fetch-plus-query&rdquo;
 </pre></div>
-<p>Fetchs the first xchar <var>xc</var> of the string <var>xc-addr1
-u1</var>. <var>xc-addr2 u2</var> is the remaining string after <var>xc</var>.
+<p>文字列 <var>xc-addr1 u1</var> の最初の xchar <var>xc</var> を取得します。 <var>xc-addr2 u2</var> は
+<var>xc</var> の後ろの残りの文字列です。
 </p>
 
 <span id="index-xc_0021_002b_003f-_0028--xc-xc_002daddr1-u1-_002d_002d-xc_002daddr2-u2-f--_0029-xchar"></span>
@@ -167,13 +157,11 @@ u1</var>. <var>xc-addr2 u2</var> is the remaining string after <var>xc</var>.
 <div class="format">
 <pre class="format"><code>xc!+?</code> ( <i>xc xc-addr1 u1 &ndash; xc-addr2 u2 f  </i>) xchar &ldquo;x-c-store-plus-query&rdquo;
 </pre></div>
-<p>Stores the xchar <var>xc</var> into the buffer starting at address
-<var>xc-addr1</var>, <var>u1</var> chars large. <var>xc-addr2</var> points to the first
-memory location after <var>xc</var>, <var>u2</var> is the remaining size of the
-buffer. If the xchar <var>xc</var> did fit into the buffer, <var>f</var> is true,
-otherwise <var>f</var> is false, and <var>xc-addr2</var> <var>u2</var> equal <var>xc-addr1</var>
-<var>u1</var>. XC!+? is safe for buffer overflows, and therefore preferred over
-XC!+.
+<p>xchar <var>xc</var> を、 アドレス <var>xc-addr1</var> で始まり <var>u1</var> 文字分の大きさであるバッファーに格納します。
+<var>xc-addr2</var> は <var>xc</var> の後の最初のメモリ位置を指し、 <var>u2</var> はバッファの残りのサイズです。 xchar
+<var>xc</var> がバッファーに収まった場合、 <var>f</var> は true、 それ以外の場合は <var>f</var> は false で
+<var>xc-addr2</var> <var>u2</var> は <var>xc-addr1</var> <var>u1</var> と等しくなります。 <code>XC!+?</code>
+はバッファー・オーバーフローに対して安全であるため、 <code>XC!+</code> よりも推奨されます。
 </p>
 
 <span id="index-xc_0021_002b-_0028--xc-xc_002daddr1-_002d_002d-xc_002daddr2--_0029-xchar"></span>
@@ -182,11 +170,9 @@ XC!+.
 <div class="format">
 <pre class="format"><code>xc!+</code> ( <i>xc xc-addr1 &ndash; xc-addr2  </i>) xchar &ldquo;x-c-store&rdquo;
 </pre></div>
-<p>Stores the xchar <var>xc</var> at <var>xc-addr1</var>. <var>xc-addr2</var> is the next
-unused address in the buffer.  Note that this writes up to 4 bytes, so you
-need at least 3 bytes of padding after the end of the buffer to avoid
-overwriting useful data if you only check the address against the end of the
-buffer.
+<p>xchar <var>xc</var> を <var>xc-addr1</var> に保存します。  <var>xc-addr2</var> は、
+バッファ内の次の未使用アドレスです。 これは最大 4 バイトを書き込むため、 アドレスをバッファの末尾と照合するだけの場合は、
+有用なデータの上書きを避けるために、 バッファの末尾の後に少なくとも 3 バイトの余裕(パディング)が必要であることに注意してください。
 </p>
 
 <span id="index-xchar_002b-_0028--xc_002daddr1-_002d_002d-xc_002daddr2--_0029-xchar"></span>
@@ -195,8 +181,8 @@ buffer.
 <div class="format">
 <pre class="format"><code>xchar+</code> ( <i>xc-addr1 &ndash; xc-addr2  </i>) xchar &ldquo;x-char-plus&rdquo;
 </pre></div>
-<p>Adds the size of the xchar stored at <var>xc-addr1</var> to this address, giving
-<var>xc-addr2</var>.
+<p><var>xc-addr1</var> に格納されている xchar のサイズをこのアドレスに加算し、 <var>xc-addr2</var> を与えます(訳注: つまり、
+次の xchar 文字の位置を返す)
 </p>
 
 <span id="index-xchar_002d-_0028--xc_002daddr1-_002d_002d-xc_002daddr2--_0029-xchar_002dext"></span>
@@ -205,8 +191,8 @@ buffer.
 <div class="format">
 <pre class="format"><code>xchar-</code> ( <i>xc-addr1 &ndash; xc-addr2  </i>) xchar-ext &ldquo;x-char-minus&rdquo;
 </pre></div>
-<p>Goes backward from <var>xc_addr1</var> until it finds an xchar so that the size
-of this xchar added to <var>xc_addr2</var> gives <var>xc_addr1</var>.
+<p><var>xc-addr1</var> から xchar が見つかるまで逆方向に進み、 この xchar のサイズを <var>xc-addr2</var> に加算すると
+<var>xc-addr1</var> になります。
 </p>
 
 <span id="index-_002bx_002fstring-_0028--xc_002daddr1-u1-_002d_002d-xc_002daddr2-u2--_0029-xchar_002dext"></span>
@@ -215,9 +201,9 @@ of this xchar added to <var>xc_addr2</var> gives <var>xc_addr1</var>.
 <div class="format">
 <pre class="format"><code>+x/string</code> ( <i>xc-addr1 u1 &ndash; xc-addr2 u2  </i>) xchar-ext &ldquo;plus-x-slash-string&rdquo;
 </pre></div>
-<p>Step forward by one xchar in the buffer defined by address <var>xc-addr1</var>,
-size <var>u1</var> chars. <var>xc-addr2</var> is the address and u2 the size in chars
-of the remaining buffer after stepping over the first xchar in the buffer.
+<p>アドレス <var>xc-addr1</var> サイズ <var>u1</var> 文字で定義されたバッファーで xchar 1つ分だけ進めたアドレスを
+<var>xc-addr2</var> に返します。 u2 は xchar 分だけ u1 より減ります(残り文字列長さです)。 u2 が 0
+になったら末尾まで到達しています。 注意:  0 になってもそこで止まりません更に進んでしまうので注意(長さが負数になる)
 </p>
 
 <span id="index-x_005cstring_002d-_0028--xc_002daddr-u1-_002d_002d-xc_002daddr-u2--_0029-xchar_002dext"></span>
@@ -226,10 +212,9 @@ of the remaining buffer after stepping over the first xchar in the buffer.
 <div class="format">
 <pre class="format"><code>x\string-</code> ( <i>xc-addr u1 &ndash; xc-addr u2  </i>) xchar-ext &ldquo;x-backslash-string-minus&rdquo;
 </pre></div>
-<p>Step backward by one xchar in the buffer defined by address <var>xc-addr</var>
-and size <var>u1</var> in chars, starting at the end of the buffer. <var>xc-addr</var>
-is the address and <var>u2</var> the size in chars of the remaining buffer after
-stepping backward over the last xchar in the buffer.
+<p>バッファの最後から開始して、 アドレス <var>xc-addr</var> とサイズ <var>u1</var> (char単位) で定義されたバッファー内で 1
+xchar ずつ後方に進みます。 <var>xc-addr</var> は変わらず、 <var>u2</var> は xchar 分ずつ短くなります。 注意: 0
+になっても止まりません。そのまま長さが負数になっていきます。
 </p>
 
 <span id="index-_002dtrailing_002dgarbage-_0028--xc_002daddr-u1-_002d_002d-xc_002daddr-u2--_0029-xchar_002dext"></span>
@@ -238,9 +223,9 @@ stepping backward over the last xchar in the buffer.
 <div class="format">
 <pre class="format"><code>-trailing-garbage</code> ( <i>xc-addr u1 &ndash; xc-addr u2  </i>) xchar-ext &ldquo;minus-trailing-garbage&rdquo;
 </pre></div>
-<p>Examine the last XCHAR in the buffer <var>xc-addr</var> <var>u1</var>&mdash;if the
-encoding is correct and it repesents a full char, <var>u2</var> equals <var>u1</var>,
-otherwise, <var>u2</var> represents the string without the last (garbled) xchar.
+<p><var>xc-addr</var> <var>u1</var> というバッファー内の最後の XCHAR を調べます &mdash; エンコードが正しく、 完全な文字を表す場合
+<var>u2</var> は <var>u1</var> と等しいです。 それ以外の場合は <var>u2</var> は、 最後の(文字化けした) xchar
+を除いた文字列を表します。
 </p>
 
 <span id="index-x_002dwidth-_0028--xc_002daddr-u-_002d_002d-n--_0029-xchar_002dext"></span>
@@ -249,10 +234,10 @@ otherwise, <var>u2</var> represents the string without the last (garbled) xchar.
 <div class="format">
 <pre class="format"><code>x-width</code> ( <i>xc-addr u &ndash; n  </i>) xchar-ext &ldquo;x-width&rdquo;
 </pre></div>
-<p><var>n</var> is the number of monospace ASCII chars that take the same space to
-display as the the xchar string starting at <var>xc-addr</var>, using <var>u</var>
-chars; assuming a monospaced display font, i.e. char width is always an
-integer multiple of the width of an ASCII char.
+<p>アドレス <var>xc-addr</var> 長さ <var>u</var> (char単位)の文字列に対して、同じ幅の等幅 ASCII 文字での文字数を <var>n</var>
+に得ます。 等幅フォントを想定しています。 つまり文字の幅はいずれも ASCII 文字の幅の整数倍であると仮定します(訳注: 含まれる xchar
+ごとにその表示幅を調べたのを積算して返します buf $@ type abcあdef ok  buf $@len . 9  ok  buf $@
+x-width . 8  ok)
 </p>
 
 <span id="index-xkey-_0028--_002d_002d-xc--_0029-xchar"></span>
@@ -261,8 +246,8 @@ integer multiple of the width of an ASCII char.
 <div class="format">
 <pre class="format"><code>xkey</code> ( <i>&ndash; xc  </i>) xchar &ldquo;x-key&rdquo;
 </pre></div>
-<p>Reads an xchar from the terminal. This will discard all input events up to
-the completion of the xchar.
+<p>端末から xchar を 1 つ読み取ります。 これにより、xchar の読み取りが完了するまでのすべての入力イベントが破棄されます(訳注:
+ヒストリ操作は効いたので…全ての入力イベント…?)。
 </p>
 
 <span id="index-xc_002dwidth-_0028--xc-_002d_002d-n--_0029-xchar_002dext"></span>
@@ -271,8 +256,7 @@ the completion of the xchar.
 <div class="format">
 <pre class="format"><code>xc-width</code> ( <i>xc &ndash; n  </i>) xchar-ext &ldquo;x-c-width&rdquo;
 </pre></div>
-<p><var>xc</var> has a width of <var>n</var> times the width of a normal fixed-width
-glyph.
+<p><var>xc</var> の幅は、通常の固定幅グリフ(fixed-width glyph)の幅の <var>n</var> 倍です。
 </p>
 
 <span id="index-xhold-_0028--xc-_002d_002d--_0029-xchar_002dext"></span>
@@ -281,8 +265,8 @@ glyph.
 <div class="format">
 <pre class="format"><code>xhold</code> ( <i>xc &ndash;  </i>) xchar-ext &ldquo;x-hold&rdquo;
 </pre></div>
-<p>Used between <code>&lt;&lt;#</code> and <code>#&gt;</code>. Prepend <var>xc</var> to the pictured
-numeric output string.  Alternatively, use <code>holds</code>.
+<p><code>&lt;&lt;#</code> と <code>#&gt;</code> の間で使用されます。 表示数値出力文字列(pictured numeric output
+string)の前に <var>xc</var> を追加します。  代替手段としては <code>holds</code> を使用することができます。
 </p>
 
 <span id="index-xc_002c-_0028--xchar-_002d_002d--_0029-xchar"></span>

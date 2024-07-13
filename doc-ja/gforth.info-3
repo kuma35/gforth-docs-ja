@@ -766,122 +766,129 @@ File: gforth.info,  Node: Xchars and Unicode,  Next: i18n and l10n,  Prev: Pipes
 6.20.10 Xchars and Unicode
 --------------------------
 
-ASCII is only appropriate for the English language.  Most western
-languages however fit somewhat into the Forth frame, since a byte is
-sufficient to encode the few special characters in each (though not
-always the same encoding can be used; latin-1 is most widely used,
-though).  For other languages, different char-sets have to be used,
-several of them variable-width.  To deal with this problem, characters
-are often represented as Unicode codepoints on the stack, and as UTF-8
-byte strings in memory.  An Unicode codepoint often represents one
-application-level character, but Unicode also supports decomposed
-characters that consist of several code points, e.g., a base letter and
-a combining diacritical mark.
+ASCII は英語(English language)にのみ適しています。 ただし、 ほとんどの西
+洋言語(western languages)は、それぞれの少数の特殊文字をエンコードするに
+は 1 バイトで十分であるため、 Forth の枠組みにある程度適合します(ただし
+、常に同じエンコードを使用できるとは限りません。 ただし、 latin-1 が最も
+広く使用されています)。 他の言語の場合は、 異なる文字セットを使用する必
+要があり、その一部は可変幅です。 この問題に対処するために、 文字はスタッ
+ク上ではユニコード・コードポイント(Unicode codepoints)として表され、 メ
+モリ内では UTF-8 バイト文字列として表されることがよくあります。 ユニコー
+ド・コードポイントは、 多くの場合、 1 つのアプリケーション・ レベル(one
+application-level character)の文字を表しますが、 ユニコードは、基本文字
+(base letter)と結合発音記号(combining diacritical mark)など、 複数のコー
+ド・ポイントで構成される分解文字(combining diacritical mark)もサポートし
+ます。
 
-   An Unicode codepoint can consume more than one byte in memory, so we
-adjust our terminology: A char is a raw byte in memory or a value in the
-range 0-255 on the stack.  An xchar (for extended char) stands for one
-codepoint; it is represented by one or more bytes in memory and may have
-larger values on the stack.  ASCII characters are the same as chars and
-as xchars: values in the range 0-127, and a single byte with that value
-in memory.
+   ユニコード・コードポイントはメモリ内の複数バイトを消費する可能性があ
+るため、 ここで我々の用語をすり合わせしておきましょう: char はメモリ内の
+生のバイト、 またはスタック上の 0 ～ 255 の範囲の値です。 xchar
+(extended char) は 1 つのコードポイントを表します。 これはメモリ内の 1 バ
+イト以上で表され、 スタック上にはより大きな値が存在する可能性があります
+。 ASCII 文字は char や xchar と同一です。 つまり、0 ～ 127 の範囲の値、
+かつ、 メモリ内のその値を含む 1 バイトです。
 
-   When using UTF-8 encoding, all other codepoints take more than one
-byte/char.  In most cases, you can just treat such characters as strings
-in memory and don’t need to use the following words, but if you want to
-deal with individual codepoints, the following words are useful.  We
-currently have no words for dealing with decomposed characters.
+   UTF-8 エンコードを使用する場合、 他のすべてのコードポイントは 1 文字
+あたり 1 バイト以上必要になります。 ほとんどの場合、 このような文字はメ
+モリ内の文字列として扱うだけでよく、 以下のワード群を使用する必要はあり
+ませんが、 個々のコードポイントを処理したい場合は、 以下のワード群が役に
+立ちます。 現時点では、 分解文字(decomposed characters)を扱うためのワー
+ドはありません。
 
-   The xchar words add a few data types:
+   xchar ワード群はいくつかのデータ型を追加します:
 
-   • XC is an extended char (xchar) on the stack.  It occupies one cell,
-     and is a subset of unsigned cell.  On 16 bit systems, only the BMP
-     subset of the Unicode character set (i.e., codepoints <65536) can
-     be represented on the stack.  If you represent your application
-     characters as strings at all times, you can avoid this limitation.
+   • XC はスタック上の拡張文字(xchar)です。 これは 1 つのセルを占有し、
+     符号なしセルのサブセットです。 16 ビット・システムでは、 ユニコード
+     文字セットの BMP サブセット (つまり、 コードポイント<65536)のみがス
+     タック上で表現できます。 アプリケーション文字(application
+     characters)を常に文字列として表現すると、 この制限を回避できます。
 
-   • XC-ADDR is the address of an xchar in memory.  Alignment
-     requirements are the same as C-ADDR.  The memory representation of
-     an xchar differs from the stack representation, and depends on the
-     encoding used.  An xchar may use a variable number of chars in
-     memory.
+   • XC-ADDR はメモリ内の xchar のアドレスです。 アライメント要件は
+     C-ADDR と同じです。 xchar のメモリ表現はスタック表現とは異なり、 使
+     用されるエンコーディングによって異なります。 xchar はメモリ内で可変
+     数の char を使用できます。
 
-   • XC-ADDR U is a buffer of xchars in memory, starting at XC-ADDR, U
-     chars (i.e., bytes, not xchars) long.
+   • XC-ADDR U はメモリ内の xchar のバッファで、XC-ADDR で始まり U char
+     (つまり、 xchar ではなくバイト)の長さになります。
 
 ‘xc-size’ ( xc – u  ) xchar “x-c-size”
-   Computes the memory size of the xchar XC in chars.
+   xchar XC のメモリ・サイズを char で計算します。
 
 ‘x-size’ ( xc-addr u1 – u2  ) xchar “x-size”
-   Computes the memory size of the first xchar stored at XC-ADDR in
-chars.
+   XC-ADDR に格納されている最初の xchar のメモリ・サイズを char で計算し
+ます。
 
 ‘xc@’ ( xc-addr – xc  ) xchar-ext “xc-fetch”
-   Fetchs the xchar XC at XC-ADDR1.
+   XC-ADDR1 から xchar XC を取得します。
 
 ‘xc@+’ ( xc-addr1 – xc-addr2 xc  ) xchar “x-c-fetch-plus”
-   Fetchs the xchar XC at XC-ADDR1.  XC-ADDR2 points to the first memory
-location after XC.
+   XC-ADDR1 から xchar XC を取得します。 XC-ADDR2 は、 XC の後ろの最初の
+メモリ位置を指します。
 
 ‘xc@+?’ ( xc-addr1 u1 – xc-addr2 u2 xc  ) gforth-experimental “x-c-fetch-plus-query”
-   Fetchs the first xchar XC of the string XC-ADDR1 U1.  XC-ADDR2 U2 is
-the remaining string after XC.
+   文字列 XC-ADDR1 U1 の最初の xchar XC を取得します。 XC-ADDR2 U2 は XC
+の後ろの残りの文字列です。
 
 ‘xc!+?’ ( xc xc-addr1 u1 – xc-addr2 u2 f  ) xchar “x-c-store-plus-query”
-   Stores the xchar XC into the buffer starting at address XC-ADDR1, U1
-chars large.  XC-ADDR2 points to the first memory location after XC, U2
-is the remaining size of the buffer.  If the xchar XC did fit into the
-buffer, F is true, otherwise F is false, and XC-ADDR2 U2 equal XC-ADDR1
-U1.  XC!+?  is safe for buffer overflows, and therefore preferred over
-XC!+.
+   xchar XC を、 アドレス XC-ADDR1 で始まり U1 文字分の大きさであるバッ
+ファーに格納します。 XC-ADDR2 は XC の後の最初のメモリ位置を指し、 U2 は
+バッファの残りのサイズです。 xchar XC がバッファーに収まった場合、 F は
+true、 それ以外の場合は F は false で XC-ADDR2 U2 は XC-ADDR1 U1 と等し
+くなります。 ‘XC!+?’ はバッファー・オーバーフローに対して安全であるため
+、 ‘XC!+’ よりも推奨されます。
 
 ‘xc!+’ ( xc xc-addr1 – xc-addr2  ) xchar “x-c-store”
-   Stores the xchar XC at XC-ADDR1.  XC-ADDR2 is the next unused address
-in the buffer.  Note that this writes up to 4 bytes, so you need at
-least 3 bytes of padding after the end of the buffer to avoid
-overwriting useful data if you only check the address against the end of
-the buffer.
+   xchar XC を XC-ADDR1 に保存します。 XC-ADDR2 は、 バッファ内の次の未
+使用アドレスです。 これは最大 4 バイトを書き込むため、 アドレスをバッフ
+ァの末尾と照合するだけの場合は、 有用なデータの上書きを避けるために、 バ
+ッファの末尾の後に少なくとも 3 バイトの余裕(パディング)が必要であること
+に注意してください。
 
 ‘xchar+’ ( xc-addr1 – xc-addr2  ) xchar “x-char-plus”
-   Adds the size of the xchar stored at XC-ADDR1 to this address, giving
-XC-ADDR2.
+   XC-ADDR1 に格納されている xchar のサイズをこのアドレスに加算し、
+XC-ADDR2 を与えます(訳注: つまり、 次の xchar 文字の位置を返す)
 
 ‘xchar-’ ( xc-addr1 – xc-addr2  ) xchar-ext “x-char-minus”
-   Goes backward from XC_ADDR1 until it finds an xchar so that the size
-of this xchar added to XC_ADDR2 gives XC_ADDR1.
+   XC-ADDR1 から xchar が見つかるまで逆方向に進み、 この xchar のサイズ
+を XC-ADDR2 に加算すると XC-ADDR1 になります。
 
 ‘+x/string’ ( xc-addr1 u1 – xc-addr2 u2  ) xchar-ext “plus-x-slash-string”
-   Step forward by one xchar in the buffer defined by address XC-ADDR1,
-size U1 chars.  XC-ADDR2 is the address and u2 the size in chars of the
-remaining buffer after stepping over the first xchar in the buffer.
+   アドレス XC-ADDR1 サイズ U1 文字で定義されたバッファーで xchar 1つ分
+だけ進めたアドレスを XC-ADDR2 に返します。 u2 は xchar 分だけ u1 より減
+ります(残り文字列長さです)。 u2 が 0 になったら末尾まで到達しています。
+注意: 0 になってもそこで止まりません更に進んでしまうので注意(長さが負数
+になる)
 
 ‘x\string-’ ( xc-addr u1 – xc-addr u2  ) xchar-ext “x-backslash-string-minus”
-   Step backward by one xchar in the buffer defined by address XC-ADDR
-and size U1 in chars, starting at the end of the buffer.  XC-ADDR is the
-address and U2 the size in chars of the remaining buffer after stepping
-backward over the last xchar in the buffer.
+   バッファの最後から開始して、 アドレス XC-ADDR とサイズ U1 (char単位)
+で定義されたバッファー内で 1 xchar ずつ後方に進みます。 XC-ADDR は変わら
+ず、 U2 は xchar 分ずつ短くなります。 注意: 0 になっても止まりません。そ
+のまま長さが負数になっていきます。
 
 ‘-trailing-garbage’ ( xc-addr u1 – xc-addr u2  ) xchar-ext “minus-trailing-garbage”
-   Examine the last XCHAR in the buffer XC-ADDR U1—if the encoding is
-correct and it repesents a full char, U2 equals U1, otherwise, U2
-represents the string without the last (garbled) xchar.
+   XC-ADDR U1 というバッファー内の最後の XCHAR を調べます — エンコードが
+正しく、 完全な文字を表す場合 U2 は U1 と等しいです。 それ以外の場合は
+U2 は、 最後の(文字化けした) xchar を除いた文字列を表します。
 
 ‘x-width’ ( xc-addr u – n  ) xchar-ext “x-width”
-   N is the number of monospace ASCII chars that take the same space to
-display as the the xchar string starting at XC-ADDR, using U chars;
-assuming a monospaced display font, i.e.  char width is always an
-integer multiple of the width of an ASCII char.
+   アドレス XC-ADDR 長さ U (char単位)の文字列に対して、同じ幅の等幅
+ASCII 文字での文字数を N に得ます。 等幅フォントを想定しています。 つま
+り文字の幅はいずれも ASCII 文字の幅の整数倍であると仮定します(訳注: 含ま
+れる xchar ごとにその表示幅を調べたのを積算して返します buf $@ type abcあ
+def ok buf $@len .  9 ok buf $@ x-width .  8 ok)
 
 ‘xkey’ ( – xc  ) xchar “x-key”
-   Reads an xchar from the terminal.  This will discard all input events
-up to the completion of the xchar.
+   端末から xchar を 1 つ読み取ります。 これにより、xchar の読み取りが完
+了するまでのすべての入力イベントが破棄されます(訳注: ヒストリ操作は効い
+たので…全ての入力イベント…?)。
 
 ‘xc-width’ ( xc – n  ) xchar-ext “x-c-width”
-   XC has a width of N times the width of a normal fixed-width glyph.
+   XC の幅は、通常の固定幅グリフ(fixed-width glyph)の幅の N 倍です。
 
 ‘xhold’ ( xc –  ) xchar-ext “x-hold”
-   Used between ‘<<#’ and ‘#>’.  Prepend XC to the pictured numeric
-output string.  Alternatively, use ‘holds’.
+   ‘<<#’ と ‘#>’ の間で使用されます。 表示数値出力文字列(pictured
+numeric output string)の前に XC を追加します。 代替手段としては ‘holds’
+を使用することができます。
 
 ‘xc,’ ( xchar –  ) xchar “x-c-comma”
 
@@ -891,68 +898,72 @@ File: gforth.info,  Node: i18n and l10n,  Next: Substitute,  Prev: Xchars and Un
 6.20.11 国際化(I18n)とローカライズ
 ----------------------------------
 
-Programs for end users require to address those in their native
-language.  There is a decades old proposal for such a facility that has
-been split from other proposals for international character sets like
-Xchars (*note Xchars and Unicode::) and Substitute (*note Substitute::).
-Messages displayed on the screen need to be translated from the native
-language of the developers to the local languages of the user.
+エンド・ユーザー向けのプログラムは、 エンド・ユーザーの母国語に対応する
+必要があります。 このような機能については古くから提案があり、 Xchars
+(*note Xchars and Unicode::)や Substitute (*note Substitute::) などの国
+際文字セットに関する他の提案から分割されました。 画面に表示されるメッセ
+ージは、 開発者の母国語(native language)からユーザーの現地言語(local
+languages)に翻訳する必要があります。
 
-   Strings subject to translation are declared with ‘L" ’STRING‘"’.
-This returns a locale string identifier (LSID). LSIDs are opaque types,
-taking a cell on the stack.  LSIDs can be translated into a locale;
-locales are languages and country-specific variants of that language.
+   翻訳対象の文字列は ‘L" ’STRING‘"’ で宣言します。 これにより、 ロケー
+ル文字列識別子(LSID)が返されます。 LSID は不明瞭なタイプ(opaque types)で
+あり、 スタック上のセルとして扱われます。 LSID はロケールに変換できます
+。 ロケールは、 言語およびその言語の国固有のバリエーションです。
 
 ‘L"’ ( "lsid<">" – lsid  ) gforth-experimental “l-quote”
-   Parse a string and define a new lsid, if the string is uniquely new.
-Identical strings result in identical lsids, which allows to refer to
-the same lsid from multiple locations using the same string.
+   文字列が一意に新しい場合は、 文字列をパースし、 新しい lsid を定義し
+ます。 同一文字列は同一の lsid となり、 同一文字列を使用して複数の場所か
+ら同じ lsid を参照できます。
 
 ‘LU"’ ( "lsid<">" – lsid  ) gforth-experimental “l-unique-quote”
-   Parse a string and always define a new lsid, even if the string is
-not unique.
+   文字列がユニークでない場合でも(重複してても)、 文字列をパースし、 常
+に新しい lsid を定義します。
 
 ‘native@’ ( lsid – addr u  ) gforth-experimental “native-fetch”
-   fetch native string from an LSID
+   LSID からネイティブ文字列(native string)を取得します
 
 ‘locale@’ ( lsid – addr u  ) gforth-experimental “locale-fetch”
-   fetch the localized string in the current language and country
+   現在の言語 かつ 現在の国(country)でローカライズされた文字列を取得しま
+す
 
 ‘locale!’ ( addr u lsid –  ) gforth-experimental “locale-store”
-   Store localized string ADDR U for the current locale and country in
-LSID.
+   現在のロケール かつ 現在の国の、 ローカライズされた文字列 ADDR U を
+LSID に保存します。
 
 ‘Language’ ( "name" –  ) gforth-experimental “Language”
-   define a locale.  Executing that locale makes it the current locale.
+   ロケールを定義します。 そのロケールを実行すると、 それが現在のロケー
+ルになります。
 
 ‘Country’ ( <lang> "name" –  ) gforth-experimental “Country”
-   define a variant (typical: country) for the current locale.
-Executing that locale makes it the current locale.  You can create
-variants of variants (a country may have variants within, e.g.  think of
-how many words for rolls/buns there are in many languages).
+   現在のロケールのバリエーション(通常: 国;country)を定義します。 そのロ
+ケールを実行すると、それが現在のロケールになります。 バリエーションのバ
+リエーションを作成できます(国によってはバリエーションが存在する場合があ
+ります。たとえば、 多くの言語で rolls/buns を表す単語が何語あるかを考え
+てください)。
 
 ‘locale-file’ ( fid –  ) gforth-experimental “locale-file”
-   read lines from FID into the current locale.
+   FID から現在のロケールに行(lines)を読み取ります。
 
 ‘included-locale’ ( addr u –  ) gforth-experimental “included-locale”
-   read lines from the file ADDR U into the current locale.
+   ファイル ADDR U から現在のロケールに行(lines)を読み取ります。
 
 ‘include-locale’ ( "name" –  ) gforth-experimental “include-locale”
-   read lines from the file "NAME" into the current locale.
+   指定のファイル "NAME" から現在のロケールに行(lines)を読み取ります。
 
 ‘locale-csv’ ( "name" –  ) gforth-experimental “locale-csv”
-   import comma-separated value table into locales.  first line contains
-locale names, “program” and “default” are special entries; generic
-languages must preceed translations for specific countries.  Entries
-under “program” (must be leftmost) are used to search for the lsid; if
-empty, the line number-1 is the lsid index.
+   カンマ区切り値テーブルをロケールにインポートします。 最初の行にはロケ
+ール名が含まれます。 “program” と “default” は特別なエントリです。
+generic languages は特定の国(specific countries)向けの翻訳よりも優先しな
+ければなりません。 “program” の下のエントリ(一番左にある必要があります)
+は、 lsid の検索に使用されます。 空の場合、 行番号 1 は lsid インデック
+スです。
 
 ‘.locale-csv’ ( –  ) gforth-experimental “dot-locale-csv”
-   write the locale database in CSV format to the terminal output.
+   ロケール・データベースを CSV 形式で端末に出力します。
 
 ‘locale-csv-out’ ( "name" –  ) gforth-experimental “locale-csv”
-   Create file "NAME" and write the locale database out to the file
-"NAME" in CSV format.
+   ファイル "NAME" を作成し、 ロケール・データベースを CSV 形式でファイ
+ル "NAME" に書き込みます。
 
 
 File: gforth.info,  Node: Substitute,  Next: CSV Reader,  Prev: i18n and l10n,  Up: Other I/O
@@ -960,13 +971,12 @@ File: gforth.info,  Node: Substitute,  Next: CSV Reader,  Prev: i18n and l10n,  
 6.20.12 Substitute
 ------------------
 
-This is a simple text macro replacement facility.  Texts in the form
-‘"text %macro% text"’ are processed, and the macro variables enclosed in
-‘'%'’ are replaced with their associated strings.  Two consecutive ‘%’
-are replaced by one ‘%’.  Macros are defined in a specific wordlist, and
-return a string upon execution; the standard defines only one way to
-declare macros, ‘replaces’, which creates a macro that just returns a
-string.
+これは単純なテキスト・マクロ置換機能です。 ‘"text %macro% text"’ の形式
+のテキストが処理され、‘'%'’ で囲まれたマクロ変数が関連する文字列に置き換
+えられます。 2 つの連続する ‘%’ は 1 つの ‘%’ に置き換えられます。 マク
+ロは特定のワードリストで定義され、実行時に文字列を返します。 標準では、
+マクロを宣言する方法が 1 つだけ、 ‘replaces’ のみ定義されています。 これ
+は文字列を返すだけのマクロを作成します。
 
 ‘macros-wordlist’ ( – wid  ) gforth-experimental “macros-wordlist”
    wordlist for string replacement macros
@@ -6872,204 +6882,4 @@ likely to change during the maintenance of Gforth.
 * The optional Memory-Allocation word set::
 * The optional Programming-Tools word set::
 * The optional Search-Order word set::
-
-
-File: gforth.info,  Node: The Core Words,  Next: The optional Block word set,  Prev: Standard conformance,  Up: Standard conformance
-
-9.1 The Core Words
-==================
-
-* Menu:
-
-* core-idef::                Implementation Defined Options
-* core-ambcond::             あいまいな条件
-* core-other::               その他のシステム・ドキュメント
-
-
-File: gforth.info,  Node: core-idef,  Next: core-ambcond,  Prev: The Core Words,  Up: The Core Words
-
-9.1.1 Implementation Defined Options
-------------------------------------
-
-(Cell) aligned addresses:
-     processor-dependent.  Gforth’s alignment words perform natural
-     alignment (e.g., an address aligned for a datum of size 8 is
-     divisible by 8).  Unaligned accesses usually result in a ‘-23
-     THROW’.
-
-‘EMIT’ and non-graphic characters:
-     The character is output using the C library function (actually,
-     macro) ‘putc’.
-
-character editing of ‘ACCEPT’ and ‘EXPECT’:
-     This is modeled on the GNU readline library (*note Command Line
-     Editing: (readline)Readline Interaction.) with Emacs-like key
-     bindings.  ‘Tab’ deviates a little by producing a full word
-     completion every time you type it (instead of producing the common
-     prefix of all completions).  *Note Command-line editing::.
-
-character set:
-     The character set of your computer and display device.  Gforth is
-     8-bit-clean (but some other component in your system may make
-     trouble).
-
-Character-aligned address requirements:
-     installation-dependent.  Currently a character is represented by a
-     C ‘unsigned char’; in the future we might switch to ‘wchar_t’
-     (Comments on that requested).
-
-character-set extensions and matching of names:
-     Any character except the ASCII NUL character can be used in a name.
-     Matching is case-insensitive (except in ‘TABLE’s).  The matching is
-     performed using the C library function ‘strncasecmp’, whose
-     function is probably influenced by the locale.  E.g., the ‘C’
-     locale does not know about accents and umlauts, so they are matched
-     case-sensitively in that locale.  For portability reasons it is
-     best to write programs such that they work in the ‘C’ locale.  Then
-     one can use libraries written by a Polish programmer (who might use
-     words containing ISO Latin-2 encoded characters) and by a French
-     programmer (ISO Latin-1) in the same program (of course, ‘WORDS’
-     will produce funny results for some of the words (which ones,
-     depends on the font you are using)).  Also, the locale you prefer
-     may not be available in other operating systems.  Hopefully,
-     Unicode will solve these problems one day.
-
-conditions under which control characters match a space delimiter:
-     If ‘word’ is called with the space character as a delimiter, all
-     white-space characters (as identified by the C macro ‘isspace()’)
-     are delimiters.  ‘Parse’, on the other hand, treats space like
-     other delimiters.  ‘Parse-name’, which is used by the outer
-     interpreter (aka text interpreter) by default, treats all
-     white-space characters as delimiters.
-
-format of the control-flow stack:
-     The data stack is used as control-flow stack.  The size of a
-     control-flow stack item in cells is given by the constant
-     ‘cs-item-size’.  At the time of this writing, an item consists of a
-     (pointer to a) locals list (third), an address in the code
-     (second), and a tag for identifying the item (TOS). The following
-     tags are used: ‘defstart’, ‘live-orig’, ‘dead-orig’, ‘dest’,
-     ‘do-dest’, ‘scopestart’.
-
-conversion of digits > 35
-     The characters ‘[\]^_'’ are the digits with the decimal value
-     36−41.  There is no way to input many of the larger digits.
-
-display after input terminates in ‘ACCEPT’ and ‘EXPECT’:
-     The cursor is moved to the end of the entered string.  If the input
-     is terminated using the ‘Return’ key, a space is typed.
-
-exception abort sequence of ‘ABORT"’:
-     The error string is stored into the variable ‘"error’ and a ‘-2
-     throw’ is performed.
-
-input line terminator:
-     For interactive input, ‘C-m’ (CR) and ‘C-j’ (LF) terminate lines.
-     One of these characters is typically produced when you type the
-     ‘Enter’ or ‘Return’ key.
-
-maximum size of a counted string:
-     ‘s" /counted-string" environment? drop .’.  Currently 255
-     characters on all platforms, but this may change.
-
-maximum size of a parsed string:
-     Given by the constant ‘/line’.  Currently 255 characters.
-
-maximum size of a definition name, in characters:
-     MAXU/8
-
-maximum string length for ‘ENVIRONMENT?’, in characters:
-     MAXU/8
-
-method of selecting the user input device:
-     The user input device is the standard input.  There is currently no
-     way to change it from within Gforth.  However, the input can
-     typically be redirected in the command line that starts Gforth.
-
-method of selecting the user output device:
-     ‘EMIT’ and ‘TYPE’ output to the file-id stored in the value
-     ‘outfile-id’ (‘stdout’ by default).  Gforth uses unbuffered output
-     when the user output device is a terminal, otherwise the output is
-     buffered.
-
-methods of dictionary compilation:
-     What are we expected to document here?
-
-number of bits in one address unit:
-     ‘s" address-units-bits" environment? drop .’.  8 in all current
-     platforms.
-
-number representation and arithmetic:
-     Processor-dependent.  Binary two’s complement on all current
-     platforms.
-
-ranges for integer types:
-     Installation-dependent.  Make environmental queries for ‘MAX-N’,
-     ‘MAX-U’, ‘MAX-D’ and ‘MAX-UD’.  The lower bounds for unsigned (and
-     positive) types is 0.  The lower bound for signed types on two’s
-     complement and one’s complement machines machines can be computed
-     by adding 1 to the upper bound.
-
-read-only data space regions:
-     The whole Forth data space is writable.
-
-size of buffer at ‘WORD’:
-     ‘PAD HERE - .’.  104 characters on 32-bit machines.  The buffer is
-     shared with the pictured numeric output string.  If overwriting
-     ‘PAD’ is acceptable, it is as large as the remaining dictionary
-     space, although only as much can be sensibly used as fits in a
-     counted string.
-
-size of one cell in address units:
-     ‘1 cells .’.
-
-size of one character in address units:
-     ‘1 chars .’.  1 on all current platforms.
-
-size of the keyboard terminal buffer:
-     Varies.  You can determine the size at a specific time using ‘lp@
-     tib - .’.  It is shared with the locals stack and TIBs of files
-     that include the current file.  You can change the amount of space
-     for TIBs and locals stack at Gforth startup with the command line
-     option ‘-l’.
-
-size of the pictured numeric output buffer:
-     ‘PAD HERE - .’.  104 characters on 32-bit machines.  The buffer is
-     shared with ‘WORD’.
-
-size of the scratch area returned by ‘PAD’:
-     The remainder of dictionary space.  ‘unused pad here - - .’.
-
-system case-sensitivity characteristics:
-     Dictionary searches are case-insensitive (except in ‘TABLE’s).
-     However, as explained above under character-set extensions, the
-     matching for non-ASCII characters is determined by the locale you
-     are using.  In the default ‘C’ locale all non-ASCII characters are
-     matched case-sensitively.
-
-system prompt:
-     ‘ ok’ in interpret state, ‘ compiled’ in compile state.
-
-division rounding:
-     The ordinary division words ‘/ mod /mod */ */mod’ perform floored
-     division (with the default installation of Gforth).  You can check
-     this with ‘s" floored" environment? drop .’.  If you write programs
-     that need a specific division rounding, best use ‘fm/mod’ or
-     ‘sm/rem’ for portability.
-
-values of ‘STATE’ when true:
-     -1.
-
-values returned after arithmetic overflow:
-     On two’s complement machines, arithmetic is performed modulo
-     2**bits-per-cell for single arithmetic and 4**bits-per-cell for
-     double arithmetic (with appropriate mapping for signed types).
-     Division by zero typically results in a ‘-55 throw’ (Floating-point
-     unidentified fault) or ‘-10 throw’ (divide by zero).  Integer
-     division overflow can result in these throws, or in ‘-11 throw’; in
-     ‘gforth-fast’ division overflow and divide by zero may also result
-     in returning bogus results without producing an exception.
-
-whether the current definition can be found after DOES>:
-     No.
 

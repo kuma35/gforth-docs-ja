@@ -27,6 +27,206 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: The Core Words,  Next: The optional Block word set,  Prev: Standard conformance,  Up: Standard conformance
+
+9.1 The Core Words
+==================
+
+* Menu:
+
+* core-idef::                Implementation Defined Options
+* core-ambcond::             あいまいな条件
+* core-other::               その他のシステム・ドキュメント
+
+
+File: gforth.info,  Node: core-idef,  Next: core-ambcond,  Prev: The Core Words,  Up: The Core Words
+
+9.1.1 Implementation Defined Options
+------------------------------------
+
+(Cell) aligned addresses:
+     processor-dependent.  Gforth’s alignment words perform natural
+     alignment (e.g., an address aligned for a datum of size 8 is
+     divisible by 8).  Unaligned accesses usually result in a ‘-23
+     THROW’.
+
+‘EMIT’ and non-graphic characters:
+     The character is output using the C library function (actually,
+     macro) ‘putc’.
+
+character editing of ‘ACCEPT’ and ‘EXPECT’:
+     This is modeled on the GNU readline library (*note Command Line
+     Editing: (readline)Readline Interaction.) with Emacs-like key
+     bindings.  ‘Tab’ deviates a little by producing a full word
+     completion every time you type it (instead of producing the common
+     prefix of all completions).  *Note Command-line editing::.
+
+character set:
+     The character set of your computer and display device.  Gforth is
+     8-bit-clean (but some other component in your system may make
+     trouble).
+
+Character-aligned address requirements:
+     installation-dependent.  Currently a character is represented by a
+     C ‘unsigned char’; in the future we might switch to ‘wchar_t’
+     (Comments on that requested).
+
+character-set extensions and matching of names:
+     Any character except the ASCII NUL character can be used in a name.
+     Matching is case-insensitive (except in ‘TABLE’s).  The matching is
+     performed using the C library function ‘strncasecmp’, whose
+     function is probably influenced by the locale.  E.g., the ‘C’
+     locale does not know about accents and umlauts, so they are matched
+     case-sensitively in that locale.  For portability reasons it is
+     best to write programs such that they work in the ‘C’ locale.  Then
+     one can use libraries written by a Polish programmer (who might use
+     words containing ISO Latin-2 encoded characters) and by a French
+     programmer (ISO Latin-1) in the same program (of course, ‘WORDS’
+     will produce funny results for some of the words (which ones,
+     depends on the font you are using)).  Also, the locale you prefer
+     may not be available in other operating systems.  Hopefully,
+     Unicode will solve these problems one day.
+
+conditions under which control characters match a space delimiter:
+     If ‘word’ is called with the space character as a delimiter, all
+     white-space characters (as identified by the C macro ‘isspace()’)
+     are delimiters.  ‘Parse’, on the other hand, treats space like
+     other delimiters.  ‘Parse-name’, which is used by the outer
+     interpreter (aka text interpreter) by default, treats all
+     white-space characters as delimiters.
+
+format of the control-flow stack:
+     The data stack is used as control-flow stack.  The size of a
+     control-flow stack item in cells is given by the constant
+     ‘cs-item-size’.  At the time of this writing, an item consists of a
+     (pointer to a) locals list (third), an address in the code
+     (second), and a tag for identifying the item (TOS). The following
+     tags are used: ‘defstart’, ‘live-orig’, ‘dead-orig’, ‘dest’,
+     ‘do-dest’, ‘scopestart’.
+
+conversion of digits > 35
+     The characters ‘[\]^_'’ are the digits with the decimal value
+     36−41.  There is no way to input many of the larger digits.
+
+display after input terminates in ‘ACCEPT’ and ‘EXPECT’:
+     The cursor is moved to the end of the entered string.  If the input
+     is terminated using the ‘Return’ key, a space is typed.
+
+exception abort sequence of ‘ABORT"’:
+     The error string is stored into the variable ‘"error’ and a ‘-2
+     throw’ is performed.
+
+input line terminator:
+     For interactive input, ‘C-m’ (CR) and ‘C-j’ (LF) terminate lines.
+     One of these characters is typically produced when you type the
+     ‘Enter’ or ‘Return’ key.
+
+maximum size of a counted string:
+     ‘s" /counted-string" environment? drop .’.  Currently 255
+     characters on all platforms, but this may change.
+
+maximum size of a parsed string:
+     Given by the constant ‘/line’.  Currently 255 characters.
+
+maximum size of a definition name, in characters:
+     MAXU/8
+
+maximum string length for ‘ENVIRONMENT?’, in characters:
+     MAXU/8
+
+method of selecting the user input device:
+     The user input device is the standard input.  There is currently no
+     way to change it from within Gforth.  However, the input can
+     typically be redirected in the command line that starts Gforth.
+
+method of selecting the user output device:
+     ‘EMIT’ and ‘TYPE’ output to the file-id stored in the value
+     ‘outfile-id’ (‘stdout’ by default).  Gforth uses unbuffered output
+     when the user output device is a terminal, otherwise the output is
+     buffered.
+
+methods of dictionary compilation:
+     What are we expected to document here?
+
+number of bits in one address unit:
+     ‘s" address-units-bits" environment? drop .’.  8 in all current
+     platforms.
+
+number representation and arithmetic:
+     Processor-dependent.  Binary two’s complement on all current
+     platforms.
+
+ranges for integer types:
+     Installation-dependent.  Make environmental queries for ‘MAX-N’,
+     ‘MAX-U’, ‘MAX-D’ and ‘MAX-UD’.  The lower bounds for unsigned (and
+     positive) types is 0.  The lower bound for signed types on two’s
+     complement and one’s complement machines machines can be computed
+     by adding 1 to the upper bound.
+
+read-only data space regions:
+     The whole Forth data space is writable.
+
+size of buffer at ‘WORD’:
+     ‘PAD HERE - .’.  104 characters on 32-bit machines.  The buffer is
+     shared with the pictured numeric output string.  If overwriting
+     ‘PAD’ is acceptable, it is as large as the remaining dictionary
+     space, although only as much can be sensibly used as fits in a
+     counted string.
+
+size of one cell in address units:
+     ‘1 cells .’.
+
+size of one character in address units:
+     ‘1 chars .’.  1 on all current platforms.
+
+size of the keyboard terminal buffer:
+     Varies.  You can determine the size at a specific time using ‘lp@
+     tib - .’.  It is shared with the locals stack and TIBs of files
+     that include the current file.  You can change the amount of space
+     for TIBs and locals stack at Gforth startup with the command line
+     option ‘-l’.
+
+size of the pictured numeric output buffer:
+     ‘PAD HERE - .’.  104 characters on 32-bit machines.  The buffer is
+     shared with ‘WORD’.
+
+size of the scratch area returned by ‘PAD’:
+     The remainder of dictionary space.  ‘unused pad here - - .’.
+
+system case-sensitivity characteristics:
+     Dictionary searches are case-insensitive (except in ‘TABLE’s).
+     However, as explained above under character-set extensions, the
+     matching for non-ASCII characters is determined by the locale you
+     are using.  In the default ‘C’ locale all non-ASCII characters are
+     matched case-sensitively.
+
+system prompt:
+     ‘ ok’ in interpret state, ‘ compiled’ in compile state.
+
+division rounding:
+     The ordinary division words ‘/ mod /mod */ */mod’ perform floored
+     division (with the default installation of Gforth).  You can check
+     this with ‘s" floored" environment? drop .’.  If you write programs
+     that need a specific division rounding, best use ‘fm/mod’ or
+     ‘sm/rem’ for portability.
+
+values of ‘STATE’ when true:
+     -1.
+
+values returned after arithmetic overflow:
+     On two’s complement machines, arithmetic is performed modulo
+     2**bits-per-cell for single arithmetic and 4**bits-per-cell for
+     double arithmetic (with appropriate mapping for signed types).
+     Division by zero typically results in a ‘-55 throw’ (Floating-point
+     unidentified fault) or ‘-10 throw’ (divide by zero).  Integer
+     division overflow can result in these throws, or in ‘-11 throw’; in
+     ‘gforth-fast’ division overflow and divide by zero may also result
+     in returning bogus results without producing an exception.
+
+whether the current definition can be found after DOES>:
+     No.
+
+
 File: gforth.info,  Node: core-ambcond,  Next: core-other,  Prev: core-idef,  Up: The Core Words
 
 9.1.2 Ambiguous conditions
@@ -3971,51 +4171,51 @@ this manual.  Each word is listed with its stack effect and wordset.
 * #tib ( -- ADDR ) core-ext-obsolescent: The Text Interpreter.
                                                               (line 136)
 * $! ( ADDR1 U $ADDR -- ) gforth-0.7:    $tring words.        (line  25)
-* $!len ( U $ADDR -- ) gforth-0.7:       $tring words.        (line  35)
-* $+! ( ADDR1 U $ADDR -- ) gforth-0.7:   $tring words.        (line  53)
-* $+!len ( U $ADDR -- ADDR ) gforth-1.0: $tring words.        (line  42)
-* $+slurp ( FID ADDR -- ) gforth-1.0:    $tring words.        (line 101)
-* $+slurp-file ( C-ADDR U ADDR -- ) gforth-1.0: $tring words. (line 105)
-* $+[]! ( C-ADDR U $[]ADDR -- ) gforth-1.0: $tring words.     (line 121)
-* $. ( ADDR -- ) gforth-1.0:             $tring words.        (line  90)
+* $!len ( U $ADDR -- ) gforth-0.7:       $tring words.        (line  36)
+* $+! ( ADDR1 U $ADDR -- ) gforth-0.7:   $tring words.        (line  54)
+* $+!len ( U $ADDR -- ADDR ) gforth-1.0: $tring words.        (line  43)
+* $+slurp ( FID ADDR -- ) gforth-1.0:    $tring words.        (line 102)
+* $+slurp-file ( C-ADDR U ADDR -- ) gforth-1.0: $tring words. (line 106)
+* $+[]! ( C-ADDR U $[]ADDR -- ) gforth-1.0: $tring words.     (line 122)
+* $. ( ADDR -- ) gforth-1.0:             $tring words.        (line  91)
 * $? ( -- N ) gforth-0.2:                Passing Commands to the OS.
                                                               (line  25)
-* $@ ( $ADDR -- ADDR2 U ) gforth-0.7:    $tring words.        (line  29)
-* $@len ( $ADDR -- U ) gforth-0.7:       $tring words.        (line  32)
-* $boot ( $ADDR -- ) gforth-1.0:         $tring words.        (line 157)
-* $del ( ADDR OFF U -- ) gforth-0.7:     $tring words.        (line  47)
-* $exec ( XT ADDR -- ) gforth-1.0:       $tring words.        (line  83)
-* $free ( $ADDR -- ) gforth-1.0:         $tring words.        (line  59)
-* $init ( $ADDR -- ) gforth-1.0:         $tring words.        (line  63)
-* $ins ( ADDR1 U $ADDR OFF -- ) gforth-0.7: $tring words.     (line  50)
-* $iter ( .. $ADDR CHAR XT -- .. ) gforth-0.7: $tring words.  (line  72)
-* $over ( ADDR U $ADDR OFF -- ) gforth-1.0: $tring words.     (line  80)
-* $save ( $ADDR -- ) gforth-1.0:         $tring words.        (line 151)
-* $saved ( ADDR -- ) gforth-1.0:         $tring words.        (line 165)
-* $slurp ( FID ADDR -- ) gforth-1.0:     $tring words.        (line  93)
-* $slurp-file ( C-ADDR U ADDR -- ) gforth-1.0: $tring words.  (line  97)
+* $@ ( $ADDR -- ADDR2 U ) gforth-0.7:    $tring words.        (line  30)
+* $@len ( $ADDR -- U ) gforth-0.7:       $tring words.        (line  33)
+* $boot ( $ADDR -- ) gforth-1.0:         $tring words.        (line 158)
+* $del ( ADDR OFF U -- ) gforth-0.7:     $tring words.        (line  48)
+* $exec ( XT ADDR -- ) gforth-1.0:       $tring words.        (line  84)
+* $free ( $ADDR -- ) gforth-1.0:         $tring words.        (line  60)
+* $init ( $ADDR -- ) gforth-1.0:         $tring words.        (line  64)
+* $ins ( ADDR1 U $ADDR OFF -- ) gforth-0.7: $tring words.     (line  51)
+* $iter ( .. $ADDR CHAR XT -- .. ) gforth-0.7: $tring words.  (line  73)
+* $over ( ADDR U $ADDR OFF -- ) gforth-1.0: $tring words.     (line  81)
+* $save ( $ADDR -- ) gforth-1.0:         $tring words.        (line 152)
+* $saved ( ADDR -- ) gforth-1.0:         $tring words.        (line 166)
+* $slurp ( FID ADDR -- ) gforth-1.0:     $tring words.        (line  94)
+* $slurp-file ( C-ADDR U ADDR -- ) gforth-1.0: $tring words.  (line  98)
 * $split ( ADDR U CHAR -- ADDR1 U1 ADDR2 U2 ) gforth-0.7: $tring words.
-                                                              (line  67)
+                                                              (line  68)
 * $substitute ( ADDR1 LEN1 -- ADDR2 LEN2 N/IOR ) gforth-experimental: Substitute.
-                                                              (line  25)
-* $tmp ( XT -- ADDR U ) gforth-1.0:      $tring words.        (line  87)
+                                                              (line  24)
+* $tmp ( XT -- ADDR U ) gforth-1.0:      $tring words.        (line  88)
 * $unescape ( ADDR1 U1 -- ADDR2 U2 ) gforth-experimental: Substitute.
-                                                              (line  40)
-* $Variable ( -- ) gforth-1.0:           $tring words.        (line 171)
-* $[] ( U $[]ADDR -- ADDR' ) gforth-1.0: $tring words.        (line 109)
-* $[]! ( C-ADDR U N $[]ADDR -- ) gforth-1.0: $tring words.    (line 113)
-* $[]# ( ADDR -- LEN ) gforth-1.0:       $tring words.        (line 130)
-* $[]+! ( C-ADDR U N $[]ADDR -- ) gforth-1.0: $tring words.   (line 117)
-* $[]. ( ADDR -- ) gforth-1.0:           $tring words.        (line 143)
-* $[]@ ( N $[]ADDR -- ADDR U ) gforth-1.0: $tring words.      (line 125)
-* $[]boot ( ADDR -- ) gforth-1.0:        $tring words.        (line 162)
-* $[]free ( ADDR -- ) gforth-1.0:        $tring words.        (line 146)
-* $[]map ( ADDR XT -- ) gforth-1.0:      $tring words.        (line 133)
-* $[]save ( ADDR -- ) gforth-1.0:        $tring words.        (line 154)
-* $[]saved ( ADDR -- ) gforth-1.0:       $tring words.        (line 168)
-* $[]slurp ( FID ADDR -- ) gforth-1.0:   $tring words.        (line 137)
-* $[]slurp-file ( ADDR U $ADDR -- ) gforth-1.0: $tring words. (line 140)
-* $[]Variable ( -- ) gforth-1.0:         $tring words.        (line 174)
+                                                              (line  39)
+* $Variable ( -- ) gforth-1.0:           $tring words.        (line 172)
+* $[] ( U $[]ADDR -- ADDR' ) gforth-1.0: $tring words.        (line 110)
+* $[]! ( C-ADDR U N $[]ADDR -- ) gforth-1.0: $tring words.    (line 114)
+* $[]# ( ADDR -- LEN ) gforth-1.0:       $tring words.        (line 131)
+* $[]+! ( C-ADDR U N $[]ADDR -- ) gforth-1.0: $tring words.   (line 118)
+* $[]. ( ADDR -- ) gforth-1.0:           $tring words.        (line 144)
+* $[]@ ( N $[]ADDR -- ADDR U ) gforth-1.0: $tring words.      (line 126)
+* $[]boot ( ADDR -- ) gforth-1.0:        $tring words.        (line 163)
+* $[]free ( ADDR -- ) gforth-1.0:        $tring words.        (line 147)
+* $[]map ( ADDR XT -- ) gforth-1.0:      $tring words.        (line 134)
+* $[]save ( ADDR -- ) gforth-1.0:        $tring words.        (line 155)
+* $[]saved ( ADDR -- ) gforth-1.0:       $tring words.        (line 169)
+* $[]slurp ( FID ADDR -- ) gforth-1.0:   $tring words.        (line 138)
+* $[]slurp-file ( ADDR U $ADDR -- ) gforth-1.0: $tring words. (line 141)
+* $[]Variable ( -- ) gforth-1.0:         $tring words.        (line 175)
 * %align ( ALIGN SIZE -- ) gforth-0.4:   Structure Glossary.  (line   6)
 * %alignment ( ALIGN SIZE -- ALIGN ) gforth-0.4: Structure Glossary.
                                                               (line   9)
@@ -4075,7 +4275,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * +thru ( I*X N1 N2 -- J*X ) gforth-0.2: Blocks.              (line 209)
 * +TO ( VALUE "NAME" -- ) gforth-1.0:    Values.              (line  39)
 * +x/string ( XC-ADDR1 U1 -- XC-ADDR2 U2 ) xchar-ext: Xchars and Unicode.
-                                                              (line  90)
+                                                              (line  92)
 * +} ( ADDR ADDR' -- ADDR' ) regexp-pattern: Regular Expressions.
                                                               (line 131)
 * , ( W -- ) core:                       Dictionary allocation.
@@ -4098,7 +4298,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * -rot ( W1 W2 W3 -- W3 W1 W2 ) gforth-0.2: Data stack.       (line  27)
 * -trailing ( C_ADDR U1 -- C_ADDR U2 ) string: String words.  (line  45)
 * -trailing-garbage ( XC-ADDR U1 -- XC-ADDR U2 ) xchar-ext: Xchars and Unicode.
-                                                              (line 101)
+                                                              (line 105)
 * -[do ( COMPILATION -- DO-SYS ; RUN-TIME N1 N2 -- | LOOP-SYS ) gforth-experimental: Counted Loops.
                                                               (line 191)
 * -\d ( ADDR -- ADDR' ) regexp-pattern:  Regular Expressions. (line  79)
@@ -4120,7 +4320,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * .hm ( NT -- ) gforth-1.0:              Header methods.      (line  24)
 * .id ( NT -- ) gforth-0.6:              Name token.          (line  78)
 * .included ( -- ) gforth-0.5:           Forth source files.  (line  66)
-* .locale-csv ( -- ) gforth-experimental: i18n and l10n.      (line  62)
+* .locale-csv ( -- ) gforth-experimental: i18n and l10n.      (line  66)
 * .path ( PATH-ADDR -- ) gforth-0.4:     General Search Paths.
                                                               (line  31)
 * .r ( N1 N2 -- ) core-ext:              Simple numeric output.
@@ -4129,7 +4329,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  48)
 * .s ( -- ) tools:                       Examining data.      (line  11)
 * .substitute ( ADDR1 LEN1 -- N / IOR ) gforth-experimental: Substitute.
-                                                              (line  21)
+                                                              (line  20)
 * .unresolved ( -- ) gforth-1.0:         Forward.             (line  17)
 * .voc ( WID -- ) gforth-0.2:            Word Lists.          (line 104)
 * .widget ( -- ) minos2:                 widget methods.      (line 102)
@@ -4558,7 +4758,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * c! ( C C-ADDR -- ) core:               Memory Access.       (line  18)
 * C" ( COMPILATION "CCC<QUOTE>" -- ; RUN-TIME -- C-ADDR ) core-ext: Counted string words.
                                                               (line  22)
-* c$+! ( CHAR $ADDR -- ) gforth-1.0:     $tring words.        (line  56)
+* c$+! ( CHAR $ADDR -- ) gforth-1.0:     $tring words.        (line  57)
 * c, ( C -- ) core:                      Dictionary allocation.
                                                               (line  41)
 * c-callback ( "FORTH-NAME" "{TYPE}" "---" "TYPE" -- ) gforth-1.0: Callbacks.
@@ -4679,7 +4879,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * count ( C-ADDR1 -- C-ADDR2 U ) core:   Counted string words.
                                                               (line  13)
 * Country ( <LANG> "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  40)
+                                                              (line  42)
 * cov% ( -- ) gforth-experimental:       Code Coverage.       (line  45)
 * cov+ ( -- ) gforth-experimental:       Code Coverage.       (line  26)
 * coverage? ( -- F ) gforth-internal:    Code Coverage.       (line  23)
@@ -5156,10 +5356,10 @@ this manual.  Each word is listed with its stack effect and wordset.
 * include-file ( I*X WFILEID -- J*X ) file: Forth source files.
                                                               (line  34)
 * include-locale ( "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  52)
+                                                              (line  55)
 * included ( I*X C-ADDR U -- J*X ) file: Forth source files.  (line  38)
 * included-locale ( ADDR U -- ) gforth-experimental: i18n and l10n.
-                                                              (line  49)
+                                                              (line  52)
 * included? ( C-ADDR U -- F ) gforth-0.2: Forth source files. (line  41)
 * infile-execute ( ... XT FILE-ID -- ... ) gforth-0.7: Redirection.
                                                               (line  30)
@@ -5253,7 +5453,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  43)
 * lalign ( -- ) gforth-1.0:              Address arithmetic.  (line 134)
 * laligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 131)
-* Language ( "NAME" -- ) gforth-experimental: i18n and l10n.  (line  37)
+* Language ( "NAME" -- ) gforth-experimental: i18n and l10n.  (line  38)
 * lastfit ( -- ) minos2:                 widget methods.      (line  66)
 * latest ( -- NT ) gforth-0.6:           Name token.          (line  31)
 * latestnt ( -- NT ) gforth-1.0:         Name token.          (line  35)
@@ -5286,12 +5486,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * load ( I*X U -- J*X ) block:           Blocks.              (line 198)
 * load-cov ( -- ) gforth-experimental:   Code Coverage.       (line  68)
 * locale! ( ADDR U LSID -- ) gforth-experimental: i18n and l10n.
-                                                              (line  33)
+                                                              (line  34)
 * locale-csv ( "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  55)
+                                                              (line  58)
 * locale-csv-out ( "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  65)
-* locale-file ( FID -- ) gforth-experimental: i18n and l10n.  (line  46)
+                                                              (line  69)
+* locale-file ( FID -- ) gforth-experimental: i18n and l10n.  (line  49)
 * locale@ ( LSID -- ADDR U ) gforth-experimental: i18n and l10n.
                                                               (line  30)
 * locate ( "NAME" -- ) gforth-1.0:       Locating source code definitions.
@@ -5320,7 +5520,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * m+ ( D1 N -- D2 ) double:              Mixed precision.     (line   6)
 * m: ( -- XT COLON-SYS; RUN-TIME: OBJECT -- ) objects: Objects Glossary.
                                                               (line 100)
-* macros-wordlist ( -- WID ) gforth-experimental: Substitute. (line  14)
+* macros-wordlist ( -- WID ) gforth-experimental: Substitute. (line  13)
 * magenta-input ( -- ) gforth-1.0:       Terminal output.     (line  78)
 * make-latest ( NT -- ) gforth-1.0:      Making a word current.
                                                               (line  11)
@@ -5573,7 +5773,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  69)
 * replace-word ( XT1 XT2 -- ) gforth-1.0: Debugging.          (line  65)
 * replaces ( ADDR1 LEN1 ADDR2 LEN2 -- ) string-ext: Substitute.
-                                                              (line  17)
+                                                              (line  16)
 * reposition-file ( UD WFILEID -- WIOR ) file: General files. (line  91)
 * represent ( R C-ADDR U -- N F1 F2 ) floating: Floating-point output.
                                                               (line  91)
@@ -5774,7 +5974,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * sub-list? ( LIST1 LIST2 -- F ) gforth-internal: Locals implementation.
                                                               (line 100)
 * substitute ( ADDR1 LEN1 ADDR2 LEN2 -- ADDR2 LEN3 N/IOR ) string-ext: Substitute.
-                                                              (line  29)
+                                                              (line  28)
 * success-color ( -- ) gforth-1.0:       Terminal output.     (line  54)
 * swap ( W1 W2 -- W2 W1 ) core:          Data stack.          (line  20)
 * Synonym ( "NAME" "OLDNAME" -- ) tools-ext: Aliases.         (line  14)
@@ -5880,7 +6080,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * uncolored-mode ( -- ) gforth-1.0:      Terminal output.     (line  75)
 * under+ ( N1 N2 N3 -- N N2 ) gforth-0.3: Single precision.   (line  19)
 * unescape ( ADDR1 U1 DEST -- DEST U2 ) string-ext: Substitute.
-                                                              (line  34)
+                                                              (line  33)
 * unlock ( SEMAPHORE -- ) gforth-experimental: Semaphores.    (line  21)
 * unloop ( R:W1 R:W2 -- ) core:          Counted Loops.       (line 259)
 * UNREACHABLE ( -- ) gforth-0.2:         Where are locals visible by name?.
@@ -5979,8 +6179,8 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  53)
 * x, ( X -- ) gforth-1.0:                Dictionary allocation.
                                                               (line  59)
-* x-size ( XC-ADDR U1 -- U2 ) xchar:     Xchars and Unicode.  (line  52)
-* x-width ( XC-ADDR U -- N ) xchar-ext:  Xchars and Unicode.  (line 106)
+* x-size ( XC-ADDR U1 -- U2 ) xchar:     Xchars and Unicode.  (line  54)
+* x-width ( XC-ADDR U -- N ) xchar-ext:  Xchars and Unicode.  (line 110)
 * x>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
                                                               (line 118)
 * x@ ( C-ADDR -- U ) gforth-1.0:         Special Memory Accesses.
@@ -5989,19 +6189,19 @@ this manual.  Each word is listed with its stack effect and wordset.
 * xaligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 137)
 * xbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  86)
-* xc!+ ( XC XC-ADDR1 -- XC-ADDR2 ) xchar: Xchars and Unicode. (line  75)
+* xc!+ ( XC XC-ADDR1 -- XC-ADDR2 ) xchar: Xchars and Unicode. (line  77)
 * xc!+? ( XC XC-ADDR1 U1 -- XC-ADDR2 U2 F ) xchar: Xchars and Unicode.
-                                                              (line  67)
-* xc, ( XCHAR -- ) xchar:                Xchars and Unicode.  (line 123)
-* xc-size ( XC -- U ) xchar:             Xchars and Unicode.  (line  49)
-* xc-width ( XC -- N ) xchar-ext:        Xchars and Unicode.  (line 116)
-* xc@ ( XC-ADDR -- XC ) xchar-ext:       Xchars and Unicode.  (line  56)
-* xc@+ ( XC-ADDR1 -- XC-ADDR2 XC ) xchar: Xchars and Unicode. (line  59)
+                                                              (line  69)
+* xc, ( XCHAR -- ) xchar:                Xchars and Unicode.  (line 130)
+* xc-size ( XC -- U ) xchar:             Xchars and Unicode.  (line  51)
+* xc-width ( XC -- N ) xchar-ext:        Xchars and Unicode.  (line 122)
+* xc@ ( XC-ADDR -- XC ) xchar-ext:       Xchars and Unicode.  (line  58)
+* xc@+ ( XC-ADDR1 -- XC-ADDR2 XC ) xchar: Xchars and Unicode. (line  61)
 * xc@+? ( XC-ADDR1 U1 -- XC-ADDR2 U2 XC ) gforth-experimental: Xchars and Unicode.
-                                                              (line  63)
-* xchar+ ( XC-ADDR1 -- XC-ADDR2 ) xchar: Xchars and Unicode.  (line  82)
+                                                              (line  65)
+* xchar+ ( XC-ADDR1 -- XC-ADDR2 ) xchar: Xchars and Unicode.  (line  84)
 * xchar- ( XC-ADDR1 -- XC-ADDR2 ) xchar-ext: Xchars and Unicode.
-                                                              (line  86)
+                                                              (line  88)
 * XCHAR-ENCODING ( -- ADDR U ) environment: Environmental Queries.
                                                               (line  83)
 * XCHAR-MAXMEM ( -- U ) environment:     Environmental Queries.
@@ -6022,8 +6222,8 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  10)
 * xfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
                                                               (line  77)
-* xhold ( XC -- ) xchar-ext:             Xchars and Unicode.  (line 119)
-* xkey ( -- XC ) xchar:                  Xchars and Unicode.  (line 112)
+* xhold ( XC -- ) xchar-ext:             Xchars and Unicode.  (line 125)
+* xkey ( -- XC ) xchar:                  Xchars and Unicode.  (line 117)
 * xkey? ( -- FLAG ) xchar:               Single-key input.    (line  22)
 * xle ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  91)
@@ -6044,6 +6244,6 @@ this manual.  Each word is listed with its stack effect and wordset.
 * xywh ( -- RX0 RY0 RW RH ) minos2:      widget methods.      (line  87)
 * xywhd ( -- RX RY RW RH RD ) minos2:    widget methods.      (line  90)
 * x\string- ( XC-ADDR U1 -- XC-ADDR U2 ) xchar-ext: Xchars and Unicode.
-                                                              (line  95)
+                                                              (line  99)
 * y ( -- R ) minos2:                     widget methods.      (line  18)
 
