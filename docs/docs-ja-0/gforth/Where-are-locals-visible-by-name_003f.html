@@ -73,10 +73,9 @@ Next: <a href="How-long-do-locals-live_003f.html" accesskey="n" rel="next">How l
 <span id="index-visibility-of-locals"></span>
 <span id="index-scope-of-locals"></span>
 
-<p>Basically, the answer is that locals are visible where you would expect it
-in block-structured languages, and sometimes a little longer. If you want to
-restrict the scope of a local, enclose its definition in
-<code>SCOPE</code>...<code>ENDSCOPE</code>.
+<p>ローカル変数をその名前によって可視できるのはどこまででしょうか？ &ndash; 基本的に、 その答えは、 ローカル変数がブロック構造言語で期待される場所で、
+場合によってはもうちょっとだけ長くできます。 ローカル変数のスコープを制限したい場合は、 その定義を
+<code>SCOPE</code>...<code>ENDSCOPE</code> で囲んで下さい。
 </p>
 
 <span id="index-scope-_0028--compilation-_002d_002d-scope-_003b-run_002dtime-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -95,39 +94,30 @@ restrict the scope of a local, enclose its definition in
 
 
 
-<p>These words behave like control structure words, so you can use them with
-<code>CS-PICK</code> and <code>CS-ROLL</code> to restrict the scope in arbitrary ways.
+<p>これらのワードは制御構造のワードのように動作するため、 <code>CS-PICK</code> および <code>CS-ROLL</code> とともに使用して、
+任意の方法で範囲を制限できます。
 </p>
-<p>If you want a more exact answer to the visibility question, here&rsquo;s the basic
-principle: A local is visible in all places that can only be reached through
-the definition of the local<a id="DOCF30" href="#FOOT30"><sup>30</sup></a>. In other words, it is
-not visible in places that can be reached without going through the
-definition of the local. E.g., locals defined in <code>IF</code>...<code>ENDIF</code>
-are visible until the <code>ENDIF</code>, locals defined in
-<code>BEGIN</code>...<code>UNTIL</code> are visible after the <code>UNTIL</code> (until, e.g.,
-a subsequent <code>ENDSCOPE</code>).
+<p>可視性の質問に対するより正確な答えが必要な場合のために、 ここで基本原則を示します: ローカル変数は、
+ローカル変数の定義を通じてのみ到達できるすべての場所で可視です<a id="DOCF30" href="#FOOT30"><sup>30</sup></a>。
+つまり、 ローカル変数という定義を経由しないと到達できる場所では不可視です。 たとえば、 <code>IF</code>...<code>ENDIF</code>
+の中で定義されたローカル変数は <code>ENDIF</code> まで可視で、 <code>BEGIN</code>...<code>UNTIL</code>
+内で定義されたローカル変数は <code>UNTIL</code> の後(たとえば、後続の <code>ENDSCOPE</code> まで)で可視です。
 </p>
-<p>The reasoning behind this solution is: We want to have the locals visible as
-long as it is meaningful. The user can always make the visibility shorter by
-using explicit scoping. In a place that can only be reached through the
-definition of a local, the meaning of a local name is clear. In other places
-it is not: How is the local initialized at the control flow path that does
-not contain the definition? Which local is meant, if the same name is
-defined twice in two independent control flow paths?
+<p>このソリューションの背景にある理由は次のとおりです: 私達は、 意味がある限り、 ローカル変数を可視させたいと考えています。 ユーザーは、
+明示的なスコープを使用することで、 いつでも可視性を短くすることができます。 ローカル変数の定義によってのみ到達できる場所では、
+ローカル変数名の意味は明らかです。 他の場所ではそうではありません。
+ローカル変数定義が含まれていない制御フロー・パスでローカル変数はどのように初期化されるのでしょうか？  2 つの独立した制御フロー
+パスで同一ローカル変数名が 2 回定義されている場合、 それはどちらのローカル変数を意味するのでしょうか？
 </p>
-<p>This should be enough detail for nearly all users, so you can skip the rest
-of this section. If you really must know all the gory details and options,
-read on.
+<p>上記で、 ほぼすべてのユーザーにとって十分詳細であるため、 このセクションの残りの部分はスキップしてかまいません。
+本当にすべての血みどろの詳細とオプションを知る必要がある場合は、 以下を読み続けてください。
 </p>
-<p>In order to implement this rule, the compiler has to know which places are
-unreachable. It knows this automatically after <code>AHEAD</code>, <code>AGAIN</code>,
-<code>EXIT</code> and <code>LEAVE</code>; in other cases (e.g., after most
-<code>THROW</code>s), you can use the word <code>UNREACHABLE</code> to tell the compiler
-that the control flow never reaches that place. If <code>UNREACHABLE</code> is not
-used where it could, the only consequence is that the visibility of some
-locals is more limited than the rule above says. If <code>UNREACHABLE</code> is
-used where it should not (i.e., if you lie to the compiler), buggy code will
-be produced.
+<p>このルールを実装するには、 コンパイラはどの場所が到達不能(unreachable)であるかを認識する必要があります。 <code>AHEAD</code> や
+<code>AGAIN</code> や <code>EXIT</code> や <code>LEAVE</code> の後で、 これが自動的に認識されます。 他の場合(例: ほとんどの
+<code>THROW</code> の後)、 <code>UNREACHABLE</code> というワードを使用して、
+制御フローがその場所に到達しないことをコンパイラに伝えることができます。 <code>UNREACHABLE</code> が使用できる場所で使用されなかった場合、
+唯一の結果は、 一部のローカル変数の可視性が上記のルールに記載されているよりも制限されることです。 <code>UNREACHABLE</code>
+を使用すべきではない場所で使用すると(つまり、 コンパイラに嘘をついた場合)、 バグのあるコードが生成されます。
 </p>
 
 <span id="index-UNREACHABLE-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -139,12 +129,10 @@ be produced.
 
 
 
-<p>Another problem with this rule is that at <code>BEGIN</code>, the compiler does
-not know which locals will be visible on the incoming back-edge. All
-problems discussed in the following are due to this ignorance of the
-compiler (we discuss the problems using <code>BEGIN</code> loops as examples; the
-discussion also applies to <code>?DO</code> and other loops). Perhaps the most
-insidious example is:
+<p>このルールのもう 1 つの問題は、 <code>BEGIN</code> で、 どのローカル変数が incoming back-edge
+で可視されるかをコンパイラが認識できないことです。 以下で説明するすべての問題は、 コンパイラのこの無知が原因です(<code>BEGIN</code>
+ループを例として使用してこの問題について説明します。 この説明は <code>?DO</code> および他のループにも当てはまります)。
+おそらく最も陰険な例は以下のとおりです:
 </p><div class="example">
 <pre class="example">AHEAD
 BEGIN
@@ -155,29 +143,20 @@ BEGIN
 UNTIL
 </pre></div>
 
-<p>This should be legal according to the visibility rule. The use of <code>x</code>
-can only be reached through the definition; but that appears textually below
-the use.
+<p>これは、 可視性ルールに従って合法である必要があります。 <code>x</code> の使用には、 定義を介してのみ到達できます。 ただし、
+下記に明示した使用法でなければなりません。
 </p>
-<p>From this example it is clear that the visibility rules cannot be fully
-implemented without major headaches. Our implementation treats common cases
-as advertised and the exceptions are treated in a safe way: The compiler
-makes a reasonable guess about the locals visible after a <code>BEGIN</code>; if
-it is too pessimistic, the user will get a spurious error about the local
-not being defined; if the compiler is too optimistic, it will notice this
-later and issue a warning. In the case above the compiler would complain
-about <code>x</code> being undefined at its use. You can see from the obscure
-examples in this section that it takes quite unusual control structures to
-get the compiler into trouble, and even then it will often do fine.
+<p>この例から、 可視性ルールを完全に実装するには大きな問題が伴うことが明らかです。 私たちの実装は、 一般的なケースを宣伝どおりに扱い、
+例外は安全な方法で処理されます。 コンパイラは、 <code>BEGIN</code> の後に可視できるローカル変数について合理的な推測を行います。
+悲観的すぎると、 ローカル変数が定義されていないという偽のエラーがユーザーに表示されます。 コンパイラが楽観的すぎる場合、 後でこれに気づき、
+警告を発行します。 上記の場合、 コンパイラは <code>x</code> が使用時に未定義であることについて文句を言います。 このセクションのあいまいな例から、
+コンパイラをトラブルに陥らせるには非常に特殊な制御構造が必要であることがわかりますが、 それでもコンパイラは多くの場合問題なく動作します。
 </p>
-<p>If the <code>BEGIN</code> is reachable from above, the most optimistic guess is
-that all locals visible before the <code>BEGIN</code> will also be visible after
-the <code>BEGIN</code>. This guess is valid for all loops that are entered only
-through the <code>BEGIN</code>, in particular, for normal
-<code>BEGIN</code>...<code>WHILE</code>...<code>REPEAT</code> and <code>BEGIN</code>...<code>UNTIL</code>
-loops and it is implemented in our compiler. When the branch to the
-<code>BEGIN</code> is finally generated by <code>AGAIN</code> or <code>UNTIL</code>, the
-compiler checks the guess and warns the user if it was too optimistic:
+<p><code>BEGIN</code> がそれより上から到達可能な場合、 最も楽観的な推測は、 <code>BEGIN</code> の前に可視であるすべてのローカル変数も
+<code>BEGIN</code> の後にも可視であることです。 この推測は、 <code>BEGIN</code> 経由でのみ入るすべてのループ、 特に通常の
+<code>BEGIN</code>...<code>WHILE</code>...<code>REPEAT</code> および <code>BEGIN</code>...<code>UNTIL</code>
+ループに対して有効であり、 コンパイラに実装されています。 <code>BEGIN</code> への分岐が <code>AGAIN</code> または
+<code>UNTIL</code> によって最終的に生成されると、 コンパイラは推測をチェックし、 それが楽観的すぎる場合はユーザーに警告します:
 </p><div class="example">
 <pre class="example">IF
   {: x :}
@@ -188,11 +167,9 @@ BEGIN
 UNTIL
 </pre></div>
 
-<p>Here, <code>x</code> lives only until the <code>BEGIN</code>, but the compiler
-optimistically assumes that it lives until the <code>THEN</code>. It notices this
-difference when it compiles the <code>UNTIL</code> and issues a warning. The user
-can avoid the warning, and make sure that <code>x</code> is not used in the wrong
-area by using explicit scoping:
+<p>ここで、 <code>x</code> は <code>BEGIN</code> までのみ存続しますが、 コンパイラは <code>THEN</code>
+まで存続すると楽観的に想定します。 <code>UNTIL</code> をコンパイルするときにこの違いに気づき、 警告を発行します。 ユーザーは警告を回避し、
+明示的なスコープを使用して <code>x</code> が間違った領域で使用されていないことを確認できます:
 </p><div class="example">
 <pre class="example">IF
   SCOPE
@@ -204,16 +181,13 @@ BEGIN
 UNTIL
 </pre></div>
 
-<p>Since the guess is optimistic, there will be no spurious error messages
-about undefined locals.
+<p>推測は楽観的であるため、 未定義のローカル変数に関する偽のエラー・メッセージは表示されません。
 </p>
-<p>If the <code>BEGIN</code> is not reachable from above (e.g., after <code>AHEAD</code> or
-<code>EXIT</code>), the compiler cannot even make an optimistic guess, as the
-locals visible after the <code>BEGIN</code> may be defined later.
+<p><code>BEGIN</code> がそれより上から到達可能でない場合(たとえば、 <code>AHEAD</code> または <code>EXIT</code> の後)、
+<code>BEGIN</code> の後で定義されたローカル変数の可視については、 コンパイラは楽観的な推測を行うことさえできません。
 </p>
-<p>It pessimistically assumes that all locals are visible that were visible at
-the latest place outside any control structure (i.e., where nothing is on
-the control-flow stack).  This means that in:
+<p>悲観的に、 制御構造の外側の最新の場所(つまり、 制御フロー・スタック上に何もない場所)で可視であったすべてのローカル変数が可視であると仮定します。
+これは以下のことを意味します:
 </p>
 <div class="example">
 <pre class="example">: foo
@@ -228,13 +202,11 @@ the control-flow stack).  This means that in:
   UNTIL ;
 </pre></div>
 
-<p>At the place marked with <code>( * )</code>, <code>x</code> is visible, but <code>y</code> is
-not (although, according to the reachability rule it should); <code>z</code> is
-not and should not be visible there.
+<p>ここで、 <code>( * )</code> でマークされた場所では、 <code>x</code> は可視ですが、 <code>y</code> は不可視です(ただし、
+到達可能性ルールによれば、 可視であるべきです)。 <code>z</code> はそこでは不可視で、 可視であるべきではありません。
 </p>
-<p>However, you can use <code>ASSUME-LIVE</code> to make the compiler assume that the
-same locals are visible at the BEGIN as at the point where the top
-control-flow stack item was created.
+<p>ただし、 <code>ASSUME-LIVE</code> を使用すると、 最上位の制御フロー・スタック項目が作成された時点と同じローカル変数が BEGIN
+で可視になるのだと、 コンパイラに想定させることができます。
 </p>
 
 <span id="index-ASSUME_002dLIVE-_0028--orig-_002d_002d-orig--_0029-gforth_002d0_002e2"></span>
@@ -260,19 +232,16 @@ control-flow stack item was created.
 THEN
 </pre></div>
 
-<p>Here <code>x</code> would not be visible at the use of <code>x</code>, because its
-definition is inside a control structure, but by using ASSUME-LIVE the
-programmer tells the compiler that the locals visible at the <code>AHEAD</code>
-should be visible at the <code>BEGIN</code>.
+<p>ここで、 <code>x</code> のローカル変数定義は制御構造内にあるため、 <code>x</code> を使用した時点では <code>x</code> は可視ではありませんが、
+<code>ASSUME-LIVE</code> を使用することで、 プログラマはコンパイラに <code>AHEAD</code> の時点で可視である、 そのローカル変数が、
+<code>BEGIN</code> の時点でも可視であるべきであると伝えます。
 </p>
-<p>Other cases where the locals are defined before the <code>BEGIN</code> can be
-handled by inserting an appropriate <code>CS-ROLL</code> before the
-<code>ASSUME-LIVE</code> (and changing the control-flow stack manipulation behind
-the <code>ASSUME-LIVE</code>).
+<p><code>BEGIN</code> の前にローカル変数が定義されている他のケースは、 <code>ASSUME-LIVE</code> の前に適切な
+<code>CS-ROLL</code> を挿入する(そして <code>ASSUME-LIVE</code>
+の背後にある制御フロー・スタック操作を変更する)ことで処理できます。
 </p>
-<p>Cases where locals are defined after the <code>BEGIN</code> (but should be visible
-immediately after the <code>BEGIN</code>) can only be handled by rearranging the
-loop. E.g., the &ldquo;most insidious&rdquo; example above can be arranged into:
+<p>ローカル変数が <code>BEGIN</code> の後で定義されている場合(ただし、 <code>BEGIN</code> の直後で可視である必要があります)は、
+ループを再配置することによってのみ処理できます。 たとえば、上記の「最も陰険な」例は以下のように整理できます:
 </p><div class="example">
 <pre class="example">BEGIN
   {: x :}
@@ -288,8 +257,7 @@ REPEAT
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT30" href="#DOCF30">(30)</a></h5>
-<p>In compiler construction terminology,
-all places dominated by the definition of the local.</p>
+<p>コンパイラ構築用語では「すべての場所はローカル変数の定義によって支配される」と言う</p>
 </div>
 <hr>
 <div class="header">

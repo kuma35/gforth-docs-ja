@@ -903,7 +903,10 @@ File: gforth.info,  Node: i18n and l10n,  Next: Substitute,  Prev: Xchars and Un
 (*note Xchars and Unicode::)や Substitute (*note Substitute::) などの国
 際文字セットに関する他の提案から分割されました。 画面に表示されるメッセ
 ージは、 開発者の母国語(native language)からユーザーの現地言語(local
-languages)に翻訳する必要があります。
+languages)に翻訳する必要があります(訳注: gforth に最初から組み込まれてい
+ないので都度 ‘require i18n.fs’ 等する必要ある。 本マニュアルに掲載が無い
+が i18n な 日付用として ‘require i18n-date.fs’ するのもいいかもしれない
+)。
 
    翻訳対象の文字列は ‘L" ’STRING‘"’ で宣言します。 これにより、 ロケー
 ル文字列識別子(LSID)が返されます。 LSID は不明瞭なタイプ(opaque types)で
@@ -979,34 +982,34 @@ File: gforth.info,  Node: Substitute,  Next: CSV Reader,  Prev: i18n and l10n,  
 は文字列を返すだけのマクロを作成します。
 
 ‘macros-wordlist’ ( – wid  ) gforth-experimental “macros-wordlist”
-   wordlist for string replacement macros
+   文字列置換マクロのワードリスト
 
 ‘replaces’ ( addr1 len1 addr2 len2 –  ) string-ext “replaces”
-   create a macro with name ADDR2 LEN2 and content ADDR1 LEN1.  If the
-macro already exists, just change the content.
+   名前が ADDR2 LEN2、 内容が ADDR1 LEN1 のマクロを作成します。 マクロが
+既に存在する場合は、 内容を変更するだけです。
 
 ‘.substitute’ ( addr1 len1 – n / ior  ) gforth-experimental “dot-substitute”
-   substitute all macros in text ADDR1 LEN1 and print the result.  N is
-the number of substitutions or, if negative, a throwable IOR.
+   テキスト ADDR1 LEN1 内のすべてのマクロを置き換えて、 結果を出力します
+。 N は置換した数。 または負数の場合は throw 可能な IOR です。
 
 ‘$substitute’ ( addr1 len1 – addr2 len2 n/ior  ) gforth-experimental “string-substitute”
-   substitute all macros in text ADDR1 LEN1.  N is the number of
-substitutions, if negative, it’s a throwable IOR, ADDR2 LEN2 the result.
+   テキスト ADDR1 LEN1 内のすべてのマクロを置き換えます。 ADDR2 LEN2 が
+置換結果で、 N は置換の数で、 負数場合は throw 可能な IOR です。
 
 ‘substitute’ ( addr1 len1 addr2 len2 – addr2 len3 n/ior  ) string-ext “substitute”
-   substitute all macros in text ADDR1 LEN1, and copy the result to
-ADDR2 LEN2.  N is the number of substitutions or, if negative, a
-throwable IOR, ADDR2 LEN3 the result.
+   テキスト ADDR1 LEN1 内のすべてのマクロを置き換え、 結果を ADDR2 LEN2
+にコピーします。 ADDR2 LEN3 は置換結果で、 N は置換した数、または負数場
+合は throw 可能な IOR です。
 
 ‘unescape’ ( addr1 u1 dest – dest u2  ) string-ext “unescape”
-   double all delimiters in ADDR1 U1, so that substitute will result in
-the original text.  Note that the buffer DEST does not have a size, as
-in worst case, it will need just twice as many characters as U1.  DEST
-U2 is the resulting string.
+   ADDR1 U1 内のすべての区切り文字を2重にすることで、 置換後の結果が元の
+テキストのままになります。 結果を格納するバッファー DEST には長さ指定の
+必要が無いことに注意してください。 最悪の場合、 必要な文字数は U1 の 2倍
+です。 DEST U2 は結果の文字列の長さです。
 
 ‘$unescape’ ( addr1 u1 – addr2 u2  ) gforth-experimental “string-unescape”
-   same as ‘unescape’, but creates a temporary destination string with
-‘$tmp’.
+   ‘unescape’ と同じですが、 ‘$tmp’ を使用して一時的な結果文字列を作成し
+ます。
 
 
 File: gforth.info,  Node: CSV Reader,  Prev: Substitute,  Up: Other I/O
@@ -1014,13 +1017,15 @@ File: gforth.info,  Node: CSV Reader,  Prev: Substitute,  Up: Other I/O
 6.20.13 CSV Reader
 ------------------
 
-Comma-separated values (CSV) are a popular text format to interchange
-data.  Gforth provides an reader in ‘csv.fs’.
+CSV(Comma-separated values)は、 データをやり取りするための一般的なテキス
+ト形式です。 Gforth は ‘csv.fs’ でCSVリーダーを提供します(注意: gforth に
+最初から組み込まれてはいないので、 都度 ‘require csv.fs’ 等する必要があ
+る)。
 
 ‘read-csv’ ( addr u xt –  ) gforth-experimental “read-csv”
-   read CVS file ADDR U and execute XT for every item found.  XT takes
-‘( addr u col line -- )’, i.e.  the string, the current column (starting
-with 0), and the current line (starting with 1).
+   CVS ファイル ADDR U を読み取り、 見つかった項目ごとに XT を実行します
+。 XT は ‘( addr ucol line -- )’、 つまり文字列と、 現在の列番号(0 で始
+まる)と、 現在の行番号(1 で始まる)を受け取ります。
 
 
 File: gforth.info,  Node: OS command line arguments,  Next: Locals,  Prev: Other I/O,  Up: Words
@@ -1028,20 +1033,20 @@ File: gforth.info,  Node: OS command line arguments,  Next: Locals,  Prev: Other
 6.21 OS command line arguments
 ==============================
 
-The usual way to pass arguments to Gforth programs on the command line
-is via the ‘-e’ option, e.g.
+コマンドラインで Gforth プログラムに引数を渡す通常の方法は、 ‘-e’ オプシ
+ョンを使用することです。 たとえば、
 
      gforth -e "123 456" foo.fs -e bye
 
-   However, you may want to interpret the command-line arguments
-directly.  In that case, you can access the (image-specific)
-command-line arguments through ‘next-arg’:
+   ただし、 コマンドライン引数を直接パースしたい場合もあります。 その場
+合、 ‘next-arg’ を通じて(イメージ固有の)コマンドライン引数にアクセスでき
+ます:
 
 ‘next-arg’ ( – addr u  ) gforth-0.7 “next-arg”
-   get the next argument from the OS command line, consuming it; if
-there is no argument left, return ‘0 0’.
+   OS コマンドラインから次の引数を取得し、 それを消費し addr u に返しま
+す。 引数が残っていない場合は、 ‘0 0’ を返します。
 
-   Here’s an example program ‘echo.fs’ for ‘next-arg’:
+   ‘next-arg’ のプログラム例 ‘echo.fs’ を以下に示します:
 
      : echo ( -- )
          begin
@@ -1052,40 +1057,39 @@ there is no argument left, return ‘0 0’.
 
      echo cr bye
 
-   This can be invoked with
+   これは以下のようにして起動します
 
      gforth echo.fs hello world
 
-   and it will print
+   そうすると以下のように出力されます
 
      hello world
 
-   The next lower level of dealing with the OS command line are the
-following words:
+   以下は、 OS コマンドラインを処理する下位レベルのワード群です:
 
 ‘arg’ ( u – addr count  ) gforth-0.2 “arg”
-   Return the string for the uth command-line argument; returns ‘0 0’ if
-the access is beyond the last argument.  ‘0 arg’ is the program name
-with which you started Gforth.  The next unprocessed argument is always
-‘1 arg’, the one after that is ‘2 arg’ etc.  All arguments already
-processed by the system are deleted.  After you have processed an
-argument, you can delete it with ‘shift-args’.
+   u 番目のコマンドライン引数の文字列を返します。 u が最後の引数を超えて
+いる場合は ‘0 0’ を返します。 ‘0 arg’ は、 Gforth を起動したプログラム名
+です。 次の未処理の引数は常に ‘1 arg’ で、 その後の引数は ‘2 arg’ などで
+す。 システムによってすでに処理された引数はすべて削除されます。 引数を処
+理した後、 ‘shift-args’ を使用して引数を削除できます。
 
 ‘shift-args’ ( –  ) gforth-0.7 “shift-args”
-   ‘1 arg’ is deleted, shifting all following OS command line parameters
-to the left by 1, and reducing ‘argc @’.  This word can change ‘argv @’.
+   ‘1 arg’ が削除され、 後続のすべての OS コマンドライン・パラメータが 1
+だけ左にシフトされ、‘argc @’ が減ります。 このワードは ‘argv @’ を変更で
+きます。
 
-   Finally, at the lowest level Gforth provides the following words:
+   最後に、 Gforth は最下位レベルで以下のワード群を提供します:
 
 ‘argc’ ( – addr  ) gforth-0.2 “argc”
-   ‘Variable’ – the number of command-line arguments (including the
-command name).  Changed by ‘next-arg’ and ‘shift-args’.
+   変数(‘Variable’) – コマンドライン引数の数(コマンド名を含む)。
+‘next-arg’ と ‘shift-args’ によって変更されます。
 
 ‘argv’ ( – addr  ) gforth-0.2 “argv”
-   ‘Variable’ – a pointer to a vector of pointers to the command-line
-arguments (including the command-name).  Each argument is represented as
-a C-style zero-terminated string.  Changed by ‘next-arg’ and
-‘shift-args’.
+   変数(‘Variable’) – コマンドライン引数 (コマンド名を含む) へのポインタ
+ーのベクトル(vector)へのポインター。 各引数は、 C言語スタイルのゼロで終
+わる文字列として表されます。 ‘next-arg’ と ‘shift-args’ によって変更され
+ます。
 
 
 File: gforth.info,  Node: Locals,  Next: Structures,  Prev: OS command line arguments,  Up: Words
@@ -1132,47 +1136,46 @@ File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Lo
         n2
       endif ;
 
-   The similarity of locals definitions with stack comments is intended.
-A locals definition often replaces the stack comment of a word.  The
-order of the locals corresponds to the order in a stack comment and
-everything after the ‘--’ is really a comment.
+   ローカル変数定義とスタック・コメントは、 類似するよう意図しています。
+ローカル変数定義は、 多くの場合、 ワードのスタック・コメントを置き換えま
+す。 ローカル変数の順序はスタック・コメント内の順序に対応し、 ‘--’ 以降
+はすべて実際はコメントです。
 
-   This similarity has one disadvantage: It is too easy to confuse
-locals declarations with stack comments, causing bugs and making them
-hard to find.  However, this problem can be avoided by appropriate
-coding conventions: Do not use both notations in the same program.  If
-you do, they should be distinguished using additional means, e.g.  by
-position.
+   この類似性には 1 つ欠点があります。 ローカル変数宣言とスタック・コメ
+ントを混同しやすく、 バグが発生し、 見つけにくくなります。 ただし、 この
+問題は適切なコーディング規約によって回避できます。 同じプログラム内で両
+方の表記法を使用しないでください。 そうする場合は、 追加の手段を使用して
+区別する必要があります。 例えば、 場所によって区別します。
 
-   The name of the local may be preceded by a type specifier, e.g., ‘F:’
-for a floating point value:
+   ローカルの名前の前に型指定子を付けることができます。 たとえば、浮動小
+数点値の場合は ‘F:’ です:
 
      : CX* {: F: Ar F: Ai F: Br F: Bi -- Cr Ci :}
      \ 複素数の掛け算
       Ar Br f* Ai Bi f* f-
       Ar Bi f* Ai Br f* f+ ;
 
-   Gforth currently supports cells (‘W:’, ‘WA:’, ‘W^’), doubles (‘D:’,
-‘DA:’, ‘D^’), floats (‘F:’, ‘FA:’, ‘F^’), characters (‘C:’, ‘CA:’,
-‘C^’), and xts (‘xt:’, ‘xta:’) in several flavours:
+   Gforth は現在、 セル型指定子(‘W:’, ‘WA:’, ‘W^’)や、 2倍長整数型指定子
+(‘D:’, ‘DA:’, ‘D^’)や、 浮動小数点数型指定子(‘F:’, ‘FA:’, ‘F^’)と、 さま
+ざまなフレーバーの xt 型指定子(‘xt:’, ‘xta:’)、 をサポートしています:
 
 “valueフレーバー(value-flavoured)”
-     (*note Values::) A value-flavoured local (defined with ‘W:’, ‘D:’
-     etc.)  produces its value and can be changed with ‘TO’.
+     (*note Values::) valueフレーバーのローカル変数(‘W:’、 ‘D:’ などで定
+     義)はその値を生成し、 ‘TO’ で変更できます。
 
-“varue-flavoured”
-     (*note Varues::) A varue-flavoured local l (defined with ‘WA:’
-     etc.)  behaves exactly like a value-flavoured local, except that
-     you can use ‘addr l’ to get its address (which becomes invalid when
-     the variable’s scope is left).  Currently there is no performance
-     difference, but in the long run value-flavoured locals will be
-     significantly faster, because they can reside in registers.
+“varueフレーバー(vaLue ではなくて vaRue)”
+     (*note Varues::) varueフレーバーのローカル変数 l (‘WA:’ などで定義)
+     は、 ‘addr l’ を使用してアドレスを取得できること(変数のスコープを離
+     れると無効になります)を除いて、 valueフレーバーのローカル変数とまっ
+     たく同じように振る舞います。 現時点ではパフォーマンスに違いはありま
+     せんが、 長期的には、 valueフレーバーのローカル変数はレジスタに常駐
+     できるため、 大幅に高速になるでしょう。
 
-“variable-flavoured”
-     (*note Variables::) A variable-flavoured local (defined with ‘W^’
-     etc.)  produces its address (which becomes invalid when the
-     variable’s scope is left).  E.g., the standard word ‘emit’ can be
-     defined in terms of ‘type’ like this:
+“variableフレーバー”
+     (*note Variables::) variableフレーバーのローカル変数(‘W^’ などで定
+     義)はそのアドレスを生成します(変数のスコープを離れると無効になりま
+     す)。 たとえば、 標準のワード ‘emit’ は、 以下ののように ‘type’ を
+     使ってで定義できます:
 
           : emit {: C^ char* -- :}
               char* 1 type ;
@@ -1189,33 +1192,35 @@ for a floating point value:
           : execute {: xt: x -- :}
             x ;
 
-   A local without type specifier is a ‘W:’ local.  You can allow or
-disallow the use of ‘addr’ with:
+   型指定子のないローカル変数は ‘W:’ ローカル変数です。 以下を使用して
+‘addr’ の使用を許可または禁止できます:
 
 ‘default-wa:’ ( –  ) gforth-experimental “default-wa:”
-   Allow ‘addr’ on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using ‘wa:’.
+   型指定子なしで定義されたローカル変数で ‘addr’ を許可します。 言い換え
+れば、 型指定子無しでローカル変数定義したときは ‘wa:’ 型指定子を指定した
+のと同じです
 
 ‘default-w:’ ( –  ) gforth-experimental “default-w:”
-   Forbid ‘addr’ on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using ‘w:’.
+   型指定子なしで定義されたローカル変数では ‘addr’ を禁止します。 言い換
+えれば、 型指定子なしで定義されたローカル変数は ‘w:’ 型指定子を指定して
+ローカル変数を定義したのと同じです。
 
-   All flavours of locals are initialized with values from the data or
-(for FP locals) FP stack, with the exception being locals defined behind
-‘|’: Gforth initializes them to 0; some Forth systems leave them
-uninitialized.
+   ‘|’ の後ろで定義されたローカル変数を除いて、 ローカル変数の全てのフレ
+ーバーは、 データまたは、 (FP ローカル変数の場合) FP スタックの値で初期
+化されます。 Gforth はそれらを 0 に初期化します。 一部の Forth システム
+では初期化されないままになっています。
 
-   Gforth supports the square bracket notation for local buffers and
-data structures.  These locals are similar to variable-flavored locals,
-the size is specified as a constant expression.  A declaration looks
-‘name[ size ]’.  The Forth expression ‘size’ is evaluated during
-declaration, it must have the stack effect ‘( -- +n )’, giving the size
-in bytes.  The square bracket ‘[’ is part of the defined name.
+   Gforth は、 ローカル・バッファーとデータデータ構造体のための角括弧
+(square bracket)表記をサポートしています。 これらのローカル変数は
+variableフレーバー のローカル変数に似ており、 サイズは定数式として指定し
+ます。 宣言は ‘name[ size ]’ のようになります。 Forth の式 ‘size’ は宣言
+中に評価され、 サイズをバイト単位で指定するスタック効果 ‘( -- +n )’ が必
+要です。 角括弧 ‘[’ は定義された名前の一部です。
 
-   Local data structures are initialized by copying size bytes from an
-address passed on the stack; uninitialized local data structures (after
-‘|’ in the declaration) are not erased, they just contain whatever data
-there was on the locals stack before.
+   ローカル変数のデータ構造体は、 スタックに渡されたアドレスから size バ
+イトをコピーすることによって初期化されます。 初期化されていないローカル
+変数データ構造体(宣言内の ‘|’ の後)は消去されません。 以前にローカル変数
+スタックにあったデータがすべて含まれるだけです。
 
    Example:
 
@@ -1228,8 +1233,8 @@ there was on the locals stack before.
          foo[ a1 !  foo[ a2 !
          foo[ test-struct dump ;
 
-   Gforth allows defining locals everywhere in a colon definition.  This
-poses the following questions:
+   Gforth では、コロン定義内のあらゆる場所でローカル変数を定義できます。
+これにより、 以下のような疑問が生じます:
 
 * Menu:
 
@@ -1246,80 +1251,92 @@ File: gforth.info,  Node: Locals definition words,  Next: Where are locals visib
 6.22.1.1 Locals definitions words
 .................................
 
-This section documents the words used for defining locals.  Note that
-the run-times for the words (like ‘W:’) that define a local are
-performed from the rightmost defined local to the leftmost defined
-local, such that the rightmost local gets the top of stack.
+このセクションでは、 ローカル変数を定義するために使用されるワード群を説
+明します。 注意: ローカル変数を定義するワード(‘W:’ など)の実行時は、 右
+端のローカル変数定義から左端のローカル変数定義の方向で実行され、 右端の
+ローカル変数がスタックのTOSから得る事になることに注意してください。
 
 ‘{:’ ( – hmaddr u latest latestnt wid 0  ) local-ext “open-brace-colon”
-   Start locals definitions.
+   ローカル変数定義の開始。
 
 ‘--’ ( hmaddr u latest latestnt wid 0 ... –  ) gforth-0.2 “dash-dash”
-   During locals definitions everything from ‘--’ to ‘:}’ is ignored.
-This is typically used when you want to make a locals definition serve
-double duty as a stack effect description.
+   ローカル変数定義中の ‘--’ から ‘:}’ までのすべてが無視されます。 これ
+は通常、 ローカル変数定義をスタック効果の説明としても使えるよう、 一人二
+役の役割を持たせる場合に使います。
 
 ‘|’ ( –  ) gforth-1.0 “bar”
-   Locals defined behind ‘|’ are not initialized from the stack; so the
-run-time of words like ‘W:’ changes to ‘( -- )’.
+   ‘|’ の後ろで定義されたローカル変数はスタックから初期化されません。 し
+たがって、 ‘W:’ のようなワードの実行時のスタック効果 ‘( -- )’ に変わりま
+す。
 
 ‘:}’ ( hmaddr u latest latestnt wid 0 xt1 ... xtn –  ) gforth-1.0 “colon-close-brace”
-   Ends locals definitions.
+   ローカル変数定義の終了。
 
 ‘{’ ( – hmaddr u latest latestnt wid 0  ) gforth-0.2 “open-brace”
-   Start locals definitions.  The Forth-2012 standard name for this word
-is ‘{:’.
+   ローカル変数定義を開始します。 このワードの Forth-2012 標準名は ‘{:’
+です。
 
 ‘}’ ( hmaddr u latest latestnt wid 0 xt1 ... xtn –  ) gforth-0.2 “close-brace”
-   Ends locals definitions.  The Forth-2012 standard name for this word
-is ‘:}’.
+   ローカル変数定義を終了します。 このワードの Forth-2012 標準名は ‘:}’
+です。
 
 ‘W:’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-0.2 “w-colon”
-   Define value-flavoured cell local name ‘( -- x1 )’
+   valueフレーバーのセル・ローカル変数 name を定義します ‘( -- x1 )’
 
 ‘WA:’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-1.0 “w-a-colon”
-   Define varue-flavoured cell local name ‘( -- x1 )’
+   varueフレーバーのセル・ローカル変数 name を定義します ‘( -- x1 )’
 
 ‘W^’ ( compilation "name" – a-addr xt; run-time x –  ) gforth-0.2 “w-caret”
-   Define variable-flavoured cell local name ‘( -- a-addr )’
+   variableフレーバーのセル・ローカル変数 name を定義します ‘( -- a-addr
+)’
 
 ‘D:’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-0.2 “d-colon”
-   Define value-flavoured double local name ‘( -- x3 x4 )’
+   valueフレーバーの2倍長整数ローカル変数 name を定義します ‘( -- x3 x4
+)’
 
 ‘DA:’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-1.0 “w-a-colon”
-   Define varue-flavoured double local name ‘( -- x3 x4 )’
+   varueフレーバーの2倍長整数ローカル変数 name を定義します ‘( -- x3 x4
+)’
 
 ‘D^’ ( compilation "name" – a-addr xt; run-time x1 x2 –  ) gforth-0.2 “d-caret”
-   Define variable-flavoured double local name ‘( -- a-addr )’
+   variableフレーバーの2倍長整数ローカル変数 name を定義します ‘( --
+a-addr )’
 
 ‘C:’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-0.2 “c-colon”
-   Define value-flavoured char local name ‘( -- c1 )’
+   valueフレーバーの char ローカル変数 name を定義します ‘( -- c1 )’
 
 ‘CA:’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-1.0 “c-a-colon”
-   Define varue-flavoured char local name ‘( -- c1 )’
+   varueフレーバーの char ローカル変数 name を定義します ‘( -- c1 )’
 
 ‘C^’ ( compilation "name" – a-addr xt; run-time c –  ) gforth-0.2 “c-caret”
-   Define variable-flavoured char local name ‘( -- c-addr )’
+   variableフレーバーの char ローカル変数 name を定義します ‘( -- c-addr
+)’
 
 ‘F:’ ( compilation "name" – a-addr xt; run-time r –  ) gforth-0.2 “f-colon”
-   Define value-flavoured float local name ‘( -- r1 )’
+   valueフレーバーの浮動小数点数ローカル変数 name を定義します ‘( -- r1
+)’
 
 ‘FA:’ ( compilation "name" – a-addr xt; run-time f –  ) gforth-1.0 “f-a-colon”
-   Define varue-flavoured float local name ‘( -- r1 )’
+   varueフレーバーの浮動小数点数ローカル変数 name を定義します ‘( -- r1
+)’
 
 ‘F^’ ( compilation "name" – a-addr xt; run-time r –  ) gforth-0.2 “f-caret”
-   Define variable-flavoured float local name ‘( -- f-addr )’
+   variableフレーバーの浮動小数点数ローカル変数 name を定義します ‘( --
+f-addr )’
 
 ‘XT:’ ( compilation "name" – a-addr xt; run-time xt1 –  ) gforth-1.0 “x-t-colon”
-   Define defer-flavoured cell local name ‘( ... -- ... )’
+   deferフレーバーのセル・ローカル変数 name を定義します ‘( ... -- ...
+)’
 
 ‘XTA:’ ( compilation "name" – a-addr xt; run-time ... – ...  ) gforth-1.0 “x-t-a-colon”
-   Define a defer-flavoured local name on which ‘addr’ can be used.
+   ‘addr’ を使用できる defer フレーバーのローカル変数 name を定義します
+。
 
-   Note that ‘|’, ‘--’, ‘:}’ and ‘}’ are not normally in the search
-order (they are in the vocabulary ‘locals-types’), and they are not
-necessarily words in all Forth systems; therefore they are documented as
-Gforth words.
+   ‘|’ や ‘--’ や ‘:}’ や ‘}’ は通常、 検索順序スタック(the search
+order)に含まれないことに注意してください(これらは ‘locals-types’ ボキャ
+ブラリに含まれます)。 そしてこれらは必ずしも全ての Forth システムでワー
+ドとして存在しているわけではありません。 したがって、 これらは Gforth の
+ワードとして文書化されています。
 
 
 File: gforth.info,  Node: Where are locals visible by name?,  Next: How long do locals live?,  Prev: Locals definition words,  Up: Gforth locals
@@ -1327,57 +1344,56 @@ File: gforth.info,  Node: Where are locals visible by name?,  Next: How long do 
 6.22.1.2 Where are locals visible by name?
 ..........................................
 
-Basically, the answer is that locals are visible where you would expect
-it in block-structured languages, and sometimes a little longer.  If you
-want to restrict the scope of a local, enclose its definition in
-‘SCOPE’...‘ENDSCOPE’.
+ローカル変数をその名前によって可視できるのはどこまででしょうか？ – 基本
+的に、 その答えは、 ローカル変数がブロック構造言語で期待される場所で、 場
+合によってはもうちょっとだけ長くできます。 ローカル変数のスコープを制限
+したい場合は、 その定義を ‘SCOPE’...‘ENDSCOPE’ で囲んで下さい。
 
 ‘scope’ ( compilation  – scope ; run-time  –  ) gforth-0.2 “scope”
 
 ‘endscope’ ( compilation scope – ; run-time  –  ) gforth-0.2 “endscope”
 
-   These words behave like control structure words, so you can use them
-with ‘CS-PICK’ and ‘CS-ROLL’ to restrict the scope in arbitrary ways.
+   これらのワードは制御構造のワードのように動作するため、 ‘CS-PICK’ およ
+び ‘CS-ROLL’ とともに使用して、 任意の方法で範囲を制限できます。
 
-   If you want a more exact answer to the visibility question, here’s
-the basic principle: A local is visible in all places that can only be
-reached through the definition of the local(1).  In other words, it is
-not visible in places that can be reached without going through the
-definition of the local.  E.g., locals defined in ‘IF’...‘ENDIF’ are
-visible until the ‘ENDIF’, locals defined in ‘BEGIN’...‘UNTIL’ are
-visible after the ‘UNTIL’ (until, e.g., a subsequent ‘ENDSCOPE’).
+   可視性の質問に対するより正確な答えが必要な場合のために、 ここで基本原
+則を示します: ローカル変数は、 ローカル変数の定義を通じてのみ到達できる
+すべての場所で可視です(1)。 つまり、 ローカル変数という定義を経由しない
+と到達できる場所では不可視です。 たとえば、 ‘IF’...‘ENDIF’ の中で定義さ
+れたローカル変数は ‘ENDIF’ まで可視で、 ‘BEGIN’...‘UNTIL’ 内で定義された
+ローカル変数は ‘UNTIL’ の後(たとえば、後続の ‘ENDSCOPE’ まで)で可視です
+。
 
-   The reasoning behind this solution is: We want to have the locals
-visible as long as it is meaningful.  The user can always make the
-visibility shorter by using explicit scoping.  In a place that can only
-be reached through the definition of a local, the meaning of a local
-name is clear.  In other places it is not: How is the local initialized
-at the control flow path that does not contain the definition?  Which
-local is meant, if the same name is defined twice in two independent
-control flow paths?
+   このソリューションの背景にある理由は次のとおりです: 私達は、 意味があ
+る限り、 ローカル変数を可視させたいと考えています。 ユーザーは、 明示的
+なスコープを使用することで、 いつでも可視性を短くすることができます。 ロ
+ーカル変数の定義によってのみ到達できる場所では、 ローカル変数名の意味は
+明らかです。 他の場所ではそうではありません。 ローカル変数定義が含まれて
+いない制御フロー・パスでローカル変数はどのように初期化されるのでしょうか
+？ 2 つの独立した制御フロー パスで同一ローカル変数名が 2 回定義されてい
+る場合、 それはどちらのローカル変数を意味するのでしょうか？
 
-   This should be enough detail for nearly all users, so you can skip
-the rest of this section.  If you really must know all the gory details
-and options, read on.
+   上記で、 ほぼすべてのユーザーにとって十分詳細であるため、 このセクシ
+ョンの残りの部分はスキップしてかまいません。 本当にすべての血みどろの詳
+細とオプションを知る必要がある場合は、 以下を読み続けてください。
 
-   In order to implement this rule, the compiler has to know which
-places are unreachable.  It knows this automatically after ‘AHEAD’,
-‘AGAIN’, ‘EXIT’ and ‘LEAVE’; in other cases (e.g., after most ‘THROW’s),
-you can use the word ‘UNREACHABLE’ to tell the compiler that the control
-flow never reaches that place.  If ‘UNREACHABLE’ is not used where it
-could, the only consequence is that the visibility of some locals is
-more limited than the rule above says.  If ‘UNREACHABLE’ is used where
-it should not (i.e., if you lie to the compiler), buggy code will be
-produced.
+   このルールを実装するには、 コンパイラはどの場所が到達不能
+(unreachable)であるかを認識する必要があります。 ‘AHEAD’ や ‘AGAIN’ や
+‘EXIT’ や ‘LEAVE’ の後で、 これが自動的に認識されます。 他の場合(例: ほ
+とんどの ‘THROW’ の後)、 ‘UNREACHABLE’ というワードを使用して、 制御フロ
+ーがその場所に到達しないことをコンパイラに伝えることができます。
+‘UNREACHABLE’ が使用できる場所で使用されなかった場合、 唯一の結果は、 一
+部のローカル変数の可視性が上記のルールに記載されているよりも制限されるこ
+とです。 ‘UNREACHABLE’ を使用すべきではない場所で使用すると(つまり、 コ
+ンパイラに嘘をついた場合)、 バグのあるコードが生成されます。
 
 ‘UNREACHABLE’ ( –  ) gforth-0.2 “UNREACHABLE”
 
-   Another problem with this rule is that at ‘BEGIN’, the compiler does
-not know which locals will be visible on the incoming back-edge.  All
-problems discussed in the following are due to this ignorance of the
-compiler (we discuss the problems using ‘BEGIN’ loops as examples; the
-discussion also applies to ‘?DO’ and other loops).  Perhaps the most
-insidious example is:
+   このルールのもう 1 つの問題は、 ‘BEGIN’ で、 どのローカル変数が
+incoming back-edge で可視されるかをコンパイラが認識できないことです。 以
+下で説明するすべての問題は、 コンパイラのこの無知が原因です(‘BEGIN’ ルー
+プを例として使用してこの問題について説明します。 この説明は ‘?DO’ および
+他のループにも当てはまります)。 おそらく最も陰険な例は以下のとおりです:
      AHEAD
      BEGIN
        x
@@ -1386,30 +1402,28 @@ insidious example is:
        ...
      UNTIL
 
-   This should be legal according to the visibility rule.  The use of
-‘x’ can only be reached through the definition; but that appears
-textually below the use.
+   これは、 可視性ルールに従って合法である必要があります。 ‘x’ の使用に
+は、 定義を介してのみ到達できます。 ただし、 下記に明示した使用法でなけ
+ればなりません。
 
-   From this example it is clear that the visibility rules cannot be
-fully implemented without major headaches.  Our implementation treats
-common cases as advertised and the exceptions are treated in a safe way:
-The compiler makes a reasonable guess about the locals visible after a
-‘BEGIN’; if it is too pessimistic, the user will get a spurious error
-about the local not being defined; if the compiler is too optimistic, it
-will notice this later and issue a warning.  In the case above the
-compiler would complain about ‘x’ being undefined at its use.  You can
-see from the obscure examples in this section that it takes quite
-unusual control structures to get the compiler into trouble, and even
-then it will often do fine.
+   この例から、 可視性ルールを完全に実装するには大きな問題が伴うことが明
+らかです。 私たちの実装は、 一般的なケースを宣伝どおりに扱い、 例外は安
+全な方法で処理されます。 コンパイラは、 ‘BEGIN’ の後に可視できるローカル
+変数について合理的な推測を行います。 悲観的すぎると、 ローカル変数が定義
+されていないという偽のエラーがユーザーに表示されます。 コンパイラが楽観
+的すぎる場合、 後でこれに気づき、 警告を発行します。 上記の場合、 コンパ
+イラは ‘x’ が使用時に未定義であることについて文句を言います。 このセクシ
+ョンのあいまいな例から、 コンパイラをトラブルに陥らせるには非常に特殊な
+制御構造が必要であることがわかりますが、 それでもコンパイラは多くの場合
+問題なく動作します。
 
-   If the ‘BEGIN’ is reachable from above, the most optimistic guess is
-that all locals visible before the ‘BEGIN’ will also be visible after
-the ‘BEGIN’.  This guess is valid for all loops that are entered only
-through the ‘BEGIN’, in particular, for normal
-‘BEGIN’...‘WHILE’...‘REPEAT’ and ‘BEGIN’...‘UNTIL’ loops and it is
-implemented in our compiler.  When the branch to the ‘BEGIN’ is finally
-generated by ‘AGAIN’ or ‘UNTIL’, the compiler checks the guess and warns
-the user if it was too optimistic:
+   ‘BEGIN’ がそれより上から到達可能な場合、 最も楽観的な推測は、 ‘BEGIN’
+の前に可視であるすべてのローカル変数も ‘BEGIN’ の後にも可視であることで
+す。 この推測は、 ‘BEGIN’ 経由でのみ入るすべてのループ、 特に通常の
+‘BEGIN’...‘WHILE’...‘REPEAT’ および ‘BEGIN’...‘UNTIL’ ループに対して有効
+であり、 コンパイラに実装されています。 ‘BEGIN’ への分岐が ‘AGAIN’ また
+は ‘UNTIL’ によって最終的に生成されると、 コンパイラは推測をチェックし、
+それが楽観的すぎる場合はユーザーに警告します:
      IF
        {: x :}
      BEGIN
@@ -1418,11 +1432,10 @@ the user if it was too optimistic:
        ...
      UNTIL
 
-   Here, ‘x’ lives only until the ‘BEGIN’, but the compiler
-optimistically assumes that it lives until the ‘THEN’.  It notices this
-difference when it compiles the ‘UNTIL’ and issues a warning.  The user
-can avoid the warning, and make sure that ‘x’ is not used in the wrong
-area by using explicit scoping:
+   ここで、 ‘x’ は ‘BEGIN’ までのみ存続しますが、 コンパイラは ‘THEN’ ま
+で存続すると楽観的に想定します。 ‘UNTIL’ をコンパイルするときにこの違い
+に気づき、 警告を発行します。 ユーザーは警告を回避し、 明示的なスコープ
+を使用して ‘x’ が間違った領域で使用されていないことを確認できます:
      IF
        SCOPE
        {: x :}
@@ -1432,16 +1445,16 @@ area by using explicit scoping:
        ...
      UNTIL
 
-   Since the guess is optimistic, there will be no spurious error
-messages about undefined locals.
+   推測は楽観的であるため、 未定義のローカル変数に関する偽のエラー・メッ
+セージは表示されません。
 
-   If the ‘BEGIN’ is not reachable from above (e.g., after ‘AHEAD’ or
-‘EXIT’), the compiler cannot even make an optimistic guess, as the
-locals visible after the ‘BEGIN’ may be defined later.
+   ‘BEGIN’ がそれより上から到達可能でない場合(たとえば、 ‘AHEAD’ または
+‘EXIT’ の後)、 ‘BEGIN’ の後で定義されたローカル変数の可視については、 コ
+ンパイラは楽観的な推測を行うことさえできません。
 
-   It pessimistically assumes that all locals are visible that were
-visible at the latest place outside any control structure (i.e., where
-nothing is on the control-flow stack).  This means that in:
+   悲観的に、 制御構造の外側の最新の場所(つまり、 制御フロー・スタック上
+に何もない場所)で可視であったすべてのローカル変数が可視であると仮定しま
+す。 これは以下のことを意味します:
 
      : foo
        IF {: z :} THEN
@@ -1454,13 +1467,13 @@ nothing is on the control-flow stack).  This means that in:
          ...
        UNTIL ;
 
-   At the place marked with ‘( * )’, ‘x’ is visible, but ‘y’ is not
-(although, according to the reachability rule it should); ‘z’ is not and
-should not be visible there.
+   ここで、 ‘( * )’ でマークされた場所では、 ‘x’ は可視ですが、 ‘y’ は不
+可視です(ただし、 到達可能性ルールによれば、 可視であるべきです)。 ‘z’ は
+そこでは不可視で、 可視であるべきではありません。
 
-   However, you can use ‘ASSUME-LIVE’ to make the compiler assume that
-the same locals are visible at the BEGIN as at the point where the top
-control-flow stack item was created.
+   ただし、 ‘ASSUME-LIVE’ を使用すると、 最上位の制御フロー・スタック項
+目が作成された時点と同じローカル変数が BEGIN で可視になるのだと、 コンパ
+イラに想定させることができます。
 
 ‘ASSUME-LIVE’ ( orig – orig  ) gforth-0.2 “ASSUME-LIVE”
 
@@ -1476,20 +1489,18 @@ control-flow stack item was created.
        UNTIL
      THEN
 
-   Here ‘x’ would not be visible at the use of ‘x’, because its
-definition is inside a control structure, but by using ASSUME-LIVE the
-programmer tells the compiler that the locals visible at the ‘AHEAD’
-should be visible at the ‘BEGIN’.
+   ここで、 ‘x’ のローカル変数定義は制御構造内にあるため、 ‘x’ を使用し
+た時点では ‘x’ は可視ではありませんが、 ‘ASSUME-LIVE’ を使用することで、
+プログラマはコンパイラに ‘AHEAD’ の時点で可視である、 そのローカル変数が
+、 ‘BEGIN’ の時点でも可視であるべきであると伝えます。
 
-   Other cases where the locals are defined before the ‘BEGIN’ can be
-handled by inserting an appropriate ‘CS-ROLL’ before the ‘ASSUME-LIVE’
-(and changing the control-flow stack manipulation behind the
-‘ASSUME-LIVE’).
+   ‘BEGIN’ の前にローカル変数が定義されている他のケースは、
+‘ASSUME-LIVE’ の前に適切な ‘CS-ROLL’ を挿入する(そして ‘ASSUME-LIVE’ の
+背後にある制御フロー・スタック操作を変更する)ことで処理できます。
 
-   Cases where locals are defined after the ‘BEGIN’ (but should be
-visible immediately after the ‘BEGIN’) can only be handled by
-rearranging the loop.  E.g., the “most insidious” example above can be
-arranged into:
+   ローカル変数が ‘BEGIN’ の後で定義されている場合(ただし、 ‘BEGIN’ の直
+後で可視である必要があります)は、 ループを再配置することによってのみ処理
+できます。 たとえば、上記の「最も陰険な」例は以下のように整理できます:
      BEGIN
        {: x :}
        ... 0=
@@ -1499,8 +1510,8 @@ arranged into:
 
    ---------- Footnotes ----------
 
-   (1) In compiler construction terminology, all places dominated by the
-definition of the local.
+   (1) コンパイラ構築用語では「すべての場所はローカル変数の定義によって
+支配される」と言う
 
 
 File: gforth.info,  Node: How long do locals live?,  Next: Locals programming style,  Prev: Where are locals visible by name?,  Up: Gforth locals
@@ -1508,16 +1519,17 @@ File: gforth.info,  Node: How long do locals live?,  Next: Locals programming st
 6.22.1.3 How long do locals live?
 .................................
 
-The right answer for the lifetime question would be: A local lives at
-least as long as it can be accessed.  For a value-flavoured local this
-means: until the end of its visibility.  However, a variable-flavoured
-local could be accessed through its address far beyond its visibility
-scope.  Ultimately, this would mean that such locals would have to be
-garbage collected.  Since this entails un-Forth-like implementation
-complexities, I adopted the same cowardly solution as some other
-languages (e.g., C): The local lives only as long as it is visible;
-afterwards its address is invalid (and programs that access it
-afterwards are erroneous).
+ローカル変数の生存期間はどのくらいなのか？ – 生存期間に関する質問に対す
+る正しい答えは、次のとおりです: ローカル変数は、 少なくともアクセスでき
+る限りは生存します。 valueフレーバーのローカル変数の場合、 これは、 その
+可視性が終了するまでを意味します。 ただし、 variableフレーバーのローカル
+変数は、可視性の範囲をはるかに超えてアドレスを通じてアクセスできる可能性
+があります。 結局のところ、 これはそのようなローカル変数がガベージ・コレ
+クションを受けなければならないことを意味します。 これには、Forth らしく
+ない実装の複雑さが伴うため、 他の言語(C言語など)と同じ引っ込み思案な解決
+策を採用しました。 つまり、 ローカル変数は、 それが可視である間のみ生存
+します。その後、そのアドレスは無効になります(そして、 その後そのアドレス
+にアクセスするプログラムはエラーになります)。
 
 
 File: gforth.info,  Node: Locals programming style,  Next: Locals implementation,  Prev: How long do locals live?,  Up: Gforth locals
@@ -1525,24 +1537,22 @@ File: gforth.info,  Node: Locals programming style,  Next: Locals implementation
 6.22.1.4 Locals programming style
 .................................
 
-The freedom to define locals anywhere has the potential to change
-programming styles dramatically.  In particular, the need to use the
-return stack for intermediate storage vanishes.  Moreover, all stack
-manipulations (except ‘PICK’s and ‘ROLL’s with run-time determined
-arguments) can be eliminated: If the stack items are in the wrong order,
-just write a locals definition for all of them; then write the items in
-the order you want.
+どこでもローカル変数を定義できる自由は、 プログラミング・スタイルを劇的
+に変える可能性を秘めています。 特に、 中間ストレージにリターン・スタック
+を使用する必要がなくなります。 さらに、 すべてのスタック操作(実行時に決
+定される引数を持つ ‘PICK’ や ‘ROLL’ を除く)を排除できます。 スタック項目
+の順序が間違っている場合は、 すべてのスタック項目のローカル変数定義を記
+述し、 その次に、 あなたが必要とする順序で項目を書き込むだけです。
 
-   This seems a little far-fetched and eliminating stack manipulations
-is unlikely to become a conscious programming objective.  Still, the
-number of stack manipulations will be reduced dramatically if local
-variables are used liberally (e.g., compare ‘max’ (*note Gforth
-locals::) with a traditional implementation of ‘max’).
+   これは少し突飛なように思えますし、 スタック操作を排除することが意識的
+なプログラミング目標になる可能性は低いです。 それでも、 ローカル変数を積
+極的に使用すれば、 スタック操作の数は大幅に減少します(例: ‘max’ (*note
+Gforth locals::) を ‘max’ の従来の実装と比較してみましょう)。
 
-   This shows one potential benefit of locals: making Forth programs
-more readable.  Of course, this benefit will only be realized if the
-programmers continue to honour the principle of factoring instead of
-using the added latitude to make the words longer.
+   これは、 ローカル変数の潜在的な利点の 1 つ、 つまり Forth プログラム
+を読みやすくすることを示しています。 もちろん、 この利点は、 プログラマ
+がワードを長ったらしく書くための自由度を追加する訳ではなく、 ファクタリ
+ング(因数分解)の原則を尊重し続けた場合にのみ実現されます。
 
    Using ‘TO’ can and should be avoided.  Without ‘TO’, every
 value-flavoured local has only a single assignment and many advantages
@@ -6708,178 +6718,4 @@ will be for the first such ‘throw’.
    ‘gforth-fast’ also does not attempt to differentiate between division
 by zero and division overflow, because that costs time in every
 division.
-
-
-File: gforth.info,  Node: Tools,  Next: Standard conformance,  Prev: Error messages,  Up: Top
-
-8 Tools
-*******
-
-* Menu:
-
-* Standard Report::          使用されたワードをワードセットごとにソートして報告します
-* Stack depth changes::      このスタック値はどこから来たのか?
-
-See also *note Emacs and Gforth::.
-
-
-File: gforth.info,  Node: Standard Report,  Next: Stack depth changes,  Prev: Tools,  Up: Tools
-
-8.1 ‘ans-report.fs’: Report the words used, sorted by wordset
-=============================================================
-
-If you want to label a Forth program as Standard Program, you must
-document which wordsets the program uses.
-
-   The ‘ans-report.fs’ tool makes it easy for you to determine which
-words from which wordset and which non-standard words your application
-uses.  You simply have to include ‘ans-report.fs’ before loading the
-program you want to check.  After loading your program, you can get the
-report with ‘print-ans-report’.  A typical use is to run this as batch
-job like this:
-     gforth ans-report.fs myprog.fs -e "print-ans-report bye"
-
-   The output looks like this (for ‘compat/control.fs’):
-     The program uses the following words
-     from CORE :
-     : POSTPONE THEN ; immediate ?dup IF 0=
-     from BLOCK-EXT :
-     \
-     from FILE :
-     (
-
-   ‘ans-report.fs’ reports both Forth-94 and Forth-2012 wordsets.  For
-words that are in both standards, it reports the wordset without suffix
-(e.g., ‘CORE-EXT’).  For Forth-2012-only words, it reports the wordset
-with a ‘-2012’ suffix (e.g., ‘CORE-EXT-2012’); and likewise for the
-words that are Forth-94-only (i.e., that have been removed in
-Forth-2012).
-
-8.1.1 Caveats
--------------
-
-Note that ‘ans-report.fs’ just checks which words are used, not whether
-they are used in a standard-conforming way!
-
-   Some words are defined in several wordsets in the standard.
-‘ans-report.fs’ reports them for only one of the wordsets, and not
-necessarily the one you expect.  It depends on usage which wordset is
-the right one to specify.  E.g., if you only use the compilation
-semantics of ‘S"’, it is a Core word; if you also use its interpretation
-semantics, it is a File word.
-
-
-File: gforth.info,  Node: Stack depth changes,  Prev: Standard Report,  Up: Tools
-
-8.2 Stack depth changes during interpretation
-=============================================
-
-Sometimes you notice that, after loading a file, there are items left on
-the stack.  The tool ‘depth-changes.fs’ helps you find out quickly where
-in the file these stack items are coming from.
-
-   The simplest way of using ‘depth-changes.fs’ is to include it before
-the file(s) you want to check, e.g.:
-
-     gforth depth-changes.fs my-file.fs
-
-   This will compare the stack depths of the data and FP stack at every
-empty line (in interpretation state) against these depths at the last
-empty line (in interpretation state).  If the depths are not equal, the
-position in the file and the stack contents are printed with ‘~~’ (*note
-Debugging::).  This indicates that a stack depth change has occured in
-the paragraph of non-empty lines before the indicated line.  It is a
-good idea to leave an empty line at the end of the file, so the last
-paragraph is checked, too.
-
-   Checking only at empty lines usually works well, but sometimes you
-have big blocks of non-empty lines (e.g., when building a big table),
-and you want to know where in this block the stack depth changed.  You
-can check all interpreted lines with
-
-     gforth depth-changes.fs -e "' all-lines is depth-changes-filter" my-file.fs
-
-   This checks the stack depth at every end-of-line.  So the depth
-change occured in the line reported by the ‘~~’ (not in the line
-before).
-
-   Note that, while this offers better accuracy in indicating where the
-stack depth changes, it will often report many intentional stack depth
-changes (e.g., when an interpreted computation stretches across several
-lines).  You can suppress the checking of some lines by putting
-backslashes at the end of these lines (not followed by white space), and
-using
-
-     gforth depth-changes.fs -e "' most-lines is depth-changes-filter" my-file.fs
-
-
-File: gforth.info,  Node: Standard conformance,  Next: Standard vs Extensions,  Prev: Tools,  Up: Top
-
-9 Standard conformance
-**********************
-
-(標準適合度)私達の知る限り、 Gforth は…
-
-   ANS Forth System and a Forth-2012 System
-   • providing the Core Extensions word set
-   • providing the Block word set
-   • providing the Block Extensions word set
-   • providing the Double-Number word set
-   • providing the Double-Number Extensions word set
-   • providing the Exception word set
-   • providing the Exception Extensions word set
-   • providing the Facility word set
-   • providing the Facility Extensions word set, except ‘EMIT?’
-   • providing the File Access word set
-   • providing the File Access Extensions word set
-   • providing the Floating-Point word set
-   • providing the Floating-Point Extensions word set
-   • providing the Locals word set
-   • providing the Locals Extensions word set
-   • providing the Memory-Allocation word set
-   • providing the Memory-Allocation Extensions word set
-   • providing the Programming-Tools word set
-   • providing the Programming-Tools Extensions word set, except
-     ‘EDITOR’ and ‘FORGET’
-   • providing the Search-Order word set
-   • providing the Search-Order Extensions word set
-   • providing the String word set
-   • providing the String Extensions word set
-   • providing the Extended-Character wordset
-
-   Gforth has the following environmental restrictions:
-
-   • While processing the OS command line, if an exception is not
-     caught, Gforth exits with a non-zero exit code instead of
-     performing QUIT.
-
-   • When an ‘throw’ is performed after a ‘query’, Gforth does not
-     always restore the input source specification in effect at the
-     corresponding catch.
-
-   In addition, Standard Forth systems are required to document certain
-implementation choices.  This chapter tries to meet these requirements
-for the Forth-94 standard.  For the Forth-2012 standard, we decided to
-produce the additional documentation only if there is demand.  So if you
-are really missing this documentation, please let us know.
-
-   In many cases, the following documentation gives a way to ask the
-system for the information instead of providing the information
-directly, in particular, if the information depends on the processor,
-the operating system or the installation options chosen, or if they are
-likely to change during the maintenance of Gforth.
-
-* Menu:
-
-* The Core Words::
-* The optional Block word set::
-* The optional Double Number word set::
-* The optional Exception word set::
-* The optional Facility word set::
-* The optional File-Access word set::
-* The optional Floating-Point word set::
-* The optional Locals word set::
-* The optional Memory-Allocation word set::
-* The optional Programming-Tools word set::
-* The optional Search-Order word set::
 

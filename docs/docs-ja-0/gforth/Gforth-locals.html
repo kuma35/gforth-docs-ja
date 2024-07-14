@@ -96,21 +96,16 @@ Next: <a href="Standard-Forth-locals.html" accesskey="n" rel="next">Standard For
  endif ;
 </pre></div>
 
-<p>The similarity of locals definitions with stack comments is intended. A
-locals definition often replaces the stack comment of a word. The order of
-the locals corresponds to the order in a stack comment and everything after
-the <code>--</code> is really a comment.
+<p>ローカル変数定義とスタック・コメントは、 類似するよう意図しています。 ローカル変数定義は、 多くの場合、 ワードのスタック・コメントを置き換えます。
+ローカル変数の順序はスタック・コメント内の順序に対応し、 <code>--</code> 以降はすべて実際はコメントです。
 </p>
-<p>This similarity has one disadvantage: It is too easy to confuse locals
-declarations with stack comments, causing bugs and making them hard to
-find. However, this problem can be avoided by appropriate coding
-conventions: Do not use both notations in the same program. If you do, they
-should be distinguished using additional means, e.g. by position.
+<p>この類似性には 1 つ欠点があります。 ローカル変数宣言とスタック・コメントを混同しやすく、 バグが発生し、 見つけにくくなります。 ただし、
+この問題は適切なコーディング規約によって回避できます。 同じプログラム内で両方の表記法を使用しないでください。 そうする場合は、
+追加の手段を使用して区別する必要があります。 例えば、 場所によって区別します。
 </p>
 <span id="index-types-of-locals"></span>
 <span id="index-locals-types"></span>
-<p>The name of the local may be preceded by a type specifier, e.g., <code>F:</code>
-for a floating point value:
+<p>ローカルの名前の前に型指定子を付けることができます。 たとえば、浮動小数点値の場合は <code>F:</code> です:
 </p>
 <div class="example">
 <pre class="example">: CX* {: F: Ar F: Ai F: Br F: Bi -- Cr Ci :}
@@ -124,31 +119,27 @@ for a floating point value:
 <span id="index-value_002dflavoured-locals"></span>
 <span id="index-varue_002dflavoured-locals"></span>
 <span id="index-variable_002dflavoured-locals"></span>
-<p>Gforth currently supports cells (<code>W:</code>, <code>WA:</code>, <code>W^</code>), doubles
-(<code>D:</code>, <code>DA:</code>, <code>D^</code>), floats (<code>F:</code>, <code>FA:</code>,
-<code>F^</code>), characters (<code>C:</code>, <code>CA:</code>, <code>C^</code>), and xts
-(<code>xt:</code>, <code>xta:</code>) in several flavours:
+<p>Gforth は現在、 セル型指定子(<code>W:</code>, <code>WA:</code>, <code>W^</code>)や、 2倍長整数型指定子(<code>D:</code>,
+<code>DA:</code>, <code>D^</code>)や、 浮動小数点数型指定子(<code>F:</code>, <code>FA:</code>, <code>F^</code>)と、
+さまざまなフレーバーの xt 型指定子(<code>xt:</code>, <code>xta:</code>)、 をサポートしています:
 </p>
 <dl compact="compact">
 <dt><span><em>valueフレーバー(value-flavoured)</em></span></dt>
-<dd><p>(see <a href="Values.html">Values</a>) A value-flavoured local (defined with <code>W:</code>, <code>D:</code>
-etc.) produces its value and can be changed with <code>TO</code>.
+<dd><p>(see <a href="Values.html">Values</a>) valueフレーバーのローカル変数(<code>W:</code>、 <code>D:</code> などで定義)はその値を生成し、
+<code>TO</code> で変更できます。
 </p>
 </dd>
-<dt><span><em>varue-flavoured</em></span></dt>
-<dd><p>(see <a href="Varues.html">Varues</a>) A varue-flavoured local <i>l</i> (defined with <code>WA:</code>
-etc.) behaves exactly like a value-flavoured local, except that you can use
-<code>addr <i>l</i></code> to get its address (which becomes invalid when the
-variable&rsquo;s scope is left).  Currently there is no performance difference,
-but in the long run value-flavoured locals will be significantly faster,
-because they can reside in registers.
+<dt><span><em>varueフレーバー(vaLue ではなくて vaRue)</em></span></dt>
+<dd><p>(see <a href="Varues.html">Varues</a>) varueフレーバーのローカル変数 <i>l</i> (<code>WA:</code> などで定義) は、 <code>addr
+<i>l</i></code> を使用してアドレスを取得できること(変数のスコープを離れると無効になります)を除いて、
+valueフレーバーのローカル変数とまったく同じように振る舞います。 現時点ではパフォーマンスに違いはありませんが、 長期的には、
+valueフレーバーのローカル変数はレジスタに常駐できるため、 大幅に高速になるでしょう。
 </p>
 </dd>
-<dt><span><em>variable-flavoured</em></span></dt>
-<dd><p>(see <a href="Variables.html">Variables</a>) A variable-flavoured local (defined with <code>W^</code> etc.)
-produces its address (which becomes invalid when the variable&rsquo;s scope is
-left).  E.g., the standard word <code>emit</code> can be defined in terms of
-<code>type</code> like this:
+<dt><span><em>variableフレーバー</em></span></dt>
+<dd><p>(see <a href="Variables.html">Variables</a>) variableフレーバーのローカル変数(<code>W^</code>
+などで定義)はそのアドレスを生成します(変数のスコープを離れると無効になります)。  たとえば、 標準のワード <code>emit</code> は、
+以下ののように <code>type</code> を使ってで定義できます:
 </p>
 <div class="example">
 <pre class="example">: emit {: C^ char* -- :}
@@ -173,8 +164,7 @@ left).  E.g., the standard word <code>emit</code> can be defined in terms of
 
 <span id="index-default-type-of-locals"></span>
 <span id="index-locals_002c-default-type"></span>
-<p>A local without type specifier is a <code>W:</code> local.  You can allow or
-disallow the use of <code>addr</code> with:
+<p>型指定子のないローカル変数は <code>W:</code> ローカル変数です。  以下を使用して <code>addr</code> の使用を許可または禁止できます:
 </p>
 <span id="index-default_002dwa_003a-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
 <span id="index-default_002dwa_003a"></span>
@@ -182,8 +172,8 @@ disallow the use of <code>addr</code> with:
 <div class="format">
 <pre class="format"><code>default-wa:</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;default-wa:&rdquo;
 </pre></div>
-<p>Allow <code>addr</code> on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using <code>wa:</code>.
+<p>型指定子なしで定義されたローカル変数で <code>addr</code> を許可します。  言い換えれば、 型指定子無しでローカル変数定義したときは
+<code>wa:</code> 型指定子を指定したのと同じです
 </p>
 
 <span id="index-default_002dw_003a-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
@@ -192,29 +182,25 @@ words, define locals without a type specifyer using <code>wa:</code>.
 <div class="format">
 <pre class="format"><code>default-w:</code> ( <i>&ndash;  </i>) gforth-experimental &ldquo;default-w:&rdquo;
 </pre></div>
-<p>Forbid <code>addr</code> on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using <code>w:</code>.
+<p>型指定子なしで定義されたローカル変数では <code>addr</code> を禁止します。  言い換えれば、 型指定子なしで定義されたローカル変数は
+<code>w:</code> 型指定子を指定してローカル変数を定義したのと同じです。
 </p>
 
 
 <span id="index-locals-initialization"></span>
 <span id="index-initialization-of-locals"></span>
-<p>All flavours of locals are initialized with values from the data or (for FP
-locals) FP stack, with the exception being locals defined behind <code>|</code>:
-Gforth initializes them to 0; some Forth systems leave them uninitialized.
+<p><code>|</code> の後ろで定義されたローカル変数を除いて、 ローカル変数の全てのフレーバーは、 データまたは、 (FP ローカル変数の場合) FP
+スタックの値で初期化されます。 Gforth はそれらを 0 に初期化します。 一部の Forth システムでは初期化されないままになっています。
 </p>
 <span id="index-data-structure-locals"></span>
-<p>Gforth supports the square bracket notation for local buffers and data
-structures.  These locals are similar to variable-flavored locals, the size
-is specified as a constant expression.  A declaration looks <code><i>name</i>[
-<i>size</i> ]</code>.  The Forth expression <code><i>size</i></code> is evaluated during
-declaration, it must have the stack effect <code>( -- +n )</code>, giving the size
-in bytes.  The square bracket <code>[</code> is part of the defined name.
+<p>Gforth は、 ローカル・バッファーとデータデータ構造体のための角括弧(square bracket)表記をサポートしています。
+これらのローカル変数は variableフレーバー のローカル変数に似ており、 サイズは定数式として指定します。  宣言は
+<code><i>name</i>[ <i>size</i> ]</code> のようになります。  Forth の式 <code><i>size</i></code> は宣言中に評価され、
+サイズをバイト単位で指定するスタック効果 <code>( -- +n )</code> が必要です。  角括弧 <code>[</code> は定義された名前の一部です。
 </p>
-<p>Local data structures are initialized by copying <i>size</i> bytes from an
-address passed on the stack; uninitialized local data structures (after
-<code>|</code> in the declaration) are not erased, they just contain whatever data
-there was on the locals stack before.
+<p>ローカル変数のデータ構造体は、 スタックに渡されたアドレスから <i>size</i> バイトをコピーすることによって初期化されます。
+初期化されていないローカル変数データ構造体(宣言内の <code>|</code> の後)は消去されません。
+以前にローカル変数スタックにあったデータがすべて含まれるだけです。
 </p>
 <p>Example:
 </p>
@@ -229,8 +215,7 @@ end-structure
     foo[ test-struct dump ;
 </pre></div>
 
-<p>Gforth allows defining locals everywhere in a colon definition. This poses
-the following questions:
+<p>Gforth では、コロン定義内のあらゆる場所でローカル変数を定義できます。 これにより、 以下のような疑問が生じます:
 </p>
 
 <ul class="section-toc">

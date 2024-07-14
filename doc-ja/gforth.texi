@@ -18006,7 +18006,9 @@ string)の前に @var{xc} を追加します。  代替手段としては @code{
 エンド・ユーザー向けのプログラムは、 エンド・ユーザーの母国語に対応する必要があります。  このような機能については古くから提案があり、 Xchars
 (@pxref{Xchars and Unicode})や Substitute (@pxref{Substitute})
 などの国際文字セットに関する他の提案から分割されました。  画面に表示されるメッセージは、 開発者の母国語(native
-language)からユーザーの現地言語(local languages)に翻訳する必要があります。
+language)からユーザーの現地言語(local languages)に翻訳する必要があります(訳注: gforth
+に最初から組み込まれていないので都度 @code{require i18n.fs} 等する必要ある。 本マニュアルに掲載が無いが i18n な
+日付用として @code{require i18n-date.fs} するのもいいかもしれない)。
 
 翻訳対象の文字列は @code{L" }@var{string}@code{"} で宣言します。  これにより、
 ロケール文字列識別子(LSID)が返されます。  LSID は不明瞭なタイプ(opaque types)であり、 スタック上のセルとして扱われます。
@@ -18150,7 +18152,7 @@ countries)向けの翻訳よりも優先しなければなりません。  “pr
 @format
 @code{macros-wordlist} ( @i{-- wid  }) gforth-experimental ``macros-wordlist''
 @end format
-wordlist for string replacement macros
+文字列置換マクロのワードリスト
 
 
 @findex replaces ( @var{ addr1 len1 addr2 len2 --   } ) string-ext
@@ -18159,8 +18161,8 @@ wordlist for string replacement macros
 @format
 @code{replaces} ( @i{addr1 len1 addr2 len2 --  }) string-ext ``replaces''
 @end format
-create a macro with name @var{addr2 len2} and content @var{addr1 len1}.  If
-the macro already exists, just change the content.
+名前が @var{addr2 len2}、 内容が @var{addr1 len1} のマクロを作成します。  マクロが既に存在する場合は、
+内容を変更するだけです。
 
 
 @findex .substitute ( @var{ addr1 len1 -- n / ior   } ) gforth-experimental
@@ -18169,9 +18171,8 @@ the macro already exists, just change the content.
 @format
 @code{.substitute} ( @i{addr1 len1 -- n / ior  }) gforth-experimental ``dot-substitute''
 @end format
-substitute all macros in text @var{addr1 len1} and print the result.
-@var{n} is the number of substitutions or, if negative, a throwable
-@var{ior}.
+テキスト @var{addr1 len1} 内のすべてのマクロを置き換えて、 結果を出力します。  @var{n} は置換した数。 または負数の場合は
+throw 可能な @var{ior} です。
 
 
 @findex $substitute ( @var{ addr1 len1 -- addr2 len2 n/ior   } ) gforth-experimental
@@ -18180,9 +18181,8 @@ substitute all macros in text @var{addr1 len1} and print the result.
 @format
 @code{$substitute} ( @i{addr1 len1 -- addr2 len2 n/ior  }) gforth-experimental ``string-substitute''
 @end format
-substitute all macros in text @var{addr1 len1}.  @var{n} is the number of
-substitutions, if negative, it's a throwable @var{ior}, @var{addr2 len2} the
-result.
+テキスト @var{addr1 len1} 内のすべてのマクロを置き換えます。 @var{addr2 len2} が置換結果で、 @var{n}
+は置換の数で、 負数場合は throw 可能な @var{ior} です。
 
 
 @findex substitute ( @var{ addr1 len1 addr2 len2 -- addr2 len3 n/ior   } ) string-ext
@@ -18191,9 +18191,8 @@ result.
 @format
 @code{substitute} ( @i{addr1 len1 addr2 len2 -- addr2 len3 n/ior  }) string-ext ``substitute''
 @end format
-substitute all macros in text @var{addr1 len1}, and copy the result to
-@var{addr2 len2}.  @var{n} is the number of substitutions or, if negative, a
-throwable @var{ior}, @var{addr2 len3} the result.
+テキスト @var{addr1 len1} 内のすべてのマクロを置き換え、 結果を @var{addr2 len2} にコピーします。
+@var{addr2 len3} は置換結果で、 @var{n} は置換した数、または負数場合は throw 可能な @var{ior} です。
 
 
 @findex unescape ( @var{ addr1 u1 dest -- dest u2   } ) string-ext
@@ -18202,10 +18201,9 @@ throwable @var{ior}, @var{addr2 len3} the result.
 @format
 @code{unescape} ( @i{addr1 u1 dest -- dest u2  }) string-ext ``unescape''
 @end format
-double all delimiters in @var{addr1 u1}, so that substitute will result in
-the original text.  Note that the buffer @var{dest} does not have a size, as
-in worst case, it will need just twice as many characters as
-@var{u1}. @var{dest u2} is the resulting string.
+@var{addr1 u1} 内のすべての区切り文字を2重にすることで、 置換後の結果が元のテキストのままになります。  結果を格納するバッファー
+@var{dest} には長さ指定の必要が無いことに注意してください。 最悪の場合、 必要な文字数は @var{u1} の 2倍です。
+@var{dest u2} は結果の文字列の長さです。
 
 
 @findex $unescape ( @var{ addr1 u1 -- addr2 u2   } ) gforth-experimental
@@ -18214,16 +18212,16 @@ in worst case, it will need just twice as many characters as
 @format
 @code{$unescape} ( @i{addr1 u1 -- addr2 u2  }) gforth-experimental ``string-unescape''
 @end format
-same as @code{unescape}, but creates a temporary destination string with
-@code{$tmp}.
+@code{unescape} と同じですが、 @code{$tmp} を使用して一時的な結果文字列を作成します。
 
 
 
 @node CSV Reader, , Substitute, Other I/O
 @subsection CSV Reader
 
-Comma-separated values (CSV) are a popular text format to interchange data.
-Gforth provides an reader in @file{csv.fs}.
+CSV(Comma-separated values)は、 データをやり取りするための一般的なテキスト形式です。  Gforth は
+@file{csv.fs} でCSVリーダーを提供します(注意: gforth に最初から組み込まれてはいないので、 都度 @code{require
+csv.fs} 等する必要がある)。
 
 @findex read-csv ( @var{ addr u xt --   } ) gforth-experimental
 @cindex @code{read-csv}
@@ -18231,9 +18229,8 @@ Gforth provides an reader in @file{csv.fs}.
 @format
 @code{read-csv} ( @i{addr u xt --  }) gforth-experimental ``read-csv''
 @end format
-read CVS file @var{addr u} and execute @var{xt} for every item found.
-@var{xt} takes @code{( addr u col line -- )}, i.e. the string, the current
-column (starting with 0), and the current line (starting with 1).
+CVS ファイル @var{addr u} を読み取り、 見つかった項目ごとに @var{xt} を実行します。  @var{xt} は @code{(
+addr ucol line -- )}、 つまり文字列と、 現在の列番号(0 で始まる)と、 現在の行番号(1 で始まる)を受け取ります。
 
 
 
@@ -18243,16 +18240,14 @@ column (starting with 0), and the current line (starting with 1).
 @cindex command line arguments, OS
 @cindex arguments, OS command line
 
-The usual way to pass arguments to Gforth programs on the command line is
-via the @option{-e} option, e.g.
+コマンドラインで Gforth プログラムに引数を渡す通常の方法は、 @option{-e} オプションを使用することです。 たとえば、
 
 @example
 gforth -e "123 456" foo.fs -e bye
 @end example
 
-However, you may want to interpret the command-line arguments directly.  In
-that case, you can access the (image-specific) command-line arguments
-through @code{next-arg}:
+ただし、 コマンドライン引数を直接パースしたい場合もあります。  その場合、 @code{next-arg}
+を通じて(イメージ固有の)コマンドライン引数にアクセスできます:
 
 @findex next-arg ( @var{ -- addr u   } ) gforth-0.7
 @cindex @code{next-arg}
@@ -18260,12 +18255,12 @@ through @code{next-arg}:
 @format
 @code{next-arg} ( @i{-- addr u  }) gforth-0.7 ``next-arg''
 @end format
-get the next argument from the OS command line, consuming it; if there is no
-argument left, return @code{0 0}.
+OS コマンドラインから次の引数を取得し、 それを消費し @i{addr u} に返します。 引数が残っていない場合は、 @code{0 0}
+を返します。
 
 
 
-Here's an example program @file{echo.fs} for @code{next-arg}:
+@code{next-arg} のプログラム例 @file{echo.fs} を以下に示します:
 
 @example
 : echo ( -- )
@@ -18278,20 +18273,19 @@ Here's an example program @file{echo.fs} for @code{next-arg}:
 echo cr bye
 @end example
 
-This can be invoked with
+これは以下のようにして起動します
 
 @example
 gforth echo.fs hello world
 @end example
 
-and it will print
+そうすると以下のように出力されます
 
 @example
 hello world
 @end example
 
-The next lower level of dealing with the OS command line are the following
-words:
+以下は、 OS コマンドラインを処理する下位レベルのワード群です:
 
 @findex arg ( @var{ u -- addr count   } ) gforth-0.2
 @cindex @code{arg}
@@ -18299,12 +18293,10 @@ words:
 @format
 @code{arg} ( @i{u -- addr count  }) gforth-0.2 ``arg''
 @end format
-Return the string for the @i{u}th command-line argument; returns @code{0 0}
-if the access is beyond the last argument.  @code{0 arg} is the program name
-with which you started Gforth.  The next unprocessed argument is always
-@code{1 arg}, the one after that is @code{2 arg} etc.  All arguments already
-processed by the system are deleted.  After you have processed an argument,
-you can delete it with @code{shift-args}.
+@i{u} 番目のコマンドライン引数の文字列を返します。 @i{u} が最後の引数を超えている場合は @code{0 0} を返します。
+@code{0 arg} は、 Gforth を起動したプログラム名です。  次の未処理の引数は常に @code{1 arg} で、 その後の引数は
+@code{2 arg} などです。 システムによってすでに処理された引数はすべて削除されます。  引数を処理した後、
+@code{shift-args} を使用して引数を削除できます。
 
 
 @findex shift-args ( @var{ --   } ) gforth-0.7
@@ -18313,13 +18305,12 @@ you can delete it with @code{shift-args}.
 @format
 @code{shift-args} ( @i{--  }) gforth-0.7 ``shift-args''
 @end format
-@code{1 arg} is deleted, shifting all following OS command line parameters
-to the left by 1, and reducing @code{argc @@}.  This word can change
-@code{argv @@}.
+@code{1 arg} が削除され、 後続のすべての OS コマンドライン・パラメータが 1 だけ左にシフトされ、@code{argc @@}
+が減ります。  このワードは @code{argv @@} を変更できます。
 
 
 
-Finally, at the lowest level Gforth provides the following words:
+最後に、 Gforth は最下位レベルで以下のワード群を提供します:
 
 @findex argc ( @var{ -- addr   } ) gforth-0.2
 @cindex @code{argc}
@@ -18327,8 +18318,8 @@ Finally, at the lowest level Gforth provides the following words:
 @format
 @code{argc} ( @i{-- addr  }) gforth-0.2 ``argc''
 @end format
-@code{Variable} -- the number of command-line arguments (including the
-command name).  Changed by @code{next-arg} and @code{shift-args}.
+変数(@code{Variable}) -- コマンドライン引数の数(コマンド名を含む)。  @code{next-arg} と
+@code{shift-args} によって変更されます。
 
 
 @findex argv ( @var{ -- addr   } ) gforth-0.2
@@ -18337,10 +18328,9 @@ command name).  Changed by @code{next-arg} and @code{shift-args}.
 @format
 @code{argv} ( @i{-- addr  }) gforth-0.2 ``argv''
 @end format
-@code{Variable} -- a pointer to a vector of pointers to the command-line
-arguments (including the command-name). Each argument is represented as a
-C-style zero-terminated string.  Changed by @code{next-arg} and
-@code{shift-args}.
+変数(@code{Variable}) -- コマンドライン引数 (コマンド名を含む) へのポインターのベクトル(vector)へのポインター。
+各引数は、 C言語スタイルのゼロで終わる文字列として表されます。  @code{next-arg} と @code{shift-args}
+によって変更されます。
 
 
 
@@ -18392,21 +18382,16 @@ or
  endif ;
 @end example
 
-The similarity of locals definitions with stack comments is intended. A
-locals definition often replaces the stack comment of a word. The order of
-the locals corresponds to the order in a stack comment and everything after
-the @code{--} is really a comment.
+ローカル変数定義とスタック・コメントは、 類似するよう意図しています。 ローカル変数定義は、 多くの場合、 ワードのスタック・コメントを置き換えます。
+ローカル変数の順序はスタック・コメント内の順序に対応し、 @code{--} 以降はすべて実際はコメントです。
 
-This similarity has one disadvantage: It is too easy to confuse locals
-declarations with stack comments, causing bugs and making them hard to
-find. However, this problem can be avoided by appropriate coding
-conventions: Do not use both notations in the same program. If you do, they
-should be distinguished using additional means, e.g. by position.
+この類似性には 1 つ欠点があります。 ローカル変数宣言とスタック・コメントを混同しやすく、 バグが発生し、 見つけにくくなります。 ただし、
+この問題は適切なコーディング規約によって回避できます。 同じプログラム内で両方の表記法を使用しないでください。 そうする場合は、
+追加の手段を使用して区別する必要があります。 例えば、 場所によって区別します。
 
 @cindex types of locals
 @cindex locals types
-The name of the local may be preceded by a type specifier, e.g., @code{F:}
-for a floating point value:
+ローカルの名前の前に型指定子を付けることができます。 たとえば、浮動小数点値の場合は @code{F:} です:
 
 @example
 : CX* @{: F: Ar F: Ai F: Br F: Bi -- Cr Ci :@}
@@ -18420,30 +18405,26 @@ for a floating point value:
 @cindex value-flavoured locals
 @cindex varue-flavoured locals
 @cindex variable-flavoured locals
-Gforth currently supports cells (@code{W:}, @code{WA:}, @code{W^}), doubles
-(@code{D:}, @code{DA:}, @code{D^}), floats (@code{F:}, @code{FA:},
-@code{F^}), characters (@code{C:}, @code{CA:}, @code{C^}), and xts
-(@code{xt:}, @code{xta:}) in several flavours:
+Gforth は現在、 セル型指定子(@code{W:}, @code{WA:}, @code{W^})や、 2倍長整数型指定子(@code{D:},
+@code{DA:}, @code{D^})や、 浮動小数点数型指定子(@code{F:}, @code{FA:}, @code{F^})と、
+さまざまなフレーバーの xt 型指定子(@code{xt:}, @code{xta:})、 をサポートしています:
 
 @table @dfn
 
 @item valueフレーバー(value-flavoured)
-(@pxref{Values}) A value-flavoured local (defined with @code{W:}, @code{D:}
-etc.) produces its value and can be changed with @code{TO}.
+(@pxref{Values}) valueフレーバーのローカル変数(@code{W:}、 @code{D:} などで定義)はその値を生成し、
+@code{TO} で変更できます。
 
-@item varue-flavoured
-(@pxref{Varues}) A varue-flavoured local @i{l} (defined with @code{WA:}
-etc.) behaves exactly like a value-flavoured local, except that you can use
-@code{addr @i{l}} to get its address (which becomes invalid when the
-variable's scope is left).  Currently there is no performance difference,
-but in the long run value-flavoured locals will be significantly faster,
-because they can reside in registers.
+@item varueフレーバー(vaLue ではなくて vaRue)
+(@pxref{Varues}) varueフレーバーのローカル変数 @i{l} (@code{WA:} などで定義) は、 @code{addr
+@i{l}} を使用してアドレスを取得できること(変数のスコープを離れると無効になります)を除いて、
+valueフレーバーのローカル変数とまったく同じように振る舞います。 現時点ではパフォーマンスに違いはありませんが、 長期的には、
+valueフレーバーのローカル変数はレジスタに常駐できるため、 大幅に高速になるでしょう。
 
-@item variable-flavoured
-(@pxref{Variables}) A variable-flavoured local (defined with @code{W^} etc.)
-produces its address (which becomes invalid when the variable's scope is
-left).  E.g., the standard word @code{emit} can be defined in terms of
-@code{type} like this:
+@item variableフレーバー
+(@pxref{Variables}) variableフレーバーのローカル変数(@code{W^}
+などで定義)はそのアドレスを生成します(変数のスコープを離れると無効になります)。  たとえば、 標準のワード @code{emit} は、
+以下ののように @code{type} を使ってで定義できます:
 
 @example
 : emit @{: C^ char* -- :@}
@@ -18466,8 +18447,7 @@ left).  E.g., the standard word @code{emit} can be defined in terms of
 
 @cindex default type of locals
 @cindex locals, default type
-A local without type specifier is a @code{W:} local.  You can allow or
-disallow the use of @code{addr} with:
+型指定子のないローカル変数は @code{W:} ローカル変数です。  以下を使用して @code{addr} の使用を許可または禁止できます:
 
 @findex default-wa: ( @var{ --   } ) gforth-experimental
 @cindex @code{default-wa:}
@@ -18475,8 +18455,8 @@ disallow the use of @code{addr} with:
 @format
 @code{default-wa:} ( @i{--  }) gforth-experimental ``default-wa:''
 @end format
-Allow @code{addr} on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using @code{wa:}.
+型指定子なしで定義されたローカル変数で @code{addr} を許可します。  言い換えれば、 型指定子無しでローカル変数定義したときは
+@code{wa:} 型指定子を指定したのと同じです
 
 
 @findex default-w: ( @var{ --   } ) gforth-experimental
@@ -18485,29 +18465,25 @@ words, define locals without a type specifyer using @code{wa:}.
 @format
 @code{default-w:} ( @i{--  }) gforth-experimental ``default-w:''
 @end format
-Forbid @code{addr} on locals defined without a type specifyer.  On other
-words, define locals without a type specifyer using @code{w:}.
+型指定子なしで定義されたローカル変数では @code{addr} を禁止します。  言い換えれば、 型指定子なしで定義されたローカル変数は
+@code{w:} 型指定子を指定してローカル変数を定義したのと同じです。
 
 
 
 @cindex locals initialization
 @cindex initialization of locals
-All flavours of locals are initialized with values from the data or (for FP
-locals) FP stack, with the exception being locals defined behind @code{|}:
-Gforth initializes them to 0; some Forth systems leave them uninitialized.
+@code{|} の後ろで定義されたローカル変数を除いて、 ローカル変数の全てのフレーバーは、 データまたは、 (FP ローカル変数の場合) FP
+スタックの値で初期化されます。 Gforth はそれらを 0 に初期化します。 一部の Forth システムでは初期化されないままになっています。
 
 @cindex data structure locals
-Gforth supports the square bracket notation for local buffers and data
-structures.  These locals are similar to variable-flavored locals, the size
-is specified as a constant expression.  A declaration looks @code{@i{name}[
-@i{size} ]}.  The Forth expression @code{@i{size}} is evaluated during
-declaration, it must have the stack effect @code{( -- +n )}, giving the size
-in bytes.  The square bracket @code{[} is part of the defined name.
+Gforth は、 ローカル・バッファーとデータデータ構造体のための角括弧(square bracket)表記をサポートしています。
+これらのローカル変数は variableフレーバー のローカル変数に似ており、 サイズは定数式として指定します。  宣言は
+@code{@i{name}[ @i{size} ]} のようになります。  Forth の式 @code{@i{size}} は宣言中に評価され、
+サイズをバイト単位で指定するスタック効果 @code{( -- +n )} が必要です。  角括弧 @code{[} は定義された名前の一部です。
 
-Local data structures are initialized by copying @i{size} bytes from an
-address passed on the stack; uninitialized local data structures (after
-@code{|} in the declaration) are not erased, they just contain whatever data
-there was on the locals stack before.
+ローカル変数のデータ構造体は、 スタックに渡されたアドレスから @i{size} バイトをコピーすることによって初期化されます。
+初期化されていないローカル変数データ構造体(宣言内の @code{|} の後)は消去されません。
+以前にローカル変数スタックにあったデータがすべて含まれるだけです。
 
 Example:
 
@@ -18522,8 +18498,7 @@ end-structure
     foo[ test-struct dump ;
 @end example
 
-Gforth allows defining locals everywhere in a colon definition. This poses
-the following questions:
+Gforth では、コロン定義内のあらゆる場所でローカル変数を定義できます。 これにより、 以下のような疑問が生じます:
 
 @menu
 * Locals definition words::
@@ -18537,10 +18512,9 @@ the following questions:
 @node Locals definition words, Where are locals visible by name?, Gforth locals, Gforth locals
 @subsubsection Locals definitions words
 
-This section documents the words used for defining locals.  Note that the
-run-times for the words (like @code{W:}) that define a local are performed
-from the rightmost defined local to the leftmost defined local, such that
-the rightmost local gets the top of stack.
+このセクションでは、 ローカル変数を定義するために使用されるワード群を説明します。 注意: ローカル変数を定義するワード(@code{W:}
+など)の実行時は、 右端のローカル変数定義から左端のローカル変数定義の方向で実行され、
+右端のローカル変数がスタックのTOSから得る事になることに注意してください。
 
 @findex @{: ( @var{ -- hmaddr u latest latestnt wid 0   } ) local-ext
 @cindex @code{@{:}
@@ -18548,7 +18522,7 @@ the rightmost local gets the top of stack.
 @format
 @code{@{:} ( @i{-- hmaddr u latest latestnt wid 0  }) local-ext ``open-brace-colon''
 @end format
-Start locals definitions.
+ローカル変数定義の開始。
 
 
 @findex -- ( @var{ hmaddr u latest latestnt wid 0 ... --   } ) gforth-0.2
@@ -18557,9 +18531,8 @@ Start locals definitions.
 @format
 @code{--} ( @i{hmaddr u latest latestnt wid 0 ... --  }) gforth-0.2 ``dash-dash''
 @end format
-During locals definitions everything from @code{--} to @code{:@}} is
-ignored.  This is typically used when you want to make a locals definition
-serve double duty as a stack effect description.
+ローカル変数定義中の @code{--} から @code{:@}} までのすべてが無視されます。  これは通常、
+ローカル変数定義をスタック効果の説明としても使えるよう、 一人二役の役割を持たせる場合に使います。
 
 
 @findex | ( @var{ --   } ) gforth-1.0
@@ -18568,8 +18541,8 @@ serve double duty as a stack effect description.
 @format
 @code{|} ( @i{--  }) gforth-1.0 ``bar''
 @end format
-Locals defined behind @code{|} are not initialized from the stack; so the
-run-time of words like @code{W:} changes to @code{( -- )}.
+@code{|} の後ろで定義されたローカル変数はスタックから初期化されません。 したがって、 @code{W:} のようなワードの実行時のスタック効果
+@code{( -- )} に変わります。
 
 
 @findex :@} ( @var{ hmaddr u latest latestnt wid 0 xt1 ... xtn --   } ) gforth-1.0
@@ -18577,7 +18550,7 @@ run-time of words like @code{W:} changes to @code{( -- )}.
 @format
 @code{:@}} ( @i{hmaddr u latest latestnt wid 0 xt1 ... xtn --  }) gforth-1.0 ``colon-close-brace''
 @end format
-Ends locals definitions.
+ローカル変数定義の終了。
 
 
 @findex @{ ( @var{ -- hmaddr u latest latestnt wid 0   } ) gforth-0.2
@@ -18586,8 +18559,7 @@ Ends locals definitions.
 @format
 @code{@{} ( @i{-- hmaddr u latest latestnt wid 0  }) gforth-0.2 ``open-brace''
 @end format
-Start locals definitions.  The Forth-2012 standard name for this word is
-@code{@{:}.
+ローカル変数定義を開始します。  このワードの Forth-2012 標準名は @code{@{:} です。
 
 
 @findex @} ( @var{ hmaddr u latest latestnt wid 0 xt1 ... xtn --   } ) gforth-0.2
@@ -18596,8 +18568,7 @@ Start locals definitions.  The Forth-2012 standard name for this word is
 @format
 @code{@}} ( @i{hmaddr u latest latestnt wid 0 xt1 ... xtn --  }) gforth-0.2 ``close-brace''
 @end format
-Ends locals definitions.  The Forth-2012 standard name for this word is
-@code{:@}}.
+ローカル変数定義を終了します。  このワードの Forth-2012 標準名は @code{:@}} です。
 
 
 @findex W: ( @var{ compilation "name" -- a-addr xt; run-time x --   } ) gforth-0.2
@@ -18606,7 +18577,7 @@ Ends locals definitions.  The Forth-2012 standard name for this word is
 @format
 @code{W:} ( @i{compilation "name" -- a-addr xt; run-time x --  }) gforth-0.2 ``w-colon''
 @end format
-Define value-flavoured cell local @i{name} @code{( -- x1 )}
+valueフレーバーのセル・ローカル変数 @i{name} を定義します @code{( -- x1 )}
 
 
 @findex WA: ( @var{ compilation "name" -- a-addr xt; run-time x --   } ) gforth-1.0
@@ -18615,7 +18586,7 @@ Define value-flavoured cell local @i{name} @code{( -- x1 )}
 @format
 @code{WA:} ( @i{compilation "name" -- a-addr xt; run-time x --  }) gforth-1.0 ``w-a-colon''
 @end format
-Define varue-flavoured cell local @i{name} @code{( -- x1 )}
+varueフレーバーのセル・ローカル変数 @i{name} を定義します @code{( -- x1 )}
 
 
 @findex W^ ( @var{ compilation "name" -- a-addr xt; run-time x --   } ) gforth-0.2
@@ -18624,7 +18595,7 @@ Define varue-flavoured cell local @i{name} @code{( -- x1 )}
 @format
 @code{W^} ( @i{compilation "name" -- a-addr xt; run-time x --  }) gforth-0.2 ``w-caret''
 @end format
-Define variable-flavoured cell local @i{name} @code{( -- a-addr )}
+variableフレーバーのセル・ローカル変数 @i{name} を定義します  @code{( -- a-addr )}
 
 
 @findex D: ( @var{ compilation "name" -- a-addr xt; run-time x1 x2 --   } ) gforth-0.2
@@ -18633,7 +18604,7 @@ Define variable-flavoured cell local @i{name} @code{( -- a-addr )}
 @format
 @code{D:} ( @i{compilation "name" -- a-addr xt; run-time x1 x2 --  }) gforth-0.2 ``d-colon''
 @end format
-Define value-flavoured double local @i{name} @code{( -- x3 x4 )}
+valueフレーバーの2倍長整数ローカル変数 @i{name} を定義します @code{( -- x3 x4 )}
 
 
 @findex DA: ( @var{ compilation "name" -- a-addr xt; run-time x1 x2 --   } ) gforth-1.0
@@ -18642,7 +18613,7 @@ Define value-flavoured double local @i{name} @code{( -- x3 x4 )}
 @format
 @code{DA:} ( @i{compilation "name" -- a-addr xt; run-time x1 x2 --  }) gforth-1.0 ``w-a-colon''
 @end format
-Define varue-flavoured double local @i{name} @code{( -- x3 x4 )}
+varueフレーバーの2倍長整数ローカル変数 @i{name} を定義します @code{( -- x3 x4 )}
 
 
 @findex D^ ( @var{ compilation "name" -- a-addr xt; run-time x1 x2 --   } ) gforth-0.2
@@ -18651,7 +18622,7 @@ Define varue-flavoured double local @i{name} @code{( -- x3 x4 )}
 @format
 @code{D^} ( @i{compilation "name" -- a-addr xt; run-time x1 x2 --  }) gforth-0.2 ``d-caret''
 @end format
-Define variable-flavoured double local @i{name} @code{( -- a-addr )}
+variableフレーバーの2倍長整数ローカル変数 @i{name} を定義します @code{( -- a-addr )}
 
 
 @findex C: ( @var{ compilation "name" -- a-addr xt; run-time c --   } ) gforth-0.2
@@ -18660,7 +18631,7 @@ Define variable-flavoured double local @i{name} @code{( -- a-addr )}
 @format
 @code{C:} ( @i{compilation "name" -- a-addr xt; run-time c --  }) gforth-0.2 ``c-colon''
 @end format
-Define value-flavoured char local @i{name} @code{( -- c1 )}
+valueフレーバーの char ローカル変数 @i{name} を定義します @code{( -- c1 )}
 
 
 @findex CA: ( @var{ compilation "name" -- a-addr xt; run-time c --   } ) gforth-1.0
@@ -18669,7 +18640,7 @@ Define value-flavoured char local @i{name} @code{( -- c1 )}
 @format
 @code{CA:} ( @i{compilation "name" -- a-addr xt; run-time c --  }) gforth-1.0 ``c-a-colon''
 @end format
-Define varue-flavoured char local @i{name} @code{( -- c1 )}
+varueフレーバーの char ローカル変数 @i{name} を定義します @code{( -- c1 )}
 
 
 @findex C^ ( @var{ compilation "name" -- a-addr xt; run-time c --   } ) gforth-0.2
@@ -18678,7 +18649,7 @@ Define varue-flavoured char local @i{name} @code{( -- c1 )}
 @format
 @code{C^} ( @i{compilation "name" -- a-addr xt; run-time c --  }) gforth-0.2 ``c-caret''
 @end format
-Define variable-flavoured char local @i{name} @code{( -- c-addr )}
+variableフレーバーの char ローカル変数 @i{name} を定義します @code{( -- c-addr )}
 
 
 @findex F: ( @var{ compilation "name" -- a-addr xt; run-time r --   } ) gforth-0.2
@@ -18687,7 +18658,7 @@ Define variable-flavoured char local @i{name} @code{( -- c-addr )}
 @format
 @code{F:} ( @i{compilation "name" -- a-addr xt; run-time r --  }) gforth-0.2 ``f-colon''
 @end format
-Define value-flavoured float local @i{name} @code{( -- r1 )}
+valueフレーバーの浮動小数点数ローカル変数 @i{name} を定義します @code{( -- r1 )}
 
 
 @findex FA: ( @var{ compilation "name" -- a-addr xt; run-time f --   } ) gforth-1.0
@@ -18696,7 +18667,7 @@ Define value-flavoured float local @i{name} @code{( -- r1 )}
 @format
 @code{FA:} ( @i{compilation "name" -- a-addr xt; run-time f --  }) gforth-1.0 ``f-a-colon''
 @end format
-Define varue-flavoured float local @i{name} @code{( -- r1 )}
+varueフレーバーの浮動小数点数ローカル変数 @i{name} を定義します @code{( -- r1 )}
 
 
 @findex F^ ( @var{ compilation "name" -- a-addr xt; run-time r --   } ) gforth-0.2
@@ -18705,7 +18676,7 @@ Define varue-flavoured float local @i{name} @code{( -- r1 )}
 @format
 @code{F^} ( @i{compilation "name" -- a-addr xt; run-time r --  }) gforth-0.2 ``f-caret''
 @end format
-Define variable-flavoured float local @i{name} @code{( -- f-addr )}
+variableフレーバーの浮動小数点数ローカル変数 @i{name} を定義します @code{( -- f-addr )}
 
 
 @findex XT: ( @var{ compilation "name" -- a-addr xt; run-time xt1 --   } ) gforth-1.0
@@ -18714,7 +18685,7 @@ Define variable-flavoured float local @i{name} @code{( -- f-addr )}
 @format
 @code{XT:} ( @i{compilation "name" -- a-addr xt; run-time xt1 --  }) gforth-1.0 ``x-t-colon''
 @end format
-Define defer-flavoured cell local @i{name} @code{( ... -- ... )}
+deferフレーバーのセル・ローカル変数 @i{name} を定義します @code{( ... -- ... )}
 
 
 @findex XTA: ( @var{ compilation "name" -- a-addr xt; run-time ... -- ...   } ) gforth-1.0
@@ -18723,14 +18694,14 @@ Define defer-flavoured cell local @i{name} @code{( ... -- ... )}
 @format
 @code{XTA:} ( @i{compilation "name" -- a-addr xt; run-time ... -- ...  }) gforth-1.0 ``x-t-a-colon''
 @end format
-Define a defer-flavoured local @i{name} on which @code{addr} can be used.
+@code{addr} を使用できる defer フレーバーのローカル変数 @i{name} を定義します。
 
 
 
-Note that @code{|}, @code{--}, @code{:@}} and @code{@}} are not normally in
-the search order (they are in the vocabulary @code{locals-types}), and they
-are not necessarily words in all Forth systems; therefore they are
-documented as Gforth words.
+@code{|} や @code{--} や @code{:@}} や @code{@}} は通常、 検索順序スタック(the search
+order)に含まれないことに注意してください(これらは @code{locals-types} ボキャブラリに含まれます)。
+そしてこれらは必ずしも全ての Forth システムでワードとして存在しているわけではありません。 したがって、 これらは Gforth
+のワードとして文書化されています。
 
 @node Where are locals visible by name?, How long do locals live?, Locals definition words, Gforth locals
 @subsubsection Where are locals visible by name?
@@ -18738,10 +18709,9 @@ documented as Gforth words.
 @cindex visibility of locals
 @cindex scope of locals
 
-Basically, the answer is that locals are visible where you would expect it
-in block-structured languages, and sometimes a little longer. If you want to
-restrict the scope of a local, enclose its definition in
-@code{SCOPE}...@code{ENDSCOPE}.
+ローカル変数をその名前によって可視できるのはどこまででしょうか？ -- 基本的に、 その答えは、 ローカル変数がブロック構造言語で期待される場所で、
+場合によってはもうちょっとだけ長くできます。 ローカル変数のスコープを制限したい場合は、 その定義を
+@code{SCOPE}...@code{ENDSCOPE} で囲んで下さい。
 
 
 @findex scope ( @var{ compilation  -- scope ; run-time  --   } ) gforth-0.2
@@ -18760,40 +18730,30 @@ restrict the scope of a local, enclose its definition in
 
 
 
-These words behave like control structure words, so you can use them with
-@code{CS-PICK} and @code{CS-ROLL} to restrict the scope in arbitrary ways.
+これらのワードは制御構造のワードのように動作するため、 @code{CS-PICK} および @code{CS-ROLL} とともに使用して、
+任意の方法で範囲を制限できます。
 
-If you want a more exact answer to the visibility question, here's the basic
-principle: A local is visible in all places that can only be reached through
-the definition of the local@footnote{In compiler construction terminology,
-all places dominated by the definition of the local.}. In other words, it is
-not visible in places that can be reached without going through the
-definition of the local. E.g., locals defined in @code{IF}...@code{ENDIF}
-are visible until the @code{ENDIF}, locals defined in
-@code{BEGIN}...@code{UNTIL} are visible after the @code{UNTIL} (until, e.g.,
-a subsequent @code{ENDSCOPE}).
+可視性の質問に対するより正確な答えが必要な場合のために、 ここで基本原則を示します: ローカル変数は、
+ローカル変数の定義を通じてのみ到達できるすべての場所で可視です@footnote{コンパイラ構築用語では「すべての場所はローカル変数の定義によって支配される」と言う}。
+つまり、 ローカル変数という定義を経由しないと到達できる場所では不可視です。 たとえば、 @code{IF}...@code{ENDIF}
+の中で定義されたローカル変数は @code{ENDIF} まで可視で、 @code{BEGIN}...@code{UNTIL}
+内で定義されたローカル変数は @code{UNTIL} の後(たとえば、後続の @code{ENDSCOPE} まで)で可視です。
 
-The reasoning behind this solution is: We want to have the locals visible as
-long as it is meaningful. The user can always make the visibility shorter by
-using explicit scoping. In a place that can only be reached through the
-definition of a local, the meaning of a local name is clear. In other places
-it is not: How is the local initialized at the control flow path that does
-not contain the definition? Which local is meant, if the same name is
-defined twice in two independent control flow paths?
+このソリューションの背景にある理由は次のとおりです: 私達は、 意味がある限り、 ローカル変数を可視させたいと考えています。 ユーザーは、
+明示的なスコープを使用することで、 いつでも可視性を短くすることができます。 ローカル変数の定義によってのみ到達できる場所では、
+ローカル変数名の意味は明らかです。 他の場所ではそうではありません。
+ローカル変数定義が含まれていない制御フロー・パスでローカル変数はどのように初期化されるのでしょうか？  2 つの独立した制御フロー
+パスで同一ローカル変数名が 2 回定義されている場合、 それはどちらのローカル変数を意味するのでしょうか？
 
-This should be enough detail for nearly all users, so you can skip the rest
-of this section. If you really must know all the gory details and options,
-read on.
+上記で、 ほぼすべてのユーザーにとって十分詳細であるため、 このセクションの残りの部分はスキップしてかまいません。
+本当にすべての血みどろの詳細とオプションを知る必要がある場合は、 以下を読み続けてください。
 
-In order to implement this rule, the compiler has to know which places are
-unreachable. It knows this automatically after @code{AHEAD}, @code{AGAIN},
-@code{EXIT} and @code{LEAVE}; in other cases (e.g., after most
-@code{THROW}s), you can use the word @code{UNREACHABLE} to tell the compiler
-that the control flow never reaches that place. If @code{UNREACHABLE} is not
-used where it could, the only consequence is that the visibility of some
-locals is more limited than the rule above says. If @code{UNREACHABLE} is
-used where it should not (i.e., if you lie to the compiler), buggy code will
-be produced.
+このルールを実装するには、 コンパイラはどの場所が到達不能(unreachable)であるかを認識する必要があります。 @code{AHEAD} や
+@code{AGAIN} や @code{EXIT} や @code{LEAVE} の後で、 これが自動的に認識されます。 他の場合(例: ほとんどの
+@code{THROW} の後)、 @code{UNREACHABLE} というワードを使用して、
+制御フローがその場所に到達しないことをコンパイラに伝えることができます。 @code{UNREACHABLE} が使用できる場所で使用されなかった場合、
+唯一の結果は、 一部のローカル変数の可視性が上記のルールに記載されているよりも制限されることです。 @code{UNREACHABLE}
+を使用すべきではない場所で使用すると(つまり、 コンパイラに嘘をついた場合)、 バグのあるコードが生成されます。
 
 
 @findex UNREACHABLE ( @var{ --   } ) gforth-0.2
@@ -18805,12 +18765,10 @@ be produced.
 
 
 
-Another problem with this rule is that at @code{BEGIN}, the compiler does
-not know which locals will be visible on the incoming back-edge. All
-problems discussed in the following are due to this ignorance of the
-compiler (we discuss the problems using @code{BEGIN} loops as examples; the
-discussion also applies to @code{?DO} and other loops). Perhaps the most
-insidious example is:
+このルールのもう 1 つの問題は、 @code{BEGIN} で、 どのローカル変数が incoming back-edge
+で可視されるかをコンパイラが認識できないことです。 以下で説明するすべての問題は、 コンパイラのこの無知が原因です(@code{BEGIN}
+ループを例として使用してこの問題について説明します。 この説明は @code{?DO} および他のループにも当てはまります)。
+おそらく最も陰険な例は以下のとおりです:
 @example
 AHEAD
 BEGIN
@@ -18821,29 +18779,20 @@ BEGIN
 UNTIL
 @end example
 
-This should be legal according to the visibility rule. The use of @code{x}
-can only be reached through the definition; but that appears textually below
-the use.
+これは、 可視性ルールに従って合法である必要があります。 @code{x} の使用には、 定義を介してのみ到達できます。 ただし、
+下記に明示した使用法でなければなりません。
 
-From this example it is clear that the visibility rules cannot be fully
-implemented without major headaches. Our implementation treats common cases
-as advertised and the exceptions are treated in a safe way: The compiler
-makes a reasonable guess about the locals visible after a @code{BEGIN}; if
-it is too pessimistic, the user will get a spurious error about the local
-not being defined; if the compiler is too optimistic, it will notice this
-later and issue a warning. In the case above the compiler would complain
-about @code{x} being undefined at its use. You can see from the obscure
-examples in this section that it takes quite unusual control structures to
-get the compiler into trouble, and even then it will often do fine.
+この例から、 可視性ルールを完全に実装するには大きな問題が伴うことが明らかです。 私たちの実装は、 一般的なケースを宣伝どおりに扱い、
+例外は安全な方法で処理されます。 コンパイラは、 @code{BEGIN} の後に可視できるローカル変数について合理的な推測を行います。
+悲観的すぎると、 ローカル変数が定義されていないという偽のエラーがユーザーに表示されます。 コンパイラが楽観的すぎる場合、 後でこれに気づき、
+警告を発行します。 上記の場合、 コンパイラは @code{x} が使用時に未定義であることについて文句を言います。 このセクションのあいまいな例から、
+コンパイラをトラブルに陥らせるには非常に特殊な制御構造が必要であることがわかりますが、 それでもコンパイラは多くの場合問題なく動作します。
 
-If the @code{BEGIN} is reachable from above, the most optimistic guess is
-that all locals visible before the @code{BEGIN} will also be visible after
-the @code{BEGIN}. This guess is valid for all loops that are entered only
-through the @code{BEGIN}, in particular, for normal
-@code{BEGIN}...@code{WHILE}...@code{REPEAT} and @code{BEGIN}...@code{UNTIL}
-loops and it is implemented in our compiler. When the branch to the
-@code{BEGIN} is finally generated by @code{AGAIN} or @code{UNTIL}, the
-compiler checks the guess and warns the user if it was too optimistic:
+@code{BEGIN} がそれより上から到達可能な場合、 最も楽観的な推測は、 @code{BEGIN} の前に可視であるすべてのローカル変数も
+@code{BEGIN} の後にも可視であることです。 この推測は、 @code{BEGIN} 経由でのみ入るすべてのループ、 特に通常の
+@code{BEGIN}...@code{WHILE}...@code{REPEAT} および @code{BEGIN}...@code{UNTIL}
+ループに対して有効であり、 コンパイラに実装されています。 @code{BEGIN} への分岐が @code{AGAIN} または
+@code{UNTIL} によって最終的に生成されると、 コンパイラは推測をチェックし、 それが楽観的すぎる場合はユーザーに警告します:
 @example
 IF
   @{: x :@}
@@ -18854,11 +18803,9 @@ BEGIN
 UNTIL
 @end example
 
-Here, @code{x} lives only until the @code{BEGIN}, but the compiler
-optimistically assumes that it lives until the @code{THEN}. It notices this
-difference when it compiles the @code{UNTIL} and issues a warning. The user
-can avoid the warning, and make sure that @code{x} is not used in the wrong
-area by using explicit scoping:
+ここで、 @code{x} は @code{BEGIN} までのみ存続しますが、 コンパイラは @code{THEN}
+まで存続すると楽観的に想定します。 @code{UNTIL} をコンパイルするときにこの違いに気づき、 警告を発行します。 ユーザーは警告を回避し、
+明示的なスコープを使用して @code{x} が間違った領域で使用されていないことを確認できます:
 @example
 IF
   SCOPE
@@ -18870,16 +18817,13 @@ BEGIN
 UNTIL
 @end example
 
-Since the guess is optimistic, there will be no spurious error messages
-about undefined locals.
+推測は楽観的であるため、 未定義のローカル変数に関する偽のエラー・メッセージは表示されません。
 
-If the @code{BEGIN} is not reachable from above (e.g., after @code{AHEAD} or
-@code{EXIT}), the compiler cannot even make an optimistic guess, as the
-locals visible after the @code{BEGIN} may be defined later.
+@code{BEGIN} がそれより上から到達可能でない場合(たとえば、 @code{AHEAD} または @code{EXIT} の後)、
+@code{BEGIN} の後で定義されたローカル変数の可視については、 コンパイラは楽観的な推測を行うことさえできません。
 
-It pessimistically assumes that all locals are visible that were visible at
-the latest place outside any control structure (i.e., where nothing is on
-the control-flow stack).  This means that in:
+悲観的に、 制御構造の外側の最新の場所(つまり、 制御フロー・スタック上に何もない場所)で可視であったすべてのローカル変数が可視であると仮定します。
+これは以下のことを意味します:
 
 @example
 : foo
@@ -18894,13 +18838,11 @@ the control-flow stack).  This means that in:
   UNTIL ;
 @end example
 
-At the place marked with @code{( * )}, @code{x} is visible, but @code{y} is
-not (although, according to the reachability rule it should); @code{z} is
-not and should not be visible there.
+ここで、 @code{( * )} でマークされた場所では、 @code{x} は可視ですが、 @code{y} は不可視です(ただし、
+到達可能性ルールによれば、 可視であるべきです)。 @code{z} はそこでは不可視で、 可視であるべきではありません。
 
-However, you can use @code{ASSUME-LIVE} to make the compiler assume that the
-same locals are visible at the BEGIN as at the point where the top
-control-flow stack item was created.
+ただし、 @code{ASSUME-LIVE} を使用すると、 最上位の制御フロー・スタック項目が作成された時点と同じローカル変数が BEGIN
+で可視になるのだと、 コンパイラに想定させることができます。
 
 
 @findex ASSUME-LIVE ( @var{ orig -- orig   } ) gforth-0.2
@@ -18927,19 +18869,16 @@ IF
 THEN
 @end example
 
-Here @code{x} would not be visible at the use of @code{x}, because its
-definition is inside a control structure, but by using ASSUME-LIVE the
-programmer tells the compiler that the locals visible at the @code{AHEAD}
-should be visible at the @code{BEGIN}.
+ここで、 @code{x} のローカル変数定義は制御構造内にあるため、 @code{x} を使用した時点では @code{x} は可視ではありませんが、
+@code{ASSUME-LIVE} を使用することで、 プログラマはコンパイラに @code{AHEAD} の時点で可視である、 そのローカル変数が、
+@code{BEGIN} の時点でも可視であるべきであると伝えます。
 
-Other cases where the locals are defined before the @code{BEGIN} can be
-handled by inserting an appropriate @code{CS-ROLL} before the
-@code{ASSUME-LIVE} (and changing the control-flow stack manipulation behind
-the @code{ASSUME-LIVE}).
+@code{BEGIN} の前にローカル変数が定義されている他のケースは、 @code{ASSUME-LIVE} の前に適切な
+@code{CS-ROLL} を挿入する(そして @code{ASSUME-LIVE}
+の背後にある制御フロー・スタック操作を変更する)ことで処理できます。
 
-Cases where locals are defined after the @code{BEGIN} (but should be visible
-immediately after the @code{BEGIN}) can only be handled by rearranging the
-loop. E.g., the ``most insidious'' example above can be arranged into:
+ローカル変数が @code{BEGIN} の後で定義されている場合(ただし、 @code{BEGIN} の直後で可視である必要があります)は、
+ループを再配置することによってのみ処理できます。 たとえば、上記の「最も陰険な」例は以下のように整理できます:
 @example
 BEGIN
   @{: x :@}
@@ -18954,39 +18893,29 @@ REPEAT
 @cindex locals lifetime
 @cindex lifetime of locals
 
-The right answer for the lifetime question would be: A local lives at least
-as long as it can be accessed. For a value-flavoured local this means: until
-the end of its visibility. However, a variable-flavoured local could be
-accessed through its address far beyond its visibility scope. Ultimately,
-this would mean that such locals would have to be garbage collected. Since
-this entails un-Forth-like implementation complexities, I adopted the same
-cowardly solution as some other languages (e.g., C): The local lives only as
-long as it is visible; afterwards its address is invalid (and programs that
-access it afterwards are erroneous).
+ローカル変数の生存期間はどのくらいなのか？ -- 生存期間に関する質問に対する正しい答えは、次のとおりです: ローカル変数は、
+少なくともアクセスできる限りは生存します。 valueフレーバーのローカル変数の場合、 これは、 その可視性が終了するまでを意味します。 ただし、
+variableフレーバーのローカル変数は、可視性の範囲をはるかに超えてアドレスを通じてアクセスできる可能性があります。 結局のところ、
+これはそのようなローカル変数がガベージ・コレクションを受けなければならないことを意味します。 これには、Forth らしくない実装の複雑さが伴うため、
+他の言語(C言語など)と同じ引っ込み思案な解決策を採用しました。 つまり、 ローカル変数は、
+それが可視である間のみ生存します。その後、そのアドレスは無効になります(そして、 その後そのアドレスにアクセスするプログラムはエラーになります)。
 
 @node Locals programming style, Locals implementation, How long do locals live?, Gforth locals
 @subsubsection Locals programming style
 @cindex locals programming style
 @cindex programming style, locals
 
-The freedom to define locals anywhere has the potential to change
-programming styles dramatically. In particular, the need to use the return
-stack for intermediate storage vanishes. Moreover, all stack manipulations
-(except @code{PICK}s and @code{ROLL}s with run-time determined arguments)
-can be eliminated: If the stack items are in the wrong order, just write a
-locals definition for all of them; then write the items in the order you
-want.
+どこでもローカル変数を定義できる自由は、 プログラミング・スタイルを劇的に変える可能性を秘めています。 特に、
+中間ストレージにリターン・スタックを使用する必要がなくなります。 さらに、 すべてのスタック操作(実行時に決定される引数を持つ @code{PICK}
+や @code{ROLL} を除く)を排除できます。 スタック項目の順序が間違っている場合は、 すべてのスタック項目のローカル変数定義を記述し、
+その次に、 あなたが必要とする順序で項目を書き込むだけです。
 
-This seems a little far-fetched and eliminating stack manipulations is
-unlikely to become a conscious programming objective. Still, the number of
-stack manipulations will be reduced dramatically if local variables are used
-liberally (e.g., compare @code{max} (@pxref{Gforth locals}) with a
-traditional implementation of @code{max}).
+これは少し突飛なように思えますし、 スタック操作を排除することが意識的なプログラミング目標になる可能性は低いです。 それでも、
+ローカル変数を積極的に使用すれば、 スタック操作の数は大幅に減少します(例: @code{max} (@pxref{Gforth locals}) を
+@code{max} の従来の実装と比較してみましょう)。
 
-This shows one potential benefit of locals: making Forth programs more
-readable. Of course, this benefit will only be realized if the programmers
-continue to honour the principle of factoring instead of using the added
-latitude to make the words longer.
+これは、 ローカル変数の潜在的な利点の 1 つ、 つまり Forth プログラムを読みやすくすることを示しています。 もちろん、 この利点は、
+プログラマがワードを長ったらしく書くための自由度を追加する訳ではなく、 ファクタリング(因数分解)の原則を尊重し続けた場合にのみ実現されます。
 
 @cindex single-assignment style for locals
 Using @code{TO} can and should be avoided.  Without @code{TO}, every

@@ -27,6 +27,180 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Tools,  Next: Standard conformance,  Prev: Error messages,  Up: Top
+
+8 Tools
+*******
+
+* Menu:
+
+* Standard Report::          使用されたワードをワードセットごとにソートして報告します
+* Stack depth changes::      このスタック値はどこから来たのか?
+
+See also *note Emacs and Gforth::.
+
+
+File: gforth.info,  Node: Standard Report,  Next: Stack depth changes,  Prev: Tools,  Up: Tools
+
+8.1 ‘ans-report.fs’: Report the words used, sorted by wordset
+=============================================================
+
+If you want to label a Forth program as Standard Program, you must
+document which wordsets the program uses.
+
+   The ‘ans-report.fs’ tool makes it easy for you to determine which
+words from which wordset and which non-standard words your application
+uses.  You simply have to include ‘ans-report.fs’ before loading the
+program you want to check.  After loading your program, you can get the
+report with ‘print-ans-report’.  A typical use is to run this as batch
+job like this:
+     gforth ans-report.fs myprog.fs -e "print-ans-report bye"
+
+   The output looks like this (for ‘compat/control.fs’):
+     The program uses the following words
+     from CORE :
+     : POSTPONE THEN ; immediate ?dup IF 0=
+     from BLOCK-EXT :
+     \
+     from FILE :
+     (
+
+   ‘ans-report.fs’ reports both Forth-94 and Forth-2012 wordsets.  For
+words that are in both standards, it reports the wordset without suffix
+(e.g., ‘CORE-EXT’).  For Forth-2012-only words, it reports the wordset
+with a ‘-2012’ suffix (e.g., ‘CORE-EXT-2012’); and likewise for the
+words that are Forth-94-only (i.e., that have been removed in
+Forth-2012).
+
+8.1.1 Caveats
+-------------
+
+Note that ‘ans-report.fs’ just checks which words are used, not whether
+they are used in a standard-conforming way!
+
+   Some words are defined in several wordsets in the standard.
+‘ans-report.fs’ reports them for only one of the wordsets, and not
+necessarily the one you expect.  It depends on usage which wordset is
+the right one to specify.  E.g., if you only use the compilation
+semantics of ‘S"’, it is a Core word; if you also use its interpretation
+semantics, it is a File word.
+
+
+File: gforth.info,  Node: Stack depth changes,  Prev: Standard Report,  Up: Tools
+
+8.2 Stack depth changes during interpretation
+=============================================
+
+Sometimes you notice that, after loading a file, there are items left on
+the stack.  The tool ‘depth-changes.fs’ helps you find out quickly where
+in the file these stack items are coming from.
+
+   The simplest way of using ‘depth-changes.fs’ is to include it before
+the file(s) you want to check, e.g.:
+
+     gforth depth-changes.fs my-file.fs
+
+   This will compare the stack depths of the data and FP stack at every
+empty line (in interpretation state) against these depths at the last
+empty line (in interpretation state).  If the depths are not equal, the
+position in the file and the stack contents are printed with ‘~~’ (*note
+Debugging::).  This indicates that a stack depth change has occured in
+the paragraph of non-empty lines before the indicated line.  It is a
+good idea to leave an empty line at the end of the file, so the last
+paragraph is checked, too.
+
+   Checking only at empty lines usually works well, but sometimes you
+have big blocks of non-empty lines (e.g., when building a big table),
+and you want to know where in this block the stack depth changed.  You
+can check all interpreted lines with
+
+     gforth depth-changes.fs -e "' all-lines is depth-changes-filter" my-file.fs
+
+   This checks the stack depth at every end-of-line.  So the depth
+change occured in the line reported by the ‘~~’ (not in the line
+before).
+
+   Note that, while this offers better accuracy in indicating where the
+stack depth changes, it will often report many intentional stack depth
+changes (e.g., when an interpreted computation stretches across several
+lines).  You can suppress the checking of some lines by putting
+backslashes at the end of these lines (not followed by white space), and
+using
+
+     gforth depth-changes.fs -e "' most-lines is depth-changes-filter" my-file.fs
+
+
+File: gforth.info,  Node: Standard conformance,  Next: Standard vs Extensions,  Prev: Tools,  Up: Top
+
+9 Standard conformance
+**********************
+
+(標準適合度)私達の知る限り、 Gforth は…
+
+   ANS Forth System and a Forth-2012 System
+   • providing the Core Extensions word set
+   • providing the Block word set
+   • providing the Block Extensions word set
+   • providing the Double-Number word set
+   • providing the Double-Number Extensions word set
+   • providing the Exception word set
+   • providing the Exception Extensions word set
+   • providing the Facility word set
+   • providing the Facility Extensions word set, except ‘EMIT?’
+   • providing the File Access word set
+   • providing the File Access Extensions word set
+   • providing the Floating-Point word set
+   • providing the Floating-Point Extensions word set
+   • providing the Locals word set
+   • providing the Locals Extensions word set
+   • providing the Memory-Allocation word set
+   • providing the Memory-Allocation Extensions word set
+   • providing the Programming-Tools word set
+   • providing the Programming-Tools Extensions word set, except
+     ‘EDITOR’ and ‘FORGET’
+   • providing the Search-Order word set
+   • providing the Search-Order Extensions word set
+   • providing the String word set
+   • providing the String Extensions word set
+   • providing the Extended-Character wordset
+
+   Gforth has the following environmental restrictions:
+
+   • While processing the OS command line, if an exception is not
+     caught, Gforth exits with a non-zero exit code instead of
+     performing QUIT.
+
+   • When an ‘throw’ is performed after a ‘query’, Gforth does not
+     always restore the input source specification in effect at the
+     corresponding catch.
+
+   In addition, Standard Forth systems are required to document certain
+implementation choices.  This chapter tries to meet these requirements
+for the Forth-94 standard.  For the Forth-2012 standard, we decided to
+produce the additional documentation only if there is demand.  So if you
+are really missing this documentation, please let us know.
+
+   In many cases, the following documentation gives a way to ask the
+system for the information instead of providing the information
+directly, in particular, if the information depends on the processor,
+the operating system or the installation options chosen, or if they are
+likely to change during the maintenance of Gforth.
+
+* Menu:
+
+* The Core Words::
+* The optional Block word set::
+* The optional Double Number word set::
+* The optional Exception word set::
+* The optional Facility word set::
+* The optional File-Access word set::
+* The optional Floating-Point word set::
+* The optional Locals word set::
+* The optional Memory-Allocation word set::
+* The optional Programming-Tools word set::
+* The optional Search-Order word set::
+
+
 File: gforth.info,  Node: The Core Words,  Next: The optional Block word set,  Prev: Standard conformance,  Up: Standard conformance
 
 9.1 The Core Words
@@ -4320,7 +4494,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * .hm ( NT -- ) gforth-1.0:              Header methods.      (line  24)
 * .id ( NT -- ) gforth-0.6:              Name token.          (line  78)
 * .included ( -- ) gforth-0.5:           Forth source files.  (line  66)
-* .locale-csv ( -- ) gforth-experimental: i18n and l10n.      (line  66)
+* .locale-csv ( -- ) gforth-experimental: i18n and l10n.      (line  69)
 * .path ( PATH-ADDR -- ) gforth-0.4:     General Search Paths.
                                                               (line  31)
 * .r ( N1 N2 -- ) core-ext:              Simple numeric output.
@@ -4410,7 +4584,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * :noname ( -- XT COLON-SYS ) core-ext:  Anonymous Definitions.
                                                               (line   9)
 * :} ( HMADDR U LATEST LATESTNT WID 0 XT1 ... XTN -- ) gforth-1.0: Locals definition words.
-                                                              (line  23)
+                                                              (line  24)
 * :}d ( HMADDR U LATEST LATESTNT WID 0 A-ADDR1 U1 ... -- ) gforth-1.0: Closures.
                                                               (line  29)
 * :}h ( HMADDR U LATEST LATESTNT WID 0 A-ADDR1 U1 ... -- ) gforth-1.0: Closures.
@@ -4592,7 +4766,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ` ( "CHAR" -- ) regexp-pattern:        Regular Expressions. (line  85)
 * `? ( "CHAR" -- ) regexp-pattern:       Regular Expressions. (line  88)
 * { ( -- HMADDR U LATEST LATESTNT WID 0 ) gforth-0.2: Locals definition words.
-                                                              (line  26)
+                                                              (line  27)
 * {* ( ADDR -- ADDR ADDR ) regexp-pattern: Regular Expressions.
                                                               (line 122)
 * {** ( ADDR -- ADDR ADDR ) regexp-pattern: Regular Expressions.
@@ -4610,7 +4784,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * || ( ADDR ADDR -- ADDR ADDR ) regexp-pattern: Regular Expressions.
                                                               (line 145)
 * } ( HMADDR U LATEST LATESTNT WID 0 XT1 ... XTN -- ) gforth-0.2: Locals definition words.
-                                                              (line  30)
+                                                              (line  31)
 * }} ( ADDR ADDR -- ADDR ) regexp-pattern: Regular Expressions.
                                                               (line 148)
 * ~~ ( -- ) gforth-0.2:                  Debugging.           (line  28)
@@ -4679,11 +4853,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * append ( C-ADDR1 U1 C-ADDR2 U2 -- C-ADDR U ) gforth-0.7: String words.
                                                               (line  89)
 * arg ( U -- ADDR COUNT ) gforth-0.2:    OS command line arguments.
-                                                              (line  41)
+                                                              (line  40)
 * argc ( -- ADDR ) gforth-0.2:           OS command line arguments.
-                                                              (line  55)
+                                                              (line  54)
 * argv ( -- ADDR ) gforth-0.2:           OS command line arguments.
-                                                              (line  59)
+                                                              (line  58)
 * arshift ( N1 U -- N2 ) gforth-1.0:     Bitwise operations.  (line  26)
 * asptr ( CLASS -- ) oof:                Class Declaration.   (line  16)
 * assembler ( -- ) tools-ext:            Assembler Definitions.
@@ -4695,7 +4869,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * assert2( ( -- ) gforth-0.2:            Assertions.          (line  36)
 * assert3( ( -- ) gforth-0.2:            Assertions.          (line  39)
 * ASSUME-LIVE ( ORIG -- ORIG ) gforth-0.2: Where are locals visible by name?.
-                                                              (line 141)
+                                                              (line 137)
 * at-deltaxy ( DX DY -- ) gforth-0.7:    Terminal output.     (line  11)
 * at-xy ( X Y -- ) facility:             Terminal output.     (line   8)
 * AUser ( "NAME" -- ) gforth-0.2:        Task-local data.     (line  17)
@@ -4778,13 +4952,13 @@ this manual.  Each word is listed with its stack effect and wordset.
 * c-variable ( "FORTH-NAME" "C-NAME" -- ) gforth-1.0: Declaring C Functions.
                                                               (line  87)
 * C: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME C -- ) gforth-0.2: Locals definition words.
-                                                              (line  52)
+                                                              (line  57)
 * c>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
                                                               (line 109)
 * c? ( ADDR CLASS -- ) regexp-pattern:   Regular Expressions. (line  64)
 * c@ ( C-ADDR -- C ) core:               Memory Access.       (line  15)
 * CA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME C -- ) gforth-1.0: Locals definition words.
-                                                              (line  55)
+                                                              (line  60)
 * call-c ( ... W -- ... ) gforth-0.2:    Low-Level C Interface Words.
                                                               (line  13)
 * caller-w ( -- OPTR ) minos2:           actor methods.       (line   6)
@@ -4879,7 +5053,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * count ( C-ADDR1 -- C-ADDR2 U ) core:   Counted string words.
                                                               (line  13)
 * Country ( <LANG> "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  42)
+                                                              (line  45)
 * cov% ( -- ) gforth-experimental:       Code Coverage.       (line  45)
 * cov+ ( -- ) gforth-experimental:       Code Coverage.       (line  26)
 * coverage? ( -- F ) gforth-internal:    Code Coverage.       (line  23)
@@ -4909,7 +5083,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * current' ( "SELECTOR" -- XT ) objects: Objects Glossary.    (line  45)
 * current-interface ( -- ADDR ) objects: Objects Glossary.    (line  51)
 * C^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME C -- ) gforth-0.2: Locals definition words.
-                                                              (line  58)
+                                                              (line  63)
 * d ( -- R ) minos2:                     widget methods.      (line  27)
 * d+ ( UD1 UD2 -- UD ) double:           Double precision.    (line  26)
 * d- ( D1 D2 -- D ) double:              Double precision.    (line  28)
@@ -4926,7 +5100,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * d2* ( D1 -- D2 ) double:               Bitwise operations.  (line  49)
 * d2/ ( D1 -- D2 ) double:               Bitwise operations.  (line  52)
 * D: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-0.2: Locals definition words.
-                                                              (line  43)
+                                                              (line  45)
 * d< ( D1 D2 -- F ) double:              Numeric comparison.  (line  52)
 * d<= ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  54)
 * d<> ( D1 D2 -- F ) gforth-0.2:         Numeric comparison.  (line  56)
@@ -4936,7 +5110,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * d>f ( D -- R ) floating:               Floating Point.      (line  28)
 * d>s ( D -- N ) double:                 Double precision.    (line  24)
 * DA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-1.0: Locals definition words.
-                                                              (line  46)
+                                                              (line  49)
 * dabs ( D -- UD ) double:               Double precision.    (line  32)
 * dark-mode ( -- ) gforth-1.0:           Terminal output.     (line  72)
 * darshift ( D1 U -- D2 ) gforth-1.0:    Bitwise operations.  (line  37)
@@ -4949,7 +5123,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * decimal ( -- ) core:                   Number Conversion.   (line  31)
 * default-color ( -- ) gforth-1.0:       Terminal output.     (line  36)
 * default-w: ( -- ) gforth-experimental: Gforth locals.       (line  86)
-* default-wa: ( -- ) gforth-experimental: Gforth locals.      (line  82)
+* default-wa: ( -- ) gforth-experimental: Gforth locals.      (line  81)
 * Defer ( "NAME" -- ) core-ext:          Deferred Words.      (line  81)
 * defer ( -- ) oof:                      Class Declaration.   (line  21)
 * defer! ( XT XT-DEFERRED -- ) core-ext: Deferred Words.      (line  86)
@@ -5031,7 +5205,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dump ( ADDR U -- ) tools:              Examining data.      (line  57)
 * dup ( W -- W W ) core:                 Data stack.          (line  10)
 * D^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-0.2: Locals definition words.
-                                                              (line  49)
+                                                              (line  53)
 * early ( -- ) oof:                      Class Declaration.   (line  26)
 * edit ( "NAME" -- ) gforth-1.0:         Locating source code definitions.
                                                               (line  65)
@@ -5142,7 +5316,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * f2* ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  87)
 * f2/ ( R1 -- R2 ) gforth-0.2:           Floating Point.      (line  90)
 * F: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME R -- ) gforth-0.2: Locals definition words.
-                                                              (line  61)
+                                                              (line  67)
 * f< ( R1 R2 -- F ) floating:            Floating Point.      (line 165)
 * f<= ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 167)
 * f<> ( R1 R2 -- F ) gforth-0.2:         Floating Point.      (line 163)
@@ -5161,7 +5335,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * f@localn ( NOFFSET -- R ) gforth-1.0:  Locals implementation.
                                                               (line  17)
 * FA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME F -- ) gforth-1.0: Locals definition words.
-                                                              (line  64)
+                                                              (line  71)
 * fabs ( R1 -- R2 ) floating-ext:        Floating Point.      (line  46)
 * facos ( R1 -- R2 ) floating-ext:       Floating Point.      (line 120)
 * facosh ( R1 -- R2 ) floating-ext:      Floating Point.      (line 137)
@@ -5300,7 +5474,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fvariable ( "NAME" -- ) floating:      Variables.           (line  42)
 * fvarue ( R "NAME" -- ) gforth-1.0:     Varues.              (line  22)
 * F^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME R -- ) gforth-0.2: Locals definition words.
-                                                              (line  67)
+                                                              (line  75)
 * f~ ( R1 R2 R3 -- FLAG ) floating-ext:  Floating Point.      (line 157)
 * f~abs ( R1 R2 R3 -- FLAG ) gforth-0.5: Floating Point.      (line 153)
 * f~rel ( R1 R2 R3 -- FLAG ) gforth-0.5: Floating Point.      (line 150)
@@ -5356,10 +5530,10 @@ this manual.  Each word is listed with its stack effect and wordset.
 * include-file ( I*X WFILEID -- J*X ) file: Forth source files.
                                                               (line  34)
 * include-locale ( "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  55)
+                                                              (line  58)
 * included ( I*X C-ADDR U -- J*X ) file: Forth source files.  (line  38)
 * included-locale ( ADDR U -- ) gforth-experimental: i18n and l10n.
-                                                              (line  52)
+                                                              (line  55)
 * included? ( C-ADDR U -- F ) gforth-0.2: Forth source files. (line  41)
 * infile-execute ( ... XT FILE-ID -- ... ) gforth-0.7: Redirection.
                                                               (line  30)
@@ -5444,7 +5618,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * l! ( W C-ADDR -- ) gforth-0.7:         Special Memory Accesses.
                                                               (line  47)
 * L" ( "LSID<">" -- LSID ) gforth-experimental: i18n and l10n.
-                                                              (line  18)
+                                                              (line  21)
 * l, ( L -- ) gforth-1.0:                Dictionary allocation.
                                                               (line  57)
 * l>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
@@ -5453,7 +5627,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  43)
 * lalign ( -- ) gforth-1.0:              Address arithmetic.  (line 134)
 * laligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 131)
-* Language ( "NAME" -- ) gforth-experimental: i18n and l10n.  (line  38)
+* Language ( "NAME" -- ) gforth-experimental: i18n and l10n.  (line  41)
 * lastfit ( -- ) minos2:                 widget methods.      (line  66)
 * latest ( -- NT ) gforth-0.6:           Name token.          (line  31)
 * latestnt ( -- NT ) gforth-1.0:         Name token.          (line  35)
@@ -5486,14 +5660,14 @@ this manual.  Each word is listed with its stack effect and wordset.
 * load ( I*X U -- J*X ) block:           Blocks.              (line 198)
 * load-cov ( -- ) gforth-experimental:   Code Coverage.       (line  68)
 * locale! ( ADDR U LSID -- ) gforth-experimental: i18n and l10n.
-                                                              (line  34)
+                                                              (line  37)
 * locale-csv ( "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  58)
+                                                              (line  61)
 * locale-csv-out ( "NAME" -- ) gforth-experimental: i18n and l10n.
-                                                              (line  69)
-* locale-file ( FID -- ) gforth-experimental: i18n and l10n.  (line  49)
+                                                              (line  72)
+* locale-file ( FID -- ) gforth-experimental: i18n and l10n.  (line  52)
 * locale@ ( LSID -- ADDR U ) gforth-experimental: i18n and l10n.
-                                                              (line  30)
+                                                              (line  33)
 * locate ( "NAME" -- ) gforth-1.0:       Locating source code definitions.
                                                               (line  26)
 * lock ( SEMAPHORE -- ) gforth-experimental: Semaphores.      (line  18)
@@ -5514,7 +5688,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * lror ( U1 U -- U2 ) gforth-1.0:        Bitwise operations.  (line  88)
 * lshift ( U1 U -- U2 ) core:            Bitwise operations.  (line  19)
 * LU" ( "LSID<">" -- LSID ) gforth-experimental: i18n and l10n.
-                                                              (line  23)
+                                                              (line  26)
 * m* ( N1 N2 -- D ) core:                Mixed precision.     (line   8)
 * m*/ ( D1 N2 U3 -- DQUOT ) double:      Integer division.    (line 122)
 * m+ ( D1 N -- D2 ) double:              Mixed precision.     (line   6)
@@ -5583,7 +5757,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * name>string ( NT -- ADDR U ) tools-ext: Name token.         (line  72)
 * NaN ( -- R ) gforth-1.0:               Floating Point.      (line 195)
 * native@ ( LSID -- ADDR U ) gforth-experimental: i18n and l10n.
-                                                              (line  27)
+                                                              (line  30)
 * needs ( ... "NAME" -- ... ) gforth-0.2: Forth source files. (line  60)
 * negate ( N1 -- N2 ) core:              Single precision.    (line  28)
 * new ( CLASS -- O ) mini-oof:           Basic Mini-OOF Usage.
@@ -5733,7 +5907,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * re-text-color ( RGBA "NAME" -- ) minos2: widget methods.    (line 158)
 * re-text-emoji-fade-color ( RGBATEXT1 ~2 RGBAEMOJI1 ~2 "NAME" -- ) minos2: widget methods.
                                                               (line 170)
-* read-csv ( ADDR U XT -- ) gforth-experimental: CSV Reader.  (line   9)
+* read-csv ( ADDR U XT -- ) gforth-experimental: CSV Reader.  (line  11)
 * read-dir ( C-ADDR U1 WDIRID -- U2 FLAG WIOR ) gforth-0.5: Directories.
                                                               (line  29)
 * read-file ( C-ADDR U1 WFILEID -- U2 WIOR ) file: General files.
@@ -5893,7 +6067,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * sh-get ( C-ADDR U -- C-ADDR2 U2 ) gforth-1.0: Passing Commands to the OS.
                                                               (line  21)
 * shift-args ( -- ) gforth-0.7:          OS command line arguments.
-                                                              (line  49)
+                                                              (line  47)
 * short-where ( -- ) gforth-1.0:         Locating uses of a word.
                                                               (line  40)
 * show ( -- ) minos2:                    actor methods.       (line  48)
@@ -6127,13 +6301,13 @@ this manual.  Each word is listed with its stack effect and wordset.
 * w-color ( -- R ) minos2:               widget methods.      (line  54)
 * w/o ( -- FAM ) file:                   General files.       (line  13)
 * W: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X -- ) gforth-0.2: Locals definition words.
-                                                              (line  34)
+                                                              (line  35)
 * w>s ( X -- N ) gforth-1.0:             Special Memory Accesses.
                                                               (line 112)
 * w@ ( C-ADDR -- U ) gforth-0.5:         Special Memory Accesses.
                                                               (line  36)
 * WA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X -- ) gforth-1.0: Locals definition words.
-                                                              (line  37)
+                                                              (line  38)
 * walign ( -- ) gforth-1.0:              Address arithmetic.  (line 128)
 * waligned ( ADDR -- ADDR' ) gforth-1.0: Address arithmetic.  (line 125)
 * WARNING" ( COMPILATION 'CCC"' -- ; RUN-TIME F -- ) gforth-1.0: Exception Handling.
@@ -6173,7 +6347,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ww ( U -- ) gforth-1.0:                Locating uses of a word.
                                                               (line  12)
 * W^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X -- ) gforth-0.2: Locals definition words.
-                                                              (line  40)
+                                                              (line  41)
 * x ( -- R ) minos2:                     widget methods.      (line  15)
 * x! ( W C-ADDR -- ) gforth-1.0:         Special Memory Accesses.
                                                               (line  53)
@@ -6237,10 +6411,10 @@ this manual.  Each word is listed with its stack effect and wordset.
 * xt-simple-see ( XT -- ) gforth-1.0:    Examining compiled code.
                                                               (line  24)
 * XT: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME XT1 -- ) gforth-1.0: Locals definition words.
-                                                              (line  70)
+                                                              (line  79)
 * xt>name ( XT -- NT ) gforth-1.0:       Name token.          (line  48)
 * XTA: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME ... -- ... ) gforth-1.0: Locals definition words.
-                                                              (line  73)
+                                                              (line  83)
 * xywh ( -- RX0 RY0 RW RH ) minos2:      widget methods.      (line  87)
 * xywhd ( -- RX RY RW RH RD ) minos2:    widget methods.      (line  90)
 * x\string- ( XC-ADDR U1 -- XC-ADDR U2 ) xchar-ext: Xchars and Unicode.
