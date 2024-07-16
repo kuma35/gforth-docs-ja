@@ -624,7 +624,7 @@ FLAG は true です。 次に ‘key’ を呼び出すと、 文字が生成�
    例: 古いキーボードには F11 キーと F12 キーがないことがよくあります。
 xterm で Gforth を実行すると、xterm は多数の組み合わせ(例: <Shift-Up>)を
 捕捉しますが、それを Gforth に渡すことはありません。 最後に、Gforth は現
-在、 複数の Shift キーの組み合わせを認識して報告しません(そのため、上記
+在、 複数のシフト・キーの組み合わせを認識して報告しません(そのため、上記
 の例の <shift-ctrl-left> のケースは決して入力されません)。
 
    Gforth は、ANSI 端末で利用可能なさまざまなキーを認識します(MS-DOS で
@@ -662,14 +662,12 @@ File: gforth.info,  Node: Line input and conversion,  Next: Pipes,  Prev: Single
    ユーザー入力デバイスから最大 N1 文字の文字列を取得し、 C-ADDR に保存
 します。 N2 は受け取った文字列の長さです。 ユーザーは <RET> を押して終了
 を指示します。 Gforth は、 ‘accept’ で、 Forth コマンド・ラインで利用で
-きるすべての編集機能(履歴やワード補完を含む)をサポートしています(訳注: タ
-ーミナルでの日本語入力は受け付けない)。
+きるすべての編集機能(履歴やワード補完を含む)をサポートしています。
 
 ‘edit-line’ ( c-addr n1 n2 – n3  ) gforth-0.6 “edit-line”
    ‘accept’ のように振る舞いますが、バッファ C-ADDR N1 の内容を先頭から
 長さ n2 まで引用します( n2=0 の場合、 全く引用せず、 空の状態から入力編
-集開始になります)。 受け取った文字列の長さを n3 に返します(訳注: ターミ
-ナルでの日本語入力は受け付けない)。
+集開始になります)。 受け取った文字列の長さを n3 に返します。
 
    変換ワード群:
 
@@ -1164,18 +1162,18 @@ File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Lo
      義)はその値を生成し、 ‘TO’ で変更できます。
 
 “varueフレーバー(vaLue ではなくて vaRue)”
-     (*note Varues::) varueフレーバーのローカル変数 l (‘WA:’ などで定義)
-     は、 ‘addr l’ を使用してアドレスを取得できること(変数のスコープを離
-     れると無効になります)を除いて、 valueフレーバーのローカル変数とまっ
-     たく同じように振る舞います。 現時点ではパフォーマンスに違いはありま
-     せんが、 長期的には、 valueフレーバーのローカル変数はレジスタに常駐
-     できるため、 大幅に高速になるでしょう。
+     (*note Varues::) varueフレーバーのローカル変数 foo (‘WA:’ などで定
+     義) は、 ‘addr foo’ を使用してアドレスを取得できること(変数のスコー
+     プを離れると無効になります)を除いて、 valueフレーバーのローカル変数
+     とまったく同じように振る舞います。 現時点ではパフォーマンスに違いは
+     ありませんが、 長期的には、 valueフレーバーのローカル変数はレジスタ
+     に常駐できるため、 大幅に高速になるでしょう。
 
 “variableフレーバー”
      (*note Variables::) variableフレーバーのローカル変数(‘W^’ などで定
      義)はそのアドレスを生成します(変数のスコープを離れると無効になりま
-     す)。 たとえば、 標準のワード ‘emit’ は、 以下ののように ‘type’ を
-     使ってで定義できます:
+     す)。 たとえば、 標準のワード ‘emit’ は、 以下のように variableフレ
+     ーバーのローカル変数(‘C^ char*’) と ‘type’ で定義できます:
 
           : emit {: C^ char* -- :}
               char* 1 type ;
@@ -1192,8 +1190,8 @@ File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Lo
           : execute {: xt: x -- :}
             x ;
 
-   型指定子のないローカル変数は ‘W:’ ローカル変数です。 以下を使用して
-‘addr’ の使用を許可または禁止できます:
+   型指定子のないローカル変数は ‘W:’ ローカル変数として扱われます。 以下
+を使用して ‘addr’ の使用を許可または禁止できます:
 
 ‘default-wa:’ ( –  ) gforth-experimental “default-wa:”
    型指定子なしで定義されたローカル変数で ‘addr’ を許可します。 言い換え
@@ -1206,9 +1204,10 @@ File: gforth.info,  Node: Gforth locals,  Next: Standard Forth locals,  Prev: Lo
 ローカル変数を定義したのと同じです。
 
    ‘|’ の後ろで定義されたローカル変数を除いて、 ローカル変数の全てのフレ
-ーバーは、 データまたは、 (FP ローカル変数の場合) FP スタックの値で初期
-化されます。 Gforth はそれらを 0 に初期化します。 一部の Forth システム
-では初期化されないままになっています。
+ーバーは、 データ・スタックの値または、 (FP ローカル変数の場合) FP スタ
+ックの値で初期化されます。 Gforth は ‘|’ の後ろで定義されたローカル変数
+を 0 に初期化します。 一部の Forth システムでは初期化されないままになっ
+ています。
 
    Gforth は、 ローカル・バッファーとデータデータ構造体のための角括弧
 (square bracket)表記をサポートしています。 これらのローカル変数は
@@ -1217,10 +1216,10 @@ variableフレーバー のローカル変数に似ており、 サイズは定�
 中に評価され、 サイズをバイト単位で指定するスタック効果 ‘( -- +n )’ が必
 要です。 角括弧 ‘[’ は定義された名前の一部です。
 
-   ローカル変数のデータ構造体は、 スタックに渡されたアドレスから size バ
-イトをコピーすることによって初期化されます。 初期化されていないローカル
-変数データ構造体(宣言内の ‘|’ の後)は消去されません。 以前にローカル変数
-スタックにあったデータがすべて含まれるだけです。
+   ローカルのデータ構造体は、 データ・スタックに渡されたアドレスから
+size バイトをコピーすることによって初期化されます。 (宣言内の ‘|’ の後の
+、)初期化されていないローカルのデータ構造体は消去されず、 以前にローカル
+・スタックにあったデータをすべて含むだけです。
 
    Example:
 
@@ -1554,13 +1553,13 @@ Gforth locals::) を ‘max’ の従来の実装と比較してみましょう)
 がワードを長ったらしく書くための自由度を追加する訳ではなく、 ファクタリ
 ング(因数分解)の原則を尊重し続けた場合にのみ実現されます。
 
-   Using ‘TO’ can and should be avoided.  Without ‘TO’, every
-value-flavoured local has only a single assignment and many advantages
-of functional languages apply to Forth.  I.e., programs are easier to
-analyse, to optimize and to read: It is clear from the definition what
-the local stands for, it does not turn into something different later.
+   ‘TO’ の使用は可能な限り避けるべきです。 ‘TO’ がない場合、 すべての
+valueフレーバーのローカル変数には 1 つの代入しかなく、 関数型言語の多く
+の利点が Forth に当てはまります。 つまり、 プログラムの分析・最適化・読
+み取りが容易になります。 ローカル変数が何を表すかは定義から明らかであり
+、 後で別のものに変わることはありません。
 
-   E.g., a definition using ‘TO’ might look like this:
+   たとえば、 ‘TO’ を使用したローカル変数定義は以下のようになります:
      : strcmp {: addr1 u1 addr2 u2 -- n :}
       u1 u2 min 0
       ?do
@@ -1572,14 +1571,14 @@ the local stands for, it does not turn into something different later.
         addr2 char+ TO addr2
       loop
       u1 u2 - ;
-   Here, ‘TO’ is used to update ‘addr1’ and ‘addr2’ at every loop
-iteration.  ‘strcmp’ is a typical example of the readability problems of
-using ‘TO’.  When you start reading ‘strcmp’, you think that ‘addr1’
-refers to the start of the string.  Only near the end of the loop you
-realize that it is something else.
+   ここで、 ‘TO’ は、 ループの反復ごとに ‘addr1’ と ‘addr2’ を更新するた
+めに使用されます。 ‘strcmp’ は、‘TO’ の使用による可読性の問題の典型的な
+例です。 ‘strcmp’ を読み始めると、 ‘addr1’ が文字列の先頭を指していると
+考えるでしょう。 ループの終わり近くになって初めて、 それが何か別のもので
+あることがわかります。
 
-   This can be avoided by defining two locals at the start of the loop
-that are initialized with the right value for the current iteration.
+   これは、 現在の反復に適切な値で初期化される 2 つのローカル変数をルー
+プの開始時に定義することで回避できます。
      : strcmp {: addr1 u1 addr2 u2 -- n :}
       addr1 addr2
       u1 u2 min 0
@@ -1592,8 +1591,8 @@ that are initialized with the right value for the current iteration.
       loop
       2drop
       u1 u2 - ;
-   Here it is clear from the start that ‘s1’ has a different value in
-every loop iteration.
+   ここで、 ‘s1’ がループの反復ごとに異なる値を持つことは最初から明らか
+です。
 
 
 File: gforth.info,  Node: Locals implementation,  Next: Closures,  Prev: Locals programming style,  Up: Gforth locals
@@ -1601,16 +1600,17 @@ File: gforth.info,  Node: Locals implementation,  Next: Closures,  Prev: Locals 
 6.22.1.5 Locals implementation
 ..............................
 
-Gforth は追加のローカル変数・スタックを使用します。 この最も説得力のある
-理由は、 リターン・スタックが浮動小数点数に整列されていないことです。 こ
-の追加のスタックを使用すると、 リターン・スタックをローカル変数・スタッ
-クとして使用する場合の問題や制限も解消されます。 他のスタックと同様に、
-ローカル変数スタックは下位アドレスに向かって成長します。 いくつかのプリ
-ミティブにより効率的な実装になっています。 あなたは、 これらを直接使用す
-るべきではありませんが、 ‘see’ の出力には表示されるため、 以下に文書化し
-ておきます:
+Gforth は追加のローカル変数用スタック(ローカル・スタック)を使用します。
+この最も説得力のある理由は、 リターン・スタックが浮動小数点数に整列され
+ていないことです。 この追加のスタックを使用すると、 リターン・スタックを
+ローカル変数用スタックとして使用する場合の問題や制限も解消されます。 他
+のスタックと同様に、 ローカル・スタックは下位アドレスに向かって成長しま
+す。 いくつかのプリミティブにより効率的な実装になっています。 あなたは、
+これらを直接使用するべきではありませんが、 ‘see’ の出力には表示されるた
+め、 以下に文書化しておきます:
 
 ‘@localn’ ( noffset – w ) gforth-internal “fetch-local-n”
+\ 訳注: ローカル・スタックのTOSを0として noffset 番目のコピーをデータ・スタックに積む
 
 ‘f@localn’ ( noffset – r ) gforth-1.0 “f-fetch-local-n”
 
@@ -1621,7 +1621,7 @@ Gforth は追加のローカル変数・スタックを使用します。 この
 ‘lp!’ ( c-addr – ) gforth-internal “lp-store”
 
 ‘>l’ ( w – ) gforth-0.2 “to-l”
-\ 訳注: w をローカル変数スタックにプッシュ
+\ 訳注: w をローカル・スタックにプッシュ
 
 ‘f>l’ ( r – ) gforth-0.2 “f-to-l”
 
@@ -1629,69 +1629,76 @@ Gforth は追加のローカル変数・スタックを使用します。 この
 これらのプリミティブのいくつかの特殊化が、 効率上の理由から提供されてい
 ます(例: ‘0 @localn’ の特殊化として ‘@local0’ )。 以下のコンパイル・ワー
 ド(compiling words)は、 適切な特殊バージョン、 または一般バージョンを適
-切にコンパイルします(訳注: ‘@local0’ シリーズは、 ‘@local0’ ローカル変数
-スタックのTOS(のコピー)をスタックに積む、 ‘@local1’ ローカル変数スタック
-の2nd(のコピー)をスタックに積む、 〜 ‘@local4’ まである):
+切にコンパイルします(訳注: ‘@local0’ シリーズは、 ‘@local0’ ローカル・ス
+タックのTOS(のコピー)をスタックに積む、 ‘@local1’ ローカル・スタックの
+2nd(のコピー)をスタックに積む、 〜 ‘@local4’ まである):
 
 ‘compile-lp+!’ ( n –  ) gforth-0.2 “compile-l-p-plus-store”
 
-   Combinations of conditional branches and ‘lp+!#’ like ‘?branch-lp+!#’
-(the locals pointer is only changed if the branch is taken) are provided
-for efficiency and correctness in loops.
+   ‘?branch-lp+!#’ のような、 条件分岐と ‘lp+!#’ の組み合わせ(ローカル・
+スタック・ポインタは分岐が選択された場合にのみ変更されます)は、 ループの
+効率と正確性のために提供されています。
 
-   A special area in the dictionary space is reserved for keeping the
-local variable names.  ‘{:’ switches the dictionary pointer to this area
-and ‘:}’ switches it back and generates the locals initializing code.
-‘W:’ etc. are normal defining words.  This special area is cleared at
-the start of every colon definition.
+   ディクショナリ空間内の特別な領域が、 ローカル変数名を保持するために予
+約されています。 ‘{:’ はディクショナリ・ポインタをこの領域に切り替え、
+‘:}’ はそれを元に戻し、 ローカル変数の初期化コードを生成します。 ‘W:’ な
+どは通常の定義ワードです。 この特別な領域は、 すべてのコロン定義の先頭で
+クリアされます。
 
-   A special feature of Gforth’s dictionary is used to implement the
-definition of locals without type specifiers: every word list (aka
-vocabulary) has its own methods for searching etc.  (*note Word
-Lists::).  For the present purpose we defined a word list with a special
-search method: When it is searched for a word, it actually creates that
-word using ‘W:’.  ‘{:’ changes the search order to first search the word
-list containing ‘:}’, ‘W:’ etc., and then the word list for defining
-locals without type specifiers.
+   Gforth のディクショナリの特別な機能は、 型指定子なしでローカルの定義
+を実装するために使用されます。 すべてのワードリスト(別名ボキャブラリ)に
+は、 検索などのための独自のメソッド(methods)があります (*note Word
+Lists::)。 型指定子なしでローカルの定義を実装するという目的のために、 私
+達は特別な検索メソッドを使用してワードリストを定義しました。 ワードが検
+索されると、 実際には ‘W:’ を使用してそのワードが作成されます。 ‘{:’ は
+、 最初に ‘:}’ や ‘W:’ などを含むワードリスト検索し、 次に型指定子のない
+ローカル変数を定義するためのワードリストを検索するよう検索順序スタック
+(the search order)を変更します。
 
-   The lifetime rules support a stack discipline within a colon
-definition: The lifetime of a local is either nested with other locals
-lifetimes or it does not overlap them.
+   ライフタイム・ルールは、 コロン定義内のスタック規律(stack
+discipline)をサポートします。 ローカル変数のライフタイムは、 他のローカ
+ル変数のライフタイムと入れ子になっているか、 他のローカル変数のライフタ
+イムと重ならないか、 です。
 
-   At ‘BEGIN’, ‘IF’, and ‘AHEAD’ no code for locals stack pointer
-manipulation is generated.  Between control structure words locals
-definitions can push locals onto the locals stack.  ‘AGAIN’ is the
-simplest of the other three control flow words.  It has to restore the
-locals stack depth of the corresponding ‘BEGIN’ before branching.  The
-code looks like this:
+   ‘BEGIN’ や ‘IF’ や ‘AHEAD’ では、 ローカル・スタック・ポインター操作
+のコードは生成されません。 制御構造のワード間で、 ローカル変数定義はロー
+カル変数をローカル・スタックにプッシュできます。 ‘AGAIN’ は、 他の 3 つ
+の制御フローワードとの中で最も単純です。 分岐する前に、 対応する ‘BEGIN’
+のローカル・スタックの深さを復元する必要があります。 そのコードは以下の
+ようになります:
 ‘lp+!#’ current-locals-size − dest-locals-size
 ‘branch’ <begin>
 
-   ‘UNTIL’ is a little more complicated: If it branches back, it must
-adjust the stack just like ‘AGAIN’.  But if it falls through, the locals
-stack must not be changed.  The compiler generates the following code:
+   ‘UNTIL’ はもう少し複雑です。 分岐して戻る場合は、 ‘AGAIN’ と同じよう
+にローカル・スタックを調整する必要があります。 ただし、 戻らずにその後ろ
+へ流れる場合は、 ローカル・スタックを変更してはなりません。 コンパイラは
+以下のコードを生成します:
 ‘?branch-lp+!#’ <begin> current-locals-size − dest-locals-size
-   The locals stack pointer is only adjusted if the branch is taken.
+   ローカル・スタック・ポインタは、 分岐が行われた場合にのみ調整されます
+。
 
-   ‘THEN’ can produce somewhat inefficient code:
+   ‘THEN’ は、 やや非効率なコードを生成する可能性があります:
 ‘lp+!#’ current-locals-size − orig-locals-size
 <orig target>:
 ‘lp+!#’ orig-locals-size − new-locals-size
-   The second ‘lp+!#’ adjusts the locals stack pointer from the level at
-the orig point to the level after the ‘THEN’.  The first ‘lp+!#’ adjusts
-the locals stack pointer from the current level to the level at the orig
-point, so the complete effect is an adjustment from the current level to
-the right level after the ‘THEN’.
 
-   In a conventional Forth implementation a dest control-flow stack
-entry is just the target address and an orig entry is just the address
-to be patched.  Our locals implementation adds a word list to every orig
-or dest item.  It is the list of locals visible (or assumed visible) at
-the point described by the entry.  Our implementation also adds a tag to
-identify the kind of entry, in particular to differentiate between live
-and dead (reachable and unreachable) orig entries.
+   2 番目の ‘lp+!#’ は、 ローカル・スタック・ポインタを orig 時点のレベ
+ルから ‘THEN’ の後のレベルに調整します。 最初の ‘lp+!#’ は、 ローカル・
+スタック・ポインタを現在のレベルから orig 時点のレベルに調整するため、 完
+全な効果は、‘THEN’ の後の現在のレベルから正しいレベルに調整されることに
+なります。
 
-   A few unusual operations have to be performed on locals word lists:
+   従来の Forth の実装では、 dest 制御フロー・スタック・エントリはターゲ
+ット・アドレスにすぎず、 orig エントリはパッチ当てされるアドレスにすぎま
+せん。 ローカル変数の実装は、 すべての orig または dest 項目にワードリス
+トを追加します。 これは、 エントリによって記述された時点で可視である(ま
+たは可視である想定される)ローカル変数のリストです。 私たちの実装では、 エ
+ントリの種類を識別するためのタグも追加します。 特に、 生きているのと死ん
+でいるエントリ(到達可能なエントリと到達不可能なエントリ)を区別するためで
+す。
+
+   ローカル変数のワードリストに対して、 いくつかの珍しい操作を実行する必
+要があります:
 
 ‘common-list’ ( list1 list2 – list3  ) gforth-internal “common-list”
 
@@ -1699,33 +1706,33 @@ and dead (reachable and unreachable) orig entries.
 
 ‘list-size’ ( list – u  ) gforth-internal “list-size”
 
-   Several features of our locals word list implementation make these
-operations easy to implement: The locals word lists are organised as
-linked lists; the tails of these lists are shared, if the lists contain
-some of the same locals; and the address of a name is greater than the
-address of the names behind it in the list.
+   ローカル変数のワードリスト実装のいくつかの機能により、 これらの操作の
+実装が簡単になります。 ローカル変数のワードリストはリンクされたリストと
+して編成されます。 リストに同一のローカル変数が含まれている場合、 これら
+のリストの末尾は共有されます。 名前のアドレスは、 リスト内でその後ろにあ
+る名前のアドレスよりも大きくなります。
 
-   Another important implementation detail is the variable ‘dead-code’.
-It is used by ‘BEGIN’ and ‘THEN’ to determine if they can be reached
-directly or only through the branch that they resolve.  ‘dead-code’ is
-set by ‘UNREACHABLE’, ‘AHEAD’, ‘EXIT’ etc., and cleared at the start of
-a colon definition, by ‘BEGIN’ and usually by ‘THEN’.
+   もう 1 つの重要な実装の詳細は、 変数 ‘dead-code’ です。これは、
+‘BEGIN’ と ‘THEN’ によって直接到達できるか、 解決するブランチ経由でのみ
+到達できるかを判断するために使用されます。 ‘dead-code’ は ‘UNREACHABLE’
+や ‘AHEAD’ や ‘EXIT’ などによって設定され、 コロン定義の先頭 や ‘BEGIN’
+や 通常は ‘THEN’ によってクリアされます。.
 
-   Counted loops are similar to other loops in most respects, but
-‘LEAVE’ requires special attention: It performs basically the same
-service as ‘AHEAD’, but it does not create a control-flow stack entry.
-Therefore the information has to be stored elsewhere; traditionally, the
-information was stored in the target fields of the branches created by
-the ‘LEAVE’s, by organizing these fields into a linked list.
-Unfortunately, this clever trick does not provide enough space for
-storing our extended control flow information.  Therefore, we introduce
-another stack, the leave stack.  It contains the control-flow stack
-entries for all unresolved ‘LEAVE’s.
+   カウンタ付きループはほとんどの点で他のループと似ていますが、 ‘LEAVE’
+には特別な注意が必要です。 基本的に ‘AHEAD’ と同じサービスを実行しますが
+、 制御フロー・スタック・エントリは作成されません。 したがって、 情報は
+別の場所に保存する必要があります。 従来、 情報は ‘LEAVE’ によって作成さ
+れたブランチのターゲット・フィールドに、 これらのフィールドをリンク・リ
+ストに編成することによって格納されていました。 残念ながら、 この巧妙なト
+リックでは、 拡張制御フロー情報を保存するための十分なスペースが提供され
+ません。 したがって、 別のスタックである Leave スタックを導入します。 こ
+れには、 すべての未解決の ‘LEAVE’ の制御フロー・スタック・エントリが含ま
+れています。
 
-   Local names are kept until the end of the colon definition, even if
-they are no longer visible in any control-flow path.  In a few cases
-this may lead to increased space needs for the locals name area, but
-usually less than reclaiming this space would cost in code size.
+   ローカル変数名は、 どの制御フロー経路にも表示されなくなった場合でも、
+コロン定義の終わりまで保持されます。 場合によっては、 これによりローカル
+変数の名前領域に必要な領域が増加する可能性がありますが、 通常はこの領域
+を再利用するよりもコード量にかかるコストは少なくなります。
 
 
 File: gforth.info,  Node: Closures,  Prev: Locals implementation,  Up: Gforth locals
@@ -1733,62 +1740,64 @@ File: gforth.info,  Node: Closures,  Prev: Locals implementation,  Up: Gforth lo
 6.22.1.6 Closures
 .................
 
-Gforth also provides basic closures.  A closure is a combination of a
-quotation (*note Quotations::) and locals.  Gforth’s closures have
-locals which are filled with values at the closure’s run-time, producing
-a trampoline xt.  When executing that trampoline xt, the closure’s code
-is executed, with access to the closure’s locals on the locals stack.
-Modifications of the closure’s locals aren’t persistent, i.e.  when the
-closure ‘EXIT’s, the modified values are lost.
+Gforth は基礎的なクロージャ(closure)も提供します。 クロージャは、 引用
+(quotation)(*note Quotations::)とローカル変数の組み合わせです。 Gforth の
+クロージャには、 クロージャの実行時に値が入力されるローカル変数があり、
+トランポリン xt (trampoline xt)が生成されます。 そのトランポリン xt を実
+行すると、 ローカル・スタック上のクロージャのローカル変数にアクセスして
+、 クロージャのコードが実行されます。 クロージャのローカル変数の変更は永
+続的ではありません。 つまり、 クロージャが ‘EXIT’ されると、 変更された
+値は失われます。
 
 ‘[{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-closure”
-   starts a closure.  Closures first declare the locals frame they are
-going to use, and then the code that is executed with those locals.
-Closures end like quotations with a ‘;]’.  The locals declaration ends
-depending where the closure’s locals are created.  At run-time, the
-closure is created as trampolin xt, and fills the values of its local
-frame from the stack.  At execution time of the xt, the local frame is
-copied to the locals stack, and used inside the closure’s code.  After
-return, those values are removed from the locals stack, and not updated
-in the closure itself.
+   クロージャを開始します。 クロージャはまず、 クロージャのために使用す
+るローカル変数フレームを宣言し、 次にそれらのローカル変数で実行されるコ
+ードを宣言します。 クロージャは引用(quotations)のように ‘;]’ で終わりま
+す。 ローカル宣言は、 クロージャ・ローカルが作成される場所に応じて終了し
+ます。 実行時、 クロージャは トランポリン xt として作成され、 スタックか
+らローカル変数・フレームの値を埋めます。 xt の実行時に、 ローカル変数・
+フレームがローカル・スタックにコピーされ、 クロージャのコード内で使用さ
+れます。 戻った後、 これらの値はローカル・スタックから削除され、 クロー
+ジャ自体は更新されません。
 
 ‘:}l’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “close-brace-locals”
-   end a closure’s locals declaration.  The closure will be allocated on
-the local’s stack.
+   クロージャ・ローカルの宣言を終了します。 クロージャはローカル・スタッ
+クに割り当てられます。
 
 ‘:}d’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-d”
-   end a closure’s locals declaration.  The closure will be allocated in
-the dictionary.
+   クロージャ・ローカル宣言を終了します。 クロージャはディクショナリに割
+り当てられます。
 
 ‘:}h’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-h”
-   end a closure’s locals declaration.  The closure will be allocated on
-the heap.
+   クロージャ・ローカル宣言を終了します。 クロージャーはヒープに割り当て
+られます。
 
 ‘:}h1’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-h”
-   end a closure’s locals declaration.  The closure will be allocated on
-the heap.
+   クロージャ・ローカル宣言を終了します。 クロージャーはヒープに割り当て
+られます。
 
 ‘:}xt’ ( hmaddr u latest latestnt wid 0 a-addr1 u1 ... –  ) gforth-1.0 “colon-close-brace-x-t”
-   end a closure’s locals declaration.  The closure will be allocated by
-the xt on the stack, so the closure’s run-time stack effect is ‘(
-xt-alloc -- xt-closure )’.
+   クロージャ・ローカル宣言を終了します。 クロージャは xt によってスタッ
+ク上に割り当てられるため、 クロージャの実行時のスタック効果は ‘(
+xt-alloc -- xt-closure )’ となります。
 
 ‘>addr’ ( xt – addr  ) gforth-experimental “to-addr”
-   convert the xt of a closure on the heap to the ADDR with can be
-passed to ‘free’ to get rid of the closure
+   (‘free-closure’ から呼び出されます)ヒープ上のクロージャの xt を ADDR
+に変換し、 ‘free’ に渡すことでクロージャを削除できます。
 
 ‘free-closure’ ( xt –  ) gforth-internal “free-closure”
-   free a heap-allocated closure
+   ヒープに割り当てられたクロージャを解放(free)します
 
      : foo [{: a f: b d: c xt: d :}d a . b f. c d. d ;] ;
      5 3.3e #1234. ' cr foo execute
 
-   ‘foo’ creates a closure in the dictionary with a single cell, a
-floating point, a double, and an xt, and prints the first three values
-before executing the xt on invocation.
+   上記 ‘foo’ は、 単一セルと浮動小数点数と2倍長整数と xt を含むクロージ
+ャをディクショナリ内に作成し、呼び出し時に最初の 3 つの値を出力後に xt を
+実行します。
 
-   This allows to implement Donald Knuth’s “Man or boy test” proposed in
-1964 to test Algol compilers.
+   これにより、 Algol コンパイラをテストするために 1964 年にドナルド・ク
+ヌースが提案した “Man or boy test” を実装することができます(訳注: 手元で
+はサッパリ動いてない(0.7.9_20240418, 2024.7))
 
      : A {: w^ k x1 x2 x3 xt: x4 xt: x5 | w^ B :} recursive
          k  0<= IF  x4 x5 f+  ELSE
@@ -1798,30 +1807,30 @@ before executing the xt on invocation.
              execute  THEN ;
      : man-or-boy? ( n -- ) [: 1e ;] [: -1e ;] 2dup swap [: 0e ;] A f. ;
 
-   Sometimes, closures need a permanent storage to be modified; it is
-even possible that more than one closure shares that permanent storage.
-In the example above, local variables of the outer procedure are used
-for this, but in some cases, the closure lives longer than the outer
-procedure; especially closures allocated in the dictionary or on the
-heap are designed to outlive their parent procedure.
+   場合によっては、 クロージャを変更するには永続的なストレージが必要です
+。 複数のクロージャがその永続ストレージを共有する可能性さえあります。 上
+の例では、 外部プロシージャのローカル変数がこれに使用されていますが、 場
+合によっては、 クロージャが外部プロシージャよりも長く存続します。 特に、
+ディクショナリまたはヒープ上に割り当てられたクロージャは、 親プロシージ
+ャより長く存続するように設計されています。
 
-   For those, we have home locations, which are allocated like closures,
-but their code is directly executed at creation and should provide us
-with the addresses of the home locations.
+   これらについては、 クロージャのように割り当てられるホーム・ロケーショ
+ン(home locations)がありますが、 そのコードは作成時に直接実行され、 ホー
+ム・ロケーションのアドレスを提供する必要があります。
 
      : bar ( a b c -- aaddr baddr caddr hl-addr )
          <{: w^ a w^ b w^ c :}h a b c ;> ;
 
-   This example creates a home location with three cells on the heap,
-and returns the addresses of the three locations and the address of the
-home location.  This address can be used to ‘free’ the home location
-when it is no longer needed.
+   この例では、 ヒープ上に 3 つのセルを持つホーム・ロケーション(home
+location)を作成し、 3 つのロケーションのアドレスとホーム・ロケーションの
+アドレスを返します。 このアドレスは、 ホーム・ロケーションが不要になった
+ときに ‘free’ するために使用できます。
 
 ‘<{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-homelocation”
-   starts a home location
+   ホーム・ロケーション(home location)の開始
 
 ‘;>’ ( –  ) gforth-experimental “end-homelocation”
-   end using a home location
+   ホーム・ロケーションの終了
 
 
 File: gforth.info,  Node: Standard Forth locals,  Prev: Gforth locals,  Up: Locals
@@ -1829,34 +1838,34 @@ File: gforth.info,  Node: Standard Forth locals,  Prev: Gforth locals,  Up: Loca
 6.22.2 Standard Forth locals
 ----------------------------
 
-The Forth-2012 standard defines a syntax for locals is restricted
-version of Gforth’s locals:
+Forth-2012 標準では、 Gforth のローカル変数の制限付きバージョンであるロ
+ーカル変数構文が定義されています:
 
-   • Locals can only be cell-sized values (no type specifiers are
-     allowed).
-   • Locals can be defined only outside control structures.
-   • Only one locals definition per definition is allowed.
-   • Locals can interfere with explicit usage of the return stack.  For
-     the exact (and long) rules, see the standard.  If you don’t use
-     return stack accessing words in a definition using locals, you will
-     be all right.  The purpose of this rule is to make locals
-     implementation on the return stack easier.
-   • The whole locals definition must be in one line.
+   • ローカル変数はセル・サイズの値のみにすることができます(型指定子は許
+     可されません)。
+   • ローカル変数は制御構造の外側でのみ定義できます。
+   • 定義ごとに許可されるローカル変数定義は 1 つだけです。
+   • ローカル変数は、 リターン・スタックの明示的な使用を妨げる可能性があ
+     ります。 正確な(そして長い)ルールについては、 標準を参照してくださ
+     い。 ローカル変数を使用している定義でリターン・スタックにアクセスす
+     るワードを使用しない場合は問題ありません。 このルールの目的は、 リ
+     ターン・スタックを使ったローカル変数の実装を容易にすることです。
+   • ローカル変数定義全体を 1 行に含める必要があります。
 
-   The Standard Forth locals wordset itself consists of two words: ‘{:’
-and:
+   標準 Forth ローカル変数ワードセット自体は ‘{:’ と 以下の 2 つのワード
+で構成されます:
 
 ‘(local)’ ( addr u –  ) local “paren-local-paren”
 
-   The ANS Forth locals extension wordset defines a syntax using
-‘locals|’, but it is so awful that we strongly recommend not to use it.
-We have implemented this syntax to make porting to Gforth easy, but do
-not document it here.  The problem with this syntax is that the locals
-are defined in an order reversed with respect to the standard stack
-comment notation, making programs harder to read, and easier to misread
-and miswrite.  The only merit of this syntax is that it is easy to
-implement using the ANS Forth locals wordset, but then, so is the ‘{:’
-syntax.
+   ANS Forth ローカル変数拡張ワードセット(ANS Forth locals extension
+wordset)は ‘locals|’ を使用して構文を定義しますが、 これはとても酷い代物
+なので、 使用しないことを強くお勧めします。 Gforth への移植を容易にする
+ためにこの構文を実装しましたが、 ここでは文書化しません。 この構文の問題
+は、 ローカル変数が標準のスタック・コメント表記とは逆の順序で定義されて
+いるため、 プログラムが読みにくくなり、 読み間違いや書き間違いが起こりや
+すくなることです。 この構文の唯一の利点は、 ANS Forth ローカル変数ワード
+セットを使用して実装が簡単であることですが、 ‘{:’ 構文だって同じくらい実
+装は簡単ですからね？
 
 
 File: gforth.info,  Node: Structures,  Next: Object-oriented Forth,  Prev: Locals,  Up: Words
@@ -6566,156 +6575,4 @@ associated with DEFINER.
 ‘opt-compile,’ method to a somewhat generic compiler for that word type
 (in particular, primitives get the slow ‘general-compile,’ method rather
 than the primitive-specific ‘peephole-compile,’).
-
-
-File: gforth.info,  Node: Passing Commands to the OS,  Next: Keeping track of Time,  Prev: Carnal words,  Up: Words
-
-6.31 Passing Commands to the Operating System
-=============================================
-
-Gforth allows you to pass an arbitrary string to the host operating
-system shell (if such a thing exists) for execution.
-
-‘sh’ ( "..." –  ) gforth-0.2 “sh”
-   Execute the rest of the command line as shell command(s).
-Afterwards, ‘$?’ produces the exit status of the command.
-
-‘system’ ( c-addr u –  ) gforth-0.2 “system”
-   Pass the string specified by C-ADDR U to the host operating system
-for execution in a sub-shell.  Afterwards, ‘$?’ produces the exit status
-of the command.  The value of the environment variable
-‘GFORTHSYSTEMPREFIX’ (or its default value) is prepended to the string
-(mainly to support using ‘command.com’ as shell in Windows instead of
-whatever shell Cygwin uses by default; *note Environment variables::).
-
-‘sh-get’ ( c-addr u – c-addr2 u2  ) gforth-1.0 “sh-get”
-   Run the shell command addr u; c-addr2 u2 is the output of the
-command.  The exit code is in ‘$?’, the output also in ‘sh$ 2@’.
-
-‘$?’ ( – n  ) gforth-0.2 “dollar-question”
-   ‘Value’ – the exit status returned by the most recently executed
-‘system’ command.
-
-‘getenv’ ( c-addr1 u1 – c-addr2 u2 ) gforth-0.2 “getenv”
-   The string c-addr1 u1 specifies an environment variable.  The string
-c-addr2 u2 is the host operating system’s expansion of that environment
-variable.  If the environment variable does not exist, c-addr2 u2
-specifies a string 0 characters in length.
-
-
-File: gforth.info,  Node: Keeping track of Time,  Next: Miscellaneous Words,  Prev: Passing Commands to the OS,  Up: Words
-
-6.32 Keeping track of Time
-==========================
-
-‘ms’ ( n –  ) facility-ext “ms”
-
-‘ns’ ( d –  ) gforth-1.0 “ns”
-
-‘time&date’ ( – nsec nmin nhour nday nmonth nyear  ) facility-ext “time-and-date”
-   Report the current time of day.  Seconds, minutes and hours are
-numbered from 0.  Months are numbered from 1.
-
-‘>time&date&tz’ ( udtime – nsec nmin nhour nday nmonth nyear fdst ndstoff c-addrtz utz ) gforth-1.0 “to-time-and-date”
-   Convert time in seconds since 1.1.1970 0:00Z to the current time of
-day.  Seconds, minutes and hours are numbered from 0.  Months are
-numbered from 1.
-
-‘utime’ ( – dtime ) gforth-0.5 “utime”
-   Report the current time in microseconds since some epoch.  Use
-‘#1000000 um/mod nip’ to convert to seconds
-
-‘ntime’ ( – dtime ) gforth-1.0 “ntime”
-   Report the current time in nanoseconds since some epoch.
-
-‘cputime’ ( – duser dsystem ) gforth-0.5 “cputime”
-   duser and dsystem are the respective user- and system-level CPU times
-used since the start of the Forth system (excluding child processes), in
-microseconds (the granularity may be much larger, however).  On
-platforms without the getrusage call, it reports elapsed time (since
-some epoch) for duser and 0 for dsystem.
-
-
-File: gforth.info,  Node: Miscellaneous Words,  Prev: Keeping track of Time,  Up: Words
-
-6.33 Miscellaneous Words
-========================
-
-This section lists the Standard Forth words that are not documented
-elsewhere in this manual.  Ultimately, they all need proper homes.
-
-‘quit’ ( ?? – ??  ) core “quit”
-   Empty the return stack, make the user input device the input source,
-enter interpret state and start the text interpreter.
-
-   The following Standard Forth words are not currently supported by
-Gforth (*note Standard conformance::):
-
-   ‘EDITOR’ ‘EMIT?’ ‘FORGET’
-
-
-File: gforth.info,  Node: Error messages,  Next: Tools,  Prev: Words,  Up: Top
-
-7 Error messages
-****************
-
-A typical Gforth error message looks like this:
-
-     in file included from \evaluated string/:-1
-     in file included from ./yyy.fs:1
-     ./xxx.fs:4: Invalid memory address
-     >>>bar<<<
-     Backtrace:
-     $400E664C @
-     $400E6664 foo
-
-   The message identifying the error is ‘Invalid memory address’.  The
-error happened when text-interpreting line 4 of the file ‘./xxx.fs’.
-This line is given (it contains ‘bar’), and the word on the line where
-the error happened, is pointed out (with ‘>>>’ and ‘<<<’).
-
-   The file containing the error was included in line 1 of ‘./yyy.fs’,
-and ‘yyy.fs’ was included from a non-file (in this case, by giving
-‘yyy.fs’ as command-line parameter to Gforth).
-
-   At the end of the error message you find a return stack dump that can
-be interpreted as a backtrace (possibly empty).  On top you find the top
-of the return stack when the ‘throw’ happened, and at the bottom you
-find the return stack entry just above the return stack of the topmost
-text interpreter.
-
-   To the right of most return stack entries you see a guess for the
-word that pushed that return stack entry as its return address.  This
-gives a backtrace.  In our case we see that ‘bar’ called ‘foo’, and
-‘foo’ called ‘@’ (and ‘@’ had an _Invalid memory address_ exception).
-
-   Note that the backtrace is not perfect: We don’t know which return
-stack entries are return addresses (so we may get false positives); and
-in some cases (e.g., for ‘abort"’) we cannot determine from the return
-address the word that pushed the return address, so for some return
-addresses you see no names in the return stack dump.
-
-   The return stack dump represents the return stack at the time when a
-specific ‘throw’ was executed.  In programs that make use of ‘catch’, it
-is not necessarily clear which ‘throw’ should be used for the return
-stack dump (e.g., consider one ‘throw’ that indicates an error, which is
-caught, and during recovery another error happens; which ‘throw’ should
-be used for the stack dump?).  Gforth presents the return stack dump for
-the first ‘throw’ after the last executed (not returned-to) ‘catch’ or
-‘nothrow’; this works well in the usual case.  To get the right
-backtrace, you usually want to insert ‘nothrow’ or ‘['] false catch
-2drop’ after a ‘catch’ if the error is not rethrown.
-
-   ‘Gforth’ is able to do a return stack dump for throws generated from
-primitives (e.g., invalid memory address, stack empty etc.);
-‘gforth-fast’ is only able to do a return stack dump from a directly
-called ‘throw’ (including ‘abort’ etc.).  Given an exception caused by a
-primitive in ‘gforth-fast’, you will typically see no return stack dump
-at all; however, if the exception is caught by ‘catch’ (e.g., for
-restoring some state), and then ‘throw’n again, the return stack dump
-will be for the first such ‘throw’.
-
-   ‘gforth-fast’ also does not attempt to differentiate between division
-by zero and division overflow, because that costs time in every
-division.
 

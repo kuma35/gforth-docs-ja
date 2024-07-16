@@ -73,9 +73,10 @@ Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <
 <span id="index-implementation-of-locals"></span>
 
 <span id="index-locals-stack-1"></span>
-<p>Gforth は追加のローカル変数・スタックを使用します。 この最も説得力のある理由は、 リターン・スタックが浮動小数点数に整列されていないことです。
-この追加のスタックを使用すると、 リターン・スタックをローカル変数・スタックとして使用する場合の問題や制限も解消されます。 他のスタックと同様に、
-ローカル変数スタックは下位アドレスに向かって成長します。 いくつかのプリミティブにより効率的な実装になっています。 あなたは、
+<p>Gforth は追加のローカル変数用スタック(ローカル・スタック)を使用します。 この最も説得力のある理由は、
+リターン・スタックが浮動小数点数に整列されていないことです。 この追加のスタックを使用すると、
+リターン・スタックをローカル変数用スタックとして使用する場合の問題や制限も解消されます。 他のスタックと同様に、
+ローカル・スタックは下位アドレスに向かって成長します。 いくつかのプリミティブにより効率的な実装になっています。 あなたは、
 これらを直接使用するべきではありませんが、 <code>see</code> の出力には表示されるため、 以下に文書化しておきます:
 </p>
 <span id="index-_0040localn-_0028--noffset-_002d_002d-w--_0029-gforth_002dinternal"></span>
@@ -83,6 +84,7 @@ Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <
 <span id="index-_0040localn-1"></span>
 <div class="format">
 <pre class="format"><code>@localn</code> ( <i>noffset &ndash; w </i>) gforth-internal &ldquo;fetch-local-n&rdquo;
+\ 訳注: ローカル・スタックのTOSを0として <i>noffset</i> 番目のコピーをデータ・スタックに積む
 </pre></div>
 
 <span id="index-f_0040localn-_0028--noffset-_002d_002d-r--_0029-gforth_002d1_002e0"></span>
@@ -113,7 +115,7 @@ Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <
 <span id="index-_003el-1"></span>
 <div class="format">
 <pre class="format"><code>&gt;l</code> ( <i>w &ndash; </i>) gforth-0.2 &ldquo;to-l&rdquo;
-\ 訳注: w をローカル変数スタックにプッシュ
+\ 訳注: w をローカル・スタックにプッシュ
 </pre></div>
 
 <span id="index-f_003el-_0028--r-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -128,8 +130,8 @@ Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <
 <p>これらのプリミティブに加えて、 一般的に発生するインライン引数に対するこれらのプリミティブのいくつかの特殊化が、 効率上の理由から提供されています(例:
 <code>0 @localn</code> の特殊化として <code>@local0</code> )。 以下のコンパイル・ワード(compiling words)は、
 適切な特殊バージョン、 または一般バージョンを適切にコンパイルします(訳注: <code>@local0</code> シリーズは、
-<code>@local0</code> ローカル変数スタックのTOS(のコピー)をスタックに積む、 <code>@local1</code>
-ローカル変数スタックの2nd(のコピー)をスタックに積む、 〜 <code>@local4</code> まである):
+<code>@local0</code> ローカル・スタックのTOS(のコピー)をスタックに積む、 <code>@local1</code>
+ローカル・スタックの2nd(のコピー)をスタックに積む、 〜 <code>@local4</code> まである):
 </p>
 
 <span id="index-compile_002dlp_002b_0021-_0028--n-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -141,72 +143,60 @@ Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <
 
 
 
-<p>Combinations of conditional branches and <code>lp+!#</code> like
-<code>?branch-lp+!#</code> (the locals pointer is only changed if the branch is
-taken) are provided for efficiency and correctness in loops.
+<p><code>?branch-lp+!#</code> のような、 条件分岐と <code>lp+!#</code>
+の組み合わせ(ローカル・スタック・ポインタは分岐が選択された場合にのみ変更されます)は、 ループの効率と正確性のために提供されています。
 </p>
-<p>A special area in the dictionary space is reserved for keeping the local
-variable names. <code>{:</code> switches the dictionary pointer to this area and
-<code>:}</code> switches it back and generates the locals initializing
-code. <code>W:</code> etc.&nbsp;are normal defining words. This special area is
-cleared at the start of every colon definition.
+<p>ディクショナリ空間内の特別な領域が、 ローカル変数名を保持するために予約されています。 <code>{:</code>
+はディクショナリ・ポインタをこの領域に切り替え、 <code>:}</code> はそれを元に戻し、 ローカル変数の初期化コードを生成します。 <code>W:</code>
+などは通常の定義ワードです。 この特別な領域は、 すべてのコロン定義の先頭でクリアされます。
 </p>
 <span id="index-word-list-for-defining-locals"></span>
-<p>A special feature of Gforth&rsquo;s dictionary is used to implement the definition
-of locals without type specifiers: every word list (aka vocabulary) has its
-own methods for searching etc. (see <a href="Word-Lists.html">Word Lists</a>). For the present purpose
-we defined a word list with a special search method: When it is searched for
-a word, it actually creates that word using <code>W:</code>. <code>{:</code> changes
-the search order to first search the word list containing <code>:}</code>,
-<code>W:</code> etc., and then the word list for defining locals without type
-specifiers.
+<p>Gforth のディクショナリの特別な機能は、 型指定子なしでローカルの定義を実装するために使用されます。
+すべてのワードリスト(別名ボキャブラリ)には、 検索などのための独自のメソッド(methods)があります (see <a href="Word-Lists.html">Word Lists</a>)。
+型指定子なしでローカルの定義を実装するという目的のために、 私達は特別な検索メソッドを使用してワードリストを定義しました。 ワードが検索されると、
+実際には <code>W:</code> を使用してそのワードが作成されます。  <code>{:</code> は、 最初に <code>:}</code> や <code>W:</code>
+などを含むワードリスト検索し、 次に型指定子のないローカル変数を定義するためのワードリストを検索するよう検索順序スタック(the search
+order)を変更します。
 </p>
-<p>The lifetime rules support a stack discipline within a colon definition: The
-lifetime of a local is either nested with other locals lifetimes or it does
-not overlap them.
+<p>ライフタイム・ルールは、 コロン定義内のスタック規律(stack discipline)をサポートします。 ローカル変数のライフタイムは、
+他のローカル変数のライフタイムと入れ子になっているか、 他のローカル変数のライフタイムと重ならないか、 です。
 </p>
-<p>At <code>BEGIN</code>, <code>IF</code>, and <code>AHEAD</code> no code for locals stack
-pointer manipulation is generated. Between control structure words locals
-definitions can push locals onto the locals stack. <code>AGAIN</code> is the
-simplest of the other three control flow words. It has to restore the locals
-stack depth of the corresponding <code>BEGIN</code> before branching. The code
-looks like this:
+<p><code>BEGIN</code> や <code>IF</code> や <code>AHEAD</code> では、 ローカル・スタック・ポインター操作のコードは生成されません。
+制御構造のワード間で、 ローカル変数定義はローカル変数をローカル・スタックにプッシュできます。 <code>AGAIN</code> は、 他の 3
+つの制御フローワードとの中で最も単純です。 分岐する前に、 対応する <code>BEGIN</code> のローカル・スタックの深さを復元する必要があります。
+そのコードは以下のようになります:
 </p><div class="format">
 <pre class="format"><code>lp+!#</code> current-locals-size - dest-locals-size
 <code>branch</code> &lt;begin&gt;
 </pre></div>
 
-<p><code>UNTIL</code> is a little more complicated: If it branches back, it must
-adjust the stack just like <code>AGAIN</code>. But if it falls through, the locals
-stack must not be changed. The compiler generates the following code:
+<p><code>UNTIL</code> はもう少し複雑です。 分岐して戻る場合は、 <code>AGAIN</code> と同じようにローカル・スタックを調整する必要があります。
+ただし、 戻らずにその後ろへ流れる場合は、 ローカル・スタックを変更してはなりません。 コンパイラは以下のコードを生成します:
 </p><div class="format">
 <pre class="format"><code>?branch-lp+!#</code> &lt;begin&gt; current-locals-size - dest-locals-size
 </pre></div>
-<p>The locals stack pointer is only adjusted if the branch is taken.
+<p>ローカル・スタック・ポインタは、 分岐が行われた場合にのみ調整されます。
 </p>
-<p><code>THEN</code> can produce somewhat inefficient code:
+<p><code>THEN</code> は、 やや非効率なコードを生成する可能性があります:
 </p><div class="format">
 <pre class="format"><code>lp+!#</code> current-locals-size - orig-locals-size
 &lt;orig target&gt;:
 <code>lp+!#</code> orig-locals-size - new-locals-size
+
 </pre></div>
-<p>The second <code>lp+!#</code> adjusts the locals stack pointer from the level at
-the <i>orig</i> point to the level after the <code>THEN</code>. The first
-<code>lp+!#</code> adjusts the locals stack pointer from the current level to the
-level at the orig point, so the complete effect is an adjustment from the
-current level to the right level after the <code>THEN</code>.
+<p>2 番目の <code>lp+!#</code> は、 ローカル・スタック・ポインタを <i>orig</i> 時点のレベルから  <code>THEN</code>
+の後のレベルに調整します。 最初の <code>lp+!#</code> は、 ローカル・スタック・ポインタを現在のレベルから orig
+時点のレベルに調整するため、 完全な効果は、<code>THEN</code> の後の現在のレベルから正しいレベルに調整されることになります。
 </p>
 <span id="index-locals-information-on-the-control_002dflow-stack"></span>
 <span id="index-control_002dflow-stack-items_002c-locals-information"></span>
-<p>In a conventional Forth implementation a dest control-flow stack entry is
-just the target address and an orig entry is just the address to be
-patched. Our locals implementation adds a word list to every orig or dest
-item. It is the list of locals visible (or assumed visible) at the point
-described by the entry. Our implementation also adds a tag to identify the
-kind of entry, in particular to differentiate between live and dead
-(reachable and unreachable) orig entries.
+<p>従来の Forth の実装では、 dest 制御フロー・スタック・エントリはターゲット・アドレスにすぎず、 orig
+エントリはパッチ当てされるアドレスにすぎません。 ローカル変数の実装は、 すべての orig または dest 項目にワードリストを追加します。
+これは、 エントリによって記述された時点で可視である(または可視である想定される)ローカル変数のリストです。 私たちの実装では、
+エントリの種類を識別するためのタグも追加します。 特に、
+生きているのと死んでいるエントリ(到達可能なエントリと到達不可能なエントリ)を区別するためです。
 </p>
-<p>A few unusual operations have to be performed on locals word lists:
+<p>ローカル変数のワードリストに対して、 いくつかの珍しい操作を実行する必要があります:
 </p>
 <span id="index-common_002dlist-_0028--list1-list2-_002d_002d-list3--_0029-gforth_002dinternal"></span>
 <span id="index-common_002dlist"></span>
@@ -231,33 +221,24 @@ kind of entry, in particular to differentiate between live and dead
 
 
 
-<p>Several features of our locals word list implementation make these
-operations easy to implement: The locals word lists are organised as linked
-lists; the tails of these lists are shared, if the lists contain some of the
-same locals; and the address of a name is greater than the address of the
-names behind it in the list.
+<p>ローカル変数のワードリスト実装のいくつかの機能により、 これらの操作の実装が簡単になります。
+ローカル変数のワードリストはリンクされたリストとして編成されます。 リストに同一のローカル変数が含まれている場合、 これらのリストの末尾は共有されます。
+名前のアドレスは、 リスト内でその後ろにある名前のアドレスよりも大きくなります。
 </p>
-<p>Another important implementation detail is the variable <code>dead-code</code>. It
-is used by <code>BEGIN</code> and <code>THEN</code> to determine if they can be reached
-directly or only through the branch that they resolve. <code>dead-code</code> is
-set by <code>UNREACHABLE</code>, <code>AHEAD</code>, <code>EXIT</code> etc., and cleared at
-the start of a colon definition, by <code>BEGIN</code> and usually by <code>THEN</code>.
+<p>もう 1 つの重要な実装の詳細は、 変数 <code>dead-code</code> です。これは、 <code>BEGIN</code> と <code>THEN</code>
+によって直接到達できるか、 解決するブランチ経由でのみ到達できるかを判断するために使用されます。 <code>dead-code</code> は
+<code>UNREACHABLE</code> や <code>AHEAD</code> や <code>EXIT</code> などによって設定され、 コロン定義の先頭 や
+<code>BEGIN</code> や 通常は <code>THEN</code> によってクリアされます。.
 </p>
-<p>Counted loops are similar to other loops in most respects, but <code>LEAVE</code>
-requires special attention: It performs basically the same service as
-<code>AHEAD</code>, but it does not create a control-flow stack entry. Therefore
-the information has to be stored elsewhere; traditionally, the information
-was stored in the target fields of the branches created by the
-<code>LEAVE</code>s, by organizing these fields into a linked list. Unfortunately,
-this clever trick does not provide enough space for storing our extended
-control flow information. Therefore, we introduce another stack, the leave
-stack. It contains the control-flow stack entries for all unresolved
-<code>LEAVE</code>s.
+<p>カウンタ付きループはほとんどの点で他のループと似ていますが、 <code>LEAVE</code> には特別な注意が必要です。 基本的に <code>AHEAD</code>
+と同じサービスを実行しますが、 制御フロー・スタック・エントリは作成されません。 したがって、 情報は別の場所に保存する必要があります。 従来、 情報は
+<code>LEAVE</code> によって作成されたブランチのターゲット・フィールドに、
+これらのフィールドをリンク・リストに編成することによって格納されていました。 残念ながら、 この巧妙なトリックでは、
+拡張制御フロー情報を保存するための十分なスペースが提供されません。 したがって、 別のスタックである Leave スタックを導入します。 これには、
+すべての未解決の <code>LEAVE</code> の制御フロー・スタック・エントリが含まれています。
 </p>
-<p>Local names are kept until the end of the colon definition, even if they are
-no longer visible in any control-flow path. In a few cases this may lead to
-increased space needs for the locals name area, but usually less than
-reclaiming this space would cost in code size.
+<p>ローカル変数名は、 どの制御フロー経路にも表示されなくなった場合でも、 コロン定義の終わりまで保持されます。 場合によっては、
+これによりローカル変数の名前領域に必要な領域が増加する可能性がありますが、 通常はこの領域を再利用するよりもコード量にかかるコストは少なくなります。
 </p>
 </div>
 <hr>

@@ -130,8 +130,8 @@ Next: <a href="Standard-Forth-locals.html" accesskey="n" rel="next">Standard For
 </p>
 </dd>
 <dt><span><em>varueフレーバー(vaLue ではなくて vaRue)</em></span></dt>
-<dd><p>(see <a href="Varues.html">Varues</a>) varueフレーバーのローカル変数 <i>l</i> (<code>WA:</code> などで定義) は、 <code>addr
-<i>l</i></code> を使用してアドレスを取得できること(変数のスコープを離れると無効になります)を除いて、
+<dd><p>(see <a href="Varues.html">Varues</a>) varueフレーバーのローカル変数 <i>foo</i> (<code>WA:</code> などで定義) は、 <code>addr
+<i>foo</i></code> を使用してアドレスを取得できること(変数のスコープを離れると無効になります)を除いて、
 valueフレーバーのローカル変数とまったく同じように振る舞います。 現時点ではパフォーマンスに違いはありませんが、 長期的には、
 valueフレーバーのローカル変数はレジスタに常駐できるため、 大幅に高速になるでしょう。
 </p>
@@ -139,7 +139,7 @@ valueフレーバーのローカル変数はレジスタに常駐できるため
 <dt><span><em>variableフレーバー</em></span></dt>
 <dd><p>(see <a href="Variables.html">Variables</a>) variableフレーバーのローカル変数(<code>W^</code>
 などで定義)はそのアドレスを生成します(変数のスコープを離れると無効になります)。  たとえば、 標準のワード <code>emit</code> は、
-以下ののように <code>type</code> を使ってで定義できます:
+以下のように variableフレーバーのローカル変数(<code>C^ char*</code>) と <code>type</code> で定義できます:
 </p>
 <div class="example">
 <pre class="example">: emit {: C^ char* -- :}
@@ -164,7 +164,8 @@ valueフレーバーのローカル変数はレジスタに常駐できるため
 
 <span id="index-default-type-of-locals"></span>
 <span id="index-locals_002c-default-type"></span>
-<p>型指定子のないローカル変数は <code>W:</code> ローカル変数です。  以下を使用して <code>addr</code> の使用を許可または禁止できます:
+<p>型指定子のないローカル変数は <code>W:</code> ローカル変数として扱われます。  以下を使用して <code>addr</code>
+の使用を許可または禁止できます:
 </p>
 <span id="index-default_002dwa_003a-_0028--_002d_002d--_0029-gforth_002dexperimental"></span>
 <span id="index-default_002dwa_003a"></span>
@@ -189,8 +190,9 @@ valueフレーバーのローカル変数はレジスタに常駐できるため
 
 <span id="index-locals-initialization"></span>
 <span id="index-initialization-of-locals"></span>
-<p><code>|</code> の後ろで定義されたローカル変数を除いて、 ローカル変数の全てのフレーバーは、 データまたは、 (FP ローカル変数の場合) FP
-スタックの値で初期化されます。 Gforth はそれらを 0 に初期化します。 一部の Forth システムでは初期化されないままになっています。
+<p><code>|</code> の後ろで定義されたローカル変数を除いて、 ローカル変数の全てのフレーバーは、 データ・スタックの値または、 (FP
+ローカル変数の場合) FP スタックの値で初期化されます。 Gforth は <code>|</code> の後ろで定義されたローカル変数を 0 に初期化します。
+一部の Forth システムでは初期化されないままになっています。
 </p>
 <span id="index-data-structure-locals"></span>
 <p>Gforth は、 ローカル・バッファーとデータデータ構造体のための角括弧(square bracket)表記をサポートしています。
@@ -198,9 +200,8 @@ valueフレーバーのローカル変数はレジスタに常駐できるため
 <code><i>name</i>[ <i>size</i> ]</code> のようになります。  Forth の式 <code><i>size</i></code> は宣言中に評価され、
 サイズをバイト単位で指定するスタック効果 <code>( -- +n )</code> が必要です。  角括弧 <code>[</code> は定義された名前の一部です。
 </p>
-<p>ローカル変数のデータ構造体は、 スタックに渡されたアドレスから <i>size</i> バイトをコピーすることによって初期化されます。
-初期化されていないローカル変数データ構造体(宣言内の <code>|</code> の後)は消去されません。
-以前にローカル変数スタックにあったデータがすべて含まれるだけです。
+<p>ローカルのデータ構造体は、 データ・スタックに渡されたアドレスから <i>size</i> バイトをコピーすることによって初期化されます。 (宣言内の
+<code>|</code> の後の、)初期化されていないローカルのデータ構造体は消去されず、 以前にローカル・スタックにあったデータをすべて含むだけです。
 </p>
 <p>Example:
 </p>
