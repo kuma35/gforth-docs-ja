@@ -74,16 +74,15 @@ Next: <a href="Structure-Naming-Convention.html" accesskey="n" rel="next">Struct
 <span id="index-field-usage"></span>
 <span id="index-struct-usage"></span>
 <span id="index-end_002dstruct-usage"></span>
-<p>You can define a structure for a (data-less) linked list with:
+<p>以下のコマンドを使用して、 (データのない)リンク・リストの構造体を定義できます:
 </p><div class="example">
 <pre class="example">struct
     cell% field list-next
 end-struct list%
 </pre></div>
 
-<p>With the address of the list node on the stack, you can compute the address
-of the field that contains the address of the next node with
-<code>list-next</code>. E.g., you can determine the length of a list with:
+<p>スタック上のリスト・ノードのアドレスを使用して、 <code>list-next</code>
+を使用して次のノードのアドレスを含むフィールドのアドレスを計算できます。 たとえば、 以下のようにしてリストの長さを決定できます:
 </p>
 <div class="example">
 <pre class="example">: list-length ( list -- n )
@@ -97,31 +96,29 @@ of the field that contains the address of the next node with
     nip ;
 </pre></div>
 
-<p>You can reserve memory for a list node in the dictionary with <code>list%
-%allot</code>, which leaves the address of the list node on the stack. For the
-equivalent allocation on the heap you can use <code>list% %alloc</code> (or, for
-an <code>allocate</code>-like stack effect (i.e., with ior), use <code>list%
-%allocate</code>). You can get the the size of a list node with <code>list% %size</code>
-and its alignment with <code>list% %alignment</code>.
+<p><code>list% %allot</code> を使用すると、 ディクショナリ内にリスト・ノード用のメモリを確保でき、 これにより、
+リスト・ノードのアドレスがスタック上に残ります。ヒープ上で同様の割り当てを行うには、 <code>list% %alloc</code>
+を使用できます(または、<code>allocate</code> のようなスタック効果(つまり、ior を使用)が欲しい場合は、 <code>list%
+%allocate</code> を使用します)。 リスト・ノードのサイズは <code>list% %size</code> で取得でき、 そのセル・アライメントは
+<code>list% %alignment</code> で取得できます。
 </p>
-<p>Note that in Standard Forth the body of a <code>create</code>d word is
-<code>aligned</code> but not necessarily <code>faligned</code>; therefore, if you do a:
+<p>注意: 標準 Forth では、 <code>create</code> されたワードの本体は <code>aligned</code> されていますが、 必ずしも
+<code>faligned</code> されている訳ではない事に注意してください。したがって、 以下のようにすると:
 </p>
 <div class="example">
-<pre class="example">create <em>name</em> foo% %allot drop
+<pre class="example">create &quot;name&quot; foo% %allot drop
 </pre></div>
 
-<p>then the memory alloted for <code>foo%</code> is guaranteed to start at the body
-of <code><em>name</em></code> only if <code>foo%</code> contains only character, cell and
-double fields.  Therefore, if your structure contains floats, better use
+<p>この場合、 <code>foo%</code> に割り当てられたメモリは、 <code>foo%</code>
+に文字フィールドやセル・フィールドや2倍長整数フィールドのみが含まれている場合にのみ、 <code><em>name</em></code>
+の本体から開始されることが保証されます。 したがって、 浮動小数点数が含まれる場合は、以下を使用することをお勧めします
 </p>
 <div class="example">
-<pre class="example">foo% %allot constant <em>name</em>
+<pre class="example">foo% %allot constant &quot;name&quot;
 </pre></div>
 
 <span id="index-structures-containing-structures"></span>
-<p>You can include a structure <code>foo%</code> as a field of another structure,
-like this:
+<p>以下のように、 構造体 <code>foo%</code> を別の構造体のフィールドとして含めることができます:
 </p><div class="example">
 <pre class="example">struct
 ...
@@ -132,10 +129,9 @@ end-struct ...
 
 <span id="index-structure-extension"></span>
 <span id="index-extended-records"></span>
-<p>Instead of starting with an empty structure, you can extend an existing
-structure. E.g., a plain linked list without data, as defined above, is
-hardly useful; You can extend it to a linked list of integers, like
-this:<a id="DOCF31" href="#FOOT31"><sup>31</sup></a>
+<p>構造体をいちから構築する代わりに、 既存の構造体を拡張できます。 たとえば、 上記例で定義したような、
+データのない単純なリンク・リストはほとんど役に立ちません。 これを以下のように、
+整数の値を持つリンク・リストに拡張できます:<a id="DOCF31" href="#FOOT31"><sup>31</sup></a>
 </p>
 <div class="example">
 <pre class="example">list%
@@ -143,28 +139,25 @@ this:<a id="DOCF31" href="#FOOT31"><sup>31</sup></a>
 end-struct intlist%
 </pre></div>
 
-<p><code>intlist%</code> is a structure with two fields: <code>list-next</code> and
-<code>intlist-int</code>.
+<p><code>intlist%</code> は、 <code>list-next</code> と <code>intlist-int</code> の 2
+つのフィールドを持つ構造体です。
 </p>
 <span id="index-structures-containing-arrays"></span>
-<p>You can specify an array type containing <em>n</em> elements of type
-<code>foo%</code> like this:
+<p>以下のように、 <i>n</i> 要素の  <code>foo%</code> 型を含む配列型を指定できます:
 </p>
 <div class="example">
-<pre class="example">foo% <em>n</em> *
+<pre class="example">foo% <i>n</i> *
 </pre></div>
 
-<p>You can use this array type in any place where you can use a normal type,
-e.g., when defining a <code>field</code>, or with <code>%allot</code>.
+<p>この配列型は、 通常の型を使用できる場所であればどこでも使用できます(例: <code>field</code> を定義する場所や <code>%allot</code>
+を使用するとき)。
 </p>
 <span id="index-first-field-optimization"></span>
-<p>The first field is at the base address of a structure and the word for this
-field (e.g., <code>list-next</code>) actually does not change the address on the
-stack. You may be tempted to leave it away in the interest of run-time and
-space efficiency. This is not necessary, because the structure package
-optimizes this case: If you compile a first-field words, no code is
-generated. So, in the interest of readability and maintainability you should
-include the word for the field when accessing the field.
+<p>最初のフィールドは構造体のベース・アドレスにあり、 この、 最初のフィールドのワード(例:
+<code>list-next</code>)は実際にはスタック上のアドレスを変更しません。 あなたは実行時間と領域の効率を考慮して、
+最初のフィールドのワードを取り除きたいとと思うかもしれません。 しかし、 構造体パッケージがこの場合を最適化するため、 そのは必要ありません。
+最初のフィールドのワードをコンパイルする場合、 コードは生成されません。 したがって、 読みやすさと保守性を考慮して、
+最初のフィールドにアクセスするときにその最初のフィールドのワードは含めるべきです。
 </p>
 
 </div>
@@ -173,15 +166,9 @@ include the word for the field when accessing the field.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT31" href="#DOCF31">(31)</a></h5>
-<p>This feature is also known as <em>extended records</em>. It is
-the main innovation in the Oberon language; in other words, adding this
-feature to Modula-2 led Wirth to create a new language, write a new compiler
-etc.  Adding this feature to Forth just required a few lines of code.</p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Structure-Naming-Convention.html">Structure Naming Convention</a>, Previous: <a href="Why-explicit-structure-support_003f.html">Why explicit structure support?</a>, Up: <a href="Structures.html">Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+<p>この機能は「拡張レコード」(extended records)とも呼ばれます。 これは、
+オベロン・プログラミング言語が成した主な革新です。 言い換えれば、 この機能を Modula-2 に追加することで、 Wirth は新しい言語を作成し、
+新しいコンパイラの記述等を行いました。 この機能を Forth に追加するには、 数行のコードが必要なだけでした。</p>
 </div>
 
 

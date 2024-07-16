@@ -1873,15 +1873,15 @@ File: gforth.info,  Node: Structures,  Next: Object-oriented Forth,  Prev: Local
 6.23 Structures
 ===============
 
-This section presents the structure package that comes with Gforth.  A
-version of the package implemented in Standard Forth is available in
-‘compat/struct.fs’.  This package was inspired by a posting on
-comp.lang.forth in 1989 (unfortunately I don’t remember, by whom;
-possibly John Hayes).  A version of this section has been published in
-M. Anton Ertl, Yet Another Forth Structures Package
+このセクションでは、 Gforth に付属する構造体パッケージを紹介します。 標
+準 Forth で実装されたパッケージのバージョンは、 ‘compat/struct.fs’ で入
+手できます。 このパッケージは、 1989 年の comp.lang.forth への投稿に触発
+されました(残念ながら、誰による投稿かは覚えていません。おそらく John
+Hayes によるものでしょう)。 このセクションのバージョンは、 M. Anton
+Ertl, Yet Another Forth Structures Package
 (https://www.complang.tuwien.ac.at/forth/objects/structs.html), Forth
-Dimensions 19(3), pages 13–16.  Marcel Hendrix provided helpful
-comments.
+Dimensions 19(3), pages 13–16 です。 Marcel Hendrix は有益なコメントを提
+供してくれました。
 
 * Menu:
 
@@ -1898,58 +1898,56 @@ File: gforth.info,  Node: Why explicit structure support?,  Next: Structure Usag
 6.23.1 Why explicit structure support?
 --------------------------------------
 
-If we want to use a structure containing several fields, we could simply
-reserve memory for it, and access the fields using address arithmetic
-(*note Address arithmetic::).  As an example, consider a structure with
-the following fields
+複数のフィールドを含む構造体を使用したい場合は、 その構造体用にメモリを
+予約し、 アドレス算術演算を使用してフィールドにアクセスするだけです
+(*note Address arithmetic::)。 例として、 以下のフィールドを持つ構造体を
+考えてみましょう
 
 ‘a’
-     is a float
+     これは浮動小数点数(float)です
 ‘b’
-     is a cell
+     これはセル(cell)です
 ‘c’
-     is a float
+     これは浮動小数点数(float)です
 
-   Given the (float-aligned) base address of the structure we get the
-address of the field
+   構造体の (float 整列された) ベース・アドレスが与えられると、
 
 ‘a’
-     without doing anything further.
+     それ以上何もせずに a フィールドが得られます。
 ‘b’
-     with ‘float+’
+     ‘float+’ すると b フィールドが得られます。
 ‘c’
-     with ‘float+ cell+ faligned’
+     ‘float+ cell+ faligned’ すると c フィールドが得られます。
 
-   It is easy to see that this can become quite tiring.
+   これが非常に疲れる可能性があることは容易にわかります。
 
-   Moreover, it is not very readable, because seeing a ‘cell+’ tells us
-neither which kind of structure is accessed nor what field is accessed;
-we have to somehow infer the kind of structure, and then look up in the
-documentation, which field of that structure corresponds to that offset.
+   さらに加えて、 ‘cell+’ を見ても、 どの構造体がアクセスされているか、
+どのフィールドがアクセスされているかがわからないため、 あまり読みやすく
+ありません。 何らかの方法で構造体の種類を推測し、 その構造体のどのフィー
+ルドがそのオフセットに対応するかをドキュメントで調べる必要があります。
 
-   Finally, this kind of address arithmetic also causes maintenance
-troubles: If you add or delete a field somewhere in the middle of the
-structure, you have to find and change all computations for the fields
-afterwards.
+   最後に、 この種のアドレス演算はメンテナンスの問題も引き起こします。 構
+造の途中でフィールドを追加または削除した場合、 その後フィールドのすべて
+の計算を探して変更する必要があります。
 
-   So, instead of using ‘cell+’ and friends directly, how about storing
-the offsets in constants:
+   そこで、 ‘cell+’ とそのファミリーを直接使用する代わりに、 以下のよう
+にオフセットを定数に保存してはどうでしょうか？:
 
      0 constant a-offset
      0 float+ constant b-offset
      0 float+ cell+ faligned c-offset
 
-   Now we can get the address of field ‘x’ with ‘x-offset +’.  This is
-much better in all respects.  Of course, you still have to change all
-later offset definitions if you add a field.  You can fix this by
-declaring the offsets in the following way:
+   これで、 ‘x-offset +’ を使用してフィールド ‘x’ のアドレスを取得できる
+ようになりました。 これはあらゆる点ではるかに優れています。 もちろん、 フ
+ィールドを追加する場合は、 その後のオフセット定義をすべて変更する必要が
+あります。 これは、 以下の方法でオフセットを宣言することで改良できます:
 
      0 constant a-offset
      a-offset float+ constant b-offset
      b-offset cell+ faligned constant c-offset
 
-   Since we always use the offsets with ‘+’, we could use a defining
-word ‘cfield’ that includes the ‘+’ in the action of the defined word:
+   常に ‘+’ でオフセットを使用するため、 定義されたワードのアクションに
+‘+’ を含む定義ワード ‘cfield’ を使用できます:
 
      : cfield ( n "name" -- )
          create ,
@@ -1960,13 +1958,12 @@ word ‘cfield’ that includes the ‘+’ in the action of the defined word:
      0 a float+ cfield b
      0 b cell+ faligned cfield c
 
-   Instead of ‘x-offset +’, we now simply write ‘x’.
+   ‘x-offset +’ の代わりに、 今や単に ‘x’ と書きます。
 
-   The structure field words now can be used quite nicely.  However,
-their definition is still a bit cumbersome: We have to repeat the name,
-the information about size and alignment is distributed before and after
-the field definitions etc.  The structure package presented here
-addresses these problems.
+   構造体フィールドのワード群が非常にうまく使用できるようになりました。
+ただし、 その定義はまだ少し面倒です。 名前を繰り返す必要があり、 サイズ
+と配置に関する情報はフィールド定義の前後に配置されます。 このセクション
+で紹介する構造体パッケージは、 これらの問題に対処します。
 
 
 File: gforth.info,  Node: Structure Usage,  Next: Structure Naming Convention,  Prev: Why explicit structure support?,  Up: Structures
@@ -1974,14 +1971,15 @@ File: gforth.info,  Node: Structure Usage,  Next: Structure Naming Convention,  
 6.23.2 Structure Usage
 ----------------------
 
-You can define a structure for a (data-less) linked list with:
+以下のコマンドを使用して、 (データのない)リンク・リストの構造体を定義で
+きます:
      struct
          cell% field list-next
      end-struct list%
 
-   With the address of the list node on the stack, you can compute the
-address of the field that contains the address of the next node with
-‘list-next’.  E.g., you can determine the length of a list with:
+   スタック上のリスト・ノードのアドレスを使用して、 ‘list-next’ を使用し
+て次のノードのアドレスを含むフィールドのアドレスを計算できます。 たとえ
+ば、 以下のようにしてリストの長さを決定できます:
 
      : list-length ( list -- n )
      \ "list" is a pointer to the first element of a linked list
@@ -1993,67 +1991,70 @@ address of the field that contains the address of the next node with
          REPEAT
          nip ;
 
-   You can reserve memory for a list node in the dictionary with ‘list%
-%allot’, which leaves the address of the list node on the stack.  For
-the equivalent allocation on the heap you can use ‘list% %alloc’ (or,
-for an ‘allocate’-like stack effect (i.e., with ior), use ‘list%
-%allocate’).  You can get the the size of a list node with ‘list% %size’
-and its alignment with ‘list% %alignment’.
+   ‘list% %allot’ を使用すると、 ディクショナリ内にリスト・ノード用のメ
+モリを確保でき、 これにより、 リスト・ノードのアドレスがスタック上に残り
+ます。ヒープ上で同様の割り当てを行うには、 ‘list% %alloc’ を使用できます
+(または、‘allocate’ のようなスタック効果(つまり、ior を使用)が欲しい場合
+は、 ‘list% %allocate’ を使用します)。 リスト・ノードのサイズは ‘list%
+%size’ で取得でき、 そのセル・アライメントは ‘list% %alignment’ で取得で
+きます。
 
-   Note that in Standard Forth the body of a ‘create’d word is ‘aligned’
-but not necessarily ‘faligned’; therefore, if you do a:
+   注意: 標準 Forth では、 ‘create’ されたワードの本体は ‘aligned’ され
+ていますが、 必ずしも ‘faligned’ されている訳ではない事に注意してくださ
+い。したがって、 以下のようにすると:
 
-     create _name_ foo% %allot drop
+     create "name" foo% %allot drop
 
-then the memory alloted for ‘foo%’ is guaranteed to start at the body of
-‘_name_’ only if ‘foo%’ contains only character, cell and double fields.
-Therefore, if your structure contains floats, better use
+この場合、 ‘foo%’ に割り当てられたメモリは、 ‘foo%’ に文字フィールドやセ
+ル・フィールドや2倍長整数フィールドのみが含まれている場合にのみ、
+‘_name_’ の本体から開始されることが保証されます。 したがって、 浮動小数
+点数が含まれる場合は、以下を使用することをお勧めします
 
-     foo% %allot constant _name_
+     foo% %allot constant "name"
 
-   You can include a structure ‘foo%’ as a field of another structure,
-like this:
+   以下のように、 構造体 ‘foo%’ を別の構造体のフィールドとして含めること
+ができます:
      struct
      ...
          foo% field ...
      ...
      end-struct ...
 
-   Instead of starting with an empty structure, you can extend an
-existing structure.  E.g., a plain linked list without data, as defined
-above, is hardly useful; You can extend it to a linked list of integers,
-like this:(1)
+   構造体をいちから構築する代わりに、 既存の構造体を拡張できます。 たと
+えば、 上記例で定義したような、 データのない単純なリンク・リストはほとん
+ど役に立ちません。 これを以下のように、 整数の値を持つリンク・リストに拡
+張できます:(1)
 
      list%
          cell% field intlist-int
      end-struct intlist%
 
-   ‘intlist%’ is a structure with two fields: ‘list-next’ and
-‘intlist-int’.
+   ‘intlist%’ は、 ‘list-next’ と ‘intlist-int’ の 2 つのフィールドを持
+つ構造体です。
 
-   You can specify an array type containing _n_ elements of type ‘foo%’
-like this:
+   以下のように、 n 要素の ‘foo%’ 型を含む配列型を指定できます:
 
-     foo% _n_ *
+     foo% n *
 
-   You can use this array type in any place where you can use a normal
-type, e.g., when defining a ‘field’, or with ‘%allot’.
+   この配列型は、 通常の型を使用できる場所であればどこでも使用できます
+(例: ‘field’ を定義する場所や ‘%allot’ を使用するとき)。
 
-   The first field is at the base address of a structure and the word
-for this field (e.g., ‘list-next’) actually does not change the address
-on the stack.  You may be tempted to leave it away in the interest of
-run-time and space efficiency.  This is not necessary, because the
-structure package optimizes this case: If you compile a first-field
-words, no code is generated.  So, in the interest of readability and
-maintainability you should include the word for the field when accessing
-the field.
+   最初のフィールドは構造体のベース・アドレスにあり、 この、 最初のフィ
+ールドのワード(例: ‘list-next’)は実際にはスタック上のアドレスを変更しま
+せん。 あなたは実行時間と領域の効率を考慮して、 最初のフィールドのワード
+を取り除きたいとと思うかもしれません。 しかし、 構造体パッケージがこの場
+合を最適化するため、 そのは必要ありません。 最初のフィールドのワードをコ
+ンパイルする場合、 コードは生成されません。 したがって、 読みやすさと保
+守性を考慮して、 最初のフィールドにアクセスするときにその最初のフィール
+ドのワードは含めるべきです。
 
    ---------- Footnotes ----------
 
-   (1) This feature is also known as _extended records_.  It is the main
-innovation in the Oberon language; in other words, adding this feature
-to Modula-2 led Wirth to create a new language, write a new compiler
-etc.  Adding this feature to Forth just required a few lines of code.
+   (1) この機能は「拡張レコード」(extended records)とも呼ばれます。 これ
+は、 オベロン・プログラミング言語が成した主な革新です。 言い換えれば、 こ
+の機能を Modula-2 に追加することで、 Wirth は新しい言語を作成し、 新しい
+コンパイラの記述等を行いました。 この機能を Forth に追加するには、 数行
+のコードが必要なだけでした。
 
 
 File: gforth.info,  Node: Structure Naming Convention,  Next: Structure Implementation,  Prev: Structure Usage,  Up: Structures
@@ -2061,13 +2062,13 @@ File: gforth.info,  Node: Structure Naming Convention,  Next: Structure Implemen
 6.23.3 Structure Naming Convention
 ----------------------------------
 
-The field names that come to (my) mind are often quite generic, and, if
-used, would cause frequent name clashes.  E.g., many structures probably
-contain a ‘counter’ field.  The structure names that come to (my) mind
-are often also the logical choice for the names of words that create
-such a structure.
+(構造体の命名規則)(私が)思いつくフィールド名は非常に汎用的なものが多く、
+使用すると頻繁に名前の衝突が発生します。 たとえば、 多くの構造体にはたい
+てい ‘counter’ フィールドが含まれています。 (私の)頭に浮かぶ構造体名は、
+多くの場合、 そのような構造体を作成するワードの名前の論理的な選択でもあ
+ります。
 
-   Therefore, I have adopted the following naming conventions:
+   したがって、 私は以下の命名規則を採用しました:
 
    • The names of fields are of the form ‘_struct_-_field_’, where
      ‘_struct_’ is the basic name of the structure, and ‘_field_’ is the

@@ -19315,14 +19315,13 @@ ANS Forth ローカル変数拡張ワードセット(ANS Forth locals extension 
 @cindex structures
 @cindex records
 
-This section presents the structure package that comes with Gforth. A
-version of the package implemented in Standard Forth is available in
-@file{compat/struct.fs}. This package was inspired by a posting on
-comp.lang.forth in 1989 (unfortunately I don't remember, by whom; possibly
-John Hayes). A version of this section has been published in M. Anton Ertl,
+このセクションでは、 Gforth に付属する構造体パッケージを紹介します。 標準 Forth で実装されたパッケージのバージョンは、
+@file{compat/struct.fs} で入手できます。 このパッケージは、 1989 年の comp.lang.forth
+への投稿に触発されました(残念ながら、誰による投稿かは覚えていません。おそらく John Hayes によるものでしょう)。
+このセクションのバージョンは、 M. Anton Ertl,
 @uref{https://www.complang.tuwien.ac.at/forth/objects/structs.html, Yet
-Another Forth Structures Package}, Forth Dimensions 19(3), pages
-13--16. Marcel Hendrix provided helpful comments.
+Another Forth Structures Package}, Forth Dimensions 19(3), pages 13--16 です。
+Marcel Hendrix は有益なコメントを提供してくれました。
 
 @menu
 * Why explicit structure support?::
@@ -19338,45 +19337,40 @@ Another Forth Structures Package}, Forth Dimensions 19(3), pages
 
 @cindex address arithmetic for structures
 @cindex structures using address arithmetic
-If we want to use a structure containing several fields, we could simply
-reserve memory for it, and access the fields using address arithmetic
-(@pxref{Address arithmetic}). As an example, consider a structure with the
-following fields
+複数のフィールドを含む構造体を使用したい場合は、 その構造体用にメモリを予約し、
+アドレス算術演算を使用してフィールドにアクセスするだけです(@pxref{Address arithmetic})。 例として、
+以下のフィールドを持つ構造体を考えてみましょう
 
 @table @code
 @item a
-is a float
+これは浮動小数点数(float)です
 @item b
-is a cell
+これはセル(cell)です
 @item c
-is a float
+これは浮動小数点数(float)です
 @end table
 
-Given the (float-aligned) base address of the structure we get the address
-of the field
+構造体の (float 整列された) ベース・アドレスが与えられると、
 
 @table @code
 @item a
-without doing anything further.
+それ以上何もせずに a フィールドが得られます。
 @item b
-with @code{float+}
+@code{float+} すると b フィールドが得られます。
 @item c
-with @code{float+ cell+ faligned}
+@code{float+ cell+ faligned} すると c フィールドが得られます。
 @end table
 
-It is easy to see that this can become quite tiring. 
+これが非常に疲れる可能性があることは容易にわかります。 
 
-Moreover, it is not very readable, because seeing a @code{cell+} tells us
-neither which kind of structure is accessed nor what field is accessed; we
-have to somehow infer the kind of structure, and then look up in the
-documentation, which field of that structure corresponds to that offset.
+さらに加えて、 @code{cell+} を見ても、 どの構造体がアクセスされているか、 どのフィールドがアクセスされているかがわからないため、
+あまり読みやすくありません。 何らかの方法で構造体の種類を推測し、
+その構造体のどのフィールドがそのオフセットに対応するかをドキュメントで調べる必要があります。
 
-Finally, this kind of address arithmetic also causes maintenance troubles:
-If you add or delete a field somewhere in the middle of the structure, you
-have to find and change all computations for the fields afterwards.
+最後に、 この種のアドレス演算はメンテナンスの問題も引き起こします。 構造の途中でフィールドを追加または削除した場合、
+その後フィールドのすべての計算を探して変更する必要があります。
 
-So, instead of using @code{cell+} and friends directly, how about storing
-the offsets in constants:
+そこで、 @code{cell+} とそのファミリーを直接使用する代わりに、 以下のようにオフセットを定数に保存してはどうでしょうか？:
 
 @example
 0 constant a-offset
@@ -19384,10 +19378,9 @@ the offsets in constants:
 0 float+ cell+ faligned c-offset
 @end example
 
-Now we can get the address of field @code{x} with @code{x-offset +}. This is
-much better in all respects. Of course, you still have to change all later
-offset definitions if you add a field. You can fix this by declaring the
-offsets in the following way:
+これで、 @code{x-offset +} を使用してフィールド @code{x} のアドレスを取得できるようになりました。
+これはあらゆる点ではるかに優れています。 もちろん、 フィールドを追加する場合は、 その後のオフセット定義をすべて変更する必要があります。 これは、
+以下の方法でオフセットを宣言することで改良できます:
 
 @example
 0 constant a-offset
@@ -19395,8 +19388,8 @@ a-offset float+ constant b-offset
 b-offset cell+ faligned constant c-offset
 @end example
 
-Since we always use the offsets with @code{+}, we could use a defining word
-@code{cfield} that includes the @code{+} in the action of the defined word:
+常に @code{+} でオフセットを使用するため、 定義されたワードのアクションに @code{+} を含む定義ワード @code{cfield}
+を使用できます:
 
 @example
 : cfield ( n "name" -- )
@@ -19409,13 +19402,10 @@ does> ( name execution: addr1 -- addr2 )
 0 b cell+ faligned cfield c
 @end example
 
-Instead of @code{x-offset +}, we now simply write @code{x}.
+@code{x-offset +} の代わりに、 今や単に @code{x} と書きます。
 
-The structure field words now can be used quite nicely. However, their
-definition is still a bit cumbersome: We have to repeat the name, the
-information about size and alignment is distributed before and after the
-field definitions etc.  The structure package presented here addresses these
-problems.
+構造体フィールドのワード群が非常にうまく使用できるようになりました。 ただし、 その定義はまだ少し面倒です。 名前を繰り返す必要があり、
+サイズと配置に関する情報はフィールド定義の前後に配置されます。 このセクションで紹介する構造体パッケージは、 これらの問題に対処します。
 
 @node Structure Usage, Structure Naming Convention, Why explicit structure support?, Structures
 @subsection Structure Usage
@@ -19424,16 +19414,15 @@ problems.
 @cindex @code{field} usage
 @cindex @code{struct} usage
 @cindex @code{end-struct} usage
-You can define a structure for a (data-less) linked list with:
+以下のコマンドを使用して、 (データのない)リンク・リストの構造体を定義できます:
 @example
 struct
     cell% field list-next
 end-struct list%
 @end example
 
-With the address of the list node on the stack, you can compute the address
-of the field that contains the address of the next node with
-@code{list-next}. E.g., you can determine the length of a list with:
+スタック上のリスト・ノードのアドレスを使用して、 @code{list-next}
+を使用して次のノードのアドレスを含むフィールドのアドレスを計算できます。 たとえば、 以下のようにしてリストの長さを決定できます:
 
 @example
 : list-length ( list -- n )
@@ -19447,32 +19436,30 @@ of the field that contains the address of the next node with
     nip ;
 @end example
 
-You can reserve memory for a list node in the dictionary with @code{list%
-%allot}, which leaves the address of the list node on the stack. For the
-equivalent allocation on the heap you can use @code{list% %alloc} (or, for
-an @code{allocate}-like stack effect (i.e., with ior), use @code{list%
-%allocate}). You can get the the size of a list node with @code{list% %size}
-and its alignment with @code{list% %alignment}.
+@code{list% %allot} を使用すると、 ディクショナリ内にリスト・ノード用のメモリを確保でき、 これにより、
+リスト・ノードのアドレスがスタック上に残ります。ヒープ上で同様の割り当てを行うには、 @code{list% %alloc}
+を使用できます(または、@code{allocate} のようなスタック効果(つまり、ior を使用)が欲しい場合は、 @code{list%
+%allocate} を使用します)。 リスト・ノードのサイズは @code{list% %size} で取得でき、 そのセル・アライメントは
+@code{list% %alignment} で取得できます。
 
-Note that in Standard Forth the body of a @code{create}d word is
-@code{aligned} but not necessarily @code{faligned}; therefore, if you do a:
+注意: 標準 Forth では、 @code{create} されたワードの本体は @code{aligned} されていますが、 必ずしも
+@code{faligned} されている訳ではない事に注意してください。したがって、 以下のようにすると:
 
 @example
-create @emph{name} foo% %allot drop
+create "name" foo% %allot drop
 @end example
 
 @noindent
-then the memory alloted for @code{foo%} is guaranteed to start at the body
-of @code{@emph{name}} only if @code{foo%} contains only character, cell and
-double fields.  Therefore, if your structure contains floats, better use
+この場合、 @code{foo%} に割り当てられたメモリは、 @code{foo%}
+に文字フィールドやセル・フィールドや2倍長整数フィールドのみが含まれている場合にのみ、 @code{@emph{name}}
+の本体から開始されることが保証されます。 したがって、 浮動小数点数が含まれる場合は、以下を使用することをお勧めします
 
 @example
-foo% %allot constant @emph{name}
+foo% %allot constant "name"
 @end example
 
 @cindex structures containing structures
-You can include a structure @code{foo%} as a field of another structure,
-like this:
+以下のように、 構造体 @code{foo%} を別の構造体のフィールドとして含めることができます:
 @example
 struct
 ...
@@ -19483,13 +19470,11 @@ end-struct ...
 
 @cindex structure extension
 @cindex extended records
-Instead of starting with an empty structure, you can extend an existing
-structure. E.g., a plain linked list without data, as defined above, is
-hardly useful; You can extend it to a linked list of integers, like
-this:@footnote{This feature is also known as @emph{extended records}. It is
-the main innovation in the Oberon language; in other words, adding this
-feature to Modula-2 led Wirth to create a new language, write a new compiler
-etc.  Adding this feature to Forth just required a few lines of code.}
+構造体をいちから構築する代わりに、 既存の構造体を拡張できます。 たとえば、 上記例で定義したような、
+データのない単純なリンク・リストはほとんど役に立ちません。 これを以下のように、
+整数の値を持つリンク・リストに拡張できます:@footnote{この機能は「拡張レコード」(extended records)とも呼ばれます。 これは、
+オベロン・プログラミング言語が成した主な革新です。 言い換えれば、 この機能を Modula-2 に追加することで、 Wirth は新しい言語を作成し、
+新しいコンパイラの記述等を行いました。 この機能を Forth に追加するには、 数行のコードが必要なだけでした。}
 
 @example
 list%
@@ -19497,41 +19482,36 @@ list%
 end-struct intlist%
 @end example
 
-@code{intlist%} is a structure with two fields: @code{list-next} and
-@code{intlist-int}.
+@code{intlist%} は、 @code{list-next} と @code{intlist-int} の 2
+つのフィールドを持つ構造体です。
 
 @cindex structures containing arrays
-You can specify an array type containing @emph{n} elements of type
-@code{foo%} like this:
+以下のように、 @i{n} 要素の  @code{foo%} 型を含む配列型を指定できます:
 
 @example
-foo% @emph{n} *
+foo% @i{n} *
 @end example
 
-You can use this array type in any place where you can use a normal type,
-e.g., when defining a @code{field}, or with @code{%allot}.
+この配列型は、 通常の型を使用できる場所であればどこでも使用できます(例: @code{field} を定義する場所や @code{%allot}
+を使用するとき)。
 
 @cindex first field optimization
-The first field is at the base address of a structure and the word for this
-field (e.g., @code{list-next}) actually does not change the address on the
-stack. You may be tempted to leave it away in the interest of run-time and
-space efficiency. This is not necessary, because the structure package
-optimizes this case: If you compile a first-field words, no code is
-generated. So, in the interest of readability and maintainability you should
-include the word for the field when accessing the field.
+最初のフィールドは構造体のベース・アドレスにあり、 この、 最初のフィールドのワード(例:
+@code{list-next})は実際にはスタック上のアドレスを変更しません。 あなたは実行時間と領域の効率を考慮して、
+最初のフィールドのワードを取り除きたいとと思うかもしれません。 しかし、 構造体パッケージがこの場合を最適化するため、 そのは必要ありません。
+最初のフィールドのワードをコンパイルする場合、 コードは生成されません。 したがって、 読みやすさと保守性を考慮して、
+最初のフィールドにアクセスするときにその最初のフィールドのワードは含めるべきです。
 
 
 @node Structure Naming Convention, Structure Implementation, Structure Usage, Structures
 @subsection Structure Naming Convention
 @cindex structure naming convention
 
-The field names that come to (my) mind are often quite generic, and, if
-used, would cause frequent name clashes. E.g., many structures probably
-contain a @code{counter} field. The structure names that come to (my) mind
-are often also the logical choice for the names of words that create such a
-structure.
+(構造体の命名規則)(私が)思いつくフィールド名は非常に汎用的なものが多く、 使用すると頻繁に名前の衝突が発生します。 たとえば、
+多くの構造体にはたいてい @code{counter} フィールドが含まれています。 (私の)頭に浮かぶ構造体名は、 多くの場合、
+そのような構造体を作成するワードの名前の論理的な選択でもあります。
 
-Therefore, I have adopted the following naming conventions: 
+したがって、 私は以下の命名規則を採用しました: 
 
 @itemize @bullet
 @cindex field naming convention

@@ -72,51 +72,46 @@ Next: <a href="Structure-Usage.html" accesskey="n" rel="next">Structure Usage</a
 
 <span id="index-address-arithmetic-for-structures"></span>
 <span id="index-structures-using-address-arithmetic"></span>
-<p>If we want to use a structure containing several fields, we could simply
-reserve memory for it, and access the fields using address arithmetic
-(see <a href="Address-arithmetic.html">Address arithmetic</a>). As an example, consider a structure with the
-following fields
+<p>複数のフィールドを含む構造体を使用したい場合は、 その構造体用にメモリを予約し、
+アドレス算術演算を使用してフィールドにアクセスするだけです(see <a href="Address-arithmetic.html">Address arithmetic</a>)。 例として、
+以下のフィールドを持つ構造体を考えてみましょう
 </p>
 <dl compact="compact">
 <dt><span><code>a</code></span></dt>
-<dd><p>is a float
+<dd><p>これは浮動小数点数(float)です
 </p></dd>
 <dt><span><code>b</code></span></dt>
-<dd><p>is a cell
+<dd><p>これはセル(cell)です
 </p></dd>
 <dt><span><code>c</code></span></dt>
-<dd><p>is a float
+<dd><p>これは浮動小数点数(float)です
 </p></dd>
 </dl>
 
-<p>Given the (float-aligned) base address of the structure we get the address
-of the field
+<p>構造体の (float 整列された) ベース・アドレスが与えられると、
 </p>
 <dl compact="compact">
 <dt><span><code>a</code></span></dt>
-<dd><p>without doing anything further.
+<dd><p>それ以上何もせずに a フィールドが得られます。
 </p></dd>
 <dt><span><code>b</code></span></dt>
-<dd><p>with <code>float+</code>
+<dd><p><code>float+</code> すると b フィールドが得られます。
 </p></dd>
 <dt><span><code>c</code></span></dt>
-<dd><p>with <code>float+ cell+ faligned</code>
+<dd><p><code>float+ cell+ faligned</code> すると c フィールドが得られます。
 </p></dd>
 </dl>
 
-<p>It is easy to see that this can become quite tiring. 
+<p>これが非常に疲れる可能性があることは容易にわかります。 
 </p>
-<p>Moreover, it is not very readable, because seeing a <code>cell+</code> tells us
-neither which kind of structure is accessed nor what field is accessed; we
-have to somehow infer the kind of structure, and then look up in the
-documentation, which field of that structure corresponds to that offset.
+<p>さらに加えて、 <code>cell+</code> を見ても、 どの構造体がアクセスされているか、 どのフィールドがアクセスされているかがわからないため、
+あまり読みやすくありません。 何らかの方法で構造体の種類を推測し、
+その構造体のどのフィールドがそのオフセットに対応するかをドキュメントで調べる必要があります。
 </p>
-<p>Finally, this kind of address arithmetic also causes maintenance troubles:
-If you add or delete a field somewhere in the middle of the structure, you
-have to find and change all computations for the fields afterwards.
+<p>最後に、 この種のアドレス演算はメンテナンスの問題も引き起こします。 構造の途中でフィールドを追加または削除した場合、
+その後フィールドのすべての計算を探して変更する必要があります。
 </p>
-<p>So, instead of using <code>cell+</code> and friends directly, how about storing
-the offsets in constants:
+<p>そこで、 <code>cell+</code> とそのファミリーを直接使用する代わりに、 以下のようにオフセットを定数に保存してはどうでしょうか？:
 </p>
 <div class="example">
 <pre class="example">0 constant a-offset
@@ -124,10 +119,9 @@ the offsets in constants:
 0 float+ cell+ faligned c-offset
 </pre></div>
 
-<p>Now we can get the address of field <code>x</code> with <code>x-offset +</code>. This is
-much better in all respects. Of course, you still have to change all later
-offset definitions if you add a field. You can fix this by declaring the
-offsets in the following way:
+<p>これで、 <code>x-offset +</code> を使用してフィールド <code>x</code> のアドレスを取得できるようになりました。
+これはあらゆる点ではるかに優れています。 もちろん、 フィールドを追加する場合は、 その後のオフセット定義をすべて変更する必要があります。 これは、
+以下の方法でオフセットを宣言することで改良できます:
 </p>
 <div class="example">
 <pre class="example">0 constant a-offset
@@ -135,8 +129,8 @@ a-offset float+ constant b-offset
 b-offset cell+ faligned constant c-offset
 </pre></div>
 
-<p>Since we always use the offsets with <code>+</code>, we could use a defining word
-<code>cfield</code> that includes the <code>+</code> in the action of the defined word:
+<p>常に <code>+</code> でオフセットを使用するため、 定義されたワードのアクションに <code>+</code> を含む定義ワード <code>cfield</code>
+を使用できます:
 </p>
 <div class="example">
 <pre class="example">: cfield ( n &quot;name&quot; -- )
@@ -149,19 +143,11 @@ does&gt; ( name execution: addr1 -- addr2 )
 0 b cell+ faligned cfield c
 </pre></div>
 
-<p>Instead of <code>x-offset +</code>, we now simply write <code>x</code>.
+<p><code>x-offset +</code> の代わりに、 今や単に <code>x</code> と書きます。
 </p>
-<p>The structure field words now can be used quite nicely. However, their
-definition is still a bit cumbersome: We have to repeat the name, the
-information about size and alignment is distributed before and after the
-field definitions etc.  The structure package presented here addresses these
-problems.
+<p>構造体フィールドのワード群が非常にうまく使用できるようになりました。 ただし、 その定義はまだ少し面倒です。 名前を繰り返す必要があり、
+サイズと配置に関する情報はフィールド定義の前後に配置されます。 このセクションで紹介する構造体パッケージは、 これらの問題に対処します。
 </p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Structure-Usage.html">Structure Usage</a>, Previous: <a href="Structures.html">Structures</a>, Up: <a href="Structures.html">Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
