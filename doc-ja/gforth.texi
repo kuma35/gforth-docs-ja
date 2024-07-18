@@ -19414,7 +19414,8 @@ does> ( name execution: addr1 -- addr2 )
 @cindex @code{field} usage
 @cindex @code{struct} usage
 @cindex @code{end-struct} usage
-以下のコマンドを使用して、 (データのない)リンク・リストの構造体を定義できます:
+以下のコマンドを使用して、 (データのない)リンク・リストの構造体を定義できます(訳注: これは構造体テンプレートを定義するだけです。
+構造体変数とするには別途 @code{%alloc} 等する必要があります):
 @example
 struct
     cell% field list-next
@@ -19516,54 +19517,43 @@ foo% @i{n} *
 @itemize @bullet
 @cindex field naming convention
 @item
-The names of fields are of the form @code{@emph{struct}-@emph{field}}, where
-@code{@emph{struct}} is the basic name of the structure, and
-@code{@emph{field}} is the basic name of the field. You can think of field
-words as converting the (address of the)  structure into the (address of
-the) field.
+フィールド名の形式は @code{@emph{struct}-@emph{field}} です。 @code{struct}
+は構造体の基本名、@code{field} はフィールドの基本名です。 フィールド・ワードは、
+構造体(のアドレス)をフィールド(のアドレス)に変換するものと考えることができます。
 
 @cindex structure naming convention
 @item
-The names of structures are of the form @code{@emph{struct}%}, where
-@code{@emph{struct}} is the basic name of the structure.
+構造体の名前は @code{struct%} の形式で、 @code{struct} は構造体の基本名です。
 @end itemize
 
-This naming convention does not work that well for fields of extended
-structures; e.g., the integer list structure has a field @code{intlist-int},
-but has @code{list-next}, not @code{intlist-next}.
+この命名規則は、 拡張構造体のフィールドではあまり機能しません。 たとえば、 上記例の整数リスト構造体にはフィールド
+@code{intlist-int} がありますが、 @code{intlist-next} ではなく @code{list-next} があります。
 
 @node Structure Implementation, Structure Glossary, Structure Naming Convention, Structures
 @subsection Structure Implementation
 @cindex structure implementation
 @cindex implementation of structures
 
-The central idea in the implementation is to pass the data about the
-structure being built on the stack, not in some global variable. Everything
-else falls into place naturally once this design decision is made.
+この実装の核となるアイデアは、 構築されている構造体に関するデータをグローバル変数ではなくスタックに渡すことです。 この設計上の決定が下されると、
+他のすべては自然に配置されます。
 
-The type description on the stack is of the form @emph{align size}. Keeping
-the size on the top-of-stack makes dealing with arrays very simple.
+スタック上の型の説明は @i{align size} の形式です。 サイズをスタックのTOSに維持すると、 配列の処理が非常に簡単になります。
 
-@code{field} is a defining word that uses @code{Create} and
-@code{DOES>}. The body of the field contains the offset of the field, and
-the normal @code{DOES>} action is simply:
+@code{field} は、 @code{Create} と @code{DOES>} を使用する定義ワードです。
+フィールドの本体にはフィールドのオフセットが含まれており、 通常の @code{DOES>} アクションは以下のようになります:
 
 @example
 @@ +
 @end example
 
 @noindent
-i.e., add the offset to the address, giving the stack effect @i{addr1 --
-addr2} for a field.
+つまり、 アドレスにオフセットを加算して、 フィールドのスタック効果 @i{addr1 -- addr2} を与えます。
 
 @cindex first field optimization, implementation
-This simple structure is slightly complicated by the optimization for fields
-with offset 0, which requires a different @code{DOES>}-part (because we
-cannot rely on there being something on the stack if such a field is invoked
-during compilation). Therefore, we put the different @code{DOES>}-parts in
-separate words, and decide which one to invoke based on the offset. For a
-zero offset, the field is basically a noop; it is immediate, and therefore
-no code is generated when it is compiled.
+この単純な構造は、 オフセット 0 のフィールドの最適化によって少し複雑になります。 これには、 別の @code{DOES>}
+部分が必要です(そのようなフィールドがコンパイル中に呼び出された場合、 スタック上に何かがあることに依存できないため)。 したがって、 異なる
+@code{DOES>} 部分を別々のワードに配置し、 オフセットに基づいてどれを呼び出すかを決定します。 ゼロ・オフセットの場合、
+フィールドは基本的に noop です。 これは即実行ワードであるため、 コンパイル時にコードは生成されません。
 
 @node Structure Glossary, Forth200x Structures, Structure Implementation, Structures
 @subsection Structure Glossary
@@ -19576,7 +19566,7 @@ no code is generated when it is compiled.
 @format
 @code{%align} ( @i{align size --  }) gforth-0.4 ``%align''
 @end format
-Align the data space pointer to the alignment @var{align}. 
+データ空間ポインタをアラインメント @var{align} に整列(align)します。 
 
 
 @findex %alignment ( @var{ align size -- align   } ) gforth-0.4
@@ -19585,7 +19575,7 @@ Align the data space pointer to the alignment @var{align}.
 @format
 @code{%alignment} ( @i{align size -- align  }) gforth-0.4 ``%alignment''
 @end format
-The alignment of the structure.
+構造体のアライメント
 
 
 @findex %alloc ( @var{ align size -- addr   } ) gforth-0.4
@@ -19594,8 +19584,9 @@ The alignment of the structure.
 @format
 @code{%alloc} ( @i{align size -- addr  }) gforth-0.4 ``%alloc''
 @end format
-Allocate @var{size} address units with alignment @var{align}, giving a data
-block at @var{addr}; @code{throw} an ior code if not successful.
+サイズ @var{size} のアドレス・ユニットをアラインメント @var{align} で整列(align)して割り当て、
+割り当てたデータ・ブロックのアドレスを @var{addr} に返します。 成功しなかった場合は負数の @i{ior} を @code{throw}
+します。
 
 
 @findex %allocate ( @var{ align size -- addr ior   } ) gforth-0.4
@@ -19604,8 +19595,9 @@ block at @var{addr}; @code{throw} an ior code if not successful.
 @format
 @code{%allocate} ( @i{align size -- addr ior  }) gforth-0.4 ``%allocate''
 @end format
-Allocate @var{size} address units with alignment @var{align}, similar to
-@code{allocate}.
+@code{allocate} と同様に、 サイズ @var{size} のアドレス単位をアライメント @var{align}
+で整列(align)して割り当て、 割り当てたデータ・ブロックのアドレスを @var{addr} に返します。 成功した場合、 @i{ior}=0,
+成功しなかった場合は @i{ior}<0
 
 
 @findex %allot ( @var{ align size -- addr   } ) gforth-0.4
@@ -19614,8 +19606,8 @@ Allocate @var{size} address units with alignment @var{align}, similar to
 @format
 @code{%allot} ( @i{align size -- addr  }) gforth-0.4 ``%allot''
 @end format
-Allot @var{size} address units of data space with alignment @var{align}; the
-resulting block of data is found at @var{addr}.
+データ空間にサイズ @var{size} アドレス単位をアラインメント @var{align} で割り当てます。 結果のデータ・ブロックのアドレスを
+@var{addr} に返します。
 
 
 @findex cell% ( @var{ -- align size   } ) gforth-0.4
@@ -19623,6 +19615,7 @@ resulting block of data is found at @var{addr}.
 @kindex cell%
 @format
 @code{cell%} ( @i{-- align size  }) gforth-0.4 ``cell%''
+\訳注: セル1つ分のサイズ @i{size} と、 サイズをアライメントした @i{align} を返す
 @end format
 
 @findex char% ( @var{ -- align size   } ) gforth-0.4
@@ -19630,6 +19623,7 @@ resulting block of data is found at @var{addr}.
 @kindex char%
 @format
 @code{char%} ( @i{-- align size  }) gforth-0.4 ``char%''
+\訳注: char 1つ分のサイズ @i{size} と、 そのサイズをアライメントした @i{align} を返します
 @end format
 
 @findex dfloat% ( @var{ -- align size   } ) gforth-0.4
@@ -19644,6 +19638,7 @@ resulting block of data is found at @var{addr}.
 @kindex double%
 @format
 @code{double%} ( @i{-- align size  }) gforth-0.4 ``double%''
+\訳注: 2倍長整数1つ分のサイズ @i{size} と、サイズをアライメントした @i{align} を返します
 @end format
 
 @findex end-struct ( @var{ align size "name" --   } ) gforth-0.2
@@ -19652,9 +19647,9 @@ resulting block of data is found at @var{addr}.
 @format
 @code{end-struct} ( @i{align size "name" --  }) gforth-0.2 ``end-struct''
 @end format
-Define a structure/type descriptor @var{name} with alignment @var{align} and
-size @var{size1} (@var{size} rounded up to be a multiple of @var{align}).@*
-@code{name} execution: -- @var{align size1}@*
+アライメント @var{align} とサイズ @var{size} を使用して 構造体/型記述子 @var{name}
+を定義します(@var{size} は @var{align} の倍数になるように切り上げられます -- @i{size1})。 @code{name}
+実行時: ( -- @var{align size1})
 
 
 @findex field ( @var{ align1 offset1 align size "name" --  align2 offset2   } ) gforth-0.2
@@ -19663,10 +19658,10 @@ size @var{size1} (@var{size} rounded up to be a multiple of @var{align}).@*
 @format
 @code{field} ( @i{align1 offset1 align size "name" --  align2 offset2  }) gforth-0.2 ``field''
 @end format
-Create a field @var{name} with offset @var{offset1}, and the type given by
-@var{align size}. @var{offset2} is the offset of the next field, and
-@var{align2} is the alignment of all fields.@* @code{name} execution:
-@var{addr1} -- @var{addr2}.@* @var{addr2}=@var{addr1}+@var{offset1}
+オフセット @var{offset1} と @var{align size} で指定された型を持つフィールド  @var{name} を作成します。
+@var{offset2} は次のフィールドのオフセットで、@var{align2} は、 (そこまでの)すべてのフィールドのアライメントです。
+@code{name} の実行時: ( @var{addr1} -- @var{addr2} )
+@var{addr2}=@var{addr1}+@var{offset1}
 
 
 @findex float% ( @var{ -- align size   } ) gforth-0.4
@@ -19689,7 +19684,7 @@ Create a field @var{name} with offset @var{offset1}, and the type given by
 @format
 @code{%size} ( @i{align size -- size  }) gforth-0.4 ``%size''
 @end format
-The size of the structure.
+構造体のサイズを返す
 
 
 @findex struct ( @var{ -- align size   } ) gforth-0.2
@@ -19698,7 +19693,7 @@ The size of the structure.
 @format
 @code{struct} ( @i{-- align size  }) gforth-0.2 ``struct''
 @end format
-An empty structure, used to start a structure definition.
+空の構造体。 構造体定義を開始するために使用されます。
 
 
 
@@ -19707,12 +19702,10 @@ An empty structure, used to start a structure definition.
 @subsection Forth200x Structures
 @cindex Structures in Forth200x
 
-The Forth 2012 standard defines a slightly less convenient form of
-structures.  In general (when using @code{field+}, you have to perform the
-alignment yourself, but there are a number of convenience words (e.g.,
-@code{field:}) that include alignment.
+Forth 2012 標準では、 やや不便な形式の構造体が定義されています。  一般に @code{field+} を使用する場合は、
+自分で位置合わせを実行する必要がありますが、 アライメントを含む便利なワード(例: @code{field:})が多数あります。
 
-A typical usage example is:
+典型的な使用例は以下のとおりです:
 
 @example
 0
@@ -19721,7 +19714,7 @@ A typical usage example is:
 constant s-struct
 @end example
 
-An alternative way of writing this structure is:
+この構造体を記述する別の方法は以下のとおりです:
 
 @example
 begin-structure s-struct
@@ -19730,8 +19723,7 @@ begin-structure s-struct
 end-structure
 @end example
 
-You can define a structure that has the same fields and additional fields as
-follows:
+以下のように、 同一のフィールドと追加のフィールドを持つ構造体を定義できます:
 
 @example
 s-struct
@@ -19740,7 +19732,7 @@ s-struct
 constant t-struct
 @end example
 
-or alternatively
+あるいは、
 
 @example
 s-struct extend-structure t-struct
@@ -19762,8 +19754,7 @@ end-structure
 @format
 @code{extend-structure} ( @i{n "name" -- struct-sys n  }) gforth-1.0 ``extend-structure''
 @end format
-Start a new structure @i{name} as extension of an existing structure with
-size @i{n}.
+サイズ @i{n} の既存の構造体の拡張として、 新しい構造体 @i{name} を開始します。
 
 
 @findex end-structure ( @var{ struct-sys +n --   } ) facility-ext
@@ -19772,7 +19763,7 @@ size @i{n}.
 @format
 @code{end-structure} ( @i{struct-sys +n --  }) facility-ext ``end-structure''
 @end format
-end a structure started wioth @code{begin-structure}
+@code{begin-struction} で開始された構造体を終了します
 
 
 @findex +field ( @var{ noffset1 nsize "name" -- noffset2   } ) facility-ext
@@ -19781,8 +19772,8 @@ end a structure started wioth @code{begin-structure}
 @format
 @code{+field} ( @i{noffset1 nsize "name" -- noffset2  }) facility-ext ``plus-field''
 @end format
-Defining word; defines @i{name} @code{( addr1 -- addr2 )}, where @i{addr2}
-is @i{addr1+noffset1}.  @i{noffset2} is @i{noffset1+nsize}.
+定義ワード。 @i{name} @code{( addr1 -- addr2 )} を定義します。 ここで、 @i{addr2} は
+@i{addr1+noffset1} です。  @i{noffset2} は @i{noffset1+nsize} です。
 
 
 @findex cfield: ( @var{ u1 "name" -- u2   } ) facility-ext
@@ -19791,7 +19782,7 @@ is @i{addr1+noffset1}.  @i{noffset2} is @i{noffset1+nsize}.
 @format
 @code{cfield:} ( @i{u1 "name" -- u2  }) facility-ext ``c-field-colon''
 @end format
-Define a char-sized field
+文字サイズのフィールドを定義します
 
 
 @findex field: ( @var{ u1 "name" -- u2   } ) facility-ext
@@ -19800,7 +19791,7 @@ Define a char-sized field
 @format
 @code{field:} ( @i{u1 "name" -- u2  }) facility-ext ``field-colon''
 @end format
-Define an aligned cell-sized field
+アライメントされたセル・サイズのフィールドを定義します
 
 
 @findex 2field: ( @var{ u1 "name" -- u2   } ) gforth-0.7
@@ -19809,7 +19800,7 @@ Define an aligned cell-sized field
 @format
 @code{2field:} ( @i{u1 "name" -- u2  }) gforth-0.7 ``two-field-colon''
 @end format
-Define an aligned double-cell-sized field
+アライメントされた2倍長セル・サイズのフィールドを定義します
 
 
 @findex ffield: ( @var{ u1 "name" -- u2   } ) floating-ext
@@ -19818,7 +19809,7 @@ Define an aligned double-cell-sized field
 @format
 @code{ffield:} ( @i{u1 "name" -- u2  }) floating-ext ``f-field-colon''
 @end format
-Define a faligned float-sized field
+アライメントされた浮動小数点サイズのフィールドを定義します
 
 
 @findex sffield: ( @var{ u1 "name" -- u2   } ) floating-ext
@@ -19827,7 +19818,7 @@ Define a faligned float-sized field
 @format
 @code{sffield:} ( @i{u1 "name" -- u2  }) floating-ext ``s-f-field-colon''
 @end format
-Define a sfaligned sfloat-sized field
+sfaligned された sfloat サイズのフィールドを定義します
 
 
 @findex dffield: ( @var{ u1 "name" -- u2   } ) floating-ext
@@ -19836,7 +19827,7 @@ Define a sfaligned sfloat-sized field
 @format
 @code{dffield:} ( @i{u1 "name" -- u2  }) floating-ext ``d-f-field-colon''
 @end format
-Define a dfaligned dfloat-sized field
+dfaligned された dfloat サイズのフィールドを定義します
 
 
 @findex wfield: ( @var{ u1 "name" -- u2   } ) gforth-1.0
@@ -19845,7 +19836,7 @@ Define a dfaligned dfloat-sized field
 @format
 @code{wfield:} ( @i{u1 "name" -- u2  }) gforth-1.0 ``w-field-colon''
 @end format
-Define a naturally aligned field for a 16-bit value.
+16 ビット値のアライメントされたフィールドを定義します。
 
 
 @findex lfield: ( @var{ u1 "name" -- u2   } ) gforth-1.0
@@ -19854,7 +19845,7 @@ Define a naturally aligned field for a 16-bit value.
 @format
 @code{lfield:} ( @i{u1 "name" -- u2  }) gforth-1.0 ``l-field-colon''
 @end format
-Define a naturally aligned field for a 32-bit value.
+32ビット値にアライメントされたフィールドを定義します。
 
 
 @findex xfield: ( @var{ u1 "name" -- u2   } ) gforth-1.0
@@ -19863,7 +19854,7 @@ Define a naturally aligned field for a 32-bit value.
 @format
 @code{xfield:} ( @i{u1 "name" -- u2  }) gforth-1.0 ``x-field-colon''
 @end format
-Define a naturally aligned field for a 64-bit-value.
+64ビット値にアライメントされたフィールドを定義します。
 
 
 
@@ -19871,12 +19862,11 @@ Define a naturally aligned field for a 64-bit-value.
 @node Object-oriented Forth, Regular Expressions, Structures, Words
 @section Object-oriented Forth
 
-Gforth comes with three packages for object-oriented programming:
-@file{objects.fs}, @file{oof.fs}, and @file{mini-oof.fs}; none of them is
-preloaded, so you have to @code{include} them before use. The most important
-differences between these packages (and others) are discussed in
-@ref{Comparison with other object models}. All packages are written in
-Standard Forth and can be used with any other Standard Forth.
+Gforth には、オブジェクト指向プログラミング用の 3 つのパッケージ (@file{objects.fs} と @file{oof.fs} と
+@file{mini-oof.fs}) が付属しています。 どれも最初から組み込まれていないため、 使用する前に @code{include}
+する必要があります。 これらのパッケージ(および、 その他のパッケージ)の最も重要な違いについては、 @ref{Comparison with
+other object models} で説明します。 すべてのパッケージは 標準 Forth で書かれており、 他の 標準 Forth
+でも使用できます。
 
 @menu
 * Why object-oriented programming?::
@@ -19891,94 +19881,80 @@ Standard Forth and can be used with any other Standard Forth.
 @c ----------------------------------------------------------------
 @node Why object-oriented programming?, Object-Oriented Terminology, Object-oriented Forth, Object-oriented Forth
 @subsection Why object-oriented programming?
-@cindex object-oriented programming motivation
+@cindex object-oriented programming motivation(オブジェクト指向プログラミングの動機)
 @cindex motivation for object-oriented programming
 
 @comment TODO add some other operations eg perimeter, area
 @comment and tie in to concrete examples later..
-Often we have to deal with several data structures (@emph{objects}), that
-have to be treated similarly in some respects, but differently in
-others. Graphical objects are the textbook example: circles, triangles,
-dinosaurs, icons, and others, and we may want to add more during program
-development. We want to apply some operations to any graphical object, e.g.,
-@code{draw} for displaying it on the screen. However, @code{draw} has to do
-something different for every kind of object.
+多くの場合、 いくつかのデータ構造「オブジェクト」(object)を扱わなければなりません。 それらは、 いつくかの側面では同様に扱う必要がありますが、
+それ以外の側面では異なる扱いをしなければなりません。 図形オブジェクトとは教科書的な例で言えば、 円や三角形や恐竜やアイコン等ですが、
+プログラム開発中にさらに追加することもできます。 任意のグラフィカル・オブジェクトにいくつかの操作を適用したいとします。 たとえば、
+画面上に表示するための @code{draw} 操作です。 しかしながら、 この @code{draw}
+はオブジェクトの種類ごとに異なる処理を行う必要があります。
 
-We could implement @code{draw} as a big @code{CASE} control structure that
-executes the appropriate code depending on the kind of object to be
-drawn. This would be not be very elegant, and, moreover, we would have to
-change @code{draw} every time we add a new kind of graphical object (say, a
-spaceship).
+@code{draw} を、 描画されるオブジェクトの種類に依存して適切なコードを実行する、 大きな @code{CASE}
+制御構造として実装することはできます。 これはあまり洗練されたものではなく、 さらに、
+新しい種類のグラフィック・オブジェクト(例えば宇宙船など)を追加するたびに @code{draw} を変更する必要があります。
 
-What we would rather do is: When defining spaceships, we would tell the
-system: ``Here's how you @code{draw} a spaceship; you figure out the rest''.
+私たちがやりたいことは、 宇宙船を定義するときにシステムに次のように指示することです: 「宇宙船を @code{draw}
+する方法は私たちがこれこれこのとおり書いたので、 それ以外の処理はシステム側でよしなしにしてください」
 
 @comment TODO ?list properties of oo systems.. oo vs o-based?
-This is the problem that all systems solve that (rightfully) call themselves
-object-oriented; the object-oriented packages presented here solve this
-problem (and not much else).
+これは、 (当然ながら、 )オブジェクト指向と呼ばれるすべてのシステムで解決すべき問題です。 ここで紹介するオブジェクト指向パッケージは、
+この問題を解決します(それ以外の問題はあんまり解決できません…)。
 
 @c ------------------------------------------------------------------------
 @node Object-Oriented Terminology, Objects, Why object-oriented programming?, Object-oriented Forth
 @subsection Object-Oriented Terminology
-@cindex object-oriented terminology
+@cindex object-oriented terminology(オブジェクト指向用語)
 @cindex terminology for object-oriented programming
 
-This section is mainly for reference, so you don't have to understand all of
-it right away.  The terminology is mainly Smalltalk-inspired.  In short:
+このセクションは主にリファレンスであるため、 すぐにすべてを理解する必要はありません。  用語は主に Smalltalk
+からインスピレーションを得たものです:
 
 @table @emph
-@cindex class
-@item class
-a data structure definition with some extras.
+@cindex クラス(class)
+@item クラス(class)
+いくつかの追加機能を備えたデータ構造定義。
 
-@cindex object
-@item object
-an instance of the data structure described by the class definition.
+@cindex オブジェクト(object)
+@item オブジェクト(object)
+クラス定義によって記述されたデータ構造の実体(インスタンス;instance)。
 
-@cindex instance variables
-@item instance variables
-fields of the data structure.
+@cindex インスタンス変数(instance variables)
+@item インスタンス変数(instance variables)
+データ構造のフィールド。
 
-@cindex selector
+@cindex セレクター(selector)
 @cindex method selector
 @cindex virtual function
-@item selector
-(or @emph{method selector}) a word (e.g., @code{draw}) that performs an
-operation on a variety of data structures (classes). A selector describes
-@emph{what} operation to perform. In C++ terminology: a (pure) virtual
-function.
+@item セレクター(selector)
+(または「メソッド・セレクター」)さまざまなデータ構造(クラス)に対して操作を実行するワード(例: @code{draw})。 セレクターは、
+「何の」(what)操作を行うかを記述します。 C++ 用語では (純粋)仮想関数 と言います
 
-@cindex method
-@item method
-the concrete definition that performs the operation described by the
-selector for a specific class. A method specifies @emph{how} the operation
-is performed for a specific class.
+@cindex メソッド(method)
+@item メソッド(method)
+特定のクラスのセレクターによって記述された操作を実行する具体的な定義。 メソッドは、
+特定のクラスに対して「どのように」(how)操作が実行されるかを指定します。
 
-@cindex selector invocation
+@cindex セレクター呼び出し(selector invocation)
 @cindex message send
 @cindex invoking a selector
-@item selector invocation
-a call of a selector. One argument of the call (the TOS (top-of-stack))  is
-used for determining which method is used. In Smalltalk terminology: a
-message (consisting of the selector and the other arguments) is sent to the
-object.
+@item セレクター呼び出し(selector invocation)
+セレクターの呼び出し。 呼び出しの 1 つの引数(TOS(スタックの頂上))は、 どのメソッドが使用されるかを決定するために使用されます。
+Smalltalk の用語では、 (セレクターとその他の引数で構成される、)メッセージがオブジェクトに送信される と言います。
 
-@cindex receiving object
-@item receiving object
-the object used for determining the method executed by a selector
-invocation. In the @file{objects.fs} model, it is the object that is on the
-TOS when the selector is invoked. (@emph{Receiving} comes from the Smalltalk
-@emph{message} terminology.)
+@cindex 受信オブジェクト(receiving object)
+@item 受信オブジェクト(receiving object)
+セレクターの呼び出しによって実行されるメソッドを決定するために使用されるオブジェクト。  @file{objects.fs} モデルでは、
+セレクターが呼び出されたときに TOS 上にあるオブジェクトです。 (「受信」という言葉は、 Smalltalk の 「メッセージ」関連用語由来です。)
 
-@cindex child class
-@cindex parent class
-@cindex inheritance
-@item child class
-a class that has (@emph{inherits}) all properties (instance variables,
-selectors, methods) from a @emph{parent class}. In Smalltalk terminology:
-The subclass inherits from the superclass. In C++ terminology: The derived
-class inherits from the base class.
+@cindex 子クラス(child class)
+@cindex parent class(親クラス)
+@cindex inheritance(継承)
+@item 子クラス(child class)
+「親クラス」のすべてのプロパティ(インスタンス変数やセレクターやメソッド)を「継承」(inherit)したクラス。  Smalltalk の用語では、
+サブクラスはスーパークラスを継承します、 と言います。 C++ 用語では、 派生クラスは基本クラスから継承します、 と言います。
 
 @end table
 
@@ -19998,17 +19974,16 @@ class inherits from the base class.
 @cindex @file{oof.fs}
 
 @c McKewan's and Zsoter's packages
-This section describes the @file{objects.fs} package. This material also has
-been published in M. Anton Ertl,
+このセクションでは、 @file{objects.fs} パッケージについて説明します。 この資料は、 M. Anton Ertl,
 @cite{@uref{https://www.complang.tuwien.ac.at/forth/objects/objects.html,
-Yet Another Forth Objects Package}}, Forth Dimensions 19(2), pages 37--43.
+Yet Another Forth Objects Package}}, Forth Dimensions 19(2), pages 37--43
+でも公開されています。
 
-This section assumes that you have read @ref{Structures}.
+このセクションは、 @ref{Structures} を読了済であることを前提としています。
 
-The techniques on which this model is based have been used to implement the
-parser generator, Gray, and have also been used in Gforth for implementing
-the various flavours of word lists (hashed or not, case-sensitive or not,
-special-purpose word lists for locals etc.).
+このモデルの基礎となっている技術は、 パーサ・ジェネレーター Gray の実装に使用されており、 Gforth
+でもさまざまな種類のワードリスト(ハッシュの有無や、大文字と小文字の区別の有無や、
+ローカル変数用などの特殊用途のワードリスト)を実装するために使用されています)。
 
 
 @menu
@@ -20026,7 +20001,7 @@ special-purpose word lists for locals etc.).
 * Objects Glossary::         
 @end menu
 
-Marcel Hendrix provided helpful comments on this section.
+Marcel Hendrix は、 このセクションに関して役立つコメントを提供しました。
 
 @node Properties of the Objects model, Basic Objects Usage, Objects, Objects
 @subsubsection Properties of the @file{objects.fs} model
@@ -20034,40 +20009,34 @@ Marcel Hendrix provided helpful comments on this section.
 
 @itemize @bullet
 @item
-It is straightforward to pass objects on the stack. Passing selectors on the
-stack is a little less convenient, but possible.
+オブジェクトをスタックに渡すのは簡単明瞭です。 スタック上でセレクターを渡すのは多少めんどくさいですが、 可能です。
 
 @item
-Objects are just data structures in memory, and are referenced by their
-address. You can create words for objects with normal defining words like
-@code{constant}. Likewise, there is no difference between instance variables
-that contain objects and those that contain other data.
+オブジェクトはメモリ内の単なるデータ構造であり、 そのアドレスによって参照されます。 @code{constant}
+のような通常の定義ワードを使用してオブジェクトのワードを作成できます。 同様に、
+オブジェクトを含むインスタンス変数と他のデータを含むインスタンス変数の間に違いはありません。
 
 @item
-Late binding is efficient and easy to use.
+遅延バインディング(Late binding)は効率的で使いやすいです。
 
 @item
-It avoids parsing, and thus avoids problems with state-smartness and reduced
-extensibility; for convenience there are a few parsing words, but they have
-non-parsing counterparts. There are also a few defining words that
-parse. This is hard to avoid, because all standard defining words parse
-(except @code{:noname}); however, such words are not as bad as many other
-parsing words, because they are not state-smart.
+これによりパースが回避されるため、 状態スマート性(state-smartness)や拡張性の低下に関する問題が回避されます。 便宜上、
+いくつかのパース・ワードがありますが、 それらには非パース・ワードもあります。 パースする定義ワードもいくつかあります。
+すべての標準の定義ワードは(@code{:noname} を除いて)パースするため、 これを避けるのは困難です。 ただし、
+このようなワードは状態スマート(state-smart)ではないため、 他の多くのパース・ワードほど悪くはありません。
 
 @item
-It does not try to incorporate everything. It does a few things and does
-them well (IMO). In particular, this model was not designed to support
-information hiding (although it has features that may help); you can use a
-separate package for achieving this.
+すべてを取り入れようとしているわけではありません。 (私見ですけども)このモデルでは、 いくつかのことをうまくやるといった体です。 特に、
+このモデルでは情報の隠蔽をサポートするように設計されていません(情報の隠蔽に役立つ可能性のある機能はありますが)。
+これを実現するには、また別のパッケージが使用可能です。
 
 @item
-It is layered; you don't have to learn and use all features to use this
-model. Only a few features are necessary (@pxref{Basic Objects Usage},
-@pxref{The Objects base class}, @pxref{Creating objects}.), the others are
-optional and independent of each other.
+それは階層化(layered)されています。 このモデルを使用するためにすべての機能を学習して使用する必要はありません。
+必要な機能はほんのわずかです((@pxref{Basic Objects Usage}, @pxref{The Objects base class},
+@pxref{Creating objects})。 その他の機能はオプションであり、互いに独立しています。
 
 @item
-An implementation in Standard Forth is available.
+標準 Forth での実装が利用可能です。
 
 @end itemize
 
@@ -20077,46 +20046,42 @@ An implementation in Standard Forth is available.
 @cindex basic objects usage
 @cindex objects, basic usage
 
-You can define a class for graphical objects like this:
+以下のようにして graphical オブジェクト(図形オブジェクト)のクラスを定義できます:
 
 @cindex @code{class} usage
 @cindex @code{end-class} usage
 @cindex @code{selector} usage
 @example
-object class \ "object" is the parent class
+object class \ クラス名 "object" は親クラスです
   selector draw ( x y graphical -- )
 end-class graphical
 @end example
 
-This code defines a class @code{graphical} with an operation @code{draw}.
-We can perform the operation @code{draw} on any @code{graphical} object,
-e.g.:
+このコードは、 @code{draw} 操作を持つクラス @code{graphical} を定義します。 任意の @code{graphical}
+オブジェクトに対して @code{draw} 操作を実行できます。例:
 
 @example
 100 100 t-rex draw
 @end example
 
 @noindent
-where @code{t-rex} is a word (say, a constant) that produces a graphical
-object.
+ここで、 @code{t-rex} は、 graphical オブジェクトを生成するワード(定数(constant)など)です。
 
 @comment TODO add a 2nd operation eg perimeter.. and use for
 @comment a concrete example
 
 @cindex abstract class
-How do we create a graphical object? With the present definitions, we cannot
-create a useful graphical object. The class @code{graphical} describes
-graphical objects in general, but not any concrete graphical object type
-(C++ users would call it an @emph{abstract class}); e.g., there is no method
-for the selector @code{draw} in the class @code{graphical}.
+graphical オブジェクトを作成するにはどうすればよいでしょうか？ 現在の定義では、 有用な graphical オブジェクトを作成できません。
+クラス @code{graphical} は graphical オブジェクト一般を記述しますが、 具体的な graphical
+オブジェクト・タイプを記述しません(C++ ユーザーはこれを「抽象クラス」(abstract class)と呼びます)。 たとえば、 クラス
+@code{graphical} にはセレクター @code{draw} のメソッドがありません。
 
-For concrete graphical objects, we define child classes of the class
-@code{graphical}, e.g.:
+具体的な graphical オブジェクトのために、 クラス @code{graphical} の子クラスを定義します。 例:
 
 @cindex @code{overrides} usage
 @cindex @code{field} usage in class definition
 @example
-graphical class \ "graphical" is the parent class
+graphical class \ 親クラスは graphical
   cell% field circle-radius
 
 :noname ( x y circle -- )
@@ -20130,13 +20095,13 @@ overrides construct
 end-class circle
 @end example
 
-Here we define a class @code{circle} as a child of @code{graphical}, with
-field @code{circle-radius} (which behaves just like a field
-(@pxref{Structures}); it defines (using @code{overrides}) new methods for
-the selectors @code{draw} and @code{construct} (@code{construct} is defined
-in @code{object}, the parent class of @code{graphical}).
+ここでは、 フィールド @code{circle-radius} を持つクラス @code{circle} を @code{graphical}
+の子として定義しています(フィールド @code{circle-radius}
+は構造体のフィールドと同じように動作します(@pxref{Structures})。 セレクター @code{draw} と
+@code{construct} 用の新しいメソッドを定義します(@code{construct} は @code{graphical} の親クラスの
+@code{object} クラスで定義されています))。
 
-Now we can create a circle on the heap (i.e., @code{allocate}d memory) with:
+以下のようにして、 ヒープ上(つまり、 @code{allocate} されたメモリ)に circle を作成できます:
 
 @cindex @code{heap-new} usage
 @example
@@ -20144,8 +20109,8 @@ Now we can create a circle on the heap (i.e., @code{allocate}d memory) with:
 @end example
 
 @noindent
-@code{heap-new} invokes @code{construct}, thus initializing the field
-@code{circle-radius} with 50. We can draw this new circle at (100,100) with:
+@code{heap-new} は @code{construct} を呼び出し、 フィールド @code{circle-radius} を 50
+で初期化します。 以下のようにして、 この新しい円を (100,100) の位置に描画(draw)できます:
 
 @example
 100 100 my-circle draw
@@ -20153,12 +20118,10 @@ Now we can create a circle on the heap (i.e., @code{allocate}d memory) with:
 
 @cindex selector invocation, restrictions
 @cindex class definition, restrictions
-Note: You can only invoke a selector if the object on the TOS (the receiving
-object) belongs to the class where the selector was defined or one of its
-descendents; e.g., you can invoke @code{draw} only for objects belonging to
-@code{graphical} or its descendents (e.g., @code{circle}).  Immediately
-before @code{end-class}, the search order has to be the same as immediately
-after @code{class}.
+注意: セレクターを呼び出すことができるのは、 TOS 上のオブジェクト(受信オブジェクト) が、 セレクターが定義されたクラス、 またはその子孫の 1
+つに属している場合のみです。 たとえば、 @code{draw} は、 @code{graphical} またはその子孫(例:
+@code{circle})に属するオブジェクトに対してのみ呼び出すことができます。  @code{end-class}
+の直前の検索順序スタック(the search order)は、 @code{class} の直後と同じである必要があります。
 
 @node The Objects base class, Creating objects, Basic Objects Usage, Objects
 @subsubsection The @file{object.fs} base class
@@ -20670,8 +20633,8 @@ Compile the method for @var{selector} in @var{class}.
 
 
 @findex class ( @var{ parent-class -- align offset   } ) objects
-@cindex @code{class}
-@kindex class
+@cindex @code{クラス(class)}
+@kindex クラス(class)
 @format
 @code{class} ( @i{parent-class -- align offset  }) objects ``class''
 @end format
@@ -20918,8 +20881,8 @@ End a method definition; restore old @code{this}.
 
 
 @findex method ( @var{ xt "name" --   } ) objects
-@cindex @code{method}
-@kindex method
+@cindex @code{メソッド(method)}
+@kindex メソッド(method)
 @format
 @code{method} ( @i{xt "name" --  }) objects ``method''
 @end format
@@ -20939,8 +20902,8 @@ selectors.
 
 
 @findex object ( @var{ -- class   } ) objects
-@cindex @code{object}
-@kindex object
+@cindex @code{オブジェクト(object)}
+@kindex オブジェクト(object)
 @format
 @code{object} ( @i{-- class  }) objects ``object''
 @end format
@@ -20996,8 +20959,8 @@ Restore the compilation wordlist that was in effect before the last
 
 
 @findex selector ( @var{ "name" --   } ) objects
-@cindex @code{selector}
-@kindex selector
+@cindex @code{セレクター(selector)}
+@kindex セレクター(selector)
 @format
 @code{selector} ( @i{"name" --  }) objects ``selector''
 @end format
@@ -21101,14 +21064,14 @@ Selector invocation and instance variable usage of the active object is
 straightforward, since both make use of the active object.
 
 @item
-Late binding is efficient and easy to use.
+遅延バインディング(Late binding)は効率的で使いやすいです。
 
 @item
 State-smart objects parse selectors. However, extensibility is provided
 using a (parsing) selector @code{postpone} and a selector @code{'}.
 
 @item
-An implementation in Standard Forth is available.
+標準 Forth での実装が利用可能です。
 
 @end itemize
 
@@ -21120,7 +21083,7 @@ An implementation in Standard Forth is available.
 This section uses the same example as for @code{objects} (@pxref{Basic
 Objects Usage}).
 
-You can define a class for graphical objects like this:
+以下のようにして graphical オブジェクト(図形オブジェクト)のクラスを定義できます:
 
 @cindex @code{class} usage
 @cindex @code{class;} usage
@@ -21131,9 +21094,8 @@ object class graphical \ "object" is the parent class
 class;
 @end example
 
-This code defines a class @code{graphical} with an operation @code{draw}.
-We can perform the operation @code{draw} on any @code{graphical} object,
-e.g.:
+このコードは、 @code{draw} 操作を持つクラス @code{graphical} を定義します。 任意の @code{graphical}
+オブジェクトに対して @code{draw} 操作を実行できます。例:
 
 @example
 100 100 t-rex draw
@@ -21144,14 +21106,12 @@ where @code{t-rex} is an object or object pointer, created with e.g.
 @code{graphical : t-rex}.
 
 @cindex abstract class
-How do we create a graphical object? With the present definitions, we cannot
-create a useful graphical object. The class @code{graphical} describes
-graphical objects in general, but not any concrete graphical object type
-(C++ users would call it an @emph{abstract class}); e.g., there is no method
-for the selector @code{draw} in the class @code{graphical}.
+graphical オブジェクトを作成するにはどうすればよいでしょうか？ 現在の定義では、 有用な graphical オブジェクトを作成できません。
+クラス @code{graphical} は graphical オブジェクト一般を記述しますが、 具体的な graphical
+オブジェクト・タイプを記述しません(C++ ユーザーはこれを「抽象クラス」(abstract class)と呼びます)。 たとえば、 クラス
+@code{graphical} にはセレクター @code{draw} のメソッドがありません。
 
-For concrete graphical objects, we define child classes of the class
-@code{graphical}, e.g.:
+具体的な graphical オブジェクトのために、 クラス @code{graphical} の子クラスを定義します。 例:
 
 @example
 graphical class circle \ "graphical" is the parent class
@@ -21489,8 +21449,8 @@ Create a method selector for early binding.
 
 
 @findex method ( @var{ --   } ) oof
-@cindex @code{method}
-@kindex method
+@cindex @code{メソッド(method)}
+@kindex メソッド(method)
 @format
 @code{method} ( @i{--  }) oof ``method''
 @end format
@@ -21572,8 +21532,8 @@ class method.
 
 
 @findex object ( @var{ -- a-addr   } ) mini-oof
-@cindex @code{object}
-@kindex object
+@cindex @code{オブジェクト(object)}
+@kindex オブジェクト(object)
 @format
 @code{object} ( @i{-- a-addr  }) mini-oof ``object''
 @end format
@@ -21581,8 +21541,8 @@ class method.
 
 
 @findex method ( @var{ m v "name" -- m' v   } ) mini-oof
-@cindex @code{method}
-@kindex method
+@cindex @code{メソッド(method)}
+@kindex メソッド(method)
 @format
 @code{method} ( @i{m v "name" -- m' v  }) mini-oof ``method''
 @end format
@@ -21599,8 +21559,8 @@ Define a variable with @var{size} bytes.
 
 
 @findex class ( @var{ class -- class selectors vars   } ) mini-oof
-@cindex @code{class}
-@kindex class
+@cindex @code{クラス(class)}
+@kindex クラス(class)
 @format
 @code{class} ( @i{class -- class selectors vars  }) mini-oof ``class''
 @end format
@@ -21662,9 +21622,8 @@ object class
 end-class graphical
 @end example
 
-This code defines a class @code{graphical} with an operation @code{draw}.
-We can perform the operation @code{draw} on any @code{graphical} object,
-e.g.:
+このコードは、 @code{draw} 操作を持つクラス @code{graphical} を定義します。 任意の @code{graphical}
+オブジェクトに対して @code{draw} 操作を実行できます。例:
 
 @example
 100 100 t-rex draw
@@ -21673,8 +21632,7 @@ e.g.:
 where @code{t-rex} is an object or object pointer, created with e.g.
 @code{graphical new Constant t-rex}.
 
-For concrete graphical objects, we define child classes of the class
-@code{graphical}, e.g.:
+具体的な graphical オブジェクトのために、 クラス @code{graphical} の子クラスを定義します。 例:
 
 @example
 graphical class

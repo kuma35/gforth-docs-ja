@@ -72,32 +72,25 @@ Next: <a href="Structure-Glossary.html" accesskey="n" rel="next">Structure Gloss
 <span id="index-structure-implementation"></span>
 <span id="index-implementation-of-structures"></span>
 
-<p>The central idea in the implementation is to pass the data about the
-structure being built on the stack, not in some global variable. Everything
-else falls into place naturally once this design decision is made.
+<p>この実装の核となるアイデアは、 構築されている構造体に関するデータをグローバル変数ではなくスタックに渡すことです。 この設計上の決定が下されると、
+他のすべては自然に配置されます。
 </p>
-<p>The type description on the stack is of the form <em>align size</em>. Keeping
-the size on the top-of-stack makes dealing with arrays very simple.
+<p>スタック上の型の説明は <i>align size</i> の形式です。 サイズをスタックのTOSに維持すると、 配列の処理が非常に簡単になります。
 </p>
-<p><code>field</code> is a defining word that uses <code>Create</code> and
-<code>DOES&gt;</code>. The body of the field contains the offset of the field, and
-the normal <code>DOES&gt;</code> action is simply:
+<p><code>field</code> は、 <code>Create</code> と <code>DOES&gt;</code> を使用する定義ワードです。
+フィールドの本体にはフィールドのオフセットが含まれており、 通常の <code>DOES&gt;</code> アクションは以下のようになります:
 </p>
 <div class="example">
 <pre class="example">@ +
 </pre></div>
 
-<p>i.e., add the offset to the address, giving the stack effect <i>addr1 &ndash;
-addr2</i> for a field.
+<p>つまり、 アドレスにオフセットを加算して、 フィールドのスタック効果 <i>addr1 &ndash; addr2</i> を与えます。
 </p>
 <span id="index-first-field-optimization_002c-implementation"></span>
-<p>This simple structure is slightly complicated by the optimization for fields
-with offset 0, which requires a different <code>DOES&gt;</code>-part (because we
-cannot rely on there being something on the stack if such a field is invoked
-during compilation). Therefore, we put the different <code>DOES&gt;</code>-parts in
-separate words, and decide which one to invoke based on the offset. For a
-zero offset, the field is basically a noop; it is immediate, and therefore
-no code is generated when it is compiled.
+<p>この単純な構造は、 オフセット 0 のフィールドの最適化によって少し複雑になります。 これには、 別の <code>DOES&gt;</code>
+部分が必要です(そのようなフィールドがコンパイル中に呼び出された場合、 スタック上に何かがあることに依存できないため)。 したがって、 異なる
+<code>DOES&gt;</code> 部分を別々のワードに配置し、 オフセットに基づいてどれを呼び出すかを決定します。 ゼロ・オフセットの場合、
+フィールドは基本的に noop です。 これは即実行ワードであるため、 コンパイル時にコードは生成されません。
 </p>
 </div>
 

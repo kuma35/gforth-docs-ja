@@ -27,6 +27,154 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Threading Words,  Prev: Header methods,  Up: Carnal words
+
+6.30.3 Threading Words
+----------------------
+
+The terminology used here stems from indirect threaded Forth systems; in
+such a system, the XT of a word is represented by the CFA (code field
+address) of a word; the CFA points to a cell that contains the code
+address.  The code address is the address of some machine code that
+performs the run-time action of invoking the word (e.g., the ‘dovar:’
+routine pushes the address of the body of the word (a variable) on the
+stack).
+
+   These words provide access to code fields, code addresses and other
+threading stuff in Gforth.  It more or less abstracts away the
+differences between direct and indirect threading.
+
+   Up to and including Gforth 0.7, the code address (plus, for
+‘does>’-defined words, the address returned by ‘>does-code’) was
+sufficient to know the type of the word.  However, since Gforth-1.0 the
+behaviour or at least implementation of words like ‘compile,’ and
+‘name>compile’ can be determined independently as described in *note
+Header methods::.
+
+   The following words for create a code field and at the same time
+initialize the header methods:
+
+‘hmcopy,’ ( xt –  ) gforth-experimental “hmcopy-comma”
+   While constructing a header, allocate the code field, and use xt as
+prototype for setting the code field and the header methods.
+
+‘docol,’ ( –  ) gforth-1.0 “docol,”
+   The code address of a colon definition.
+
+‘docon,’ ( –  ) gforth-1.0 “docon,”
+   The code address of a ‘CONSTANT’.
+
+‘dovar,’ ( –  ) gforth-1.0 “dovar,”
+   The code address of a ‘CREATE’d word.
+
+‘douser,’ ( –  ) gforth-1.0 “douser,”
+   The code address of a ‘USER’ variable.
+
+‘dodefer,’ ( –  ) gforth-1.0 “dodefer,”
+   The code address of a ‘defer’ed word.
+
+‘dofield,’ ( –  ) gforth-1.0 “dofield,”
+   The code address of a ‘field’.
+
+‘dovalue,’ ( –  ) gforth-1.0 “dovalue,”
+   The code address of a ‘CONSTANT’.
+
+‘doabicode,’ ( –  ) gforth-1.0 “doabicode,”
+   The code address of a ‘ABI-CODE’ definition.
+
+   For ‘does>’-defined words, use ‘hmcopy,’.
+
+   Or you use a higher-level word like ‘create-from’ (*note Creating
+from a prototype::).
+
+   The following words were designed before the introduction of header
+methods, and are therefore not the best (and recommended) way to deal
+with different word types in Gforth.
+
+   In an indirect threaded Forth, you can get the code address of name
+with ‘' name @’; in Gforth you can get it with ‘' name >code-address’,
+independent of the threading method.
+
+‘threading-method’ ( – n ) gforth-0.2 “threading-method”
+   0 if the engine is direct threaded.  Note that this may change during
+the lifetime of an image.
+
+‘>code-address’ ( xt – c_addr  ) gforth-0.2 “>code-address”
+   c-addr is the code address of the word xt.
+
+‘code-address!’ ( c_addr xt –  ) gforth-obsolete “code-address!”
+   Change a code field with code address c-addr at xt.
+
+   The code addresses produced by various defining words are produced by
+the following words:
+
+‘docol:’ ( – addr  ) gforth-0.2 “docol:”
+   The code address of a colon definition.
+
+‘docon:’ ( – addr  ) gforth-0.2 “docon:”
+   The code address of a ‘CONSTANT’.
+
+‘dovar:’ ( – addr  ) gforth-0.2 “dovar:”
+   The code address of a ‘CREATE’d word.
+
+‘douser:’ ( – addr  ) gforth-0.2 “douser:”
+   The code address of a ‘USER’ variable.
+
+‘dodefer:’ ( – addr  ) gforth-0.2 “dodefer:”
+   The code address of a ‘defer’ed word.
+
+‘dofield:’ ( – addr  ) gforth-0.2 “dofield:”
+   The code address of a ‘field’.
+
+‘dovalue:’ ( – addr  ) gforth-0.7 “dovalue:”
+   The code address of a ‘CONSTANT’.
+
+‘dodoes:’ ( – addr  ) gforth-0.6 “dodoes:”
+   The code address of a ‘DOES>’-defined word.
+
+‘doabicode:’ ( – addr  ) gforth-1.0 “doabicode:”
+   The code address of a ‘ABI-CODE’ definition.
+
+   For a word X defined with ‘set-does>’, the code address points to
+‘dodoes:’, and the ‘>hmextra’ field of the header methods contains the
+xt of the word that is called after pushing the body addres of X.
+
+   If you want to know whether a word is a ‘DOES>’-defined word, and
+what Forth code it executes, ‘>does-code’ tells you that:
+
+‘>does-code’ ( xt1 – xt2  ) gforth-0.2 “>does-code”
+   If xt1 is the execution token of a child of a ‘set-does>’-defined
+word, xt2 is the xt passed to ‘set-does>’, i.e, the xt of the word that
+is executed when executing xt1 (but first the body address of xt1 is
+pushed).  If xt1 does not belong to a ‘set-does>’-defined word, xt2 is
+0.
+
+   You can use the resulting xt2 with ‘set-does>’ (preferred) to change
+the latest word or with
+
+‘does-code!’ ( xt2 xt1 –  ) gforth-0.2 “does-code!”
+   Change xt1 to be a ‘xt2 set-does>’-defined word.
+
+   to change an arbitrary word.
+
+   The following two words generalize ‘>code-address’, ‘>does-code’,
+‘code-address!’, and ‘does-code!’:
+
+‘>definer’ ( xt – definer  ) gforth-0.2 “>definer”
+   DEFINER is a unique identifier for the way the XT was defined.  Words
+defined with different ‘does>’-codes have different definers.  The
+definer can be used for comparison and in ‘definer!’.
+
+‘definer!’ ( definer xt –  ) gforth-obsolete “definer!”
+   The word represented by XT changes its behaviour to the behaviour
+associated with DEFINER.
+
+   ‘Code-address!’, ‘does-code!’, and ‘definer!’ update the
+‘opt-compile,’ method to a somewhat generic compiler for that word type
+(in particular, primitives get the slow ‘general-compile,’ method rather
+than the primitive-specific ‘peephole-compile,’).
+
+
 File: gforth.info,  Node: Passing Commands to the OS,  Next: Keeping track of Time,  Prev: Carnal words,  Up: Words
 
 6.31 Passing Commands to the Operating System
@@ -4550,11 +4698,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * %alloc ( ALIGN SIZE -- ADDR ) gforth-0.4: Structure Glossary.
                                                               (line  12)
 * %allocate ( ALIGN SIZE -- ADDR IOR ) gforth-0.4: Structure Glossary.
-                                                              (line  16)
+                                                              (line  17)
 * %allot ( ALIGN SIZE -- ADDR ) gforth-0.4: Structure Glossary.
-                                                              (line  20)
+                                                              (line  22)
 * %size ( ALIGN SIZE -- SIZE ) gforth-0.4: Structure Glossary.
-                                                              (line  48)
+                                                              (line  52)
 * ' ( "NAME" -- XT ) core:               Execution token.     (line  27)
 * 'cold ( -- ) gforth-0.2:               Modifying the Startup Sequence.
                                                               (line  47)
@@ -4593,7 +4741,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * +DO ( COMPILATION -- DO-SYS ; RUN-TIME N1 N2 -- | LOOP-SYS ) gforth-0.2: Counted Loops.
                                                               (line 180)
 * +field ( NOFFSET1 NSIZE "NAME" -- NOFFSET2 ) facility-ext: Forth200x Structures.
-                                                              (line  49)
+                                                              (line  48)
 * +fmode ( FAM1 RWXRWXRWX -- FAM2 ) gforth-1.0: General files.
                                                               (line  17)
 * +load ( I*X N -- J*X ) gforth-0.2:     Blocks.              (line 205)
@@ -4712,7 +4860,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 2drop ( W1 W2 -- ) core:               Data stack.          (line  35)
 * 2dup ( W1 W2 -- W1 W2 W1 W2 ) core:    Data stack.          (line  39)
 * 2field: ( U1 "NAME" -- U2 ) gforth-0.7: Forth200x Structures.
-                                                              (line  59)
+                                                              (line  58)
 * 2Literal ( COMPILATION W1 W2 -- ; RUN-TIME -- W1 W2 ) double: Literals.
                                                               (line  58)
 * 2nip ( W1 W2 W3 W4 -- W3 W4 ) gforth-0.2: Data stack.       (line  37)
@@ -5049,7 +5197,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * BEGIN ( COMPILATION -- DEST ; RUN-TIME -- ) core: Arbitrary control structures.
                                                               (line  28)
 * begin-structure ( "NAME" -- STRUCT-SYS 0 ) facility-ext: Forth200x Structures.
-                                                              (line  40)
+                                                              (line  39)
 * bin ( FAM1 -- FAM2 ) file:             General files.       (line  15)
 * bind ( ... "CLASS" "SELECTOR" -- ... ) objects: Objects Glossary.
                                                               (line   6)
@@ -5127,7 +5275,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * catch ( X1 .. XN XT -- Y1 .. YM 0 / Z1 .. ZN ERROR ) exception: Exception Handling.
                                                               (line  95)
 * cell ( -- U ) gforth-0.2:              Address arithmetic.  (line  64)
-* cell% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  24)
+* cell% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  26)
 * cell+ ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  55)
 * cell- ( A-ADDR1 -- A-ADDR2 ) core:     Address arithmetic.  (line  58)
 * cell/ ( N1 -- N2 ) gforth-1.0:         Address arithmetic.  (line  61)
@@ -5137,10 +5285,10 @@ this manual.  Each word is listed with its stack effect and wordset.
 * cfaligned ( ADDR1 -- ADDR2 ) gforth-0.2: Address arithmetic.
                                                               (line 113)
 * cfield: ( U1 "NAME" -- U2 ) facility-ext: Forth200x Structures.
-                                                              (line  53)
+                                                              (line  52)
 * char ( '<SPACES>CCC' -- C ) core,xchar-ext: String and character literals.
                                                               (line  47)
-* char% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  26)
+* char% ( -- ALIGN SIZE ) gforth-0.4:    Structure Glossary.  (line  29)
 * char+ ( C-ADDR1 -- C-ADDR2 ) core:     Address arithmetic.  (line  47)
 * char- ( C-ADDR1 -- C-ADDR2 ) gforth-0.7: Address arithmetic.
                                                               (line  50)
@@ -5302,8 +5450,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dfaligned ( C-ADDR -- DF-ADDR ) floating-ext: Address arithmetic.
                                                               (line 105)
 * dffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
-                                                              (line  68)
-* dfloat% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  28)
+                                                              (line  67)
+* dfloat% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  32)
 * dfloat+ ( DF-ADDR1 -- DF-ADDR2 ) floating-ext: Address arithmetic.
                                                               (line 100)
 * dfloat/ ( N1 -- N2 ) gforth-1.0:       Address arithmetic.  (line 103)
@@ -5337,7 +5485,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dofield: ( -- ADDR ) gforth-0.2:       Threading Words.     (line  97)
 * DONE ( COMPILATION DO-SYS -- ; RUN-TIME -- ) gforth-0.2: Counted Loops.
                                                               (line 261)
-* double% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  30)
+* double% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  34)
 * douser, ( -- ) gforth-1.0:             Threading Words.     (line  41)
 * douser: ( -- ADDR ) gforth-0.2:        Threading Words.     (line  91)
 * dovalue, ( -- ) gforth-1.0:            Threading Words.     (line  50)
@@ -5395,9 +5543,9 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  68)
 * end-methods ( -- ) objects:            Objects Glossary.    (line  71)
 * end-struct ( ALIGN SIZE "NAME" -- ) gforth-0.2: Structure Glossary.
-                                                              (line  32)
+                                                              (line  37)
 * end-structure ( STRUCT-SYS +N -- ) facility-ext: Forth200x Structures.
-                                                              (line  46)
+                                                              (line  45)
 * endcase ( COMPILATION CASE-SYS -- ; RUN-TIME X -- ) core-ext: Arbitrary control structures.
                                                               (line  91)
 * ENDIF ( COMPILATION ORIG -- ; RUN-TIME -- ) gforth-0.2: Arbitrary control structures.
@@ -5444,7 +5592,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * extend-mem ( ADDR1 U1 U -- ADDR ADDR2 U2 ) gforth-experimental: Heap Allocation.
                                                               (line  46)
 * extend-structure ( N "NAME" -- STRUCT-SYS N ) gforth-1.0: Forth200x Structures.
-                                                              (line  42)
+                                                              (line  41)
 * f! ( R F-ADDR -- ) floating:           Memory Access.       (line  31)
 * f* ( R1 R2 -- R3 ) floating:           Floating Point.      (line  40)
 * f** ( R1 R2 -- R3 ) floating-ext:      Floating Point.      (line  66)
@@ -5524,13 +5672,13 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fexp ( R1 -- R2 ) floating-ext:        Floating Point.      (line  71)
 * fexpm1 ( R1 -- R2 ) floating-ext:      Floating Point.      (line  73)
 * ffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
-                                                              (line  62)
+                                                              (line  61)
 * ffourth ( R1 R2 R3 R4 -- R1 R2 R3 R4 R1 ) gforth-1.0: Floating point stack.
                                                               (line  16)
 * field ( ALIGN1 OFFSET1 ALIGN SIZE "NAME" -- ALIGN2 OFFSET2 ) gforth-0.2: Structure Glossary.
-                                                              (line  37)
+                                                              (line  42)
 * field: ( U1 "NAME" -- U2 ) facility-ext: Forth200x Structures.
-                                                              (line  56)
+                                                              (line  55)
 * file-eof? ( WFILEID -- FLAG ) gforth-0.6: General files.    (line  71)
 * file-position ( WFILEID -- UD WIOR ) file: General files.   (line  89)
 * file-size ( WFILEID -- UD WIOR ) file: General files.       (line  93)
@@ -5554,7 +5702,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * fln ( R1 -- R2 ) floating-ext:         Floating Point.      (line  76)
 * flnp1 ( R1 -- R2 ) floating-ext:       Floating Point.      (line  78)
 * float ( -- U ) gforth-0.3:             Address arithmetic.  (line  76)
-* float% ( -- ALIGN SIZE ) gforth-0.4:   Structure Glossary.  (line  44)
+* float% ( -- ALIGN SIZE ) gforth-0.4:   Structure Glossary.  (line  48)
 * float+ ( F-ADDR1 -- F-ADDR2 ) floating: Address arithmetic. (line  73)
 * float/ ( N1 -- N2 ) gforth-1.0:        Address arithmetic.  (line  79)
 * floating-stack ( -- N ) environment:   Environmental Queries.
@@ -5793,7 +5941,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 253)
 * left ( -- ) minos2:                    actor methods.       (line  45)
 * lfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
-                                                              (line  74)
+                                                              (line  73)
 * lib-error ( -- C-ADDR U ) gforth-0.7:  Low-Level C Interface Words.
                                                               (line  10)
 * lib-sym ( C-ADDR1 U1 U2 -- U3 ) gforth-0.4: Low-Level C Interface Words.
@@ -6210,8 +6358,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * sfaligned ( C-ADDR -- SF-ADDR ) floating-ext: Address arithmetic.
                                                               (line  93)
 * sffield: ( U1 "NAME" -- U2 ) floating-ext: Forth200x Structures.
-                                                              (line  65)
-* sfloat% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  46)
+                                                              (line  64)
+* sfloat% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  50)
 * sfloat+ ( SF-ADDR1 -- SF-ADDR2 ) floating-ext: Address arithmetic.
                                                               (line  88)
 * sfloat/ ( N1 -- N2 ) gforth-1.0:       Address arithmetic.  (line  91)
@@ -6298,7 +6446,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  18)
 * string-suffix? ( C-ADDR1 U1 C-ADDR2 U2 -- F ) gforth-1.0: String words.
                                                               (line  21)
-* struct ( -- ALIGN SIZE ) gforth-0.2:   Structure Glossary.  (line  51)
+* struct ( -- ALIGN SIZE ) gforth-0.2:   Structure Glossary.  (line  55)
 * sub-list? ( LIST1 LIST2 -- F ) gforth-internal: Locals implementation.
                                                               (line 108)
 * substitute ( ADDR1 LEN1 ADDR2 LEN2 -- ADDR2 LEN3 N/IOR ) string-ext: Substitute.
@@ -6471,7 +6619,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * wbe ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  66)
 * wfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
-                                                              (line  71)
+                                                              (line  70)
 * where ( "NAME" -- ) gforth-1.0:        Locating uses of a word.
                                                               (line   6)
 * whereg ( "NAME" -- ) gforth-1.0:       Locating uses of a word.
@@ -6549,7 +6697,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * xemit ( XC -- ) xchar:                 Displaying characters and strings.
                                                               (line  10)
 * xfield: ( U1 "NAME" -- U2 ) gforth-1.0: Forth200x Structures.
-                                                              (line  77)
+                                                              (line  76)
 * xhold ( XC -- ) xchar-ext:             Xchars and Unicode.  (line 125)
 * xkey ( -- XC ) xchar:                  Xchars and Unicode.  (line 117)
 * xkey? ( -- FLAG ) xchar:               Single-key input.    (line  22)

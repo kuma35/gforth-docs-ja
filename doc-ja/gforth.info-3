@@ -1972,7 +1972,8 @@ File: gforth.info,  Node: Structure Usage,  Next: Structure Naming Convention,  
 ----------------------
 
 以下のコマンドを使用して、 (データのない)リンク・リストの構造体を定義で
-きます:
+きます(訳注: これは構造体テンプレートを定義するだけです。 構造体変数とす
+るには別途 ‘%alloc’ 等する必要があります):
      struct
          cell% field list-next
      end-struct list%
@@ -2070,18 +2071,16 @@ File: gforth.info,  Node: Structure Naming Convention,  Next: Structure Implemen
 
    したがって、 私は以下の命名規則を採用しました:
 
-   • The names of fields are of the form ‘_struct_-_field_’, where
-     ‘_struct_’ is the basic name of the structure, and ‘_field_’ is the
-     basic name of the field.  You can think of field words as
-     converting the (address of the) structure into the (address of the)
-     field.
+   • フィールド名の形式は ‘_struct_-_field_’ です。 ‘struct’ は構造体の
+     基本名、‘field’ はフィールドの基本名です。 フィールド・ワードは、 構
+     造体(のアドレス)をフィールド(のアドレス)に変換するものと考えること
+     ができます。
 
-   • The names of structures are of the form ‘_struct_%’, where
-     ‘_struct_’ is the basic name of the structure.
+   • 構造体の名前は ‘struct%’ の形式で、 ‘struct’ は構造体の基本名です。
 
-   This naming convention does not work that well for fields of extended
-structures; e.g., the integer list structure has a field ‘intlist-int’,
-but has ‘list-next’, not ‘intlist-next’.
+   この命名規則は、 拡張構造体のフィールドではあまり機能しません。 たと
+えば、 上記例の整数リスト構造体にはフィールド ‘intlist-int’ がありますが
+、 ‘intlist-next’ ではなく ‘list-next’ があります。
 
 
 File: gforth.info,  Node: Structure Implementation,  Next: Structure Glossary,  Prev: Structure Naming Convention,  Up: Structures
@@ -2089,31 +2088,29 @@ File: gforth.info,  Node: Structure Implementation,  Next: Structure Glossary,  
 6.23.4 Structure Implementation
 -------------------------------
 
-The central idea in the implementation is to pass the data about the
-structure being built on the stack, not in some global variable.
-Everything else falls into place naturally once this design decision is
-made.
+この実装の核となるアイデアは、 構築されている構造体に関するデータをグロ
+ーバル変数ではなくスタックに渡すことです。 この設計上の決定が下されると
+、 他のすべては自然に配置されます。
 
-   The type description on the stack is of the form _align size_.
-Keeping the size on the top-of-stack makes dealing with arrays very
-simple.
+   スタック上の型の説明は align size の形式です。 サイズをスタックの
+TOSに維持すると、 配列の処理が非常に簡単になります。
 
-   ‘field’ is a defining word that uses ‘Create’ and ‘DOES>’.  The body
-of the field contains the offset of the field, and the normal ‘DOES>’
-action is simply:
+   ‘field’ は、 ‘Create’ と ‘DOES>’ を使用する定義ワードです。 フィール
+ドの本体にはフィールドのオフセットが含まれており、 通常の ‘DOES>’ アクシ
+ョンは以下のようになります:
 
      @ +
 
-i.e., add the offset to the address, giving the stack effect addr1 –
-addr2 for a field.
+つまり、 アドレスにオフセットを加算して、 フィールドのスタック効果 addr1
+– addr2 を与えます。
 
-   This simple structure is slightly complicated by the optimization for
-fields with offset 0, which requires a different ‘DOES>’-part (because
-we cannot rely on there being something on the stack if such a field is
-invoked during compilation).  Therefore, we put the different
-‘DOES>’-parts in separate words, and decide which one to invoke based on
-the offset.  For a zero offset, the field is basically a noop; it is
-immediate, and therefore no code is generated when it is compiled.
+   この単純な構造は、 オフセット 0 のフィールドの最適化によって少し複雑
+になります。 これには、 別の ‘DOES>’ 部分が必要です(そのようなフィールド
+がコンパイル中に呼び出された場合、 スタック上に何かがあることに依存でき
+ないため)。 したがって、 異なる ‘DOES>’ 部分を別々のワードに配置し、 オ
+フセットに基づいてどれを呼び出すかを決定します。 ゼロ・オフセットの場合
+、 フィールドは基本的に noop です。 これは即実行ワードであるため、 コン
+パイル時にコードは生成されません。
 
 
 File: gforth.info,  Node: Structure Glossary,  Next: Forth200x Structures,  Prev: Structure Implementation,  Up: Structures
@@ -2122,52 +2119,56 @@ File: gforth.info,  Node: Structure Glossary,  Next: Forth200x Structures,  Prev
 -------------------------
 
 ‘%align’ ( align size –  ) gforth-0.4 “%align”
-   Align the data space pointer to the alignment ALIGN.
+   データ空間ポインタをアラインメント ALIGN に整列(align)します。
 
 ‘%alignment’ ( align size – align  ) gforth-0.4 “%alignment”
-   The alignment of the structure.
+   構造体のアライメント
 
 ‘%alloc’ ( align size – addr  ) gforth-0.4 “%alloc”
-   Allocate SIZE address units with alignment ALIGN, giving a data block
-at ADDR; ‘throw’ an ior code if not successful.
+   サイズ SIZE のアドレス・ユニットをアラインメント ALIGN で整列
+(align)して割り当て、 割り当てたデータ・ブロックのアドレスを ADDR に返し
+ます。 成功しなかった場合は負数の ior を ‘throw’ します。
 
 ‘%allocate’ ( align size – addr ior  ) gforth-0.4 “%allocate”
-   Allocate SIZE address units with alignment ALIGN, similar to
-‘allocate’.
+   ‘allocate’ と同様に、 サイズ SIZE のアドレス単位をアライメント ALIGN
+で整列(align)して割り当て、 割り当てたデータ・ブロックのアドレスを ADDR
+に返します。 成功した場合、 ior=0, 成功しなかった場合は ior<0
 
 ‘%allot’ ( align size – addr  ) gforth-0.4 “%allot”
-   Allot SIZE address units of data space with alignment ALIGN; the
-resulting block of data is found at ADDR.
+   データ空間にサイズ SIZE アドレス単位をアラインメント ALIGN で割り当て
+ます。 結果のデータ・ブロックのアドレスを ADDR に返します。
 
 ‘cell%’ ( – align size  ) gforth-0.4 “cell%”
+\訳注: セル1つ分のサイズ size と、 サイズをアライメントした align を返す
 
 ‘char%’ ( – align size  ) gforth-0.4 “char%”
+\訳注: char 1つ分のサイズ size と、 そのサイズをアライメントした align を返します
 
 ‘dfloat%’ ( – align size  ) gforth-0.4 “dfloat%”
 
 ‘double%’ ( – align size  ) gforth-0.4 “double%”
+\訳注: 2倍長整数1つ分のサイズ size と、サイズをアライメントした align を返します
 
 ‘end-struct’ ( align size "name" –  ) gforth-0.2 “end-struct”
-   Define a structure/type descriptor NAME with alignment ALIGN and size
-SIZE1 (SIZE rounded up to be a multiple of ALIGN).
-‘name’ execution: – ALIGN SIZE1
+   アライメント ALIGN とサイズ SIZE を使用して 構造体/型記述子 NAME を定
+義します(SIZE は ALIGN の倍数になるように切り上げられます – size1)。
+‘name’ 実行時: ( – ALIGN SIZE1)
 
 ‘field’ ( align1 offset1 align size "name" –  align2 offset2  ) gforth-0.2 “field”
-   Create a field NAME with offset OFFSET1, and the type given by ALIGN
-SIZE.  OFFSET2 is the offset of the next field, and ALIGN2 is the
-alignment of all fields.
-‘name’ execution: ADDR1 – ADDR2.
-ADDR2=ADDR1+OFFSET1
+   オフセット OFFSET1 と ALIGN SIZE で指定された型を持つフィールド NAME
+を作成します。 OFFSET2 は次のフィールドのオフセットで、ALIGN2 は、 (そこ
+までの)すべてのフィールドのアライメントです。 ‘name’ の実行時: ( ADDR1 –
+ADDR2 ) ADDR2=ADDR1+OFFSET1
 
 ‘float%’ ( – align size  ) gforth-0.4 “float%”
 
 ‘sfloat%’ ( – align size  ) gforth-0.4 “sfloat%”
 
 ‘%size’ ( align size – size  ) gforth-0.4 “%size”
-   The size of the structure.
+   構造体のサイズを返す
 
 ‘struct’ ( – align size  ) gforth-0.2 “struct”
-   An empty structure, used to start a structure definition.
+   空の構造体。 構造体定義を開始するために使用されます。
 
 
 File: gforth.info,  Node: Forth200x Structures,  Prev: Structure Glossary,  Up: Structures
@@ -2175,34 +2176,33 @@ File: gforth.info,  Node: Forth200x Structures,  Prev: Structure Glossary,  Up: 
 6.23.6 Forth200x Structures
 ---------------------------
 
-The Forth 2012 standard defines a slightly less convenient form of
-structures.  In general (when using ‘field+’, you have to perform the
-alignment yourself, but there are a number of convenience words (e.g.,
-‘field:’) that include alignment.
+Forth 2012 標準では、 やや不便な形式の構造体が定義されています。 一般に
+‘field+’ を使用する場合は、 自分で位置合わせを実行する必要がありますが、
+アライメントを含む便利なワード(例: ‘field:’)が多数あります。
 
-   A typical usage example is:
+   典型的な使用例は以下のとおりです:
 
      0
        field:                   s-a
        faligned 2 floats +field s-b
      constant s-struct
 
-   An alternative way of writing this structure is:
+   この構造体を記述する別の方法は以下のとおりです:
 
      begin-structure s-struct
        field:                   s-a
        faligned 2 floats +field s-b
      end-structure
 
-   You can define a structure that has the same fields and additional
-fields as follows:
+   以下のように、 同一のフィールドと追加のフィールドを持つ構造体を定義で
+きます:
 
      s-struct
        cfield: t-c
        cfield: t-d
      constant t-struct
 
-   or alternatively
+   あるいは、
 
      s-struct extend-structure t-struct
        cfield: t-c
@@ -2212,42 +2212,42 @@ fields as follows:
 ‘begin-structure’ ( "name" – struct-sys 0  ) facility-ext “begin-structure”
 
 ‘extend-structure’ ( n "name" – struct-sys n  ) gforth-1.0 “extend-structure”
-   Start a new structure name as extension of an existing structure with
-size n.
+   サイズ n の既存の構造体の拡張として、 新しい構造体 name を開始します
+。
 
 ‘end-structure’ ( struct-sys +n –  ) facility-ext “end-structure”
-   end a structure started wioth ‘begin-structure’
+   ‘begin-struction’ で開始された構造体を終了します
 
 ‘+field’ ( noffset1 nsize "name" – noffset2  ) facility-ext “plus-field”
-   Defining word; defines name ‘( addr1 -- addr2 )’, where addr2 is
-addr1+noffset1.  noffset2 is noffset1+nsize.
+   定義ワード。 name ‘( addr1 -- addr2 )’ を定義します。 ここで、 addr2
+は addr1+noffset1 です。 noffset2 は noffset1+nsize です。
 
 ‘cfield:’ ( u1 "name" – u2  ) facility-ext “c-field-colon”
-   Define a char-sized field
+   文字サイズのフィールドを定義します
 
 ‘field:’ ( u1 "name" – u2  ) facility-ext “field-colon”
-   Define an aligned cell-sized field
+   アライメントされたセル・サイズのフィールドを定義します
 
 ‘2field:’ ( u1 "name" – u2  ) gforth-0.7 “two-field-colon”
-   Define an aligned double-cell-sized field
+   アライメントされた2倍長セル・サイズのフィールドを定義します
 
 ‘ffield:’ ( u1 "name" – u2  ) floating-ext “f-field-colon”
-   Define a faligned float-sized field
+   アライメントされた浮動小数点サイズのフィールドを定義します
 
 ‘sffield:’ ( u1 "name" – u2  ) floating-ext “s-f-field-colon”
-   Define a sfaligned sfloat-sized field
+   sfaligned された sfloat サイズのフィールドを定義します
 
 ‘dffield:’ ( u1 "name" – u2  ) floating-ext “d-f-field-colon”
-   Define a dfaligned dfloat-sized field
+   dfaligned された dfloat サイズのフィールドを定義します
 
 ‘wfield:’ ( u1 "name" – u2  ) gforth-1.0 “w-field-colon”
-   Define a naturally aligned field for a 16-bit value.
+   16 ビット値のアライメントされたフィールドを定義します。
 
 ‘lfield:’ ( u1 "name" – u2  ) gforth-1.0 “l-field-colon”
-   Define a naturally aligned field for a 32-bit value.
+   32ビット値にアライメントされたフィールドを定義します。
 
 ‘xfield:’ ( u1 "name" – u2  ) gforth-1.0 “x-field-colon”
-   Define a naturally aligned field for a 64-bit-value.
+   64ビット値にアライメントされたフィールドを定義します。
 
 
 File: gforth.info,  Node: Object-oriented Forth,  Next: Regular Expressions,  Prev: Structures,  Up: Words
@@ -2255,12 +2255,13 @@ File: gforth.info,  Node: Object-oriented Forth,  Next: Regular Expressions,  Pr
 6.24 Object-oriented Forth
 ==========================
 
-Gforth comes with three packages for object-oriented programming:
-‘objects.fs’, ‘oof.fs’, and ‘mini-oof.fs’; none of them is preloaded, so
-you have to ‘include’ them before use.  The most important differences
-between these packages (and others) are discussed in *note Comparison
-with other object models::.  All packages are written in Standard Forth
-and can be used with any other Standard Forth.
+Gforth には、オブジェクト指向プログラミング用の 3 つのパッケージ
+(‘objects.fs’ と ‘oof.fs’ と ‘mini-oof.fs’) が付属しています。 どれも最
+初から組み込まれていないため、 使用する前に ‘include’ する必要があります
+。 これらのパッケージ(および、 その他のパッケージ)の最も重要な違いについ
+ては、 *note Comparison with other object models:: で説明します。 すべて
+のパッケージは 標準 Forth で書かれており、 他の 標準 Forth でも使用でき
+ます。
 
 * Menu:
 
@@ -2278,27 +2279,27 @@ File: gforth.info,  Node: Why object-oriented programming?,  Next: Object-Orient
 6.24.1 Why object-oriented programming?
 ---------------------------------------
 
-Often we have to deal with several data structures (_objects_), that
-have to be treated similarly in some respects, but differently in
-others.  Graphical objects are the textbook example: circles, triangles,
-dinosaurs, icons, and others, and we may want to add more during program
-development.  We want to apply some operations to any graphical object,
-e.g., ‘draw’ for displaying it on the screen.  However, ‘draw’ has to do
-something different for every kind of object.
+多くの場合、 いくつかのデータ構造「オブジェクト」(object)を扱わなければ
+なりません。 それらは、 いつくかの側面では同様に扱う必要がありますが、 そ
+れ以外の側面では異なる扱いをしなければなりません。 図形オブジェクトとは
+教科書的な例で言えば、 円や三角形や恐竜やアイコン等ですが、 プログラム開
+発中にさらに追加することもできます。 任意のグラフィカル・オブジェクトに
+いくつかの操作を適用したいとします。 たとえば、 画面上に表示するための
+‘draw’ 操作です。 しかしながら、 この ‘draw’ はオブジェクトの種類ごとに
+異なる処理を行う必要があります。
 
-   We could implement ‘draw’ as a big ‘CASE’ control structure that
-executes the appropriate code depending on the kind of object to be
-drawn.  This would be not be very elegant, and, moreover, we would have
-to change ‘draw’ every time we add a new kind of graphical object (say,
-a spaceship).
+   ‘draw’ を、 描画されるオブジェクトの種類に依存して適切なコードを実行
+する、 大きな ‘CASE’ 制御構造として実装することはできます。 これはあまり
+洗練されたものではなく、 さらに、 新しい種類のグラフィック・オブジェクト
+(例えば宇宙船など)を追加するたびに ‘draw’ を変更する必要があります。
 
-   What we would rather do is: When defining spaceships, we would tell
-the system: “Here’s how you ‘draw’ a spaceship; you figure out the
-rest”.
+   私たちがやりたいことは、 宇宙船を定義するときにシステムに次のように指
+示することです: 「宇宙船を ‘draw’ する方法は私たちがこれこれこのとおり書
+いたので、 それ以外の処理はシステム側でよしなしにしてください」
 
-   This is the problem that all systems solve that (rightfully) call
-themselves object-oriented; the object-oriented packages presented here
-solve this problem (and not much else).
+   これは、 (当然ながら、 )オブジェクト指向と呼ばれるすべてのシステムで
+解決すべき問題です。 ここで紹介するオブジェクト指向パッケージは、 この問
+題を解決します(それ以外の問題はあんまり解決できません…)。
 
 
 File: gforth.info,  Node: Object-Oriented Terminology,  Next: Objects,  Prev: Why object-oriented programming?,  Up: Object-oriented Forth
@@ -2306,48 +2307,48 @@ File: gforth.info,  Node: Object-Oriented Terminology,  Next: Objects,  Prev: Wh
 6.24.2 Object-Oriented Terminology
 ----------------------------------
 
-This section is mainly for reference, so you don’t have to understand
-all of it right away.  The terminology is mainly Smalltalk-inspired.  In
-short:
+このセクションは主にリファレンスであるため、 すぐにすべてを理解する必要
+はありません。 用語は主に Smalltalk からインスピレーションを得たものです
+:
 
-_class_
-     a data structure definition with some extras.
+_クラス(class)_
+     いくつかの追加機能を備えたデータ構造定義。
 
-_object_
-     an instance of the data structure described by the class
-     definition.
+_オブジェクト(object)_
+     クラス定義によって記述されたデータ構造の実体(インスタンス
+     ;instance)。
 
-_instance variables_
-     fields of the data structure.
+_インスタンス変数(instance variables)_
+     データ構造のフィールド。
 
-_selector_
-     (or _method selector_) a word (e.g., ‘draw’) that performs an
-     operation on a variety of data structures (classes).  A selector
-     describes _what_ operation to perform.  In C++ terminology: a
-     (pure) virtual function.
+_セレクター(selector)_
+     (または「メソッド・セレクター」)さまざまなデータ構造(クラス)に対し
+     て操作を実行するワード(例: ‘draw’)。 セレクターは、 「何の」
+     (what)操作を行うかを記述します。 C++ 用語では (純粋)仮想関数 と言い
+     ます
 
-_method_
-     the concrete definition that performs the operation described by
-     the selector for a specific class.  A method specifies _how_ the
-     operation is performed for a specific class.
+_メソッド(method)_
+     特定のクラスのセレクターによって記述された操作を実行する具体的な定
+     義。 メソッドは、 特定のクラスに対して「どのように」(how)操作が実行
+     されるかを指定します。
 
-_selector invocation_
-     a call of a selector.  One argument of the call (the TOS
-     (top-of-stack)) is used for determining which method is used.  In
-     Smalltalk terminology: a message (consisting of the selector and
-     the other arguments) is sent to the object.
+_セレクター呼び出し(selector invocation)_
+     セレクターの呼び出し。 呼び出しの 1 つの引数(TOS(スタックの頂上))は
+     、 どのメソッドが使用されるかを決定するために使用されます。
+     Smalltalk の用語では、 (セレクターとその他の引数で構成される、)メッ
+     セージがオブジェクトに送信される と言います。
 
-_receiving object_
-     the object used for determining the method executed by a selector
-     invocation.  In the ‘objects.fs’ model, it is the object that is on
-     the TOS when the selector is invoked.  (_Receiving_ comes from the
-     Smalltalk _message_ terminology.)
+_受信オブジェクト(receiving object)_
+     セレクターの呼び出しによって実行されるメソッドを決定するために使用
+     されるオブジェクト。 ‘objects.fs’ モデルでは、 セレクターが呼び出さ
+     れたときに TOS 上にあるオブジェクトです。 (「受信」という言葉は、
+     Smalltalk の 「メッセージ」関連用語由来です。)
 
-_child class_
-     a class that has (_inherits_) all properties (instance variables,
-     selectors, methods) from a _parent class_.  In Smalltalk
-     terminology: The subclass inherits from the superclass.  In C++
-     terminology: The derived class inherits from the base class.
+_子クラス(child class)_
+     「親クラス」のすべてのプロパティ(インスタンス変数やセレクターやメソ
+     ッド)を「継承」(inherit)したクラス。 Smalltalk の用語では、 サブク
+     ラスはスーパークラスを継承します、 と言います。 C++ 用語では、 派生
+     クラスは基本クラスから継承します、 と言います。
 
 
 File: gforth.info,  Node: Objects,  Next: OOF,  Prev: Object-Oriented Terminology,  Up: Object-oriented Forth
@@ -2355,17 +2356,18 @@ File: gforth.info,  Node: Objects,  Next: OOF,  Prev: Object-Oriented Terminolog
 6.24.3 The ‘objects.fs’ model
 -----------------------------
 
-This section describes the ‘objects.fs’ package.  This material also has
-been published in M. Anton Ertl, ‘Yet Another Forth Objects Package
+このセクションでは、 ‘objects.fs’ パッケージについて説明します。 この資
+料は、 M. Anton Ertl, ‘Yet Another Forth Objects Package
 (https://www.complang.tuwien.ac.at/forth/objects/objects.html)’, Forth
-Dimensions 19(2), pages 37–43.
+Dimensions 19(2), pages 37–43 でも公開されています。
 
-   This section assumes that you have read *note Structures::.
+   このセクションは、 *note Structures:: を読了済であることを前提として
+います。
 
-   The techniques on which this model is based have been used to
-implement the parser generator, Gray, and have also been used in Gforth
-for implementing the various flavours of word lists (hashed or not,
-case-sensitive or not, special-purpose word lists for locals etc.).
+   このモデルの基礎となっている技術は、 パーサ・ジェネレーター Gray の実
+装に使用されており、 Gforth でもさまざまな種類のワードリスト(ハッシュの
+有無や、大文字と小文字の区別の有無や、 ローカル変数用などの特殊用途のワ
+ードリスト)を実装するために使用されています)。
 
 * Menu:
 
@@ -2382,7 +2384,8 @@ case-sensitive or not, special-purpose word lists for locals etc.).
 * Objects Implementation::
 * Objects Glossary::
 
-   Marcel Hendrix provided helpful comments on this section.
+   Marcel Hendrix は、 このセクションに関して役立つコメントを提供しまし
+た。
 
 
 File: gforth.info,  Node: Properties of the Objects model,  Next: Basic Objects Usage,  Prev: Objects,  Up: Objects
@@ -2390,36 +2393,38 @@ File: gforth.info,  Node: Properties of the Objects model,  Next: Basic Objects 
 6.24.3.1 Properties of the ‘objects.fs’ model
 .............................................
 
-   • It is straightforward to pass objects on the stack.  Passing
-     selectors on the stack is a little less convenient, but possible.
+   • オブジェクトをスタックに渡すのは簡単明瞭です。 スタック上でセレクタ
+     ーを渡すのは多少めんどくさいですが、 可能です。
 
-   • Objects are just data structures in memory, and are referenced by
-     their address.  You can create words for objects with normal
-     defining words like ‘constant’.  Likewise, there is no difference
-     between instance variables that contain objects and those that
-     contain other data.
+   • オブジェクトはメモリ内の単なるデータ構造であり、 そのアドレスによっ
+     て参照されます。 ‘constant’ のような通常の定義ワードを使用してオブ
+     ジェクトのワードを作成できます。 同様に、 オブジェクトを含むインス
+     タンス変数と他のデータを含むインスタンス変数の間に違いはありません
+     。
 
-   • Late binding is efficient and easy to use.
+   • 遅延バインディング(Late binding)は効率的で使いやすいです。
 
-   • It avoids parsing, and thus avoids problems with state-smartness
-     and reduced extensibility; for convenience there are a few parsing
-     words, but they have non-parsing counterparts.  There are also a
-     few defining words that parse.  This is hard to avoid, because all
-     standard defining words parse (except ‘:noname’); however, such
-     words are not as bad as many other parsing words, because they are
-     not state-smart.
+   • これによりパースが回避されるため、 状態スマート性
+     (state-smartness)や拡張性の低下に関する問題が回避されます。 便宜上
+     、 いくつかのパース・ワードがありますが、 それらには非パース・ワー
+     ドもあります。 パースする定義ワードもいくつかあります。 すべての標
+     準の定義ワードは(‘:noname’ を除いて)パースするため、 これを避けるの
+     は困難です。 ただし、 このようなワードは状態スマート(state-smart)で
+     はないため、 他の多くのパース・ワードほど悪くはありません。
 
-   • It does not try to incorporate everything.  It does a few things
-     and does them well (IMO). In particular, this model was not
-     designed to support information hiding (although it has features
-     that may help); you can use a separate package for achieving this.
+   • すべてを取り入れようとしているわけではありません。 (私見ですけども
+     )このモデルでは、 いくつかのことをうまくやるといった体です。 特に、
+     このモデルでは情報の隠蔽をサポートするように設計されていません(情報
+     の隠蔽に役立つ可能性のある機能はありますが)。 これを実現するには、
+     また別のパッケージが使用可能です。
 
-   • It is layered; you don’t have to learn and use all features to use
-     this model.  Only a few features are necessary (*note Basic Objects
-     Usage::, *note The Objects base class::, *note Creating
-     objects::.), the others are optional and independent of each other.
+   • それは階層化(layered)されています。 このモデルを使用するためにすべ
+     ての機能を学習して使用する必要はありません。 必要な機能はほんのわず
+     かです((*note Basic Objects Usage::, *note The Objects base
+     class::, *note Creating objects::)。 その他の機能はオプションであり
+     、互いに独立しています。
 
-   • An implementation in Standard Forth is available.
+   • 標準 Forth での実装が利用可能です。
 
 
 File: gforth.info,  Node: Basic Objects Usage,  Next: The Objects base class,  Prev: Properties of the Objects model,  Up: Objects
@@ -2427,30 +2432,32 @@ File: gforth.info,  Node: Basic Objects Usage,  Next: The Objects base class,  P
 6.24.3.2 Basic ‘objects.fs’ Usage
 .................................
 
-You can define a class for graphical objects like this:
+以下のようにして graphical オブジェクト(図形オブジェクト)のクラスを定義
+できます:
 
-     object class \ "object" is the parent class
+     object class \ クラス名 "object" は親クラスです
        selector draw ( x y graphical -- )
      end-class graphical
 
-   This code defines a class ‘graphical’ with an operation ‘draw’.  We
-can perform the operation ‘draw’ on any ‘graphical’ object, e.g.:
+   このコードは、 ‘draw’ 操作を持つクラス ‘graphical’ を定義します。 任
+意の ‘graphical’ オブジェクトに対して ‘draw’ 操作を実行できます。例:
 
      100 100 t-rex draw
 
-where ‘t-rex’ is a word (say, a constant) that produces a graphical
-object.
+ここで、 ‘t-rex’ は、 graphical オブジェクトを生成するワード(定数
+(constant)など)です。
 
-   How do we create a graphical object?  With the present definitions,
-we cannot create a useful graphical object.  The class ‘graphical’
-describes graphical objects in general, but not any concrete graphical
-object type (C++ users would call it an _abstract class_); e.g., there
-is no method for the selector ‘draw’ in the class ‘graphical’.
+   graphical オブジェクトを作成するにはどうすればよいでしょうか？ 現在の
+定義では、 有用な graphical オブジェクトを作成できません。 クラス
+‘graphical’ は graphical オブジェクト一般を記述しますが、 具体的な
+graphical オブジェクト・タイプを記述しません(C++ ユーザーはこれを「抽象
+クラス」(abstract class)と呼びます)。 たとえば、 クラス ‘graphical’ には
+セレクター ‘draw’ のメソッドがありません。
 
-   For concrete graphical objects, we define child classes of the class
-‘graphical’, e.g.:
+   具体的な graphical オブジェクトのために、 クラス ‘graphical’ の子クラ
+スを定義します。 例:
 
-     graphical class \ "graphical" is the parent class
+     graphical class \ 親クラスは graphical
        cell% field circle-radius
 
      :noname ( x y circle -- )
@@ -2463,28 +2470,29 @@ is no method for the selector ‘draw’ in the class ‘graphical’.
 
      end-class circle
 
-   Here we define a class ‘circle’ as a child of ‘graphical’, with field
-‘circle-radius’ (which behaves just like a field (*note Structures::);
-it defines (using ‘overrides’) new methods for the selectors ‘draw’ and
-‘construct’ (‘construct’ is defined in ‘object’, the parent class of
-‘graphical’).
+   ここでは、 フィールド ‘circle-radius’ を持つクラス ‘circle’ を
+‘graphical’ の子として定義しています(フィールド ‘circle-radius’ は構造体
+のフィールドと同じように動作します(*note Structures::)。 セレクター
+‘draw’ と ‘construct’ 用の新しいメソッドを定義します(‘construct’ は
+‘graphical’ の親クラスの ‘object’ クラスで定義されています))。
 
-   Now we can create a circle on the heap (i.e., ‘allocate’d memory)
-with:
+   以下のようにして、 ヒープ上(つまり、 ‘allocate’ されたメモリ)に
+circle を作成できます:
 
      50 circle heap-new constant my-circle
 
-‘heap-new’ invokes ‘construct’, thus initializing the field
-‘circle-radius’ with 50.  We can draw this new circle at (100,100) with:
+‘heap-new’ は ‘construct’ を呼び出し、 フィールド ‘circle-radius’ を 50
+で初期化します。 以下のようにして、 この新しい円を (100,100) の位置に描
+画(draw)できます:
 
      100 100 my-circle draw
 
-   Note: You can only invoke a selector if the object on the TOS (the
-receiving object) belongs to the class where the selector was defined or
-one of its descendents; e.g., you can invoke ‘draw’ only for objects
-belonging to ‘graphical’ or its descendents (e.g., ‘circle’).
-Immediately before ‘end-class’, the search order has to be the same as
-immediately after ‘class’.
+   注意: セレクターを呼び出すことができるのは、 TOS 上のオブジェクト(受
+信オブジェクト) が、 セレクターが定義されたクラス、 またはその子孫の 1 つ
+に属している場合のみです。 たとえば、 ‘draw’ は、 ‘graphical’ またはその
+子孫(例: ‘circle’)に属するオブジェクトに対してのみ呼び出すことができます
+。 ‘end-class’ の直前の検索順序スタック(the search order)は、 ‘class’ の
+直後と同じである必要があります。
 
 
 File: gforth.info,  Node: The Objects base class,  Next: Creating objects,  Prev: Basic Objects Usage,  Up: Objects
@@ -3096,12 +3104,12 @@ File: gforth.info,  Node: Properties of the OOF model,  Next: Basic OOF Usage,  
      object is straightforward, since both make use of the active
      object.
 
-   • Late binding is efficient and easy to use.
+   • 遅延バインディング(Late binding)は効率的で使いやすいです。
 
    • State-smart objects parse selectors.  However, extensibility is
      provided using a (parsing) selector ‘postpone’ and a selector ‘'’.
 
-   • An implementation in Standard Forth is available.
+   • 標準 Forth での実装が利用可能です。
 
 
 File: gforth.info,  Node: Basic OOF Usage,  Next: The OOF base class,  Prev: Properties of the OOF model,  Up: OOF
@@ -3112,28 +3120,30 @@ File: gforth.info,  Node: Basic OOF Usage,  Next: The OOF base class,  Prev: Pro
 This section uses the same example as for ‘objects’ (*note Basic Objects
 Usage::).
 
-   You can define a class for graphical objects like this:
+   以下のようにして graphical オブジェクト(図形オブジェクト)のクラスを定
+義できます:
 
      object class graphical \ "object" is the parent class
        method draw ( x y -- )
      class;
 
-   This code defines a class ‘graphical’ with an operation ‘draw’.  We
-can perform the operation ‘draw’ on any ‘graphical’ object, e.g.:
+   このコードは、 ‘draw’ 操作を持つクラス ‘graphical’ を定義します。 任
+意の ‘graphical’ オブジェクトに対して ‘draw’ 操作を実行できます。例:
 
      100 100 t-rex draw
 
 where ‘t-rex’ is an object or object pointer, created with e.g.
 ‘graphical : t-rex’.
 
-   How do we create a graphical object?  With the present definitions,
-we cannot create a useful graphical object.  The class ‘graphical’
-describes graphical objects in general, but not any concrete graphical
-object type (C++ users would call it an _abstract class_); e.g., there
-is no method for the selector ‘draw’ in the class ‘graphical’.
+   graphical オブジェクトを作成するにはどうすればよいでしょうか？ 現在の
+定義では、 有用な graphical オブジェクトを作成できません。 クラス
+‘graphical’ は graphical オブジェクト一般を記述しますが、 具体的な
+graphical オブジェクト・タイプを記述しません(C++ ユーザーはこれを「抽象
+クラス」(abstract class)と呼びます)。 たとえば、 クラス ‘graphical’ には
+セレクター ‘draw’ のメソッドがありません。
 
-   For concrete graphical objects, we define child classes of the class
-‘graphical’, e.g.:
+   具体的な graphical オブジェクトのために、 クラス ‘graphical’ の子クラ
+スを定義します。 例:
 
      graphical class circle \ "graphical" is the parent class
        cell var circle-radius
@@ -3374,16 +3384,16 @@ slightly extended form, is supplied as ‘moof-exm.fs’
        method draw
      end-class graphical
 
-   This code defines a class ‘graphical’ with an operation ‘draw’.  We
-can perform the operation ‘draw’ on any ‘graphical’ object, e.g.:
+   このコードは、 ‘draw’ 操作を持つクラス ‘graphical’ を定義します。 任
+意の ‘graphical’ オブジェクトに対して ‘draw’ 操作を実行できます。例:
 
      100 100 t-rex draw
 
    where ‘t-rex’ is an object or object pointer, created with e.g.
 ‘graphical new Constant t-rex’.
 
-   For concrete graphical objects, we define child classes of the class
-‘graphical’, e.g.:
+   具体的な graphical オブジェクトのために、 クラス ‘graphical’ の子クラ
+スを定義します。 例:
 
      graphical class
        cell var circle-radius
@@ -6428,152 +6438,4 @@ of the current word to xt.
 ‘set-name>link’ ( xt –  ) gforth-1.0 “set-name-to-link”
    Sets the implementation of the ‘name>link ( nt1 -- nt2|0 )’ method of
 the current word to xt.
-
-
-File: gforth.info,  Node: Threading Words,  Prev: Header methods,  Up: Carnal words
-
-6.30.3 Threading Words
-----------------------
-
-The terminology used here stems from indirect threaded Forth systems; in
-such a system, the XT of a word is represented by the CFA (code field
-address) of a word; the CFA points to a cell that contains the code
-address.  The code address is the address of some machine code that
-performs the run-time action of invoking the word (e.g., the ‘dovar:’
-routine pushes the address of the body of the word (a variable) on the
-stack).
-
-   These words provide access to code fields, code addresses and other
-threading stuff in Gforth.  It more or less abstracts away the
-differences between direct and indirect threading.
-
-   Up to and including Gforth 0.7, the code address (plus, for
-‘does>’-defined words, the address returned by ‘>does-code’) was
-sufficient to know the type of the word.  However, since Gforth-1.0 the
-behaviour or at least implementation of words like ‘compile,’ and
-‘name>compile’ can be determined independently as described in *note
-Header methods::.
-
-   The following words for create a code field and at the same time
-initialize the header methods:
-
-‘hmcopy,’ ( xt –  ) gforth-experimental “hmcopy-comma”
-   While constructing a header, allocate the code field, and use xt as
-prototype for setting the code field and the header methods.
-
-‘docol,’ ( –  ) gforth-1.0 “docol,”
-   The code address of a colon definition.
-
-‘docon,’ ( –  ) gforth-1.0 “docon,”
-   The code address of a ‘CONSTANT’.
-
-‘dovar,’ ( –  ) gforth-1.0 “dovar,”
-   The code address of a ‘CREATE’d word.
-
-‘douser,’ ( –  ) gforth-1.0 “douser,”
-   The code address of a ‘USER’ variable.
-
-‘dodefer,’ ( –  ) gforth-1.0 “dodefer,”
-   The code address of a ‘defer’ed word.
-
-‘dofield,’ ( –  ) gforth-1.0 “dofield,”
-   The code address of a ‘field’.
-
-‘dovalue,’ ( –  ) gforth-1.0 “dovalue,”
-   The code address of a ‘CONSTANT’.
-
-‘doabicode,’ ( –  ) gforth-1.0 “doabicode,”
-   The code address of a ‘ABI-CODE’ definition.
-
-   For ‘does>’-defined words, use ‘hmcopy,’.
-
-   Or you use a higher-level word like ‘create-from’ (*note Creating
-from a prototype::).
-
-   The following words were designed before the introduction of header
-methods, and are therefore not the best (and recommended) way to deal
-with different word types in Gforth.
-
-   In an indirect threaded Forth, you can get the code address of name
-with ‘' name @’; in Gforth you can get it with ‘' name >code-address’,
-independent of the threading method.
-
-‘threading-method’ ( – n ) gforth-0.2 “threading-method”
-   0 if the engine is direct threaded.  Note that this may change during
-the lifetime of an image.
-
-‘>code-address’ ( xt – c_addr  ) gforth-0.2 “>code-address”
-   c-addr is the code address of the word xt.
-
-‘code-address!’ ( c_addr xt –  ) gforth-obsolete “code-address!”
-   Change a code field with code address c-addr at xt.
-
-   The code addresses produced by various defining words are produced by
-the following words:
-
-‘docol:’ ( – addr  ) gforth-0.2 “docol:”
-   The code address of a colon definition.
-
-‘docon:’ ( – addr  ) gforth-0.2 “docon:”
-   The code address of a ‘CONSTANT’.
-
-‘dovar:’ ( – addr  ) gforth-0.2 “dovar:”
-   The code address of a ‘CREATE’d word.
-
-‘douser:’ ( – addr  ) gforth-0.2 “douser:”
-   The code address of a ‘USER’ variable.
-
-‘dodefer:’ ( – addr  ) gforth-0.2 “dodefer:”
-   The code address of a ‘defer’ed word.
-
-‘dofield:’ ( – addr  ) gforth-0.2 “dofield:”
-   The code address of a ‘field’.
-
-‘dovalue:’ ( – addr  ) gforth-0.7 “dovalue:”
-   The code address of a ‘CONSTANT’.
-
-‘dodoes:’ ( – addr  ) gforth-0.6 “dodoes:”
-   The code address of a ‘DOES>’-defined word.
-
-‘doabicode:’ ( – addr  ) gforth-1.0 “doabicode:”
-   The code address of a ‘ABI-CODE’ definition.
-
-   For a word X defined with ‘set-does>’, the code address points to
-‘dodoes:’, and the ‘>hmextra’ field of the header methods contains the
-xt of the word that is called after pushing the body addres of X.
-
-   If you want to know whether a word is a ‘DOES>’-defined word, and
-what Forth code it executes, ‘>does-code’ tells you that:
-
-‘>does-code’ ( xt1 – xt2  ) gforth-0.2 “>does-code”
-   If xt1 is the execution token of a child of a ‘set-does>’-defined
-word, xt2 is the xt passed to ‘set-does>’, i.e, the xt of the word that
-is executed when executing xt1 (but first the body address of xt1 is
-pushed).  If xt1 does not belong to a ‘set-does>’-defined word, xt2 is
-0.
-
-   You can use the resulting xt2 with ‘set-does>’ (preferred) to change
-the latest word or with
-
-‘does-code!’ ( xt2 xt1 –  ) gforth-0.2 “does-code!”
-   Change xt1 to be a ‘xt2 set-does>’-defined word.
-
-   to change an arbitrary word.
-
-   The following two words generalize ‘>code-address’, ‘>does-code’,
-‘code-address!’, and ‘does-code!’:
-
-‘>definer’ ( xt – definer  ) gforth-0.2 “>definer”
-   DEFINER is a unique identifier for the way the XT was defined.  Words
-defined with different ‘does>’-codes have different definers.  The
-definer can be used for comparison and in ‘definer!’.
-
-‘definer!’ ( definer xt –  ) gforth-obsolete “definer!”
-   The word represented by XT changes its behaviour to the behaviour
-associated with DEFINER.
-
-   ‘Code-address!’, ‘does-code!’, and ‘definer!’ update the
-‘opt-compile,’ method to a somewhat generic compiler for that word type
-(in particular, primitives get the slow ‘general-compile,’ method rather
-than the primitive-specific ‘peephole-compile,’).
 
