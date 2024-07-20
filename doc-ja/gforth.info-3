@@ -1651,8 +1651,8 @@ Gforth は追加のローカル変数用スタック(ローカル・スタック
 Lists::)。 型指定子なしでローカルの定義を実装するという目的のために、 私
 達は特別な検索メソッドを使用してワードリストを定義しました。 ワードが検
 索されると、 実際には ‘W:’ を使用してそのワードが作成されます。 ‘{:’ は
-、 最初に ‘:}’ や ‘W:’ などを含むワードリスト検索し、 次に型指定子のない
-ローカル変数を定義するためのワードリストを検索するよう検索順序スタック
+、 最初に ‘:}’ や ‘W:’ などを含むワードリストで検索し、 次に型指定子のな
+いローカル変数を定義するためのワードリストで検索するよう検索順序スタック
 (the search order)を変更します。
 
    ライフタイム・ルールは、 コロン定義内のスタック規律(stack
@@ -1743,11 +1743,11 @@ File: gforth.info,  Node: Closures,  Prev: Locals implementation,  Up: Gforth lo
 Gforth は基礎的なクロージャ(closure)も提供します。 クロージャは、 引用
 (quotation)(*note Quotations::)とローカル変数の組み合わせです。 Gforth の
 クロージャには、 クロージャの実行時に値が入力されるローカル変数があり、
-トランポリン xt (trampoline xt)が生成されます。 そのトランポリン xt を実
-行すると、 ローカル・スタック上のクロージャのローカル変数にアクセスして
-、 クロージャのコードが実行されます。 クロージャのローカル変数の変更は永
-続的ではありません。 つまり、 クロージャが ‘EXIT’ されると、 変更された
-値は失われます。
+トランポリン xt (trampoline xt)が生成されます。 そのトランポリン xt を
+execute すると、 ローカル・スタック上のクロージャのローカル変数にアクセ
+スして、 クロージャのコードが実行されます。 クロージャのローカル変数の変
+更は永続的ではありません。 つまり、 クロージャが ‘EXIT’ されると、 変更
+された値は失われます。
 
 ‘[{:’ ( – hmaddr u latest latestnt wid 0  ) gforth-experimental “start-closure”
    クロージャを開始します。 クロージャはまず、 クロージャのために使用す
@@ -1926,9 +1926,9 @@ File: gforth.info,  Node: Why explicit structure support?,  Next: Structure Usag
 ありません。 何らかの方法で構造体の種類を推測し、 その構造体のどのフィー
 ルドがそのオフセットに対応するかをドキュメントで調べる必要があります。
 
-   最後に、 この種のアドレス演算はメンテナンスの問題も引き起こします。 構
-造の途中でフィールドを追加または削除した場合、 その後フィールドのすべて
-の計算を探して変更する必要があります。
+   最後に、 この種のアドレス計算はメンテナンスの問題も引き起こします。 構
+造体の途中にフィールドを追加・削除した場合、 その後フィールドのすべての
+アドレス計算を探し出して変更する必要があります。
 
    そこで、 ‘cell+’ とそのファミリーを直接使用する代わりに、 以下のよう
 にオフセットを定数に保存してはどうでしょうか？:
@@ -1946,8 +1946,8 @@ File: gforth.info,  Node: Why explicit structure support?,  Next: Structure Usag
      a-offset float+ constant b-offset
      b-offset cell+ faligned constant c-offset
 
-   常に ‘+’ でオフセットを使用するため、 定義されたワードのアクションに
-‘+’ を含む定義ワード ‘cfield’ を使用できます:
+   オフセット計算にはいつも ‘+’ を使うので、 定義されたワードのアクショ
+ンに ‘+’ を含む定義ワード ‘cfield’ を使用できます:
 
      : cfield ( n "name" -- )
          create ,
@@ -1958,7 +1958,8 @@ File: gforth.info,  Node: Why explicit structure support?,  Next: Structure Usag
      0 a float+ cfield b
      0 b cell+ faligned cfield c
 
-   ‘x-offset +’ の代わりに、 今や単に ‘x’ と書きます。
+   今や、 ‘x-offset +’ の代わりに、 単に ‘x’ と書くことができるようにな
+りました。
 
    構造体フィールドのワード群が非常にうまく使用できるようになりました。
 ただし、 その定義はまだ少し面倒です。 名前を繰り返す必要があり、 サイズ
@@ -2177,8 +2178,8 @@ File: gforth.info,  Node: Forth200x Structures,  Prev: Structure Glossary,  Up: 
 ---------------------------
 
 Forth 2012 標準では、 やや不便な形式の構造体が定義されています。 一般に
-‘field+’ を使用する場合は、 自分で位置合わせを実行する必要がありますが、
-アライメントを含む便利なワード(例: ‘field:’)が多数あります。
+‘field+’ を使用する場合は、 自分でアライメントを行う必要がありますが、 ア
+ライメント機能を含む便利なワード(例: ‘field:’)が多数あります。
 
    典型的な使用例は以下のとおりです:
 
@@ -2257,11 +2258,11 @@ File: gforth.info,  Node: Object-oriented Forth,  Next: Regular Expressions,  Pr
 
 Gforth には、オブジェクト指向プログラミング用の 3 つのパッケージ
 (‘objects.fs’ と ‘oof.fs’ と ‘mini-oof.fs’) が付属しています。 どれも最
-初から組み込まれていないため、 使用する前に ‘include’ する必要があります
-。 これらのパッケージ(および、 その他のパッケージ)の最も重要な違いについ
-ては、 *note Comparison with other object models:: で説明します。 すべて
-のパッケージは 標準 Forth で書かれており、 他の 標準 Forth でも使用でき
-ます。
+初から組み込まれていないため、 使用する前にインクルードする必要がありま
+す。 これらのパッケージ(および、 その他のパッケージ)の最も重要な違いにつ
+いては、 *note Comparison with other object models:: で説明します。 すべ
+てのパッケージは 標準 Forth で書かれており、 他の 標準 Forth でも使用で
+きます。
 
 * Menu:
 
@@ -2281,12 +2282,12 @@ File: gforth.info,  Node: Why object-oriented programming?,  Next: Object-Orient
 
 多くの場合、 いくつかのデータ構造「オブジェクト」(object)を扱わなければ
 なりません。 それらは、 いつくかの側面では同様に扱う必要がありますが、 そ
-れ以外の側面では異なる扱いをしなければなりません。 図形オブジェクトとは
-教科書的な例で言えば、 円や三角形や恐竜やアイコン等ですが、 プログラム開
-発中にさらに追加することもできます。 任意のグラフィカル・オブジェクトに
-いくつかの操作を適用したいとします。 たとえば、 画面上に表示するための
-‘draw’ 操作です。 しかしながら、 この ‘draw’ はオブジェクトの種類ごとに
-異なる処理を行う必要があります。
+れ以外の側面では異なる扱いをしなければなりません。 グラフィカル・オブジ
+ェクトとは教科書的な例で言えば、 円や三角形や恐竜の絵やアイコン等ですが
+、 プログラム開発中にさらに追加することもできます。 あなたが、 任意のグ
+ラフィカル・オブジェクトにいくつかの操作を適用したいとしましょう。 たと
+えば、 画面上に表示するための ‘draw’ 操作です。 しかしながら、 この
+‘draw’ はオブジェクトの種類ごとに異なる処理を行う必要があります。
 
    ‘draw’ を、 描画されるオブジェクトの種類に依存して適切なコードを実行
 する、 大きな ‘CASE’ 制御構造として実装することはできます。 これはあまり
@@ -2404,27 +2405,28 @@ File: gforth.info,  Node: Properties of the Objects model,  Next: Basic Objects 
 
    • 遅延結び付け(Late binding)は効率的で使いやすいです。
 
-   • これによりパースが回避されるため、 状態スマート性
-     (state-smartness)や拡張性の低下に関する問題が回避されます。 便宜上
-     、 いくつかのパース・ワードがありますが、 それらには非パース・ワー
-     ドもあります。 パースする定義ワードもいくつかあります。 すべての標
-     準の定義ワードは(‘:noname’ を除いて)パースするため、 これを避けるの
-     は困難です。 ただし、 このようなワードは状態スマート(state-smart)で
-     はないため、 他の多くのパース・ワードほど悪くはありません。
+   • 遅延結び付け(Late binding)によりパースが回避されるため、 状態スマー
+     ト性(state-smartness)や拡張性の低下に関する問題が回避されます。 便
+     宜上、 いくつかのパース・ワードがありますが、 それらには非パース・
+     ワードもあります。 パースする定義ワードもいくつかあります。 すべて
+     の標準の定義ワードは(‘:noname’ を除いて)パースするため、 これを避け
+     るのは困難です。 ただし、 このようなワードは状態スマート
+     (state-smart)ではないため、 他の多くのパース・ワードほど悪くはあり
+     ません。
 
-   • すべてを取り入れようとしているわけではありません。 (私見ですけども
-     )このモデルでは、 いくつかのことをうまくやるといった体です。 特に、
-     このモデルでは情報の隠蔽をサポートするように設計されていません(情報
-     の隠蔽に役立つ可能性のある機能はありますが)。 これを実現するには、
-     また別のパッケージが使用可能です。
+   • このモデルではすべてを取り入れようとしているわけではありません。 (著
+     者の私見ですけども)このモデルでは、 いくつかのことをうまくやるとい
+     った体です。 特に、 このモデルでは情報の隠蔽をサポートするように設
+     計されていません(情報の隠蔽に役立つ可能性のある機能はありますが)。
+     これを実現するには、また別のパッケージが使用可能です。
 
-   • それは階層化(layered)されています。 このモデルを使用するためにすべ
-     ての機能を学習して使用する必要はありません。 必要な機能はほんのわず
-     かです((*note Basic Objects Usage::, *note The Objects base
-     class::, *note Creating objects::)。 その他の機能はオプションであり
-     、互いに独立しています。
+   • このモデルは階層構造((layered))になっています。 このモデルを使用す
+     るために下位階層まですべての機能を学習して使用する必要はありません
+     。 必要な機能はほんのわずかです((*note Basic Objects Usage::, *note
+     The Objects base class::, *note Creating objects::)。 その他の機能
+     はオプションであり、 互いに独立しています。
 
-   • 標準 Forth での実装が利用可能です。
+   • gforth 固有ではなく、 標準 Forth 用の実装が利用可能です。
 
 
 File: gforth.info,  Node: Basic Objects Usage,  Next: The Objects base class,  Prev: Properties of the Objects model,  Up: Objects
@@ -2608,27 +2610,28 @@ File: gforth.info,  Node: Method conveniences,  Next: Classes and Scoping,  Prev
 6.24.3.7 Method conveniences
 ............................
 
-In a method you usually access the receiving object pretty often.  If
-you define the method as a plain colon definition (e.g., with
-‘:noname’), you may have to do a lot of stack gymnastics.  To avoid
-this, you can define the method with ‘m: ... ;m’.  E.g., you could
-define the method for ‘draw’ing a ‘circle’ with
+【メソッドをより便利に】通常、 メソッドでは受信オブジェクト(receiving
+object)に頻繁にアクセスします。 メソッドをプレーンなコロン定義(‘:noname’
+など)として定義する場合、 多くのスタック体操が必要になる場合があります。
+これを回避するには、 ‘m: ... ;m’ を使用してメソッドを定義します。たとえ
+ば、 以下を使用して ‘circle’ を ‘draw’ するメソッドを定義できます
 
      m: ( x y circle -- )
        ( x y ) this circle-radius @ draw-circle ;m
 
-   When this method is executed, the receiver object is removed from the
-stack; you can access it with ‘this’ (admittedly, in this example the
-use of ‘m: ... ;m’ offers no advantage).  Note that I specify the stack
-effect for the whole method (i.e.  including the receiver object), not
-just for the code between ‘m:’ and ‘;m’.  You cannot use ‘exit’ in
-‘m:...;m’; instead, use ‘exitm’.(1)
+   このメソッドが実行されると、 受信オブジェクト(receiver object)がスタ
+ックから削除されます。 あなたは ‘this’ を使用してアクセスできます(ええ、
+確かに、この例では ‘m: ... ;m’ を使用する利点はないですけども)。 ‘m:’ と
+‘;m’ の間のコードだけでなく、 メソッド全体(つまり、 受信オブジェクトを含
+むメソッド全体)のスタック効果を指定していることに注意してください。
+‘m:...;m’ では ‘exit’ を使用できません。 代わりに、‘exitm’ を使用してく
+ださい。(1)
 
-   You will frequently use sequences of the form ‘this _field_’ (in the
-example above: ‘this circle-radius’).  If you use the field only in this
-way, you can define it with ‘inst-var’ and eliminate the ‘this’ before
-the field name.  E.g., the ‘circle’ class above could also be defined
-with:
+   あなたは ‘this "field"’ という形式のシーケンスを頻繁に使用するハメに
+なります(上記例では: ‘this circle-radius’)。 なので、 この方法でのみフィ
+ールドを使用する場合は、 ‘inst-var’ を使用してフィールドを定義し、 フィ
+ールド名の前の ‘this’ を削れます。 たとえば、 上記例の ‘circle’ クラスは
+以下のように定義することもできます:
 
      graphical class
        cell% inst-var radius
@@ -2643,13 +2646,14 @@ with:
 
      end-class circle
 
-   ‘radius’ can only be used in ‘circle’ and its descendent classes and
-inside ‘m:...;m’.
+   ‘radius’ は、 ‘circle’ や、 その子孫クラスと、 それらの ‘m:...;m’ 内
+でのみ使用できます。
 
-   You can also define fields with ‘inst-value’, which is to ‘inst-var’
-what ‘value’ is to ‘variable’.  You can change the value of such a field
-with ‘[to-inst]’.  E.g., we could also define the class ‘circle’ like
-this:
+   ‘inst-value’ を使用してフィールドを定義することもできます。 これは、
+‘variable’ に対して ‘value’ があるのと同様に、 ‘inst-var’ に対して
+‘inst-value’ があるのです。 このようなフィールドの値は ‘[to-inst]’ を使
+用して変更できます。 たとえば、 クラス ‘circle’ を以下のように定義するこ
+ともできます:
 
      graphical class
        inst-value radius
@@ -2666,9 +2670,9 @@ this:
 
    ---------- Footnotes ----------
 
-   (1) Moreover, for any word that calls ‘catch’ and was defined before
-loading ‘objects.fs’, you have to redefine it like I redefined ‘catch’:
-‘: catch this >r catch r> to-this ;’
+   (1) さらに、 ‘catch’ を呼び出すワードや、 ‘objects.fs’ をロードする前
+に定義されているワードについては、 ‘catch’ を再定義したように、 これらも
+再定義する必要があります: ‘: catch this >r catch r> to-this ;’
 
 
 File: gforth.info,  Node: Classes and Scoping,  Next: Dividing classes,  Prev: Method conveniences,  Up: Objects
@@ -2676,28 +2680,29 @@ File: gforth.info,  Node: Classes and Scoping,  Next: Dividing classes,  Prev: M
 6.24.3.8 Classes and Scoping
 ............................
 
-Inheritance is frequent, unlike structure extension.  This exacerbates
-the problem with the field name convention (*note Structure Naming
-Convention::): One always has to remember in which class the field was
-originally defined; changing a part of the class structure would require
-changes for renaming in otherwise unaffected code.
+構造体の拡張とは異なり、 継承は頻繁に行われます。 これは、フィールド名命
+名規則の問題をさらに悪化させます(*note Structure Naming Convention::): フ
+ィールドが最初にどのクラスで定義されたかを常に覚えておく必要があります。
+クラス構造の一部を変更すると、 影響を受けないコードの名前も変更する必要
+があります。
 
-   To solve this problem, I added a scoping mechanism (which was not in
-my original charter): A field defined with ‘inst-var’ (or ‘inst-value’)
-is visible only in the class where it is defined and in the descendent
-classes of this class.  Using such fields only makes sense in
-‘m:’-defined methods in these classes anyway.
+   この問題を解決するために、 著者は(著者のオリジナルのモデルにはなかっ
+た)スコープ・メカニズムを追加しました。 ‘inst-var’ (または
+‘inst-value’)で定義されたフィールドは、 それが定義されているクラスと、 そ
+のクラスの子孫のクラスでのみ可視です。 このようなフィールドの使用は、 い
+ずれにしても、 これらのクラスの ‘m:’ で定義されたメソッドでのみ意味があ
+ります。
 
-   This scoping mechanism allows us to use the unadorned field name,
-because name clashes with unrelated words become much less likely.
+   このスコープ・メカニズムにより、 名前が無関係なワードと衝突する可能性
+が大幅に低くなるため、 着飾っていないフィールド名を使用できます。
 
-   Once we have this mechanism, we can also use it for controlling the
-visibility of other words: All words defined after ‘protected’ are
-visible only in the current class and its descendents.  ‘public’
-restores the compilation (i.e.  ‘current’) word list that was in effect
-before.  If you have several ‘protected’s without an intervening
-‘public’ or ‘set-current’, ‘public’ will restore the compilation word
-list in effect before the first of these ‘protected’s.
+   スコープ・メカニズムがあれば、 他のワードの可視性を制御するために使用
+することもできます。 ‘protected’ の後に定義されたすべてのワードは、 現在
+のクラスとその子孫でのみ表示されます。 ‘public’ は、 以前に有効だった
+the current wordlist (新しく定義されたワードを入れるワードリスト)(つまり
+ユーザー変数 ‘current’)を復元します。 ‘public’ または ‘set-current’ が介
+在せずに複数の ‘protected’ がある場合、 ‘public’ はこれらの最初の
+‘protected’ より前の有効な the current wordlist を復元します。
 
 
 File: gforth.info,  Node: Dividing classes,  Next: Object Interfaces,  Prev: Classes and Scoping,  Up: Objects
@@ -2705,10 +2710,9 @@ File: gforth.info,  Node: Dividing classes,  Next: Object Interfaces,  Prev: Cla
 6.24.3.9 Dividing classes
 .........................
 
-You may want to do the definition of methods separate from the
-definition of the class, its selectors, fields, and instance variables,
-i.e., separate the implementation from the definition.  You can do this
-in the following way:
+メソッドの定義を、 クラスや、そのセレクターや、 フィールドや、 インスタ
+ンス変数、 の定義とは別に行う、 つまり、 実装を定義から分離することもで
+きます。 これは以下の方法で行うことができます:
 
      graphical class
        inst-value radius
@@ -2728,15 +2732,16 @@ in the following way:
 
      end-methods
 
-   You can use several ‘methods’...‘end-methods’ sections.  The only
-things you can do to the class in these sections are: defining methods,
-and overriding the class’s selectors.  You must not define new selectors
-or fields.
+   複数の ‘methods’...‘end-methods’ セクションを使用できます。 これらの
+セクションでクラスに対して実行できることは、 メソッドの定義とクラスのセ
+レクターのオーバーライドのみです。 新しいセレクターやフィールドを定義し
+てはいけません。
 
-   Note that you often have to override a selector before using it.  In
-particular, you usually have to override ‘construct’ with a new method
-before you can invoke ‘heap-new’ and friends.  E.g., you must not create
-a circle before the ‘overrides construct’ sequence in the example above.
+   注意: 多くの場合、 セレクターを使用する前にオーバーライドする必要があ
+ることに注意してください。 特に、 ‘heap-new’ とその他のメソッドを呼び出
+す前に、 通常は ‘construct’ を新しいメソッドでオーバーライドする必要があ
+ります。 たとえば、 上記例の ‘overrides construction’ シーケンスの前に
+circle を作成してはなりません。
 
 
 File: gforth.info,  Node: Object Interfaces,  Next: Objects Implementation,  Prev: Dividing classes,  Up: Objects
@@ -2744,26 +2749,28 @@ File: gforth.info,  Node: Object Interfaces,  Next: Objects Implementation,  Pre
 6.24.3.10 Object Interfaces
 ...........................
 
-In this model you can only call selectors defined in the class of the
-receiving objects or in one of its ancestors.  If you call a selector
-with a receiving object that is not in one of these classes, the result
-is undefined; if you are lucky, the program crashes immediately.
+このモデルでは、 受信オブジェクト(receiving objects)のクラスまたはその祖
+先の 1 つに定義されたセレクターのみを呼び出すことができます。 これらのク
+ラスのいずれにも属さない受信オブジェクトを使用してセレクターを呼び出した
+場合、 結果は未定義になります。 あなたの運が良ければ、 プログラムは即座
+にクラッシュします。
 
-   Now consider the case when you want to have a selector (or several)
-available in two classes: You would have to add the selector to a common
-ancestor class, in the worst case to ‘object’.  You may not want to do
-this, e.g., because someone else is responsible for this ancestor class.
+   ここで、 2 つのクラスで 1 つまたは複数のセレクターを使用できるように
+したい場合を考えてみましょう。 セレクターを共通の祖先クラスに追加する必
+要があり、 最悪の場合は ‘object’ に追加する必要があります。 たとえば、 他
+の誰かがこの祖先クラスに対して責任を負っているなどの理由で、 共通の祖先
+クラスへのセレクターの追加を実行したくない場合もあります。
 
-   The solution for this problem is interfaces.  An interface is a
-collection of selectors.  If a class implements an interface, the
-selectors become available to the class and its descendents.  A class
-can implement an unlimited number of interfaces.  For the problem
-discussed above, we would define an interface for the selector(s), and
-both classes would implement the interface.
+   この問題の解決策はインターフェース(interface)です。 インターフェイス
+はセレクターのコレクション(collection)です。 クラスがインターフェイスを
+実装している場合、 セレクターはクラスとその子孫で使用できるようになりま
+す。 クラスは無制限の数のインターフェイスを実装できます。 上で説明した問
+題については、 セレクターのインターフェイスを定義し、 両方のクラスがその
+インターフェイスを実装します。
 
-   As an example, consider an interface ‘storage’ for writing objects to
-disk and getting them back, and a class ‘foo’ that implements it.  The
-code would look like this:
+   例として、 オブジェクトをディスクに書き込んで戻すための ‘storage’ と
+いうインターフェイスと、 それを実装するクラス ‘foo’ について考えてみまし
+ょう。 そのコードは以下のようになります:
 
      interface
        selector write ( file object -- )
@@ -2778,16 +2785,17 @@ code would look like this:
      ...
      end-class foo
 
-(I would add a word ‘read’ ( file – object ) that uses ‘read1’
-internally, but that’s beyond the point illustrated here.)
+(著者は、 ここから更に ‘read1’ を内部的に使用するワード ‘read’ ( file –
+object ) を追加するのですが、 それはインターフェイスとは関係ないので、 こ
+こでは説明を割愛します。 )
 
-   Note that you cannot use ‘protected’ in an interface; and of course
-you cannot define fields.
+   注意: インターフェースでは ‘protected’ を使用できないことに注意してく
+ださい。 もちろん、 フィールドを定義することもできません。
 
-   In the Neon model, all selectors are available for all classes;
-therefore it does not need interfaces.  The price you pay in this model
-is slower late binding, and therefore, added complexity to avoid late
-binding.
+   Neon モデルでは、 すべてのセレクターがすべてのクラスで使用できます。
+したがってインターフェイスは必要ありません。 Neon モデルで支払う代償は、
+遅延結び付け(late binding)が遅くなるため、 遅延結び付けを回避するために
+複雑さが増すことです。
 
 
 File: gforth.info,  Node: Objects Implementation,  Next: Objects Glossary,  Prev: Object Interfaces,  Up: Objects
@@ -2795,88 +2803,91 @@ File: gforth.info,  Node: Objects Implementation,  Next: Objects Glossary,  Prev
 6.24.3.11 ‘objects.fs’ Implementation
 .....................................
 
-An object is a piece of memory, like one of the data structures
-described with ‘struct...end-struct’.  It has a field ‘object-map’ that
-points to the method map for the object’s class.
+オブジェクトは、 ‘struct...end-struct’ で記述されたデータ構造の 1 つであ
+る、 メモリの一片です。 これには、 オブジェクトのクラスのメソッド・マッ
+プ(the method map)を指すフィールド ‘object-map’ があります。
 
-   The _method map_(1) is an array that contains the execution tokens
-(xts) of the methods for the object’s class.  Each selector contains an
-offset into a method map.
+   「メソッド・マップ」(method map)(1)は、 オブジェクトのクラスのメソッ
+ドの実行トークン(xt)を含む配列です。 各セレクターには、 メソッド・マップ
+へのオフセットが含まれています。
 
-   ‘selector’ is a defining word that uses ‘CREATE’ and ‘DOES>’.  The
-body of the selector contains the offset; the ‘DOES>’ action for a class
-selector is, basically:
+   ‘selector’ は、‘CREATE’ と ‘DOES>’ を使用する定義ワードです。
+selector の本体にはオフセットが含まれています。 クラスのセレクターの
+‘DOES>’ アクションは、 基本的には以下のとおりです:
 
      ( object addr ) @ over object-map @ + @ execute
 
-   Since ‘object-map’ is the first field of the object, it does not
-generate any code.  As you can see, calling a selector has a small,
-constant cost.
+   なお、 ‘object-map’ はオブジェクトの最初のフィールドであるため、 コー
+ドは生成されません。 ご覧のとおり、 セレクターの呼び出しには小さいけれど
+も一定のコストがかかります。
 
-   A class is basically a ‘struct’ combined with a method map.  During
-the class definition the alignment and size of the class are passed on
-the stack, just as with ‘struct’s, so ‘field’ can also be used for
-defining class fields.  However, passing more items on the stack would
-be inconvenient, so ‘class’ builds a data structure in memory, which is
-accessed through the variable ‘current-interface’.  After its definition
-is complete, the class is represented on the stack by a pointer (e.g.,
-as parameter for a child class definition).
+   クラスは基本的に ‘struct’ とメソッド・マップを組み合わせたものです。
+‘struct’ の場合と同様に、 クラス定義中に、 クラスのアライメントとサイズ
+がスタックに渡されるため、 ‘field’ をクラスのフィールドの定義にも使用で
+きます。 ただし、 スタックにさらに多くの項目を渡すと不便になるため、
+‘class’ はメモリ内にデータ構造を構築し、 変数 ‘current-interface’ を通じ
+てアクセスします。 定義が完了すると、 クラスはポインタ(たとえば、 子クラ
+ス定義のパラメータとして利用したりする)としてスタックに置かれます。
 
-   A new class starts off with the alignment and size of its parent, and
-a copy of the parent’s method map.  Defining new fields extends the size
-and alignment; likewise, defining new selectors extends the method map.
-‘overrides’ just stores a new xt in the method map at the offset given
-by the selector.
+   新しいクラスは、 その親のアライメントとサイズ、 およびその親のメソッ
+ド・マップのコピーから始まります。 新しいフィールドを定義すると、 サイズ
+とアライメントが拡張されます。 同様に、 新しいセレクターを定義すると、 メ
+ソッド・マップが拡張されます。 ‘overrides’ は、 セレクターによって指定さ
+れたオフセットでメソッド・マップに新しい xt を保存するだけです。
 
-   Class binding just gets the xt at the offset given by the selector
-from the class’s method map and ‘compile,’s (in the case of ‘[bind]’)
-it.
+   クラス結び付け(class binding)は、クラスのメソッド・マップからセレクタ
+ーによって指定されたオフセットで xt を取得し、 それを ‘compile,’ で取得
+します(‘[bind]’ の場合)。
 
-   I implemented ‘this’ as a ‘value’.  At the start of an ‘m:...;m’
-method the old ‘this’ is stored to the return stack and restored at the
-end; and the object on the TOS is stored ‘TO this’.  This technique has
-one disadvantage: If the user does not leave the method via ‘;m’, but
-via ‘throw’ or ‘exit’, ‘this’ is not restored (and ‘exit’ may crash).
-To deal with the ‘throw’ problem, I have redefined ‘catch’ to save and
-restore ‘this’; the same should be done with any word that can catch an
-exception.  As for ‘exit’, I simply forbid it (as a replacement, there
-is ‘exitm’).
+   著者は ‘this’ を ‘value’ として実装しました。 ‘m:...;m’ メソッドの開
+始時に、 古い ‘this’ がリターン・スタックに保存され、 最後に復元されます
+。 TOS 上のオブジェクトは ‘TO this’ で保存します。 この手法には欠点が 1
+つあります。 ユーザーが ‘;m’ 経由ではなく ‘throw’ または ‘exit’ 経由でメ
+ソッドを終了した場合、 ‘this’ は復元されません(そして ‘exit’ がクラッシ
+ュする可能性があります)。 著者は ‘throw’ の問題に対処するために、 ‘this’
+を保存および復元するために ‘catch’ を再定義しました(訳注: つまり、
+"objects.fs" をインクルードした時に redefined と警告が出るが、意図的に再
+定義してあるので無視してください)。 例外をキャッチできるワードについても
+全く同様に行うべきです。 ‘exit’ については、 単純に使用を禁止します(代わ
+りに ‘exitm’ があります)。
 
-   ‘inst-var’ is just the same as ‘field’, with a different ‘DOES>’
-action:
+   ‘inst-var’ は ‘field’ とまったく同じですが、 ‘DOES>’ アクションが異な
+ります:
      @ this +
-   Similar for ‘inst-value’.
+   ‘inst-value’ も同様です。
 
-   Each class also has a word list that contains the words defined with
-‘inst-var’ and ‘inst-value’, and its protected words.  It also has a
-pointer to its parent.  ‘class’ pushes the word lists of the class and
-all its ancestors onto the search order stack, and ‘end-class’ drops
-them.
+   各クラスは、 ‘inst-var’ と ‘inst-value’ で定義されたワードや、 それら
+の protected されたワードを含む、 ワードリストを持っています。 また、 そ
+の親へのポインタも持っています。 ‘class’ は、 クラスとそのすべての祖先の
+ワードリストを検索順序スタック(the search order)にプッシュし、
+‘end-class’ はそれらをスタックから drop します。
 
-   An interface is like a class without fields, parent and protected
-words; i.e., it just has a method map.  If a class implements an
-interface, its method map contains a pointer to the method map of the
-interface.  The positive offsets in the map are reserved for class
-methods, therefore interface map pointers have negative offsets.
-Interfaces have offsets that are unique throughout the system, unlike
-class selectors, whose offsets are only unique for the classes where the
-selector is available (invokable).
+   インターフェイスは、 フィールドと親と protected されたワードのないク
+ラスに似ています。 つまり、 メソッド・マップがあるだけです。 クラスがイ
+ンターフェイスを実装する場合、 そのメソッド・マップにはインターフェイス
+のメソッド・マップへのポインターが含まれます。 マップ内の正のオフセット
+はクラス・メソッド用に予約されているため、 インターフェイス・マップ・ポ
+インターは負のオフセットを持ちます。 クラス・セレクターとは異なり、 イン
+ターフェイスにはシステム全体で一意のオフセットがあります。 クラス・セレ
+クターのオフセットは、 セレクターが利用可能な(呼び出し可能な)クラスに対
+してのみ一意です。
 
-   This structure means that interface selectors have to perform one
-indirection more than class selectors to find their method.  Their body
-contains the interface map pointer offset in the class method map, and
-the method offset in the interface method map.  The ‘does>’ action for
-an interface selector is, basically:
+   この構造は、 インターフェイス・セレクターがメソッドを見つけるために、
+クラス・セレクターよりも 1 つ多い間接参照を実行する必要があることを意味
+します。 その本体には、 クラス・メソッド・マップ内のインターフェイス・マ
+ップ・ポインター・オフセットと、 インターフェイス・メソッド・マップ内の
+メソッド・オフセットが含まれています。 インターフェイス・セレクターの
+‘does>’ アクションは、 基本的には以下のとおりです:
 
      ( object selector-body )
      2dup selector-interface @ ( object selector-body object interface-offset )
      swap object-map @ + @ ( object selector-body map )
      swap selector-offset @ + @ execute
 
-   where ‘object-map’ and ‘selector-offset’ are first fields and
-generate no code.
+   ここで、 ‘object-map’ と ‘selector-offset’ は最初のフィールドであり、
+コードは生成されません。
 
-   As a concrete example, consider the following code:
+   具体的な例として、 以下のコードについて考えてみましょう:
 
      interface
        selector if1sel1
@@ -2897,14 +2908,14 @@ generate no code.
      create obj1 object dict-new drop
      create obj2 cl1    dict-new drop
 
-   The data structure created by this code (including the data structure
-for ‘object’) is shown in the figure (objects-implementation.eps),
-assuming a cell size of 4.
+   このコードで作成されたデータ構造 (‘object’ のデータ構造を含む) は、セ
+ル・サイズ 4 を想定して figure (objects-implementation.png) に図示されて
+います。
 
    ---------- Footnotes ----------
 
-   (1) This is Self terminology; in C++ terminology: virtual function
-table.
+   (1) 「メソッド・マップ」(method map)は著者自作用語です。 C++ 用語では
+、 仮想関数テーブル と言います。
 
 
 File: gforth.info,  Node: Objects Glossary,  Prev: Objects Implementation,  Up: Objects
@@ -3114,7 +3125,7 @@ File: gforth.info,  Node: Properties of the OOF model,  Next: Basic OOF Usage,  
    • State-smart objects parse selectors.  However, extensibility is
      provided using a (parsing) selector ‘postpone’ and a selector ‘'’.
 
-   • 標準 Forth での実装が利用可能です。
+   • gforth 固有ではなく、 標準 Forth 用の実装が利用可能です。
 
 
 File: gforth.info,  Node: Basic OOF Usage,  Next: The OOF base class,  Prev: Properties of the OOF model,  Up: OOF
@@ -6256,191 +6267,4 @@ specific to the word type; its length depends on the word type.  E.g.,
 for a ‘constant’ it contains a cell with the value of the constant.  You
 can access it through ‘>body’ (*note CREATE..DOES> details::), but this
 is only standard for words you defined with ‘create’.
-
-
-File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header fields,  Up: Carnal words
-
-6.30.2 Header methods
----------------------
-
-The new Gforth word header is object-oriented and supports the following
-methods (method selectors):
-
-     .hm label method          overrider        field
-               execute         set-execute      >cfa
-     opt:      opt-compile,    set-optimizer    >hmcompile,
-     to:       (to)            set-to           >hmto
-     extra:                                     >hmextra
-     >int:     name>interpret  set->int         >hm>int
-     >comp:    name>compile    set->comp        >hm>comp
-     >string:  name>string     set-name>string  >hm>string
-     >link:    name>link       set-name>link    >hm>link
-
-   Many of these words are not stable Gforth words, but Gforth has
-stable higher-level words that we mention below.
-
-   You can look at the header methods of a word with
-
-‘.hm’ ( nt –  ) gforth-1.0 “dot-h-m”
-   print the header methods of nt
-
-   Overrider (setter) words change the method implementation for the
-most recent definition.  Quotations or closures restore the previous
-most recent definition when they are completed, so they are not
-considered most recent, and you can do things like:
-
-     : my2dup over over ;
-     [: drop ]] over over [[ ;] set-optimizer
-
-   The ‘execute’ method is actually stored in the ‘>cfa’ field in the
-header rather than in the header-methods table for performance reasons;
-also it is implemented through a native-code address, while the other
-methods are implemented by calling an xt.  The high-level way to set
-this method is
-
-‘set-execute’ ( ca –  ) gforth-1.0 “set-execute”
-   Changes the current word such that it jumps to the native code at ca.
-Also changes the ‘compile,’ implementation to the most general (and
-slowest) one.  Call ‘set-optimizer’ afterwards if you want a more
-efficient ‘compile,’ implementation.
-
-   To get a code address for use with ‘set-execute’, you can use words
-like ‘docol:’ or ‘>code-address’, *Note Threading Words::.
-
-   As an alternative to ‘set-execute’, there is also ‘set-does>’ (*note
-User-defined Defining Words::), which takes an xt.
-
-   Moreover, there are the low-level ‘code-address!’ and ‘definer!’
-(*note Threading Words::).
-
-   The ‘opt-compile,’ method is what ‘compile,’ does on most Gforth
-engines (‘gforth-itc’ uses ‘,’ instead).  You can define a more
-efficient implementation of ‘compile,’ for the current word with
-‘set-optimizer’ (*note User-defined compile-comma::).  Note that the end
-result must be equivalent to ‘postpone literal postpone execute’.
-
-   As an example of the use of ‘set-optimizer’, consider the following
-definition of ‘constant’:
-
-     : constant ( n "name" -- ; name: -- n )
-       create ,
-       ['] @ set-does>
-     ;
-
-     5 constant five
-     : foo five ; see foo
-
-   The Forth system does not know that the value of a constant must not
-be changed, and just sees a ‘create’d word (which can be changed with
-‘>body’), and ‘foo’ first pushes the body address of ‘five’ and then
-fetches from there.  With ‘set-optimizer’ the definition of ‘constant’
-can be optimized as follows:
-
-     : constant ( n "name" -- ; name: -- n )
-       create ,
-       ['] @ set-does>
-       [: >body @ postpone literal ;] set-optimizer
-     ;
-
-   Now ‘foo’ contains the literal 5 rather than a call to ‘five’.
-
-   Note that ‘set-execute’ and ‘set-does>’ perform ‘set-optimizer’
-themselves in order to ensure that ‘execute’ and ‘compile,’ agree, so if
-you want to add your own optimizer, you should add it afterwards.
-
-   The ‘defer!’ (aka ‘(to)’ method (*note User-defined TO and DEFER@::)
-implements ‘defer!’ for words defined with ‘defer’ and similar words,
-but it is also the core of ‘to’.  The general stack effect of the
-‘defer!’/‘(to)’ method is ‘( val xt -- )’, where xt identifies the word
-stored into, and val is the value (of appropriate type) stored there.
-
-   たとえば、 以下のように ‘fvalue’ を実装できます:
-
-     : fvalue-to ( r xt -- ) >body f! ;
-
-     : fvalue ( r -- )
-       create f,
-       ['] f@ set-does>
-       ['] fvalue-to set-to ;
-
-     5e fvalue foo
-     : bar foo 1e f+ to foo ;
-     see bar
-
-   You can improve the generated code with ‘set-optimizer’:
-
-     : compile-fvalue-to ( xt-value-to -- )
-       drop ]] >body f! [[ ;
-
-     : fvalue-to ( r xt -- ) >body f! ;
-     ' compile-fvalue-to set-optimizer
-
-     : fvalue ( r -- )
-       create f,
-       ['] f@ set-does>
-       [: >body ]] literal f@ [[ ;] set-optimizer
-       ['] fvalue-to set-to ;
-
-     5e fvalue foo
-     : bar foo 1e f+ to foo ;
-     see bar
-
-   In practice Gforth has a few additional twists to implement, e.g.,
-‘+TO’.
-
-   ‘Set-defer@’ (*note User-defined TO and DEFER@::) allows to implement
-variants of the ‘defer@’ (*note Deferred Words::) method for
-‘defer’-like words.
-
-   The ‘>hmextra’ field is used for cases where additional data needs to
-be stored in the header methods table.  In particular, it stores the xt
-passed to ‘set-does>’ (and ‘does>’ calls ‘set-does>’) and the code
-address behind ‘;abi-code’.
-
-   The methods above all consume an xt, not an nt, but the override
-words work on the most recent definition.  This means that if you use,
-e.g., ‘set-optimizer’ on a synonym, the effect will probably not be what
-you intended: When ‘compile,’ing the xt of the word, the ‘opt-compile,’
-implementation of the original word will be used, not the freshly-set
-one of the synonym.
-
-   The following methods consume an nt.
-
-   The ‘name>interpret’ method is implemented as noop for most words,
-except synonyms and similar words.
-
-‘set->int’ ( xt –  ) gforth-1.0 “set-to-int”
-   Sets the implementation of the ‘name>interpret ( nt -- xt2 )’ method
-of the current word to xt.
-
-   The ‘name>compile’ method produces the compilation semantics of the
-nt.  By changing it with ‘set->comp’, you can change the compilation
-semantics, but it’s not as simple as just pushing the xt of the desired
-compilation semantics, because of the stack effect of ‘name>compile’.
-Generally you should avoid changing the compilation semantics, and if
-you do, use a higher-level word like ‘immediate’ or
-‘interpret/compile:’, *Note Combined words::.
-
-‘set->comp’ ( xt –  ) gforth-1.0 “set-to-comp”
-   Sets the implementation of the ‘name>compile ( nt -- w xt2 )’ method
-of the current word to xt.
-
-‘immediate?’ ( nt – flag  ) gforth-1.0 “immediate?”
-   true if the word nt has non-default compilation semantics (that’s not
-quite according to the definition of immediacy, but many people mean
-that when they call a word “immediate”).
-
-   ‘Name>string’ and ‘Name>link’ are methods in order to make it
-possible to eliminate the name, ‘>f+c’ and ‘link’ fields from noname
-headers, but still produce meaningful results when using these words.
-You will typically not change the implementations of these methods
-except with ‘noname’, but we still have
-
-‘set-name>string’ ( xt –  ) gforth-1.0 “set-name-to-string”
-   Sets the implementation of the ‘name>string ( nt -- addr u )’ method
-of the current word to xt.
-
-‘set-name>link’ ( xt –  ) gforth-1.0 “set-name-to-link”
-   Sets the implementation of the ‘name>link ( nt1 -- nt2|0 )’ method of
-the current word to xt.
 

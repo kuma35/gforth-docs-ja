@@ -19047,7 +19047,7 @@ Gforth のディクショナリの特別な機能は、 型指定子なしでロ
 すべてのワードリスト(別名ボキャブラリ)には、 検索などのための独自のメソッド(methods)があります (@pxref{Word Lists})。
 型指定子なしでローカルの定義を実装するという目的のために、 私達は特別な検索メソッドを使用してワードリストを定義しました。 ワードが検索されると、
 実際には @code{W:} を使用してそのワードが作成されます。  @code{@{:} は、 最初に @code{:@}} や @code{W:}
-などを含むワードリスト検索し、 次に型指定子のないローカル変数を定義するためのワードリストを検索するよう検索順序スタック(the search
+などを含むワードリストで検索し、 次に型指定子のないローカル変数を定義するためのワードリストで検索するよう検索順序スタック(the search
 order)を変更します。
 
 ライフタイム・ルールは、 コロン定義内のスタック規律(stack discipline)をサポートします。 ローカル変数のライフタイムは、
@@ -19138,8 +19138,8 @@ order)を変更します。
 
 Gforth は基礎的なクロージャ(closure)も提供します。  クロージャは、
 引用(quotation)(@pxref{Quotations})とローカル変数の組み合わせです。  Gforth のクロージャには、
-クロージャの実行時に値が入力されるローカル変数があり、 トランポリン xt (trampoline xt)が生成されます。  そのトランポリン xt
-を実行すると、 ローカル・スタック上のクロージャのローカル変数にアクセスして、 クロージャのコードが実行されます。
+クロージャの実行時に値が入力されるローカル変数があり、 トランポリン xt (trampoline xt)が生成されます。  そのトランポリン xt を
+execute すると、 ローカル・スタック上のクロージャのローカル変数にアクセスして、 クロージャのコードが実行されます。
 クロージャのローカル変数の変更は永続的ではありません。 つまり、 クロージャが @code{EXIT} されると、 変更された値は失われます。
 
 @findex [@{: ( @var{ -- hmaddr u latest latestnt wid 0   } ) gforth-experimental
@@ -19368,8 +19368,8 @@ Marcel Hendrix は有益なコメントを提供してくれました。
 あまり読みやすくありません。 何らかの方法で構造体の種類を推測し、
 その構造体のどのフィールドがそのオフセットに対応するかをドキュメントで調べる必要があります。
 
-最後に、 この種のアドレス演算はメンテナンスの問題も引き起こします。 構造の途中でフィールドを追加または削除した場合、
-その後フィールドのすべての計算を探して変更する必要があります。
+最後に、 この種のアドレス計算はメンテナンスの問題も引き起こします。 構造体の途中にフィールドを追加・削除した場合、
+その後フィールドのすべてのアドレス計算を探し出して変更する必要があります。
 
 そこで、 @code{cell+} とそのファミリーを直接使用する代わりに、 以下のようにオフセットを定数に保存してはどうでしょうか？:
 
@@ -19389,7 +19389,7 @@ a-offset float+ constant b-offset
 b-offset cell+ faligned constant c-offset
 @end example
 
-常に @code{+} でオフセットを使用するため、 定義されたワードのアクションに @code{+} を含む定義ワード @code{cfield}
+オフセット計算にはいつも @code{+} を使うので、 定義されたワードのアクションに @code{+} を含む定義ワード @code{cfield}
 を使用できます:
 
 @example
@@ -19403,7 +19403,7 @@ does> ( name execution: addr1 -- addr2 )
 0 b cell+ faligned cfield c
 @end example
 
-@code{x-offset +} の代わりに、 今や単に @code{x} と書きます。
+今や、 @code{x-offset +} の代わりに、 単に @code{x} と書くことができるようになりました。
 
 構造体フィールドのワード群が非常にうまく使用できるようになりました。 ただし、 その定義はまだ少し面倒です。 名前を繰り返す必要があり、
 サイズと配置に関する情報はフィールド定義の前後に配置されます。 このセクションで紹介する構造体パッケージは、 これらの問題に対処します。
@@ -19704,7 +19704,7 @@ foo% @i{n} *
 @cindex Structures in Forth200x
 
 Forth 2012 標準では、 やや不便な形式の構造体が定義されています。  一般に @code{field+} を使用する場合は、
-自分で位置合わせを実行する必要がありますが、 アライメントを含む便利なワード(例: @code{field:})が多数あります。
+自分でアライメントを行う必要がありますが、 アライメント機能を含む便利なワード(例: @code{field:})が多数あります。
 
 典型的な使用例は以下のとおりです:
 
@@ -19864,10 +19864,9 @@ dfaligned された dfloat サイズのフィールドを定義します
 @section Object-oriented Forth
 
 Gforth には、オブジェクト指向プログラミング用の 3 つのパッケージ (@file{objects.fs} と @file{oof.fs} と
-@file{mini-oof.fs}) が付属しています。 どれも最初から組み込まれていないため、 使用する前に @code{include}
-する必要があります。 これらのパッケージ(および、 その他のパッケージ)の最も重要な違いについては、 @ref{Comparison with
-other object models} で説明します。 すべてのパッケージは 標準 Forth で書かれており、 他の 標準 Forth
-でも使用できます。
+@file{mini-oof.fs}) が付属しています。 どれも最初から組み込まれていないため、 使用する前にインクルードする必要があります。
+これらのパッケージ(および、 その他のパッケージ)の最も重要な違いについては、 @ref{Comparison with other object
+models} で説明します。 すべてのパッケージは 標準 Forth で書かれており、 他の 標準 Forth でも使用できます。
 
 @menu
 * Why object-oriented programming?::
@@ -19888,8 +19887,8 @@ other object models} で説明します。 すべてのパッケージは 標準
 @comment TODO add some other operations eg perimeter, area
 @comment and tie in to concrete examples later..
 多くの場合、 いくつかのデータ構造「オブジェクト」(object)を扱わなければなりません。 それらは、 いつくかの側面では同様に扱う必要がありますが、
-それ以外の側面では異なる扱いをしなければなりません。 図形オブジェクトとは教科書的な例で言えば、 円や三角形や恐竜やアイコン等ですが、
-プログラム開発中にさらに追加することもできます。 任意のグラフィカル・オブジェクトにいくつかの操作を適用したいとします。 たとえば、
+それ以外の側面では異なる扱いをしなければなりません。 グラフィカル・オブジェクトとは教科書的な例で言えば、 円や三角形や恐竜の絵やアイコン等ですが、
+プログラム開発中にさらに追加することもできます。 あなたが、 任意のグラフィカル・オブジェクトにいくつかの操作を適用したいとしましょう。 たとえば、
 画面上に表示するための @code{draw} 操作です。 しかしながら、 この @code{draw}
 はオブジェクトの種類ごとに異なる処理を行う必要があります。
 
@@ -20021,23 +20020,24 @@ Marcel Hendrix は、 このセクションに関して役立つコメントを�
 遅延結び付け(Late binding)は効率的で使いやすいです。
 
 @item
-これによりパースが回避されるため、 状態スマート性(state-smartness)や拡張性の低下に関する問題が回避されます。 便宜上、
-いくつかのパース・ワードがありますが、 それらには非パース・ワードもあります。 パースする定義ワードもいくつかあります。
-すべての標準の定義ワードは(@code{:noname} を除いて)パースするため、 これを避けるのは困難です。 ただし、
-このようなワードは状態スマート(state-smart)ではないため、 他の多くのパース・ワードほど悪くはありません。
+遅延結び付け(Late binding)によりパースが回避されるため、
+状態スマート性(state-smartness)や拡張性の低下に関する問題が回避されます。 便宜上、 いくつかのパース・ワードがありますが、
+それらには非パース・ワードもあります。 パースする定義ワードもいくつかあります。 すべての標準の定義ワードは(@code{:noname}
+を除いて)パースするため、 これを避けるのは困難です。 ただし、 このようなワードは状態スマート(state-smart)ではないため、
+他の多くのパース・ワードほど悪くはありません。
 
 @item
-すべてを取り入れようとしているわけではありません。 (私見ですけども)このモデルでは、 いくつかのことをうまくやるといった体です。 特に、
-このモデルでは情報の隠蔽をサポートするように設計されていません(情報の隠蔽に役立つ可能性のある機能はありますが)。
+このモデルではすべてを取り入れようとしているわけではありません。 (著者の私見ですけども)このモデルでは、 いくつかのことをうまくやるといった体です。
+特に、 このモデルでは情報の隠蔽をサポートするように設計されていません(情報の隠蔽に役立つ可能性のある機能はありますが)。
 これを実現するには、また別のパッケージが使用可能です。
 
 @item
-それは階層化(layered)されています。 このモデルを使用するためにすべての機能を学習して使用する必要はありません。
+このモデルは階層構造((layered))になっています。 このモデルを使用するために下位階層まですべての機能を学習して使用する必要はありません。
 必要な機能はほんのわずかです((@pxref{Basic Objects Usage}, @pxref{The Objects base class},
-@pxref{Creating objects})。 その他の機能はオプションであり、互いに独立しています。
+@pxref{Creating objects})。 その他の機能はオプションであり、 互いに独立しています。
 
 @item
-標準 Forth での実装が利用可能です。
+gforth 固有ではなく、 標準 Forth 用の実装が利用可能です。
 
 @end itemize
 
@@ -20233,11 +20233,10 @@ classes)にのみ結び付け(bind)すべきです。 たとえば、 受信オ�
 @subsubsection Method conveniences
 @cindex method conveniences
 
-In a method you usually access the receiving object pretty often.  If you
-define the method as a plain colon definition (e.g., with @code{:noname}),
-you may have to do a lot of stack gymnastics. To avoid this, you can define
-the method with @code{m: ... ;m}. E.g., you could define the method for
-@code{draw}ing a @code{circle} with
+【メソッドをより便利に】通常、 メソッドでは受信オブジェクト(receiving object)に頻繁にアクセスします。
+メソッドをプレーンなコロン定義(@code{:noname} など)として定義する場合、 多くのスタック体操が必要になる場合があります。
+これを回避するには、 @code{m: ... ;m} を使用してメソッドを定義します。たとえば、 以下を使用して @code{circle} を
+@code{draw} するメソッドを定義できます
 
 @cindex @code{this} usage
 @cindex @code{m:} usage
@@ -20250,22 +20249,18 @@ m: ( x y circle -- )
 @cindex @code{exit} in @code{m: ... ;m}
 @cindex @code{exitm} discussion
 @cindex @code{catch} in @code{m: ... ;m}
-When this method is executed, the receiver object is removed from the stack;
-you can access it with @code{this} (admittedly, in this example the use of
-@code{m: ... ;m} offers no advantage). Note that I specify the stack effect
-for the whole method (i.e. including the receiver object), not just for the
-code between @code{m:} and @code{;m}. You cannot use @code{exit} in
-@code{m:...;m}; instead, use @code{exitm}.@footnote{Moreover, for any word
-that calls @code{catch} and was defined before loading @code{objects.fs},
-you have to redefine it like I redefined @code{catch}: @code{: catch this >r
-catch r> to-this ;}}
+このメソッドが実行されると、 受信オブジェクト(receiver object)がスタックから削除されます。 あなたは @code{this}
+を使用してアクセスできます(ええ、 確かに、この例では @code{m: ... ;m} を使用する利点はないですけども)。 @code{m:} と
+@code{;m} の間のコードだけでなく、 メソッド全体(つまり、
+受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 @code{m:...;m} では @code{exit}
+を使用できません。 代わりに、@code{exitm} を使用してください。@footnote{さらに、 @code{catch} を呼び出すワードや、
+@code{objects.fs} をロードする前に定義されているワードについては、 @code{catch} を再定義したように、
+これらも再定義する必要があります: @code{: catch this >r catch r> to-this ;}}
 
 @cindex @code{inst-var} usage
-You will frequently use sequences of the form @code{this @emph{field}} (in
-the example above: @code{this circle-radius}). If you use the field only in
-this way, you can define it with @code{inst-var} and eliminate the
-@code{this} before the field name. E.g., the @code{circle} class above could
-also be defined with:
+あなたは @code{this "field"} という形式のシーケンスを頻繁に使用するハメになります(上記例では: @code{this
+circle-radius})。 なので、 この方法でのみフィールドを使用する場合は、 @code{inst-var} を使用してフィールドを定義し、
+フィールド名の前の @code{this} を削れます。 たとえば、 上記例の @code{circle} クラスは以下のように定義することもできます:
 
 @example
 graphical class
@@ -20282,14 +20277,13 @@ overrides construct
 end-class circle
 @end example
 
-@code{radius} can only be used in @code{circle} and its descendent classes
-and inside @code{m:...;m}.
+@code{radius} は、 @code{circle} や、 その子孫クラスと、 それらの @code{m:...;m} 内でのみ使用できます。
 
 @cindex @code{inst-value} usage
-You can also define fields with @code{inst-value}, which is to
-@code{inst-var} what @code{value} is to @code{variable}.  You can change the
-value of such a field with @code{[to-inst]}.  E.g., we could also define the
-class @code{circle} like this:
+@code{inst-value} を使用してフィールドを定義することもできます。 これは、 @code{variable} に対して
+@code{value} があるのと同様に、 @code{inst-var} に対して @code{inst-value} があるのです。
+このようなフィールドの値は @code{[to-inst]} を使用して変更できます。  たとえば、 クラス @code{circle}
+を以下のように定義することもできます:
 
 @example
 graphical class
@@ -20320,41 +20314,33 @@ end-class circle
 @cindex classes and scoping
 @cindex scoping and classes
 
-Inheritance is frequent, unlike structure extension. This exacerbates the
-problem with the field name convention (@pxref{Structure Naming
-Convention}): One always has to remember in which class the field was
-originally defined; changing a part of the class structure would require
-changes for renaming in otherwise unaffected code.
+構造体の拡張とは異なり、 継承は頻繁に行われます。 これは、フィールド名命名規則の問題をさらに悪化させます(@pxref{Structure
+Naming Convention}): フィールドが最初にどのクラスで定義されたかを常に覚えておく必要があります。 クラス構造の一部を変更すると、
+影響を受けないコードの名前も変更する必要があります。
 
-@cindex @code{inst-var} visibility
-@cindex @code{inst-value} visibility
-To solve this problem, I added a scoping mechanism (which was not in my
-original charter): A field defined with @code{inst-var} (or
-@code{inst-value}) is visible only in the class where it is defined and in
-the descendent classes of this class.  Using such fields only makes sense in
-@code{m:}-defined methods in these classes anyway.
+@cindex @code{inst-var} visibility(可視性)
+@cindex @code{inst-value} visibility(可視性)
+この問題を解決するために、 著者は(著者のオリジナルのモデルにはなかった)スコープ・メカニズムを追加しました。 @code{inst-var} (または
+@code{inst-value})で定義されたフィールドは、 それが定義されているクラスと、 そのクラスの子孫のクラスでのみ可視です。
+このようなフィールドの使用は、 いずれにしても、 これらのクラスの @code{m:} で定義されたメソッドでのみ意味があります。
 
-This scoping mechanism allows us to use the unadorned field name, because
-name clashes with unrelated words become much less likely.
+このスコープ・メカニズムにより、 名前が無関係なワードと衝突する可能性が大幅に低くなるため、 着飾っていないフィールド名を使用できます。
 
 @cindex @code{protected} discussion
 @cindex @code{private} discussion
-Once we have this mechanism, we can also use it for controlling the
-visibility of other words: All words defined after @code{protected} are
-visible only in the current class and its descendents. @code{public}
-restores the compilation (i.e. @code{current}) word list that was in effect
-before. If you have several @code{protected}s without an intervening
-@code{public} or @code{set-current}, @code{public} will restore the
-compilation word list in effect before the first of these @code{protected}s.
+スコープ・メカニズムがあれば、 他のワードの可視性を制御するために使用することもできます。 @code{protected}
+の後に定義されたすべてのワードは、 現在のクラスとその子孫でのみ表示されます。  @code{public} は、 以前に有効だった the
+current wordlist (新しく定義されたワードを入れるワードリスト)(つまり ユーザー変数 @code{current})を復元します。
+@code{public} または @code{set-current} が介在せずに複数の @code{protected} がある場合、
+@code{public} はこれらの最初の @code{protected} より前の有効な the current wordlist を復元します。
 
 @node Dividing classes, Object Interfaces, Classes and Scoping, Objects
 @subsubsection Dividing classes
 @cindex Dividing classes
 @cindex @code{methods}...@code{end-methods}
 
-You may want to do the definition of methods separate from the definition of
-the class, its selectors, fields, and instance variables, i.e., separate the
-implementation from the definition.  You can do this in the following way:
+メソッドの定義を、 クラスや、そのセレクターや、 フィールドや、 インスタンス変数、 の定義とは別に行う、 つまり、
+実装を定義から分離することもできます。  これは以下の方法で行うことができます:
 
 @example
 graphical class
@@ -20376,43 +20362,35 @@ overrides construct
 end-methods
 @end example
 
-You can use several @code{methods}...@code{end-methods} sections.  The only
-things you can do to the class in these sections are: defining methods, and
-overriding the class's selectors.  You must not define new selectors or
-fields.
+複数の @code{methods}...@code{end-methods} セクションを使用できます。
+これらのセクションでクラスに対して実行できることは、 メソッドの定義とクラスのセレクターのオーバーライドのみです。
+新しいセレクターやフィールドを定義してはいけません。
 
-Note that you often have to override a selector before using it.  In
-particular, you usually have to override @code{construct} with a new method
-before you can invoke @code{heap-new} and friends.  E.g., you must not
-create a circle before the @code{overrides construct} sequence in the
-example above.
+注意: 多くの場合、 セレクターを使用する前にオーバーライドする必要があることに注意してください。  特に、 @code{heap-new}
+とその他のメソッドを呼び出す前に、 通常は @code{construct} を新しいメソッドでオーバーライドする必要があります。  たとえば、
+上記例の @code{overrides construction} シーケンスの前に circle を作成してはなりません。
 
 @node Object Interfaces, Objects Implementation, Dividing classes, Objects
 @subsubsection Object Interfaces
 @cindex object interfaces
 @cindex interfaces for objects
 
-In this model you can only call selectors defined in the class of the
-receiving objects or in one of its ancestors. If you call a selector with a
-receiving object that is not in one of these classes, the result is
-undefined; if you are lucky, the program crashes immediately.
+このモデルでは、 受信オブジェクト(receiving objects)のクラスまたはその祖先の 1
+つに定義されたセレクターのみを呼び出すことができます。 これらのクラスのいずれにも属さない受信オブジェクトを使用してセレクターを呼び出した場合、
+結果は未定義になります。 あなたの運が良ければ、 プログラムは即座にクラッシュします。
 
 @cindex selectors common to hardly-related classes
-Now consider the case when you want to have a selector (or several)
-available in two classes: You would have to add the selector to a common
-ancestor class, in the worst case to @code{object}. You may not want to do
-this, e.g., because someone else is responsible for this ancestor class.
+ここで、 2 つのクラスで 1 つまたは複数のセレクターを使用できるようにしたい場合を考えてみましょう。
+セレクターを共通の祖先クラスに追加する必要があり、 最悪の場合は @code{object} に追加する必要があります。 たとえば、
+他の誰かがこの祖先クラスに対して責任を負っているなどの理由で、 共通の祖先クラスへのセレクターの追加を実行したくない場合もあります。
 
-The solution for this problem is interfaces. An interface is a collection of
-selectors. If a class implements an interface, the selectors become
-available to the class and its descendents. A class can implement an
-unlimited number of interfaces. For the problem discussed above, we would
-define an interface for the selector(s), and both classes would implement
-the interface.
+この問題の解決策はインターフェース(interface)です。 インターフェイスはセレクターのコレクション(collection)です。
+クラスがインターフェイスを実装している場合、 セレクターはクラスとその子孫で使用できるようになります。
+クラスは無制限の数のインターフェイスを実装できます。 上で説明した問題については、 セレクターのインターフェイスを定義し、
+両方のクラスがそのインターフェイスを実装します。
 
-As an example, consider an interface @code{storage} for writing objects to
-disk and getting them back, and a class @code{foo} that implements it. The
-code would look like this:
+例として、 オブジェクトをディスクに書き込んで戻すための @code{storage} というインターフェイスと、 それを実装するクラス
+@code{foo} について考えてみましょう。 そのコードは以下のようになります:
 
 @cindex @code{interface} usage
 @cindex @code{end-interface} usage
@@ -20433,109 +20411,92 @@ end-class foo
 @end example
 
 @noindent
-(I would add a word @code{read} @i{( file -- object )} that uses
-@code{read1} internally, but that's beyond the point illustrated here.)
+(著者は、 ここから更に  @code{read1} を内部的に使用するワード @code{read} @i{( file -- object )}
+を追加するのですが、 それはインターフェイスとは関係ないので、 ここでは説明を割愛します。 )
 
-Note that you cannot use @code{protected} in an interface; and of course you
-cannot define fields.
+注意: インターフェースでは @code{protected} を使用できないことに注意してください。 もちろん、
+フィールドを定義することもできません。
 
-In the Neon model, all selectors are available for all classes; therefore it
-does not need interfaces. The price you pay in this model is slower late
-binding, and therefore, added complexity to avoid late binding.
+Neon モデルでは、 すべてのセレクターがすべてのクラスで使用できます。 したがってインターフェイスは必要ありません。 Neon
+モデルで支払う代償は、 遅延結び付け(late binding)が遅くなるため、 遅延結び付けを回避するために複雑さが増すことです。
 
 @node Objects Implementation, Objects Glossary, Object Interfaces, Objects
 @subsubsection @file{objects.fs} Implementation
 @cindex @file{objects.fs} implementation
 
 @cindex @code{object-map} discussion
-An object is a piece of memory, like one of the data structures described
-with @code{struct...end-struct}. It has a field @code{object-map} that
-points to the method map for the object's class.
+オブジェクトは、 @code{struct...end-struct} で記述されたデータ構造の 1 つである、 メモリの一片です。 これには、
+オブジェクトのクラスのメソッド・マップ(the method map)を指すフィールド @code{object-map} があります。
 
 @cindex method map
 @cindex virtual function table
-The @emph{method map}@footnote{This is Self terminology; in C++ terminology:
-virtual function table.} is an array that contains the execution tokens
-(@i{xt}s) of the methods for the object's class. Each selector contains an
-offset into a method map.
+「メソッド・マップ」(method map)@footnote{「メソッド・マップ」(method map)は著者自作用語です。 C++ 用語では、
+仮想関数テーブル と言います。}は、 オブジェクトのクラスのメソッドの実行トークン(@i{xt})を含む配列です。 各セレクターには、
+メソッド・マップへのオフセットが含まれています。
 
 @cindex @code{selector} implementation, class
-@code{selector} is a defining word that uses @code{CREATE} and
-@code{DOES>}. The body of the selector contains the offset; the @code{DOES>}
-action for a class selector is, basically:
+@code{selector} は、@code{CREATE} と @code{DOES>} を使用する定義ワードです。 selector
+の本体にはオフセットが含まれています。 クラスのセレクターの @code{DOES>} アクションは、 基本的には以下のとおりです:
 
 @example
 ( object addr ) @@ over object-map @@ + @@ execute
 @end example
 
-Since @code{object-map} is the first field of the object, it does not
-generate any code. As you can see, calling a selector has a small, constant
-cost.
+なお、 @code{object-map} はオブジェクトの最初のフィールドであるため、 コードは生成されません。 ご覧のとおり、
+セレクターの呼び出しには小さいけれども一定のコストがかかります。
 
 @cindex @code{current-interface} discussion
 @cindex class implementation and representation
-A class is basically a @code{struct} combined with a method map. During the
-class definition the alignment and size of the class are passed on the
-stack, just as with @code{struct}s, so @code{field} can also be used for
-defining class fields. However, passing more items on the stack would be
-inconvenient, so @code{class} builds a data structure in memory, which is
-accessed through the variable @code{current-interface}. After its definition
-is complete, the class is represented on the stack by a pointer (e.g., as
-parameter for a child class definition).
+クラスは基本的に @code{struct} とメソッド・マップを組み合わせたものです。 @code{struct} の場合と同様に、 クラス定義中に、
+クラスのアライメントとサイズがスタックに渡されるため、 @code{field} をクラスのフィールドの定義にも使用できます。 ただし、
+スタックにさらに多くの項目を渡すと不便になるため、 @code{class} はメモリ内にデータ構造を構築し、 変数
+@code{current-interface} を通じてアクセスします。 定義が完了すると、 クラスはポインタ(たとえば、
+子クラス定義のパラメータとして利用したりする)としてスタックに置かれます。
 
-A new class starts off with the alignment and size of its parent, and a copy
-of the parent's method map. Defining new fields extends the size and
-alignment; likewise, defining new selectors extends the method
-map. @code{overrides} just stores a new @i{xt} in the method map at the
-offset given by the selector.
+新しいクラスは、 その親のアライメントとサイズ、 およびその親のメソッド・マップのコピーから始まります。 新しいフィールドを定義すると、
+サイズとアライメントが拡張されます。 同様に、 新しいセレクターを定義すると、 メソッド・マップが拡張されます。 @code{overrides} は、
+セレクターによって指定されたオフセットでメソッド・マップに新しい @i{xt} を保存するだけです。
 
 @cindex class binding, implementation
-Class binding just gets the @i{xt} at the offset given by the selector from
-the class's method map and @code{compile,}s (in the case of @code{[bind]})
-it.
+クラス結び付け(class binding)は、クラスのメソッド・マップからセレクターによって指定されたオフセットで @i{xt} を取得し、 それを
+@code{compile,} で取得します(@code{[bind]} の場合)。
 
 @cindex @code{this} implementation
 @cindex @code{catch} and @code{this}
 @cindex @code{this} and @code{catch}
-I implemented @code{this} as a @code{value}. At the start of an
-@code{m:...;m} method the old @code{this} is stored to the return stack and
-restored at the end; and the object on the TOS is stored @code{TO
-this}. This technique has one disadvantage: If the user does not leave the
-method via @code{;m}, but via @code{throw} or @code{exit}, @code{this} is
-not restored (and @code{exit} may crash). To deal with the @code{throw}
-problem, I have redefined @code{catch} to save and restore @code{this}; the
-same should be done with any word that can catch an exception. As for
-@code{exit}, I simply forbid it (as a replacement, there is @code{exitm}).
+著者は @code{this} を @code{value} として実装しました。 @code{m:...;m} メソッドの開始時に、 古い
+@code{this} がリターン・スタックに保存され、 最後に復元されます。 TOS 上のオブジェクトは @code{TO this} で保存します。
+この手法には欠点が 1 つあります。 ユーザーが @code{;m} 経由ではなく @code{throw} または @code{exit}
+経由でメソッドを終了した場合、 @code{this} は復元されません(そして @code{exit} がクラッシュする可能性があります)。 著者は
+@code{throw} の問題に対処するために、 @code{this} を保存および復元するために @code{catch}
+を再定義しました(訳注: つまり、 "objects.fs" をインクルードした時に redefined
+と警告が出るが、意図的に再定義してあるので無視してください)。 例外をキャッチできるワードについても全く同様に行うべきです。 @code{exit}
+については、 単純に使用を禁止します(代わりに @code{exitm} があります)。
 
 @cindex @code{inst-var} implementation
-@code{inst-var} is just the same as @code{field}, with a different
-@code{DOES>} action:
+@code{inst-var} は @code{field} とまったく同じですが、 @code{DOES>} アクションが異なります:
 @example
 @@ this +
 @end example
-Similar for @code{inst-value}.
+@code{inst-value} も同様です。
 
 @cindex class scoping implementation
-Each class also has a word list that contains the words defined with
-@code{inst-var} and @code{inst-value}, and its protected words. It also has
-a pointer to its parent. @code{class} pushes the word lists of the class and
-all its ancestors onto the search order stack, and @code{end-class} drops
-them.
+各クラスは、 @code{inst-var} と @code{inst-value} で定義されたワードや、 それらの protected
+されたワードを含む、 ワードリストを持っています。 また、 その親へのポインタも持っています。 @code{class} は、
+クラスとそのすべての祖先のワードリストを検索順序スタック(the search order)にプッシュし、 @code{end-class}
+はそれらをスタックから drop します。
 
 @cindex interface implementation
-An interface is like a class without fields, parent and protected words;
-i.e., it just has a method map. If a class implements an interface, its
-method map contains a pointer to the method map of the interface. The
-positive offsets in the map are reserved for class methods, therefore
-interface map pointers have negative offsets. Interfaces have offsets that
-are unique throughout the system, unlike class selectors, whose offsets are
-only unique for the classes where the selector is available (invokable).
+インターフェイスは、 フィールドと親と protected されたワードのないクラスに似ています。 つまり、 メソッド・マップがあるだけです。
+クラスがインターフェイスを実装する場合、 そのメソッド・マップにはインターフェイスのメソッド・マップへのポインターが含まれます。
+マップ内の正のオフセットはクラス・メソッド用に予約されているため、 インターフェイス・マップ・ポインターは負のオフセットを持ちます。
+クラス・セレクターとは異なり、 インターフェイスにはシステム全体で一意のオフセットがあります。 クラス・セレクターのオフセットは、
+セレクターが利用可能な(呼び出し可能な)クラスに対してのみ一意です。
 
-This structure means that interface selectors have to perform one
-indirection more than class selectors to find their method. Their body
-contains the interface map pointer offset in the class method map, and the
-method offset in the interface method map. The @code{does>} action for an
-interface selector is, basically:
+この構造は、 インターフェイス・セレクターがメソッドを見つけるために、 クラス・セレクターよりも 1
+つ多い間接参照を実行する必要があることを意味します。 その本体には、 クラス・メソッド・マップ内のインターフェイス・マップ・ポインター・オフセットと、
+インターフェイス・メソッド・マップ内のメソッド・オフセットが含まれています。 インターフェイス・セレクターの @code{does>} アクションは、
+基本的には以下のとおりです:
 
 @example
 ( object selector-body )
@@ -20544,10 +20505,9 @@ swap object-map @@ + @@ ( object selector-body map )
 swap selector-offset @@ + @@ execute
 @end example
 
-where @code{object-map} and @code{selector-offset} are first fields and
-generate no code.
+ここで、 @code{object-map} と @code{selector-offset} は最初のフィールドであり、 コードは生成されません。
 
-As a concrete example, consider the following code:
+具体的な例として、 以下のコードについて考えてみましょう: 
 
 @example
 interface
@@ -20571,9 +20531,8 @@ create obj2 cl1    dict-new drop
 @end example
 
 @comment TODO add this diagram..
-The data structure created by this code (including the data structure for
-@code{object}) is shown in the @uref{objects-implementation.eps,figure},
-assuming a cell size of 4.
+このコードで作成されたデータ構造 (@code{object} のデータ構造を含む) は、セル・サイズ 4 を想定して
+@uref{objects-implementation.png,figure} に図示されています。
 
 @node Objects Glossary, , Objects Implementation, Objects
 @subsubsection @file{objects.fs} Glossary
@@ -21055,7 +21014,7 @@ State-smart objects parse selectors. However, extensibility is provided
 using a (parsing) selector @code{postpone} and a selector @code{'}.
 
 @item
-標準 Forth での実装が利用可能です。
+gforth 固有ではなく、 標準 Forth 用の実装が利用可能です。
 
 @end itemize
 

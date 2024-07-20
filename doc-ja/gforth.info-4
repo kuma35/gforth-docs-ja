@@ -27,6 +27,193 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header fields,  Up: Carnal words
+
+6.30.2 Header methods
+---------------------
+
+The new Gforth word header is object-oriented and supports the following
+methods (method selectors):
+
+     .hm label method          overrider        field
+               execute         set-execute      >cfa
+     opt:      opt-compile,    set-optimizer    >hmcompile,
+     to:       (to)            set-to           >hmto
+     extra:                                     >hmextra
+     >int:     name>interpret  set->int         >hm>int
+     >comp:    name>compile    set->comp        >hm>comp
+     >string:  name>string     set-name>string  >hm>string
+     >link:    name>link       set-name>link    >hm>link
+
+   Many of these words are not stable Gforth words, but Gforth has
+stable higher-level words that we mention below.
+
+   You can look at the header methods of a word with
+
+‘.hm’ ( nt –  ) gforth-1.0 “dot-h-m”
+   print the header methods of nt
+
+   Overrider (setter) words change the method implementation for the
+most recent definition.  Quotations or closures restore the previous
+most recent definition when they are completed, so they are not
+considered most recent, and you can do things like:
+
+     : my2dup over over ;
+     [: drop ]] over over [[ ;] set-optimizer
+
+   The ‘execute’ method is actually stored in the ‘>cfa’ field in the
+header rather than in the header-methods table for performance reasons;
+also it is implemented through a native-code address, while the other
+methods are implemented by calling an xt.  The high-level way to set
+this method is
+
+‘set-execute’ ( ca –  ) gforth-1.0 “set-execute”
+   Changes the current word such that it jumps to the native code at ca.
+Also changes the ‘compile,’ implementation to the most general (and
+slowest) one.  Call ‘set-optimizer’ afterwards if you want a more
+efficient ‘compile,’ implementation.
+
+   To get a code address for use with ‘set-execute’, you can use words
+like ‘docol:’ or ‘>code-address’, *Note Threading Words::.
+
+   As an alternative to ‘set-execute’, there is also ‘set-does>’ (*note
+User-defined Defining Words::), which takes an xt.
+
+   Moreover, there are the low-level ‘code-address!’ and ‘definer!’
+(*note Threading Words::).
+
+   The ‘opt-compile,’ method is what ‘compile,’ does on most Gforth
+engines (‘gforth-itc’ uses ‘,’ instead).  You can define a more
+efficient implementation of ‘compile,’ for the current word with
+‘set-optimizer’ (*note User-defined compile-comma::).  Note that the end
+result must be equivalent to ‘postpone literal postpone execute’.
+
+   As an example of the use of ‘set-optimizer’, consider the following
+definition of ‘constant’:
+
+     : constant ( n "name" -- ; name: -- n )
+       create ,
+       ['] @ set-does>
+     ;
+
+     5 constant five
+     : foo five ; see foo
+
+   The Forth system does not know that the value of a constant must not
+be changed, and just sees a ‘create’d word (which can be changed with
+‘>body’), and ‘foo’ first pushes the body address of ‘five’ and then
+fetches from there.  With ‘set-optimizer’ the definition of ‘constant’
+can be optimized as follows:
+
+     : constant ( n "name" -- ; name: -- n )
+       create ,
+       ['] @ set-does>
+       [: >body @ postpone literal ;] set-optimizer
+     ;
+
+   Now ‘foo’ contains the literal 5 rather than a call to ‘five’.
+
+   Note that ‘set-execute’ and ‘set-does>’ perform ‘set-optimizer’
+themselves in order to ensure that ‘execute’ and ‘compile,’ agree, so if
+you want to add your own optimizer, you should add it afterwards.
+
+   The ‘defer!’ (aka ‘(to)’ method (*note User-defined TO and DEFER@::)
+implements ‘defer!’ for words defined with ‘defer’ and similar words,
+but it is also the core of ‘to’.  The general stack effect of the
+‘defer!’/‘(to)’ method is ‘( val xt -- )’, where xt identifies the word
+stored into, and val is the value (of appropriate type) stored there.
+
+   たとえば、 以下のように ‘fvalue’ を実装できます:
+
+     : fvalue-to ( r xt -- ) >body f! ;
+
+     : fvalue ( r -- )
+       create f,
+       ['] f@ set-does>
+       ['] fvalue-to set-to ;
+
+     5e fvalue foo
+     : bar foo 1e f+ to foo ;
+     see bar
+
+   You can improve the generated code with ‘set-optimizer’:
+
+     : compile-fvalue-to ( xt-value-to -- )
+       drop ]] >body f! [[ ;
+
+     : fvalue-to ( r xt -- ) >body f! ;
+     ' compile-fvalue-to set-optimizer
+
+     : fvalue ( r -- )
+       create f,
+       ['] f@ set-does>
+       [: >body ]] literal f@ [[ ;] set-optimizer
+       ['] fvalue-to set-to ;
+
+     5e fvalue foo
+     : bar foo 1e f+ to foo ;
+     see bar
+
+   In practice Gforth has a few additional twists to implement, e.g.,
+‘+TO’.
+
+   ‘Set-defer@’ (*note User-defined TO and DEFER@::) allows to implement
+variants of the ‘defer@’ (*note Deferred Words::) method for
+‘defer’-like words.
+
+   The ‘>hmextra’ field is used for cases where additional data needs to
+be stored in the header methods table.  In particular, it stores the xt
+passed to ‘set-does>’ (and ‘does>’ calls ‘set-does>’) and the code
+address behind ‘;abi-code’.
+
+   The methods above all consume an xt, not an nt, but the override
+words work on the most recent definition.  This means that if you use,
+e.g., ‘set-optimizer’ on a synonym, the effect will probably not be what
+you intended: When ‘compile,’ing the xt of the word, the ‘opt-compile,’
+implementation of the original word will be used, not the freshly-set
+one of the synonym.
+
+   The following methods consume an nt.
+
+   The ‘name>interpret’ method is implemented as noop for most words,
+except synonyms and similar words.
+
+‘set->int’ ( xt –  ) gforth-1.0 “set-to-int”
+   Sets the implementation of the ‘name>interpret ( nt -- xt2 )’ method
+of the current word to xt.
+
+   The ‘name>compile’ method produces the compilation semantics of the
+nt.  By changing it with ‘set->comp’, you can change the compilation
+semantics, but it’s not as simple as just pushing the xt of the desired
+compilation semantics, because of the stack effect of ‘name>compile’.
+Generally you should avoid changing the compilation semantics, and if
+you do, use a higher-level word like ‘immediate’ or
+‘interpret/compile:’, *Note Combined words::.
+
+‘set->comp’ ( xt –  ) gforth-1.0 “set-to-comp”
+   Sets the implementation of the ‘name>compile ( nt -- w xt2 )’ method
+of the current word to xt.
+
+‘immediate?’ ( nt – flag  ) gforth-1.0 “immediate?”
+   true if the word nt has non-default compilation semantics (that’s not
+quite according to the definition of immediacy, but many people mean
+that when they call a word “immediate”).
+
+   ‘Name>string’ and ‘Name>link’ are methods in order to make it
+possible to eliminate the name, ‘>f+c’ and ‘link’ fields from noname
+headers, but still produce meaningful results when using these words.
+You will typically not change the implementations of these methods
+except with ‘noname’, but we still have
+
+‘set-name>string’ ( xt –  ) gforth-1.0 “set-name-to-string”
+   Sets the implementation of the ‘name>string ( nt -- addr u )’ method
+of the current word to xt.
+
+‘set-name>link’ ( xt –  ) gforth-1.0 “set-name-to-link”
+   Sets the implementation of the ‘name>link ( nt1 -- nt2|0 )’ method of
+the current word to xt.
+
+
 File: gforth.info,  Node: Threading Words,  Prev: Header methods,  Up: Carnal words
 
 6.30.3 Threading Words

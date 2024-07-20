@@ -72,93 +72,77 @@ Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs<
 <span id="index-objects_002efs-implementation"></span>
 
 <span id="index-object_002dmap-discussion"></span>
-<p>An object is a piece of memory, like one of the data structures described
-with <code>struct...end-struct</code>. It has a field <code>object-map</code> that
-points to the method map for the object&rsquo;s class.
+<p>オブジェクトは、 <code>struct...end-struct</code> で記述されたデータ構造の 1 つである、 メモリの一片です。 これには、
+オブジェクトのクラスのメソッド・マップ(the method map)を指すフィールド <code>object-map</code> があります。
 </p>
 <span id="index-method-map"></span>
 <span id="index-virtual-function-table"></span>
-<p>The <em>method map</em><a id="DOCF33" href="#FOOT33"><sup>33</sup></a> is an array that contains the execution tokens
-(<i>xt</i>s) of the methods for the object&rsquo;s class. Each selector contains an
-offset into a method map.
+<p>「メソッド・マップ」(method map)<a id="DOCF33" href="#FOOT33"><sup>33</sup></a>は、 オブジェクトのクラスのメソッドの実行トークン(<i>xt</i>)を含む配列です。 各セレクターには、
+メソッド・マップへのオフセットが含まれています。
 </p>
 <span id="index-selector-implementation_002c-class"></span>
-<p><code>selector</code> is a defining word that uses <code>CREATE</code> and
-<code>DOES&gt;</code>. The body of the selector contains the offset; the <code>DOES&gt;</code>
-action for a class selector is, basically:
+<p><code>selector</code> は、<code>CREATE</code> と <code>DOES&gt;</code> を使用する定義ワードです。 selector
+の本体にはオフセットが含まれています。 クラスのセレクターの <code>DOES&gt;</code> アクションは、 基本的には以下のとおりです:
 </p>
 <div class="example">
 <pre class="example">( object addr ) @ over object-map @ + @ execute
 </pre></div>
 
-<p>Since <code>object-map</code> is the first field of the object, it does not
-generate any code. As you can see, calling a selector has a small, constant
-cost.
+<p>なお、 <code>object-map</code> はオブジェクトの最初のフィールドであるため、 コードは生成されません。 ご覧のとおり、
+セレクターの呼び出しには小さいけれども一定のコストがかかります。
 </p>
 <span id="index-current_002dinterface-discussion"></span>
 <span id="index-class-implementation-and-representation"></span>
-<p>A class is basically a <code>struct</code> combined with a method map. During the
-class definition the alignment and size of the class are passed on the
-stack, just as with <code>struct</code>s, so <code>field</code> can also be used for
-defining class fields. However, passing more items on the stack would be
-inconvenient, so <code>class</code> builds a data structure in memory, which is
-accessed through the variable <code>current-interface</code>. After its definition
-is complete, the class is represented on the stack by a pointer (e.g., as
-parameter for a child class definition).
+<p>クラスは基本的に <code>struct</code> とメソッド・マップを組み合わせたものです。 <code>struct</code> の場合と同様に、 クラス定義中に、
+クラスのアライメントとサイズがスタックに渡されるため、 <code>field</code> をクラスのフィールドの定義にも使用できます。 ただし、
+スタックにさらに多くの項目を渡すと不便になるため、 <code>class</code> はメモリ内にデータ構造を構築し、 変数
+<code>current-interface</code> を通じてアクセスします。 定義が完了すると、 クラスはポインタ(たとえば、
+子クラス定義のパラメータとして利用したりする)としてスタックに置かれます。
 </p>
-<p>A new class starts off with the alignment and size of its parent, and a copy
-of the parent&rsquo;s method map. Defining new fields extends the size and
-alignment; likewise, defining new selectors extends the method
-map. <code>overrides</code> just stores a new <i>xt</i> in the method map at the
-offset given by the selector.
+<p>新しいクラスは、 その親のアライメントとサイズ、 およびその親のメソッド・マップのコピーから始まります。 新しいフィールドを定義すると、
+サイズとアライメントが拡張されます。 同様に、 新しいセレクターを定義すると、 メソッド・マップが拡張されます。 <code>overrides</code> は、
+セレクターによって指定されたオフセットでメソッド・マップに新しい <i>xt</i> を保存するだけです。
 </p>
 <span id="index-class-binding_002c-implementation"></span>
-<p>Class binding just gets the <i>xt</i> at the offset given by the selector from
-the class&rsquo;s method map and <code>compile,</code>s (in the case of <code>[bind]</code>)
-it.
+<p>クラス結び付け(class binding)は、クラスのメソッド・マップからセレクターによって指定されたオフセットで <i>xt</i> を取得し、 それを
+<code>compile,</code> で取得します(<code>[bind]</code> の場合)。
 </p>
 <span id="index-this-implementation"></span>
 <span id="index-catch-and-this"></span>
 <span id="index-this-and-catch"></span>
-<p>I implemented <code>this</code> as a <code>value</code>. At the start of an
-<code>m:...;m</code> method the old <code>this</code> is stored to the return stack and
-restored at the end; and the object on the TOS is stored <code>TO
-this</code>. This technique has one disadvantage: If the user does not leave the
-method via <code>;m</code>, but via <code>throw</code> or <code>exit</code>, <code>this</code> is
-not restored (and <code>exit</code> may crash). To deal with the <code>throw</code>
-problem, I have redefined <code>catch</code> to save and restore <code>this</code>; the
-same should be done with any word that can catch an exception. As for
-<code>exit</code>, I simply forbid it (as a replacement, there is <code>exitm</code>).
+<p>著者は <code>this</code> を <code>value</code> として実装しました。 <code>m:...;m</code> メソッドの開始時に、 古い
+<code>this</code> がリターン・スタックに保存され、 最後に復元されます。 TOS 上のオブジェクトは <code>TO this</code> で保存します。
+この手法には欠点が 1 つあります。 ユーザーが <code>;m</code> 経由ではなく <code>throw</code> または <code>exit</code>
+経由でメソッドを終了した場合、 <code>this</code> は復元されません(そして <code>exit</code> がクラッシュする可能性があります)。 著者は
+<code>throw</code> の問題に対処するために、 <code>this</code> を保存および復元するために <code>catch</code>
+を再定義しました(訳注: つまり、 &quot;objects.fs&quot; をインクルードした時に redefined
+と警告が出るが、意図的に再定義してあるので無視してください)。 例外をキャッチできるワードについても全く同様に行うべきです。 <code>exit</code>
+については、 単純に使用を禁止します(代わりに <code>exitm</code> があります)。
 </p>
 <span id="index-inst_002dvar-implementation"></span>
-<p><code>inst-var</code> is just the same as <code>field</code>, with a different
-<code>DOES&gt;</code> action:
+<p><code>inst-var</code> は <code>field</code> とまったく同じですが、 <code>DOES&gt;</code> アクションが異なります:
 </p><div class="example">
 <pre class="example">@ this +
 </pre></div>
-<p>Similar for <code>inst-value</code>.
+<p><code>inst-value</code> も同様です。
 </p>
 <span id="index-class-scoping-implementation"></span>
-<p>Each class also has a word list that contains the words defined with
-<code>inst-var</code> and <code>inst-value</code>, and its protected words. It also has
-a pointer to its parent. <code>class</code> pushes the word lists of the class and
-all its ancestors onto the search order stack, and <code>end-class</code> drops
-them.
+<p>各クラスは、 <code>inst-var</code> と <code>inst-value</code> で定義されたワードや、 それらの protected
+されたワードを含む、 ワードリストを持っています。 また、 その親へのポインタも持っています。 <code>class</code> は、
+クラスとそのすべての祖先のワードリストを検索順序スタック(the search order)にプッシュし、 <code>end-class</code>
+はそれらをスタックから drop します。
 </p>
 <span id="index-interface-implementation"></span>
-<p>An interface is like a class without fields, parent and protected words;
-i.e., it just has a method map. If a class implements an interface, its
-method map contains a pointer to the method map of the interface. The
-positive offsets in the map are reserved for class methods, therefore
-interface map pointers have negative offsets. Interfaces have offsets that
-are unique throughout the system, unlike class selectors, whose offsets are
-only unique for the classes where the selector is available (invokable).
+<p>インターフェイスは、 フィールドと親と protected されたワードのないクラスに似ています。 つまり、 メソッド・マップがあるだけです。
+クラスがインターフェイスを実装する場合、 そのメソッド・マップにはインターフェイスのメソッド・マップへのポインターが含まれます。
+マップ内の正のオフセットはクラス・メソッド用に予約されているため、 インターフェイス・マップ・ポインターは負のオフセットを持ちます。
+クラス・セレクターとは異なり、 インターフェイスにはシステム全体で一意のオフセットがあります。 クラス・セレクターのオフセットは、
+セレクターが利用可能な(呼び出し可能な)クラスに対してのみ一意です。
 </p>
-<p>This structure means that interface selectors have to perform one
-indirection more than class selectors to find their method. Their body
-contains the interface map pointer offset in the class method map, and the
-method offset in the interface method map. The <code>does&gt;</code> action for an
-interface selector is, basically:
+<p>この構造は、 インターフェイス・セレクターがメソッドを見つけるために、 クラス・セレクターよりも 1
+つ多い間接参照を実行する必要があることを意味します。 その本体には、 クラス・メソッド・マップ内のインターフェイス・マップ・ポインター・オフセットと、
+インターフェイス・メソッド・マップ内のメソッド・オフセットが含まれています。 インターフェイス・セレクターの <code>does&gt;</code> アクションは、
+基本的には以下のとおりです:
 </p>
 <div class="example">
 <pre class="example">( object selector-body )
@@ -167,10 +151,9 @@ swap object-map @ + @ ( object selector-body map )
 swap selector-offset @ + @ execute
 </pre></div>
 
-<p>where <code>object-map</code> and <code>selector-offset</code> are first fields and
-generate no code.
+<p>ここで、 <code>object-map</code> と <code>selector-offset</code> は最初のフィールドであり、 コードは生成されません。
 </p>
-<p>As a concrete example, consider the following code:
+<p>具体的な例として、 以下のコードについて考えてみましょう: 
 </p>
 <div class="example">
 <pre class="example">interface
@@ -193,9 +176,8 @@ create obj1 object dict-new drop
 create obj2 cl1    dict-new drop
 </pre></div>
 
-<p>The data structure created by this code (including the data structure for
-<code>object</code>) is shown in the <a href="objects-implementation.eps">figure</a>,
-assuming a cell size of 4.
+<p>このコードで作成されたデータ構造 (<code>object</code> のデータ構造を含む) は、セル・サイズ 4 を想定して
+<a href="objects-implementation.png">figure</a> に図示されています。
 </p>
 </div>
 <div class="footnote">
@@ -203,8 +185,8 @@ assuming a cell size of 4.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT33" href="#DOCF33">(33)</a></h5>
-<p>This is Self terminology; in C++ terminology:
-virtual function table.</p>
+<p>「メソッド・マップ」(method map)は著者自作用語です。 C++ 用語では、
+仮想関数テーブル と言います。</p>
 </div>
 <hr>
 <div class="header">
