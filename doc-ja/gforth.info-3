@@ -2517,15 +2517,20 @@ File: gforth.info,  Node: Creating objects,  Next: Object-Oriented Programming S
 ‘heap-new’ ( ...  class – object ) を使用するとヒープ上にクラスのオブジ
 ェクトを作成して初期化することができ、 ‘dict-new’ ( ...  class – object
 ) を使用するとディクショナリ内(‘allot’ による割り当て)にクラスのオブジェ
-クトを作成して初期化することができます。 どちらのワードも ‘construct’ を
-呼び出し、 それぞれのスタック効果の「...」で示されたスタック項目を消費し
-ます。
+クトを作成して初期化することができます。 どちらのワードも当該クラス
+class の ‘construct’ を呼び出し、 当該クラス class の ‘construct’ のスタ
+ック効果(上記「...」の部分)で示されたスタック項目を消費します(訳注: 例え
+ば 6.24.3.2 Basic ‘objects.fs’ Usage の例のように、 ‘circle’ の
+‘construct’ のスタック効果 n-radius が必要で、 ‘50 circle heap-new
+constant my-circle’ としなければならない)。
 
    オブジェクトに自分でメモリを割り当てたい場合は、 ‘class-inst-size 2@’
-( class – align size ) を使用してそのアライメント(alignment)とサイズを取
-得できます。 オブジェクト用のメモリを確保したら、 ‘init-object’ ( ...
-class object – )でオブジェクトを初期化できます。 ‘construct’ は必要な作
-業の一部のみを行います。
+( class – align size ) を使用してクラスのアライメント(alignment)とサイズ
+を取得できます。 オブジェクト用のメモリを確保したら、 ‘init-object’ (
+...  class object – )でオブジェクトを初期化できます(訳注: class のための
+データ構造を object からに構築し、 その後そのオブジェクトに対して
+‘construct’ を実行します。 注意: 当該 class の ‘construct’ 用のスタック
+項目の指定も必要な事に注意)。
 
 
 File: gforth.info,  Node: Object-Oriented Programming Style,  Next: Class Binding,  Prev: Creating objects,  Up: Objects
@@ -2619,19 +2624,20 @@ object)に頻繁にアクセスします。 メソッドをプレーンなコロ
      m: ( x y circle -- )
        ( x y ) this circle-radius @ draw-circle ;m
 
-   このメソッドが実行されると、 受信オブジェクト(receiver object)がスタ
-ックから削除されます。 あなたは ‘this’ を使用してアクセスできます(ええ、
-確かに、この例では ‘m: ... ;m’ を使用する利点はないですけども)。 ‘m:’ と
-‘;m’ の間のコードだけでなく、 メソッド全体(つまり、 受信オブジェクトを含
-むメソッド全体)のスタック効果を指定していることに注意してください。
-‘m:...;m’ では ‘exit’ を使用できません。 代わりに、‘exitm’ を使用してく
-ださい。(1)
+   このメソッドが実行されるときは、 受信オブジェクト(receiver object)(上
+記例の circle)がスタックから取り除かれます。 その代わりに、 m: 〜 ;m の
+間は ‘this’ を使用して受信オブジェクトにアクセスできます(ええ、 確かに、
+この例では ‘m: ... ;m’ を使用する利点ないかもしれませんね)。 注意: しか
+し、 スタック・コメントとしては ‘m:’ と ‘;m’ の間のコードだけでなく、 メ
+ソッド全体(つまり、 受信オブジェクトを含むメソッド全体)のスタック効果を
+指定していることに注意してください。 なお、 ‘m:...;m’ では ‘exit’ を使用
+できません。 代わりに、 ‘exitm’ を使用してください(1)。
 
    あなたは ‘this "field"’ という形式のシーケンスを頻繁に使用するハメに
-なります(上記例では: ‘this circle-radius’)。 なので、 この方法でのみフィ
-ールドを使用する場合は、 ‘inst-var’ を使用してフィールドを定義し、 フィ
-ールド名の前の ‘this’ を削れます。 たとえば、 上記例の ‘circle’ クラスは
-以下のように定義することもできます:
+なると思います(上記例では: ‘this circle-radius’)。 そこで、 この方法での
+みフィールドを使用する場合は、 ‘inst-var’ を使用してフィールドを定義し、
+フィールド名の前の ‘this’ を削れます。 たとえば、 上記例の ‘circle’ クラ
+スは以下のように定義することもできます:
 
      graphical class
        cell% inst-var radius
@@ -2924,158 +2930,176 @@ File: gforth.info,  Node: Objects Glossary,  Prev: Objects Implementation,  Up: 
 ...............................
 
 ‘bind’ ( ... "class" "selector" – ...  ) objects “bind”
-   Execute the method for SELECTOR in CLASS.
+   指定のクラス CLASS の 指定セレクター SELECTOR のメソッドを execute し
+ます。
 
 ‘<bind>’ ( class selector-xt – xt  ) objects “<bind>”
-   XT is the method for the selector SELECTOR-XT in CLASS.
+   XT は、 指定クラス CLASS のセレクター SELECTOR-XT のメソッドです。
 
 ‘bind'’ ( "class" "selector" – xt  ) objects “bind”’
-   XT is the method for SELECTOR in CLASS.
+   XT は 指定のクラス CLASS の 指定のセレクター SELECTOR のメソッドです
+。
 
 ‘[bind]’ ( compile-time: "class" "selector" – ; run-time: ... object – ...  ) objects “[bind]”
-   Compile the method for SELECTOR in CLASS.
+   指定のクラス CLASS の 指定のセレクター SELECTOR のメソッドをコンパイ
+ルします。
 
 ‘class’ ( parent-class – align offset  ) objects “class”
-   Start a new class definition as a child of PARENT-CLASS.  ALIGN
-OFFSET are for use by FIELD etc.
+   PARENT-CLASS の子として新しいクラス定義を開始します。 スタックに積ま
+れた ALIGN OFFSET は FIELD などで使用されます。
 
 ‘class->map’ ( class – map  ) objects “class->map”
-   MAP is the pointer to CLASS’s method map; it points to the place in
-the map to which the selector offsets refer (i.e., where OBJECT-MAPs
-point to).
+   MAP は 指定のクラス CLASS のメソッド・マップへのポインタです。 これは
+、 セレクター・オフセットが参照するマップ内の場所(つまり、 OBJECT-MAP が
+指す場所)を指します。
 
 ‘class-inst-size’ ( class – addr  ) objects “class-inst-size”
-   Give the size specification for an instance (i.e.  an object) of
-CLASS; used as ‘class-inst-size 2 ( class -- align size )’.
+   してのクラス CLASS のインスタンス(つまり、 オブジェクト)のサイズ仕様
+を指定します。 ‘class-inst-size 2 ( class -- align size )’ として使用さ
+れます。
 
 ‘class-override!’ ( xt sel-xt class-map –  ) objects “class-override!”
-   XT is the new method for the selector SEL-XT in CLASS-MAP.
+   指定の XT は、 指定の CLASS-MAP のセレクター SEL-XT の新しいメソッド
+です。
 
 ‘class-previous’ ( class –  ) objects “class-previous”
-   Drop CLASS’s wordlists from the search order.  No checking is made
-whether CLASS’s wordlists are actually on the search order.
+   指定の CLASS のワードリストを検索順序スタック(the search order)から
+drop します。 CLASS のワードリストが実際に検索順序スタックに含まれている
+かどうかのチェックは行われません。
 
 ‘class>order’ ( class –  ) objects “class>order”
-   Add CLASS’s wordlists to the head of the search-order.
+   クラス CLASS のワードリストを検索順序スタック(the search-order)の先頭
+に追加します。
 
 ‘construct’ ( ... object –  ) objects “construct”
-   Initialize the data fields of OBJECT.  The method for the class
-OBJECT just does nothing: ‘( object -- )’.
+   指定の OBJECT のデータ・フィールドを初期化します。 クラス OBJECT のメ
+ソッドは何も行いません: ‘( object -- )’.
 
 ‘current'’ ( "selector" – xt  ) objects “current”’
-   XT is the method for SELECTOR in the current class.
+   XT は、 現在のクラスの指定の SELECTOR のメソッドです。
 
 ‘[current]’ ( compile-time: "selector" – ; run-time: ... object – ...  ) objects “[current]”
-   Compile the method for SELECTOR in the current class.
+   現在のクラスの SELECTOR のメソッドをコンパイルします。
 
 ‘current-interface’ ( – addr  ) objects “current-interface”
-   Variable: contains the class or interface currently being defined.
+   変数(Variable): 現在定義中のクラスまたはインターフェイスが含まれます
+。
 
 ‘dict-new’ ( ... class – object  ) objects “dict-new”
-   ‘allot’ and initialize an object of class CLASS in the dictionary.
+   ‘allot’ を使用して、 ディクショナリ内のクラス CLASS のオブジェクトを
+初期化します。 初期化したオブジェクトへのポインタを OBJECT に返します
 
 ‘end-class’ ( align offset "name" –  ) objects “end-class”
-   NAME execution: ‘-- class’
-End a class definition.  The resulting class is CLASS.
+   NAME という名前を付けてクラス定義を終了します。 NAME 実行時: ‘--
+class’
 
 ‘end-class-noname’ ( align offset – class  ) objects “end-class-noname”
-   End a class definition.  The resulting class is CLASS.
+   クラス定義を終了します。 結果のクラスは CLASS です。
 
 ‘end-interface’ ( "name" –  ) objects “end-interface”
-   ‘name’ execution: ‘-- interface’
-End an interface definition.  The resulting interface is INTERFACE.
+   ‘name’ という名前を付けてインターフェイス定義を終了します。 ‘name’ の
+実行時: ‘--interface’
 
 ‘end-interface-noname’ ( – interface  ) objects “end-interface-noname”
-   End an interface definition.  The resulting interface is INTERFACE.
+   インターフェース定義を終了します。 結果のインターフェースは INTERFACE
 
 ‘end-methods’ ( –  ) objects “end-methods”
-   Switch back from defining methods of a class to normal mode
-(currently this just restores the old search order).
+   クラスのメソッド定義から通常モードに切り替えます(現在、 これは古い検
+索順序スタックを復元するだけです)。
 
 ‘exitm’ ( –  ) objects “exitm”
-   ‘exit’ from a method; restore old ‘this’.
+   メソッドから ‘exit’ します。 古い ‘this’ を復元します。
 
 ‘heap-new’ ( ... class – object  ) objects “heap-new”
-   ‘allocate’ and initialize an object of class CLASS.
+   ‘allocate’ し、 クラス CLASS のオブジェクトを初期化します。
 
 ‘implementation’ ( interface –  ) objects “implementation”
-   The current class implements INTERFACE.  I.e., you can use all
-selectors of the interface in the current class and its descendents.
+   現在のクラスは INTERFACE を実装しています。 つまり、 現在のクラスとそ
+の子孫のインターフェイスのすべてのセレクターを使用できます。
 
 ‘init-object’ ( ... class object –  ) objects “init-object”
-   Initialize a chunk of memory (OBJECT) to an object of class CLASS;
-then performs ‘construct’.
+   メモリのチャンク OBJECT (アドレス)をクラス CLASS のオブジェクトのため
+に初期化します。 それから ‘construct’ を実行します(訳注: CLASS の
+‘construct’ 用のスタック項目も必要な事に注意。 6.24.3.2 Basic
+‘objects.fs’ Usage の例 circle で言えば n-radius が必要で(my-circle2 と
+いうメモリ領域をクラス・オブジェクトにするとして、) ‘50 circle
+my-circle-2 init-object’ としなければならない)
 
 ‘inst-value’ ( align1 offset1 "name" – align2 offset2  ) objects “inst-value”
-   NAME execution: ‘-- w’
-W is the value of the field NAME in ‘this’ object.
+   ALIGN2 OFFSET2 は W のサイズだけ足し込んだ値です。 NAME の実行時: ‘--
+w’ W は、‘this’ オブジェクトの NAME フィールドの値です。
 
 ‘inst-var’ ( align1 offset1 align size "name" – align2 offset2  ) objects “inst-var”
-   NAME execution: ‘-- addr’
-ADDR is the address of the field NAME in ‘this’ object.
+   ADDR は、‘this’ オブジェクトのフィールド NAME のアドレスです。 NAME の
+実行時: ‘-- addr’
 
 ‘interface’ ( –  ) objects “interface”
-   Start an interface definition.
+   インターフェース定義を開始します。
 
 ‘m:’ ( – xt colon-sys; run-time: object –  ) objects “m:”
-   Start a method definition; OBJECT becomes new ‘this’.
+   メソッド定義を開始します。 OBJECT が新しい ‘this’ になります。
 
 ‘:m’ ( "name" – xt; run-time: object –  ) objects “:m”
-   Start a named method definition; OBJECT becomes new ‘this’.  Has to
-be ended with ‘;m’.
+   名前付きメソッド定義を開始します。 OBJECT が新しい ‘this’ になります
+。 ‘;m’ で終わる必要があります。
 
 ‘;m’ ( colon-sys –; run-time: –  ) objects “;m”
-   End a method definition; restore old ‘this’.
+   メソッド定義を終了します。 古い ‘this’ を復元します。
 
 ‘method’ ( xt "name" –  ) objects “method”
-   ‘name’ execution: ‘... object -- ...’
-Create selector NAME and makes XT its method in the current class.
+   セレクター NAME を作成し、XT を現在のクラスのメソッドにします。
+‘name’ の実行時: ‘... object -- ...’
 
 ‘methods’ ( class –  ) objects “methods”
-   Makes CLASS the current class.  This is intended to be used for
-defining methods to override selectors; you cannot define new fields or
-selectors.
+   CLASS を現在のクラスにします。 これは、 セレクターをオーバーライドす
+るメソッドを定義するために使用することを目的としています。 新しいフィー
+ルドやセレクターを定義することはできません。
 
 ‘object’ ( – class  ) objects “object”
-   the ancestor of all classes.
+   すべてのクラスの祖先。
 
 ‘overrides’ ( xt "selector" –  ) objects “overrides”
-   replace default method for SELECTOR in the current class with XT.
-‘overrides’ must not be used during an interface definition.
+   現在のクラスの SELECTOR のデフォルト・メソッドを XT に置き換えます。
+‘overrides’ はインターフェイス定義中に使用してはいけません。
 
 ‘[parent]’ ( compile-time: "selector" – ; run-time: ... object – ...  ) objects “[parent]”
-   Compile the method for SELECTOR in the parent of the current class.
+   現在のクラスの親の SELECTOR のメソッドをコンパイルします。
 
 ‘print’ ( object –  ) objects “print”
-   Print the object.  The method for the class OBJECT prints the address
-of the object and the address of its class.
+   オブジェクトを出力します。 指定のクラス OBJECT のメソッドは、 オブジ
+ェクトのアドレスとそのクラスのアドレスを出力します。
 
 ‘protected’ ( –  ) objects “protected”
-   Set the compilation wordlist to the current class’s wordlist
+   現在のクラスのワードリストをコンパイル・ワードリスト(the compilation
+wordlist)にセットします
 
 ‘public’ ( –  ) objects “public”
-   Restore the compilation wordlist that was in effect before the last
-‘protected’ that actually changed the compilation wordlist.
+   実際にコンパイル・ワードリスト(the compilation wordlist)を変更した最
+後の ‘protected’ より前に有効だったコンパイル・ワードリストを復元します
+。
 
 ‘selector’ ( "name" –  ) objects “selector”
-   NAME execution: ‘... object -- ...’
-Create selector NAME for the current class and its descendents; you can
-set a method for the selector in the current class with ‘overrides’.
+   現在のクラスとその子孫のセレクター NAME を作成します。 ‘overrides’ を
+使用して、 現在のクラスのセレクターのメソッドを設定できます。 NAME の実
+行時: ‘... object -- ...’
 
 ‘this’ ( – object  ) objects “this”
-   the receiving object of the current method (aka active object).
+   現在のメソッドの受信オブジェクト(receiving object)(別名アクティブ・オ
+ブジェクト)。
 
 ‘<to-inst>’ ( w xt –  ) objects “<to-inst>”
-   store W into the field XT in ‘this’ object.
+   W を ‘this’ オブジェクトのフィールド XT に格納します。
 
 ‘[to-inst]’ ( compile-time: "name" – ; run-time: w –  ) objects “[to-inst]”
-   store W into field NAME in ‘this’ object.
+   W を ‘this’ オブジェクトの NAME フィールドに格納します。
 
 ‘to-this’ ( object –  ) objects “to-this”
-   Set ‘this’ (used internally, but useful when debugging).
+   ‘this’ を設定します(内部的に使用されるものですが、 デバッグ時に役立ち
+ます)。
 
 ‘xt-new’ ( ... class xt – object  ) objects “xt-new”
-   Make a new object, using ‘xt ( align size -- addr )’ to get memory.
+   ‘xt ( align size -- addr )’ を使用してメモリを取得し、 新しいオブジェ
+クトを作成します。
 
 
 File: gforth.info,  Node: OOF,  Next: Mini-OOF,  Prev: Objects,  Up: Object-oriented Forth
@@ -3083,11 +3107,12 @@ File: gforth.info,  Node: OOF,  Next: Mini-OOF,  Prev: Objects,  Up: Object-orie
 6.24.4 The ‘oof.fs’ model
 -------------------------
 
-This section describes the ‘oof.fs’ package.
+このセクションでは、 ‘oof.fs’ パッケージについて説明します。
 
-   The package described in this section has been used in bigFORTH since
-1991, and used for two large applications: a chromatographic system used
-to create new medicaments, and a graphic user interface library (MINOS).
+   このセクションで説明するパッケージは、 1991 年以来 bigFORTH で使用さ
+れており、 新薬作成に使用されるクロマトグラフィー・システムと、グラフィ
+ック・ユーザー・インターフェイス・ライブラリ (MINOS) という 2 つの大きな
+アプリケーションに使用されています。
 
    You can find a description (in German) of ‘oof.fs’ in ‘Object
 oriented bigFORTH’ by Bernd Paysan, published in ‘Vierte Dimension’
@@ -6150,121 +6175,4 @@ words:
         r3  r0 -4 #]!      str,     \ push r3
         pc  lr             mov,     \ return to caller, new SP in r0
      end-code
-
-
-File: gforth.info,  Node: Other assemblers,  Prev: ARM Assembler,  Up: Assembler and Code Words
-
-6.29.10 Other assemblers
-------------------------
-
-If you want to contribute another assembler/disassembler, please contact
-us (<anton@mips.complang.tuwien.ac.at>) to check if we have such an
-assembler already.  If you are writing them from scratch, please use a
-similar syntax style as the one we use (i.e., postfix, commas at the end
-of the instruction names, *note Common Assembler::); make the output of
-the disassembler be valid input for the assembler, and keep the style
-similar to the style we used.
-
-   Hints on implementation: The most important part is to have a good
-test suite that contains all instructions.  Once you have that, the rest
-is easy.  For actual coding you can take a look at ‘arch/mips/disasm.fs’
-to get some ideas on how to use data for both the assembler and
-disassembler, avoiding redundancy and some potential bugs.  You can also
-look at that file (and *note Advanced does> usage example::) to get
-ideas how to factor a disassembler.
-
-   Start with the disassembler, because it’s easier to reuse data from
-the disassembler for the assembler than the other way round.
-
-   For the assembler, take a look at ‘arch/alpha/asm.fs’, which shows
-how simple it can be.
-
-
-File: gforth.info,  Node: Carnal words,  Next: Passing Commands to the OS,  Prev: Assembler and Code Words,  Up: Words
-
-6.30 Carnal words
-=================
-
-These words deal with the mechanics of Gforth (in Forth circles called
-“carnal knowledge” of a Forth system), but we consider them stable
-enough to document them.
-
-* Menu:
-
-* Header fields::
-* Header methods::
-* Threading Words::
-
-
-File: gforth.info,  Node: Header fields,  Next: Header methods,  Prev: Carnal words,  Up: Carnal words
-
-6.30.1 Header fields
---------------------
-
-In Gforth 1.0 we switched to a new word header layout.  For a detailed
-description, read: Bernd Paysan and M. Anton Ertl.  ‘The new Gforth
-header (http://www.euroforth.org/ef19/papers/paysan.pdf)’.  In 35th
-EuroForth Conference, pages 5-20, 2019.  Since this paper was published,
-xt and nt have been changed to point to the parameter field, like the
-body, but otherwise it is still up-to-date.
-
-   This section explains just the data structure and the words used to
-access it.  A header has the following fields:
-
-     name
-     >f+c
-     >link
-     >cfa
-     >namehm
-     >body
-
-   Currently Gforth has the names shown above for getting from the
-xt/nt/body to the field, but apart from the standard ‘>body’ they are
-not stable Gforth words.  Instead, we provide access words.  Note that
-the documented access words have survived the reorganization of the
-header layout.
-
-   Some of the words expect an nt, some expect an xt.  Given that both
-nt and xt point to the body of a word, what is the difference?  For most
-words, the xt and nt use the same header, and with nt=xt, they point to
-the same place.  However, for a synonym (*note Aliases::) there is a
-difference; consider the example
-
-     create x
-     synonym y x
-     synonym z y
-
-   In this case the nt of ‘z’ points to the body of ‘z’, while the xt of
-‘z’ points to the body of ‘x’.  Words defined with ‘alias’ or ‘forward’
-(*note Forward::) also have different nts and xts.
-
-   The name field is variable-length and is accessed with ‘name>string’
-(*note Name token::).
-
-   The ‘>f+c’ field contains flags and the name length (count).  You
-read the count with ‘name>string’, and the flags with
-
-‘compile-only?’ ( nt – flag  ) gforth-1.0 “compile-only?”
-   true if nt is marked as compile-only.
-
-   The ‘>link’ field contains a link to the previous word in the same
-word list.  You can read it with ‘name>link’ (*note Name token::).
-
-   The name, ‘>f+c’ and ‘>link’ fields are not present for ‘noname’
-words, but ‘name>string’ and ‘name>link’ work nevertheless, producing 0
-0 and 0, respectively.
-
-   The ‘>cfa’ field (aka code field) contains the code address used for
-‘execute’ing the word; you can read it with ‘>code-address’ and write it
-with ‘code-address!’ (*note Threading Words::).
-
-   The ‘>namehm’ field contains the address of the header methods table,
-described below.  You access it by performing or accessing header
-methods (*note Header methods::).
-
-   The ‘>body’ (aka parameter) field contains data or threaded code
-specific to the word type; its length depends on the word type.  E.g.,
-for a ‘constant’ it contains a cell with the value of the constant.  You
-can access it through ‘>body’ (*note CREATE..DOES> details::), but this
-is only standard for words you defined with ‘create’.
 

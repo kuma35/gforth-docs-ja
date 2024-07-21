@@ -20143,14 +20143,19 @@ end-class circle
 @cindex @code{construct} discussion
 @code{heap-new} ( ... class -- object )
 を使用するとヒープ上にクラスのオブジェクトを作成して初期化することができ、 @code{dict-new} ( ... class -- object
-) を使用するとディクショナリ内(@code{allot} による割り当て)にクラスのオブジェクトを作成して初期化することができます。 どちらのワードも
-@code{construct} を呼び出し、 それぞれのスタック効果の「...」で示されたスタック項目を消費します。
+) を使用するとディクショナリ内(@code{allot} による割り当て)にクラスのオブジェクトを作成して初期化することができます。
+どちらのワードも当該クラス @i{class} の @code{construct} を呼び出し、 当該クラス @i{class} の
+@code{construct} のスタック効果(上記「...」の部分)で示されたスタック項目を消費します(訳注: 例えば 6.24.3.2 Basic
+‘objects.fs’ Usage の例のように、 @code{circle} の @code{construct} のスタック効果 n-radius
+が必要で、 @code{50 circle heap-new constant my-circle} としなければならない)。
 
 @cindex @code{init-object} discussion
 @cindex @code{class-inst-size} discussion
 オブジェクトに自分でメモリを割り当てたい場合は、 @code{class-inst-size 2@@} ( class -- align size )
-を使用してそのアライメント(alignment)とサイズを取得できます。 オブジェクト用のメモリを確保したら、  @code{init-object}
-( ... class object -- )でオブジェクトを初期化できます。 @code{construct} は必要な作業の一部のみを行います。
+を使用してクラスのアライメント(alignment)とサイズを取得できます。 オブジェクト用のメモリを確保したら、
+@code{init-object} ( ... class object -- )でオブジェクトを初期化できます(訳注: @i{class}
+のためのデータ構造を @i{object} からに構築し、 その後そのオブジェクトに対して @code{construct} を実行します。 注意:
+当該 @i{class} の @code{construct} 用のスタック項目の指定も必要な事に注意)。
 
 @node Object-Oriented Programming Style, Class Binding, Creating objects, Objects
 @subsubsection Object-Oriented Programming Style
@@ -20249,17 +20254,19 @@ m: ( x y circle -- )
 @cindex @code{exit} in @code{m: ... ;m}
 @cindex @code{exitm} discussion
 @cindex @code{catch} in @code{m: ... ;m}
-このメソッドが実行されると、 受信オブジェクト(receiver object)がスタックから削除されます。 あなたは @code{this}
-を使用してアクセスできます(ええ、 確かに、この例では @code{m: ... ;m} を使用する利点はないですけども)。 @code{m:} と
+このメソッドが実行されるときは、 受信オブジェクト(receiver object)(上記例の @i{circle})がスタックから取り除かれます。
+その代わりに、 @i{m:} 〜 @i{;m} の間は @code{this} を使用して受信オブジェクトにアクセスできます(ええ、 確かに、この例では
+@code{m: ... ;m} を使用する利点ないかもしれませんね)。 注意: しかし、 スタック・コメントとしては @code{m:} と
 @code{;m} の間のコードだけでなく、 メソッド全体(つまり、
-受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 @code{m:...;m} では @code{exit}
-を使用できません。 代わりに、@code{exitm} を使用してください。@footnote{さらに、 @code{catch} を呼び出すワードや、
-@code{objects.fs} をロードする前に定義されているワードについては、 @code{catch} を再定義したように、
-これらも再定義する必要があります: @code{: catch this >r catch r> to-this ;}}
+受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 なお、 @code{m:...;m} では
+@code{exit} を使用できません。 代わりに、 @code{exitm} を使用してください@footnote{さらに、
+@code{catch} を呼び出すワードや、 @code{objects.fs} をロードする前に定義されているワードについては、
+@code{catch} を再定義したように、  これらも再定義する必要があります: @code{: catch this >r catch r>
+to-this ;}}。
 
 @cindex @code{inst-var} usage
-あなたは @code{this "field"} という形式のシーケンスを頻繁に使用するハメになります(上記例では: @code{this
-circle-radius})。 なので、 この方法でのみフィールドを使用する場合は、 @code{inst-var} を使用してフィールドを定義し、
+あなたは @code{this "field"} という形式のシーケンスを頻繁に使用するハメになると思います(上記例では: @code{this
+circle-radius})。 そこで、 この方法でのみフィールドを使用する場合は、 @code{inst-var} を使用してフィールドを定義し、
 フィールド名の前の @code{this} を削れます。 たとえば、 上記例の @code{circle} クラスは以下のように定義することもできます:
 
 @example
@@ -20545,7 +20552,7 @@ create obj2 cl1    dict-new drop
 @format
 @code{bind} ( @i{... "class" "selector" -- ...  }) objects ``bind''
 @end format
-Execute the method for @var{selector} in @var{class}.
+指定のクラス @var{class} の 指定セレクター @var{selector} のメソッドを execute します。
 
 
 @findex <bind> ( @var{ class selector-xt -- xt   } ) objects
@@ -20554,7 +20561,7 @@ Execute the method for @var{selector} in @var{class}.
 @format
 @code{<bind>} ( @i{class selector-xt -- xt  }) objects ``<bind>''
 @end format
-@var{xt} is the method for the selector @var{selector-xt} in @var{class}.
+@var{xt} は、 指定クラス @var{class} のセレクター @var{selector-xt} のメソッドです。
 
 
 @findex bind' ( @var{ "class" "selector" -- xt   } ) objects
@@ -20563,7 +20570,7 @@ Execute the method for @var{selector} in @var{class}.
 @format
 @code{bind'} ( @i{"class" "selector" -- xt  }) objects ``bind'''
 @end format
-@var{xt} is the method for @var{selector} in @var{class}.
+@var{xt} は 指定のクラス @var{class} の 指定のセレクター @var{selector} のメソッドです。
 
 
 @findex [bind] ( @var{ compile-time: "class" "selector" -- ; run-time: ... object -- ...   } ) objects
@@ -20572,7 +20579,7 @@ Execute the method for @var{selector} in @var{class}.
 @format
 @code{[bind]} ( @i{compile-time: "class" "selector" -- ; run-time: ... object -- ...  }) objects ``[bind]''
 @end format
-Compile the method for @var{selector} in @var{class}.
+指定のクラス @var{class} の 指定のセレクター @var{selector} のメソッドをコンパイルします。
 
 
 @findex class ( @var{ parent-class -- align offset   } ) objects
@@ -20581,8 +20588,8 @@ Compile the method for @var{selector} in @var{class}.
 @format
 @code{class} ( @i{parent-class -- align offset  }) objects ``class''
 @end format
-Start a new class definition as a child of @var{parent-class}. @var{align
-offset} are for use by @var{field} etc.
+@var{parent-class} の子として新しいクラス定義を開始します。 スタックに積まれた @var{align offset} は
+@var{field} などで使用されます。
 
 
 @findex class->map ( @var{ class -- map   } ) objects
@@ -20591,9 +20598,8 @@ offset} are for use by @var{field} etc.
 @format
 @code{class->map} ( @i{class -- map  }) objects ``class->map''
 @end format
-@var{map} is the pointer to @var{class}'s method map; it points to the place
-in the map to which the selector offsets refer (i.e., where
-@var{object-map}s point to).
+@var{map} は 指定のクラス @var{class} のメソッド・マップへのポインタです。 これは、
+セレクター・オフセットが参照するマップ内の場所(つまり、 @var{object-map} が指す場所)を指します。
 
 
 @findex class-inst-size ( @var{ class -- addr   } ) objects
@@ -20602,8 +20608,8 @@ in the map to which the selector offsets refer (i.e., where
 @format
 @code{class-inst-size} ( @i{class -- addr  }) objects ``class-inst-size''
 @end format
-Give the size specification for an instance (i.e. an object)  of
-@var{class}; used as @code{class-inst-size 2@ ( class -- align size )}.
+してのクラス @var{class} のインスタンス(つまり、 オブジェクト)のサイズ仕様を指定します。 @code{class-inst-size
+2@ ( class -- align size )} として使用されます。
 
 
 @findex class-override! ( @var{ xt sel-xt class-map --   } ) objects
@@ -20612,7 +20618,7 @@ Give the size specification for an instance (i.e. an object)  of
 @format
 @code{class-override!} ( @i{xt sel-xt class-map --  }) objects ``class-override!''
 @end format
-@var{xt} is the new method for the selector @var{sel-xt} in @var{class-map}.
+指定の @var{xt} は、 指定の @var{class-map} のセレクター @var{sel-xt} の新しいメソッドです。
 
 
 @findex class-previous ( @var{ class --   } ) objects
@@ -20621,8 +20627,8 @@ Give the size specification for an instance (i.e. an object)  of
 @format
 @code{class-previous} ( @i{class --  }) objects ``class-previous''
 @end format
-Drop @var{class}'s wordlists from the search order. No checking is made
-whether @var{class}'s wordlists are actually on the search order.
+指定の @var{class} のワードリストを検索順序スタック(the search order)から drop します。  @var{class}
+のワードリストが実際に検索順序スタックに含まれているかどうかのチェックは行われません。
 
 
 @findex class>order ( @var{ class --   } ) objects
@@ -20631,7 +20637,7 @@ whether @var{class}'s wordlists are actually on the search order.
 @format
 @code{class>order} ( @i{class --  }) objects ``class>order''
 @end format
-Add @var{class}'s wordlists to the head of the search-order.
+クラス @var{class} のワードリストを検索順序スタック(the search-order)の先頭に追加します。
 
 
 @findex construct ( @var{ ... object --   } ) objects
@@ -20640,8 +20646,8 @@ Add @var{class}'s wordlists to the head of the search-order.
 @format
 @code{construct} ( @i{... object --  }) objects ``construct''
 @end format
-Initialize the data fields of @var{object}. The method for the class
-@var{object} just does nothing: @code{( object -- )}.
+指定の @var{object} のデータ・フィールドを初期化します。 クラス @var{object} のメソッドは何も行いません: @code{(
+object -- )}.
 
 
 @findex current' ( @var{ "selector" -- xt   } ) objects
@@ -20650,7 +20656,7 @@ Initialize the data fields of @var{object}. The method for the class
 @format
 @code{current'} ( @i{"selector" -- xt  }) objects ``current'''
 @end format
-@var{xt} is the method for @var{selector} in the current class.
+@var{xt} は、 現在のクラスの指定の @var{selector} のメソッドです。
 
 
 @findex [current] ( @var{ compile-time: "selector" -- ; run-time: ... object -- ...   } ) objects
@@ -20659,7 +20665,7 @@ Initialize the data fields of @var{object}. The method for the class
 @format
 @code{[current]} ( @i{compile-time: "selector" -- ; run-time: ... object -- ...  }) objects ``[current]''
 @end format
-Compile the method for @var{selector} in the current class.
+現在のクラスの @var{selector} のメソッドをコンパイルします。
 
 
 @findex current-interface ( @var{ -- addr   } ) objects
@@ -20668,7 +20674,7 @@ Compile the method for @var{selector} in the current class.
 @format
 @code{current-interface} ( @i{-- addr  }) objects ``current-interface''
 @end format
-Variable: contains the class or interface currently being defined.
+変数(Variable): 現在定義中のクラスまたはインターフェイスが含まれます。
 
 
 @findex dict-new ( @var{ ... class -- object   } ) objects
@@ -20677,8 +20683,8 @@ Variable: contains the class or interface currently being defined.
 @format
 @code{dict-new} ( @i{... class -- object  }) objects ``dict-new''
 @end format
-@code{allot} and initialize an object of class @var{class} in the
-dictionary.
+@code{allot} を使用して、 ディクショナリ内のクラス @var{class} のオブジェクトを初期化します。
+初期化したオブジェクトへのポインタを @var{object} に返します
 
 
 @findex end-class ( @var{ align offset "name" --   } ) objects
@@ -20687,8 +20693,7 @@ dictionary.
 @format
 @code{end-class} ( @i{align offset "name" --  }) objects ``end-class''
 @end format
-@var{name} execution: @code{-- class}@* End a class definition. The
-resulting class is @var{class}.
+@var{name} という名前を付けてクラス定義を終了します。  @var{name} 実行時: @code{-- class}
 
 
 @findex end-class-noname ( @var{ align offset -- class   } ) objects
@@ -20697,7 +20702,7 @@ resulting class is @var{class}.
 @format
 @code{end-class-noname} ( @i{align offset -- class  }) objects ``end-class-noname''
 @end format
-End a class definition. The resulting class is @var{class}.
+クラス定義を終了します。 結果のクラスは @var{class} です。
 
 
 @findex end-interface ( @var{ "name" --   } ) objects
@@ -20706,8 +20711,7 @@ End a class definition. The resulting class is @var{class}.
 @format
 @code{end-interface} ( @i{"name" --  }) objects ``end-interface''
 @end format
-@code{name} execution: @code{-- interface}@* End an interface
-definition. The resulting interface is @var{interface}.
+@code{name} という名前を付けてインターフェイス定義を終了します。 @code{name} の実行時: @code{--interface}
 
 
 @findex end-interface-noname ( @var{ -- interface   } ) objects
@@ -20716,7 +20720,7 @@ definition. The resulting interface is @var{interface}.
 @format
 @code{end-interface-noname} ( @i{-- interface  }) objects ``end-interface-noname''
 @end format
-End an interface definition. The resulting interface is @var{interface}.
+インターフェース定義を終了します。 結果のインターフェースは @var{interface}
 
 
 @findex end-methods ( @var{ --   } ) objects
@@ -20725,8 +20729,7 @@ End an interface definition. The resulting interface is @var{interface}.
 @format
 @code{end-methods} ( @i{--  }) objects ``end-methods''
 @end format
-Switch back from defining methods of a class to normal mode (currently this
-just restores the old search order).
+クラスのメソッド定義から通常モードに切り替えます(現在、 これは古い検索順序スタックを復元するだけです)。
 
 
 @findex exitm ( @var{ --   } ) objects
@@ -20735,7 +20738,7 @@ just restores the old search order).
 @format
 @code{exitm} ( @i{--  }) objects ``exitm''
 @end format
-@code{exit} from a method; restore old @code{this}.
+メソッドから @code{exit} します。 古い @code{this} を復元します。
 
 
 @findex heap-new ( @var{ ... class -- object   } ) objects
@@ -20744,7 +20747,7 @@ just restores the old search order).
 @format
 @code{heap-new} ( @i{... class -- object  }) objects ``heap-new''
 @end format
-@code{allocate} and initialize an object of class @var{class}.
+@code{allocate} し、 クラス @var{class} のオブジェクトを初期化します。
 
 
 @findex implementation ( @var{ interface --   } ) objects
@@ -20753,8 +20756,8 @@ just restores the old search order).
 @format
 @code{implementation} ( @i{interface --  }) objects ``implementation''
 @end format
-The current class implements @var{interface}. I.e., you can use all
-selectors of the interface in the current class and its descendents.
+現在のクラスは @var{interface} を実装しています。 つまり、
+現在のクラスとその子孫のインターフェイスのすべてのセレクターを使用できます。
 
 
 @findex init-object ( @var{ ... class object --   } ) objects
@@ -20763,8 +20766,11 @@ selectors of the interface in the current class and its descendents.
 @format
 @code{init-object} ( @i{... class object --  }) objects ``init-object''
 @end format
-Initialize a chunk of memory (@var{object}) to an object of class
-@var{class}; then performs @code{construct}.
+メモリのチャンク @var{object} (アドレス)をクラス @var{class} のオブジェクトのために初期化します。 それから
+@code{construct} を実行します(訳注: @var{class} の @code{construct} 用のスタック項目も必要な事に注意。
+6.24.3.2 Basic ‘objects.fs’ Usage の例 circle で言えば n-radius が必要で(my-circle2
+というメモリ領域をクラス・オブジェクトにするとして、) @code{50 circle my-circle-2 init-object}
+としなければならない)
 
 
 @findex inst-value ( @var{ align1 offset1 "name" -- align2 offset2   } ) objects
@@ -20773,8 +20779,8 @@ Initialize a chunk of memory (@var{object}) to an object of class
 @format
 @code{inst-value} ( @i{align1 offset1 "name" -- align2 offset2  }) objects ``inst-value''
 @end format
-@var{name} execution: @code{-- w}@* @var{w} is the value of the field
-@var{name} in @code{this} object.
+@var{align2} @var{offset2} は @var{w} のサイズだけ足し込んだ値です。 @var{name} の実行時:
+@code{-- w} @var{w} は、@code{this} オブジェクトの @var{name} フィールドの値です。
 
 
 @findex inst-var ( @var{ align1 offset1 align size "name" -- align2 offset2   } ) objects
@@ -20783,8 +20789,8 @@ Initialize a chunk of memory (@var{object}) to an object of class
 @format
 @code{inst-var} ( @i{align1 offset1 align size "name" -- align2 offset2  }) objects ``inst-var''
 @end format
-@var{name} execution: @code{-- addr}@* @var{addr} is the address of the
-field @var{name} in @code{this} object.
+@var{addr} は、@code{this} オブジェクトのフィールド @var{name} のアドレスです。 @var{name} の実行時:
+@code{-- addr}
 
 
 @findex interface ( @var{ --   } ) objects
@@ -20793,7 +20799,7 @@ field @var{name} in @code{this} object.
 @format
 @code{interface} ( @i{--  }) objects ``interface''
 @end format
-Start an interface definition.
+インターフェース定義を開始します。
 
 
 @findex m: ( @var{ -- xt colon-sys; run-time: object --   } ) objects
@@ -20802,7 +20808,7 @@ Start an interface definition.
 @format
 @code{m:} ( @i{-- xt colon-sys; run-time: object --  }) objects ``m:''
 @end format
-Start a method definition; @var{object} becomes new @code{this}.
+メソッド定義を開始します。 @var{object} が新しい @code{this} になります。
 
 
 @findex :m ( @var{ "name" -- xt; run-time: object --   } ) objects
@@ -20810,8 +20816,8 @@ Start a method definition; @var{object} becomes new @code{this}.
 @format
 @code{:m} ( @i{"name" -- xt; run-time: object --  }) objects ``:m''
 @end format
-Start a named method definition; @var{object} becomes new @code{this}.  Has
-to be ended with @code{;m}.
+名前付きメソッド定義を開始します。 @var{object} が新しい @code{this} になります。  @code{;m}
+で終わる必要があります。
 
 
 @findex ;m ( @var{ colon-sys --; run-time: --   } ) objects
@@ -20820,7 +20826,7 @@ to be ended with @code{;m}.
 @format
 @code{;m} ( @i{colon-sys --; run-time: --  }) objects ``;m''
 @end format
-End a method definition; restore old @code{this}.
+メソッド定義を終了します。 古い @code{this} を復元します。
 
 
 @findex method ( @var{ xt "name" --   } ) objects
@@ -20829,8 +20835,8 @@ End a method definition; restore old @code{this}.
 @format
 @code{method} ( @i{xt "name" --  }) objects ``method''
 @end format
-@code{name} execution: @code{... object -- ...}@* Create selector @var{name}
-and makes @var{xt} its method in the current class.
+セレクター @var{name} を作成し、@var{xt} を現在のクラスのメソッドにします。 @code{name} の実行時:
+@code{... object -- ...}
 
 
 @findex methods ( @var{ class --   } ) objects
@@ -20839,9 +20845,8 @@ and makes @var{xt} its method in the current class.
 @format
 @code{methods} ( @i{class --  }) objects ``methods''
 @end format
-Makes @var{class} the current class. This is intended to be used for
-defining methods to override selectors; you cannot define new fields or
-selectors.
+@var{class} を現在のクラスにします。 これは、 セレクターをオーバーライドするメソッドを定義するために使用することを目的としています。
+新しいフィールドやセレクターを定義することはできません。
 
 
 @findex object ( @var{ -- class   } ) objects
@@ -20850,7 +20855,7 @@ selectors.
 @format
 @code{object} ( @i{-- class  }) objects ``object''
 @end format
-the ancestor of all classes.
+すべてのクラスの祖先。
 
 
 @findex overrides ( @var{ xt "selector" --   } ) objects
@@ -20859,8 +20864,8 @@ the ancestor of all classes.
 @format
 @code{overrides} ( @i{xt "selector" --  }) objects ``overrides''
 @end format
-replace default method for @var{selector} in the current class with
-@var{xt}. @code{overrides} must not be used during an interface definition.
+現在のクラスの @var{selector} のデフォルト・メソッドを @var{xt} に置き換えます。 @code{overrides}
+はインターフェイス定義中に使用してはいけません。
 
 
 @findex [parent] ( @var{ compile-time: "selector" -- ; run-time: ... object -- ...   } ) objects
@@ -20869,7 +20874,7 @@ replace default method for @var{selector} in the current class with
 @format
 @code{[parent]} ( @i{compile-time: "selector" -- ; run-time: ... object -- ...  }) objects ``[parent]''
 @end format
-Compile the method for @var{selector} in the parent of the current class.
+現在のクラスの親の @var{selector} のメソッドをコンパイルします。
 
 
 @findex print ( @var{ object --   } ) objects
@@ -20878,8 +20883,7 @@ Compile the method for @var{selector} in the parent of the current class.
 @format
 @code{print} ( @i{object --  }) objects ``print''
 @end format
-Print the object. The method for the class @var{object} prints the address
-of the object and the address of its class.
+オブジェクトを出力します。 指定のクラス @var{object} のメソッドは、 オブジェクトのアドレスとそのクラスのアドレスを出力します。
 
 
 @findex protected ( @var{ --   } ) objects
@@ -20888,7 +20892,7 @@ of the object and the address of its class.
 @format
 @code{protected} ( @i{--  }) objects ``protected''
 @end format
-Set the compilation wordlist to the current class's wordlist
+現在のクラスのワードリストをコンパイル・ワードリスト(the compilation wordlist)にセットします
 
 
 @findex public ( @var{ --   } ) objects
@@ -20897,8 +20901,8 @@ Set the compilation wordlist to the current class's wordlist
 @format
 @code{public} ( @i{--  }) objects ``public''
 @end format
-Restore the compilation wordlist that was in effect before the last
-@code{protected} that actually changed the compilation wordlist.
+実際にコンパイル・ワードリスト(the compilation wordlist)を変更した最後の @code{protected}
+より前に有効だったコンパイル・ワードリストを復元します。
 
 
 @findex selector ( @var{ "name" --   } ) objects
@@ -20907,9 +20911,8 @@ Restore the compilation wordlist that was in effect before the last
 @format
 @code{selector} ( @i{"name" --  }) objects ``selector''
 @end format
-@var{name} execution: @code{... object -- ...}@* Create selector @var{name}
-for the current class and its descendents; you can set a method for the
-selector in the current class with @code{overrides}.
+現在のクラスとその子孫のセレクター @var{name} を作成します。 @code{overrides} を使用して、
+現在のクラスのセレクターのメソッドを設定できます。 @var{name} の実行時: @code{... object -- ...}
 
 
 @findex this ( @var{ -- object   } ) objects
@@ -20918,7 +20921,7 @@ selector in the current class with @code{overrides}.
 @format
 @code{this} ( @i{-- object  }) objects ``this''
 @end format
-the receiving object of the current method (aka active object).
+現在のメソッドの受信オブジェクト(receiving object)(別名アクティブ・オブジェクト)。
 
 
 @findex <to-inst> ( @var{ w xt --   } ) objects
@@ -20927,7 +20930,7 @@ the receiving object of the current method (aka active object).
 @format
 @code{<to-inst>} ( @i{w xt --  }) objects ``<to-inst>''
 @end format
-store @var{w} into the field @var{xt} in @code{this} object.
+@var{w} を @code{this} オブジェクトのフィールド @var{xt} に格納します。
 
 
 @findex [to-inst] ( @var{ compile-time: "name" -- ; run-time: w --   } ) objects
@@ -20936,7 +20939,7 @@ store @var{w} into the field @var{xt} in @code{this} object.
 @format
 @code{[to-inst]} ( @i{compile-time: "name" -- ; run-time: w --  }) objects ``[to-inst]''
 @end format
-store @var{w} into field @var{name} in @code{this} object.
+@var{w} を @code{this} オブジェクトの @var{name} フィールドに格納します。
 
 
 @findex to-this ( @var{ object --   } ) objects
@@ -20945,7 +20948,7 @@ store @var{w} into field @var{name} in @code{this} object.
 @format
 @code{to-this} ( @i{object --  }) objects ``to-this''
 @end format
-Set @code{this} (used internally, but useful when debugging).
+@code{this} を設定します(内部的に使用されるものですが、 デバッグ時に役立ちます)。
 
 
 @findex xt-new ( @var{ ... class xt -- object   } ) objects
@@ -20954,7 +20957,7 @@ Set @code{this} (used internally, but useful when debugging).
 @format
 @code{xt-new} ( @i{... class xt -- object  }) objects ``xt-new''
 @end format
-Make a new object, using @code{xt ( align size -- addr )} to get memory.
+@code{xt ( align size -- addr )} を使用してメモリを取得し、 新しいオブジェクトを作成します。
 
 
 
@@ -20968,11 +20971,11 @@ Make a new object, using @code{xt ( align size -- addr )} to get memory.
 @cindex @file{objects.fs}
 @cindex @file{oof.fs}
 
-This section describes the @file{oof.fs} package.
+このセクションでは、 @file{oof.fs} パッケージについて説明します。
 
-The package described in this section has been used in bigFORTH since 1991,
-and used for two large applications: a chromatographic system used to create
-new medicaments, and a graphic user interface library (MINOS).
+このセクションで説明するパッケージは、 1991 年以来 bigFORTH で使用されており、
+新薬作成に使用されるクロマトグラフィー・システムと、グラフィック・ユーザー・インターフェイス・ライブラリ (MINOS) という 2
+つの大きなアプリケーションに使用されています。
 
 You can find a description (in German) of @file{oof.fs} in @cite{Object
 oriented bigFORTH} by Bernd Paysan, published in @cite{Vierte Dimension}

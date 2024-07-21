@@ -27,6 +27,123 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Other assemblers,  Prev: ARM Assembler,  Up: Assembler and Code Words
+
+6.29.10 Other assemblers
+------------------------
+
+If you want to contribute another assembler/disassembler, please contact
+us (<anton@mips.complang.tuwien.ac.at>) to check if we have such an
+assembler already.  If you are writing them from scratch, please use a
+similar syntax style as the one we use (i.e., postfix, commas at the end
+of the instruction names, *note Common Assembler::); make the output of
+the disassembler be valid input for the assembler, and keep the style
+similar to the style we used.
+
+   Hints on implementation: The most important part is to have a good
+test suite that contains all instructions.  Once you have that, the rest
+is easy.  For actual coding you can take a look at ‘arch/mips/disasm.fs’
+to get some ideas on how to use data for both the assembler and
+disassembler, avoiding redundancy and some potential bugs.  You can also
+look at that file (and *note Advanced does> usage example::) to get
+ideas how to factor a disassembler.
+
+   Start with the disassembler, because it’s easier to reuse data from
+the disassembler for the assembler than the other way round.
+
+   For the assembler, take a look at ‘arch/alpha/asm.fs’, which shows
+how simple it can be.
+
+
+File: gforth.info,  Node: Carnal words,  Next: Passing Commands to the OS,  Prev: Assembler and Code Words,  Up: Words
+
+6.30 Carnal words
+=================
+
+These words deal with the mechanics of Gforth (in Forth circles called
+“carnal knowledge” of a Forth system), but we consider them stable
+enough to document them.
+
+* Menu:
+
+* Header fields::
+* Header methods::
+* Threading Words::
+
+
+File: gforth.info,  Node: Header fields,  Next: Header methods,  Prev: Carnal words,  Up: Carnal words
+
+6.30.1 Header fields
+--------------------
+
+In Gforth 1.0 we switched to a new word header layout.  For a detailed
+description, read: Bernd Paysan and M. Anton Ertl.  ‘The new Gforth
+header (http://www.euroforth.org/ef19/papers/paysan.pdf)’.  In 35th
+EuroForth Conference, pages 5-20, 2019.  Since this paper was published,
+xt and nt have been changed to point to the parameter field, like the
+body, but otherwise it is still up-to-date.
+
+   This section explains just the data structure and the words used to
+access it.  A header has the following fields:
+
+     name
+     >f+c
+     >link
+     >cfa
+     >namehm
+     >body
+
+   Currently Gforth has the names shown above for getting from the
+xt/nt/body to the field, but apart from the standard ‘>body’ they are
+not stable Gforth words.  Instead, we provide access words.  Note that
+the documented access words have survived the reorganization of the
+header layout.
+
+   Some of the words expect an nt, some expect an xt.  Given that both
+nt and xt point to the body of a word, what is the difference?  For most
+words, the xt and nt use the same header, and with nt=xt, they point to
+the same place.  However, for a synonym (*note Aliases::) there is a
+difference; consider the example
+
+     create x
+     synonym y x
+     synonym z y
+
+   In this case the nt of ‘z’ points to the body of ‘z’, while the xt of
+‘z’ points to the body of ‘x’.  Words defined with ‘alias’ or ‘forward’
+(*note Forward::) also have different nts and xts.
+
+   The name field is variable-length and is accessed with ‘name>string’
+(*note Name token::).
+
+   The ‘>f+c’ field contains flags and the name length (count).  You
+read the count with ‘name>string’, and the flags with
+
+‘compile-only?’ ( nt – flag  ) gforth-1.0 “compile-only?”
+   true if nt is marked as compile-only.
+
+   The ‘>link’ field contains a link to the previous word in the same
+word list.  You can read it with ‘name>link’ (*note Name token::).
+
+   The name, ‘>f+c’ and ‘>link’ fields are not present for ‘noname’
+words, but ‘name>string’ and ‘name>link’ work nevertheless, producing 0
+0 and 0, respectively.
+
+   The ‘>cfa’ field (aka code field) contains the code address used for
+‘execute’ing the word; you can read it with ‘>code-address’ and write it
+with ‘code-address!’ (*note Threading Words::).
+
+   The ‘>namehm’ field contains the address of the header methods table,
+described below.  You access it by performing or accessing header
+methods (*note Header methods::).
+
+   The ‘>body’ (aka parameter) field contains data or threaded code
+specific to the word type; its length depends on the word type.  E.g.,
+for a ‘constant’ it contains a cell with the value of the constant.  You
+can access it through ‘>body’ (*note CREATE..DOES> details::), but this
+is only standard for words you defined with ‘create’.
+
+
 File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header fields,  Up: Carnal words
 
 6.30.2 Header methods
@@ -5069,7 +5186,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * :: ( CLASS "NAME" -- ) mini-oof:       Basic Mini-OOF Usage.
                                                               (line  32)
 * :m ( "NAME" -- XT; RUN-TIME: OBJECT -- ) objects: Objects Glossary.
-                                                              (line 103)
+                                                              (line 116)
 * :noname ( -- XT COLON-SYS ) core-ext:  Anonymous Definitions.
                                                               (line   9)
 * :} ( HMADDR U LATEST LATESTNT WID 0 XT1 ... XTN -- ) gforth-1.0: Locals definition words.
@@ -5094,7 +5211,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ;inline ( INLINE:-SYS -- ) gforth-experimental: Colon Definitions.
                                                               (line  32)
 * ;m ( COLON-SYS --; RUN-TIME: -- ) objects: Objects Glossary.
-                                                              (line 107)
+                                                              (line 120)
 * ;s ( R:W -- ) gforth-0.2:              Calls and returns.   (line  56)
 * ;] ( COMPILE-TIME: QUOTATION-SYS -- ; RUN-TIME: -- XT ) gforth-1.0: Quotations.
                                                               (line  31)
@@ -5109,8 +5226,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * <= ( N1 N2 -- F ) gforth-0.2:          Numeric comparison.  (line  11)
 * <> ( N1 N2 -- F ) core-ext:            Numeric comparison.  (line  13)
 * <bind> ( CLASS SELECTOR-XT -- XT ) objects: Objects Glossary.
-                                                              (line   9)
-* <to-inst> ( W XT -- ) objects:         Objects Glossary.    (line 148)
+                                                              (line  10)
+* <to-inst> ( W XT -- ) objects:         Objects Glossary.    (line 164)
 * <{: ( -- HMADDR U LATEST LATESTNT WID 0 ) gforth-experimental: Closures.
                                                               (line  92)
 * = ( N1 N2 -- F ) core:                 Numeric comparison.  (line  15)
@@ -5186,7 +5303,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * [BEGIN] ( -- ) gforth-0.2:             Interpreter Directives.
                                                               (line  83)
 * [bind] ( COMPILE-TIME: "CLASS" "SELECTOR" -- ; RUN-TIME: ... OBJECT -- ... ) objects: Objects Glossary.
-                                                              (line  15)
+                                                              (line  17)
 * [char] ( COMPILATION '<SPACES>CCC' -- ; RUN-TIME -- C ) core,xchar-ext: String and character literals.
                                                               (line  52)
 * [COMP'] ( COMPILATION "NAME" -- ; RUN-TIME -- W XT ) gforth-0.2: Compilation token.
@@ -5194,7 +5311,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * [compile] ( COMPILATION "NAME" -- ; RUN-TIME ? -- ? ) core-ext: Macros.
                                                               (line 213)
 * [current] ( COMPILE-TIME: "SELECTOR" -- ; RUN-TIME: ... OBJECT -- ... ) objects: Objects Glossary.
-                                                              (line  48)
+                                                              (line  55)
 * [defined] ( "<SPACES>NAME" -- FLAG ) tools-ext: Interpreter Directives.
                                                               (line  43)
 * [DO] ( N-LIMIT N-INDEX -- ) gforth-0.2: Interpreter Directives.
@@ -5218,13 +5335,13 @@ this manual.  Each word is listed with its stack effect and wordset.
 * [NEXT] ( N -- ) gforth-0.2:            Interpreter Directives.
                                                               (line  71)
 * [parent] ( COMPILE-TIME: "SELECTOR" -- ; RUN-TIME: ... OBJECT -- ... ) objects: Objects Glossary.
-                                                              (line 126)
+                                                              (line 139)
 * [REPEAT] ( -- ) gforth-0.2:            Interpreter Directives.
                                                               (line  91)
 * [THEN] ( -- ) tools-ext:               Interpreter Directives.
                                                               (line  36)
 * [to-inst] ( COMPILE-TIME: "NAME" -- ; RUN-TIME: W -- ) objects: Objects Glossary.
-                                                              (line 151)
+                                                              (line 167)
 * [undefined] ( "<SPACES>NAME" -- FLAG ) tools-ext: Interpreter Directives.
                                                               (line  47)
 * [UNTIL] ( FLAG -- ) gforth-0.2:        Interpreter Directives.
@@ -5389,7 +5506,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * bind ( ... "CLASS" "SELECTOR" -- ... ) objects: Objects Glossary.
                                                               (line   6)
 * bind' ( "CLASS" "SELECTOR" -- XT ) objects: Objects Glossary.
-                                                              (line  12)
+                                                              (line  13)
 * bl ( -- C-CHAR ) core:                 String and character literals.
                                                               (line  79)
 * blank ( C-ADDR U -- ) string:          Memory Blocks.       (line  44)
@@ -5487,15 +5604,15 @@ this manual.  Each word is listed with its stack effect and wordset.
 * class ( CLASS -- CLASS SELECTORS VARS ) mini-oof: Basic Mini-OOF Usage.
                                                               (line  20)
 * class ( PARENT-CLASS -- ALIGN OFFSET ) objects: Objects Glossary.
-                                                              (line  18)
-* class->map ( CLASS -- MAP ) objects:   Objects Glossary.    (line  22)
+                                                              (line  21)
+* class->map ( CLASS -- MAP ) objects:   Objects Glossary.    (line  25)
 * class-inst-size ( CLASS -- ADDR ) objects: Objects Glossary.
-                                                              (line  27)
+                                                              (line  30)
 * class-override! ( XT SEL-XT CLASS-MAP -- ) objects: Objects Glossary.
-                                                              (line  31)
-* class-previous ( CLASS -- ) objects:   Objects Glossary.    (line  34)
+                                                              (line  35)
+* class-previous ( CLASS -- ) objects:   Objects Glossary.    (line  39)
 * class; ( -- ) oof:                     Class Declaration.   (line  42)
-* class>order ( CLASS -- ) objects:      Objects Glossary.    (line  38)
+* class>order ( CLASS -- ) objects:      Objects Glossary.    (line  44)
 * clear-libs ( -- ) gforth-0.7:          Declaring OS-level libraries.
                                                               (line  30)
 * clear-path ( PATH-ADDR -- ) gforth-0.5: General Search Paths.
@@ -5528,7 +5645,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * const-does> ( RUN-TIME: W*UW R*UR UW UR "NAME" -- ) gforth-obsolete: Const-does>.
                                                               (line   9)
 * Constant ( W "NAME" -- ) core:         Constants.           (line  23)
-* construct ( ... OBJECT -- ) objects:   Objects Glossary.    (line  41)
+* construct ( ... OBJECT -- ) objects:   Objects Glossary.    (line  48)
 * context ( -- ADDR ) gforth-0.2:        Word Lists.          (line 172)
 * contof ( COMPILATION CASE-SYS1 OF-SYS -- CASE-SYS2 ; RUN-TIME -- ) gforth-1.0: Arbitrary control structures.
                                                               (line 114)
@@ -5569,8 +5686,8 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  58)
 * ctz ( X -- U ) gforth-1.0:             Bitwise operations.  (line  67)
 * current ( -- ADDR ) gforth-0.2:        Word Lists.          (line 169)
-* current' ( "SELECTOR" -- XT ) objects: Objects Glossary.    (line  45)
-* current-interface ( -- ADDR ) objects: Objects Glossary.    (line  51)
+* current' ( "SELECTOR" -- XT ) objects: Objects Glossary.    (line  52)
+* current-interface ( -- ADDR ) objects: Objects Glossary.    (line  58)
 * C^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME C -- ) gforth-0.2: Locals definition words.
                                                               (line  63)
 * d ( -- R ) minos2:                     widget methods.      (line  27)
@@ -5645,7 +5762,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dfloats ( N1 -- N2 ) floating-ext:     Address arithmetic.  (line  97)
 * dglue ( -- RTYP RSUB RADD ) minos2:    widget methods.      (line  72)
 * dglue@ ( -- RTYP RSUB RADD ) minos2:   widget methods.      (line  81)
-* dict-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  54)
+* dict-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  62)
 * dirname ( C-ADDR1 U1 -- C-ADDR1 U2 ) gforth-0.7: Directories.
                                                               (line  15)
 * discode ( ADDR U -- ) gforth-0.2:      Common Disassembler. (line   9)
@@ -5718,17 +5835,17 @@ this manual.  Each word is listed with its stack effect and wordset.
 * end-c-library ( -- ) gforth-0.7:       Defining library interfaces.
                                                               (line  54)
 * end-class ( ALIGN OFFSET "NAME" -- ) objects: Objects Glossary.
-                                                              (line  57)
+                                                              (line  66)
 * end-class ( CLASS SELECTORS VARS "NAME" -- ) mini-oof: Basic Mini-OOF Usage.
                                                               (line  23)
 * end-class-noname ( ALIGN OFFSET -- CLASS ) objects: Objects Glossary.
-                                                              (line  61)
+                                                              (line  70)
 * end-code ( COLON-SYS -- ) gforth-0.2:  Assembler Definitions.
                                                               (line  59)
-* end-interface ( "NAME" -- ) objects:   Objects Glossary.    (line  64)
+* end-interface ( "NAME" -- ) objects:   Objects Glossary.    (line  73)
 * end-interface-noname ( -- INTERFACE ) objects: Objects Glossary.
-                                                              (line  68)
-* end-methods ( -- ) objects:            Objects Glossary.    (line  71)
+                                                              (line  77)
+* end-methods ( -- ) objects:            Objects Glossary.    (line  80)
 * end-struct ( ALIGN SIZE "NAME" -- ) gforth-0.2: Structure Glossary.
                                                               (line  37)
 * end-structure ( STRUCT-SYS +N -- ) facility-ext: Forth200x Structures.
@@ -5771,7 +5888,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  59)
 * EXIT ( COMPILATION -- ; RUN-TIME NEST-SYS -- ) core: Calls and returns.
                                                               (line  46)
-* exitm ( -- ) objects:                  Objects Glossary.    (line  75)
+* exitm ( -- ) objects:                  Objects Glossary.    (line  84)
 * expand-where ( -- ) gforth-1.0:        Locating uses of a word.
                                                               (line  43)
 * expect ( C-ADDR +N -- ) core-ext-obsolescent: Line input and conversion.
@@ -5988,7 +6105,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * h. ( U -- ) gforth-1.0:                Simple numeric output.
                                                               (line  16)
 * halt ( TASK -- ) gforth-experimental:  Basic multi-tasking. (line  75)
-* heap-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  78)
+* heap-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  87)
 * help ( "REST-OF-LINE" -- ) gforth-1.0: Help on Gforth.      (line   9)
 * here ( -- ADDR ) core:                 Dictionary allocation.
                                                               (line  24)
@@ -6014,7 +6131,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * immediate ( -- ) core:                 Interpretation and Compilation Semantics.
                                                               (line  48)
 * immediate? ( NT -- FLAG ) gforth-1.0:  Header methods.      (line 168)
-* implementation ( INTERFACE -- ) objects: Objects Glossary.  (line  81)
+* implementation ( INTERFACE -- ) objects: Objects Glossary.  (line  90)
 * include ( ... "FILE" -- ... ) file-ext: Forth source files. (line  48)
 * include-file ( I*X WFILEID -- J*X ) file: Forth source files.
                                                               (line  34)
@@ -6034,7 +6151,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * init-buffer ( ADDR -- ) gforth-experimental: Heap Allocation.
                                                               (line  66)
 * init-object ( ... CLASS OBJECT -- ) objects: Objects Glossary.
-                                                              (line  85)
+                                                              (line  94)
 * initiate ( XT TASK -- ) gforth-experimental: Basic multi-tasking.
                                                               (line  34)
 * inline: ( "NAME" -- INLINE:-SYS ) gforth-experimental: Colon Definitions.
@@ -6043,12 +6160,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * insert ( STRING LENGTH BUFFER SIZE -- ) gforth-0.7: Memory Blocks.
                                                               (line  47)
 * inst-value ( ALIGN1 OFFSET1 "NAME" -- ALIGN2 OFFSET2 ) objects: Objects Glossary.
-                                                              (line  89)
+                                                              (line 102)
 * inst-var ( ALIGN1 OFFSET1 ALIGN SIZE "NAME" -- ALIGN2 OFFSET2 ) objects: Objects Glossary.
-                                                              (line  93)
+                                                              (line 106)
 * INT-[I] ( -- N ) gforth-1.0:           Interpreter Directives.
                                                               (line  79)
-* interface ( -- ) objects:              Objects Glossary.    (line  97)
+* interface ( -- ) objects:              Objects Glossary.    (line 110)
 * interpret ( ... -- ... ) gforth-0.2:   The Text Interpreter.
                                                               (line 141)
 * interpret/compile: ( INTERP-XT COMP-XT "NAME" -- ) gforth-0.2: Combined words.
@@ -6182,7 +6299,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * m*/ ( D1 N2 U3 -- DQUOT ) double:      Integer division.    (line 122)
 * m+ ( D1 N -- D2 ) double:              Mixed precision.     (line   6)
 * m: ( -- XT COLON-SYS; RUN-TIME: OBJECT -- ) objects: Objects Glossary.
-                                                              (line 100)
+                                                              (line 113)
 * macros-wordlist ( -- WID ) gforth-experimental: Substitute. (line  13)
 * magenta-input ( -- ) gforth-1.0:       Terminal output.     (line  78)
 * make-latest ( NT -- ) gforth-1.0:      Making a word current.
@@ -6218,8 +6335,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * method ( -- ) oof:                     Class Declaration.   (line  29)
 * method ( M V "NAME" -- M' V ) mini-oof: Basic Mini-OOF Usage.
                                                               (line  14)
-* method ( XT "NAME" -- ) objects:       Objects Glossary.    (line 110)
-* methods ( CLASS -- ) objects:          Objects Glossary.    (line 114)
+* method ( XT "NAME" -- ) objects:       Objects Glossary.    (line 123)
+* methods ( CLASS -- ) objects:          Objects Glossary.    (line 127)
 * min ( N1 N2 -- N ) core:               Single precision.    (line  32)
 * mkdir-parents ( C-ADDR U MODE -- IOR ) gforth-0.7: Directories.
                                                               (line  63)
@@ -6287,7 +6404,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * o> ( R:C-ADDR -- ) new:                Mini-OOF2.           (line  16)
 * object ( -- A-ADDR ) mini-oof:         Basic Mini-OOF Usage.
                                                               (line  11)
-* object ( -- CLASS ) objects:           Objects Glossary.    (line 119)
+* object ( -- CLASS ) objects:           Objects Glossary.    (line 132)
 * object-' ( "NAME" -- XT ) oof:         The OOF base class.  (line  77)
 * object-: ( "NAME" -- ) oof:            The OOF base class.  (line  43)
 * object-:: ( "NAME" -- ) oof:           The OOF base class.  (line  55)
@@ -6343,7 +6460,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  21)
 * outfile-id ( -- FILE-ID ) gforth-0.2:  Redirection.         (line  24)
 * over ( W1 W2 -- W1 W2 W1 ) core:       Data stack.          (line  12)
-* overrides ( XT "SELECTOR" -- ) objects: Objects Glossary.   (line 122)
+* overrides ( XT "SELECTOR" -- ) objects: Objects Glossary.   (line 135)
 * pad ( -- C-ADDR ) core-ext:            Memory Blocks.       (line  62)
 * page ( -- ) facility:                  Terminal output.     (line  22)
 * par-split ( RW -- ) minos2:            widget methods.      (line 105)
@@ -6373,13 +6490,13 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  47)
 * preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 118)
 * previous ( -- ) search-ext:            Word Lists.          (line  77)
-* print ( OBJECT -- ) objects:           Objects Glossary.    (line 129)
+* print ( OBJECT -- ) objects:           Objects Glossary.    (line 142)
 * printdebugdata ( -- ) gforth-0.2:      Debugging.           (line  32)
 * process-option ( ADDR U -- TRUE / ADDR U FALSE ) gforth-0.7: Modifying the Startup Sequence.
                                                               (line  56)
-* protected ( -- ) objects:              Objects Glossary.    (line 133)
+* protected ( -- ) objects:              Objects Glossary.    (line 146)
 * ptr ( -- ) oof:                        Class Declaration.   (line  13)
-* public ( -- ) objects:                 Objects Glossary.    (line 136)
+* public ( -- ) objects:                 Objects Glossary.    (line 150)
 * query ( -- ) core-ext-obsolescent:     Input Sources.       (line  49)
 * quit ( ?? -- ?? ) core:                Miscellaneous Words. (line   9)
 * r/o ( -- FAM ) file:                   General files.       (line   9)
@@ -6513,7 +6630,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * see-code-range ( ADDR1 ADDR2 -- ) gforth-0.7: Examining compiled code.
                                                               (line  44)
 * select ( U1 U2 F -- U ) gforth-1.0:    Boolean Flags.       (line  23)
-* selector ( "NAME" -- ) objects:        Objects Glossary.    (line 140)
+* selector ( "NAME" -- ) objects:        Objects Glossary.    (line 155)
 * semaphore ( "NAME" -- ) gforth-experimental: Semaphores.    (line  14)
 * send-event ( XT TASK -- ) gforth-experimental: Message queues.
                                                               (line  13)
@@ -6656,7 +6773,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * THEN ( COMPILATION ORIG -- ; RUN-TIME -- ) core: Arbitrary control structures.
                                                               (line  24)
 * third ( W1 W2 W3 -- W1 W2 W3 W1 ) gforth-1.0: Data stack.   (line  14)
-* this ( -- OBJECT ) objects:            Objects Glossary.    (line 145)
+* this ( -- OBJECT ) objects:            Objects Glossary.    (line 160)
 * threading-method ( -- N ) gforth-0.2:  Threading Words.     (line  69)
 * throw ( Y1 .. YM NERROR -- Y1 .. YM / Z1 .. ZN ERROR ) exception: Exception Handling.
                                                               (line  10)
@@ -6670,7 +6787,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  22)
 * to-table: ( "NAME" "XT1" .. "XTN" -- ) gforth-experimental: User-defined TO and DEFER@.
                                                               (line  18)
-* to-this ( OBJECT -- ) objects:         Objects Glossary.    (line 154)
+* to-this ( OBJECT -- ) objects:         Objects Glossary.    (line 170)
 * touchdown ( $RXY*N BMASK -- ) minos2:  actor methods.       (line  21)
 * touchup ( $RXY*N BMASK -- ) minos2:    actor methods.       (line  24)
 * toupper ( C1 -- C2 ) gforth-0.2:       Characters.          (line  29)
@@ -6892,7 +7009,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  91)
 * xor ( W1 W2 -- W ) core:               Bitwise operations.  (line  10)
 * xt-new ( ... CLASS XT -- OBJECT ) objects: Objects Glossary.
-                                                              (line 157)
+                                                              (line 174)
 * xt-see ( XT -- ) gforth-0.2:           Examining compiled code.
                                                               (line  17)
 * xt-see-code ( XT -- ) gforth-1.0:      Examining compiled code.

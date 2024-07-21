@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gforth-docs-ja 0.0\n"
 "POT-Creation-Date: 2024-07-02 04:26+0900\n"
-"PO-Revision-Date: 2024-07-20 18:29+0900\n"
+"PO-Revision-Date: 2024-07-21 19:36+0900\n"
 "Last-Translator: kuma35\n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -53568,6 +53568,30 @@ msgid ""
 "@code{circle-radius} with 50. We can draw this new circle at (100,100) with:"
 msgstr "@code{heap-new} は @code{construct} を呼び出し、 フィールド @code{circle-radius} を 50 で初期化します。 以下のようにして、 この新しい円を (100,100) の位置に描画(draw)できます:"
 
+# object class  ok 2
+#     selector draw  ( x y graphicl -- )  ok 2
+# end-class graphical  ok
+#
+# : draw-circle  ( x y r -- ; dummy-word )  compiled
+#     . . . ;  ok
+#
+# graphical class  ok 2
+#     cell% field circle-radius  ok 2
+#   ok 2
+#     :noname  ( x y circle -- )  compiled
+#         circle-radius @ draw-circle ;  ok 3
+#     overrides draw  ok 2
+#   ok 2
+#     :noname  ( n-radius circle -- )  compiled
+#         circle-radius ! ;  ok 3
+#     overrides construct  ok 2
+# end-class circle  ok
+#
+# 50 circle heap-new constant my-circle  ok
+#
+# my-circle print object:94071267066416 class:140284399414664  ok
+#
+# 100 100 my-circle draw 50 100 100  ok
 #. type: example
 #: ../doc/gforth.texi:21809 ../doc/gforth.texi:22884 ../doc/gforth.texi:23412
 #, no-wrap
@@ -53676,7 +53700,7 @@ msgid ""
 "with @code{allot}) with @code{dict-new} ( ... class -- object ). Both words "
 "invoke @code{construct}, which consumes the stack items indicated by \"...\" "
 "above."
-msgstr "@code{heap-new} ( ... class -- object ) を使用するとヒープ上にクラスのオブジェクトを作成して初期化することができ、 @code{dict-new} ( ... class -- object ) を使用するとディクショナリ内(@code{allot} による割り当て)にクラスのオブジェクトを作成して初期化することができます。 どちらのワードも @code{construct} を呼び出し、 それぞれのスタック効果の「...」で示されたスタック項目を消費します。"
+msgstr "@code{heap-new} ( ... class -- object ) を使用するとヒープ上にクラスのオブジェクトを作成して初期化することができ、 @code{dict-new} ( ... class -- object ) を使用するとディクショナリ内(@code{allot} による割り当て)にクラスのオブジェクトを作成して初期化することができます。 どちらのワードも当該クラス @i{class} の @code{construct} を呼び出し、 当該クラス @i{class} の @code{construct} のスタック効果(上記「...」の部分)で示されたスタック項目を消費します(訳注: 例えば 6.24.3.2 Basic ‘objects.fs’ Usage の例のように、 @code{circle} の @code{construct} のスタック効果 n-radius が必要で、 @code{50 circle heap-new constant my-circle} としなければならない)。"
 
 #. type: cindex
 #: ../doc/gforth.texi:21846
@@ -53690,6 +53714,31 @@ msgstr "@code{init-object} discussion"
 msgid "@code{class-inst-size} discussion"
 msgstr "@code{class-inst-size} discussion"
 
+# graphical class-inst-size 2@ swap . . 8 8  ok
+# circle class-inst-size 2@ swap . . 8 16  ok
+# my-circle class-inst-size 2@ swap . . 94071267066800 0  ok
+#
+# circle class-inst-size 2@ %alloc constant my-circle-2  ok \ ヒープにメモリを確保する。
+# my-circle-2 print \ メモリ確保しただけなのでクラスオブジェクトとしては認識されていない
+# *the terminal*:42:13: error: Invalid memory address
+# my-circle-2 >>>print<<<
+# Backtrace:
+# /usr/local/share/gforth/0.7.9_20240418/objects.fs:148:58:  0 $7F9681A1C2D8 perform
+#  
+# circle my-circle-2 init-object \ circle の construct が走るので n-radius 指定が必要
+# *the terminal*:43:20: error: Stack underflow
+# circle my-circle-2 >>>init-object<<<
+# Backtrace:
+# *terminal*:21:23:                        0 $7F9681CB6E90 ! 
+# /usr/local/share/gforth/0.7.9_20240418/objects.fs:148:58:  1 $7F9681A1C2D8 perform
+#  
+# /usr/local/share/gforth/0.7.9_20240418/objects.fs:532:5:  2 $7F9681CB6AF0 construc
+# t 
+# 50 circle my-circle-2 init-object  ok
+#
+# \ ちゃんとクラスオブジェクトになった。
+# my-circle-2 print object:94071267069792 class:140284399414664  ok
+#
 #. type: table
 #: ../doc/gforth.texi:21853
 msgid ""
@@ -53698,7 +53747,7 @@ msgid ""
 "Once you have memory for an object, you can initialize it with @code{init-"
 "object} ( ... class object -- ); @code{construct} does only a part of the "
 "necessary work."
-msgstr "オブジェクトに自分でメモリを割り当てたい場合は、 @code{class-inst-size 2@@} ( class -- align size ) を使用してそのアライメント(alignment)とサイズを取得できます。 オブジェクト用のメモリを確保したら、  @code{init-object} ( ... class object -- )でオブジェクトを初期化できます。 @code{construct} は必要な作業の一部のみを行います。"
+msgstr "オブジェクトに自分でメモリを割り当てたい場合は、 @code{class-inst-size 2@@} ( class -- align size ) を使用してクラスのアライメント(alignment)とサイズを取得できます。 オブジェクト用のメモリを確保したら、  @code{init-object} ( ... class object -- )でオブジェクトを初期化できます(訳注: @i{class} のためのデータ構造を @i{object} からに構築し、 その後そのオブジェクトに対して @code{construct} を実行します。 注意: 当該 @i{class} の @code{construct} 用のスタック項目の指定も必要な事に注意)。"
 
 #. type: node
 #: ../doc/gforth.texi:21854 ../doc/gforth.texi:21877 ../doc/gforth.texi:21878
@@ -53994,7 +54043,7 @@ msgid ""
 "that calls @code{catch} and was defined before loading @code{objects.fs}, "
 "you have to redefine it like I redefined @code{catch}: @code{: catch this >r "
 "catch r> to-this ;}}"
-msgstr "このメソッドが実行されると、 受信オブジェクト(receiver object)がスタックから削除されます。 あなたは @code{this} を使用してアクセスできます(ええ、 確かに、この例では @code{m: ... ;m} を使用する利点はないですけども)。 @code{m:} と @code{;m} の間のコードだけでなく、 メソッド全体(つまり、 受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 @code{m:...;m} では @code{exit} を使用できません。 代わりに、@code{exitm} を使用してください。@footnote{さらに、 @code{catch} を呼び出すワードや、 @code{objects.fs} をロードする前に定義されているワードについては、 @code{catch} を再定義したように、  これらも再定義する必要があります: @code{: catch this >r catch r> to-this ;}}"
+msgstr "このメソッドが実行されるときは、 受信オブジェクト(receiver object)(上記例の @i{circle})がスタックから取り除かれます。 その代わりに、 @i{m:} 〜 @i{;m} の間は @code{this} を使用して受信オブジェクトにアクセスできます(ええ、 確かに、この例では @code{m: ... ;m} を使用する利点ないかもしれませんね)。 注意: しかし、 スタック・コメントとしては @code{m:} と @code{;m} の間のコードだけでなく、 メソッド全体(つまり、 受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 なお、 @code{m:...;m} では @code{exit} を使用できません。 代わりに、 @code{exitm} を使用してください@footnote{さらに、 @code{catch} を呼び出すワードや、 @code{objects.fs} をロードする前に定義されているワードについては、 @code{catch} を再定義したように、  これらも再定義する必要があります: @code{: catch this >r catch r> to-this ;}}。"
 
 #. type: cindex
 #: ../doc/gforth.texi:21980
@@ -54010,7 +54059,7 @@ msgid ""
 "this way, you can define it with @code{inst-var} and eliminate the "
 "@code{this} before the field name. E.g., the @code{circle} class above could "
 "also be defined with:"
-msgstr "あなたは @code{this \"field\"} という形式のシーケンスを頻繁に使用するハメになります(上記例では: @code{this circle-radius})。 なので、 この方法でのみフィールドを使用する場合は、 @code{inst-var} を使用してフィールドを定義し、 フィールド名の前の @code{this} を削れます。 たとえば、 上記例の @code{circle} クラスは以下のように定義することもできます:"
+msgstr "あなたは @code{this \"field\"} という形式のシーケンスを頻繁に使用するハメになると思います(上記例では: @code{this circle-radius})。 そこで、 この方法でのみフィールドを使用する場合は、 @code{inst-var} を使用してフィールドを定義し、 フィールド名の前の @code{this} を削れます。 たとえば、 上記例の @code{circle} クラスは以下のように定義することもできます:"
 
 #. type: example
 #: ../doc/gforth.texi:21991
@@ -54738,137 +54787,137 @@ msgstr "このコードで作成されたデータ構造 (@code{object} のデ�
 #: ../doc/gforth.texi:22313 ../doc/gforth.texi:22314
 #, no-wrap
 msgid "@file{objects.fs} Glossary"
-msgstr ""
+msgstr "@file{objects.fs} Glossary"
 
 #. type: findex
 #: ../doc/gforth.texi:22317
 #, no-wrap
 msgid "bind ( @var{ ... \"class\" \"selector\" -- ...   } ) objects"
-msgstr ""
+msgstr "bind ( @var{ ... \"class\" \"selector\" -- ...   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22318 ../doc/gforth.texi:22319
 #, no-wrap
 msgid "bind"
-msgstr ""
+msgstr "bind"
 
 #. type: format
 #: ../doc/gforth.texi:22322
 #, no-wrap
 msgid "@code{bind} ( @i{... \"class\" \"selector\" -- ...  }) objects ``bind''\n"
-msgstr ""
+msgstr "@code{bind} ( @i{... \"class\" \"selector\" -- ...  }) objects ``bind''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22324
 msgid "Execute the method for @var{selector} in @var{class}."
-msgstr ""
+msgstr "指定のクラス @var{class} の 指定セレクター @var{selector} のメソッドを execute します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22326
 #, no-wrap
 msgid "<bind> ( @var{ class selector-xt -- xt   } ) objects"
-msgstr ""
+msgstr "<bind> ( @var{ class selector-xt -- xt   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22327 ../doc/gforth.texi:22328
 #, no-wrap
 msgid "<bind>"
-msgstr ""
+msgstr "<bind>"
 
 #. type: format
 #: ../doc/gforth.texi:22331
 #, no-wrap
 msgid "@code{<bind>} ( @i{class selector-xt -- xt  }) objects ``<bind>''\n"
-msgstr ""
+msgstr "@code{<bind>} ( @i{class selector-xt -- xt  }) objects ``<bind>''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22334
 msgid ""
 "@var{xt} is the method for the selector @var{selector-xt} in @var{class}."
-msgstr ""
+msgstr "@var{xt} は、 指定クラス @var{class} のセレクター @var{selector-xt} のメソッドです。"
 
 #. type: findex
 #: ../doc/gforth.texi:22336
 #, no-wrap
 msgid "bind' ( @var{ \"class\" \"selector\" -- xt   } ) objects"
-msgstr ""
+msgstr "bind' ( @var{ \"class\" \"selector\" -- xt   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22337 ../doc/gforth.texi:22338
 #, no-wrap
 msgid "bind'"
-msgstr ""
+msgstr "bind'"
 
 #. type: format
 #: ../doc/gforth.texi:22341
 #, no-wrap
 msgid "@code{bind'} ( @i{\"class\" \"selector\" -- xt  }) objects ``bind'''\n"
-msgstr ""
+msgstr "@code{bind'} ( @i{\"class\" \"selector\" -- xt  }) objects ``bind'''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22343
 msgid "@var{xt} is the method for @var{selector} in @var{class}."
-msgstr ""
+msgstr "@var{xt} は 指定のクラス @var{class} の 指定のセレクター @var{selector} のメソッドです。"
 
 #. type: findex
 #: ../doc/gforth.texi:22345
 #, no-wrap
 msgid "[bind] ( @var{ compile-time: \"class\" \"selector\" -- ; run-time: ... object -- ...   } ) objects"
-msgstr ""
+msgstr "[bind] ( @var{ compile-time: \"class\" \"selector\" -- ; run-time: ... object -- ...   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22346 ../doc/gforth.texi:22347
 #, no-wrap
 msgid "[bind]"
-msgstr ""
+msgstr "[bind]"
 
 #. type: format
 #: ../doc/gforth.texi:22350
 #, no-wrap
 msgid "@code{[bind]} ( @i{compile-time: \"class\" \"selector\" -- ; run-time: ... object -- ...  }) objects ``[bind]''\n"
-msgstr ""
+msgstr "@code{[bind]} ( @i{compile-time: \"class\" \"selector\" -- ; run-time: ... object -- ...  }) objects ``[bind]''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22352
 msgid "Compile the method for @var{selector} in @var{class}."
-msgstr ""
+msgstr "指定のクラス @var{class} の 指定のセレクター @var{selector} のメソッドをコンパイルします。"
 
 #. type: findex
 #: ../doc/gforth.texi:22354
 #, no-wrap
 msgid "class ( @var{ parent-class -- align offset   } ) objects"
-msgstr ""
+msgstr "class ( @var{ parent-class -- align offset   } ) objects"
 
 #. type: format
 #: ../doc/gforth.texi:22359
 #, no-wrap
 msgid "@code{class} ( @i{parent-class -- align offset  }) objects ``class''\n"
-msgstr ""
+msgstr "@code{class} ( @i{parent-class -- align offset  }) objects ``class''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22363
 msgid ""
 "Start a new class definition as a child of @var{parent-class}. @var{align "
 "offset} are for use by @var{field} etc."
-msgstr ""
+msgstr "@var{parent-class} の子として新しいクラス定義を開始します。 スタックに積まれた @var{align offset} は @var{field} などで使用されます。"
 
 #. type: findex
 #: ../doc/gforth.texi:22365
 #, no-wrap
 msgid "class->map ( @var{ class -- map   } ) objects"
-msgstr ""
+msgstr "class->map ( @var{ class -- map   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22366 ../doc/gforth.texi:22367
 #, no-wrap
 msgid "class->map"
-msgstr ""
+msgstr "class->map"
 
 #. type: format
 #: ../doc/gforth.texi:22370
 #, no-wrap
 msgid "@code{class->map} ( @i{class -- map  }) objects ``class->map''\n"
-msgstr ""
+msgstr "@code{class->map} ( @i{class -- map  }) objects ``class->map''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22374
@@ -54876,622 +54925,622 @@ msgid ""
 "@var{map} is the pointer to @var{class}'s method map; it points to the place "
 "in the map to which the selector offsets refer (i.e., where @var{object-map}"
 "s point to)."
-msgstr ""
+msgstr "@var{map} は 指定のクラス @var{class} のメソッド・マップへのポインタです。 これは、 セレクター・オフセットが参照するマップ内の場所(つまり、 @var{object-map} が指す場所)を指します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22376
 #, no-wrap
 msgid "class-inst-size ( @var{ class -- addr   } ) objects"
-msgstr ""
+msgstr "class-inst-size ( @var{ class -- addr   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22377 ../doc/gforth.texi:22378
 #, no-wrap
 msgid "class-inst-size"
-msgstr ""
+msgstr "class-inst-size"
 
 #. type: format
 #: ../doc/gforth.texi:22381
 #, no-wrap
 msgid "@code{class-inst-size} ( @i{class -- addr  }) objects ``class-inst-size''\n"
-msgstr ""
+msgstr "@code{class-inst-size} ( @i{class -- addr  }) objects ``class-inst-size''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22385
 msgid ""
 "Give the size specification for an instance (i.e. an object)  of "
 "@var{class}; used as @code{class-inst-size 2@ ( class -- align size )}."
-msgstr ""
+msgstr "してのクラス @var{class} のインスタンス(つまり、 オブジェクト)のサイズ仕様を指定します。 @code{class-inst-size 2@ ( class -- align size )} として使用されます。"
 
 #. type: findex
 #: ../doc/gforth.texi:22387
 #, no-wrap
 msgid "class-override! ( @var{ xt sel-xt class-map --   } ) objects"
-msgstr ""
+msgstr "class-override! ( @var{ xt sel-xt class-map --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22388 ../doc/gforth.texi:22389
 #, no-wrap
 msgid "class-override!"
-msgstr ""
+msgstr "class-override!"
 
 #. type: format
 #: ../doc/gforth.texi:22392
 #, no-wrap
 msgid "@code{class-override!} ( @i{xt sel-xt class-map --  }) objects ``class-override!''\n"
-msgstr ""
+msgstr "@code{class-override!} ( @i{xt sel-xt class-map --  }) objects ``class-override!''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22395
 msgid ""
 "@var{xt} is the new method for the selector @var{sel-xt} in @var{class-map}."
-msgstr ""
+msgstr "指定の @var{xt} は、 指定の @var{class-map} のセレクター @var{sel-xt} の新しいメソッドです。"
 
 #. type: findex
 #: ../doc/gforth.texi:22397
 #, no-wrap
 msgid "class-previous ( @var{ class --   } ) objects"
-msgstr ""
+msgstr "class-previous ( @var{ class --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22398 ../doc/gforth.texi:22399
 #, no-wrap
 msgid "class-previous"
-msgstr ""
+msgstr "class-previous"
 
 #. type: format
 #: ../doc/gforth.texi:22402
 #, no-wrap
 msgid "@code{class-previous} ( @i{class --  }) objects ``class-previous''\n"
-msgstr ""
+msgstr "@code{class-previous} ( @i{class --  }) objects ``class-previous''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22406
 msgid ""
 "Drop @var{class}'s wordlists from the search order. No checking is made "
 "whether @var{class}'s wordlists are actually on the search order."
-msgstr ""
+msgstr "指定の @var{class} のワードリストを検索順序スタック(the search order)から drop します。  @var{class} のワードリストが実際に検索順序スタックに含まれているかどうかのチェックは行われません。"
 
 #. type: findex
 #: ../doc/gforth.texi:22408
 #, no-wrap
 msgid "class>order ( @var{ class --   } ) objects"
-msgstr ""
+msgstr "class>order ( @var{ class --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22409 ../doc/gforth.texi:22410
 #, no-wrap
 msgid "class>order"
-msgstr ""
+msgstr "class>order"
 
 #. type: format
 #: ../doc/gforth.texi:22413
 #, no-wrap
 msgid "@code{class>order} ( @i{class --  }) objects ``class>order''\n"
-msgstr ""
+msgstr "@code{class>order} ( @i{class --  }) objects ``class>order''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22415
 msgid "Add @var{class}'s wordlists to the head of the search-order."
-msgstr ""
+msgstr "クラス @var{class} のワードリストを検索順序スタック(the search-order)の先頭に追加します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22417
 #, no-wrap
 msgid "construct ( @var{ ... object --   } ) objects"
-msgstr ""
+msgstr "construct ( @var{ ... object --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22418 ../doc/gforth.texi:22419
 #, no-wrap
 msgid "construct"
-msgstr ""
+msgstr "construct"
 
 #. type: format
 #: ../doc/gforth.texi:22422
 #, no-wrap
 msgid "@code{construct} ( @i{... object --  }) objects ``construct''\n"
-msgstr ""
+msgstr "@code{construct} ( @i{... object --  }) objects ``construct''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22425
 msgid ""
 "Initialize the data fields of @var{object}. The method for the class "
 "@var{object} just does nothing: @code{( object -- )}."
-msgstr ""
+msgstr "指定の @var{object} のデータ・フィールドを初期化します。 クラス @var{object} のメソッドは何も行いません: @code{( object -- )}."
 
 #. type: findex
 #: ../doc/gforth.texi:22427
 #, no-wrap
 msgid "current' ( @var{ \"selector\" -- xt   } ) objects"
-msgstr ""
+msgstr "current' ( @var{ \"selector\" -- xt   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22428 ../doc/gforth.texi:22429
 #, no-wrap
 msgid "current'"
-msgstr ""
+msgstr "current'"
 
 #. type: format
 #: ../doc/gforth.texi:22432
 #, no-wrap
 msgid "@code{current'} ( @i{\"selector\" -- xt  }) objects ``current'''\n"
-msgstr ""
+msgstr "@code{current'} ( @i{\"selector\" -- xt  }) objects ``current'''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22434
 msgid "@var{xt} is the method for @var{selector} in the current class."
-msgstr ""
+msgstr "@var{xt} は、 現在のクラスの指定の @var{selector} のメソッドです。"
 
 #. type: findex
 #: ../doc/gforth.texi:22436
 #, no-wrap
 msgid "[current] ( @var{ compile-time: \"selector\" -- ; run-time: ... object -- ...   } ) objects"
-msgstr ""
+msgstr "[current] ( @var{ compile-time: \"selector\" -- ; run-time: ... object -- ...   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22437 ../doc/gforth.texi:22438
 #, no-wrap
 msgid "[current]"
-msgstr ""
+msgstr "[current]"
 
 #. type: format
 #: ../doc/gforth.texi:22441
 #, no-wrap
 msgid "@code{[current]} ( @i{compile-time: \"selector\" -- ; run-time: ... object -- ...  }) objects ``[current]''\n"
-msgstr ""
+msgstr "@code{[current]} ( @i{compile-time: \"selector\" -- ; run-time: ... object -- ...  }) objects ``[current]''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22443
 msgid "Compile the method for @var{selector} in the current class."
-msgstr ""
+msgstr "現在のクラスの @var{selector} のメソッドをコンパイルします。"
 
 #. type: findex
 #: ../doc/gforth.texi:22445
 #, no-wrap
 msgid "current-interface ( @var{ -- addr   } ) objects"
-msgstr ""
+msgstr "current-interface ( @var{ -- addr   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22446 ../doc/gforth.texi:22447
 #, no-wrap
 msgid "current-interface"
-msgstr ""
+msgstr "current-interface"
 
 #. type: format
 #: ../doc/gforth.texi:22450
 #, no-wrap
 msgid "@code{current-interface} ( @i{-- addr  }) objects ``current-interface''\n"
-msgstr ""
+msgstr "@code{current-interface} ( @i{-- addr  }) objects ``current-interface''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22453
 msgid "Variable: contains the class or interface currently being defined."
-msgstr ""
+msgstr "変数(Variable): 現在定義中のクラスまたはインターフェイスが含まれます。"
 
 #. type: findex
 #: ../doc/gforth.texi:22455
 #, no-wrap
 msgid "dict-new ( @var{ ... class -- object   } ) objects"
-msgstr ""
+msgstr "dict-new ( @var{ ... class -- object   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22456 ../doc/gforth.texi:22457
 #, no-wrap
 msgid "dict-new"
-msgstr ""
+msgstr "dict-new"
 
 #. type: format
 #: ../doc/gforth.texi:22460
 #, no-wrap
 msgid "@code{dict-new} ( @i{... class -- object  }) objects ``dict-new''\n"
-msgstr ""
+msgstr "@code{dict-new} ( @i{... class -- object  }) objects ``dict-new''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22463
 msgid ""
 "@code{allot} and initialize an object of class @var{class} in the dictionary."
-msgstr ""
+msgstr "@code{allot} を使用して、 ディクショナリ内のクラス @var{class} のオブジェクトを初期化します。 初期化したオブジェクトへのポインタを @var{object} に返します"
 
 #. type: findex
 #: ../doc/gforth.texi:22465
 #, no-wrap
 msgid "end-class ( @var{ align offset \"name\" --   } ) objects"
-msgstr ""
+msgstr "end-class ( @var{ align offset \"name\" --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22466 ../doc/gforth.texi:22467 ../doc/gforth.texi:23311
 #: ../doc/gforth.texi:23312
 #, no-wrap
 msgid "end-class"
-msgstr ""
+msgstr "end-class"
 
 #. type: format
 #: ../doc/gforth.texi:22470
 #, no-wrap
 msgid "@code{end-class} ( @i{align offset \"name\" --  }) objects ``end-class''\n"
-msgstr ""
+msgstr "@code{end-class} ( @i{align offset \"name\" --  }) objects ``end-class''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22473
 msgid ""
 "@var{name} execution: @code{-- class}@* End a class definition. The "
 "resulting class is @var{class}."
-msgstr ""
+msgstr "@var{name} という名前を付けてクラス定義を終了します。  @var{name} 実行時: @code{-- class}"
 
 #. type: findex
 #: ../doc/gforth.texi:22475
 #, no-wrap
 msgid "end-class-noname ( @var{ align offset -- class   } ) objects"
-msgstr ""
+msgstr "end-class-noname ( @var{ align offset -- class   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22476 ../doc/gforth.texi:22477
 #, no-wrap
 msgid "end-class-noname"
-msgstr ""
+msgstr "end-class-noname"
 
 #. type: format
 #: ../doc/gforth.texi:22480
 #, no-wrap
 msgid "@code{end-class-noname} ( @i{align offset -- class  }) objects ``end-class-noname''\n"
-msgstr ""
+msgstr "@code{end-class-noname} ( @i{align offset -- class  }) objects ``end-class-noname''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22482
 msgid "End a class definition. The resulting class is @var{class}."
-msgstr ""
+msgstr "クラス定義を終了します。 結果のクラスは @var{class} です。"
 
 #. type: findex
 #: ../doc/gforth.texi:22484
 #, no-wrap
 msgid "end-interface ( @var{ \"name\" --   } ) objects"
-msgstr ""
+msgstr "end-interface ( @var{ \"name\" --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22485 ../doc/gforth.texi:22486
 #, no-wrap
 msgid "end-interface"
-msgstr ""
+msgstr "end-interface"
 
 #. type: format
 #: ../doc/gforth.texi:22489
 #, no-wrap
 msgid "@code{end-interface} ( @i{\"name\" --  }) objects ``end-interface''\n"
-msgstr ""
+msgstr "@code{end-interface} ( @i{\"name\" --  }) objects ``end-interface''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22493
 msgid ""
 "@code{name} execution: @code{-- interface}@* End an interface definition. "
 "The resulting interface is @var{interface}."
-msgstr ""
+msgstr "@code{name} という名前を付けてインターフェイス定義を終了します。 @code{name} の実行時: @code{--interface}"
 
 #. type: findex
 #: ../doc/gforth.texi:22495
 #, no-wrap
 msgid "end-interface-noname ( @var{ -- interface   } ) objects"
-msgstr ""
+msgstr "end-interface-noname ( @var{ -- interface   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22496 ../doc/gforth.texi:22497
 #, no-wrap
 msgid "end-interface-noname"
-msgstr ""
+msgstr "end-interface-noname"
 
 #. type: format
 #: ../doc/gforth.texi:22500
 #, no-wrap
 msgid "@code{end-interface-noname} ( @i{-- interface  }) objects ``end-interface-noname''\n"
-msgstr ""
+msgstr "@code{end-interface-noname} ( @i{-- interface  }) objects ``end-interface-noname''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22503
 msgid ""
 "End an interface definition. The resulting interface is @var{interface}."
-msgstr ""
+msgstr "インターフェース定義を終了します。 結果のインターフェースは @var{interface}"
 
 #. type: findex
 #: ../doc/gforth.texi:22505
 #, no-wrap
 msgid "end-methods ( @var{ --   } ) objects"
-msgstr ""
+msgstr "end-methods ( @var{ --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22506 ../doc/gforth.texi:22507
 #, no-wrap
 msgid "end-methods"
-msgstr ""
+msgstr "end-methods"
 
 #. type: format
 #: ../doc/gforth.texi:22510
 #, no-wrap
 msgid "@code{end-methods} ( @i{--  }) objects ``end-methods''\n"
-msgstr ""
+msgstr "@code{end-methods} ( @i{--  }) objects ``end-methods''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22513
 msgid ""
 "Switch back from defining methods of a class to normal mode (currently this "
 "just restores the old search order)."
-msgstr ""
+msgstr "クラスのメソッド定義から通常モードに切り替えます(現在、 これは古い検索順序スタックを復元するだけです)。"
 
 #. type: findex
 #: ../doc/gforth.texi:22515
 #, no-wrap
 msgid "exitm ( @var{ --   } ) objects"
-msgstr ""
+msgstr "exitm ( @var{ --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22516 ../doc/gforth.texi:22517
 #, no-wrap
 msgid "exitm"
-msgstr ""
+msgstr "exitm"
 
 #. type: format
 #: ../doc/gforth.texi:22520
 #, no-wrap
 msgid "@code{exitm} ( @i{--  }) objects ``exitm''\n"
-msgstr ""
+msgstr "@code{exitm} ( @i{--  }) objects ``exitm''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22522
 msgid "@code{exit} from a method; restore old @code{this}."
-msgstr ""
+msgstr "メソッドから @code{exit} します。 古い @code{this} を復元します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22524
 #, no-wrap
 msgid "heap-new ( @var{ ... class -- object   } ) objects"
-msgstr ""
+msgstr "heap-new ( @var{ ... class -- object   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22525 ../doc/gforth.texi:22526
 #, no-wrap
 msgid "heap-new"
-msgstr ""
+msgstr "heap-new"
 
 #. type: format
 #: ../doc/gforth.texi:22529
 #, no-wrap
 msgid "@code{heap-new} ( @i{... class -- object  }) objects ``heap-new''\n"
-msgstr ""
+msgstr "@code{heap-new} ( @i{... class -- object  }) objects ``heap-new''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22531
 msgid "@code{allocate} and initialize an object of class @var{class}."
-msgstr ""
+msgstr "@code{allocate} し、 クラス @var{class} のオブジェクトを初期化します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22533
 #, no-wrap
 msgid "implementation ( @var{ interface --   } ) objects"
-msgstr ""
+msgstr "implementation ( @var{ interface --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22534 ../doc/gforth.texi:22535
 #, no-wrap
 msgid "implementation"
-msgstr ""
+msgstr "implementation"
 
 #. type: format
 #: ../doc/gforth.texi:22538
 #, no-wrap
 msgid "@code{implementation} ( @i{interface --  }) objects ``implementation''\n"
-msgstr ""
+msgstr "@code{implementation} ( @i{interface --  }) objects ``implementation''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22542
 msgid ""
 "The current class implements @var{interface}. I.e., you can use all "
 "selectors of the interface in the current class and its descendents."
-msgstr ""
+msgstr "現在のクラスは @var{interface} を実装しています。 つまり、 現在のクラスとその子孫のインターフェイスのすべてのセレクターを使用できます。"
 
 #. type: findex
 #: ../doc/gforth.texi:22544
 #, no-wrap
 msgid "init-object ( @var{ ... class object --   } ) objects"
-msgstr ""
+msgstr "init-object ( @var{ ... class object --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22545 ../doc/gforth.texi:22546
 #, no-wrap
 msgid "init-object"
-msgstr ""
+msgstr "init-object"
 
 #. type: format
 #: ../doc/gforth.texi:22549
 #, no-wrap
 msgid "@code{init-object} ( @i{... class object --  }) objects ``init-object''\n"
-msgstr ""
+msgstr "@code{init-object} ( @i{... class object --  }) objects ``init-object''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22552
 msgid ""
 "Initialize a chunk of memory (@var{object}) to an object of class "
 "@var{class}; then performs @code{construct}."
-msgstr ""
+msgstr "メモリのチャンク @var{object} (アドレス)をクラス @var{class} のオブジェクトのために初期化します。 それから @code{construct} を実行します(訳注: @var{class} の @code{construct} 用のスタック項目も必要な事に注意。 6.24.3.2 Basic ‘objects.fs’ Usage の例 circle で言えば n-radius が必要で(my-circle2 というメモリ領域をクラス・オブジェクトにするとして、) @code{50 circle my-circle-2 init-object} としなければならない)"
 
 #. type: findex
 #: ../doc/gforth.texi:22554
 #, no-wrap
 msgid "inst-value ( @var{ align1 offset1 \"name\" -- align2 offset2   } ) objects"
-msgstr ""
+msgstr "inst-value ( @var{ align1 offset1 \"name\" -- align2 offset2   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22555 ../doc/gforth.texi:22556
 #, no-wrap
 msgid "inst-value"
-msgstr ""
+msgstr "inst-value"
 
 #. type: format
 #: ../doc/gforth.texi:22559
 #, no-wrap
 msgid "@code{inst-value} ( @i{align1 offset1 \"name\" -- align2 offset2  }) objects ``inst-value''\n"
-msgstr ""
+msgstr "@code{inst-value} ( @i{align1 offset1 \"name\" -- align2 offset2  }) objects ``inst-value''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22563
 msgid ""
 "@var{name} execution: @code{-- w}@* @var{w} is the value of the field "
 "@var{name} in @code{this} object."
-msgstr ""
+msgstr "@var{align2} @var{offset2} は @var{w} のサイズだけ足し込んだ値です。 @var{name} の実行時: @code{-- w} @var{w} は、@code{this} オブジェクトの @var{name} フィールドの値です。"
 
 #. type: findex
 #: ../doc/gforth.texi:22565
 #, no-wrap
 msgid "inst-var ( @var{ align1 offset1 align size \"name\" -- align2 offset2   } ) objects"
-msgstr ""
+msgstr "inst-var ( @var{ align1 offset1 align size \"name\" -- align2 offset2   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22566 ../doc/gforth.texi:22567
 #, no-wrap
 msgid "inst-var"
-msgstr ""
+msgstr "inst-var"
 
 #. type: format
 #: ../doc/gforth.texi:22570
 #, no-wrap
 msgid "@code{inst-var} ( @i{align1 offset1 align size \"name\" -- align2 offset2  }) objects ``inst-var''\n"
-msgstr ""
+msgstr "@code{inst-var} ( @i{align1 offset1 align size \"name\" -- align2 offset2  }) objects ``inst-var''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22574
 msgid ""
 "@var{name} execution: @code{-- addr}@* @var{addr} is the address of the "
 "field @var{name} in @code{this} object."
-msgstr ""
+msgstr "@var{addr} は、@code{this} オブジェクトのフィールド @var{name} のアドレスです。 @var{name} の実行時: @code{-- addr}"
 
 #. type: findex
 #: ../doc/gforth.texi:22576
 #, no-wrap
 msgid "interface ( @var{ --   } ) objects"
-msgstr ""
+msgstr "interface ( @var{ --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22577 ../doc/gforth.texi:22578
 #, no-wrap
 msgid "interface"
-msgstr ""
+msgstr "interface"
 
 #. type: format
 #: ../doc/gforth.texi:22581
 #, no-wrap
 msgid "@code{interface} ( @i{--  }) objects ``interface''\n"
-msgstr ""
+msgstr "@code{interface} ( @i{--  }) objects ``interface''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22583
 msgid "Start an interface definition."
-msgstr ""
+msgstr "インターフェース定義を開始します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22585
 #, no-wrap
 msgid "m: ( @var{ -- xt colon-sys; run-time: object --   } ) objects"
-msgstr ""
+msgstr "m: ( @var{ -- xt colon-sys; run-time: object --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22586 ../doc/gforth.texi:22587
 #, no-wrap
 msgid "m:"
-msgstr ""
+msgstr "m:"
 
 #. type: format
 #: ../doc/gforth.texi:22590
 #, no-wrap
 msgid "@code{m:} ( @i{-- xt colon-sys; run-time: object --  }) objects ``m:''\n"
-msgstr ""
+msgstr "@code{m:} ( @i{-- xt colon-sys; run-time: object --  }) objects ``m:''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22592
 msgid "Start a method definition; @var{object} becomes new @code{this}."
-msgstr ""
+msgstr "メソッド定義を開始します。 @var{object} が新しい @code{this} になります。"
 
 #. type: findex
 #: ../doc/gforth.texi:22594
 #, no-wrap
 msgid ":m ( @var{ \"name\" -- xt; run-time: object --   } ) objects"
-msgstr ""
+msgstr ":m ( @var{ \"name\" -- xt; run-time: object --   } ) objects"
 
 #. type: code{#1}
 #: ../doc/gforth.texi:22595
 #, no-wrap
 msgid ":m"
-msgstr ""
+msgstr ":m"
 
 #. type: format
 #: ../doc/gforth.texi:22598
 #, no-wrap
 msgid "@code{:m} ( @i{\"name\" -- xt; run-time: object --  }) objects ``:m''\n"
-msgstr ""
+msgstr "@code{:m} ( @i{\"name\" -- xt; run-time: object --  }) objects ``:m''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22601
 msgid ""
 "Start a named method definition; @var{object} becomes new @code{this}.  Has "
 "to be ended with @code{;m}."
-msgstr ""
+msgstr "名前付きメソッド定義を開始します。 @var{object} が新しい @code{this} になります。  @code{;m} で終わる必要があります。"
 
 #. type: findex
 #: ../doc/gforth.texi:22603
 #, no-wrap
 msgid ";m ( @var{ colon-sys --; run-time: --   } ) objects"
-msgstr ""
+msgstr ";m ( @var{ colon-sys --; run-time: --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22604 ../doc/gforth.texi:22605
 #, no-wrap
 msgid ";m"
-msgstr ""
+msgstr ";m"
 
 #. type: format
 #: ../doc/gforth.texi:22608
 #, no-wrap
 msgid "@code{;m} ( @i{colon-sys --; run-time: --  }) objects ``;m''\n"
-msgstr ""
+msgstr "@code{;m} ( @i{colon-sys --; run-time: --  }) objects ``;m''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22610
 msgid "End a method definition; restore old @code{this}."
-msgstr ""
+msgstr "メソッド定義を終了します。 古い @code{this} を復元します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22612
 #, no-wrap
 msgid "method ( @var{ xt \"name\" --   } ) objects"
-msgstr ""
+msgstr "method ( @var{ xt \"name\" --   } ) objects"
 
 #. type: format
 #: ../doc/gforth.texi:22617
 #, no-wrap
 msgid "@code{method} ( @i{xt \"name\" --  }) objects ``method''\n"
-msgstr ""
+msgstr "@code{method} ( @i{xt \"name\" --  }) objects ``method''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22621
 msgid ""
 "@code{name} execution: @code{... object -- ...}@* Create selector @var{name} "
 "and makes @var{xt} its method in the current class."
-msgstr ""
+msgstr "セレクター @var{name} を作成し、@var{xt} を現在のクラスのメソッドにします。 @code{name} の実行時: @code{... object -- ...}"
 
 #. type: findex
 #: ../doc/gforth.texi:22623
 #, no-wrap
 msgid "methods ( @var{ class --   } ) objects"
-msgstr ""
+msgstr "methods ( @var{ class --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22624 ../doc/gforth.texi:22625
 #, no-wrap
 msgid "methods"
-msgstr ""
+msgstr "methods"
 
 #. type: format
 #: ../doc/gforth.texi:22628
 #, no-wrap
 msgid "@code{methods} ( @i{class --  }) objects ``methods''\n"
-msgstr ""
+msgstr "@code{methods} ( @i{class --  }) objects ``methods''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22632
@@ -55499,158 +55548,182 @@ msgid ""
 "Makes @var{class} the current class. This is intended to be used for "
 "defining methods to override selectors; you cannot define new fields or "
 "selectors."
-msgstr ""
+msgstr "@var{class} を現在のクラスにします。 これは、 セレクターをオーバーライドするメソッドを定義するために使用することを目的としています。 新しいフィールドやセレクターを定義することはできません。"
 
 #. type: findex
 #: ../doc/gforth.texi:22634
 #, no-wrap
 msgid "object ( @var{ -- class   } ) objects"
-msgstr ""
+msgstr "object ( @var{ -- class   } ) objects"
 
 #. type: format
 #: ../doc/gforth.texi:22639
 #, no-wrap
 msgid "@code{object} ( @i{-- class  }) objects ``object''\n"
-msgstr ""
+msgstr "@code{object} ( @i{-- class  }) objects ``object''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22641
 msgid "the ancestor of all classes."
-msgstr ""
+msgstr "すべてのクラスの祖先。"
 
 #. type: findex
 #: ../doc/gforth.texi:22643
 #, no-wrap
 msgid "overrides ( @var{ xt \"selector\" --   } ) objects"
-msgstr ""
+msgstr "overrides ( @var{ xt \"selector\" --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22644 ../doc/gforth.texi:22645
 #, no-wrap
 msgid "overrides"
-msgstr ""
+msgstr "overrides"
 
 #. type: format
 #: ../doc/gforth.texi:22648
 #, no-wrap
 msgid "@code{overrides} ( @i{xt \"selector\" --  }) objects ``overrides''\n"
-msgstr ""
+msgstr "@code{overrides} ( @i{xt \"selector\" --  }) objects ``overrides''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22652
 msgid ""
 "replace default method for @var{selector} in the current class with "
 "@var{xt}. @code{overrides} must not be used during an interface definition."
-msgstr ""
+msgstr "現在のクラスの @var{selector} のデフォルト・メソッドを @var{xt} に置き換えます。 @code{overrides} はインターフェイス定義中に使用してはいけません。"
 
 #. type: findex
 #: ../doc/gforth.texi:22654
 #, no-wrap
 msgid "[parent] ( @var{ compile-time: \"selector\" -- ; run-time: ... object -- ...   } ) objects"
-msgstr ""
+msgstr "[parent] ( @var{ compile-time: \"selector\" -- ; run-time: ... object -- ...   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22655 ../doc/gforth.texi:22656
 #, no-wrap
 msgid "[parent]"
-msgstr ""
+msgstr "[parent]"
 
 #. type: format
 #: ../doc/gforth.texi:22659
 #, no-wrap
 msgid "@code{[parent]} ( @i{compile-time: \"selector\" -- ; run-time: ... object -- ...  }) objects ``[parent]''\n"
-msgstr ""
+msgstr "@code{[parent]} ( @i{compile-time: \"selector\" -- ; run-time: ... object -- ...  }) objects ``[parent]''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22662
 msgid ""
 "Compile the method for @var{selector} in the parent of the current class."
-msgstr ""
+msgstr "現在のクラスの親の @var{selector} のメソッドをコンパイルします。"
 
 #. type: findex
 #: ../doc/gforth.texi:22664
 #, no-wrap
 msgid "print ( @var{ object --   } ) objects"
-msgstr ""
+msgstr "print ( @var{ object --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22665 ../doc/gforth.texi:22666
 #, no-wrap
 msgid "print"
-msgstr ""
+msgstr "print"
 
 #. type: format
 #: ../doc/gforth.texi:22669
 #, no-wrap
 msgid "@code{print} ( @i{object --  }) objects ``print''\n"
-msgstr ""
+msgstr "@code{print} ( @i{object --  }) objects ``print''\n"
 
+# object class  ok 2
+#     selector draw  ( x y graphicl -- )  ok 2
+# end-class graphical  ok
+#
+# : draw-circle  ( x y r -- ; dummy-word )  compiled
+#     . . . ;  ok
+#
+# graphical class  ok 2
+#     cell% field circle-radius  ok 2
+#   ok 2
+#     :noname  ( x y circle -- )  compiled
+#         circle-radius @ draw-circle ;  ok 3
+#     overrides draw  ok 2
+#   ok 2
+#     :noname  ( n-radius circle -- )  compiled
+#         circle-radius ! ;  ok 3
+#     overrides construct  ok 2
+# end-class circle  ok
+#
+# 50 circle heap-new constant my-circle  ok
+#
+# my-circle print object:94071267066416 class:140284399414664  ok
+#
+# 100 100 my-circle draw 50 100 100  ok
 #. type: table
 #: ../doc/gforth.texi:22672
 msgid ""
 "Print the object. The method for the class @var{object} prints the address "
 "of the object and the address of its class."
-msgstr ""
+msgstr "オブジェクトを出力します。 指定のクラス @var{object} のメソッドは、 オブジェクトのアドレスとそのクラスのアドレスを出力します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22674
 #, no-wrap
 msgid "protected ( @var{ --   } ) objects"
-msgstr ""
+msgstr "protected ( @var{ --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22675 ../doc/gforth.texi:22676
 #, no-wrap
 msgid "protected"
-msgstr ""
+msgstr "protected"
 
 #. type: format
 #: ../doc/gforth.texi:22679
 #, no-wrap
 msgid "@code{protected} ( @i{--  }) objects ``protected''\n"
-msgstr ""
+msgstr "@code{protected} ( @i{--  }) objects ``protected''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22681
 msgid "Set the compilation wordlist to the current class's wordlist"
-msgstr ""
+msgstr "現在のクラスのワードリストをコンパイル・ワードリスト(the compilation wordlist)にセットします"
 
 #. type: findex
 #: ../doc/gforth.texi:22683
 #, no-wrap
 msgid "public ( @var{ --   } ) objects"
-msgstr ""
+msgstr "public ( @var{ --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22684 ../doc/gforth.texi:22685
 #, no-wrap
 msgid "public"
-msgstr ""
+msgstr "public"
 
 #. type: format
 #: ../doc/gforth.texi:22688
 #, no-wrap
 msgid "@code{public} ( @i{--  }) objects ``public''\n"
-msgstr ""
+msgstr "@code{public} ( @i{--  }) objects ``public''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22692
 msgid ""
 "Restore the compilation wordlist that was in effect before the last "
 "@code{protected} that actually changed the compilation wordlist."
-msgstr ""
+msgstr "実際にコンパイル・ワードリスト(the compilation wordlist)を変更した最後の @code{protected} より前に有効だったコンパイル・ワードリストを復元します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22694
 #, no-wrap
 msgid "selector ( @var{ \"name\" --   } ) objects"
-msgstr ""
+msgstr "selector ( @var{ \"name\" --   } ) objects"
 
 #. type: format
 #: ../doc/gforth.texi:22699
 #, no-wrap
 msgid "@code{selector} ( @i{\"name\" --  }) objects ``selector''\n"
-msgstr ""
+msgstr "@code{selector} ( @i{\"name\" --  }) objects ``selector''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22704
@@ -55658,141 +55731,141 @@ msgid ""
 "@var{name} execution: @code{... object -- ...}@* Create selector @var{name} "
 "for the current class and its descendents; you can set a method for the "
 "selector in the current class with @code{overrides}."
-msgstr ""
+msgstr "現在のクラスとその子孫のセレクター @var{name} を作成します。 @code{overrides} を使用して、 現在のクラスのセレクターのメソッドを設定できます。 @var{name} の実行時: @code{... object -- ...}"
 
 #. type: findex
 #: ../doc/gforth.texi:22706
 #, no-wrap
 msgid "this ( @var{ -- object   } ) objects"
-msgstr ""
+msgstr "this ( @var{ -- object   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22707 ../doc/gforth.texi:22708
 #, no-wrap
 msgid "this"
-msgstr ""
+msgstr "this"
 
 #. type: format
 #: ../doc/gforth.texi:22711
 #, no-wrap
 msgid "@code{this} ( @i{-- object  }) objects ``this''\n"
-msgstr ""
+msgstr "@code{this} ( @i{-- object  }) objects ``this''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22713
 msgid "the receiving object of the current method (aka active object)."
-msgstr ""
+msgstr "現在のメソッドの受信オブジェクト(receiving object)(別名アクティブ・オブジェクト)。"
 
 #. type: findex
 #: ../doc/gforth.texi:22715
 #, no-wrap
 msgid "<to-inst> ( @var{ w xt --   } ) objects"
-msgstr ""
+msgstr "<to-inst> ( @var{ w xt --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22716 ../doc/gforth.texi:22717
 #, no-wrap
 msgid "<to-inst>"
-msgstr ""
+msgstr "<to-inst>"
 
 #. type: format
 #: ../doc/gforth.texi:22720
 #, no-wrap
 msgid "@code{<to-inst>} ( @i{w xt --  }) objects ``<to-inst>''\n"
-msgstr ""
+msgstr "@code{<to-inst>} ( @i{w xt --  }) objects ``<to-inst>''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22722
 msgid "store @var{w} into the field @var{xt} in @code{this} object."
-msgstr ""
+msgstr "@var{w} を @code{this} オブジェクトのフィールド @var{xt} に格納します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22724
 #, no-wrap
 msgid "[to-inst] ( @var{ compile-time: \"name\" -- ; run-time: w --   } ) objects"
-msgstr ""
+msgstr "[to-inst] ( @var{ compile-time: \"name\" -- ; run-time: w --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22725 ../doc/gforth.texi:22726
 #, no-wrap
 msgid "[to-inst]"
-msgstr ""
+msgstr "[to-inst]"
 
 #. type: format
 #: ../doc/gforth.texi:22729
 #, no-wrap
 msgid "@code{[to-inst]} ( @i{compile-time: \"name\" -- ; run-time: w --  }) objects ``[to-inst]''\n"
-msgstr ""
+msgstr "@code{[to-inst]} ( @i{compile-time: \"name\" -- ; run-time: w --  }) objects ``[to-inst]''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22731
 msgid "store @var{w} into field @var{name} in @code{this} object."
-msgstr ""
+msgstr "@var{w} を @code{this} オブジェクトの @var{name} フィールドに格納します。"
 
 #. type: findex
 #: ../doc/gforth.texi:22733
 #, no-wrap
 msgid "to-this ( @var{ object --   } ) objects"
-msgstr ""
+msgstr "to-this ( @var{ object --   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22734 ../doc/gforth.texi:22735
 #, no-wrap
 msgid "to-this"
-msgstr ""
+msgstr "to-this"
 
 #. type: format
 #: ../doc/gforth.texi:22738
 #, no-wrap
 msgid "@code{to-this} ( @i{object --  }) objects ``to-this''\n"
-msgstr ""
+msgstr "@code{to-this} ( @i{object --  }) objects ``to-this''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22740
 msgid "Set @code{this} (used internally, but useful when debugging)."
-msgstr ""
+msgstr "@code{this} を設定します(内部的に使用されるものですが、 デバッグ時に役立ちます)。"
 
 #. type: findex
 #: ../doc/gforth.texi:22742
 #, no-wrap
 msgid "xt-new ( @var{ ... class xt -- object   } ) objects"
-msgstr ""
+msgstr "xt-new ( @var{ ... class xt -- object   } ) objects"
 
 #. type: kindex
 #: ../doc/gforth.texi:22743 ../doc/gforth.texi:22744
 #, no-wrap
 msgid "xt-new"
-msgstr ""
+msgstr "xt-new"
 
 #. type: format
 #: ../doc/gforth.texi:22747
 #, no-wrap
 msgid "@code{xt-new} ( @i{... class xt -- object  }) objects ``xt-new''\n"
-msgstr ""
+msgstr "@code{xt-new} ( @i{... class xt -- object  }) objects ``xt-new''\n"
 
 #. type: table
 #: ../doc/gforth.texi:22750
 msgid ""
 "Make a new object, using @code{xt ( align size -- addr )} to get memory."
-msgstr ""
+msgstr "@code{xt ( align size -- addr )} を使用してメモリを取得し、 新しいオブジェクトを作成します。"
 
 #. type: node
 #: ../doc/gforth.texi:22755 ../doc/gforth.texi:23247 ../doc/gforth.texi:23263
 #: ../doc/gforth.texi:23350 ../doc/gforth.texi:23414 ../doc/gforth.texi:23557
 #, no-wrap
 msgid "Mini-OOF"
-msgstr ""
+msgstr "Mini-OOF"
 
 #. type: cindex
 #: ../doc/gforth.texi:22757
 #, no-wrap
 msgid "oof"
-msgstr ""
+msgstr "oof"
 
 #. type: table
 #: ../doc/gforth.texi:22764
 msgid "This section describes the @file{oof.fs} package."
-msgstr ""
+msgstr "このセクションでは、 @file{oof.fs} パッケージについて説明します。"
 
 #. type: table
 #: ../doc/gforth.texi:22768
@@ -55800,7 +55873,7 @@ msgid ""
 "The package described in this section has been used in bigFORTH since 1991, "
 "and used for two large applications: a chromatographic system used to create "
 "new medicaments, and a graphic user interface library (MINOS)."
-msgstr ""
+msgstr "このセクションで説明するパッケージは、 1991 年以来 bigFORTH で使用されており、 新薬作成に使用されるクロマトグラフィー・システムと、グラフィック・ユーザー・インターフェイス・ライブラリ (MINOS) という 2 つの大きなアプリケーションに使用されています。"
 
 #. type: table
 #: ../doc/gforth.texi:22772
