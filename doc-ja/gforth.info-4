@@ -27,6 +27,106 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: ARM Assembler,  Next: Other assemblers,  Prev: PowerPC assembler,  Up: Assembler and Code Words
+
+6.29.9 ARM Assembler
+--------------------
+
+The ARM assembler includes all instruction of ARM architecture version
+4, and the BLX instruction from architecture 5.  It does not (yet) have
+support for Thumb instructions.  It also lacks support for any
+co-processors.
+
+   The assembler uses a postfix syntax with the same operand order as
+used in the ARM Architecture Reference Manual.  Mnemonics are suffixed
+by a comma.
+
+   Registers are specified by their names ‘r0’ through ‘r15’, with the
+aliases ‘pc’, ‘lr’, ‘sp’, ‘ip’ and ‘fp’ provided for convenience.  Note
+that ‘ip’ refers to the“intra procedure call scratch register” (‘r12’)
+and does not refer to an instruction pointer.  ‘sp’ refers to the ARM
+ABI stack pointer (‘r13’) and not the Forth stack pointer.
+
+   Condition codes can be specified anywhere in the instruction, but
+will be most readable if specified just in front of the mnemonic.  The
+’S’ flag is not a separate word, but encoded into instruction mnemonics,
+ie.  just use ‘adds,’ instead of ‘add,’ if you want the status register
+to be updated.
+
+   The following table lists the syntax of operands for general
+instructions:
+
+     Gforth          normal assembler      description
+     123 #           #123                  immediate
+     r12             r12                   register
+     r12 4 #LSL      r12, LSL #4           shift left by immediate
+     r12 r1 LSL      r12, LSL r1           shift left by register
+     r12 4 #LSR      r12, LSR #4           shift right by immediate
+     r12 r1 LSR      r12, LSR r1           shift right by register
+     r12 4 #ASR      r12, ASR #4           arithmetic shift right
+     r12 r1 ASR      r12, ASR r1           ... by register
+     r12 4 #ROR      r12, ROR #4           rotate right by immediate
+     r12 r1 ROR      r12, ROR r1           ... by register
+     r12 RRX         r12, RRX              rotate right with extend by 1
+
+   Memory operand syntax is listed in this table:
+
+     Gforth            normal assembler      description
+     r4 ]              [r4]                  register
+     r4 4 #]           [r4, #+4]             register with immediate offset
+     r4 -4 #]          [r4, #-4]             with negative offset
+     r4 r1 +]          [r4, +r1]             register with register offset
+     r4 r1 -]          [r4, -r1]             with negated register offset
+     r4 r1 2 #LSL -]   [r4, -r1, LSL #2]     with negated and shifted offset
+     r4 4 #]!          [r4, #+4]!            immediate preincrement
+     r4 r1 +]!         [r4, +r1]!            register preincrement
+     r4 r1 -]!         [r4, +r1]!            register predecrement
+     r4 r1 2 #LSL +]!  [r4, +r1, LSL #2]!    shifted preincrement
+     r4 -4 ]#          [r4], #-4             immediate postdecrement
+     r4 r1 ]+          [r4], r1              register postincrement
+     r4 r1 ]-          [r4], -r1             register postdecrement
+     r4 r1 2 #LSL ]-   [r4], -r1, LSL #2     shifted postdecrement
+     ' xyz >body [#]   xyz                   PC-relative addressing
+
+   Register lists for load/store multiple instructions are started and
+terminated by using the words ‘{’ and ‘}’ respectively.  Between braces,
+register names can be listed one by one or register ranges can be formed
+by using the postfix operator ‘r-r’.  The ‘^’ flag is not encoded in the
+register list operand, but instead directly encoded into the instruction
+mnemonic, ie.  use ‘^ldm,’ and ‘^stm,’.
+
+   Addressing modes for load/store multiple are not encoded as
+instruction suffixes, but instead specified like an addressing mode, Use
+one of ‘DA’, ‘IA’, ‘DB’, ‘IB’, ‘DA!’, ‘IA!’, ‘DB!’ or ‘IB!’.
+
+   The following table gives some examples:
+
+     Gforth                           normal assembler
+     r4 ia  { r0 r7 r8 }  stm,        stmia    r4, {r0,r7,r8}
+     r4 db!  { r0 r7 r8 }  ldm,       ldmdb    r4!, {r0,r7,r8}
+     sp ia!  { r0 r15 r-r }  ^ldm,    ldmfd    sp!, {r0-r15}^
+
+   Control structure words typical for Forth assemblers are available:
+‘if,’ ‘ahead,’ ‘then,’ ‘else,’ ‘begin,’ ‘until,’ ‘again,’ ‘while,’
+‘repeat,’ ‘repeat-until,’.  Conditions are specified in front of these
+words:
+
+     r1 r2 cmp,    \ compare r1 and r2
+     eq if,        \ equal?
+        ...          \ code executed if r1 == r2
+     then,
+
+   Example of a definition using the ARM assembler:
+
+     abi-code my+ ( n1 n2 --  n3 )
+        \ arm abi: r0=SP, r1=&FP, r2,r3,r12 saved by caller
+        r0 IA!  { r2 r3 }  ldm,     \ pop r2 = n2, r3 = n1
+        r3  r2  r3         add,     \ r3 = n1+n1
+        r3  r0 -4 #]!      str,     \ push r3
+        pc  lr             mov,     \ return to caller, new SP in r0
+     end-code
+
+
 File: gforth.info,  Node: Other assemblers,  Prev: ARM Assembler,  Up: Assembler and Code Words
 
 6.29.10 Other assemblers
@@ -5184,7 +5284,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 2varue ( X1 X2 "NAME" -- ) gforth-1.0: Varues.              (line  17)
 * : ( "NAME" -- COLON-SYS ) core:        Colon Definitions.   (line  17)
 * :: ( CLASS "NAME" -- ) mini-oof:       Basic Mini-OOF Usage.
-                                                              (line  32)
+                                                              (line  33)
 * :m ( "NAME" -- XT; RUN-TIME: OBJECT -- ) objects: Objects Glossary.
                                                               (line 116)
 * :noname ( -- XT COLON-SYS ) core-ext:  Anonymous Definitions.
@@ -5602,7 +5702,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * cilk-init ( -- ) cilk:                 Cilk.                (line  31)
 * cilk-sync ( -- ) cilk:                 Cilk.                (line  46)
 * class ( CLASS -- CLASS SELECTORS VARS ) mini-oof: Basic Mini-OOF Usage.
-                                                              (line  20)
+                                                              (line  21)
 * class ( PARENT-CLASS -- ALIGN OFFSET ) objects: Objects Glossary.
                                                               (line  21)
 * class->map ( CLASS -- MAP ) objects:   Objects Glossary.    (line  25)
@@ -5611,7 +5711,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * class-override! ( XT SEL-XT CLASS-MAP -- ) objects: Objects Glossary.
                                                               (line  35)
 * class-previous ( CLASS -- ) objects:   Objects Glossary.    (line  39)
-* class; ( -- ) oof:                     Class Declaration.   (line  42)
+* class; ( -- ) oof:                     Class Declaration.   (line  43)
 * class>order ( CLASS -- ) objects:      Objects Glossary.    (line  44)
 * clear-libs ( -- ) gforth-0.7:          Declaring OS-level libraries.
                                                               (line  30)
@@ -5731,7 +5831,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * default-w: ( -- ) gforth-experimental: Gforth locals.       (line  86)
 * default-wa: ( -- ) gforth-experimental: Gforth locals.      (line  81)
 * Defer ( "NAME" -- ) core-ext:          Deferred Words.      (line  81)
-* defer ( -- ) oof:                      Class Declaration.   (line  21)
+* defer ( -- ) oof:                      Class Declaration.   (line  22)
 * defer! ( XT XT-DEFERRED -- ) core-ext: Deferred Words.      (line  86)
 * defer@ ( XT-DEFERRED -- XT ) core-ext: Deferred Words.      (line  93)
 * defers ( COMPILATION "NAME" -- ; RUN-TIME ... -- ... ) gforth-0.2: Deferred Words.
@@ -5739,7 +5839,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * definer! ( DEFINER XT -- ) gforth-obsolete: Threading Words.
                                                               (line 139)
 * defines ( XT CLASS "NAME" -- ) mini-oof: Basic Mini-OOF Usage.
-                                                              (line  26)
+                                                              (line  27)
 * definitions ( -- ) search:             Word Lists.          (line  36)
 * defocus ( -- ) minos2:                 actor methods.       (line  39)
 * delete ( BUFFER SIZE U -- ) gforth-0.7: Memory Blocks.      (line  51)
@@ -5812,7 +5912,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dup ( W -- W W ) core:                 Data stack.          (line  10)
 * D^ ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME X1 X2 -- ) gforth-0.2: Locals definition words.
                                                               (line  53)
-* early ( -- ) oof:                      Class Declaration.   (line  26)
+* early ( -- ) oof:                      Class Declaration.   (line  27)
 * edit ( "NAME" -- ) gforth-1.0:         Locating source code definitions.
                                                               (line  65)
 * edit-line ( C-ADDR N1 N2 -- N3 ) gforth-0.6: Line input and conversion.
@@ -5837,7 +5937,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * end-class ( ALIGN OFFSET "NAME" -- ) objects: Objects Glossary.
                                                               (line  66)
 * end-class ( CLASS SELECTORS VARS "NAME" -- ) mini-oof: Basic Mini-OOF Usage.
-                                                              (line  23)
+                                                              (line  24)
 * end-class-noname ( ALIGN OFFSET -- CLASS ) objects: Objects Glossary.
                                                               (line  70)
 * end-code ( COLON-SYS -- ) gforth-0.2:  Assembler Definitions.
@@ -6120,7 +6220,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  60)
 * holds ( ADDR U -- ) core-ext:          Formatted numeric output.
                                                               (line  64)
-* how: ( -- ) oof:                       Class Declaration.   (line  39)
+* how: ( -- ) oof:                       Class Declaration.   (line  40)
 * i ( R:N -- R:N N ) core:               Counted Loops.       (line 237)
 * i' ( R:W R:W2 -- R:W R:W2 W ) gforth-0.2: Counted Loops.    (line 247)
 * id. ( NT -- ) gforth-0.6:              Name token.          (line  75)
@@ -6332,9 +6432,9 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  68)
 * mem-do ( COMPILATION -- W XT DO-SYS; RUN-TIME ADDR UBYTES +NSTRIDE -- ) gforth-experimental: Counted Loops.
                                                               (line 214)
-* method ( -- ) oof:                     Class Declaration.   (line  29)
+* method ( -- ) oof:                     Class Declaration.   (line  30)
 * method ( M V "NAME" -- M' V ) mini-oof: Basic Mini-OOF Usage.
-                                                              (line  14)
+                                                              (line  15)
 * method ( XT "NAME" -- ) objects:       Objects Glossary.    (line 123)
 * methods ( CLASS -- ) objects:          Objects Glossary.    (line 127)
 * min ( N1 N2 -- N ) core:               Single precision.    (line  32)
@@ -6367,7 +6467,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * needs ( ... "NAME" -- ... ) gforth-0.2: Forth source files. (line  60)
 * negate ( N1 -- N2 ) core:              Single precision.    (line  28)
 * new ( CLASS -- O ) mini-oof:           Basic Mini-OOF Usage.
-                                                              (line  29)
+                                                              (line  30)
 * new-color: ( RGBA "NAME" -- ) minos2:  widget methods.      (line 131)
 * newline ( -- C-ADDR U ) gforth-0.5:    String and character literals.
                                                               (line  75)
@@ -6403,32 +6503,32 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  15)
 * o> ( R:C-ADDR -- ) new:                Mini-OOF2.           (line  16)
 * object ( -- A-ADDR ) mini-oof:         Basic Mini-OOF Usage.
-                                                              (line  11)
+                                                              (line  12)
 * object ( -- CLASS ) objects:           Objects Glossary.    (line 132)
-* object-' ( "NAME" -- XT ) oof:         The OOF base class.  (line  77)
-* object-: ( "NAME" -- ) oof:            The OOF base class.  (line  43)
-* object-:: ( "NAME" -- ) oof:           The OOF base class.  (line  55)
-* object-asptr ( O "NAME" -- ) oof:      The OOF base class.  (line  47)
-* object-bind ( O "NAME" -- ) oof:       The OOF base class.  (line  66)
+* object-' ( "NAME" -- XT ) oof:         The OOF base class.  (line  79)
+* object-: ( "NAME" -- ) oof:            The OOF base class.  (line  44)
+* object-:: ( "NAME" -- ) oof:           The OOF base class.  (line  57)
+* object-asptr ( O "NAME" -- ) oof:      The OOF base class.  (line  48)
+* object-bind ( O "NAME" -- ) oof:       The OOF base class.  (line  68)
 * object-bound ( CLASS ADDR "NAME" -- ) oof: The OOF base class.
-                                                              (line  68)
+                                                              (line  70)
 * object-class ( "NAME" -- ) oof:        The OOF base class.  (line  20)
 * object-class? ( O -- FLAG ) oof:       The OOF base class.  (line  24)
 * object-definitions ( -- ) oof:         The OOF base class.  (line  22)
 * object-dispose ( -- ) oof:             The OOF base class.  (line  34)
-* object-endwith ( -- ) oof:             The OOF base class.  (line  88)
+* object-endwith ( -- ) oof:             The OOF base class.  (line  90)
 * object-init ( ... -- ) oof:            The OOF base class.  (line  32)
-* object-is ( XT "NAME" -- ) oof:        The OOF base class.  (line  72)
+* object-is ( XT "NAME" -- ) oof:        The OOF base class.  (line  74)
 * object-link ( "NAME" -- CLASS ADDR ) oof: The OOF base class.
-                                                              (line  70)
-* object-new ( -- O ) oof:               The OOF base class.  (line  39)
-* object-new[] ( N -- O ) oof:           The OOF base class.  (line  41)
-* object-postpone ( "NAME" -- ) oof:     The OOF base class.  (line  79)
-* object-ptr ( "NAME" -- ) oof:          The OOF base class.  (line  45)
-* object-self ( -- O ) oof:              The OOF base class.  (line  61)
-* object-super ( "NAME" -- ) oof:        The OOF base class.  (line  57)
-* object-with ( O -- ) oof:              The OOF base class.  (line  86)
-* object-[] ( N "NAME" -- ) oof:         The OOF base class.  (line  49)
+                                                              (line  72)
+* object-new ( -- O ) oof:               The OOF base class.  (line  40)
+* object-new[] ( N -- O ) oof:           The OOF base class.  (line  42)
+* object-postpone ( "NAME" -- ) oof:     The OOF base class.  (line  81)
+* object-ptr ( "NAME" -- ) oof:          The OOF base class.  (line  46)
+* object-self ( -- O ) oof:              The OOF base class.  (line  63)
+* object-super ( "NAME" -- ) oof:        The OOF base class.  (line  59)
+* object-with ( O -- ) oof:              The OOF base class.  (line  88)
+* object-[] ( N "NAME" -- ) oof:         The OOF base class.  (line  50)
 * of ( COMPILATION -- OF-SYS ; RUN-TIME X1 X2 -- |X1 ) core-ext: Arbitrary control structures.
                                                               (line 102)
 * off ( A-ADDR -- ) gforth-0.2:          Boolean Flags.       (line  20)
@@ -6728,7 +6828,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  91)
 * staged/-size ( -- U ) gforth-1.0:      Two-stage integer division.
                                                               (line  50)
-* static ( -- ) oof:                     Class Declaration.   (line  34)
+* static ( -- ) oof:                     Class Declaration.   (line  35)
 * status-color ( -- ) gforth-1.0:        Terminal output.     (line  60)
 * stderr ( -- WFILEID ) gforth-0.2:      General files.       (line 110)
 * stdin ( -- WFILEID ) gforth-0.4:       General files.       (line 104)
@@ -6884,7 +6984,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  98)
 * Value ( W "NAME" -- ) core-ext:        Values.              (line  18)
 * var ( M V SIZE "NAME" -- M V' ) mini-oof: Basic Mini-OOF Usage.
-                                                              (line  17)
+                                                              (line  18)
 * var ( SIZE -- ) oof:                   Class Declaration.   (line   8)
 * Variable ( "NAME" -- ) core:           Variables.           (line  31)
 * Varue ( W "NAME" -- ) gforth-1.0:      Varues.              (line  12)

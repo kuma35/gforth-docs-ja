@@ -69,50 +69,44 @@ Previous: <a href="Mini_002dOOF-Example.html" accesskey="p" rel="prev">Mini-OOF 
 <hr>
 <span id="mini_002doof_002efs-Implementation"></span><h4 class="subsubsection">6.24.5.3 <samp>mini-oof.fs</samp> Implementation</h4>
 
-<p>Object-oriented systems with late binding typically use a
-&ldquo;vtable&rdquo;-approach: the first variable in each object is a pointer to a
-table, which contains the methods as function pointers. The vtable may also
-contain other information.
+<p>遅延結び付け(late binding)を備えたオブジェクト指向システムは通常、 「vtable」アプローチを使用します。 つまり、
+各オブジェクトの最初の変数はテーブルへのポインタであり、 テーブルには関数ポインタとしてメソッドが含まれています。 vtable
+には他の情報も含まれる場合があります。
 </p>
-<p>So first, let&rsquo;s declare selectors:
+<p>まず、 セレクターを宣言しましょう:
 </p>
 <div class="example">
 <pre class="example">: method ( m v &quot;name&quot; -- m' v ) Create  over , swap cell+ swap
   DOES&gt; ( ... o -- ... ) @ over @ + @ execute ;
 </pre></div>
 
-<p>During selector declaration, the number of selectors and instance variables
-is on the stack (in address units). <code>method</code> creates one selector and
-increments the selector number. To execute a selector, it takes the object,
-fetches the vtable pointer, adds the offset, and executes the method <i>xt</i>
-stored there. Each selector takes the object it is invoked with as top of
-stack parameter; it passes the parameters (including the object) unchanged
-to the appropriate method which should consume that object.
+<p>セレクターの宣言中、 セレクターの数とインスタンス変数は(アドレス単位で)スタック上にあります。 <code>method</code> はセレクターを 1
+つ作成し、 セレクター番号をインクリメントします。 セレクターを実行するには、 オブジェクトを取得し、 vtable ポインターを取得し、
+オフセットを追加して、 そこに保存されているメソッド <i>xt</i> を実行します。 各セレクターは、 スタック・パラメーターのTOSとして、
+呼び出されるオブジェクトを受け取ります。 セレクターは、 パラメーター(オブジェクトを含む)を変更せずに、 そのオブジェクトを、
+使用する適切なメソッドに渡します。
 </p>
-<p>Now, we also have to declare instance variables
+<p>いまや、 インスタンス変数も宣言しなければなりません
 </p>
 <div class="example">
 <pre class="example">: var ( m v size &quot;name&quot; -- m v' ) Create  over , +
   DOES&gt; ( o -- addr ) @ + ;
 </pre></div>
 
-<p>As before, a word is created with the current offset. Instance variables can
-have different sizes (cells, floats, doubles, chars), so all we do is take
-the size and add it to the offset. If your machine has alignment
-restrictions, put the proper <code>aligned</code> or <code>faligned</code> before the
-variable, to adjust the variable offset. That&rsquo;s why it is on the top of
-stack.
+<p>同様に、 ワードには現在のオフセットを書き込んで作成されます。 インスタンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、
+char)を持つことができるため、 サイズを取得してオフセットに追加するだけです。 マシンにアライメント制限がある場合は、 変数の前に適切な
+<code>aligned</code> または <code>faligned</code> を配置して、 変数のオフセットを調整します。
+それがスタックのTOSにある理由です。
 </p>
-<p>We need a starting point (the base object) and some syntactic sugar:
+<p>開始点(基本オブジェクト)と、 いくつかの糖衣構文も必要です:
 </p>
 <div class="example">
 <pre class="example">Create object  1 cells , 2 cells ,
 : class ( class -- class selectors vars ) dup 2@ ;
 </pre></div>
 
-<p>For inheritance, the vtable of the parent object has to be copied when a
-new, derived class is declared. This gives all the methods of the parent
-class, which can be overridden, though.
+<p>継承の場合、 新しい派生クラスが宣言されるときに、 親オブジェクトの vtable をコピーする必要があります。 これにより、
+親クラスのすべてのメソッドが提供されますが、 それらはオーバーライドすることもできます。
 </p>
 <div class="example">
 <pre class="example">: end-class  ( class selectors vars &quot;name&quot; -- )
@@ -120,34 +114,31 @@ class, which can be overridden, though.
   cell+ dup cell+ r&gt; rot @ 2 cells /string move ;
 </pre></div>
 
-<p>The first line creates the vtable, initialized with <code>noop</code>s. The second
-line is the inheritance mechanism, it copies the xts from the parent vtable.
+<p>最初の行は、 <code>noop</code> で初期化された vtable を作成します。  2 行目は継承メカニズムで、 親 vtable から xt
+達をコピーします。
 </p>
-<p>We still have no way to define new methods, let&rsquo;s do that now:
+<p>新しいメソッドを定義する方法がまだありませんね。 ここで定義しましょう:
 </p>
 <div class="example">
 <pre class="example">: defines ( xt class &quot;name&quot; -- ) ' &gt;body @ + ! ;
 </pre></div>
 
-<p>To allocate a new object, we need a word, too:
+<p>新しいオブジェクトを割り当てるためのワードも必要です:
 </p>
 <div class="example">
 <pre class="example">: new ( class -- o )  here over @ allot swap over ! ;
 </pre></div>
 
-<p>Sometimes derived classes want to access the method of the parent
-object. There are two ways to achieve this with Mini-OOF: first, you could
-use named words, and second, you could look up the vtable of the parent
-object.
+<p>派生クラスが親オブジェクトのメソッドにアクセスしたい場合があります。 Mini-OOF でこれを実現するには 2 つの方法があります: 1
+つ目は名前付きのワードを使用する方法で、 2 つ目は親オブジェクトの vtable を検索する方法です。
 </p>
 <div class="example">
 <pre class="example">: :: ( class &quot;name&quot; -- ) ' &gt;body @ + @ compile, ;
 </pre></div>
 
 
-<p>Nothing can be more confusing than a good example, so here is one. First
-let&rsquo;s declare a text object (called <code>button</code>), that stores text and
-position:
+<p>混乱しないためには良い例に勝るものはないので、 以下に例を示します。 まず、
+テキストとその位置を格納するテキスト・オブジェクト(<code>button</code> と呼ばれます)を宣言しましょう:
 </p>
 <div class="example">
 <pre class="example">object class
@@ -160,7 +151,7 @@ position:
 end-class button
 </pre></div>
 
-<p>Now, implement the two methods, <code>draw</code> and <code>init</code>:
+<p>次に、 <code>draw</code> と <code>init</code> の 2 つのメソッドを実装します:
 </p>
 <div class="example">
 <pre class="example">:noname ( o -- )
@@ -171,8 +162,7 @@ end-class button
  button defines init
 </pre></div>
 
-<p>To demonstrate inheritance, we define a class <code>bold-button</code>, with no
-new data and no new selectors:
+<p>継承を示すために、 新しいデータや新しいセレクターを持たないクラス <code>bold-button</code> を定義します:
 </p>
 <div class="example">
 <pre class="example">button class
@@ -182,14 +172,14 @@ end-class bold-button
 : normal 27 emit .&quot; [0m&quot; ;
 </pre></div>
 
-<p>The class <code>bold-button</code> has a different draw method to <code>button</code>,
-but the new method is defined in terms of the draw method for <code>button</code>:
+<p>クラス <code>bold-button</code> には <code>button</code> とは異なる draw メソッドがありますが、 新しいメソッドは
+<code>button</code> の draw メソッドに関して定義されています:
 </p>
 <div class="example">
 <pre class="example">:noname bold [ button :: draw ] normal ; bold-button defines draw
 </pre></div>
 
-<p>Finally, create two objects and apply selectors:
+<p>最後に、 2 つのオブジェクトを作成し、セレクターを適用します:
 </p>
 <div class="example">
 <pre class="example">button new Constant foo
