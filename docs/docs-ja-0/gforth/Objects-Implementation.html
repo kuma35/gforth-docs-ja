@@ -72,17 +72,18 @@ Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs<
 <span id="index-objects_002efs-implementation"></span>
 
 <span id="index-object_002dmap-discussion"></span>
-<p>オブジェクトは、 <code>struct...end-struct</code> で記述されたデータ構造の 1 つである、 メモリの一片です。 これには、
-オブジェクトのクラスのメソッド・マップ(the method map)を指すフィールド <code>object-map</code> があります。
+<p>オブジェクトは、 <code>struct...end-struct</code> で記述されたデータ構造体の 1 つである、 メモリの一片です。 これは、
+そのオブジェクトのクラスのメソッド・マップ(the method map) を指すフィールド <code>object-map</code> を持っています。
 </p>
 <span id="index-method-map"></span>
 <span id="index-virtual-function-table"></span>
-<p>「メソッド・マップ」(method map)<a id="DOCF33" href="#FOOT33"><sup>33</sup></a>は、 オブジェクトのクラスのメソッドの実行トークン(<i>xt</i>)を含む配列です。 各セレクターには、
+<p>「メソッド・マップ」(method map)<a id="DOCF33" href="#FOOT33"><sup>33</sup></a>は、 そのオブジェクトのクラスのメソッドの実行トークン(<i>xt</i>)を含む配列です。 各セレクターには、
 メソッド・マップへのオフセットが含まれています。
 </p>
 <span id="index-selector-implementation_002c-class"></span>
 <p><code>selector</code> は、<code>CREATE</code> と <code>DOES&gt;</code> を使用する定義ワードです。 selector
-の本体にはオフセットが含まれています。 クラスのセレクターの <code>DOES&gt;</code> アクションは、 基本的には以下のとおりです:
+の本体の内容はメソッド・マップのオフセット値です。 クラスのセレクターの <code>DOES&gt;</code> アクションは、 基本的には以下のとおりです(訳注:
+メソッド・マップの実装上のフィールド名は &quot;object-map&quot;):
 </p>
 <div class="example">
 <pre class="example">( object addr ) @ over object-map @ + @ execute
@@ -104,8 +105,8 @@ Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs<
 セレクターによって指定されたオフセットでメソッド・マップに新しい <i>xt</i> を保存するだけです。
 </p>
 <span id="index-class-binding_002c-implementation"></span>
-<p>クラス結び付け(class binding)は、クラスのメソッド・マップからセレクターによって指定されたオフセットで <i>xt</i> を取得し、 それを
-<code>compile,</code> で取得します(<code>[bind]</code> の場合)。
+<p>クラス結び付け(class binding)は、 そのクラスのメソッド・マップからセレクターによって指定されたオフセットで <i>xt</i> を取得し、
+それをコンパイル(<code>compile,</code>)するだけです(<code>[bind]</code> の場合)。
 </p>
 <span id="index-this-implementation"></span>
 <span id="index-catch-and-this"></span>
@@ -115,9 +116,9 @@ Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs<
 この手法には欠点が 1 つあります。 ユーザーが <code>;m</code> 経由ではなく <code>throw</code> または <code>exit</code>
 経由でメソッドを終了した場合、 <code>this</code> は復元されません(そして <code>exit</code> がクラッシュする可能性があります)。 著者は
 <code>throw</code> の問題に対処するために、 <code>this</code> を保存および復元するために <code>catch</code>
-を再定義しました(訳注: つまり、 &quot;objects.fs&quot; をインクルードした時に redefined
-と警告が出るが、意図的に再定義してあるので無視してください)。 例外をキャッチできるワードについても全く同様に行うべきです。 <code>exit</code>
-については、 単純に使用を禁止します(代わりに <code>exitm</code> があります)。
+を再定義しました(訳注: &quot;objects.fs&quot; をインクルードした時に &quot;redefined catch&quot; と警告が出るが、
+意図的に再定義してあるので無視してください、 ということ)。 例外をキャッチできるワードについても全く同様に行うべきです。 <code>exit</code>
+については、 単純に使用を禁止します(代わりに <code>exitm</code> を用意しました)。
 </p>
 <span id="index-inst_002dvar-implementation"></span>
 <p><code>inst-var</code> は <code>field</code> とまったく同じですが、 <code>DOES&gt;</code> アクションが異なります:
@@ -166,10 +167,10 @@ object class
   selector cl1sel1
   cell% inst-var cl1iv1
 
-' m1 overrides construct
-' m2 overrides if1sel1
-' m3 overrides if1sel2
-' m4 overrides cl1sel2
+  ' m1 overrides construct
+  ' m2 overrides if1sel1
+  ' m3 overrides if1sel2
+  ' m4 overrides cl1sel2
 end-class cl1
 
 create obj1 object dict-new drop

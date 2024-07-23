@@ -2349,7 +2349,8 @@ _子クラス(child class)_
      「親クラス」のすべてのプロパティ(インスタンス変数やセレクターやメソ
      ッド)を「継承」(inherit)したクラス。 Smalltalk の用語では、 サブク
      ラスはスーパークラスを継承します、 と言います。 C++ 用語では、 派生
-     クラスは基本クラスから継承します、 と言います。
+     クラスは基底クラスから継承します(The derived class inherits from
+     the base class.)、 と言います。
 
 
 File: gforth.info,  Node: Objects,  Next: OOF,  Prev: Object-Oriented Terminology,  Up: Object-oriented Forth
@@ -2502,11 +2503,12 @@ File: gforth.info,  Node: The Objects base class,  Next: Creating objects,  Prev
 6.24.3.3 The ‘object.fs’ base class
 ...................................
 
-クラスを定義するときは、 親クラスを指定する必要があります。 では、 クラ
-スの定義はどのように始めればよいのでしょうか？ 最初から使用できるクラス
-は 1 つです。 それは ‘object’ です。 これはすべてのクラスの祖先であるた
-め、 親を持たない唯一のクラスです。 ‘construct’ と ‘print’ という 2 つの
-セレクターを持っています。
+あなたがクラスを定義するときは、 必ず親クラスを指定する必要があります。
+では、 (最初の)クラス定義はどのようにすればよいのでしょうか？ そのために
+最初から使用できるクラスが 1 つだけあります。 それは ‘object’ という名前
+のクラスです。 これはすべてのクラスの祖先であるため、 親を持たない唯一の
+クラスです。 そして、 ‘construct’ と ‘print’ という 2 つのセレクターを持
+っています。
 
 
 File: gforth.info,  Node: Creating objects,  Next: Object-Oriented Programming Style,  Prev: The Objects base class,  Up: Objects
@@ -2642,13 +2644,13 @@ object)に頻繁にアクセスします。 メソッドをプレーンなコロ
      graphical class
        cell% inst-var radius
 
-     m: ( x y circle -- )
-       radius @ draw-circle ;m
-     overrides draw
+       m: ( x y circle -- )
+         radius @ draw-circle ;m
+       overrides draw
 
-     m: ( n-radius circle -- )
-       radius ! ;m
-     overrides construct
+       m: ( n-radius circle -- )
+         radius ! ;m
+       overrides construct
 
      end-class circle
 
@@ -2664,13 +2666,13 @@ object)に頻繁にアクセスします。 メソッドをプレーンなコロ
      graphical class
        inst-value radius
 
-     m: ( x y circle -- )
-       radius draw-circle ;m
-     overrides draw
+       m: ( x y circle -- )
+         radius draw-circle ;m
+       overrides draw
 
-     m: ( n-radius circle -- )
-       [to-inst] radius ;m
-     overrides construct
+       m: ( n-radius circle -- )
+         [to-inst] radius ;m
+       overrides construct
 
      end-class circle
 
@@ -2728,13 +2730,13 @@ File: gforth.info,  Node: Dividing classes,  Next: Object Interfaces,  Prev: Cla
 
      circle methods \ now we are ready
 
-     m: ( x y circle -- )
-       radius draw-circle ;m
-     overrides draw
+       m: ( x y circle -- )
+         radius draw-circle ;m
+       overrides draw
 
-     m: ( n-radius circle -- )
-       [to-inst] radius ;m
-     overrides construct
+       m: ( n-radius circle -- )
+         [to-inst] radius ;m
+       overrides construct
 
      end-methods
 
@@ -2767,12 +2769,13 @@ File: gforth.info,  Node: Object Interfaces,  Next: Objects Implementation,  Pre
 の誰かがこの祖先クラスに対して責任を負っているなどの理由で、 共通の祖先
 クラスへのセレクターの追加を実行したくない場合もあります。
 
-   この問題の解決策はインターフェース(interface)です。 インターフェイス
+   この問題の解決策はインターフェイス(interface)です。 インターフェイス
 はセレクターのコレクション(collection)です。 クラスがインターフェイスを
-実装している場合、 セレクターはクラスとその子孫で使用できるようになりま
-す。 クラスは無制限の数のインターフェイスを実装できます。 上で説明した問
-題については、 セレクターのインターフェイスを定義し、 両方のクラスがその
-インターフェイスを実装します。
+実装(implement)している場合、 そのインターフェイスのセレクターはそのクラ
+スとその子孫のクラスで使用できるようになります。 クラスは無制限の数のイ
+ンターフェイスを実装できます。 上で説明した問題については、 セレクター達
+の為にインターフェイスを定義し、 両方のクラスでそのインターフェイスを実
+装します。
 
    例として、 オブジェクトをディスクに書き込んで戻すための ‘storage’ と
 いうインターフェイスと、 それを実装するクラス ‘foo’ について考えてみまし
@@ -2786,16 +2789,17 @@ File: gforth.info,  Node: Object Interfaces,  Next: Objects Implementation,  Pre
      bar class
        storage implementation
 
-     ... overrides write
-     ... overrides read1
-     ...
+       ... overrides write
+       ... overrides read1
+       ...
+
      end-class foo
 
 (著者は、 ここから更に ‘read1’ を内部的に使用するワード ‘read’ ( file –
 object ) を追加するのですが、 それはインターフェイスとは関係ないので、 こ
 こでは説明を割愛します。 )
 
-   注意: インターフェースでは ‘protected’ を使用できないことに注意してく
+   注意: インターフェイスでは ‘protected’ を使用できないことに注意してく
 ださい。 もちろん、 フィールドを定義することもできません。
 
    Neon モデルでは、 すべてのセレクターがすべてのクラスで使用できます。
@@ -2809,17 +2813,18 @@ File: gforth.info,  Node: Objects Implementation,  Next: Objects Glossary,  Prev
 6.24.3.11 ‘objects.fs’ Implementation
 .....................................
 
-オブジェクトは、 ‘struct...end-struct’ で記述されたデータ構造の 1 つであ
-る、 メモリの一片です。 これには、 オブジェクトのクラスのメソッド・マッ
-プ(the method map)を指すフィールド ‘object-map’ があります。
+オブジェクトは、 ‘struct...end-struct’ で記述されたデータ構造体の 1 つで
+ある、 メモリの一片です。 これは、 そのオブジェクトのクラスのメソッド・
+マップ(the method map) を指すフィールド ‘object-map’ を持っています。
 
-   「メソッド・マップ」(method map)(1)は、 オブジェクトのクラスのメソッ
-ドの実行トークン(xt)を含む配列です。 各セレクターには、 メソッド・マップ
-へのオフセットが含まれています。
+   「メソッド・マップ」(method map)(1)は、 そのオブジェクトのクラスのメ
+ソッドの実行トークン(xt)を含む配列です。 各セレクターには、 メソッド・マ
+ップへのオフセットが含まれています。
 
    ‘selector’ は、‘CREATE’ と ‘DOES>’ を使用する定義ワードです。
-selector の本体にはオフセットが含まれています。 クラスのセレクターの
-‘DOES>’ アクションは、 基本的には以下のとおりです:
+selector の本体の内容はメソッド・マップのオフセット値です。 クラスのセレ
+クターの ‘DOES>’ アクションは、 基本的には以下のとおりです(訳注: メソッ
+ド・マップの実装上のフィールド名は "object-map"):
 
      ( object addr ) @ over object-map @ + @ execute
 
@@ -2841,9 +2846,9 @@ selector の本体にはオフセットが含まれています。 クラスの�
 ソッド・マップが拡張されます。 ‘overrides’ は、 セレクターによって指定さ
 れたオフセットでメソッド・マップに新しい xt を保存するだけです。
 
-   クラス結び付け(class binding)は、クラスのメソッド・マップからセレクタ
-ーによって指定されたオフセットで xt を取得し、 それを ‘compile,’ で取得
-します(‘[bind]’ の場合)。
+   クラス結び付け(class binding)は、 そのクラスのメソッド・マップからセ
+レクターによって指定されたオフセットで xt を取得し、 それをコンパイル
+(‘compile,’)するだけです(‘[bind]’ の場合)。
 
    著者は ‘this’ を ‘value’ として実装しました。 ‘m:...;m’ メソッドの開
 始時に、 古い ‘this’ がリターン・スタックに保存され、 最後に復元されます
@@ -2851,11 +2856,11 @@ selector の本体にはオフセットが含まれています。 クラスの�
 つあります。 ユーザーが ‘;m’ 経由ではなく ‘throw’ または ‘exit’ 経由でメ
 ソッドを終了した場合、 ‘this’ は復元されません(そして ‘exit’ がクラッシ
 ュする可能性があります)。 著者は ‘throw’ の問題に対処するために、 ‘this’
-を保存および復元するために ‘catch’ を再定義しました(訳注: つまり、
-"objects.fs" をインクルードした時に redefined と警告が出るが、意図的に再
-定義してあるので無視してください)。 例外をキャッチできるワードについても
-全く同様に行うべきです。 ‘exit’ については、 単純に使用を禁止します(代わ
-りに ‘exitm’ があります)。
+を保存および復元するために ‘catch’ を再定義しました(訳注: "objects.fs" を
+インクルードした時に "redefined catch" と警告が出るが、 意図的に再定義し
+てあるので無視してください、 ということ)。 例外をキャッチできるワードに
+ついても全く同様に行うべきです。 ‘exit’ については、 単純に使用を禁止し
+ます(代わりに ‘exitm’ を用意しました)。
 
    ‘inst-var’ は ‘field’ とまったく同じですが、 ‘DOES>’ アクションが異な
 ります:
@@ -2905,10 +2910,10 @@ selector の本体にはオフセットが含まれています。 クラスの�
        selector cl1sel1
        cell% inst-var cl1iv1
 
-     ' m1 overrides construct
-     ' m2 overrides if1sel1
-     ' m3 overrides if1sel2
-     ' m4 overrides cl1sel2
+       ' m1 overrides construct
+       ' m2 overrides if1sel1
+       ' m3 overrides if1sel2
+       ' m4 overrides cl1sel2
      end-class cl1
 
      create obj1 object dict-new drop
@@ -2949,14 +2954,12 @@ File: gforth.info,  Node: Objects Glossary,  Prev: Objects Implementation,  Up: 
 れた ALIGN OFFSET は FIELD などで使用されます。
 
 ‘class->map’ ( class – map  ) objects “class->map”
-   MAP は 指定のクラス CLASS のメソッド・マップへのポインタです。 これは
-、 セレクター・オフセットが参照するマップ内の場所(つまり、 OBJECT-MAP が
-指す場所)を指します。
+   指定のクラス CLASS のメソッド・マップへのポインタを MAP に返します。
 
 ‘class-inst-size’ ( class – addr  ) objects “class-inst-size”
-   してのクラス CLASS のインスタンス(つまり、 オブジェクト)のサイズ仕様
-を指定します。 ‘class-inst-size 2 ( class -- align size )’ として使用さ
-れます。
+   指定のクラス CLASS のインスタンス(つまり、 オブジェクト)のサイズ仕様
+を指します。 通常 ‘class-inst-size 2@ ( class -- align size )’ として使
+用されます。
 
 ‘class-override!’ ( xt sel-xt class-map –  ) objects “class-override!”
    指定の XT は、 指定の CLASS-MAP のセレクター SEL-XT の新しいメソッド
@@ -2972,8 +2975,8 @@ drop します。 CLASS のワードリストが実際に検索順序スタッ�
 に追加します。
 
 ‘construct’ ( ... object –  ) objects “construct”
-   指定の OBJECT のデータ・フィールドを初期化します。 クラス OBJECT のメ
-ソッドは何も行いません: ‘( object -- )’.
+   指定の OBJECT のデータ・フィールドを初期化します。 基底クラス OBJECT
+の construct メソッドは何も行いません: ‘( object -- )’.
 
 ‘current'’ ( "selector" – xt  ) objects “current”’
    XT は、 現在のクラスの指定の SELECTOR のメソッドです。
@@ -2986,8 +2989,10 @@ drop します。 CLASS のワードリストが実際に検索順序スタッ�
 。
 
 ‘dict-new’ ( ... class – object  ) objects “dict-new”
-   ‘allot’ を使用して、 ディクショナリ内のクラス CLASS のオブジェクトを
-初期化します。 初期化したオブジェクトへのポインタを OBJECT に返します
+   指定のクラス CLASS オブジェクト用の領域を ‘allot’ を使用してディクシ
+ョナリ内に確保し、 初期化(‘init-object’)したオブジェクトへのポインタを
+OBJECT に返します(訳注: OBJECT は領域の先頭ではなくてメソッド・マップ
+(object-map)フィールドを指している事に注意)
 
 ‘end-class’ ( align offset "name" –  ) objects “end-class”
    NAME という名前を付けてクラス定義を終了します。 NAME 実行時: ‘--
@@ -3001,7 +3006,7 @@ class’
 実行時: ‘--interface’
 
 ‘end-interface-noname’ ( – interface  ) objects “end-interface-noname”
-   インターフェース定義を終了します。 結果のインターフェースは INTERFACE
+   インターフェイス定義を終了します。 結果のインターフェイスは INTERFACE
 
 ‘end-methods’ ( –  ) objects “end-methods”
    クラスのメソッド定義から通常モードに切り替えます(現在、 これは古い検
@@ -3014,8 +3019,9 @@ class’
    ‘allocate’ し、 クラス CLASS のオブジェクトを初期化します。
 
 ‘implementation’ ( interface –  ) objects “implementation”
-   現在のクラスは INTERFACE を実装しています。 つまり、 現在のクラスとそ
-の子孫のインターフェイスのすべてのセレクターを使用できます。
+   現在のクラスは指定のインターフェイス INTERFACE を実装します。 つまり
+、 あなたは、 現在のクラス内とその子孫のクラス内で、 指定のインターフェ
+イス INTERFACE の全てのセレクターを使用できます。
 
 ‘init-object’ ( ... class object –  ) objects “init-object”
    メモリのチャンク OBJECT (アドレス)をクラス CLASS のオブジェクトのため
@@ -3034,14 +3040,15 @@ w’ W は、‘this’ オブジェクトの NAME フィールドの値です�
 実行時: ‘-- addr’
 
 ‘interface’ ( –  ) objects “interface”
-   インターフェース定義を開始します。
+   インターフェイス定義を開始します。
 
 ‘m:’ ( – xt colon-sys; run-time: object –  ) objects “m:”
-   メソッド定義を開始します。 OBJECT が新しい ‘this’ になります。
+   メソッド定義を開始します。 定義中は指定の OBJECT が新しい ‘this’ にな
+ります。
 
 ‘:m’ ( "name" – xt; run-time: object –  ) objects “:m”
-   名前付きメソッド定義を開始します。 OBJECT が新しい ‘this’ になります
-。 ‘;m’ で終わる必要があります。
+   名前付きメソッド定義を開始します。 定義中は指定の OBJECT が新しい
+‘this’ になります。 ‘;m’ で終わらせる必要があります。
 
 ‘;m’ ( colon-sys –; run-time: –  ) objects “;m”
    メソッド定義を終了します。 古い ‘this’ を復元します。
@@ -3088,7 +3095,9 @@ wordlist)にセットします
 ブジェクト)。
 
 ‘<to-inst>’ ( w xt –  ) objects “<to-inst>”
-   W を ‘this’ オブジェクトのフィールド XT に格納します。
+   実行トークン XT を inst-value で作成したフィールドとみなしてフィール
+ド・オフセットを取得し、 現在のオブジェクト(this)の当該フィールドに指定
+の値 W を格納します。
 
 ‘[to-inst]’ ( compile-time: "name" – ; run-time: w –  ) objects “[to-inst]”
    W を ‘this’ オブジェクトの NAME フィールドに格納します。
@@ -3098,8 +3107,8 @@ wordlist)にセットします
 ます)。
 
 ‘xt-new’ ( ... class xt – object  ) objects “xt-new”
-   ‘xt ( align size -- addr )’ を使用してメモリを取得し、 新しいオブジェ
-クトを作成します。
+   ‘xt ( align size -- addr )’ を使用して何らかの形で領域を確保し、 そこ
+に指定のクラス class の新しいオブジェクトを作成(‘init-object’)します。
 
 
 File: gforth.info,  Node: OOF,  Next: Mini-OOF,  Prev: Objects,  Up: Object-oriented Forth
@@ -3302,10 +3311,11 @@ File: gforth.info,  Node: The OOF base class,  Next: Class Declaration,  Prev: B
 
      ‘object-postpone’ ( "name" –  ) oof “object-postpone”
 
-   • ‘with’ と ‘endwith’ を使用して、 スタックからアクティブなオブジェク
-     トを選択し、 そのスコープを有効にします。 ‘with’ と ‘endwith’ を使
-     用すると、 ステートスマート・オブジェクトにトラップされることなく、
-     セレクター ‘postpone’ を使用してコードを作成することもできます。
+   • ‘with’ と ‘endwith’ は、 スタックから得たオブジェクトをアクティブ・
+     オブジェクトにし、 そのオブジェクトのスコープを有効にします。
+     ‘with’ と ‘endwith’ を使用すると、 ステートスマート・オブジェクトに
+     トラップされることなく、 セレクターを ‘postpone’ してコードを作成す
+     ることもできます。
 
      ‘object-with’ ( o –  ) oof “object-with”
 
@@ -3344,7 +3354,7 @@ File: gforth.info,  Node: Class Declaration,  Next: Class Implementation,  Prev:
      ‘method’ ( –  ) oof “method”
      メソッド・セレクターを作成します。
 
-   • クラス全体の変数(クラス全体の変数)
+   • クラス変数(class-wide variables)
 
      ‘static’ ( –  ) oof “static”
      クラス全体のセル・サイズの変数を作成します。
@@ -3386,20 +3396,20 @@ File: gforth.info,  Node: Basic Mini-OOF Usage,  Next: Mini-OOF Example,  Prev: 
 6.24.5.1 Basic ‘mini-oof.fs’ Usage
 ..................................
 
-基本クラス(base class)(‘class’、 オブジェクト・ポインターに 1 つのセルを
+基底クラス(base class)(‘class’、 オブジェクト・ポインターに 1 つのセルを
 割り当てます) に加えて、 7つのワードがあります。 それは、 メソッドの定義
 、 変数の定義、 クラスの定義開始、 クラスの定義終了、 結び付けの解決
 (resolve binding)、 オブジェクトの割り当て、 クラス・メソッドのコンパイ
 ル、 です。
 
 ‘object’ ( – a-addr  ) mini-oof “object”
-   OBJECT はすべてのオブジェクトの基本クラス(base class)です。
+   OBJECT はすべてのオブジェクトの基底クラス(base class)です。
 
 ‘method’ ( m v "name" – m’ v  ) mini-oof “method”
    セレクターを定義します。
 
 ‘var’ ( m v size "name" – m v’  ) mini-oof “var”
-   SIZE バイトで変数を定義します。
+   SIZE バイトのサイズの変数を定義します。
 
 ‘class’ ( class – class selectors vars  ) mini-oof “class”
    クラスの定義を開始します。
@@ -3623,33 +3633,33 @@ File: gforth.info,  Node: Comparison with other object models,  Prev: Mini-OOF2,
 6.24.7 Comparison with other object models
 ------------------------------------------
 
-Many object-oriented Forth extensions have been proposed (‘A survey of
-object-oriented Forths’ (SIGPLAN Notices, April 1996) by Bradford J.
-Rodriguez and W. F. S. Poehlman lists 17).  This section discusses the
-relation of the object models described here to two well-known and two
-closely-related (by the use of method maps) models.  Andras Zsoter
-helped us with this section.
+【他のオブジェクト・モデルとの比較】オブジェクト指向の Forth 拡張機能が
+数多く提案されています(‘A survey of object-oriented Forths’ (SIGPLAN
+Notices, April 1996) by Bradford J. Rodriguez and W. F. S. Poehlman
+lists 17)。 このセクションでは、 先程説明した、 よく知られた 2つのモデル
+と、 (メソッド・マップの使用に関して)密接に関連した 2 つのモデルとの関係
+について議論します。 このセクションでは Andras Zsoter が協力してくれまし
+た。
 
-   The most popular model currently seems to be the Neon model (see
-‘Object-oriented programming in ANS Forth’ (Forth Dimensions, March
-1997) by Andrew McKewan) but this model has a number of limitations (1):
+   現在最も人気のあるモデルは Neon モデル(参照: ‘Object-oriented
+programming in ANS Forth’ (Forth Dimensions, March 1997)であるようですで
+すが、 このモデルには多くの制限があります(1):
 
-   • It uses a ‘_selector object_’ syntax, which makes it unnatural to
-     pass objects on the stack.
+   • ‘selector object’ 構文を使用しているため、 スタック上でオブジェクト
+     を渡すのが不自然になります。
 
-   • It requires that the selector parses the input stream (at compile
-     time); this leads to reduced extensibility and to bugs that are
-     hard to find.
+   • セレクターが入力ストリームを(コンパイル時に)パースする必要がありま
+     す。 これにより、 拡張性が低下し、 バグが発見されにくくなります。
 
-   • It allows using every selector on every object; this eliminates the
-     need for interfaces, but makes it harder to create efficient
-     implementations.
+   • これにより、 すべてのオブジェクトですべてのセレクターを使用できるよ
+     うになり、 インターフェイスが不要になりますが、 効率的な実装を作成
+     することが難しくなります。
 
-   Another well-known publication is ‘Object-Oriented Forth’ (Academic
-Press, London, 1987) by Dick Pountain.  However, it is not really about
-object-oriented programming, because it hardly deals with late binding.
-Instead, it focuses on features like information hiding and overloading
-that are characteristic of modular languages like Ada (83).
+   もう 1 つのよく知られた出版物は、 ‘Object-Oriented Forth’ (Academic
+Press, London, 1987) by Dick Pountain ですが、 遅延結び付け(late
+binding)をほとんど扱っていないため、 真のオブジェクト指向プログラミング
+に関するモノとは言えません。 代わりに、 Ada (83) のようなモジュラー言語
+の特徴である情報隠蔽やオーバーロードなどの機能に焦点を当てています。
 
    In Does late binding have to be slow?
 (http://www.forth.org/oopf.html) (Forth Dimensions 18(1) 1996, pages
@@ -3686,9 +3696,9 @@ the ‘objects.fs’ and ‘oof.fs’ models.
 
    ---------- Footnotes ----------
 
-   (1) A longer version of this critique can be found in ‘On
-Standardizing Object-Oriented Forth Extensions’ (Forth Dimensions, May
-1997) by Anton Ertl.
+   (1) この批評の長いバージョンは、Anton Ertl の ‘On Standardizing
+Object-Oriented Forth Extensions’ (Forth Dimensions, May 1997) にありま
+す。
 
 
 File: gforth.info,  Node: Regular Expressions,  Next: Programming Tools,  Prev: Object-oriented Forth,  Up: Words
