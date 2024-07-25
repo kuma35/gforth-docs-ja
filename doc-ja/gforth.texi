@@ -9471,7 +9471,7 @@ uelements * uelementsize です
 @cindex @code{LEAVE}
 @kindex LEAVE
 @format
-@code{LEAVE} ( @i{compilation -- ; run-time loop-sys --  }) core ``LEAVE''
+@code{LEAVE} ( @i{compilation -- ; run-time loop-sys --  }) core ``LEAVE'' @*\ 訳注: @code{LEAVE} は、 最も内側のカウンタ付きループを抜け出します。@*\       それが関係する @code{LOOP} または @code{NEXT} の直後から実行を続行します。
 @end format
 @xref{Counted Loops}.
 
@@ -9480,7 +9480,7 @@ uelements * uelementsize です
 @cindex @code{?LEAVE}
 @kindex ?LEAVE
 @format
-@code{?LEAVE} ( @i{compilation -- ; run-time f | f loop-sys --  }) gforth-0.2 ``question-leave''
+@code{?LEAVE} ( @i{compilation -- ; run-time f | f loop-sys --  }) gforth-0.2 ``question-leave'' @*\訳注: @i{f} が true なら @var{leave} します。
 @end format
 @xref{Counted Loops}.
 
@@ -9652,7 +9652,7 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @cindex @code{orig}, control-flow stack item
 @cindex @code{dest}, control-flow stack item
 @i{orig} エントリは未解決の前方分岐を表し、 @i{dest} エントリは後方分岐ターゲットを表します。 いくつかのワードは、
-可能なあらゆる制御構造を構築するための基礎となります(ストレージを必要とする制御構造を除く、 呼び出しやコルーチンやバックトラッキングなど)。
+可能なあらゆる制御構造を構築するための基礎となります(呼び出しやコルーチンやバックトラッキングのような、 ストレージを必要とする制御構造を除く)。
 
 
 @findex IF ( @var{ compilation -- orig ; run-time f --   } ) core
@@ -9661,8 +9661,8 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{IF} ( @i{compilation -- orig ; run-time f --  }) core ``IF''
 @end format
-実行時(run-time)、 @i{f}=0 の場合、 @i{orig} を消費する @code{THEN} (または @code{ELSE})
-の後から実行が続行されます。 それ以外の場合は、 @code{IF} の直後に続きます(@pxref{Selection})。
+実行時(run-time)、 @i{f}=0 の場合、 (コンパイル時に) @i{orig} を消費する @code{THEN} (または
+@code{ELSE}) の後から実行が続行されます。 それ以外の場合は、 @code{IF} の直後に続きます(@pxref{Selection})。
 
 
 @findex AHEAD ( @var{ compilation -- orig ; run-time --   } ) tools-ext
@@ -9671,7 +9671,8 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{AHEAD} ( @i{compilation -- orig ; run-time --  }) tools-ext ``AHEAD''
 @end format
-実行時、 @i{orig} を消費する @code{THEN} の後から実行が続行されます。
+実行時、 (コンパイル時に) @i{orig} を消費する @code{THEN} の後から実行が続行されます(訳注: つまり、 単純に
+@code{THEN} へジャンプする)。
 
 
 @findex THEN ( @var{ compilation orig -- ; run-time --   } ) core
@@ -9680,8 +9681,8 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{THEN} ( @i{compilation orig -- ; run-time --  }) core ``THEN''
 @end format
-@i{orig} にプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} または @code{WHILE}
-は、 @code{THEN} の直後にジャンプします(@pxref{Selection})。
+(コンパイル時に) @i{orig} をプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} または
+@code{WHILE} は、 @code{THEN} の直後にジャンプします(@pxref{Selection})。
 
 
 @findex BEGIN ( @var{ compilation -- dest ; run-time --   } ) core
@@ -9690,7 +9691,7 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{BEGIN} ( @i{compilation -- dest ; run-time --  }) core ``BEGIN''
 @end format
-@i{dest} を消費する @code{UNTIL} または @code{AGAIN} または @code{REPEAT} は、
+(コンパイル時に) @i{dest} を消費する @code{UNTIL} または @code{AGAIN} または @code{REPEAT} は、
 @code{BEGIN} の直後へジャンプします(@pxref{Simple Loops})。
 
 
@@ -9700,8 +9701,8 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{UNTIL} ( @i{compilation dest -- ; run-time f --  }) core ``UNTIL''
 @end format
-実行時、 @i{f}=0 の場合、 @i{dest} を生成した @code{BEGIN} の後で実行が続行されます。 それ以外の場合は、
-@code{UNTIL}の直後から実行が続行されます(@pxref{Simple Loops})。
+実行時、 @i{f}=0 の場合、 (コンパイル時に) @i{dest} をプッシュした @code{BEGIN} の直後から実行が続行されます。
+それ以外の場合は、 @code{UNTIL}の直後から実行が続行されます(@pxref{Simple Loops})。
 
 
 @findex AGAIN ( @var{ compilation dest -- ; run-time --   } ) core-ext
@@ -9710,7 +9711,8 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{AGAIN} ( @i{compilation dest -- ; run-time --  }) core-ext ``AGAIN''
 @end format
-実行時、 @i{dest} を生成した @code{BEGIN} の後から実行が続行されます(@pxref{Simple Loops})。
+実行時、 (コンパイル時に) @i{dest} をプッシュした @code{BEGIN} の直後から実行が続行されます(@pxref{Simple
+Loops})。
 
 
 @findex CS-PICK ( @var{ orig0/dest0 orig1/dest1 ... origu/destu u -- ... orig0/dest0   } ) tools-ext
@@ -9736,7 +9738,7 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 
 
 標準ワードの @code{CS-PICK} や @code{CS-ROLL} を使用すると、 移植可能な方法で制御フロー・スタックを操作できます。
-これら無しだと制御フロー・エントリが占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを使用します。 Gforth では現在 3
+これら無しだと制御フロー・エントリが占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを使用します。 Gforth では現在 4
 つを使用しますが、 これは将来変更される可能性があります)。
 
 @i{orig} は 1 回だけ解決する必要があるため、 @code{CS-PICK} は @i{dest} を pick することしかできず、 かつ、
@@ -9751,8 +9753,8 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{ELSE} ( @i{compilation orig1 -- orig2 ; run-time --  }) core ``ELSE''
 @end format
-実行時、 @i{orig} を消費する @code{THEN} の後から実行が続行されます。 @i{orig1} をプッシュした @code{IF}
-または @code{AHEAD} または @code{ELSE} または @code{WHILE} は、 @code{ELSE}
+実行時、 (コンパイル時に) @i{orig} を消費する @code{THEN} の直後から実行が続行されます。 @i{orig1} をプッシュした
+@code{IF} または @code{AHEAD} または @code{ELSE} または @code{WHILE} は、 @code{ELSE}
 の直後にジャンプします(@pxref{Selection})。
 
 
@@ -9762,9 +9764,9 @@ exits})。 注意: @code{endcase} とは異なり、 @code{next-case} は値を�
 @format
 @code{WHILE} ( @i{compilation dest -- orig dest ; run-time f --  }) core ``WHILE''
 @end format
-実行時、 @i{f}=0 の場合、 @i{orig} を消費する @code{REPEAT} (または @code{THEN} または
-@code{ELSE}) の後から実行が継続されます。 それ以外の場合は、 @code{WHILE} の直後から実行されます(@pxref{Simple
-Loops})。
+実行時、 @i{f}=0 の場合、 (コンパイル時の) @i{orig} を消費する @code{REPEAT} (または @code{THEN}
+または @code{ELSE}) の直後から実行が継続されます。 それ以外の場合は、 @code{WHILE}
+の直後から実行されます(@pxref{Simple Loops})。
 
 
 @findex REPEAT ( @var{ compilation orig dest -- ; run-time --   } ) core
@@ -9773,9 +9775,9 @@ Loops})。
 @format
 @code{REPEAT} ( @i{compilation orig dest -- ; run-time --  }) core ``REPEAT''
 @end format
-実行時、 @i{dest} を生成した @code{BEGIN} の後から実行が続行されます。 @i{orig} をプッシュした
-@code{WHILE} または @code{IF} または @code{AHEAD} または @code{ELSE} は、 @code{REPEAT}
-の直後にジャンプします(@pxref{Simple Loops})。
+実行時、 (コンパイル時に) @i{dest} をプッシュした @code{BEGIN} の直後から実行が続行されます。 @i{orig}
+をプッシュした @code{WHILE} または @code{IF} または @code{AHEAD} または @code{ELSE} は、
+@code{REPEAT} の直後にジャンプします(@pxref{Simple Loops})。
 
 
 
@@ -9841,7 +9843,7 @@ IF}」の代替として推奨されます。 しかも、 @code{?DUP IF} より
 @format
 @code{next-case} ( @i{compilation case-sys -- ; run-time --  }) gforth-1.0 ``next-case''
 @end format
-マッチする @code{case} にジャンプして、 @code{case} ループを再開します。 @code{endcase} とは異なり、
+一致する @code{case} にジャンプして、 @code{case} ループを再開します。 @code{endcase} とは異なり、
 @code{next-case} はセルを drop しないことに注意してください。
 
 
@@ -9871,7 +9873,7 @@ f が true の場合は続行します。 それ以外の場合は、 @code{endo
 @code{endof} ( @i{compilation case-sys1 of-sys -- case-sys2 ; run-time  --  }) core-ext ``end-of''
 @end format
 @code{endcase}/@code{next-case} の後ろにジャンプして、 囲んでいる @code{case}
-構造体を終了(exit)します。
+構造を終了(exit)します。
 
 
 @findex contof ( @var{ compilation case-sys1 of-sys -- case-sys2 ; run-time  --   } ) gforth-1.0
@@ -21545,8 +21547,8 @@ binding)、 オブジェクトの割り当て、 クラス・メソッドのコ�
 @cindex mini-oof example
 
 @comment TODO could flesh this out with some comments from the Forthwrite article
-短い例は、 このパッケージの使用方法を示しています。 この例は、 わずかに拡張された形式で、 @file{moof-exm.fs}<
-として提供されます。
+短い例で、 このパッケージの使い方を示します。 他の例として button オブジェクト の Mini-OOF バージョンが
+@file{moof-exm.fs} にあります。
 
 @example
 object class
@@ -21616,9 +21618,8 @@ circle new Constant my-circle
 
 セレクターの宣言中、 セレクターの数とインスタンス変数は(アドレス単位で)スタック上にあります。 @code{method} はセレクターを 1
 つ作成し、 セレクター番号をインクリメントします。 セレクターを実行するには、 オブジェクトを取得し、 vtable ポインターを取得し、
-オフセットを追加して、 そこに保存されているメソッド @i{xt} を実行します。 各セレクターは、 スタック・パラメーターのTOSとして、
-呼び出されるオブジェクトを受け取ります。 セレクターは、 パラメーター(オブジェクトを含む)を変更せずに、 そのオブジェクトを、
-使用する適切なメソッドに渡します。
+オフセットを追加して、 そこに保存されているメソッド @i{xt} を実行します。 実行時、 各セレクターは、 スタック・パラメーターのTOSとして、
+セレクターを呼び出すオブジェクトを受け取り、 パラメーター(オブジェクトを含む)を変更せずに、 適切なメソッドに渡します。
 
 いまや、 インスタンス変数も宣言しなければなりません
 
@@ -21628,11 +21629,11 @@ circle new Constant my-circle
 @end example
 
 同様に、 ワードには現在のオフセットを書き込んで作成されます。 インスタンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、
-char)を持つことができるため、 サイズを取得してオフセットに追加するだけです。 マシンにアライメント制限がある場合は、 変数の前に適切な
-@code{aligned} または @code{faligned} を配置して、 変数のオフセットを調整します。
-それがスタックのTOSにある理由です。
+char)にすることができるため、 そのサイズを取得してオフセットに追加します。 マシンにアライメント制限がある場合は、 変数の前に適切な
+@code{aligned} または @code{faligned} を配置して、 変数のオフセットを調整します。 それが @i{size}
+がスタックのTOSにある理由です。
 
-開始点(基本オブジェクト)と、 いくつかの糖衣構文も必要です:
+開始点(基底オブジェクト)と、 いくつかの糖衣構文も必要です:
 
 @example
 Create object  1 cells , 2 cells ,
@@ -21698,7 +21699,7 @@ end-class button
 @end example
 
 @noindent
-継承を示すために、 新しいデータや新しいセレクターを持たないクラス @code{bold-button} を定義します:
+継承のデモンストレーションとして、 新しいデータや新しいセレクターを持たない、 クラス @code{bold-button} を定義します:
 
 @example
 button class
@@ -21810,57 +21811,45 @@ Object-Oriented Forth Extensions} (Forth Dimensions, May 1997) にあります�
 のようなモジュラー言語の特徴である情報隠蔽やオーバーロードなどの機能に焦点を当てています。
 
 @cindex Zsoter's object-oriented model
-In @uref{http://www.forth.org/oopf.html, Does late binding have to be slow?}
-(Forth Dimensions 18(1) 1996, pages 31-35) Andras Zsoter describes a model
-that makes heavy use of an active object (like @code{this} in
-@file{objects.fs}): The active object is not only used for accessing all
-fields, but also specifies the receiving object of every selector
-invocation; you have to change the active object explicitly with @code{@{
-... @}}, whereas in @file{objects.fs} it changes more or less implicitly at
-@code{m: ... ;m}. Such a change at the method entry point is unnecessary
-with Zsoter's model, because the receiving object is the active object
-already. On the other hand, the explicit change is absolutely necessary in
-that model, because otherwise no one could ever change the active object. An
-Standard Forth implementation of this model is available through
-@uref{http://www.forth.org/oopf.html}.
+@uref{http://www.forth.org/oopf.html, Does late binding have to be slow?}
+(Forth Dimensions 18(1) 1996, pages 31-35)(「遅延結び付けは遅くないといけないのか？」) で、 Andras
+Zsoter は(@file{objects.fs} の @code{this}
+のような)アクティブ・オブジェクトを多用するモデルについて説明しています。 アクティブ・オブジェクトは、
+すべてのフィールドにアクセスするために使用されるだけでなく、 すべてのセレクター呼び出しの受信オブジェクトも指定します。 あなたは @code{@{
+... @}} を使用してアクティブなオブジェクトを明示的に変更する必要がありますが、 @file{objects.fs} では @code{m:
+... ;m} で多かれ少なかれ暗黙的に変更されます。 Zsoter のモデルでは、 受信オブジェクトがすでにアクティブなオブジェクトであるため、
+メソッドのエントリ・ポイントでのこのような変更は不要です。 一方、 Zsoter のモデルでは明示的な変更(機能)が絶対に必要です。 そうしないと、
+誰もアクティブ・オブジェクトを変更できなくなるからです。 このモデルの標準 Forth での実装は、
+@uref{http://www.forth.org/oopf.html} から入手できます。
 
 @cindex @file{oof.fs}, differences to other models
-The @file{oof.fs} model combines information hiding and overloading
-resolution (by keeping names in various word lists) with object-oriented
-programming. It sets the active object implicitly on method entry, but also
-allows explicit changing (with @code{>o...o>} or with
-@code{with...endwith}). It uses parsing and state-smart objects and classes
-for resolving overloading and for early binding: the object or class parses
-the selector and determines the method from this. If the selector is not
-parsed by an object or class, it performs a call to the selector for the
-active object (late binding), like Zsoter's model.  Fields are always
-accessed through the active object. The big disadvantage of this model is
-the parsing and the state-smartness, which reduces extensibility and
-increases the opportunities for subtle bugs; essentially, you are only safe
-if you never tick or @code{postpone} an object or class (Bernd disagrees,
-but I (Anton) am not convinced).
+@file{oof.fs} モデルは、
+(さまざまなワードリストに名前を保持することにより、)情報の隠蔽とオーバーロードの解決(resolution)をオブジェクト指向プログラミングと組み合わせます。
+メソッドのエントリ時にアクティブ・オブジェクトを暗黙的に設定しますが、 (@code{>o...o>} または
+@code{with...endwith} を使用して、)明示的に変更することもできます。 オーバーロードの解決と早期結び付け(early
+binding)のために、 パースと、 ステートスマートなオブジェクトとクラスを使用します: オブジェクトまたはクラスはセレクターをパースし、
+そこからメソッドを決定します。 セレクターがオブジェクトまたはクラスによってパースされない場合、 Zsoter のモデルのように、
+アクティブなオブジェクトのセレクターへの呼び出し(遅延結び付け;late binding)が実行されます。
+フィールドには常にアクティブ・オブジェクトを通じてアクセスします。 このモデルの大きな欠点は、 パースとステート・スマートです。
+これにより拡張性が低下し、微妙なバグが発生する可能性が高くなります。 基本的に、 オブジェクトやクラスをティック(tick)したり
+@code{postpone} したりしない場合にのみ安全です(Bernd は反対しているが、 著者 (Anton) は納得していない)。
 
 @cindex @file{mini-oof.fs}, differences to other models
-The @file{mini-oof.fs} model is quite similar to a very stripped-down
-version of the @file{objects.fs} model, but syntactically it is a mixture of
-the @file{objects.fs} and @file{oof.fs} models.
+@file{mini-oof.fs} モデルは、 @file{objects.fs} モデルの非常に簡素化されたバージョンに非常に似ていますが、
+構文的には @file{objects.fs} と @file{oof.fs} モデルが混合されたものです。 。
 
 @c -------------------------------------------------------------
 @node Regular Expressions, Programming Tools, Object-oriented Forth, Words
 @section Regular Expressions
 @cindex regexps
 
-Regular expressions are pattern matching algorithms for strings found in
-many contemporary languages.  You can add regular expression functionality
-to Gforth with @code{require regexp.fs}.
+正規表現(regular expression)は、 多くの現代的プログラミング言語で見られる、 文字列のパターン・マッチング・アルゴリズムです。
+あなたは  @code{require regexp.fs} を使用して正規表現機能を Gforth に追加できます。
 
-The classical implementation for this pattern matching is a backtracking
-algorithm, which is also necessary if you want to have features like
-backreferencing.  Gforth implements regular expressions by providing a
-language to define backtracking programs for pattern matching.  Basic
-element is the control structure @code{FORK} @dots{} @code{JOIN}, which is a
-forward call within a word, and therefore allows to code a lightweight try
-and fail control structure.
+このパターン・マッチングの古典的な実装はバックトラッキング・アルゴリズムです。 これは、 後方参照などの機能を使用する場合にも必要です。  Gforth
+は、 パターン・マッチングのためのバックトラッキング・プログラムを定義する言語(language)を提供することで正規表現を実装します。
+基本要素は制御構造 @code{FORK} @dots{} @code{JOIN} です。 これはワード内での前方呼び出しであるため、
+軽量の試行錯誤制御構造(try and fail control structure)をコーディングできます。
 
 @findex FORK ( @var{ compilation -- orig ; run-time f --   } ) gforth-0.7
 @cindex @code{FORK}
@@ -21868,7 +21857,7 @@ and fail control structure.
 @format
 @code{FORK} ( @i{compilation -- orig ; run-time f --  }) gforth-0.7 ``FORK''
 @end format
-AHEAD-like control structure: calls the code after JOIN.
+AHEAD のような制御構造: JOIN の後にコードを呼び出します。
 
 
 @findex JOIN ( @var{ orig --   } ) gforth-0.7
@@ -21877,13 +21866,12 @@ AHEAD-like control structure: calls the code after JOIN.
 @format
 @code{JOIN} ( @i{orig --  }) gforth-0.7 ``JOIN''
 @end format
-THEN-like control structure for FORK
+FORK のための、 THEN のような制御構造
 
 
 
-You can program any sort of arbitrary checks yourself by computing a flag
-and @code{?LEAVE} when the check fails.  Your regular expression code is
-enclosed in @code{((} and @code{))}.
+あなたは、 チェックが失敗した場合に、 フラグと @code{?LEAVE} を計算することで、 任意の種類のチェックを自分でプログラムできます。
+正規表現コードは @code{((} と @code{))} で囲まれています。
 
 @findex (( ( @var{ addr u --   } ) regexp-pattern
 @cindex @code{((}
@@ -21891,7 +21879,7 @@ enclosed in @code{((} and @code{))}.
 @format
 @code{((} ( @i{addr u --  }) regexp-pattern ``((''
 @end format
-start regexp block
+正規表現ブロックの開始
 
 
 @findex )) ( @var{ -- flag   } ) regexp-pattern
@@ -21900,14 +21888,12 @@ start regexp block
 @format
 @code{))} ( @i{-- flag  }) regexp-pattern ``))''
 @end format
-end regexp block
+正規表現ブロックの終了
 
 
 
-Pattern matching in regular expressions have character sets as elements, so
-a number of functions allow you to create and modify character sets (called
-@code{charclass}).  All characters here are bytes, so this doesn't extend to
-unicode characters.
+正規表現のパターン・マッチングには要素として文字セットがあるため、 多くの機能を使用して文字セット(@code{charclass}
+と呼ばれる)を作成・変更できます。  ここでの文字はすべてバイトであるため、 これはユニコード文字には適用されません。
 
 @findex charclass ( @var{ --   } ) regexp-cg
 @cindex @code{charclass}
@@ -21915,7 +21901,7 @@ unicode characters.
 @format
 @code{charclass} ( @i{--  }) regexp-cg ``charclass''
 @end format
-Create a charclass
+charclass を作成します
 
 
 @findex +char ( @var{ char --   } ) regexp-cg
@@ -21924,7 +21910,7 @@ Create a charclass
 @format
 @code{+char} ( @i{char --  }) regexp-cg ``+char''
 @end format
-add a char to the current charclass
+現在の charclass に @i{char} を追加します
 
 
 @findex -char ( @var{ char --   } ) regexp-cg
@@ -21933,7 +21919,7 @@ add a char to the current charclass
 @format
 @code{-char} ( @i{char --  }) regexp-cg ``-char''
 @end format
-remove a char from the current charclass
+現在の charclass から @i{char} を削除します
 
 
 @findex ..char ( @var{ start end --   } ) regexp-cg
@@ -21942,7 +21928,7 @@ remove a char from the current charclass
 @format
 @code{..char} ( @i{start end --  }) regexp-cg ``..char''
 @end format
-add a range of chars to the current charclass
+char の範囲を現在の charclass に追加します
 
 
 @findex +chars ( @var{ addr u --   } ) regexp-cg
@@ -21951,7 +21937,7 @@ add a range of chars to the current charclass
 @format
 @code{+chars} ( @i{addr u --  }) regexp-cg ``+chars''
 @end format
-add a string of chars to the current charclass
+charの文字列(string)を現在の charclass に追加します
 
 
 @findex +class ( @var{ class --   } ) regexp-cg
@@ -21960,7 +21946,7 @@ add a string of chars to the current charclass
 @format
 @code{+class} ( @i{class --  }) regexp-cg ``+class''
 @end format
-union of charclass @var{class} and the current charclass
+charclass @var{class} と現在の charclass の結合(union)
 
 
 @findex -class ( @var{ class --   } ) regexp-cg
@@ -21969,13 +21955,12 @@ union of charclass @var{class} and the current charclass
 @format
 @code{-class} ( @i{class --  }) regexp-cg ``-class''
 @end format
-subtract the charclass @var{class} from the current charclass
+現在の charclass から charclass @var{class} を抜き取ります(subtract)。
 
 
 
-There are predefined charclasses and tests for them, and generic checks.  If
-a check fails, the next possible alternative of the regular expression is
-tried, or a loop is terminated.
+事前定義された charclasses と それらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、
+次に考えられる正規表現の代替が試行されるか、 mまたは、 ループが終了します。
 
 @findex c? ( @var{ addr class --   } ) regexp-pattern
 @cindex @code{c?}
@@ -21983,7 +21968,7 @@ tried, or a loop is terminated.
 @format
 @code{c?} ( @i{addr class --  }) regexp-pattern ``c?''
 @end format
-check @var{addr} for membership in charclass @var{class}
+@var{addr} の位置の char が charclass @var{class} に含まれているなら true
 
 
 @findex -c? ( @var{ addr class --   } ) regexp-pattern

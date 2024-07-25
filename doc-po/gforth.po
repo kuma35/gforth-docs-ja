@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gforth-docs-ja 0.0\n"
 "POT-Creation-Date: 2024-07-02 04:26+0900\n"
-"PO-Revision-Date: 2024-07-24 08:14+0900\n"
+"PO-Revision-Date: 2024-07-26 08:26+0900\n"
 "Last-Translator: kuma35\n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -7828,9 +7828,7 @@ msgstr ""
 #. type: table
 #: ../doc/gforth.texi:2502
 msgid "@code{LEAVE} leaves the innermost counted loop right away:"
-msgstr ""
-"@code{LEAVE} は、 (@code{LEAVE} から見て)最も内側にあるカウンタ付きループを直"
-"ちに終了します:"
+msgstr "@code{LEAVE} は、 (@code{LEAVE} から見て)最も内側にあるカウンタ付きループを直ちに終了します:"
 
 #. type: example
 #: ../doc/gforth.texi:2512
@@ -26304,9 +26302,7 @@ msgstr "カウント・ループにはいくつかのバリエーションがあ
 msgid ""
 "@code{LEAVE} leaves the innermost counted loop immediately; execution "
 "continues after the associated @code{LOOP} or @code{NEXT}. For example:"
-msgstr ""
-"@code{LEAVE} は、 最も内側のカウント・ループを直ちに抜け出します。 それが関係"
-"する @code{LOOP} または @code{NEXT} の後へ実行は移ります。 例:"
+msgstr "@code{LEAVE} は、 最も内側のカウント・ループを直ちに抜け出します。 それが関係する @code{LOOP} または @code{NEXT} の後へ実行は移ります。 例:"
 
 #. type: example
 #: ../doc/gforth.texi:9770
@@ -27221,7 +27217,7 @@ msgstr "LEAVE"
 #: ../doc/gforth.texi:10156
 #, no-wrap
 msgid "@code{LEAVE} ( @i{compilation -- ; run-time loop-sys --  }) core ``LEAVE''\n"
-msgstr "@code{LEAVE} ( @i{compilation -- ; run-time loop-sys --  }) core ``LEAVE''\n"
+msgstr "@code{LEAVE} ( @i{compilation -- ; run-time loop-sys --  }) core ``LEAVE'' @*\\ 訳注: @code{LEAVE} は、 最も内側のカウンタ付きループを抜け出します。@*\\       それが関係する @code{LOOP} または @code{NEXT} の直後から実行を続行します。\n"
 
 #. type: findex
 #: ../doc/gforth.texi:10160
@@ -27235,11 +27231,31 @@ msgstr "?LEAVE ( @var{ compilation -- ; run-time f | f loop-sys --   } ) gforth-
 msgid "?LEAVE"
 msgstr "?LEAVE"
 
+# : ?LEAVE ( compilation -- ; run-time f | f loop-sys -- ) \ gforth	question-leave
+#     \G @xref{Counted Loops}.
+#     POSTPONE 0= POSTPONE if
+#     >leave ; immediate restrict
+#
+# ここの if はなんでか論理逆転してるので、つまり、結局 f が ture なら leave する。
+#
+# : q-leave  ( -- )  compiled
+#     5 -5 ?do  compiled
+#         i dup .  compiled
+#         ?leave  compiled
+#     loop ;  ok
+# q-leave -5  ok
+#
+# : q-leave  ( -- )  compiled
+#     5 -5 ?do  compiled
+#         i dup .  compiled
+#         0= ?leave  compiled
+#     loop ; 
+# q-leave -5 -4 -3 -2 -1 0  ok
 #. type: format
 #: ../doc/gforth.texi:10165
 #, no-wrap
 msgid "@code{?LEAVE} ( @i{compilation -- ; run-time f | f loop-sys --  }) gforth-0.2 ``question-leave''\n"
-msgstr "@code{?LEAVE} ( @i{compilation -- ; run-time f | f loop-sys --  }) gforth-0.2 ``question-leave''\n"
+msgstr "@code{?LEAVE} ( @i{compilation -- ; run-time f | f loop-sys --  }) gforth-0.2 ``question-leave'' @*\\訳注: @i{f} が true なら @var{leave} します。\n"
 
 #. type: findex
 #: ../doc/gforth.texi:10169
@@ -27716,6 +27732,20 @@ msgstr "@code{orig}, control-flow stack item"
 msgid "@code{dest}, control-flow stack item"
 msgstr "@code{dest}, control-flow stack item"
 
+# AHEAD, IF などで orig を cs-stack に積む( stack-state list addr type=orig )
+# ここで、 addr は orig を積んだワードの here であり、 ダミーとして 0 が書き込んである。
+#
+# then などでは >resolve が前方参照を解決する。
+# つまり、 上記 addr の内容(0)を、thenの直後(here)のアドレスで書き換える。
+# これで実行時は orig を積んだワードから(条件により)thenの直後にジャンプできる。
+#
+#
+# BEGIN 等で dest を cs-stack に積む( stack-state list addr type=dest )
+# ここで、 addr は orig を積んだワードの here である。
+#
+# AGAIN 等では <resolve が後方参照を解決する。
+# つまり 上記 addr を ここに書き込む。
+# そうするとこのワードは実行時に dest を積んだワードのところへジャンプできる訳である。
 #. type: table
 #: ../doc/gforth.texi:10362
 msgid ""
@@ -27723,11 +27753,7 @@ msgid ""
 "represents a backward branch target. A few words are the basis for building "
 "any control structure possible (except control structures that need storage, "
 "like calls, coroutines, and backtracking)."
-msgstr ""
-"@i{orig} エントリは未解決の前方分岐を表し、 @i{dest} エントリは後方分岐ター"
-"ゲットを表します。 いくつかのワードは、 可能なあらゆる制御構造を構築するため"
-"の基礎となります(ストレージを必要とする制御構造を除く、 呼び出しやコルーチン"
-"やバックトラッキングなど)。"
+msgstr "@i{orig} エントリは未解決の前方分岐を表し、 @i{dest} エントリは後方分岐ターゲットを表します。 いくつかのワードは、 可能なあらゆる制御構造を構築するための基礎となります(呼び出しやコルーチンやバックトラッキングのような、 ストレージを必要とする制御構造を除く)。"
 
 #. type: findex
 #: ../doc/gforth.texi:10364
@@ -27753,10 +27779,7 @@ msgid ""
 "At run-time, if @i{f}=0, execution continues after the @code{THEN} (or "
 "@code{ELSE}) that consumes the @i{orig}, otherwise right after the @code{IF} "
 "(@pxref{Selection})."
-msgstr ""
-"実行時(run-time)、 @i{f}=0 の場合、 @i{orig} を消費する @code{THEN} (または "
-"@code{ELSE}) の後から実行が続行されます。 それ以外の場合は、 @code{IF} の直後"
-"に続きます(@pxref{Selection})。"
+msgstr "実行時(run-time)、 @i{f}=0 の場合、 (コンパイル時に) @i{orig} を消費する @code{THEN} (または @code{ELSE}) の後から実行が続行されます。 それ以外の場合は、 @code{IF} の直後に続きます(@pxref{Selection})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10375
@@ -27781,7 +27804,7 @@ msgstr "@code{AHEAD} ( @i{compilation -- orig ; run-time --  }) tools-ext ``AHEA
 msgid ""
 "At run-time, execution continues after the @code{THEN} that consumes the "
 "@i{orig}."
-msgstr "実行時、 @i{orig} を消費する @code{THEN} の後から実行が続行されます。"
+msgstr "実行時、 (コンパイル時に) @i{orig} を消費する @code{THEN} の後から実行が続行されます(訳注: つまり、 単純に @code{THEN} へジャンプする)。"
 
 #. type: findex
 #: ../doc/gforth.texi:10385
@@ -27806,9 +27829,7 @@ msgstr "@code{THEN} ( @i{compilation orig -- ; run-time --  }) core ``THEN''\n"
 msgid ""
 "The @code{IF}, @code{AHEAD}, @code{ELSE} or @code{WHILE} that pushed "
 "@i{orig} jumps right after the @code{THEN} (@pxref{Selection})."
-msgstr ""
-"@i{orig} にプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} また"
-"は @code{WHILE} は、 @code{THEN} の直後にジャンプします(@pxref{Selection})。"
+msgstr "(コンパイル時に) @i{orig} をプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} または @code{WHILE} は、 @code{THEN} の直後にジャンプします(@pxref{Selection})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10396
@@ -27833,9 +27854,7 @@ msgstr "@code{BEGIN} ( @i{compilation -- dest ; run-time --  }) core ``BEGIN''\n
 msgid ""
 "The @code{UNTIL}, @code{AGAIN} or @code{REPEAT} that consumes the @i{dest} "
 "jumps right behind the @code{BEGIN} (@pxref{Simple Loops})."
-msgstr ""
-"@i{dest} を消費する @code{UNTIL} または @code{AGAIN} または @code{REPEAT} "
-"は、 @code{BEGIN} の直後へジャンプします(@pxref{Simple Loops})。"
+msgstr "(コンパイル時に) @i{dest} を消費する @code{UNTIL} または @code{AGAIN} または @code{REPEAT} は、 @code{BEGIN} の直後へジャンプします(@pxref{Simple Loops})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10407
@@ -27861,10 +27880,7 @@ msgid ""
 "At run-time, if @i{f}=0, execution continues after the @code{BEGIN} that "
 "produced @i{dest}, otherwise right after the @code{UNTIL} (@pxref{Simple "
 "Loops})."
-msgstr ""
-"実行時、 @i{f}=0 の場合、 @i{dest} を生成した @code{BEGIN} の後で実行が続行さ"
-"れます。 それ以外の場合は、 @code{UNTIL}の直後から実行が続行されます"
-"(@pxref{Simple Loops})。"
+msgstr "実行時、 @i{f}=0 の場合、 (コンパイル時に) @i{dest} をプッシュした @code{BEGIN} の直後から実行が続行されます。 それ以外の場合は、 @code{UNTIL}の直後から実行が続行されます(@pxref{Simple Loops})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10418
@@ -27889,9 +27905,7 @@ msgstr "@code{AGAIN} ( @i{compilation dest -- ; run-time --  }) core-ext ``AGAIN
 msgid ""
 "At run-time, execution continues after the @code{BEGIN} that produced the "
 "@i{dest} (@pxref{Simple Loops})."
-msgstr ""
-"実行時、 @i{dest} を生成した @code{BEGIN} の後から実行が続行されます"
-"(@pxref{Simple Loops})。"
+msgstr "実行時、 (コンパイル時に) @i{dest} をプッシュした @code{BEGIN} の直後から実行が続行されます(@pxref{Simple Loops})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10428
@@ -27947,6 +27961,28 @@ msgstr "CS-DROP"
 msgid "@code{CS-DROP} ( @i{dest --  }) gforth-1.0 ``CS-DROP''\n"
 msgstr "@code{CS-DROP} ( @i{dest --  }) gforth-1.0 ``CS-DROP''\n"
 
+# kernel/cond.fs
+# \ Control Flow Stack
+# \ orig, etc. have the following structure:
+# \ type ( defstart, live-orig, dead-orig, dest, do-dest, scopestart) ( TOS )
+# \ address (of the branch or the instruction to be branched to) (second)
+# \ locals-list (valid at address) (third)
+# \ stack state address for checking (fourth)
+#
+# 4 constant cs-item-size
+#
+# 4つ使用してるな…？ 4つに変更しておく
+#
+# \ types
+# [IFUNDEF] defstart 
+# Create defstart	\ usally defined in comp.fs
+# [THEN]
+# Create live-orig
+# Create dead-orig
+# Create dest \ the loopback branch is always assumed live
+# Create do-dest
+# Create scopestart
+#
 #. type: table
 #: ../doc/gforth.texi:10455
 msgid ""
@@ -27955,12 +27991,7 @@ msgid ""
 "know how many stack items are occupied by a control-flow entry (many systems "
 "use one cell. In Gforth they currently take three, but this may change in "
 "the future)."
-msgstr ""
-"標準ワードの @code{CS-PICK} や @code{CS-ROLL} を使用すると、 移植可能な方法で"
-"制御フロー・スタックを操作できます。 これら無しだと制御フロー・エントリが占め"
-"るスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを使用しま"
-"す。 Gforth では現在 3 つを使用しますが、 これは将来変更される可能性がありま"
-"す)。"
+msgstr "標準ワードの @code{CS-PICK} や @code{CS-ROLL} を使用すると、 移植可能な方法で制御フロー・スタックを操作できます。 これら無しだと制御フロー・エントリが占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを使用します。 Gforth では現在 4 つを使用しますが、 これは将来変更される可能性があります)。"
 
 #. type: table
 #: ../doc/gforth.texi:10458
@@ -28001,11 +28032,7 @@ msgid ""
 "At run-time, execution continues after the @code{THEN} that consumes the "
 "@i{orig}; the @code{IF}, @code{AHEAD}, @code{ELSE} or @code{WHILE} that "
 "pushed @i{orig1} jumps right after the @code{ELSE}.  (@pxref{Selection})."
-msgstr ""
-"実行時、 @i{orig} を消費する @code{THEN} の後から実行が続行されます。 "
-"@i{orig1} をプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} ま"
-"たは @code{WHILE} は、 @code{ELSE} の直後にジャンプします"
-"(@pxref{Selection})。"
+msgstr "実行時、 (コンパイル時に) @i{orig} を消費する @code{THEN} の直後から実行が続行されます。 @i{orig1} をプッシュした @code{IF} または @code{AHEAD} または @code{ELSE} または @code{WHILE} は、 @code{ELSE} の直後にジャンプします(@pxref{Selection})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10474
@@ -28031,10 +28058,7 @@ msgid ""
 "At run-time, if @i{f}=0, execution continues after the @code{REPEAT} (or "
 "@code{THEN} or @code{ELSE}) that consumes the @i{orig}, otherwise right "
 "after the @code{WHILE} (@pxref{Simple Loops})."
-msgstr ""
-"実行時、 @i{f}=0 の場合、 @i{orig} を消費する @code{REPEAT} (または "
-"@code{THEN} または @code{ELSE}) の後から実行が継続されます。 それ以外の場合"
-"は、 @code{WHILE} の直後から実行されます(@pxref{Simple Loops})。"
+msgstr "実行時、 @i{f}=0 の場合、 (コンパイル時の) @i{orig} を消費する @code{REPEAT} (または @code{THEN} または @code{ELSE}) の直後から実行が継続されます。 それ以外の場合は、 @code{WHILE} の直後から実行されます(@pxref{Simple Loops})。"
 
 #. type: findex
 #: ../doc/gforth.texi:10486
@@ -28060,11 +28084,7 @@ msgid ""
 "At run-time, execution continues after the @code{BEGIN} that produced the "
 "@i{dest}; the @code{WHILE}, @code{IF}, @code{AHEAD} or @code{ELSE} that "
 "pushed @i{orig} jumps right after the @code{REPEAT}.  (@pxref{Simple Loops})."
-msgstr ""
-"実行時、 @i{dest} を生成した @code{BEGIN} の後から実行が続行されます。 "
-"@i{orig} をプッシュした @code{WHILE} または @code{IF} または @code{AHEAD} ま"
-"たは @code{ELSE} は、 @code{REPEAT} の直後にジャンプします(@pxref{Simple "
-"Loops})。"
+msgstr "実行時、 (コンパイル時に) @i{dest} をプッシュした @code{BEGIN} の直後から実行が続行されます。 @i{orig} をプッシュした @code{WHILE} または @code{IF} または @code{AHEAD} または @code{ELSE} は、 @code{REPEAT} の直後にジャンプします(@pxref{Simple Loops})。"
 
 #. type: table
 #: ../doc/gforth.texi:10502
@@ -28222,10 +28242,7 @@ msgstr "@code{next-case} ( @i{compilation case-sys -- ; run-time --  }) gforth-1
 msgid ""
 "Restart the @code{case} loop by jumping to the matching @code{case}.  Note "
 "that @code{next-case} does not drop a cell, unlike @code{endcase}."
-msgstr ""
-"マッチする @code{case} にジャンプして、 @code{case} ループを再開します。 "
-"@code{endcase} とは異なり、 @code{next-case} はセルを drop しないことに注意し"
-"てください。"
+msgstr "一致する @code{case} にジャンプして、 @code{case} ループを再開します。 @code{endcase} とは異なり、 @code{next-case} はセルを drop しないことに注意してください。"
 
 #. type: findex
 #: ../doc/gforth.texi:10569
@@ -28303,9 +28320,7 @@ msgstr "@code{endof} ( @i{compilation case-sys1 of-sys -- case-sys2 ; run-time  
 msgid ""
 "Exit the enclosing @code{case} structure by jumping behind @code{endcase}/"
 "@code{next-case}."
-msgstr ""
-"@code{endcase}/@code{next-case} の後ろにジャンプして、 囲んでいる "
-"@code{case} 構造体を終了(exit)します。"
+msgstr "@code{endcase}/@code{next-case} の後ろにジャンプして、 囲んでいる @code{case} 構造を終了(exit)します。"
 
 #. type: findex
 #: ../doc/gforth.texi:10599
@@ -28370,6 +28385,11 @@ msgstr ""
 "対して新しい制御構造ワードを定義し、 プログラム内でこれらのワードを使用するこ"
 "とをお勧めします。たとえば、 以下のように書く代わりに:"
 
+# BEGIN ( cs: -- dest_BEGIN )
+#   ...
+# IF ( cs: -- dest_BEGIN orig_IF ) [ 1 CS-ROLL ] ( cs: -- orig_IF dest_BEGIN  )
+#   ...
+# AGAIN ( cs: -- orig_IF ) THEN ( cs: -- )
 #. type: example
 #: ../doc/gforth.texi:10629
 #, no-wrap
@@ -33573,6 +33593,9 @@ msgstr ""
 ": greet .\" Hello\" ;\n"
 ": bar ... greet ... ;\n"
 
+# defer hoge
+# hoge
+# deferred word execute is uninitialized ok
 #. type: table
 #: ../doc/gforth.texi:12829
 msgid ""
@@ -57060,7 +57083,7 @@ msgstr "mini-oof example"
 msgid ""
 "A short example shows how to use this package. This example, in slightly "
 "extended form, is supplied as @file{moof-exm.fs}"
-msgstr "短い例は、 このパッケージの使用方法を示しています。 この例は、 わずかに拡張された形式で、 @file{moof-exm.fs}< として提供されます。"
+msgstr "短い例で、 このパッケージの使い方を示します。 他の例として button オブジェクト の Mini-OOF バージョンが @file{moof-exm.fs} にあります。"
 
 #. type: example
 #: ../doc/gforth.texi:23363
@@ -57193,7 +57216,7 @@ msgid ""
 "stored there. Each selector takes the object it is invoked with as top of "
 "stack parameter; it passes the parameters (including the object) unchanged "
 "to the appropriate method which should consume that object."
-msgstr "セレクターの宣言中、 セレクターの数とインスタンス変数は(アドレス単位で)スタック上にあります。 @code{method} はセレクターを 1 つ作成し、 セレクター番号をインクリメントします。 セレクターを実行するには、 オブジェクトを取得し、 vtable ポインターを取得し、 オフセットを追加して、 そこに保存されているメソッド @i{xt} を実行します。 各セレクターは、 スタック・パラメーターのTOSとして、 呼び出されるオブジェクトを受け取ります。 セレクターは、 パラメーター(オブジェクトを含む)を変更せずに、 そのオブジェクトを、 使用する適切なメソッドに渡します。"
+msgstr "セレクターの宣言中、 セレクターの数とインスタンス変数は(アドレス単位で)スタック上にあります。 @code{method} はセレクターを 1 つ作成し、 セレクター番号をインクリメントします。 セレクターを実行するには、 オブジェクトを取得し、 vtable ポインターを取得し、 オフセットを追加して、 そこに保存されているメソッド @i{xt} を実行します。 実行時、 各セレクターは、 スタック・パラメーターのTOSとして、 セレクターを呼び出すオブジェクトを受け取り、 パラメーター(オブジェクトを含む)を変更せずに、 適切なメソッドに渡します。"
 
 #. type: table
 #: ../doc/gforth.texi:23439
@@ -57219,12 +57242,12 @@ msgid ""
 "restrictions, put the proper @code{aligned} or @code{faligned} before the "
 "variable, to adjust the variable offset. That's why it is on the top of "
 "stack."
-msgstr "同様に、 ワードには現在のオフセットを書き込んで作成されます。 インスタンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、 char)を持つことができるため、 サイズを取得してオフセットに追加するだけです。 マシンにアライメント制限がある場合は、 変数の前に適切な @code{aligned} または @code{faligned} を配置して、 変数のオフセットを調整します。 それがスタックのTOSにある理由です。"
+msgstr "同様に、 ワードには現在のオフセットを書き込んで作成されます。 インスタンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、 char)にすることができるため、 そのサイズを取得してオフセットに追加します。 マシンにアライメント制限がある場合は、 変数の前に適切な @code{aligned} または @code{faligned} を配置して、 変数のオフセットを調整します。 それが @i{size} がスタックのTOSにある理由です。"
 
 #. type: table
 #: ../doc/gforth.texi:23453
 msgid "We need a starting point (the base object) and some syntactic sugar:"
-msgstr "開始点(基本オブジェクト)と、 いくつかの糖衣構文も必要です:"
+msgstr "開始点(基底オブジェクト)と、 いくつかの糖衣構文も必要です:"
 
 #. type: example
 #: ../doc/gforth.texi:23457
@@ -57357,7 +57380,7 @@ msgstr ""
 msgid ""
 "To demonstrate inheritance, we define a class @code{bold-button}, with no "
 "new data and no new selectors:"
-msgstr "継承を示すために、 新しいデータや新しいセレクターを持たないクラス @code{bold-button} を定義します:"
+msgstr "継承のデモンストレーションとして、 新しいデータや新しいセレクターを持たない、 クラス @code{bold-button} を定義します:"
 
 #. type: example
 #: ../doc/gforth.texi:23529
@@ -57618,13 +57641,13 @@ msgid ""
 "otherwise no one could ever change the active object. An Standard Forth "
 "implementation of this model is available through @uref{http://www.forth.org/"
 "oopf.html}."
-msgstr ""
+msgstr "@uref{http://www.forth.org/oopf.html, Does late binding have to be slow?} (Forth Dimensions 18(1) 1996, pages 31-35)(「遅延結び付けは遅くないといけないのか？」) で、 Andras Zsoter は(@file{objects.fs} の @code{this} のような)アクティブ・オブジェクトを多用するモデルについて説明しています。 アクティブ・オブジェクトは、 すべてのフィールドにアクセスするために使用されるだけでなく、 すべてのセレクター呼び出しの受信オブジェクトも指定します。 あなたは @code{@{ ... @}} を使用してアクティブなオブジェクトを明示的に変更する必要がありますが、 @file{objects.fs} では @code{m: ... ;m} で多かれ少なかれ暗黙的に変更されます。 Zsoter のモデルでは、 受信オブジェクトがすでにアクティブなオブジェクトであるため、 メソッドのエントリ・ポイントでのこのような変更は不要です。 一方、 Zsoter のモデルでは明示的な変更(機能)が絶対に必要です。 そうしないと、 誰もアクティブ・オブジェクトを変更できなくなるからです。 このモデルの標準 Forth での実装は、 @uref{http://www.forth.org/oopf.html} から入手できます。"
 
 #. type: cindex
 #: ../doc/gforth.texi:23662
 #, no-wrap
 msgid "@file{oof.fs}, differences to other models"
-msgstr ""
+msgstr "@file{oof.fs}, differences to other models"
 
 #. type: table
 #: ../doc/gforth.texi:23677
@@ -57643,13 +57666,13 @@ msgid ""
 "for subtle bugs; essentially, you are only safe if you never tick or "
 "@code{postpone} an object or class (Bernd disagrees, but I (Anton) am not "
 "convinced)."
-msgstr ""
+msgstr "@file{oof.fs} モデルは、 (さまざまなワードリストに名前を保持することにより、)情報の隠蔽とオーバーロードの解決(resolution)をオブジェクト指向プログラミングと組み合わせます。 メソッドのエントリ時にアクティブ・オブジェクトを暗黙的に設定しますが、 (@code{>o...o>} または @code{with...endwith} を使用して、)明示的に変更することもできます。 オーバーロードの解決と早期結び付け(early binding)のために、 パースと、 ステートスマートなオブジェクトとクラスを使用します: オブジェクトまたはクラスはセレクターをパースし、 そこからメソッドを決定します。 セレクターがオブジェクトまたはクラスによってパースされない場合、 Zsoter のモデルのように、 アクティブなオブジェクトのセレクターへの呼び出し(遅延結び付け;late binding)が実行されます。 フィールドには常にアクティブ・オブジェクトを通じてアクセスします。 このモデルの大きな欠点は、 パースとステート・スマートです。 これにより拡張性が低下し、微妙なバグが発生する可能性が高くなります。 基本的に、 オブジェクトやクラスをティック(tick)したり @code{postpone} したりしない場合にのみ安全です(Bernd は反対しているが、 著者 (Anton) は納得していない)。"
 
 #. type: cindex
 #: ../doc/gforth.texi:23678
 #, no-wrap
 msgid "@file{mini-oof.fs}, differences to other models"
-msgstr ""
+msgstr "@file{mini-oof.fs}, differences to other models"
 
 #. type: table
 #: ../doc/gforth.texi:23682
@@ -57657,13 +57680,13 @@ msgid ""
 "The @file{mini-oof.fs} model is quite similar to a very stripped-down "
 "version of the @file{objects.fs} model, but syntactically it is a mixture of "
 "the @file{objects.fs} and @file{oof.fs} models."
-msgstr ""
+msgstr "@file{mini-oof.fs} モデルは、 @file{objects.fs} モデルの非常に簡素化されたバージョンに非常に似ていますが、 構文的には @file{objects.fs} と @file{oof.fs} モデルが混合されたものです。 。"
 
 #. type: cindex
 #: ../doc/gforth.texi:23686
 #, no-wrap
 msgid "regexps"
-msgstr ""
+msgstr "regexps"
 
 #. type: table
 #: ../doc/gforth.texi:23691
@@ -57671,7 +57694,7 @@ msgid ""
 "Regular expressions are pattern matching algorithms for strings found in "
 "many contemporary languages.  You can add regular expression functionality "
 "to Gforth with @code{require regexp.fs}."
-msgstr ""
+msgstr "正規表現(regular expression)は、 多くの現代的プログラミング言語で見られる、 文字列のパターン・マッチング・アルゴリズムです。 あなたは  @code{require regexp.fs} を使用して正規表現機能を Gforth に追加できます。"
 
 #. type: table
 #: ../doc/gforth.texi:23699
@@ -57683,53 +57706,53 @@ msgid ""
 "element is the control structure @code{FORK} @dots{} @code{JOIN}, which is a "
 "forward call within a word, and therefore allows to code a lightweight try "
 "and fail control structure."
-msgstr ""
+msgstr "このパターン・マッチングの古典的な実装はバックトラッキング・アルゴリズムです。 これは、 後方参照などの機能を使用する場合にも必要です。  Gforth は、 パターン・マッチングのためのバックトラッキング・プログラムを定義する言語(language)を提供することで正規表現を実装します。  基本要素は制御構造 @code{FORK} @dots{} @code{JOIN} です。 これはワード内での前方呼び出しであるため、 軽量の試行錯誤制御構造(try and fail control structure)をコーディングできます。"
 
 #. type: findex
 #: ../doc/gforth.texi:23700
 #, no-wrap
 msgid "FORK ( @var{ compilation -- orig ; run-time f --   } ) gforth-0.7"
-msgstr ""
+msgstr "FORK ( @var{ compilation -- orig ; run-time f --   } ) gforth-0.7"
 
 #. type: kindex
 #: ../doc/gforth.texi:23701 ../doc/gforth.texi:23702
 #, no-wrap
 msgid "FORK"
-msgstr ""
+msgstr "FORK"
 
 #. type: format
 #: ../doc/gforth.texi:23705
 #, no-wrap
 msgid "@code{FORK} ( @i{compilation -- orig ; run-time f --  }) gforth-0.7 ``FORK''\n"
-msgstr ""
+msgstr "@code{FORK} ( @i{compilation -- orig ; run-time f --  }) gforth-0.7 ``FORK''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23707
 msgid "AHEAD-like control structure: calls the code after JOIN."
-msgstr ""
+msgstr "AHEAD のような制御構造: JOIN の後にコードを呼び出します。"
 
 #. type: findex
 #: ../doc/gforth.texi:23709
 #, no-wrap
 msgid "JOIN ( @var{ orig --   } ) gforth-0.7"
-msgstr ""
+msgstr "JOIN ( @var{ orig --   } ) gforth-0.7"
 
 #. type: kindex
 #: ../doc/gforth.texi:23710 ../doc/gforth.texi:23711
 #, no-wrap
 msgid "JOIN"
-msgstr ""
+msgstr "JOIN"
 
 #. type: format
 #: ../doc/gforth.texi:23714
 #, no-wrap
 msgid "@code{JOIN} ( @i{orig --  }) gforth-0.7 ``JOIN''\n"
-msgstr ""
+msgstr "@code{JOIN} ( @i{orig --  }) gforth-0.7 ``JOIN''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23716
 msgid "THEN-like control structure for FORK"
-msgstr ""
+msgstr "FORK のための、 THEN のような制御構造"
 
 #. type: table
 #: ../doc/gforth.texi:23722
@@ -57737,53 +57760,53 @@ msgid ""
 "You can program any sort of arbitrary checks yourself by computing a flag "
 "and @code{?LEAVE} when the check fails.  Your regular expression code is "
 "enclosed in @code{((} and @code{))}."
-msgstr ""
+msgstr "あなたは、 チェックが失敗した場合に、 フラグと @code{?LEAVE} を計算することで、 任意の種類のチェックを自分でプログラムできます。  正規表現コードは @code{((} と @code{))} で囲まれています。"
 
 #. type: findex
 #: ../doc/gforth.texi:23723
 #, no-wrap
 msgid "(( ( @var{ addr u --   } ) regexp-pattern"
-msgstr ""
+msgstr "(( ( @var{ addr u --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23724 ../doc/gforth.texi:23725
 #, no-wrap
 msgid "(("
-msgstr ""
+msgstr "(("
 
 #. type: format
 #: ../doc/gforth.texi:23728
 #, no-wrap
 msgid "@code{((} ( @i{addr u --  }) regexp-pattern ``((''\n"
-msgstr ""
+msgstr "@code{((} ( @i{addr u --  }) regexp-pattern ``((''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23730
 msgid "start regexp block"
-msgstr ""
+msgstr "正規表現ブロックの開始"
 
 #. type: findex
 #: ../doc/gforth.texi:23732
 #, no-wrap
 msgid ")) ( @var{ -- flag   } ) regexp-pattern"
-msgstr ""
+msgstr ")) ( @var{ -- flag   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23733 ../doc/gforth.texi:23734
 #, no-wrap
 msgid "))"
-msgstr ""
+msgstr "))"
 
 #. type: format
 #: ../doc/gforth.texi:23737
 #, no-wrap
 msgid "@code{))} ( @i{-- flag  }) regexp-pattern ``))''\n"
-msgstr ""
+msgstr "@code{))} ( @i{-- flag  }) regexp-pattern ``))''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23739
 msgid "end regexp block"
-msgstr ""
+msgstr "正規表現ブロックの終了"
 
 #. type: table
 #: ../doc/gforth.texi:23746
@@ -57792,168 +57815,168 @@ msgid ""
 "a number of functions allow you to create and modify character sets (called "
 "@code{charclass}).  All characters here are bytes, so this doesn't extend to "
 "unicode characters."
-msgstr ""
+msgstr "正規表現のパターン・マッチングには要素として文字セットがあるため、 多くの機能を使用して文字セット(@code{charclass} と呼ばれる)を作成・変更できます。  ここでの文字はすべてバイトであるため、 これはユニコード文字には適用されません。"
 
 #. type: findex
 #: ../doc/gforth.texi:23747
 #, no-wrap
 msgid "charclass ( @var{ --   } ) regexp-cg"
-msgstr ""
+msgstr "charclass ( @var{ --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23748 ../doc/gforth.texi:23749
 #, no-wrap
 msgid "charclass"
-msgstr ""
+msgstr "charclass"
 
 #. type: format
 #: ../doc/gforth.texi:23752
 #, no-wrap
 msgid "@code{charclass} ( @i{--  }) regexp-cg ``charclass''\n"
-msgstr ""
+msgstr "@code{charclass} ( @i{--  }) regexp-cg ``charclass''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23754
 msgid "Create a charclass"
-msgstr ""
+msgstr "charclass を作成します"
 
 #. type: findex
 #: ../doc/gforth.texi:23756
 #, no-wrap
 msgid "+char ( @var{ char --   } ) regexp-cg"
-msgstr ""
+msgstr "+char ( @var{ char --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23757 ../doc/gforth.texi:23758
 #, no-wrap
 msgid "+char"
-msgstr ""
+msgstr "+char"
 
 #. type: format
 #: ../doc/gforth.texi:23761
 #, no-wrap
 msgid "@code{+char} ( @i{char --  }) regexp-cg ``+char''\n"
-msgstr ""
+msgstr "@code{+char} ( @i{char --  }) regexp-cg ``+char''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23763
 msgid "add a char to the current charclass"
-msgstr ""
+msgstr "現在の charclass に @i{char} を追加します"
 
 #. type: findex
 #: ../doc/gforth.texi:23765
 #, no-wrap
 msgid "-char ( @var{ char --   } ) regexp-cg"
-msgstr ""
+msgstr "-char ( @var{ char --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23766 ../doc/gforth.texi:23767
 #, no-wrap
 msgid "-char"
-msgstr ""
+msgstr "-char"
 
 #. type: format
 #: ../doc/gforth.texi:23770
 #, no-wrap
 msgid "@code{-char} ( @i{char --  }) regexp-cg ``-char''\n"
-msgstr ""
+msgstr "@code{-char} ( @i{char --  }) regexp-cg ``-char''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23772
 msgid "remove a char from the current charclass"
-msgstr ""
+msgstr "現在の charclass から @i{char} を削除します"
 
 #. type: findex
 #: ../doc/gforth.texi:23774
 #, no-wrap
 msgid "..char ( @var{ start end --   } ) regexp-cg"
-msgstr ""
+msgstr "..char ( @var{ start end --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23775 ../doc/gforth.texi:23776
 #, no-wrap
 msgid "..char"
-msgstr ""
+msgstr "..char"
 
 #. type: format
 #: ../doc/gforth.texi:23779
 #, no-wrap
 msgid "@code{..char} ( @i{start end --  }) regexp-cg ``..char''\n"
-msgstr ""
+msgstr "@code{..char} ( @i{start end --  }) regexp-cg ``..char''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23781
 msgid "add a range of chars to the current charclass"
-msgstr ""
+msgstr "char の範囲を現在の charclass に追加します"
 
 #. type: findex
 #: ../doc/gforth.texi:23783
 #, no-wrap
 msgid "+chars ( @var{ addr u --   } ) regexp-cg"
-msgstr ""
+msgstr "+chars ( @var{ addr u --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23784 ../doc/gforth.texi:23785
 #, no-wrap
 msgid "+chars"
-msgstr ""
+msgstr "+chars"
 
 #. type: format
 #: ../doc/gforth.texi:23788
 #, no-wrap
 msgid "@code{+chars} ( @i{addr u --  }) regexp-cg ``+chars''\n"
-msgstr ""
+msgstr "@code{+chars} ( @i{addr u --  }) regexp-cg ``+chars''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23790
 msgid "add a string of chars to the current charclass"
-msgstr ""
+msgstr "charの文字列(string)を現在の charclass に追加します"
 
 #. type: findex
 #: ../doc/gforth.texi:23792
 #, no-wrap
 msgid "+class ( @var{ class --   } ) regexp-cg"
-msgstr ""
+msgstr "+class ( @var{ class --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23793 ../doc/gforth.texi:23794
 #, no-wrap
 msgid "+class"
-msgstr ""
+msgstr "+class"
 
 #. type: format
 #: ../doc/gforth.texi:23797
 #, no-wrap
 msgid "@code{+class} ( @i{class --  }) regexp-cg ``+class''\n"
-msgstr ""
+msgstr "@code{+class} ( @i{class --  }) regexp-cg ``+class''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23799
 msgid "union of charclass @var{class} and the current charclass"
-msgstr ""
+msgstr "charclass @var{class} と現在の charclass の結合(union)"
 
 #. type: findex
 #: ../doc/gforth.texi:23801
 #, no-wrap
 msgid "-class ( @var{ class --   } ) regexp-cg"
-msgstr ""
+msgstr "-class ( @var{ class --   } ) regexp-cg"
 
 #. type: kindex
 #: ../doc/gforth.texi:23802 ../doc/gforth.texi:23803
 #, no-wrap
 msgid "-class"
-msgstr ""
+msgstr "-class"
 
 #. type: format
 #: ../doc/gforth.texi:23806
 #, no-wrap
 msgid "@code{-class} ( @i{class --  }) regexp-cg ``-class''\n"
-msgstr ""
+msgstr "@code{-class} ( @i{class --  }) regexp-cg ``-class''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23808
 msgid "subtract the charclass @var{class} from the current charclass"
-msgstr ""
+msgstr "現在の charclass から charclass @var{class} を抜き取ります(subtract)。"
 
 #. type: table
 #: ../doc/gforth.texi:23814
@@ -57961,48 +57984,53 @@ msgid ""
 "There are predefined charclasses and tests for them, and generic checks.  If "
 "a check fails, the next possible alternative of the regular expression is "
 "tried, or a loop is terminated."
-msgstr ""
+msgstr "事前定義された charclasses と それらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、 次に考えられる正規表現の代替が試行されるか、 mまたは、 ループが終了します。"
 
 #. type: findex
 #: ../doc/gforth.texi:23815
 #, no-wrap
 msgid "c? ( @var{ addr class --   } ) regexp-pattern"
-msgstr ""
+msgstr "c? ( @var{ addr class --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23816 ../doc/gforth.texi:23817
 #, no-wrap
 msgid "c?"
-msgstr ""
+msgstr "c?"
 
 #. type: format
 #: ../doc/gforth.texi:23820
 #, no-wrap
 msgid "@code{c?} ( @i{addr class --  }) regexp-pattern ``c?''\n"
-msgstr ""
+msgstr "@code{c?} ( @i{addr class --  }) regexp-pattern ``c?''\n"
 
+# : char? ( addr class -- addr' flag )
+#     >r count r> + c@ ;
+#
+# ※単純に 1バイト目を取り出すために count を使ってるorz
+# ※ addr' は addr の次のアドレスになるんであるorz
 #. type: table
 #: ../doc/gforth.texi:23822
 msgid "check @var{addr} for membership in charclass @var{class}"
-msgstr ""
+msgstr "@var{addr} の位置の char が charclass @var{class} に含まれているなら true"
 
 #. type: findex
 #: ../doc/gforth.texi:23824
 #, no-wrap
 msgid "-c? ( @var{ addr class --   } ) regexp-pattern"
-msgstr ""
+msgstr "-c? ( @var{ addr class --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23825 ../doc/gforth.texi:23826
 #, no-wrap
 msgid "-c?"
-msgstr ""
+msgstr "-c?"
 
 #. type: format
 #: ../doc/gforth.texi:23829
 #, no-wrap
 msgid "@code{-c?} ( @i{addr class --  }) regexp-pattern ``-c?''\n"
-msgstr ""
+msgstr "@code{-c?} ( @i{addr class --  }) regexp-pattern ``-c?''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23831

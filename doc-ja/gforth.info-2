@@ -639,9 +639,12 @@ uelements * uelementsize です
    u2=‘I'’-‘I’ (limit とインデックスの差)
 
 ‘LEAVE’ ( compilation – ; run-time loop-sys –  ) core “LEAVE”
+\ 訳注: ‘LEAVE’ は、 最も内側のカウンタ付きループを抜け出します。
+\       それが関係する ‘LOOP’ または ‘NEXT’ の直後から実行を続行します。
    *Note Counted Loops::.
 
 ‘?LEAVE’ ( compilation – ; run-time f | f loop-sys –  ) gforth-0.2 “question-leave”
+\訳注: f が true なら LEAVE します。
    *Note Counted Loops::.
 
 ‘unloop’ ( R:w1 R:w2 – ) core “unloop”
@@ -814,33 +817,35 @@ File: gforth.info,  Node: Arbitrary control structures,  Next: Calls and returns
 
    orig エントリは未解決の前方分岐を表し、 dest エントリは後方分岐ターゲ
 ットを表します。 いくつかのワードは、 可能なあらゆる制御構造を構築するた
-めの基礎となります(ストレージを必要とする制御構造を除く、 呼び出しやコル
-ーチンやバックトラッキングなど)。
+めの基礎となります(呼び出しやコルーチンやバックトラッキングのような、 ス
+トレージを必要とする制御構造を除く)。
 
 ‘IF’ ( compilation – orig ; run-time f –  ) core “IF”
-   実行時(run-time)、 f=0 の場合、 orig を消費する ‘THEN’ (または
-‘ELSE’) の後から実行が続行されます。 それ以外の場合は、 ‘IF’ の直後に続
-きます(*note Selection::)。
+   実行時(run-time)、 f=0 の場合、 (コンパイル時に) orig を消費する
+‘THEN’ (または ‘ELSE’) の後から実行が続行されます。 それ以外の場合は、
+‘IF’ の直後に続きます(*note Selection::)。
 
 ‘AHEAD’ ( compilation – orig ; run-time –  ) tools-ext “AHEAD”
-   実行時、 orig を消費する ‘THEN’ の後から実行が続行されます。
+   実行時、 (コンパイル時に) orig を消費する ‘THEN’ の後から実行が続行さ
+れます(訳注: つまり、 単純に ‘THEN’ へジャンプする)。
 
 ‘THEN’ ( compilation orig – ; run-time –  ) core “THEN”
-   orig にプッシュした ‘IF’ または ‘AHEAD’ または ‘ELSE’ または ‘WHILE’
-は、 ‘THEN’ の直後にジャンプします(*note Selection::)。
+   (コンパイル時に) orig をプッシュした ‘IF’ または ‘AHEAD’ または
+‘ELSE’ または ‘WHILE’ は、 ‘THEN’ の直後にジャンプします(*note
+Selection::)。
 
 ‘BEGIN’ ( compilation – dest ; run-time –  ) core “BEGIN”
-   dest を消費する ‘UNTIL’ または ‘AGAIN’ または ‘REPEAT’ は、 ‘BEGIN’ の
-直後へジャンプします(*note Simple Loops::)。
+   (コンパイル時に) dest を消費する ‘UNTIL’ または ‘AGAIN’ または
+‘REPEAT’ は、 ‘BEGIN’ の直後へジャンプします(*note Simple Loops::)。
 
 ‘UNTIL’ ( compilation dest – ; run-time f –  ) core “UNTIL”
-   実行時、 f=0 の場合、 dest を生成した ‘BEGIN’ の後で実行が続行されま
-す。 それ以外の場合は、 ‘UNTIL’の直後から実行が続行されます(*note Simple
-Loops::)。
+   実行時、 f=0 の場合、 (コンパイル時に) dest をプッシュした ‘BEGIN’ の
+直後から実行が続行されます。 それ以外の場合は、 ‘UNTIL’の直後から実行が
+続行されます(*note Simple Loops::)。
 
 ‘AGAIN’ ( compilation dest – ; run-time –  ) core-ext “AGAIN”
-   実行時、 dest を生成した ‘BEGIN’ の後から実行が続行されます(*note
-Simple Loops::)。
+   実行時、 (コンパイル時に) dest をプッシュした ‘BEGIN’ の直後から実行
+が続行されます(*note Simple Loops::)。
 
 ‘CS-PICK’ ( orig0/dest0 orig1/dest1 ... origu/destu u – ... orig0/dest0  ) tools-ext “c-s-pick”
 
@@ -851,7 +856,7 @@ Simple Loops::)。
    標準ワードの ‘CS-PICK’ や ‘CS-ROLL’ を使用すると、 移植可能な方法で制
 御フロー・スタックを操作できます。 これら無しだと制御フロー・エントリが
 占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを
-使用します。 Gforth では現在 3 つを使用しますが、 これは将来変更される可
+使用します。 Gforth では現在 4 つを使用しますが、 これは将来変更される可
 能性があります)。
 
    orig は 1 回だけ解決する必要があるため、 ‘CS-PICK’ は dest を pick す
@@ -861,19 +866,20 @@ Simple Loops::)。
    一部の標準の制御構造ワードは、 以下のワード群から構築されます:
 
 ‘ELSE’ ( compilation orig1 – orig2 ; run-time –  ) core “ELSE”
-   実行時、 orig を消費する ‘THEN’ の後から実行が続行されます。 orig1 を
-プッシュした ‘IF’ または ‘AHEAD’ または ‘ELSE’ または ‘WHILE’ は、
-‘ELSE’ の直後にジャンプします(*note Selection::)。
+   実行時、 (コンパイル時に) orig を消費する ‘THEN’ の直後から実行が続行
+されます。 orig1 をプッシュした ‘IF’ または ‘AHEAD’ または ‘ELSE’ または
+‘WHILE’ は、 ‘ELSE’ の直後にジャンプします(*note Selection::)。
 
 ‘WHILE’ ( compilation dest – orig dest ; run-time f –  ) core “WHILE”
-   実行時、 f=0 の場合、 orig を消費する ‘REPEAT’ (または ‘THEN’ または
-‘ELSE’) の後から実行が継続されます。 それ以外の場合は、 ‘WHILE’ の直後か
-ら実行されます(*note Simple Loops::)。
+   実行時、 f=0 の場合、 (コンパイル時の) orig を消費する ‘REPEAT’ (また
+は ‘THEN’ または ‘ELSE’) の直後から実行が継続されます。 それ以外の場合は
+、 ‘WHILE’ の直後から実行されます(*note Simple Loops::)。
 
 ‘REPEAT’ ( compilation orig dest – ; run-time –  ) core “REPEAT”
-   実行時、 dest を生成した ‘BEGIN’ の後から実行が続行されます。 orig を
-プッシュした ‘WHILE’ または ‘IF’ または ‘AHEAD’ または ‘ELSE’ は、
-‘REPEAT’ の直後にジャンプします(*note Simple Loops::)。
+   実行時、 (コンパイル時に) dest をプッシュした ‘BEGIN’ の直後から実行
+が続行されます。 orig をプッシュした ‘WHILE’ または ‘IF’ または ‘AHEAD’
+または ‘ELSE’ は、 ‘REPEAT’ の直後にジャンプします(*note Simple
+Loops::)。
 
 Gforth は、さらにいくつかの制御構造ワードを追加します:
 
@@ -899,7 +905,7 @@ Gforth は、さらにいくつかの制御構造ワードを追加します:
 要がある場合があります。
 
 ‘next-case’ ( compilation case-sys – ; run-time –  ) gforth-1.0 “next-case”
-   マッチする ‘case’ にジャンプして、 ‘case’ ループを再開します。
+   一致する ‘case’ にジャンプして、 ‘case’ ループを再開します。
 ‘endcase’ とは異なり、 ‘next-case’ はセルを drop しないことに注意してく
 ださい。
 
@@ -912,8 +918,8 @@ Gforth は、さらにいくつかの制御構造ワードを追加します:
 ‘contof’ の後ろにジャンプします。
 
 ‘endof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) core-ext “end-of”
-   ‘endcase’/‘next-case’ の後ろにジャンプして、 囲んでいる ‘case’ 構造体
-を終了(exit)します。
+   ‘endcase’/‘next-case’ の後ろにジャンプして、 囲んでいる ‘case’ 構造を
+終了(exit)します。
 
 ‘contof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) gforth-1.0 “cont-of”
    囲んでいる ‘case’ にジャンプして、 ‘case’ ループを再開します。

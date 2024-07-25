@@ -3433,8 +3433,8 @@ File: gforth.info,  Node: Mini-OOF Example,  Next: Mini-OOF Implementation,  Pre
 6.24.5.2 Mini-OOF Example
 .........................
 
-短い例は、 このパッケージの使用方法を示しています。 この例は、 わずかに
-拡張された形式で、 ‘moof-exm.fs’< として提供されます。
+短い例で、 このパッケージの使い方を示します。 他の例として button オブジ
+ェクト の Mini-OOF バージョンが ‘moof-exm.fs’ にあります。
 
      object class
        method init
@@ -3498,10 +3498,9 @@ vtable」アプローチを使用します。 つまり、 各オブジェクト
 で)スタック上にあります。 ‘method’ はセレクターを 1 つ作成し、 セレクタ
 ー番号をインクリメントします。 セレクターを実行するには、 オブジェクトを
 取得し、 vtable ポインターを取得し、 オフセットを追加して、 そこに保存さ
-れているメソッド xt を実行します。 各セレクターは、 スタック・パラメータ
-ーのTOSとして、 呼び出されるオブジェクトを受け取ります。 セレクターは、
-パラメーター(オブジェクトを含む)を変更せずに、 そのオブジェクトを、 使用
-する適切なメソッドに渡します。
+れているメソッド xt を実行します。 実行時、 各セレクターは、 スタック・
+パラメーターのTOSとして、 セレクターを呼び出すオブジェクトを受け取り、 パ
+ラメーター(オブジェクトを含む)を変更せずに、 適切なメソッドに渡します。
 
    いまや、 インスタンス変数も宣言しなければなりません
 
@@ -3509,13 +3508,13 @@ vtable」アプローチを使用します。 つまり、 各オブジェクト
        DOES> ( o -- addr ) @ + ;
 
    同様に、 ワードには現在のオフセットを書き込んで作成されます。 インス
-タンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、 char)を持
-つことができるため、 サイズを取得してオフセットに追加するだけです。 マシ
-ンにアライメント制限がある場合は、 変数の前に適切な ‘aligned’ または
-‘faligned’ を配置して、 変数のオフセットを調整します。 それがスタックの
-TOSにある理由です。
+タンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、 char)にす
+ることができるため、 そのサイズを取得してオフセットに追加します。 マシン
+にアライメント制限がある場合は、 変数の前に適切な ‘aligned’ または
+‘faligned’ を配置して、 変数のオフセットを調整します。 それが size がス
+タックのTOSにある理由です。
 
-   開始点(基本オブジェクト)と、 いくつかの糖衣構文も必要です:
+   開始点(基底オブジェクト)と、 いくつかの糖衣構文も必要です:
 
      Create object  1 cells , 2 cells ,
      : class ( class -- class selectors vars ) dup 2@ ;
@@ -3569,8 +3568,8 @@ Mini-OOF でこれを実現するには 2 つの方法があります: 1 つ目�
       >r 0 r@ x ! 0 r@ y ! r@ len ! r> text ! ;
       button defines init
 
-継承を示すために、 新しいデータや新しいセレクターを持たないクラス
-‘bold-button’ を定義します:
+継承のデモンストレーションとして、 新しいデータや新しいセレクターを持た
+ない、 クラス ‘bold-button’ を定義します:
 
      button class
      end-class bold-button
@@ -3661,38 +3660,40 @@ binding)をほとんど扱っていないため、 真のオブジェクト指�
 に関するモノとは言えません。 代わりに、 Ada (83) のようなモジュラー言語
 の特徴である情報隠蔽やオーバーロードなどの機能に焦点を当てています。
 
-   In Does late binding have to be slow?
-(http://www.forth.org/oopf.html) (Forth Dimensions 18(1) 1996, pages
-31-35) Andras Zsoter describes a model that makes heavy use of an active
-object (like ‘this’ in ‘objects.fs’): The active object is not only used
-for accessing all fields, but also specifies the receiving object of
-every selector invocation; you have to change the active object
-explicitly with ‘{ ... }’, whereas in ‘objects.fs’ it changes more or
-less implicitly at ‘m: ... ;m’.  Such a change at the method entry point
-is unnecessary with Zsoter’s model, because the receiving object is the
-active object already.  On the other hand, the explicit change is
-absolutely necessary in that model, because otherwise no one could ever
-change the active object.  An Standard Forth implementation of this
-model is available through <http://www.forth.org/oopf.html>.
+   Does late binding have to be slow?  (http://www.forth.org/oopf.html)
+(Forth Dimensions 18(1) 1996, pages 31-35)(「遅延結び付けは遅くないとい
+けないのか？」) で、 Andras Zsoter は(‘objects.fs’ の ‘this’ のような)ア
+クティブ・オブジェクトを多用するモデルについて説明しています。 アクティ
+ブ・オブジェクトは、 すべてのフィールドにアクセスするために使用されるだ
+けでなく、 すべてのセレクター呼び出しの受信オブジェクトも指定します。 あ
+なたは ‘{ ... }’ を使用してアクティブなオブジェクトを明示的に変更する必
+要がありますが、 ‘objects.fs’ では ‘m: ... ;m’ で多かれ少なかれ暗黙的に
+変更されます。 Zsoter のモデルでは、 受信オブジェクトがすでにアクティブ
+なオブジェクトであるため、 メソッドのエントリ・ポイントでのこのような変
+更は不要です。 一方、 Zsoter のモデルでは明示的な変更(機能)が絶対に必要
+です。 そうしないと、 誰もアクティブ・オブジェクトを変更できなくなるから
+です。 このモデルの標準 Forth での実装は、
+<http://www.forth.org/oopf.html> から入手できます。
 
-   The ‘oof.fs’ model combines information hiding and overloading
-resolution (by keeping names in various word lists) with object-oriented
-programming.  It sets the active object implicitly on method entry, but
-also allows explicit changing (with ‘>o...o>’ or with ‘with...endwith’).
-It uses parsing and state-smart objects and classes for resolving
-overloading and for early binding: the object or class parses the
-selector and determines the method from this.  If the selector is not
-parsed by an object or class, it performs a call to the selector for the
-active object (late binding), like Zsoter’s model.  Fields are always
-accessed through the active object.  The big disadvantage of this model
-is the parsing and the state-smartness, which reduces extensibility and
-increases the opportunities for subtle bugs; essentially, you are only
-safe if you never tick or ‘postpone’ an object or class (Bernd
-disagrees, but I (Anton) am not convinced).
+   ‘oof.fs’ モデルは、 (さまざまなワードリストに名前を保持することにより
+、)情報の隠蔽とオーバーロードの解決(resolution)をオブジェクト指向プログ
+ラミングと組み合わせます。 メソッドのエントリ時にアクティブ・オブジェク
+トを暗黙的に設定しますが、 (‘>o...o>’ または ‘with...endwith’ を使用して
+、)明示的に変更することもできます。 オーバーロードの解決と早期結び付け
+(early binding)のために、 パースと、 ステートスマートなオブジェクトとク
+ラスを使用します: オブジェクトまたはクラスはセレクターをパースし、 そこ
+からメソッドを決定します。 セレクターがオブジェクトまたはクラスによって
+パースされない場合、 Zsoter のモデルのように、 アクティブなオブジェクト
+のセレクターへの呼び出し(遅延結び付け;late binding)が実行されます。 フィ
+ールドには常にアクティブ・オブジェクトを通じてアクセスします。 このモデ
+ルの大きな欠点は、 パースとステート・スマートです。 これにより拡張性が低
+下し、微妙なバグが発生する可能性が高くなります。 基本的に、 オブジェクト
+やクラスをティック(tick)したり ‘postpone’ したりしない場合にのみ安全です
+(Bernd は反対しているが、 著者 (Anton) は納得していない)。
 
-   The ‘mini-oof.fs’ model is quite similar to a very stripped-down
-version of the ‘objects.fs’ model, but syntactically it is a mixture of
-the ‘objects.fs’ and ‘oof.fs’ models.
+   ‘mini-oof.fs’ モデルは、 ‘objects.fs’ モデルの非常に簡素化されたバー
+ジョンに非常に似ていますが、 構文的には ‘objects.fs’ と ‘oof.fs’ モデル
+が混合されたものです。 。
 
    ---------- Footnotes ----------
 
@@ -3706,66 +3707,66 @@ File: gforth.info,  Node: Regular Expressions,  Next: Programming Tools,  Prev: 
 6.25 Regular Expressions
 ========================
 
-Regular expressions are pattern matching algorithms for strings found in
-many contemporary languages.  You can add regular expression
-functionality to Gforth with ‘require regexp.fs’.
+正規表現(regular expression)は、 多くの現代的プログラミング言語で見られ
+る、 文字列のパターン・マッチング・アルゴリズムです。 あなたは ‘require
+regexp.fs’ を使用して正規表現機能を Gforth に追加できます。
 
-   The classical implementation for this pattern matching is a
-backtracking algorithm, which is also necessary if you want to have
-features like backreferencing.  Gforth implements regular expressions by
-providing a language to define backtracking programs for pattern
-matching.  Basic element is the control structure ‘FORK’ ... ‘JOIN’,
-which is a forward call within a word, and therefore allows to code a
-lightweight try and fail control structure.
+   このパターン・マッチングの古典的な実装はバックトラッキング・アルゴリ
+ズムです。 これは、 後方参照などの機能を使用する場合にも必要です。
+Gforth は、 パターン・マッチングのためのバックトラッキング・プログラムを
+定義する言語(language)を提供することで正規表現を実装します。 基本要素は
+制御構造 ‘FORK’ ... ‘JOIN’ です。 これはワード内での前方呼び出しであるた
+め、 軽量の試行錯誤制御構造(try and fail control structure)をコーディン
+グできます。
 
 ‘FORK’ ( compilation – orig ; run-time f –  ) gforth-0.7 “FORK”
-   AHEAD-like control structure: calls the code after JOIN.
+   AHEAD のような制御構造: JOIN の後にコードを呼び出します。
 
 ‘JOIN’ ( orig –  ) gforth-0.7 “JOIN”
-   THEN-like control structure for FORK
+   FORK のための、 THEN のような制御構造
 
-   You can program any sort of arbitrary checks yourself by computing a
-flag and ‘?LEAVE’ when the check fails.  Your regular expression code is
-enclosed in ‘((’ and ‘))’.
+   あなたは、 チェックが失敗した場合に、 フラグと ‘?LEAVE’ を計算するこ
+とで、 任意の種類のチェックを自分でプログラムできます。 正規表現コードは
+‘((’ と ‘))’ で囲まれています。
 
 ‘((’ ( addr u –  ) regexp-pattern “((”
-   start regexp block
+   正規表現ブロックの開始
 
 ‘))’ ( – flag  ) regexp-pattern “))”
-   end regexp block
+   正規表現ブロックの終了
 
-   Pattern matching in regular expressions have character sets as
-elements, so a number of functions allow you to create and modify
-character sets (called ‘charclass’).  All characters here are bytes, so
-this doesn’t extend to unicode characters.
+   正規表現のパターン・マッチングには要素として文字セットがあるため、 多
+くの機能を使用して文字セット(‘charclass’ と呼ばれる)を作成・変更できます
+。 ここでの文字はすべてバイトであるため、 これはユニコード文字には適用さ
+れません。
 
 ‘charclass’ ( –  ) regexp-cg “charclass”
-   Create a charclass
+   charclass を作成します
 
 ‘+char’ ( char –  ) regexp-cg “+char”
-   add a char to the current charclass
+   現在の charclass に char を追加します
 
 ‘-char’ ( char –  ) regexp-cg “-char”
-   remove a char from the current charclass
+   現在の charclass から char を削除します
 
 ‘..char’ ( start end –  ) regexp-cg “..char”
-   add a range of chars to the current charclass
+   char の範囲を現在の charclass に追加します
 
 ‘+chars’ ( addr u –  ) regexp-cg “+chars”
-   add a string of chars to the current charclass
+   charの文字列(string)を現在の charclass に追加します
 
 ‘+class’ ( class –  ) regexp-cg “+class”
-   union of charclass CLASS and the current charclass
+   charclass CLASS と現在の charclass の結合(union)
 
 ‘-class’ ( class –  ) regexp-cg “-class”
-   subtract the charclass CLASS from the current charclass
+   現在の charclass から charclass CLASS を抜き取ります(subtract)。
 
-   There are predefined charclasses and tests for them, and generic
-checks.  If a check fails, the next possible alternative of the regular
-expression is tried, or a loop is terminated.
+   事前定義された charclasses と それらのテストと、 一般的なチェックがあ
+ります。 チェックが失敗した場合は、 次に考えられる正規表現の代替が試行さ
+れるか、 mまたは、 ループが終了します。
 
 ‘c?’ ( addr class –  ) regexp-pattern “c?”
-   check ADDR for membership in charclass CLASS
+   ADDR の位置の char が charclass CLASS に含まれているなら true
 
 ‘-c?’ ( addr class –  ) regexp-pattern “-c?”
    check ADDR for not membership in charclass CLASS
@@ -5991,81 +5992,4 @@ the trailing ‘,’ from a branch with a corresponding name; e.g.,
      endif,
 
    ‘fbgt,’ gives ‘fgt’.
-
-
-File: gforth.info,  Node: MIPS assembler,  Next: PowerPC assembler,  Prev: Alpha Assembler,  Up: Assembler and Code Words
-
-6.29.7 MIPS assembler
----------------------
-
-The MIPS assembler was originally written by Christian Pirker.
-
-   Currently the assembler and disassembler covers most of the MIPS32
-architecture and doesn’t support FP instructions.
-
-   The register names ‘$a0’–‘$a3’ are not available to avoid shadowing
-hex numbers.  Use register numbers ‘$4’–‘$7’ instead.
-
-   Nothing distinguishes registers from immediate values.  Use explicit
-opcode names with the ‘i’ suffix for instructions with immediate
-argument.  E.g.  ‘addiu,’ in place of ‘addu,’.
-
-   Where the architecture manual specifies several formats for the
-instruction (e.g., for ‘jalr,’),use the one with more arguments (i.e.
-two for ‘jalr,’).  When in doubt, see ‘arch/mips/testasm.fs’ for an
-example of correct use.
-
-   Branches and jumps in the MIPS architecture have a delay slot.  You
-have to fill it manually (the simplest way is to use ‘nop,’), the
-assembler does not do it for you (unlike ‘as’).  Even ‘if,’, ‘ahead,’,
-‘until,’, ‘again,’, ‘while,’, ‘else,’ and ‘repeat,’ need a delay slot.
-Since ‘begin,’ and ‘then,’ just specify branch targets, they are not
-affected.  For branches the argument specifying the target is a relative
-address.  Add the address of the delay slot to get the absolute address.
-
-   Note that you must not put branches nor jumps (nor control-flow
-instructions) into the delay slot.  Also it is a bad idea to put
-pseudo-ops such as ‘li,’ into a delay slot, as these may expand to
-several instructions.  The MIPS I architecture also had load delay
-slots, and newer MIPSes still have restrictions on using ‘mfhi,’ and
-‘mflo,’.  Be careful to satisfy these restrictions, the assembler does
-not do it for you.
-
-   Some example of instructions are:
-
-     $ra  12 $sp  sw,         \ sw    ra,12(sp)
-     $4    8 $s0  lw,         \ lw    a0,8(s0)
-     $v0  $0  lui,            \ lui   v0,0x0
-     $s0  $s4  $12  addiu,    \ addiu s0,s4,0x12
-     $s0  $s4  $4  addu,      \ addu  s0,s4,$a0
-     $ra  $t9  jalr,          \ jalr  t9
-
-   You can specify the conditions for ‘if,’ etc.  by taking a
-conditional branch and leaving away the ‘b’ at the start and the ‘,’ at
-the end.  E.g.,
-
-     4 5 eq if,
-       ... \ do something if $4 equals $5
-     then,
-
-   The calling conventions for 32-bit MIPS machines is to pass the first
-4 arguments in registers ‘$4’..‘$7’, and to use ‘$v0’-‘$v1’ for return
-values.  In addition to these registers, it is ok to clobber registers
-‘$t0’-‘$t8’ without saving and restoring them.
-
-   If you use ‘jalr,’ to call into dynamic library routines, you must
-first load the called function’s address into ‘$t9’, which is used by
-position-indirect code to do relative memory accesses.
-
-   Here is an example of a MIPS32 ‘abi-code’ word:
-
-     abi-code my+  ( n1 n2 -- n3 )
-       \ SP passed in $4, returned in $v0
-       $t0  4 $4  lw,         \ load n1, n2 from stack
-       $t1  0 $4  lw,
-       $t0  $t0  $t1  addu,   \ add n1+n2, result in $t0
-       $t0  4 $4  sw,         \ store result (overwriting n1)
-       $ra  jr,               \ return to caller
-       $v0  $4  4  addiu,     \ (delay slot) return uptated SP in $v0
-     end-code
 

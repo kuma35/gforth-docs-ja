@@ -27,6 +27,83 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: MIPS assembler,  Next: PowerPC assembler,  Prev: Alpha Assembler,  Up: Assembler and Code Words
+
+6.29.7 MIPS assembler
+---------------------
+
+The MIPS assembler was originally written by Christian Pirker.
+
+   Currently the assembler and disassembler covers most of the MIPS32
+architecture and doesn’t support FP instructions.
+
+   The register names ‘$a0’–‘$a3’ are not available to avoid shadowing
+hex numbers.  Use register numbers ‘$4’–‘$7’ instead.
+
+   Nothing distinguishes registers from immediate values.  Use explicit
+opcode names with the ‘i’ suffix for instructions with immediate
+argument.  E.g.  ‘addiu,’ in place of ‘addu,’.
+
+   Where the architecture manual specifies several formats for the
+instruction (e.g., for ‘jalr,’),use the one with more arguments (i.e.
+two for ‘jalr,’).  When in doubt, see ‘arch/mips/testasm.fs’ for an
+example of correct use.
+
+   Branches and jumps in the MIPS architecture have a delay slot.  You
+have to fill it manually (the simplest way is to use ‘nop,’), the
+assembler does not do it for you (unlike ‘as’).  Even ‘if,’, ‘ahead,’,
+‘until,’, ‘again,’, ‘while,’, ‘else,’ and ‘repeat,’ need a delay slot.
+Since ‘begin,’ and ‘then,’ just specify branch targets, they are not
+affected.  For branches the argument specifying the target is a relative
+address.  Add the address of the delay slot to get the absolute address.
+
+   Note that you must not put branches nor jumps (nor control-flow
+instructions) into the delay slot.  Also it is a bad idea to put
+pseudo-ops such as ‘li,’ into a delay slot, as these may expand to
+several instructions.  The MIPS I architecture also had load delay
+slots, and newer MIPSes still have restrictions on using ‘mfhi,’ and
+‘mflo,’.  Be careful to satisfy these restrictions, the assembler does
+not do it for you.
+
+   Some example of instructions are:
+
+     $ra  12 $sp  sw,         \ sw    ra,12(sp)
+     $4    8 $s0  lw,         \ lw    a0,8(s0)
+     $v0  $0  lui,            \ lui   v0,0x0
+     $s0  $s4  $12  addiu,    \ addiu s0,s4,0x12
+     $s0  $s4  $4  addu,      \ addu  s0,s4,$a0
+     $ra  $t9  jalr,          \ jalr  t9
+
+   You can specify the conditions for ‘if,’ etc.  by taking a
+conditional branch and leaving away the ‘b’ at the start and the ‘,’ at
+the end.  E.g.,
+
+     4 5 eq if,
+       ... \ do something if $4 equals $5
+     then,
+
+   The calling conventions for 32-bit MIPS machines is to pass the first
+4 arguments in registers ‘$4’..‘$7’, and to use ‘$v0’-‘$v1’ for return
+values.  In addition to these registers, it is ok to clobber registers
+‘$t0’-‘$t8’ without saving and restoring them.
+
+   If you use ‘jalr,’ to call into dynamic library routines, you must
+first load the called function’s address into ‘$t9’, which is used by
+position-indirect code to do relative memory accesses.
+
+   Here is an example of a MIPS32 ‘abi-code’ word:
+
+     abi-code my+  ( n1 n2 -- n3 )
+       \ SP passed in $4, returned in $v0
+       $t0  4 $4  lw,         \ load n1, n2 from stack
+       $t1  0 $4  lw,
+       $t0  $t0  $t1  addu,   \ add n1+n2, result in $t0
+       $t0  4 $4  sw,         \ store result (overwriting n1)
+       $ra  jr,               \ return to caller
+       $v0  $4  4  addiu,     \ (delay slot) return uptated SP in $v0
+     end-code
+
+
 File: gforth.info,  Node: PowerPC assembler,  Next: ARM Assembler,  Prev: MIPS assembler,  Up: Assembler and Code Words
 
 6.29.8 PowerPC assembler
@@ -5401,16 +5478,16 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 177)
 * ?dup ( W -- S:... W ) core:            Data stack.          (line  29)
 * ?DUP-0=-IF ( COMPILATION -- ORIG ; RUN-TIME N -- N| ) gforth-0.2: Arbitrary control structures.
-                                                              (line  84)
+                                                              (line  87)
 * ?dup-IF ( COMPILATION -- ORIG ; RUN-TIME N -- N| ) gforth-0.2: Arbitrary control structures.
-                                                              (line  79)
+                                                              (line  82)
 * ?events ( -- ) gforth-experimental:    Message queues.      (line  21)
 * ?EXIT ( -- ) gforth-0.2:               Calls and returns.   (line  53)
 * ?inside ( RX RY -- ACT / 0 ) minos2:   actor methods.       (line  33)
 * ?LEAVE ( COMPILATION -- ; RUN-TIME F | F LOOP-SYS -- ) gforth-0.2: Counted Loops.
-                                                              (line 256)
+                                                              (line 258)
 * ?of ( COMPILATION -- OF-SYS ; RUN-TIME F -- ) gforth-1.0: Arbitrary control structures.
-                                                              (line 106)
+                                                              (line 109)
 * @ ( A-ADDR -- W ) core:                Memory Access.       (line   6)
 * @localn ( NOFFSET -- W ) gforth-internal: Locals implementation.
                                                               (line  15)
@@ -5564,7 +5641,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * after-locate ( -- U ) gforth-1.0:      Locating source code definitions.
                                                               (line  59)
 * AGAIN ( COMPILATION DEST -- ; RUN-TIME -- ) core-ext: Arbitrary control structures.
-                                                              (line  37)
+                                                              (line  39)
 * AHEAD ( COMPILATION -- ORIG ; RUN-TIME -- ) tools-ext: Arbitrary control structures.
                                                               (line  21)
 * Alias ( XT "NAME" -- ) gforth-0.2:     Aliases.             (line  24)
@@ -5624,7 +5701,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * before-word ( -- ) gforth-0.7:         Text Interpreter Hooks.
                                                               (line  10)
 * BEGIN ( COMPILATION -- DEST ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  28)
+                                                              (line  30)
 * begin-structure ( "NAME" -- STRUCT-SYS 0 ) facility-ext: Forth200x Structures.
                                                               (line  39)
 * bin ( FAM1 -- FAM2 ) file:             General files.       (line  15)
@@ -5700,7 +5777,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * capsstring-prefix? ( C-ADDR1 U1 C-ADDR2 U2 -- F ) gforth-1.0: String words.
                                                               (line  73)
 * case ( COMPILATION -- CASE-SYS ; RUN-TIME -- ) core-ext: Arbitrary control structures.
-                                                              (line  88)
+                                                              (line  91)
 * catch ( X1 .. XN XT -- Y1 .. YM 0 / Z1 .. ZN ERROR ) exception: Exception Handling.
                                                               (line  95)
 * cell ( -- U ) gforth-0.2:              Address arithmetic.  (line  64)
@@ -5773,7 +5850,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * construct ( ... OBJECT -- ) objects:   Objects Glossary.    (line  46)
 * context ( -- ADDR ) gforth-0.2:        Word Lists.          (line 172)
 * contof ( COMPILATION CASE-SYS1 OF-SYS -- CASE-SYS2 ; RUN-TIME -- ) gforth-1.0: Arbitrary control structures.
-                                                              (line 114)
+                                                              (line 117)
 * convert ( UD1 C-ADDR1 -- UD2 C-ADDR2 ) core-ext-obsolescent: Line input and conversion.
                                                               (line  72)
 * CORE ( -- F ) environment:             Environmental Queries.
@@ -5800,11 +5877,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * critical-section ( XT SEMAPHORE -- ) gforth-experimental: Semaphores.
                                                               (line  30)
 * CS-DROP ( DEST -- ) gforth-1.0:        Arbitrary control structures.
-                                                              (line  45)
+                                                              (line  47)
 * CS-PICK ( ORIG0/DEST0 ORIG1/DEST1 ... ORIGU/DESTU U -- ... ORIG0/DEST0 ) tools-ext: Arbitrary control structures.
-                                                              (line  41)
-* CS-ROLL ( DESTU/ORIGU .. DEST0/ORIG0 U -- .. DEST0/ORIG0 DESTU/ORIGU ) tools-ext: Arbitrary control structures.
                                                               (line  43)
+* CS-ROLL ( DESTU/ORIGU .. DEST0/ORIG0 U -- .. DEST0/ORIG0 DESTU/ORIGU ) tools-ext: Arbitrary control structures.
+                                                              (line  45)
 * cs-vocabulary ( "NAME" -- ) gforth-1.0: Word Lists.         (line  69)
 * cs-wordlist ( -- WID ) gforth-1.0:     Word Lists.          (line  66)
 * cstring>sstring ( C-ADDR -- C-ADDR U ) gforth-0.2: String words.
@@ -5913,7 +5990,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dofield, ( -- ) gforth-1.0:            Threading Words.     (line  47)
 * dofield: ( -- ADDR ) gforth-0.2:       Threading Words.     (line  97)
 * DONE ( COMPILATION DO-SYS -- ; RUN-TIME -- ) gforth-0.2: Counted Loops.
-                                                              (line 261)
+                                                              (line 264)
 * double% ( -- ALIGN SIZE ) gforth-0.4:  Structure Glossary.  (line  34)
 * douser, ( -- ) gforth-1.0:             Threading Words.     (line  41)
 * douser: ( -- ADDR ) gforth-0.2:        Threading Words.     (line  91)
@@ -5951,7 +6028,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ekey? ( -- FLAG ) facility-ext:        Single-key input.    (line  63)
 * ekeyed ( EKEY -- ) minos2:             actor methods.       (line  30)
 * ELSE ( COMPILATION ORIG1 -- ORIG2 ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  59)
+                                                              (line  61)
 * emit ( C -- ) core:                    Displaying characters and strings.
                                                               (line  13)
 * emit-file ( C WFILEID -- WIOR ) gforth-0.2: General files.  (line  79)
@@ -5976,11 +6053,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * end-structure ( STRUCT-SYS +N -- ) facility-ext: Forth200x Structures.
                                                               (line  45)
 * endcase ( COMPILATION CASE-SYS -- ; RUN-TIME X -- ) core-ext: Arbitrary control structures.
-                                                              (line  91)
+                                                              (line  94)
 * ENDIF ( COMPILATION ORIG -- ; RUN-TIME -- ) gforth-0.2: Arbitrary control structures.
-                                                              (line  76)
+                                                              (line  79)
 * endof ( COMPILATION CASE-SYS1 OF-SYS -- CASE-SYS2 ; RUN-TIME -- ) core-ext: Arbitrary control structures.
-                                                              (line 110)
+                                                              (line 113)
 * endscope ( COMPILATION SCOPE -- ; RUN-TIME -- ) gforth-0.2: Where are locals visible by name?.
                                                               (line  13)
 * endtry ( COMPILATION -- ; RUN-TIME R:SYS1 -- ) gforth-0.5: Exception Handling.
@@ -6505,7 +6582,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * next-arg ( -- ADDR U ) gforth-0.7:     OS command line arguments.
                                                               (line  15)
 * next-case ( COMPILATION CASE-SYS -- ; RUN-TIME -- ) gforth-1.0: Arbitrary control structures.
-                                                              (line  97)
+                                                              (line 100)
 * nextname ( C-ADDR U -- ) gforth-0.2:   Supplying names.     (line  10)
 * nip ( W1 W2 -- W2 ) core-ext:          Data stack.          (line   8)
 * nocov[ ( -- ) gforth-1.0:              Code Coverage.       (line  17)
@@ -6555,7 +6632,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * object-with ( O -- ) oof:              The OOF base class.  (line  89)
 * object-[] ( N "NAME" -- ) oof:         The OOF base class.  (line  50)
 * of ( COMPILATION -- OF-SYS ; RUN-TIME X1 X2 -- |X1 ) core-ext: Arbitrary control structures.
-                                                              (line 102)
+                                                              (line 105)
 * off ( A-ADDR -- ) gforth-0.2:          Boolean Flags.       (line  20)
 * on ( A-ADDR -- ) gforth-0.2:           Boolean Flags.       (line  17)
 * once ( -- ) gforth-1.0:                Debugging.           (line  47)
@@ -6675,7 +6752,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * rename-file ( C-ADDR1 U1 C-ADDR2 U2 -- WIOR ) file-ext: General files.
                                                               (line  35)
 * REPEAT ( COMPILATION ORIG DEST -- ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  69)
+                                                              (line  71)
 * replace-word ( XT1 XT2 -- ) gforth-1.0: Debugging.          (line  65)
 * replaces ( ADDR1 LEN1 ADDR2 LEN2 -- ) string-ext: Substitute.
                                                               (line  16)
@@ -6896,7 +6973,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * text-emoji-fade-color: ( RGBATEXT1 ~2 RGBAEMOJI1 ~2 "NAME" -- ) minos2: widget methods.
                                                               (line 148)
 * THEN ( COMPILATION ORIG -- ; RUN-TIME -- ) core: Arbitrary control structures.
-                                                              (line  24)
+                                                              (line  25)
 * third ( W1 W2 W3 -- W1 W2 W3 W1 ) gforth-1.0: Data stack.   (line  14)
 * this ( -- OBJECT ) objects:            Objects Glossary.    (line 162)
 * threading-method ( -- N ) gforth-0.2:  Threading Words.     (line  69)
@@ -6987,11 +7064,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * unescape ( ADDR1 U1 DEST -- DEST U2 ) string-ext: Substitute.
                                                               (line  33)
 * unlock ( SEMAPHORE -- ) gforth-experimental: Semaphores.    (line  21)
-* unloop ( R:W1 R:W2 -- ) core:          Counted Loops.       (line 259)
+* unloop ( R:W1 R:W2 -- ) core:          Counted Loops.       (line 262)
 * UNREACHABLE ( -- ) gforth-0.2:         Where are locals visible by name?.
                                                               (line  49)
 * UNTIL ( COMPILATION DEST -- ; RUN-TIME F -- ) core: Arbitrary control structures.
-                                                              (line  32)
+                                                              (line  34)
 * unused ( -- U ) core-ext:              Dictionary allocation.
                                                               (line  27)
 * unused-words ( -- ) gforth-1.0:        Locating uses of a word.
@@ -7054,7 +7131,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * whereg ( "NAME" -- ) gforth-1.0:       Locating uses of a word.
                                                               (line  35)
 * WHILE ( COMPILATION DEST -- ORIG DEST ; RUN-TIME F -- ) core: Arbitrary control structures.
-                                                              (line  64)
+                                                              (line  66)
 * widget ( -- CLASS ) minos2:            MINOS2 object framework.
                                                               (line  17)
 * within ( U1 U2 U3 -- F ) core-ext:     Numeric comparison.  (line  41)
