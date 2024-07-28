@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gforth-docs-ja 0.0\n"
 "POT-Creation-Date: 2024-07-02 04:26+0900\n"
-"PO-Revision-Date: 2024-07-26 08:26+0900\n"
+"PO-Revision-Date: 2024-07-29 05:29+0900\n"
 "Last-Translator: kuma35\n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -57984,7 +57984,7 @@ msgid ""
 "There are predefined charclasses and tests for them, and generic checks.  If "
 "a check fails, the next possible alternative of the regular expression is "
 "tried, or a loop is terminated."
-msgstr "事前定義された charclasses と それらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、 次に考えられる正規表現の代替が試行されるか、 mまたは、 ループが終了します。"
+msgstr "事前定義された文字クラス(charclasses)とそれらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、 次に考えられる正規表現の代替が試行されるか、 または、 ループが終了(@i{leave})します(訳注: 基本的には、 チェックが成功した場合は @var{addr} を 1文字(char)分進めた @var{addr'} を返し、 失敗した場合はスタックに何も積まずに @i{leave} する)。"
 
 #. type: findex
 #: ../doc/gforth.texi:23815
@@ -58002,7 +58002,7 @@ msgstr "c?"
 #: ../doc/gforth.texi:23820
 #, no-wrap
 msgid "@code{c?} ( @i{addr class --  }) regexp-pattern ``c?''\n"
-msgstr "@code{c?} ( @i{addr class --  }) regexp-pattern ``c?''\n"
+msgstr "@code{c?} ( @i{addr class -- addr' }) regexp-pattern ``c?''\n"
 
 # : char? ( addr class -- addr' flag )
 #     >r count r> + c@ ;
@@ -58012,7 +58012,7 @@ msgstr "@code{c?} ( @i{addr class --  }) regexp-pattern ``c?''\n"
 #. type: table
 #: ../doc/gforth.texi:23822
 msgid "check @var{addr} for membership in charclass @var{class}"
-msgstr "@var{addr} の位置の char が charclass @var{class} に含まれているなら true"
+msgstr "文字クラス @var{class} にマッチ(@var{addr} の位置の char が charclass @var{class} に含まれているなら @var{addr} の 1 char 次のアドレスを @var{addr`} に返し、 含まれていないなら @code{leave} する)"
 
 #. type: findex
 #: ../doc/gforth.texi:23824
@@ -58030,834 +58030,866 @@ msgstr "-c?"
 #: ../doc/gforth.texi:23829
 #, no-wrap
 msgid "@code{-c?} ( @i{addr class --  }) regexp-pattern ``-c?''\n"
-msgstr "@code{-c?} ( @i{addr class --  }) regexp-pattern ``-c?''\n"
+msgstr "@code{-c?} ( @i{addr class -- addr' }) regexp-pattern ``-c?''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23831
 msgid "check @var{addr} for not membership in charclass @var{class}"
-msgstr ""
+msgstr "文字クラス @var{class} 以外にマッチ(@var{addr} の位置の文字が charclass @var{class} に含まれていなければ @var{addr} の1文字後ろのアドレスを @var{addr'} に返し、含まれていたら @code{leave} する)"
 
 #. type: findex
 #: ../doc/gforth.texi:23833
 #, no-wrap
 msgid "\\d ( @var{ addr -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr "\\d ( @var{ addr -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23834 ../doc/gforth.texi:23835
 #, no-wrap
 msgid "\\d"
-msgstr ""
+msgstr "\\d"
 
 #. type: format
 #: ../doc/gforth.texi:23838
 #, no-wrap
 msgid "@code{\\d} ( @i{addr -- addr'  }) regexp-pattern ``\\d''\n"
-msgstr ""
+msgstr "@code{\\d} ( @i{addr -- addr'  }) regexp-pattern ``\\d''\n"
 
+# : hoge  compiled  
+#   (( .s \d .s \d .s \d .s \d .s )) ; 
+#
+# "0123" hoge . <1> 94404108642208 <1> 94404108642209 <1> 94404108642210 <1> 9440410
+# 8642211 <1> 94404108642212 -1  ok
+# "01a3" hoge . <1> 94404108642128 <1> 94404108642129 <1> 94404108642130 0  ok
 #. type: table
 #: ../doc/gforth.texi:23840
 msgid "check for digit"
-msgstr ""
+msgstr "数字([0-9])にマッチ(指定の @var{addr} の char が digit かどうか([0-9])しらべ、 そうなら @var{addr} の char 分次のアドレスを addr' に返す。 そうでなければ @code{leave} する)"
 
 #. type: findex
 #: ../doc/gforth.texi:23842
 #, no-wrap
 msgid "\\s ( @var{ addr -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr "\\s ( @var{ addr -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23843 ../doc/gforth.texi:23844
 #, no-wrap
 msgid "\\s"
-msgstr ""
+msgstr "\\s"
 
 #. type: format
 #: ../doc/gforth.texi:23847
 #, no-wrap
 msgid "@code{\\s} ( @i{addr -- addr'  }) regexp-pattern ``\\s''\n"
-msgstr ""
+msgstr "@code{\\s} ( @i{addr -- addr'  }) regexp-pattern ``\\s''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23849
 msgid "check for blanks"
-msgstr ""
+msgstr "非表示文字(\\x00〜\\x20)にマッチ(指定の @var{addr} の char が blanks かどうか([\\x00-\\x20])しらべ、 そうなら @var{addr} の char 分次のアドレスを addr' に返す。 そうでなければ @code{leave} する)"
 
 #. type: findex
 #: ../doc/gforth.texi:23851
 #, no-wrap
 msgid ".? ( @var{ addr -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr ".? ( @var{ addr -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23852 ../doc/gforth.texi:23853
 #, no-wrap
 msgid ".?"
-msgstr ""
+msgstr ".?"
 
 #. type: format
 #: ../doc/gforth.texi:23856
 #, no-wrap
 msgid "@code{.?} ( @i{addr -- addr'  }) regexp-pattern ``.?''\n"
-msgstr ""
+msgstr "@code{.?} ( @i{addr -- addr'  }) regexp-pattern ``.?''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23858
 msgid "check for any single charachter"
-msgstr ""
+msgstr "任意の1文字(char)にマッチ(任意の1文字(char)であれば次の文字のアドレスを @i{addr'} に返します。 そうでなければ @i{leave} します)"
 
 #. type: findex
 #: ../doc/gforth.texi:23860
 #, no-wrap
 msgid "-\\d ( @var{ addr -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr "-\\d ( @var{ addr -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23861 ../doc/gforth.texi:23862
 #, no-wrap
 msgid "-\\d"
-msgstr ""
+msgstr "-\\d"
 
 #. type: format
 #: ../doc/gforth.texi:23865
 #, no-wrap
 msgid "@code{-\\d} ( @i{addr -- addr'  }) regexp-pattern ``-\\d''\n"
-msgstr ""
+msgstr "@code{-\\d} ( @i{addr -- addr'  }) regexp-pattern ``-\\d''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23867
 msgid "check for not digit"
-msgstr ""
+msgstr "@i{addr} の文字が数字で無ければ([^0-9])次の文字のアドレスを @i{addr'} に返します。 そうでなければ @i{leave} します。"
 
 #. type: findex
 #: ../doc/gforth.texi:23869
 #, no-wrap
 msgid "-\\s ( @var{ addr -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr "-\\s ( @var{ addr -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23870 ../doc/gforth.texi:23871
 #, no-wrap
 msgid "-\\s"
-msgstr ""
+msgstr "-\\s"
 
 #. type: format
 #: ../doc/gforth.texi:23874
 #, no-wrap
 msgid "@code{-\\s} ( @i{addr -- addr'  }) regexp-pattern ``-\\s''\n"
-msgstr ""
+msgstr "@code{-\\s} ( @i{addr -- addr'  }) regexp-pattern ``-\\s''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23876
 msgid "check for not blank"
-msgstr ""
+msgstr "指定の @var{addr} の char が blanks で無いかどうか([^\\x00-\\x20])しらべ、 そうなら @var{addr} の char 分次のアドレスを @i{addr'} に返す。 そうでなければ @code{leave} する"
 
 #. type: findex
 #: ../doc/gforth.texi:23878
 #, no-wrap
 msgid "` ( @var{ \"char\" --   } ) regexp-pattern"
-msgstr ""
+msgstr "` ( @var{ \"char\" --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23879 ../doc/gforth.texi:23880
 #, no-wrap
 msgid "`"
-msgstr ""
+msgstr "`"
 
 #. type: format
 #: ../doc/gforth.texi:23883
 #, no-wrap
 msgid "@code{`} ( @i{\"char\" --  }) regexp-pattern ```''\n"
-msgstr ""
+msgstr "@code{`} ( @i{addr \"char\" -- addr' }) regexp-pattern ```''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23885 ../doc/gforth.texi:23901
 msgid "check for particular char"
-msgstr ""
+msgstr "指定の文字をチェックします。 @code{` c} の形で使用し、 @var{addr} の文字が 文字 c ならば、 次の文字へのアドレスを @var{addr'} に返し、そうでなければ @i{leave} します。"
 
 #. type: findex
 #: ../doc/gforth.texi:23887
 #, no-wrap
 msgid "`? ( @var{ \"char\" --   } ) regexp-pattern"
-msgstr ""
+msgstr "`? ( @var{ \"char\" --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23888 ../doc/gforth.texi:23889
 #, no-wrap
 msgid "`?"
-msgstr ""
+msgstr "`?"
 
 #. type: format
 #: ../doc/gforth.texi:23892
 #, no-wrap
 msgid "@code{`?} ( @i{\"char\" --  }) regexp-pattern ```?''\n"
-msgstr ""
+msgstr "@code{`?} ( @i{addr \"char\" -- addr | addr' }) regexp-pattern ```?'' @*\\ 訳注: @code{`? c}  @var{addr} の文字が c ならば @var{addr} をそのまま返す。 c でなければ次の文字へのアドレスを @var{addr'} に返す。\n"
 
 #. type: findex
 #: ../doc/gforth.texi:23894
 #, no-wrap
 msgid "-` ( @var{ \"char\" --   } ) regexp-pattern"
-msgstr ""
+msgstr "-` ( @var{ \"char\" --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23895 ../doc/gforth.texi:23896
 #, no-wrap
 msgid "-`"
-msgstr ""
+msgstr "-`"
 
 #. type: format
 #: ../doc/gforth.texi:23899
 #, no-wrap
 msgid "@code{-`} ( @i{\"char\" --  }) regexp-pattern ``-`''\n"
-msgstr ""
+msgstr "@code{-`} ( @i{addr \"char\" -- addr' }) regexp-pattern ``-`'' @*\\ 訳注: @code{-` c} @var{addr} の文字が c でなければ次の文字へのアドレスを @var{addr'} に返す。 そうでなければ @i{leave} する。\n"
 
 #. type: table
 #: ../doc/gforth.texi:23906
 msgid ""
 "You can certainly also check for start and end of the string, and for whole "
 "string constants."
-msgstr ""
+msgstr "明示的に文字列の開始と終了、および文字列定数全体をチェックすることもできます。"
 
 #. type: findex
 #: ../doc/gforth.texi:23907
 #, no-wrap
 msgid "\\^ ( @var{ addr -- addr   } ) regexp-pattern"
-msgstr ""
+msgstr "\\^ ( @var{ addr -- addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23908 ../doc/gforth.texi:23909
 #, no-wrap
 msgid "\\^"
-msgstr ""
+msgstr "\\^"
 
 #. type: format
 #: ../doc/gforth.texi:23912
 #, no-wrap
 msgid "@code{\\^} ( @i{addr -- addr  }) regexp-pattern ``\\^''\n"
-msgstr ""
+msgstr "@code{\\^} ( @i{addr -- addr  }) regexp-pattern ``\\^''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23914
 msgid "check for string start"
-msgstr ""
+msgstr "文字列の開始にマッチ"
 
 #. type: findex
 #: ../doc/gforth.texi:23916
 #, no-wrap
 msgid "\\$ ( @var{ addr -- addr   } ) regexp-pattern"
-msgstr ""
+msgstr "\\$ ( @var{ addr -- addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23917 ../doc/gforth.texi:23918
 #, no-wrap
 msgid "\\$"
-msgstr ""
+msgstr "\\$"
 
 #. type: format
 #: ../doc/gforth.texi:23921
 #, no-wrap
 msgid "@code{\\$} ( @i{addr -- addr  }) regexp-pattern ``\\$''\n"
-msgstr ""
+msgstr "@code{\\$} ( @i{addr -- addr  }) regexp-pattern ``\\$''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23923
 msgid "check for string end"
-msgstr ""
+msgstr "文字列の終了にマッチ"
 
 #. type: findex
 #: ../doc/gforth.texi:23925
 #, no-wrap
 msgid "str=? ( @var{ addr1 addr u -- addr2   } ) regexp-pattern"
-msgstr ""
+msgstr "str=? ( @var{ addr1 addr u -- addr2   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23926 ../doc/gforth.texi:23927
 #, no-wrap
 msgid "str=?"
-msgstr ""
+msgstr "str=?"
 
 #. type: format
 #: ../doc/gforth.texi:23930
 #, no-wrap
 msgid "@code{str=?} ( @i{addr1 addr u -- addr2  }) regexp-pattern ``str=?''\n"
-msgstr ""
+msgstr "@code{str=?} ( @i{addr1 addr u -- addr2  }) regexp-pattern ``str=?''\n"
 
+# : !end ( addr u -- addr )
+#   over + addr addr+u 
+#   to end$ dup to start$ ;
+# end$ → 文字列の終了アドレス+1のアドレス
+# start$ → 文字列の開始アドレス
+# -- addr 文字列の開始アドレス
+#
+# : rest$ ( addr -- addr addr u )
+#   dup end$ ( addr addr end_addr ) \ end_addr = end$
+#   over ( addr addr end_addr addr) - ;
+# \ u に残り文字数を返す  
+#
+# : (str=?) ( addr1 addr u -- addr2 )
+#     dup >r 2>r rest$ r@ umin 2r> compare IF rdrop true ELSE r> + false THEN ;
+#
+# : (str=?) ( addr1 addr u -- addr2 )
+#     dup >r 2>r ( addr1 r: u addr u )
+#     rest$ ( addr1 addr1 rest_u r: u addr u ) \ rest_u 文字列終わりまでの残り文字数
+#     r@ ( addr1 addr1 rest_u u r: u addr u )
+#     umin ( addr1 addr1 min_u r: u addr u )
+#     2r> ( addr1 addr1 min_u addr u r: u  ) compare ( addr1 f r: u  )
+#     IF ( addr1 r: u  )
+#     rdrop ( addr1 ) true
+#     ELSE ( addr1 r: u  )
+#     r> ( addr1 u  ) + ( addr1+u ) false
+#     THEN ;
 #. type: table
 #: ../doc/gforth.texi:23932
 msgid "check for a computed string on the stack (possibly a backreference)"
-msgstr ""
+msgstr "指定の文字列 @i{addr u} にマッチ(等しい)するかどうかチェックします(マッチすれば文字列の次のアドレスを @i{addr2} に返します。 マッチしない場合は @i{leave} します)"
 
 #. type: table
 #: ../doc/gforth.texi:23935
 msgid "doc-=''"
-msgstr ""
+msgstr "doc-='' (原文未記述)"
 
 #. type: table
 #: ../doc/gforth.texi:23938
 msgid ""
 "Loops that check for repeated character sets can be greedy or non-greedy."
-msgstr ""
+msgstr "繰り返される文字セットをチェックするループは、 貪欲(greedy)または非貪欲(non-greedy)にすることができます。"
 
 #. type: findex
 #: ../doc/gforth.texi:23939
 #, no-wrap
 msgid "@{** ( @var{ addr -- addr addr   } ) regexp-pattern"
-msgstr ""
+msgstr "@{** ( @var{ addr -- addr addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23940 ../doc/gforth.texi:23941
 #, no-wrap
 msgid "@{**"
-msgstr ""
+msgstr "@{**"
 
 #. type: format
 #: ../doc/gforth.texi:23944
 #, no-wrap
 msgid "@code{@{**} ( @i{addr -- addr addr  }) regexp-pattern ``begin-greedy-star''\n"
-msgstr ""
+msgstr "@code{@{**} ( @i{addr -- addr addr  }) regexp-pattern ``begin-greedy-star''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23946
 msgid "greedy zero-or-more pattern"
-msgstr ""
+msgstr "貪欲な 0 個以上のパターンの開始"
 
 #. type: findex
 #: ../doc/gforth.texi:23948
 #, no-wrap
 msgid "**@} ( @var{ sys --   } ) regexp-pattern"
-msgstr ""
+msgstr "**@} ( @var{ sys --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23949 ../doc/gforth.texi:23950
 #, no-wrap
 msgid "**@}"
-msgstr ""
+msgstr "**@}"
 
 #. type: format
 #: ../doc/gforth.texi:23953
 #, no-wrap
 msgid "@code{**@}} ( @i{sys --  }) regexp-pattern ``end-greedy-star''\n"
-msgstr ""
+msgstr "@code{**@}} ( @i{sys --  }) regexp-pattern ``end-greedy-star''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23955
 msgid "end of greedy zero-or-more pattern"
-msgstr ""
+msgstr "貪欲な 0 個以上のパターンの終わり"
 
 #. type: findex
 #: ../doc/gforth.texi:23957
 #, no-wrap
 msgid "@{++ ( @var{ addr -- addr addr   } ) regexp-pattern"
-msgstr ""
+msgstr "@{++ ( @var{ addr -- addr addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23958 ../doc/gforth.texi:23959
 #, no-wrap
 msgid "@{++"
-msgstr ""
+msgstr "@{++"
 
 #. type: format
 #: ../doc/gforth.texi:23962
 #, no-wrap
 msgid "@code{@{++} ( @i{addr -- addr addr  }) regexp-pattern ``begin-greedy-plus''\n"
-msgstr ""
+msgstr "@code{@{++} ( @i{addr -- addr addr  }) regexp-pattern ``begin-greedy-plus''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23964
 msgid "greedy one-or-more pattern"
-msgstr ""
+msgstr "貪欲な 1 つ以上のパターンの開始"
 
 #. type: findex
 #: ../doc/gforth.texi:23966
 #, no-wrap
 msgid "++@} ( @var{ sys --   } ) regexp-pattern"
-msgstr ""
+msgstr "++@} ( @var{ sys --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23967 ../doc/gforth.texi:23968
 #, no-wrap
 msgid "++@}"
-msgstr ""
+msgstr "++@}"
 
 #. type: format
 #: ../doc/gforth.texi:23971
 #, no-wrap
 msgid "@code{++@}} ( @i{sys --  }) regexp-pattern ``end-greedy-plus''\n"
-msgstr ""
+msgstr "@code{++@}} ( @i{sys --  }) regexp-pattern ``end-greedy-plus''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23973
 msgid "end of greedy one-or-more pattern"
-msgstr ""
+msgstr "貪欲な 1 つ以上のパターンの終わり"
 
 #. type: findex
 #: ../doc/gforth.texi:23975
 #, no-wrap
 msgid "@{* ( @var{ addr -- addr addr   } ) regexp-pattern"
-msgstr ""
+msgstr "@{* ( @var{ addr -- addr addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23976 ../doc/gforth.texi:23977
 #, no-wrap
 msgid "@{*"
-msgstr ""
+msgstr "@{*"
 
 #. type: format
 #: ../doc/gforth.texi:23980
 #, no-wrap
 msgid "@code{@{*} ( @i{addr -- addr addr  }) regexp-pattern ``begin-non-greedy-star''\n"
-msgstr ""
+msgstr "@code{@{*} ( @i{addr -- addr addr  }) regexp-pattern ``begin-non-greedy-star''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23982
 msgid "non-greedy zero-or-more pattern"
-msgstr ""
+msgstr "非貪欲な 0 個以上のパターンの開始"
 
 #. type: findex
 #: ../doc/gforth.texi:23984
 #, no-wrap
 msgid "*@} ( @var{ addr addr' -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr "*@} ( @var{ addr addr' -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23985 ../doc/gforth.texi:23986
 #, no-wrap
 msgid "*@}"
-msgstr ""
+msgstr "*@}"
 
 #. type: format
 #: ../doc/gforth.texi:23989
 #, no-wrap
 msgid "@code{*@}} ( @i{addr addr' -- addr'  }) regexp-pattern ``end-non-greedy-star''\n"
-msgstr ""
+msgstr "@code{*@}} ( @i{addr addr' -- addr'  }) regexp-pattern ``end-non-greedy-star''\n"
 
 #. type: table
 #: ../doc/gforth.texi:23991
 msgid "end of non-greedy zero-or-more pattern"
-msgstr ""
+msgstr "非貪欲な 0 個以上のパターンの終わり"
 
 #. type: findex
 #: ../doc/gforth.texi:23993
 #, no-wrap
 msgid "@{+ ( @var{ addr -- addr addr   } ) regexp-pattern"
-msgstr ""
+msgstr "@{+ ( @var{ addr -- addr addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:23994 ../doc/gforth.texi:23995
 #, no-wrap
 msgid "@{+"
-msgstr ""
+msgstr "@{+"
 
 #. type: format
 #: ../doc/gforth.texi:23998
 #, no-wrap
 msgid "@code{@{+} ( @i{addr -- addr addr  }) regexp-pattern ``begin-non-greedy-plus''\n"
-msgstr ""
+msgstr "@code{@{+} ( @i{addr -- addr addr  }) regexp-pattern ``begin-non-greedy-plus''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24000
 msgid "non-greedy one-or-more pattern"
-msgstr ""
+msgstr "非貪欲な 1 つ以上のパターンの開始"
 
 #. type: findex
 #: ../doc/gforth.texi:24002
 #, no-wrap
 msgid "+@} ( @var{ addr addr' -- addr'   } ) regexp-pattern"
-msgstr ""
+msgstr "+@} ( @var{ addr addr' -- addr'   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24003 ../doc/gforth.texi:24004
 #, no-wrap
 msgid "+@}"
-msgstr ""
+msgstr "+@}"
 
 #. type: format
 #: ../doc/gforth.texi:24007
 #, no-wrap
 msgid "@code{+@}} ( @i{addr addr' -- addr'  }) regexp-pattern ``end-non-greedy-plus''\n"
-msgstr ""
+msgstr "@code{+@}} ( @i{addr addr' -- addr'  }) regexp-pattern ``end-non-greedy-plus''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24009
 msgid "end of non-greedy one-or-more pattern"
-msgstr ""
+msgstr "非貪欲な 1 つ以上のパターンの終わり"
 
 #. type: table
 #: ../doc/gforth.texi:24014
 msgid ""
 "Example: Searching for a substring really is a non-greedy match of anything "
 "in front of it."
-msgstr ""
+msgstr "例: 部分文字列の検索は、 実際にはその前にあるものとの非貪欲な一致です。"
 
 #. type: findex
 #: ../doc/gforth.texi:24015
 #, no-wrap
 msgid "// ( @var{ --   } ) regexp-pattern"
-msgstr ""
+msgstr "// ( @var{ --   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24016 ../doc/gforth.texi:24017
 #, no-wrap
 msgid "//"
-msgstr ""
+msgstr "//"
 
 #. type: format
 #: ../doc/gforth.texi:24020
 #, no-wrap
 msgid "@code{//} ( @i{--  }) regexp-pattern ``//''\n"
-msgstr ""
+msgstr "@code{//} ( @i{--  }) regexp-pattern ``//''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24022
 msgid "search for string"
-msgstr ""
+msgstr "文字列内を検索(後続のパターンを文字列先頭ではなく文字列中でのマッチにする)(訳注:@*: ([0-9])  ( addr u -- )  (( \\( \\d \\) )) IF .\" [\" \\1 type .\" ]\" ELSE .\" fail\" THEN ;@*\"0123\" ([0-9])  [0] ok@*\"A123\" ([0-9])  fail ok@*: (//[0-9])  ( addr u -- )  (( // \\( \\d \\) )) IF .\" [\" \\1 type .\" ]\" ELSE .\" fail\" THEN ;.@*\"0123\" (//[0-9])  [0] ok@*\"A123\" (//[0-9])  [1] ok@*\"ABC3\" (//[0-9]) [3] ok)"
 
 #. type: table
 #: ../doc/gforth.texi:24026
 msgid "Alternatives are written with"
-msgstr ""
+msgstr "選択肢(alternative)は以下のように書きます。"
 
 #. type: findex
 #: ../doc/gforth.texi:24027
 #, no-wrap
 msgid "@{@{ ( @var{ addr -- addr addr   } ) regexp-pattern"
-msgstr ""
+msgstr "@{@{ ( @var{ addr -- addr addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24028 ../doc/gforth.texi:24029
 #, no-wrap
 msgid "@{@{"
-msgstr ""
+msgstr "@{@{"
 
 #. type: format
 #: ../doc/gforth.texi:24032
 #, no-wrap
 msgid "@code{@{@{} ( @i{addr -- addr addr  }) regexp-pattern ``begin-alternatives''\n"
-msgstr ""
+msgstr "@code{@{@{} ( @i{addr -- addr addr  }) regexp-pattern ``begin-alternatives''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24034
 msgid "Start of alternatives"
-msgstr ""
+msgstr "選択肢(alternatives)の開始"
 
 #. type: findex
 #: ../doc/gforth.texi:24036
 #, no-wrap
 msgid "|| ( @var{ addr addr -- addr addr   } ) regexp-pattern"
-msgstr ""
+msgstr "|| ( @var{ addr addr -- addr addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24037 ../doc/gforth.texi:24038
 #, no-wrap
 msgid "||"
-msgstr ""
+msgstr "||"
 
 #. type: format
 #: ../doc/gforth.texi:24041
 #, no-wrap
 msgid "@code{||} ( @i{addr addr -- addr addr  }) regexp-pattern ``next-alternative''\n"
-msgstr ""
+msgstr "@code{||} ( @i{addr addr -- addr addr  }) regexp-pattern ``next-alternative''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24043
 msgid "separator between alternatives"
-msgstr ""
+msgstr "選択肢の区切り文字"
 
 #. type: findex
 #: ../doc/gforth.texi:24045
 #, no-wrap
 msgid "@}@} ( @var{ addr addr -- addr   } ) regexp-pattern"
-msgstr ""
+msgstr "@}@} ( @var{ addr addr -- addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24046 ../doc/gforth.texi:24047
 #, no-wrap
 msgid "@}@}"
-msgstr ""
+msgstr "@}@}"
 
 #. type: format
 #: ../doc/gforth.texi:24050
 #, no-wrap
 msgid "@code{@}@}} ( @i{addr addr -- addr  }) regexp-pattern ``end-alternatives''\n"
-msgstr ""
+msgstr "@code{@}@}} ( @i{addr addr -- addr  }) regexp-pattern ``end-alternatives''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24052
 msgid "end of alternatives"
-msgstr ""
+msgstr "選択肢の終了"
 
 #. type: table
 #: ../doc/gforth.texi:24057
 msgid ""
 "You can use up to 9 variables named @code{\\1} to @code{\\9} to refer to "
 "matched substrings"
-msgstr ""
+msgstr "@code{\\1} ～ @code{\\9} という名前の変数を最大 9 つ使用して、 一致した部分文字列を参照できます"
 
 #. type: findex
 #: ../doc/gforth.texi:24058
 #, no-wrap
 msgid "\\( ( @var{ addr -- addr   } ) regexp-pattern"
-msgstr ""
+msgstr "\\( ( @var{ addr -- addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24059 ../doc/gforth.texi:24060
 #, no-wrap
 msgid "\\("
-msgstr ""
+msgstr "\\("
 
 #. type: format
 #: ../doc/gforth.texi:24063
 #, no-wrap
 msgid "@code{\\(} ( @i{addr -- addr  }) regexp-pattern ``\\(''\n"
-msgstr ""
+msgstr "@code{\\(} ( @i{addr -- addr  }) regexp-pattern ``\\(''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24065
 msgid "start of matching variable; variables are referred as \\\\1--9"
-msgstr ""
+msgstr "マッチング変数の開始;変数は \\\\1〜9 として参照されます"
 
 #. type: findex
 #: ../doc/gforth.texi:24067
 #, no-wrap
 msgid "\\) ( @var{ addr -- addr   } ) regexp-pattern"
-msgstr ""
+msgstr "\\) ( @var{ addr -- addr   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24068 ../doc/gforth.texi:24069
 #, no-wrap
 msgid "\\)"
-msgstr ""
+msgstr "\\)"
 
 #. type: format
 #: ../doc/gforth.texi:24072
 #, no-wrap
 msgid "@code{\\)} ( @i{addr -- addr  }) regexp-pattern ``\\)''\n"
-msgstr ""
+msgstr "@code{\\)} ( @i{addr -- addr  }) regexp-pattern ``\\)''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24074
 msgid "end of matching variable"
-msgstr ""
+msgstr "マッチング変数の終わり"
 
 #. type: findex
 #: ../doc/gforth.texi:24076
 #, no-wrap
 msgid "\\0 ( @var{ -- addr u   } ) regexp-pattern"
-msgstr ""
+msgstr "\\0 ( @var{ -- addr u   } ) regexp-pattern"
 
 #. type: kindex
 #: ../doc/gforth.texi:24077 ../doc/gforth.texi:24078
 #, no-wrap
 msgid "\\0"
-msgstr ""
+msgstr "\\0"
 
 #. type: format
 #: ../doc/gforth.texi:24081
 #, no-wrap
 msgid "@code{\\0} ( @i{-- addr u  }) regexp-pattern ``\\0''\n"
-msgstr ""
+msgstr "@code{\\0} ( @i{-- addr u  }) regexp-pattern ``\\0''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24083
 msgid "the whole string"
-msgstr ""
+msgstr "文字列全体"
 
 #. type: table
 #: ../doc/gforth.texi:24087
 msgid "Certainly, you can also write code to replace patterns you found."
-msgstr ""
+msgstr "もちろん、 あなたは、 見つけたパターンを置換するコードを作成することもできます。"
 
 #. type: findex
 #: ../doc/gforth.texi:24088
 #, no-wrap
 msgid "s>> ( @var{ addr -- addr   } ) regexp-replace"
-msgstr ""
+msgstr "s>> ( @var{ addr -- addr   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24089 ../doc/gforth.texi:24090
 #, no-wrap
 msgid "s>>"
-msgstr ""
+msgstr "s>>"
 
 #. type: format
 #: ../doc/gforth.texi:24093
 #, no-wrap
 msgid "@code{s>>} ( @i{addr -- addr  }) regexp-replace ``s>>''\n"
-msgstr ""
+msgstr "@code{s>>} ( @i{addr -- addr  }) regexp-replace ``s>>''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24095
 msgid "Start replace pattern region"
-msgstr ""
+msgstr "置換パターン領域の開始"
 
 #. type: findex
 #: ../doc/gforth.texi:24097
 #, no-wrap
 msgid ">> ( @var{ addr -- addr   } ) regexp-replace"
-msgstr ""
+msgstr ">> ( @var{ addr -- addr   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24098 ../doc/gforth.texi:24099
 #, no-wrap
 msgid ">>"
-msgstr ""
+msgstr ">>"
 
 #. type: format
 #: ../doc/gforth.texi:24102
 #, no-wrap
 msgid "@code{>>} ( @i{addr -- addr  }) regexp-replace ``>>''\n"
-msgstr ""
+msgstr "@code{>>} ( @i{addr -- addr  }) regexp-replace ``>>''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24105
 msgid ""
 "Start arbitrary replacement code, the code shall compute a string on the "
 "stack and pass it to @code{<<}"
-msgstr ""
+msgstr "任意の置換コードを開始し、 コードはスタック上の文字列を評価し、 それを @code{<<} に渡します。"
 
 #. type: findex
 #: ../doc/gforth.texi:24107
 #, no-wrap
 msgid "<< ( @var{ run-addr addr u -- run-addr   } ) regexp-replace"
-msgstr ""
+msgstr "<< ( @var{ run-addr addr u -- run-addr   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24108 ../doc/gforth.texi:24109
 #, no-wrap
 msgid "<<"
-msgstr ""
+msgstr "<<"
 
 #. type: format
 #: ../doc/gforth.texi:24112
 #, no-wrap
 msgid "@code{<<} ( @i{run-addr addr u -- run-addr  }) regexp-replace ``<<''\n"
-msgstr ""
+msgstr "@code{<<} ( @i{run-addr addr u -- run-addr  }) regexp-replace ``<<''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24115
 msgid ""
 "Replace string from start of replace pattern region with @var{addr} @var{u}"
-msgstr ""
+msgstr "置換パターン領域の先頭から、 指定の文字列 @var{addr} @var{u} に置換します"
 
 #. type: findex
 #: ../doc/gforth.texi:24117
 #, no-wrap
 msgid "<<\" ( @var{ \"string<\">\" --   } ) regexp-replace"
-msgstr ""
+msgstr "<<\" ( @var{ \"string<\">\" --   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24118 ../doc/gforth.texi:24119
 #, no-wrap
 msgid "<<\""
-msgstr ""
+msgstr "<<\""
 
 #. type: format
 #: ../doc/gforth.texi:24122
 #, no-wrap
 msgid "@code{<<\"} ( @i{\"string<\">\" --  }) regexp-replace ``<<\"''\n"
-msgstr ""
+msgstr "@code{<<\"} ( @i{\"string<\">\" --  }) regexp-replace ``<<\"''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24125
 msgid "Replace string from start of replace pattern region with @var{string}"
-msgstr ""
+msgstr "置換パターン領域の先頭から文字列を @var{string} に置換します(訳注: @code{<<\\ hogehoge} と使用する)"
 
 #. type: findex
 #: ../doc/gforth.texi:24127
 #, no-wrap
 msgid "s// ( @var{ addr u -- ptr   } ) regexp-replace"
-msgstr ""
+msgstr "s// ( @var{ addr u -- ptr   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24128 ../doc/gforth.texi:24129
 #, no-wrap
 msgid "s//"
-msgstr ""
+msgstr "s//"
 
 #. type: format
 #: ../doc/gforth.texi:24132
 #, no-wrap
 msgid "@code{s//} ( @i{addr u -- ptr  }) regexp-replace ``s//''\n"
-msgstr ""
+msgstr "@code{s//} ( @i{addr u -- ptr  }) regexp-replace ``s//''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24134
 msgid "start search/replace loop"
-msgstr ""
+msgstr "検索/置換 ループの開始"
 
 #. type: findex
 #: ../doc/gforth.texi:24136
 #, no-wrap
 msgid "//s ( @var{ ptr --   } ) regexp-replace"
-msgstr ""
+msgstr "//s ( @var{ ptr --   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24137 ../doc/gforth.texi:24138
 #, no-wrap
 msgid "//s"
-msgstr ""
+msgstr "//s"
 
 #. type: format
 #: ../doc/gforth.texi:24141
 #, no-wrap
 msgid "@code{//s} ( @i{ptr --  }) regexp-replace ``//s''\n"
-msgstr ""
+msgstr "@code{//s} ( @i{ptr --  }) regexp-replace ``//s''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24143
 msgid "search end"
-msgstr ""
+msgstr "検索の終わり"
 
 #. type: findex
 #: ../doc/gforth.texi:24145
 #, no-wrap
 msgid "//o ( @var{ ptr addr u -- addr' u'   } ) regexp-replace"
-msgstr ""
+msgstr "//o ( @var{ ptr addr u -- addr' u'   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24146 ../doc/gforth.texi:24147
 #, no-wrap
 msgid "//o"
-msgstr ""
+msgstr "//o"
 
 #. type: format
 #: ../doc/gforth.texi:24150
 #, no-wrap
 msgid "@code{//o} ( @i{ptr addr u -- addr' u'  }) regexp-replace ``//o''\n"
-msgstr ""
+msgstr "@code{//o} ( @i{ptr addr u -- addr' u'  }) regexp-replace ``//o''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24152
 msgid "end search/replace single loop"
-msgstr ""
+msgstr "検索/置換 の単一ループの終了"
 
 #. type: findex
 #: ../doc/gforth.texi:24154
 #, no-wrap
 msgid "//g ( @var{ ptr addr u -- addr' u'   } ) regexp-replace"
-msgstr ""
+msgstr "//g ( @var{ ptr addr u -- addr' u'   } ) regexp-replace"
 
 #. type: kindex
 #: ../doc/gforth.texi:24155 ../doc/gforth.texi:24156
 #, no-wrap
 msgid "//g"
-msgstr ""
+msgstr "//g"
 
 #. type: format
 #: ../doc/gforth.texi:24159
 #, no-wrap
 msgid "@code{//g} ( @i{ptr addr u -- addr' u'  }) regexp-replace ``//g''\n"
-msgstr ""
+msgstr "@code{//g} ( @i{ptr addr u -- addr' u'  }) regexp-replace ``//g''\n"
 
 #. type: table
 #: ../doc/gforth.texi:24161
 msgid "end search/replace all loop"
-msgstr ""
+msgstr "検索/置換 の全てのループの終了"
 
 #. type: table
 #: ../doc/gforth.texi:24165
 msgid "Examples can be found in @code{test/regexp-test.fs}."
-msgstr ""
+msgstr "これらの使用例は @code{test/regexp-test.fs} にあります。"
 
 #. type: cindex
 #: ../doc/gforth.texi:24169

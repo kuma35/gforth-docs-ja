@@ -187,25 +187,30 @@ Next: <a href="Programming-Tools.html" accesskey="n" rel="next">Programming Tool
 </p>
 
 
-<p>事前定義された charclasses と それらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、
-次に考えられる正規表現の代替が試行されるか、 mまたは、 ループが終了します。
+<p>事前定義された文字クラス(charclasses)とそれらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、
+次に考えられる正規表現の代替が試行されるか、 または、 ループが終了(<i>leave</i>)します(訳注: 基本的には、 チェックが成功した場合は
+<var>addr</var> を 1文字(char)分進めた <var>addr&rsquo;</var> を返し、 失敗した場合はスタックに何も積まずに <i>leave</i>
+する)。
 </p>
 <span id="index-c_003f-_0028--addr-class-_002d_002d--_0029-regexp_002dpattern"></span>
 <span id="index-c_003f"></span>
 <span id="index-c_003f-1"></span>
 <div class="format">
-<pre class="format"><code>c?</code> ( <i>addr class &ndash;  </i>) regexp-pattern &ldquo;c?&rdquo;
+<pre class="format"><code>c?</code> ( <i>addr class &ndash; addr&rsquo; </i>) regexp-pattern &ldquo;c?&rdquo;
 </pre></div>
-<p><var>addr</var> の位置の char が charclass <var>class</var> に含まれているなら true
+<p>文字クラス <var>class</var> にマッチ(<var>addr</var> の位置の char が charclass <var>class</var>
+に含まれているなら <var>addr</var> の 1 char 次のアドレスを <var>addr&lsquo;</var> に返し、 含まれていないなら
+<code>leave</code> する)
 </p>
 
 <span id="index-_002dc_003f-_0028--addr-class-_002d_002d--_0029-regexp_002dpattern"></span>
 <span id="index-_002dc_003f"></span>
 <span id="index-_002dc_003f-1"></span>
 <div class="format">
-<pre class="format"><code>-c?</code> ( <i>addr class &ndash;  </i>) regexp-pattern &ldquo;-c?&rdquo;
+<pre class="format"><code>-c?</code> ( <i>addr class &ndash; addr&rsquo; </i>) regexp-pattern &ldquo;-c?&rdquo;
 </pre></div>
-<p>check <var>addr</var> for not membership in charclass <var>class</var>
+<p>文字クラス <var>class</var> 以外にマッチ(<var>addr</var> の位置の文字が charclass <var>class</var> に含まれていなければ
+<var>addr</var> の1文字後ろのアドレスを <var>addr&rsquo;</var> に返し、含まれていたら <code>leave</code> する)
 </p>
 
 <span id="index-_005cd-_0028--addr-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -214,7 +219,8 @@ Next: <a href="Programming-Tools.html" accesskey="n" rel="next">Programming Tool
 <div class="format">
 <pre class="format"><code>\d</code> ( <i>addr &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;\d&rdquo;
 </pre></div>
-<p>check for digit
+<p>数字([0-9])にマッチ(指定の <var>addr</var> の char が digit かどうか([0-9])しらべ、 そうなら <var>addr</var>
+の char 分次のアドレスを addr&rsquo; に返す。 そうでなければ <code>leave</code> する)
 </p>
 
 <span id="index-_005cs-_0028--addr-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -223,7 +229,8 @@ Next: <a href="Programming-Tools.html" accesskey="n" rel="next">Programming Tool
 <div class="format">
 <pre class="format"><code>\s</code> ( <i>addr &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;\s&rdquo;
 </pre></div>
-<p>check for blanks
+<p>非表示文字(\x00〜\x20)にマッチ(指定の <var>addr</var> の char が blanks かどうか([\x00-\x20])しらべ、
+そうなら <var>addr</var> の char 分次のアドレスを addr&rsquo; に返す。 そうでなければ <code>leave</code> する)
 </p>
 
 <span id="index-_002e_003f-_0028--addr-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -232,7 +239,8 @@ Next: <a href="Programming-Tools.html" accesskey="n" rel="next">Programming Tool
 <div class="format">
 <pre class="format"><code>.?</code> ( <i>addr &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;.?&rdquo;
 </pre></div>
-<p>check for any single charachter
+<p>任意の1文字(char)にマッチ(任意の1文字(char)であれば次の文字のアドレスを <i>addr&rsquo;</i> に返します。 そうでなければ
+<i>leave</i> します)
 </p>
 
 <span id="index-_002d_005cd-_0028--addr-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -241,7 +249,8 @@ Next: <a href="Programming-Tools.html" accesskey="n" rel="next">Programming Tool
 <div class="format">
 <pre class="format"><code>-\d</code> ( <i>addr &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;-\d&rdquo;
 </pre></div>
-<p>check for not digit
+<p><i>addr</i> の文字が数字で無ければ([^0-9])次の文字のアドレスを <i>addr&rsquo;</i> に返します。 そうでなければ <i>leave</i>
+します。
 </p>
 
 <span id="index-_002d_005cs-_0028--addr-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -250,37 +259,41 @@ Next: <a href="Programming-Tools.html" accesskey="n" rel="next">Programming Tool
 <div class="format">
 <pre class="format"><code>-\s</code> ( <i>addr &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;-\s&rdquo;
 </pre></div>
-<p>check for not blank
+<p>指定の <var>addr</var> の char が blanks で無いかどうか([^\x00-\x20])しらべ、 そうなら <var>addr</var> の
+char 分次のアドレスを <i>addr&rsquo;</i> に返す。 そうでなければ <code>leave</code> する
 </p>
 
 <span id="index-_0060-_0028--_0022char_0022-_002d_002d--_0029-regexp_002dpattern"></span>
 <span id="index-_0060"></span>
 <span id="index-_0060-1"></span>
 <div class="format">
-<pre class="format"><code>`</code> ( <i>&quot;char&quot; &ndash;  </i>) regexp-pattern &ldquo;&lsquo;&rdquo;
+<pre class="format"><code>`</code> ( <i>addr &quot;char&quot; &ndash; addr&rsquo; </i>) regexp-pattern &ldquo;&lsquo;&rdquo;
 </pre></div>
-<p>check for particular char
+<p>指定の文字をチェックします。 <code>` c</code> の形で使用し、 <var>addr</var> の文字が 文字 c ならば、 次の文字へのアドレスを
+<var>addr&rsquo;</var> に返し、そうでなければ <i>leave</i> します。
 </p>
 
 <span id="index-_0060_003f-_0028--_0022char_0022-_002d_002d--_0029-regexp_002dpattern"></span>
 <span id="index-_0060_003f"></span>
 <span id="index-_0060_003f-1"></span>
 <div class="format">
-<pre class="format"><code>`?</code> ( <i>&quot;char&quot; &ndash;  </i>) regexp-pattern &ldquo;&lsquo;?&rdquo;
+<pre class="format"><code>`?</code> ( <i>addr &quot;char&quot; &ndash; addr | addr&rsquo; </i>) regexp-pattern &ldquo;&lsquo;?&rdquo; 
+\ 訳注: <code>`? c</code>  <var>addr</var> の文字が c ならば <var>addr</var> をそのまま返す。 c でなければ次の文字へのアドレスを <var>addr&rsquo;</var> に返す。
 </pre></div>
 
 <span id="index-_002d_0060-_0028--_0022char_0022-_002d_002d--_0029-regexp_002dpattern"></span>
 <span id="index-_002d_0060"></span>
 <span id="index-_002d_0060-1"></span>
 <div class="format">
-<pre class="format"><code>-`</code> ( <i>&quot;char&quot; &ndash;  </i>) regexp-pattern &ldquo;-&lsquo;&rdquo;
+<pre class="format"><code>-`</code> ( <i>addr &quot;char&quot; &ndash; addr&rsquo; </i>) regexp-pattern &ldquo;-&lsquo;&rdquo; 
+\ 訳注: <code>-` c</code> <var>addr</var> の文字が c でなければ次の文字へのアドレスを <var>addr&rsquo;</var> に返す。 そうでなければ <i>leave</i> する。
 </pre></div>
-<p>check for particular char
+<p>指定の文字をチェックします。 <code>` c</code> の形で使用し、 <var>addr</var> の文字が 文字 c ならば、 次の文字へのアドレスを
+<var>addr&rsquo;</var> に返し、そうでなければ <i>leave</i> します。
 </p>
 
 
-<p>You can certainly also check for start and end of the string, and for whole
-string constants.
+<p>明示的に文字列の開始と終了、および文字列定数全体をチェックすることもできます。
 </p>
 <span id="index-_005c_005e-_0028--addr-_002d_002d-addr--_0029-regexp_002dpattern"></span>
 <span id="index-_005c_005e"></span>
@@ -288,7 +301,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>\^</code> ( <i>addr &ndash; addr  </i>) regexp-pattern &ldquo;\^&rdquo;
 </pre></div>
-<p>check for string start
+<p>文字列の開始にマッチ
 </p>
 
 <span id="index-_005c_0024-_0028--addr-_002d_002d-addr--_0029-regexp_002dpattern"></span>
@@ -297,7 +310,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>\$</code> ( <i>addr &ndash; addr  </i>) regexp-pattern &ldquo;\$&rdquo;
 </pre></div>
-<p>check for string end
+<p>文字列の終了にマッチ
 </p>
 
 <span id="index-str_003d_003f-_0028--addr1-addr-u-_002d_002d-addr2--_0029-regexp_002dpattern"></span>
@@ -306,12 +319,13 @@ string constants.
 <div class="format">
 <pre class="format"><code>str=?</code> ( <i>addr1 addr u &ndash; addr2  </i>) regexp-pattern &ldquo;str=?&rdquo;
 </pre></div>
-<p>check for a computed string on the stack (possibly a backreference)
+<p>指定の文字列 <i>addr u</i> にマッチ(等しい)するかどうかチェックします(マッチすれば文字列の次のアドレスを <i>addr2</i> に返します。
+マッチしない場合は <i>leave</i> します)
 </p>
 
-<p>doc-=&rdquo;
+<p>doc-=&rdquo; (原文未記述)
 </p>
-<p>Loops that check for repeated character sets can be greedy or non-greedy.
+<p>繰り返される文字セットをチェックするループは、 貪欲(greedy)または非貪欲(non-greedy)にすることができます。
 </p>
 <span id="index-_007b_002a_002a-_0028--addr-_002d_002d-addr-addr--_0029-regexp_002dpattern"></span>
 <span id="index-_007b_002a_002a"></span>
@@ -319,7 +333,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>{**</code> ( <i>addr &ndash; addr addr  </i>) regexp-pattern &ldquo;begin-greedy-star&rdquo;
 </pre></div>
-<p>greedy zero-or-more pattern
+<p>貪欲な 0 個以上のパターンの開始
 </p>
 
 <span id="index-_002a_002a_007d-_0028--sys-_002d_002d--_0029-regexp_002dpattern"></span>
@@ -328,7 +342,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>**}</code> ( <i>sys &ndash;  </i>) regexp-pattern &ldquo;end-greedy-star&rdquo;
 </pre></div>
-<p>end of greedy zero-or-more pattern
+<p>貪欲な 0 個以上のパターンの終わり
 </p>
 
 <span id="index-_007b_002b_002b-_0028--addr-_002d_002d-addr-addr--_0029-regexp_002dpattern"></span>
@@ -337,7 +351,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>{++</code> ( <i>addr &ndash; addr addr  </i>) regexp-pattern &ldquo;begin-greedy-plus&rdquo;
 </pre></div>
-<p>greedy one-or-more pattern
+<p>貪欲な 1 つ以上のパターンの開始
 </p>
 
 <span id="index-_002b_002b_007d-_0028--sys-_002d_002d--_0029-regexp_002dpattern"></span>
@@ -346,7 +360,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>++}</code> ( <i>sys &ndash;  </i>) regexp-pattern &ldquo;end-greedy-plus&rdquo;
 </pre></div>
-<p>end of greedy one-or-more pattern
+<p>貪欲な 1 つ以上のパターンの終わり
 </p>
 
 <span id="index-_007b_002a-_0028--addr-_002d_002d-addr-addr--_0029-regexp_002dpattern"></span>
@@ -355,7 +369,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>{*</code> ( <i>addr &ndash; addr addr  </i>) regexp-pattern &ldquo;begin-non-greedy-star&rdquo;
 </pre></div>
-<p>non-greedy zero-or-more pattern
+<p>非貪欲な 0 個以上のパターンの開始
 </p>
 
 <span id="index-_002a_007d-_0028--addr-addr_0027-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -364,7 +378,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>*}</code> ( <i>addr addr&rsquo; &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;end-non-greedy-star&rdquo;
 </pre></div>
-<p>end of non-greedy zero-or-more pattern
+<p>非貪欲な 0 個以上のパターンの終わり
 </p>
 
 <span id="index-_007b_002b-_0028--addr-_002d_002d-addr-addr--_0029-regexp_002dpattern"></span>
@@ -373,7 +387,7 @@ string constants.
 <div class="format">
 <pre class="format"><code>{+</code> ( <i>addr &ndash; addr addr  </i>) regexp-pattern &ldquo;begin-non-greedy-plus&rdquo;
 </pre></div>
-<p>non-greedy one-or-more pattern
+<p>非貪欲な 1 つ以上のパターンの開始
 </p>
 
 <span id="index-_002b_007d-_0028--addr-addr_0027-_002d_002d-addr_0027--_0029-regexp_002dpattern"></span>
@@ -382,12 +396,11 @@ string constants.
 <div class="format">
 <pre class="format"><code>+}</code> ( <i>addr addr&rsquo; &ndash; addr&rsquo;  </i>) regexp-pattern &ldquo;end-non-greedy-plus&rdquo;
 </pre></div>
-<p>end of non-greedy one-or-more pattern
+<p>非貪欲な 1 つ以上のパターンの終わり
 </p>
 
 
-<p>Example: Searching for a substring really is a non-greedy match of anything
-in front of it.
+<p>例: 部分文字列の検索は、 実際にはその前にあるものとの非貪欲な一致です。
 </p>
 <span id="index-_002f_002f-_0028--_002d_002d--_0029-regexp_002dpattern"></span>
 <span id="index-_002f_002f"></span>
@@ -395,11 +408,15 @@ in front of it.
 <div class="format">
 <pre class="format"><code>//</code> ( <i>&ndash;  </i>) regexp-pattern &ldquo;//&rdquo;
 </pre></div>
-<p>search for string
+<p>文字列内を検索(後続のパターンを文字列先頭ではなく文字列中でのマッチにする)(訳注:<br>: ([0-9])  ( addr u &ndash; )  (( \(
+\d \) )) IF .&quot; [&quot; \1 type .&quot; ]&quot; ELSE .&quot; fail&quot; THEN ;<br>&quot;0123&quot; ([0-9])  [0]
+ok<br>&quot;A123&quot; ([0-9])  fail ok<br>: (//[0-9])  ( addr u &ndash; )  (( // \( \d \) ))
+IF .&quot; [&quot; \1 type .&quot; ]&quot; ELSE .&quot; fail&quot; THEN ;.<br>&quot;0123&quot; (//[0-9])  [0]
+ok<br>&quot;A123&quot; (//[0-9])  [1] ok<br>&quot;ABC3&quot; (//[0-9]) [3] ok)
 </p>
 
 
-<p>Alternatives are written with
+<p>選択肢(alternative)は以下のように書きます。
 </p>
 <span id="index-_007b_007b-_0028--addr-_002d_002d-addr-addr--_0029-regexp_002dpattern"></span>
 <span id="index-_007b_007b"></span>
@@ -407,7 +424,7 @@ in front of it.
 <div class="format">
 <pre class="format"><code>{{</code> ( <i>addr &ndash; addr addr  </i>) regexp-pattern &ldquo;begin-alternatives&rdquo;
 </pre></div>
-<p>Start of alternatives
+<p>選択肢(alternatives)の開始
 </p>
 
 <span id="index-_007c_007c-_0028--addr-addr-_002d_002d-addr-addr--_0029-regexp_002dpattern"></span>
@@ -416,7 +433,7 @@ in front of it.
 <div class="format">
 <pre class="format"><code>||</code> ( <i>addr addr &ndash; addr addr  </i>) regexp-pattern &ldquo;next-alternative&rdquo;
 </pre></div>
-<p>separator between alternatives
+<p>選択肢の区切り文字
 </p>
 
 <span id="index-_007d_007d-_0028--addr-addr-_002d_002d-addr--_0029-regexp_002dpattern"></span>
@@ -425,12 +442,11 @@ in front of it.
 <div class="format">
 <pre class="format"><code>}}</code> ( <i>addr addr &ndash; addr  </i>) regexp-pattern &ldquo;end-alternatives&rdquo;
 </pre></div>
-<p>end of alternatives
+<p>選択肢の終了
 </p>
 
 
-<p>You can use up to 9 variables named <code>\1</code> to <code>\9</code> to refer to
-matched substrings
+<p><code>\1</code> ～ <code>\9</code> という名前の変数を最大 9 つ使用して、 一致した部分文字列を参照できます
 </p>
 <span id="index-_005c_0028-_0028--addr-_002d_002d-addr--_0029-regexp_002dpattern"></span>
 <span id="index-_005c_0028"></span>
@@ -438,7 +454,7 @@ matched substrings
 <div class="format">
 <pre class="format"><code>\(</code> ( <i>addr &ndash; addr  </i>) regexp-pattern &ldquo;\(&rdquo;
 </pre></div>
-<p>start of matching variable; variables are referred as \\1&ndash;9
+<p>マッチング変数の開始;変数は \\1〜9 として参照されます
 </p>
 
 <span id="index-_005c_0029-_0028--addr-_002d_002d-addr--_0029-regexp_002dpattern"></span>
@@ -447,7 +463,7 @@ matched substrings
 <div class="format">
 <pre class="format"><code>\)</code> ( <i>addr &ndash; addr  </i>) regexp-pattern &ldquo;\)&rdquo;
 </pre></div>
-<p>end of matching variable
+<p>マッチング変数の終わり
 </p>
 
 <span id="index-_005c0-_0028--_002d_002d-addr-u--_0029-regexp_002dpattern"></span>
@@ -456,11 +472,11 @@ matched substrings
 <div class="format">
 <pre class="format"><code>\0</code> ( <i>&ndash; addr u  </i>) regexp-pattern &ldquo;\0&rdquo;
 </pre></div>
-<p>the whole string
+<p>文字列全体
 </p>
 
 
-<p>Certainly, you can also write code to replace patterns you found.
+<p>もちろん、 あなたは、 見つけたパターンを置換するコードを作成することもできます。
 </p>
 <span id="index-s_003e_003e-_0028--addr-_002d_002d-addr--_0029-regexp_002dreplace"></span>
 <span id="index-s_003e_003e"></span>
@@ -468,7 +484,7 @@ matched substrings
 <div class="format">
 <pre class="format"><code>s&gt;&gt;</code> ( <i>addr &ndash; addr  </i>) regexp-replace &ldquo;s&gt;&gt;&rdquo;
 </pre></div>
-<p>Start replace pattern region
+<p>置換パターン領域の開始
 </p>
 
 <span id="index-_003e_003e-_0028--addr-_002d_002d-addr--_0029-regexp_002dreplace"></span>
@@ -477,8 +493,7 @@ matched substrings
 <div class="format">
 <pre class="format"><code>&gt;&gt;</code> ( <i>addr &ndash; addr  </i>) regexp-replace &ldquo;&gt;&gt;&rdquo;
 </pre></div>
-<p>Start arbitrary replacement code, the code shall compute a string on the
-stack and pass it to <code>&lt;&lt;</code>
+<p>任意の置換コードを開始し、 コードはスタック上の文字列を評価し、 それを <code>&lt;&lt;</code> に渡します。
 </p>
 
 <span id="index-_003c_003c-_0028--run_002daddr-addr-u-_002d_002d-run_002daddr--_0029-regexp_002dreplace"></span>
@@ -487,7 +502,7 @@ stack and pass it to <code>&lt;&lt;</code>
 <div class="format">
 <pre class="format"><code>&lt;&lt;</code> ( <i>run-addr addr u &ndash; run-addr  </i>) regexp-replace &ldquo;&lt;&lt;&rdquo;
 </pre></div>
-<p>Replace string from start of replace pattern region with <var>addr</var> <var>u</var>
+<p>置換パターン領域の先頭から、 指定の文字列 <var>addr</var> <var>u</var> に置換します
 </p>
 
 <span id="index-_003c_003c_0022-_0028--_0022string_003c_0022_003e_0022-_002d_002d--_0029-regexp_002dreplace"></span>
@@ -496,7 +511,7 @@ stack and pass it to <code>&lt;&lt;</code>
 <div class="format">
 <pre class="format"><code>&lt;&lt;&quot;</code> ( <i>&quot;string&lt;&quot;&gt;&quot; &ndash;  </i>) regexp-replace &ldquo;&lt;&lt;&quot;&rdquo;
 </pre></div>
-<p>Replace string from start of replace pattern region with <var>string</var>
+<p>置換パターン領域の先頭から文字列を <var>string</var> に置換します(訳注: <code>&lt;&lt;\ hogehoge</code> と使用する)
 </p>
 
 <span id="index-s_002f_002f-_0028--addr-u-_002d_002d-ptr--_0029-regexp_002dreplace"></span>
@@ -505,7 +520,7 @@ stack and pass it to <code>&lt;&lt;</code>
 <div class="format">
 <pre class="format"><code>s//</code> ( <i>addr u &ndash; ptr  </i>) regexp-replace &ldquo;s//&rdquo;
 </pre></div>
-<p>start search/replace loop
+<p>検索/置換 ループの開始
 </p>
 
 <span id="index-_002f_002fs-_0028--ptr-_002d_002d--_0029-regexp_002dreplace"></span>
@@ -514,7 +529,7 @@ stack and pass it to <code>&lt;&lt;</code>
 <div class="format">
 <pre class="format"><code>//s</code> ( <i>ptr &ndash;  </i>) regexp-replace &ldquo;//s&rdquo;
 </pre></div>
-<p>search end
+<p>検索の終わり
 </p>
 
 <span id="index-_002f_002fo-_0028--ptr-addr-u-_002d_002d-addr_0027-u_0027--_0029-regexp_002dreplace"></span>
@@ -523,7 +538,7 @@ stack and pass it to <code>&lt;&lt;</code>
 <div class="format">
 <pre class="format"><code>//o</code> ( <i>ptr addr u &ndash; addr&rsquo; u&rsquo;  </i>) regexp-replace &ldquo;//o&rdquo;
 </pre></div>
-<p>end search/replace single loop
+<p>検索/置換 の単一ループの終了
 </p>
 
 <span id="index-_002f_002fg-_0028--ptr-addr-u-_002d_002d-addr_0027-u_0027--_0029-regexp_002dreplace"></span>
@@ -532,11 +547,11 @@ stack and pass it to <code>&lt;&lt;</code>
 <div class="format">
 <pre class="format"><code>//g</code> ( <i>ptr addr u &ndash; addr&rsquo; u&rsquo;  </i>) regexp-replace &ldquo;//g&rdquo;
 </pre></div>
-<p>end search/replace all loop
+<p>検索/置換 の全てのループの終了
 </p>
 
 
-<p>Examples can be found in <code>test/regexp-test.fs</code>.
+<p>これらの使用例は <code>test/regexp-test.fs</code> にあります。
 </p>
 </div>
 <hr>

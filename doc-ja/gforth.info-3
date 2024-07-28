@@ -3761,137 +3761,171 @@ Gforth は、 パターン・マッチングのためのバックトラッキン
 ‘-class’ ( class –  ) regexp-cg “-class”
    現在の charclass から charclass CLASS を抜き取ります(subtract)。
 
-   事前定義された charclasses と それらのテストと、 一般的なチェックがあ
-ります。 チェックが失敗した場合は、 次に考えられる正規表現の代替が試行さ
-れるか、 mまたは、 ループが終了します。
+   事前定義された文字クラス(charclasses)とそれらのテストと、 一般的なチ
+ェックがあります。 チェックが失敗した場合は、 次に考えられる正規表現の代
+替が試行されるか、 または、 ループが終了(leave)します(訳注: 基本的には、
+チェックが成功した場合は ADDR を 1文字(char)分進めた ADDR’ を返し、 失敗
+した場合はスタックに何も積まずに leave する)。
 
-‘c?’ ( addr class –  ) regexp-pattern “c?”
-   ADDR の位置の char が charclass CLASS に含まれているなら true
+‘c?’ ( addr class – addr’ ) regexp-pattern “c?”
+   文字クラス CLASS にマッチ(ADDR の位置の char が charclass CLASS に含
+まれているなら ADDR の 1 char 次のアドレスを ADDR‘ に返し、 含まれていな
+いなら ‘leave’ する)
 
-‘-c?’ ( addr class –  ) regexp-pattern “-c?”
-   check ADDR for not membership in charclass CLASS
+‘-c?’ ( addr class – addr’ ) regexp-pattern “-c?”
+   文字クラス CLASS 以外にマッチ(ADDR の位置の文字が charclass CLASS に
+含まれていなければ ADDR の1文字後ろのアドレスを ADDR’ に返し、含まれてい
+たら ‘leave’ する)
 
 ‘\d’ ( addr – addr’  ) regexp-pattern “\d”
-   check for digit
+   数字([0-9])にマッチ(指定の ADDR の char が digit かどうか([0-9])しら
+べ、 そうなら ADDR の char 分次のアドレスを addr’ に返す。 そうでなけれ
+ば ‘leave’ する)
 
 ‘\s’ ( addr – addr’  ) regexp-pattern “\s”
-   check for blanks
+   非表示文字(\x00〜\x20)にマッチ(指定の ADDR の char が blanks かどうか
+([\x00-\x20])しらべ、 そうなら ADDR の char 分次のアドレスを addr’ に返
+す。 そうでなければ ‘leave’ する)
 
 ‘.?’ ( addr – addr’  ) regexp-pattern “.?”
-   check for any single charachter
+   任意の1文字(char)にマッチ(任意の1文字(char)であれば次の文字のアドレス
+を addr’ に返します。 そうでなければ leave します)
 
 ‘-\d’ ( addr – addr’  ) regexp-pattern “-\d”
-   check for not digit
+   addr の文字が数字で無ければ([^0-9])次の文字のアドレスを addr’ に返し
+ます。 そうでなければ leave します。
 
 ‘-\s’ ( addr – addr’  ) regexp-pattern “-\s”
-   check for not blank
+   指定の ADDR の char が blanks で無いかどうか([^\x00-\x20])しらべ、 そ
+うなら ADDR の char 分次のアドレスを addr’ に返す。 そうでなければ
+‘leave’ する
 
-‘`’ ( "char" –  ) regexp-pattern “‘”
-   check for particular char
+‘`’ ( addr "char" – addr’ ) regexp-pattern “‘”
+   指定の文字をチェックします。 ‘` c’ の形で使用し、 ADDR の文字が 文字
+c ならば、 次の文字へのアドレスを ADDR’ に返し、そうでなければ leave し
+ます。
 
-‘`?’ ( "char" –  ) regexp-pattern “‘?”
+‘`?’ ( addr "char" – addr | addr’ ) regexp-pattern “‘?”
+\ 訳注: ‘`? c’  ADDR の文字が c ならば ADDR をそのまま返す。 c でなければ次の文字へのアドレスを ADDR’ に返す。
 
-‘-`’ ( "char" –  ) regexp-pattern “-‘”
-   check for particular char
+‘-`’ ( addr "char" – addr’ ) regexp-pattern “-‘”
+\ 訳注: ‘-` c’ ADDR の文字が c でなければ次の文字へのアドレスを ADDR’ に返す。 そうでなければ leave する。
+   指定の文字をチェックします。 ‘` c’ の形で使用し、 ADDR の文字が 文字
+c ならば、 次の文字へのアドレスを ADDR’ に返し、そうでなければ leave し
+ます。
 
-   You can certainly also check for start and end of the string, and for
-whole string constants.
+   明示的に文字列の開始と終了、および文字列定数全体をチェックすることも
+できます。
 
 ‘\^’ ( addr – addr  ) regexp-pattern “\^”
-   check for string start
+   文字列の開始にマッチ
 
 ‘\$’ ( addr – addr  ) regexp-pattern “\$”
-   check for string end
+   文字列の終了にマッチ
 
 ‘str=?’ ( addr1 addr u – addr2  ) regexp-pattern “str=?”
-   check for a computed string on the stack (possibly a backreference)
+   指定の文字列 addr u にマッチ(等しい)するかどうかチェックします(マッチ
+すれば文字列の次のアドレスを addr2 に返します。 マッチしない場合は leave
+します)
 
-   doc-=”
+   doc-=” (原文未記述)
 
-   Loops that check for repeated character sets can be greedy or
-non-greedy.
+   繰り返される文字セットをチェックするループは、 貪欲(greedy)または非貪
+欲(non-greedy)にすることができます。
 
 ‘{**’ ( addr – addr addr  ) regexp-pattern “begin-greedy-star”
-   greedy zero-or-more pattern
+   貪欲な 0 個以上のパターンの開始
 
 ‘**}’ ( sys –  ) regexp-pattern “end-greedy-star”
-   end of greedy zero-or-more pattern
+   貪欲な 0 個以上のパターンの終わり
 
 ‘{++’ ( addr – addr addr  ) regexp-pattern “begin-greedy-plus”
-   greedy one-or-more pattern
+   貪欲な 1 つ以上のパターンの開始
 
 ‘++}’ ( sys –  ) regexp-pattern “end-greedy-plus”
-   end of greedy one-or-more pattern
+   貪欲な 1 つ以上のパターンの終わり
 
 ‘{*’ ( addr – addr addr  ) regexp-pattern “begin-non-greedy-star”
-   non-greedy zero-or-more pattern
+   非貪欲な 0 個以上のパターンの開始
 
 ‘*}’ ( addr addr’ – addr’  ) regexp-pattern “end-non-greedy-star”
-   end of non-greedy zero-or-more pattern
+   非貪欲な 0 個以上のパターンの終わり
 
 ‘{+’ ( addr – addr addr  ) regexp-pattern “begin-non-greedy-plus”
-   non-greedy one-or-more pattern
+   非貪欲な 1 つ以上のパターンの開始
 
 ‘+}’ ( addr addr’ – addr’  ) regexp-pattern “end-non-greedy-plus”
-   end of non-greedy one-or-more pattern
+   非貪欲な 1 つ以上のパターンの終わり
 
-   Example: Searching for a substring really is a non-greedy match of
-anything in front of it.
+   例: 部分文字列の検索は、 実際にはその前にあるものとの非貪欲な一致です
+。
 
 ‘//’ ( –  ) regexp-pattern “//”
-   search for string
+   文字列内を検索(後続のパターンを文字列先頭ではなく文字列中でのマッチに
+する)(訳注:
+: ([0-9]) ( addr u – ) (( \( \d \) )) IF ."  [" \1 type ."  ]"  ELSE ."
+fail" THEN ;
+"0123" ([0-9]) [0] ok
+"A123" ([0-9]) fail ok
+: (//[0-9]) ( addr u – ) (( // \( \d \) )) IF ."  [" \1 type ."  ]"
+ELSE ."  fail" THEN ;.
+"0123" (//[0-9]) [0] ok
+"A123" (//[0-9]) [1] ok
+"ABC3" (//[0-9]) [3] ok)
 
-   Alternatives are written with
+   選択肢(alternative)は以下のように書きます。
 
 ‘{{’ ( addr – addr addr  ) regexp-pattern “begin-alternatives”
-   Start of alternatives
+   選択肢(alternatives)の開始
 
 ‘||’ ( addr addr – addr addr  ) regexp-pattern “next-alternative”
-   separator between alternatives
+   選択肢の区切り文字
 
 ‘}}’ ( addr addr – addr  ) regexp-pattern “end-alternatives”
-   end of alternatives
+   選択肢の終了
 
-   You can use up to 9 variables named ‘\1’ to ‘\9’ to refer to matched
-substrings
+   ‘\1’ ～ ‘\9’ という名前の変数を最大 9 つ使用して、 一致した部分文字列
+を参照できます
 
 ‘\(’ ( addr – addr  ) regexp-pattern “\(”
-   start of matching variable; variables are referred as \\1–9
+   マッチング変数の開始;変数は \\1〜9 として参照されます
 
 ‘\)’ ( addr – addr  ) regexp-pattern “\)”
-   end of matching variable
+   マッチング変数の終わり
 
 ‘\0’ ( – addr u  ) regexp-pattern “\0”
-   the whole string
+   文字列全体
 
-   Certainly, you can also write code to replace patterns you found.
+   もちろん、 あなたは、 見つけたパターンを置換するコードを作成すること
+もできます。
 
 ‘s>>’ ( addr – addr  ) regexp-replace “s>>”
-   Start replace pattern region
+   置換パターン領域の開始
 
 ‘>>’ ( addr – addr  ) regexp-replace “>>”
-   Start arbitrary replacement code, the code shall compute a string on
-the stack and pass it to ‘<<’
+   任意の置換コードを開始し、 コードはスタック上の文字列を評価し、 それ
+を ‘<<’ に渡します。
 
 ‘<<’ ( run-addr addr u – run-addr  ) regexp-replace “<<”
-   Replace string from start of replace pattern region with ADDR U
+   置換パターン領域の先頭から、 指定の文字列 ADDR U に置換します
 
 ‘<<"’ ( "string<">" –  ) regexp-replace “<<"”
-   Replace string from start of replace pattern region with STRING
+   置換パターン領域の先頭から文字列を STRING に置換します(訳注: ‘<<\
+hogehoge’ と使用する)
 
 ‘s//’ ( addr u – ptr  ) regexp-replace “s//”
-   start search/replace loop
+   検索/置換 ループの開始
 
 ‘//s’ ( ptr –  ) regexp-replace “//s”
-   search end
+   検索の終わり
 
 ‘//o’ ( ptr addr u – addr’ u’  ) regexp-replace “//o”
-   end search/replace single loop
+   検索/置換 の単一ループの終了
 
 ‘//g’ ( ptr addr u – addr’ u’  ) regexp-replace “//g”
-   end search/replace all loop
+   検索/置換 の全てのループの終了
 
-   Examples can be found in ‘test/regexp-test.fs’.
+   これらの使用例は ‘test/regexp-test.fs’ にあります。
 
 
 File: gforth.info,  Node: Programming Tools,  Next: Multitasker,  Prev: Regular Expressions,  Up: Words
@@ -5963,33 +5997,4 @@ Linux プラットフォームでは、 レジスタ AX CX DX SI DI R8 R9 R10 R1
      di         ax mov         \ sp into return reg
      ret
      end-code
-
-
-File: gforth.info,  Node: Alpha Assembler,  Next: MIPS assembler,  Prev: AMD64 Assembler,  Up: Assembler and Code Words
-
-6.29.6 Alpha Assembler
-----------------------
-
-The Alpha assembler and disassembler were originally written by Bernd
-Thallner.
-
-   The register names ‘a0’–‘a5’ are not available to avoid shadowing hex
-numbers.
-
-   Immediate forms of arithmetic instructions are distinguished by a ‘#’
-just before the ‘,’, e.g., ‘and#,’ (note: ‘lda,’ does not count as
-arithmetic instruction).
-
-   You have to specify all operands to an instruction, even those that
-other assemblers consider optional, e.g., the destination register for
-‘br,’, or the destination register and hint for ‘jmp,’.
-
-   You can specify conditions for ‘if,’ by removing the first ‘b’ and
-the trailing ‘,’ from a branch with a corresponding name; e.g.,
-
-     11 fgt if, \ if F11>0e
-       ...
-     endif,
-
-   ‘fbgt,’ gives ‘fgt’.
 

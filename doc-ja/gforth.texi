@@ -21959,25 +21959,30 @@ charclass @var{class} と現在の charclass の結合(union)
 
 
 
-事前定義された charclasses と それらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、
-次に考えられる正規表現の代替が試行されるか、 mまたは、 ループが終了します。
+事前定義された文字クラス(charclasses)とそれらのテストと、 一般的なチェックがあります。  チェックが失敗した場合は、
+次に考えられる正規表現の代替が試行されるか、 または、 ループが終了(@i{leave})します(訳注: 基本的には、 チェックが成功した場合は
+@var{addr} を 1文字(char)分進めた @var{addr'} を返し、 失敗した場合はスタックに何も積まずに @i{leave}
+する)。
 
 @findex c? ( @var{ addr class --   } ) regexp-pattern
 @cindex @code{c?}
 @kindex c?
 @format
-@code{c?} ( @i{addr class --  }) regexp-pattern ``c?''
+@code{c?} ( @i{addr class -- addr' }) regexp-pattern ``c?''
 @end format
-@var{addr} の位置の char が charclass @var{class} に含まれているなら true
+文字クラス @var{class} にマッチ(@var{addr} の位置の char が charclass @var{class}
+に含まれているなら @var{addr} の 1 char 次のアドレスを @var{addr`} に返し、 含まれていないなら
+@code{leave} する)
 
 
 @findex -c? ( @var{ addr class --   } ) regexp-pattern
 @cindex @code{-c?}
 @kindex -c?
 @format
-@code{-c?} ( @i{addr class --  }) regexp-pattern ``-c?''
+@code{-c?} ( @i{addr class -- addr' }) regexp-pattern ``-c?''
 @end format
-check @var{addr} for not membership in charclass @var{class}
+文字クラス @var{class} 以外にマッチ(@var{addr} の位置の文字が charclass @var{class} に含まれていなければ
+@var{addr} の1文字後ろのアドレスを @var{addr'} に返し、含まれていたら @code{leave} する)
 
 
 @findex \d ( @var{ addr -- addr'   } ) regexp-pattern
@@ -21986,7 +21991,8 @@ check @var{addr} for not membership in charclass @var{class}
 @format
 @code{\d} ( @i{addr -- addr'  }) regexp-pattern ``\d''
 @end format
-check for digit
+数字([0-9])にマッチ(指定の @var{addr} の char が digit かどうか([0-9])しらべ、 そうなら @var{addr}
+の char 分次のアドレスを addr' に返す。 そうでなければ @code{leave} する)
 
 
 @findex \s ( @var{ addr -- addr'   } ) regexp-pattern
@@ -21995,7 +22001,8 @@ check for digit
 @format
 @code{\s} ( @i{addr -- addr'  }) regexp-pattern ``\s''
 @end format
-check for blanks
+非表示文字(\x00〜\x20)にマッチ(指定の @var{addr} の char が blanks かどうか([\x00-\x20])しらべ、
+そうなら @var{addr} の char 分次のアドレスを addr' に返す。 そうでなければ @code{leave} する)
 
 
 @findex .? ( @var{ addr -- addr'   } ) regexp-pattern
@@ -22004,7 +22011,8 @@ check for blanks
 @format
 @code{.?} ( @i{addr -- addr'  }) regexp-pattern ``.?''
 @end format
-check for any single charachter
+任意の1文字(char)にマッチ(任意の1文字(char)であれば次の文字のアドレスを @i{addr'} に返します。 そうでなければ
+@i{leave} します)
 
 
 @findex -\d ( @var{ addr -- addr'   } ) regexp-pattern
@@ -22013,7 +22021,8 @@ check for any single charachter
 @format
 @code{-\d} ( @i{addr -- addr'  }) regexp-pattern ``-\d''
 @end format
-check for not digit
+@i{addr} の文字が数字で無ければ([^0-9])次の文字のアドレスを @i{addr'} に返します。 そうでなければ @i{leave}
+します。
 
 
 @findex -\s ( @var{ addr -- addr'   } ) regexp-pattern
@@ -22022,37 +22031,39 @@ check for not digit
 @format
 @code{-\s} ( @i{addr -- addr'  }) regexp-pattern ``-\s''
 @end format
-check for not blank
+指定の @var{addr} の char が blanks で無いかどうか([^\x00-\x20])しらべ、 そうなら @var{addr} の
+char 分次のアドレスを @i{addr'} に返す。 そうでなければ @code{leave} する
 
 
 @findex ` ( @var{ "char" --   } ) regexp-pattern
 @cindex @code{`}
 @kindex `
 @format
-@code{`} ( @i{"char" --  }) regexp-pattern ```''
+@code{`} ( @i{addr "char" -- addr' }) regexp-pattern ```''
 @end format
-check for particular char
+指定の文字をチェックします。 @code{` c} の形で使用し、 @var{addr} の文字が 文字 c ならば、 次の文字へのアドレスを
+@var{addr'} に返し、そうでなければ @i{leave} します。
 
 
 @findex `? ( @var{ "char" --   } ) regexp-pattern
 @cindex @code{`?}
 @kindex `?
 @format
-@code{`?} ( @i{"char" --  }) regexp-pattern ```?''
+@code{`?} ( @i{addr "char" -- addr | addr' }) regexp-pattern ```?'' @*\ 訳注: @code{`? c}  @var{addr} の文字が c ならば @var{addr} をそのまま返す。 c でなければ次の文字へのアドレスを @var{addr'} に返す。
 @end format
 
 @findex -` ( @var{ "char" --   } ) regexp-pattern
 @cindex @code{-`}
 @kindex -`
 @format
-@code{-`} ( @i{"char" --  }) regexp-pattern ``-`''
+@code{-`} ( @i{addr "char" -- addr' }) regexp-pattern ``-`'' @*\ 訳注: @code{-` c} @var{addr} の文字が c でなければ次の文字へのアドレスを @var{addr'} に返す。 そうでなければ @i{leave} する。
 @end format
-check for particular char
+指定の文字をチェックします。 @code{` c} の形で使用し、 @var{addr} の文字が 文字 c ならば、 次の文字へのアドレスを
+@var{addr'} に返し、そうでなければ @i{leave} します。
 
 
 
-You can certainly also check for start and end of the string, and for whole
-string constants.
+明示的に文字列の開始と終了、および文字列定数全体をチェックすることもできます。
 
 @findex \^ ( @var{ addr -- addr   } ) regexp-pattern
 @cindex @code{\^}
@@ -22060,7 +22071,7 @@ string constants.
 @format
 @code{\^} ( @i{addr -- addr  }) regexp-pattern ``\^''
 @end format
-check for string start
+文字列の開始にマッチ
 
 
 @findex \$ ( @var{ addr -- addr   } ) regexp-pattern
@@ -22069,7 +22080,7 @@ check for string start
 @format
 @code{\$} ( @i{addr -- addr  }) regexp-pattern ``\$''
 @end format
-check for string end
+文字列の終了にマッチ
 
 
 @findex str=? ( @var{ addr1 addr u -- addr2   } ) regexp-pattern
@@ -22078,12 +22089,13 @@ check for string end
 @format
 @code{str=?} ( @i{addr1 addr u -- addr2  }) regexp-pattern ``str=?''
 @end format
-check for a computed string on the stack (possibly a backreference)
+指定の文字列 @i{addr u} にマッチ(等しい)するかどうかチェックします(マッチすれば文字列の次のアドレスを @i{addr2} に返します。
+マッチしない場合は @i{leave} します)
 
 
-doc-=''
+doc-='' (原文未記述)
 
-Loops that check for repeated character sets can be greedy or non-greedy.
+繰り返される文字セットをチェックするループは、 貪欲(greedy)または非貪欲(non-greedy)にすることができます。
 
 @findex @{** ( @var{ addr -- addr addr   } ) regexp-pattern
 @cindex @code{@{**}
@@ -22091,7 +22103,7 @@ Loops that check for repeated character sets can be greedy or non-greedy.
 @format
 @code{@{**} ( @i{addr -- addr addr  }) regexp-pattern ``begin-greedy-star''
 @end format
-greedy zero-or-more pattern
+貪欲な 0 個以上のパターンの開始
 
 
 @findex **@} ( @var{ sys --   } ) regexp-pattern
@@ -22100,7 +22112,7 @@ greedy zero-or-more pattern
 @format
 @code{**@}} ( @i{sys --  }) regexp-pattern ``end-greedy-star''
 @end format
-end of greedy zero-or-more pattern
+貪欲な 0 個以上のパターンの終わり
 
 
 @findex @{++ ( @var{ addr -- addr addr   } ) regexp-pattern
@@ -22109,7 +22121,7 @@ end of greedy zero-or-more pattern
 @format
 @code{@{++} ( @i{addr -- addr addr  }) regexp-pattern ``begin-greedy-plus''
 @end format
-greedy one-or-more pattern
+貪欲な 1 つ以上のパターンの開始
 
 
 @findex ++@} ( @var{ sys --   } ) regexp-pattern
@@ -22118,7 +22130,7 @@ greedy one-or-more pattern
 @format
 @code{++@}} ( @i{sys --  }) regexp-pattern ``end-greedy-plus''
 @end format
-end of greedy one-or-more pattern
+貪欲な 1 つ以上のパターンの終わり
 
 
 @findex @{* ( @var{ addr -- addr addr   } ) regexp-pattern
@@ -22127,7 +22139,7 @@ end of greedy one-or-more pattern
 @format
 @code{@{*} ( @i{addr -- addr addr  }) regexp-pattern ``begin-non-greedy-star''
 @end format
-non-greedy zero-or-more pattern
+非貪欲な 0 個以上のパターンの開始
 
 
 @findex *@} ( @var{ addr addr' -- addr'   } ) regexp-pattern
@@ -22136,7 +22148,7 @@ non-greedy zero-or-more pattern
 @format
 @code{*@}} ( @i{addr addr' -- addr'  }) regexp-pattern ``end-non-greedy-star''
 @end format
-end of non-greedy zero-or-more pattern
+非貪欲な 0 個以上のパターンの終わり
 
 
 @findex @{+ ( @var{ addr -- addr addr   } ) regexp-pattern
@@ -22145,7 +22157,7 @@ end of non-greedy zero-or-more pattern
 @format
 @code{@{+} ( @i{addr -- addr addr  }) regexp-pattern ``begin-non-greedy-plus''
 @end format
-non-greedy one-or-more pattern
+非貪欲な 1 つ以上のパターンの開始
 
 
 @findex +@} ( @var{ addr addr' -- addr'   } ) regexp-pattern
@@ -22154,12 +22166,11 @@ non-greedy one-or-more pattern
 @format
 @code{+@}} ( @i{addr addr' -- addr'  }) regexp-pattern ``end-non-greedy-plus''
 @end format
-end of non-greedy one-or-more pattern
+非貪欲な 1 つ以上のパターンの終わり
 
 
 
-Example: Searching for a substring really is a non-greedy match of anything
-in front of it.
+例: 部分文字列の検索は、 実際にはその前にあるものとの非貪欲な一致です。
 
 @findex // ( @var{ --   } ) regexp-pattern
 @cindex @code{//}
@@ -22167,11 +22178,15 @@ in front of it.
 @format
 @code{//} ( @i{--  }) regexp-pattern ``//''
 @end format
-search for string
+文字列内を検索(後続のパターンを文字列先頭ではなく文字列中でのマッチにする)(訳注:@*: ([0-9])  ( addr u -- )  (( \(
+\d \) )) IF ." [" \1 type ." ]" ELSE ." fail" THEN ;@*"0123" ([0-9])  [0]
+ok@*"A123" ([0-9])  fail ok@*: (//[0-9])  ( addr u -- )  (( // \( \d \) ))
+IF ." [" \1 type ." ]" ELSE ." fail" THEN ;.@*"0123" (//[0-9])  [0]
+ok@*"A123" (//[0-9])  [1] ok@*"ABC3" (//[0-9]) [3] ok)
 
 
 
-Alternatives are written with
+選択肢(alternative)は以下のように書きます。
 
 @findex @{@{ ( @var{ addr -- addr addr   } ) regexp-pattern
 @cindex @code{@{@{}
@@ -22179,7 +22194,7 @@ Alternatives are written with
 @format
 @code{@{@{} ( @i{addr -- addr addr  }) regexp-pattern ``begin-alternatives''
 @end format
-Start of alternatives
+選択肢(alternatives)の開始
 
 
 @findex || ( @var{ addr addr -- addr addr   } ) regexp-pattern
@@ -22188,7 +22203,7 @@ Start of alternatives
 @format
 @code{||} ( @i{addr addr -- addr addr  }) regexp-pattern ``next-alternative''
 @end format
-separator between alternatives
+選択肢の区切り文字
 
 
 @findex @}@} ( @var{ addr addr -- addr   } ) regexp-pattern
@@ -22197,12 +22212,11 @@ separator between alternatives
 @format
 @code{@}@}} ( @i{addr addr -- addr  }) regexp-pattern ``end-alternatives''
 @end format
-end of alternatives
+選択肢の終了
 
 
 
-You can use up to 9 variables named @code{\1} to @code{\9} to refer to
-matched substrings
+@code{\1} ～ @code{\9} という名前の変数を最大 9 つ使用して、 一致した部分文字列を参照できます
 
 @findex \( ( @var{ addr -- addr   } ) regexp-pattern
 @cindex @code{\(}
@@ -22210,7 +22224,7 @@ matched substrings
 @format
 @code{\(} ( @i{addr -- addr  }) regexp-pattern ``\(''
 @end format
-start of matching variable; variables are referred as \\1--9
+マッチング変数の開始;変数は \\1〜9 として参照されます
 
 
 @findex \) ( @var{ addr -- addr   } ) regexp-pattern
@@ -22219,7 +22233,7 @@ start of matching variable; variables are referred as \\1--9
 @format
 @code{\)} ( @i{addr -- addr  }) regexp-pattern ``\)''
 @end format
-end of matching variable
+マッチング変数の終わり
 
 
 @findex \0 ( @var{ -- addr u   } ) regexp-pattern
@@ -22228,11 +22242,11 @@ end of matching variable
 @format
 @code{\0} ( @i{-- addr u  }) regexp-pattern ``\0''
 @end format
-the whole string
+文字列全体
 
 
 
-Certainly, you can also write code to replace patterns you found.
+もちろん、 あなたは、 見つけたパターンを置換するコードを作成することもできます。
 
 @findex s>> ( @var{ addr -- addr   } ) regexp-replace
 @cindex @code{s>>}
@@ -22240,7 +22254,7 @@ Certainly, you can also write code to replace patterns you found.
 @format
 @code{s>>} ( @i{addr -- addr  }) regexp-replace ``s>>''
 @end format
-Start replace pattern region
+置換パターン領域の開始
 
 
 @findex >> ( @var{ addr -- addr   } ) regexp-replace
@@ -22249,8 +22263,7 @@ Start replace pattern region
 @format
 @code{>>} ( @i{addr -- addr  }) regexp-replace ``>>''
 @end format
-Start arbitrary replacement code, the code shall compute a string on the
-stack and pass it to @code{<<}
+任意の置換コードを開始し、 コードはスタック上の文字列を評価し、 それを @code{<<} に渡します。
 
 
 @findex << ( @var{ run-addr addr u -- run-addr   } ) regexp-replace
@@ -22259,7 +22272,7 @@ stack and pass it to @code{<<}
 @format
 @code{<<} ( @i{run-addr addr u -- run-addr  }) regexp-replace ``<<''
 @end format
-Replace string from start of replace pattern region with @var{addr} @var{u}
+置換パターン領域の先頭から、 指定の文字列 @var{addr} @var{u} に置換します
 
 
 @findex <<" ( @var{ "string<">" --   } ) regexp-replace
@@ -22268,7 +22281,7 @@ Replace string from start of replace pattern region with @var{addr} @var{u}
 @format
 @code{<<"} ( @i{"string<">" --  }) regexp-replace ``<<"''
 @end format
-Replace string from start of replace pattern region with @var{string}
+置換パターン領域の先頭から文字列を @var{string} に置換します(訳注: @code{<<\ hogehoge} と使用する)
 
 
 @findex s// ( @var{ addr u -- ptr   } ) regexp-replace
@@ -22277,7 +22290,7 @@ Replace string from start of replace pattern region with @var{string}
 @format
 @code{s//} ( @i{addr u -- ptr  }) regexp-replace ``s//''
 @end format
-start search/replace loop
+検索/置換 ループの開始
 
 
 @findex //s ( @var{ ptr --   } ) regexp-replace
@@ -22286,7 +22299,7 @@ start search/replace loop
 @format
 @code{//s} ( @i{ptr --  }) regexp-replace ``//s''
 @end format
-search end
+検索の終わり
 
 
 @findex //o ( @var{ ptr addr u -- addr' u'   } ) regexp-replace
@@ -22295,7 +22308,7 @@ search end
 @format
 @code{//o} ( @i{ptr addr u -- addr' u'  }) regexp-replace ``//o''
 @end format
-end search/replace single loop
+検索/置換 の単一ループの終了
 
 
 @findex //g ( @var{ ptr addr u -- addr' u'   } ) regexp-replace
@@ -22304,11 +22317,11 @@ end search/replace single loop
 @format
 @code{//g} ( @i{ptr addr u -- addr' u'  }) regexp-replace ``//g''
 @end format
-end search/replace all loop
+検索/置換 の全てのループの終了
 
 
 
-Examples can be found in @code{test/regexp-test.fs}.
+これらの使用例は @code{test/regexp-test.fs} にあります。
 
 @c -------------------------------------------------------------
 @node Programming Tools, Multitasker, Regular Expressions, Words
