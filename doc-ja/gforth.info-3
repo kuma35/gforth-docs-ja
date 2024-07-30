@@ -3618,8 +3618,8 @@ object variable)を持ち、 プリミティブの ‘>o’ と ‘o>’ を使�
 ‘rec-moof2’ がアクティブ化されます。
 
 ‘rec-moof2’ ( addr u – xt translate-moof2 | notfound  ) mini-oof2 “rec-moof2”
-   この認識器は非常に単純なドット・パーサ(dot-parser)で、
-‘.’SELECTOR/IVAR を ‘>o’ SELECTOR/IVAR ‘o>’ に変換します。
+   この認識器は非常に単純なドット・パーサ(dot-parser)で、 ‘.SELECTOR’ や
+‘.IVAR’ を ‘>o SELECTOR o>’ や ‘>o IVAR o>’ に変換します。
 
    セレクターにメソッドを割り当てるには、 XT CLASS ‘is’ SELECTOR を使用
 するため、 ‘defines’ は必要ありません。 メソッドの早期結び付け(early
@@ -3736,30 +3736,30 @@ Gforth は、 パターン・マッチングのためのバックトラッキン
    正規表現ブロックの終了
 
    正規表現のパターン・マッチングには要素として文字セットがあるため、 多
-くの機能を使用して文字セット(‘charclass’ と呼ばれる)を作成・変更できます
-。 ここでの文字はすべてバイトであるため、 これはユニコード文字には適用さ
-れません。
+くの機能を使用して文字クラス(‘charclass’ と呼ばれる)を作成・変更できます
+。 ここでの文字はすべてバイトであるため、 ユニコード文字用には拡張されま
+せん。
 
 ‘charclass’ ( –  ) regexp-cg “charclass”
-   charclass を作成します
+   文字クラスを作成します
 
 ‘+char’ ( char –  ) regexp-cg “+char”
-   現在の charclass に char を追加します
+   現在の文字クラスに char を追加します
 
 ‘-char’ ( char –  ) regexp-cg “-char”
-   現在の charclass から char を削除します
+   現在の文字クラスから char を削除します
 
 ‘..char’ ( start end –  ) regexp-cg “..char”
-   char の範囲を現在の charclass に追加します
+   char の範囲(start 〜 end)を現在の文字クラスに追加します
 
 ‘+chars’ ( addr u –  ) regexp-cg “+chars”
-   charの文字列(string)を現在の charclass に追加します
+   charの文字列(string)を現在の文字クラスに追加します
 
 ‘+class’ ( class –  ) regexp-cg “+class”
-   charclass CLASS と現在の charclass の結合(union)
+   文字クラス CLASS と現在の文字クラスの結合(union)
 
 ‘-class’ ( class –  ) regexp-cg “-class”
-   現在の charclass から charclass CLASS を抜き取ります(subtract)。
+   現在の文字クラスから、 文字クラス CLASS を抜き取ります(subtract)。
 
    事前定義された文字クラス(charclasses)とそれらのテストと、 一般的なチ
 ェックがあります。 チェックが失敗した場合は、 次に考えられる正規表現の代
@@ -3768,12 +3768,12 @@ Gforth は、 パターン・マッチングのためのバックトラッキン
 した場合はスタックに何も積まずに leave する)。
 
 ‘c?’ ( addr class – addr’ ) regexp-pattern “c?”
-   文字クラス CLASS にマッチ(ADDR の位置の char が charclass CLASS に含
+   文字クラス CLASS にマッチ(ADDR の位置の char が文字クラス CLASS に含
 まれているなら ADDR の 1 char 次のアドレスを ADDR‘ に返し、 含まれていな
 いなら ‘leave’ する)
 
 ‘-c?’ ( addr class – addr’ ) regexp-pattern “-c?”
-   文字クラス CLASS 以外にマッチ(ADDR の位置の文字が charclass CLASS に
+   文字クラス CLASS 以外にマッチ(ADDR の位置の文字が文字クラス CLASS に
 含まれていなければ ADDR の1文字後ろのアドレスを ADDR’ に返し、含まれてい
 たら ‘leave’ する)
 
@@ -3900,18 +3900,18 @@ ELSE ."  fail" THEN ;.
 もできます。
 
 ‘s>>’ ( addr – addr  ) regexp-replace “s>>”
-   置換パターン領域の開始
+   検索/置換 の置換パターン領域の開始
 
 ‘>>’ ( addr – addr  ) regexp-replace “>>”
    任意の置換コードを開始し、 コードはスタック上の文字列を評価し、 それ
 を ‘<<’ に渡します。
 
 ‘<<’ ( run-addr addr u – run-addr  ) regexp-replace “<<”
-   置換パターン領域の先頭から、 指定の文字列 ADDR U に置換します
+   置換パターン領域の先頭からを、 指定の文字列 ADDR U に置換します
 
 ‘<<"’ ( "string<">" –  ) regexp-replace “<<"”
-   置換パターン領域の先頭から文字列を STRING に置換します(訳注: ‘<<\
-hogehoge’ と使用する)
+   置換パターン領域の先頭から文字列を STRING に置換します(訳注: 使い方:
+‘<<" STRING’ )
 
 ‘s//’ ( addr u – ptr  ) regexp-replace “s//”
    検索/置換 ループの開始
@@ -3953,75 +3953,76 @@ File: gforth.info,  Node: Locating source code definitions,  Next: Locating uses
 6.26.1 Locating source code definitions
 ---------------------------------------
 
-Many programming systems are organized as an integrated development
-environment (IDE) where the editor is the hub of the system, and allows
-building and running programs.  If you want that, Gforth has it, too
-(*note Emacs and Gforth::).
+多くのプログラミング・システムは、 エディターがシステムのハブとなり、 プ
+ログラムを構築して実行できる統合開発環境(IDE)として編成されています。 そ
+れが必要な場合は、Gforth にもそれがあります(*note Emacs and Gforth::)。
 
-   However, several Forth systems have a different kind of IDE: The
-Forth command line is the hub of the environment; you can view the
-source from there in various ways, and call an editor if needed.
+   しかしながら、いくつかの Forth システムには異なる種類の IDE を持って
+います: Forth コマンド・ラインが開発環境のハブです。 そこからさまざまな
+方法でソースを表示し、 必要に応じてエディターを呼び出すことができます。
 
-   Gforth also implements such an IDE. It mostly follows the conventions
-of SwiftForth where they exist, but implements features beyond them.
+   gforth もそのような IDE を実装しています。 gforth は SwiftForth の慣
+習をほぼ踏襲していますが、 それ以上の機能を実装しています。
 
-   An advantage of this approach is that it allows you to use your
-favourite editor: set the environment variable ‘EDITOR’ to your
-favourite editor, and the editing commands will call that editor; Gforth
-invokes some GUI editors in the background (so you do not need to finish
-editing to continue with your Forth session), terminal editors in the
-foreground (default for editors not known to Gforth is foreground).  If
-you have not set ‘EDITOR’, the default editor is ‘vi’.
+   このアプローチの利点は、 お気に入りのエディターを使用できることです。
+環境変数 ‘EDITOR’ をお気に入りのエディターに設定すると、 編集コマンドが
+そのエディターを呼び出します。 Gforth はバックグラウンドでいくつかの GUI
+エディターを呼び出し(そのため、 Forth セッションは続行するので、 編集を
+終了する必要はありません)、 ターミナル上のエディターはフォアグラウンドで
+呼び出します(Gforth に認識されないエディターのデフォルトはフォアグラウン
+ドです)。 ‘EDITOR’ を設定していない場合、 デフォルトのエディターは ‘vi’
+です。
 
 ‘locate’ ( "name" –  ) gforth-1.0 “locate”
-   Show the source code of the word name and set the current location
-there.
+   ワード name のソース・コードを表示し、 現在位置(current location)をそ
+こに設定します。
 
-   doc-xt-locate
+   doc-xt-locate(原文 未記述)
 
-   The _current location_ is set by a number of other words in addition
-to ‘locate’.  Also, when an error happens while loading a file, the
-location of the error becomes the current location.
+   「現在位置」(current location)は、 ‘locate’ に加えて、 他の多くのワー
+ドによって設定されます。 また、 ファイルのロード中にエラーが発生した場合
+、 エラーの場所が現在位置になります。
 
-   A number of words work with the current location:
+   多くのワードが現在位置(current location)で機能します:
 
 ‘l’ ( –  ) gforth-1.0 “l”
-   Display source code lines at the current location.
+   現在位置(current location)のソースコードの行達を表示します。
 
 ‘n’ ( –  ) gforth-1.0 “n”
-   Display lines behind the current location, or behind the last ‘n’ or
-‘b’ output (whichever was later).
+   現在位置より後ろの行、 または最後の ‘n’ または ‘b’ 出力より後ろの行を
+表示します。
 
 ‘b’ ( –  ) gforth-1.0 “b”
-   Display lines before the current location, or before the last ‘n’ or
-‘b’ output (whichever was later).
+   現在位置より前の行、 または最後の ‘n’ または ‘b’ 出力より前の行を表示
+します。
 
 ‘g’ ( –  ) gforth-0.7 “g”
-   Enter the editor at the current location, or at the start of the last
-‘n’ or ‘b’ output (whichever was later).
+   現在位置、 または最後の ‘n’ または ‘b’ 出力の先頭からエディターに入り
+ます。
 
-   You can control how many lines ‘l’, ‘n’ and ‘b’ show by changing the
-values:
+   以下の値を変更することで、 ‘l’ や ‘n’ や ‘b’ で表示する行数を制御でき
+ます:
 
 ‘before-locate’ ( – u  ) gforth-1.0 “before-locate”
-   number of lines shown before current location (default 3).
+   現在位置の前に表示される行数(デフォルトは 3)。
 
 ‘after-locate’ ( – u  ) gforth-1.0 “after-locate”
-   number of lines shown after current location (default 12).
+   現在位置の後に表示される行数 (デフォルトは 12)。
 
-   Finally, you can directly go to the source code of a word in the
-editor with
+   最後に、以下を使用すると、 エディターを開いて当該ワードのソース・コー
+ドに直接移動できます。
 
 ‘edit’ ( "name" –  ) gforth-1.0 “edit”
-   Enter the editor at the location of "name"
+   "name" の場所でエディターを起動します。
 
-   You can see the definitions of similarly-named words with
+   以下を使用すると、 似た名前のワードの定義を確認できます
 
 ‘browse’ ( "subname" –  ) gforth-1.0 “browse”
-   Show all places where a word with a name that contains subname is
-defined (‘mwords’-like, *note Word Lists::).  You can then use ‘ww’,
-‘nw’ or ‘bw’ (*note Locating uses of a word::) to inspect specific
-occurences more closely.
+   (‘mwords’ のように、) subname を名前の一部に含むワードが定義されてい
+るすべての場所を表示します(*note Word Lists::)。 その後、 ‘ww’ または
+‘nw’ または ‘bw’ (*note Locating uses of a word::) を使用して、 特定の場
+所をより詳細に調査できます(訳注: 表示結果各行末尾の数(インデックス)を指
+定して、 ‘ww’ で当該の場所の内容を閲覧する、 等)
 
 
 File: gforth.info,  Node: Locating uses of a word,  Next: Locating exception source,  Prev: Locating source code definitions,  Up: Programming Tools
@@ -4030,55 +4031,63 @@ File: gforth.info,  Node: Locating uses of a word,  Next: Locating exception sou
 ------------------------------
 
 ‘where’ ( "name" –  ) gforth-1.0 “where”
-   Show all places where name is used (text-interpreted).  You can then
-use ‘ww’, ‘nw’ or ‘bw’ to inspect specific occurences more closely.
-Gforth’s ‘where’ does not show the definition of name; use ‘locate’ for
-that.
+   name が「使用されている」すべての場所を表示します(テキスト・インタプ
+リタ時)。 その後、 ‘ww’ または ‘nw’ または ‘bw’ を使用して、 特定の場所
+をより詳細に調べられます。 gforth の ‘where’ では name の定義は表示され
+ません。 そのためには ‘locate’ を使用してください。
 
 ‘ww’ ( u –  ) gforth-1.0 “ww”
-   The next ‘l’ or ‘g’ shows the ‘where’ result with index u
+   その後の ‘l’ や ‘g’ で閲覧する場所をインデックス u で指定します。 こ
+こで、 インデックスは ‘browse’ や ‘where’ で表示した際の行末尾の数字です
+。
 
 ‘nw’ ( –  ) gforth-1.0 “nw”
-   The next ‘l’ or ‘g’ shows the next ‘where’ result; if the current one
-is the last one, after ‘nw’ there is no current one.  If there is no
-current one, after ‘nw’ the first one is the current one.
+   次の ‘l’ または ‘g’ では、 ‘browse’ または ‘where’ の次の行の場所を表
+示します。 現在位置(current location)が ‘browse’ や ‘where’ の表示の最後
+のモノである場合、 ‘nw’ の後には何も無いです。 現在位置(current
+location)がまだ設定されていない時は、 ‘nw’ の後は、 ‘browse’ や ‘where’
+の表示の最初のものが現在位置(current location)になります。
 
 ‘bw’ ( –  ) gforth-1.0 “bw”
-   The next ‘l’ or ‘g’ shows the previous ‘where’ result; if the current
-one is the first one, after ‘bw’ there is no current one.  If there is
-no current one, after ‘bw’ the last one is the current one.
+   次の ‘l’ または ‘g’ では、 ‘browse’ または ‘where’ の前の行の場所を表
+示します。 現在位置(current location)が ‘browse’ や ‘where’ の表示の最初
+のモノである場合、 ‘bw’ の後には何も無いです。 現在位置(current
+location)がまだ設定されていない時は、 ‘nw’ の後は、 ‘browse’ や ‘where’
+の表示の最後のものが現在位置(current location)になります。
 
 ‘gg’ ( –  ) gforth-1.0 “gg”
-   The next ‘ww’, ‘nw’, ‘bw’, ‘bb’, ‘nb’, ‘lb’ (but not ‘locate’,
-‘edit’, ‘l’ or ‘g’) puts it result in the editor (like ‘g’).  Use ‘gg
-gg’ to make this permanent rather than one-shot.
+   このワードの次の ‘ww’ や ‘nw’ や ‘bw’ や ‘bb’ や ‘nb’ や ‘lb’ (ただし
+、 ‘locate’ や ‘edit’ や ‘l’ や ‘g’ は除く)は、 その結果を(‘g’ のように
+)エディターに流し込みます。 これをこの場限り(one-shot)では無くく永続的に
+するには、 ‘gg gg’ を使用します。
 
 ‘ll’ ( –  ) gforth-1.0 “ll”
-   The next ‘ww’, ‘nw’, ‘bw’, ‘bb’, ‘nb’, ‘lb’ (but not ‘locate’,
-‘edit’, ‘l’ or ‘g’) displays in the Forth system (like ‘l’).  Use ‘ll
-ll’ to make this permanent rather than one-shot.
+   このワードの次の ‘ww’ や ‘nw’ や ‘bw’ や ‘bb’ や ‘nb’ や ‘lb’ (ただし
+、 ‘locate’ や ‘edit’ や ‘l’ や ‘g’ は除く)は(‘l’ のように) Forth システ
+ムに表示されます。 これを1回限りではなく永続的にするには、 ‘ll ll’ を使
+用します。
 
 ‘whereg’ ( "name" –  ) gforth-1.0 “whereg”
-   Like ‘where’, but puts the output in the editor.  In Emacs, you can
-then use the compilation-mode commands (*note (emacs)Compilation Mode::)
-to inspect specific occurences more closely.
+   ‘where’ と似ていますが、 出力をエディターに流し込みます。 Emacs では
+、コンパイル・モード・コマンド (*note (emacs)Compilation Mode::) を使用
+して、 特定の箇所をより詳細に調査できます。
 
 ‘short-where’ ( –  ) gforth-1.0 “short-where”
-   Set up ‘where’ to use a short file format (default).
+   短いファイル形式を使用するように ‘where’ を設定します(デフォルト)。
 
 ‘expand-where’ ( –  ) gforth-1.0 “expand-where”
-   Set up ‘where’ to use a fully expanded file format (to pass to e.g.
-editors).
+   完全に拡張されたファイル形式を使用するように ‘where’ を設定します(例
+えば、 エディターなどに渡すためです)。
 
 ‘prepend-where’ ( –  ) gforth-1.0 “prepend-where”
-   Set up ‘where’ to show the file on a separate line, followed by
-‘where’ lines without file names (like SwiftForth).
+   ‘where’ を設定してファイルを別の行に表示し、 その後にファイル名のない
+‘where’ 行が続きます(SwiftForth 風)。
 
-   The data we have on word usage also allows us to show which words
-have no uses:
+   ワードの使用状況に関するデータを利用すると、 どのワードが使用されてい
+ないのかを表示することもできます:
 
 ‘unused-words’ ( –  ) gforth-1.0 “unused-words”
-   list all words without usage
+   使用されていないすべてのワードをリストします
 
 
 File: gforth.info,  Node: Locating exception source,  Next: Examining compiled code,  Prev: Locating uses of a word,  Up: Programming Tools
@@ -4087,10 +4096,13 @@ File: gforth.info,  Node: Locating exception source,  Next: Examining compiled c
 --------------------------------
 
 ‘tt’ ( u –  ) gforth-1.0 “tt”
+\ 訳注: エラー表示時の Backtrace: で表示される番号を指定して、その場所を表示します。
 
 ‘nt’ (  –  ) gforth-1.0 “nt”
+\ 訳注: ‘tt’ の次の backtrace 行の場所を表示します。
 
 ‘bt’ ( –  ) gforth-1.0 “bt”
+\ 訳注: ‘tt’ で表示した1行前の backtrace 行の場所を表示します。
 
 
 File: gforth.info,  Node: Examining compiled code,  Next: Examining data,  Prev: Locating exception source,  Up: Programming Tools
@@ -4098,54 +4110,59 @@ File: gforth.info,  Node: Examining compiled code,  Next: Examining data,  Prev:
 6.26.4 Examining compiled code
 ------------------------------
 
-And finally, ‘see’ and friends show compiled code.  Some of the things
-in the source code are not present in the compiled code (e.g.,
-formatting and comments), but this is useful to see what threaded code
-or native code is produced by macros and Gforth’s optimization features.
+そして最後に、 ‘see’ とそのファミリーが、 コンパイル済のコードの表示を行
+います。 ソース・コード内の一部の内容は、 コンパイルされたコードには存在
+しません(書式設定やコメント等)。 しかし、 これは、 マクロや Gforth の最
+適化機能によってどのようなスレッド化コード(threaded code)やネイティブ・
+コード(native code)が生成されるかを確認するのに役立ちます。
 
 ‘see’ ( "<spaces>name" –  ) tools “see”
-   Locate NAME using the current search order.  Display the definition
-of NAME.  Since this is achieved by decompiling the definition, the
-formatting is mechanised and some source information (comments,
-interpreted sequences within definitions etc.)  is lost.
+   現在の検索順序(search order)を使用して NAME を ‘locate’ します。
+‘locate’ できたら、 その定義を表示します。 これは定義を逆コンパイルする
+ことで実現されるため、 書式は機械化され、 一部のソース情報(コメントや定
+義内のインタプリトされたシーケンスなど)は失われます。
 
 ‘xt-see’ ( xt –  ) gforth-0.2 “xt-see”
-   Decompile the definition represented by xt.
+   xt で表される定義を逆コンパイルします。
 
 ‘simple-see’ ( "name" –  ) gforth-0.6 “simple-see”
-   Decompile the colon definition name, showing a line for each cell,
-and try to guess a meaning for the cell, and show that.
+   コロン定義 name を逆コンパイルして各セルごとに行表示し、 セルの意味を
+推測してそれを表示します。
 
 ‘xt-simple-see’ ( xt –  ) gforth-1.0 “xt-simple-see”
-   Decompile the colon definition xt like ‘simple-see’
+   ‘simple-see’ のようにコロン定義 xt を逆コンパイルします。
 
 ‘simple-see-range’ ( addr1 addr2 –  ) gforth-0.6 “simple-see-range”
-   Decompile code in [addr1,addr2) like ‘simple-see’
+   [addr1,addr2) ( addr1 <= and < addr2 )の範囲のコードを ‘simple-see’ の
+ように逆コンパイルします
 
 ‘see-code’ ( "name" –  ) gforth-0.7 “see-code”
-   Like ‘simple-see’, but also shows the dynamic native code for the
-inlined primitives.  For static superinstructions, it shows the
-primitive sequence instead of the first primitive (the other primitives
-of the superinstruction are shown, too).  For primitives for which
-native code is generated, it shows the number of stack items in
-registers at the beginning and at the end (e.g., ‘1->1’ means 1 stack
-item is in a register at the start and at the end).  For each primitive
-or superinstruction with native code, the inline arguments and component
-primitives are shown first, then the native code.
+   ‘simple-see’ と似ていますが、 インライン化されたプリミティブの動的ネ
+イティブ・コード(dynamic native code)も表示されます。 静的命令融合
+(superinstructions)の場合、 最初のプリミティブではなくプリミティブ・シー
+ケンスが表示されます(命令融合(superinstructions)の他のプリミティブも表示
+されます)。 ネイティブ・コードが生成されるプリミティブの場合、 最初と最
+後のレジスタ内のスタック項目の数が表示されます(たとえば、 ‘1->1’ は、 最
+初と最後のレジスタに 1 つのスタック項目があることを意味します)。 ネイテ
+ィブ・コードを使用した各プリミティブまたは命令融合(superinstructions)に
+ついては、 インライン引数とコンポーネント・プリミティブが最初に表示され
+、 次にネイティブ・コードが表示されます。
 
 ‘xt-see-code’ ( xt –  ) gforth-1.0 “xt-see-code”
-   Decompile the colon definition xt like ‘see-code’.
+   コロン定義 xt を ‘see-code’ のように逆コンパイルします。
 
 ‘see-code-range’ ( addr1 addr2 –  ) gforth-0.7 “see-code-range”
-   Decompile code in [addr1,addr2) like ‘see-code’.
+   [addr1,addr2) ( addr1 <= and < addr2 )の範囲のコードを ‘see-code’ の
+ように逆コンパイルします。
 
-   As an example, consider:
+   例として、 以下について考えてみましょう:
 
      : foo x f@ fsin drop over ;
 
-   This is not particularly useful, but it demonstrates the various code
-generation differences.  Compiling this on ‘gforth-fast’ on AMD64 and
-then using ‘see-code foo’ outputs:
+   この例は特に役に立つわけではありませんが、 さまざまなコード生成の違い
+を示しています。 これを AMD64 の ‘gforth-fast’ でコンパイルし、
+‘see-code foo’ を使用すると以下の出力が得られます(訳注: OSのコマンドライ
+ンから、 ‘gforth’ ではなくて ‘gforth-fast’ で起動する):
 
      $7FD0CEE8C510 lit f@     1->1
      $7FD0CEE8C518 x
@@ -4170,49 +4187,57 @@ then using ‘see-code foo’ outputs:
      7FD0CEB516CB:   mov     rcx,-$08[r13]
      7FD0CEB516CF:   jmp     ecx
 
-   First, you see a threaded-code cell for a static superinstruction
-with the components ‘lit’ and ‘f@’, starting and ending with one data
-stack item in a register (‘1->1’); this is followed by the cell for the
-argument ‘x’ of ‘lit’, and the cell for the ‘f@’ component of the
-superinstruction; the latter cell is not used, but is there for
-Gforth-internal reasons.
+   まず、 コンポーネント ‘lit’ と ‘f@’ を含む静的命令融合
+(superinstruction)のスレッド化コード・セルが表示されます。 それは、 レジ
+スタ内の 1 つのデータ・スタック項目 (‘1->1’) で始まり・終わります。 )。
+これに、‘lit’ の引数 ‘x’ のセルと、 命令融合の ‘f@’ コンポーネントのセル
+が続きます。 後者のセルは使用されませんが、 Gforth 内部の理由により存在
+します。
 
-   Next, the dynamically generated native code for the superinstruction
-‘lit f@’ is shown; note that this native code is not mixed with the
-threaded code in memory, as you can see by comparing the addresses.
+   その次に、 命令融合 ‘lit f@’ に対して動的に生成されたネイティブ・コー
+ドを表示します。 注意: アドレスを比較するとわかるように、 このネイティブ
+・コードはメモリ内のスレッド化コードと混合されていない(not mixed)ことに
+注意してください。
 
-   If you want to understand the native code shown here: the
-threaded-code instruction pointer is in ‘r13’, the data stack pointer in
-‘r15’; the first data stack register is ‘r8’ (i.e., the top of stack
-resides there if there is one data stack item in a register); the return
-stack pointer is in ‘rbx’, the FP stack pointer in ‘r12’, and the top of
-the floating-pont stack in ‘xmm15’.  Note that the register assignments
-vary between engines, so you may see a different register assignment for
-this code.
+   ここに表示されているネイティブ・コードを理解するには、以下のレジスタ
+について知っておくべきです:
+スレッド化コードの命令ポインタは ‘r13’
+データ・スタック・ポインタは ‘r15’
+最初(TOS)のデータ・スタック・レジスタは ‘r8’ (データ・スタックのTOS、 つ
+まり、 レジスタにデータ・スタック項目が 1 つある場合、 スタックのTOSがそ
+こに存在します)
+リターン・スタック ポインタは ‘rbx’
+FP スタック・ポインタは ‘r12’
+FP スタックの先頭(TOS)は ‘xmm15’
+注意: レジスタの割り当てはエンジンによって異なるため、 コード表示におい
+ては異なるレジスタの割り当てが表示される場合があることに注意してください
+。
 
-   The dynamic native code for ‘lit f@’ ends with a dispatch jump (aka
-NEXT), because the code for the next word ‘fsin’ in the definition is
-not dynamically generated.
+   ‘lit f@’ の動的ネイティブ・コードは、 ディスパッチ・ジャンプ(dispatch
+jump;別名 NEXT)(訳注: 古典的には内部インタプリタへ制御を戻すためのジャン
+プ)で終了します。 これは、 定義内の次のワード ‘fsin’ のネイティブ・コー
+ドは動的に生成しないためです。
 
-   Next, you see the threaded-code cell for ‘fsin’.  There is no
-dynamically-generated native code for this word, and ‘see-code’ does not
-show the static native code for it (you can look at it with ‘see fsin’).
-Like all words with static native code in ‘gforth-fast’, the effect on
-the data stack representation is ‘1->1’ (for ‘gforth’, ‘0->0’), but this
-is not shown.
+   次に、 ‘fsin’ のスレッド化コード・セルが表示されます。 このワードには
+動的に生成されるネイティブ・コードはなく、 ‘see-code’ では静的ネイティブ
+・コードは表示されません(‘fsin’ の静的ネイティブ・コードを確認したければ
+‘see fsin’)。 ‘gforth-fast’ 内の静的ネイティブ・コードを含むすべてのワー
+ドと同様、 データ・スタック表現への影響は ‘1->1’ (‘gforth’ エンジンでは
+‘0->0’) です。 しかし、 これは表示されません。
 
-   Next, you see the threaded-code cell for ‘drop’; the native-code
-variant used here starts with one data stack item in registers, and ends
-with zero data stack items in registers (‘1->0’).  This is followed by
-the native code for this variant of ‘drop’.  There is no NEXT here,
-because the native code falls through to the code for the next word.
+   次に、 ‘drop’ のスレッド化コード・セルが表示されます。 ここで使用され
+るネイティブ・コード版のバリエーションは、 レジスタ内の 1 つのデータ・ス
+タック項目で始まり、 レジスタ内の 0 個のデータ スタック項目で終わります
+(‘1->0’)。 この後に ‘drop’ のこのバリエーションのネイティブ・コードが続
+きます。 ここのネイティブ・コードは次のワードのコードに続くため、 ここに
+は NEXT はありません。
 
-   Next, you see the threaded-code cell for ‘over’ followed by the
-dynamically-generated native code in the ‘0->1’ variant.
+   次に、 ‘over’ のスレッド化コード・セルと、 その後に ‘0->1’ バリエーシ
+ョンで動的に生成されたネイティブ・コードが表示されます。
 
-   Finally, you see the threaded and native code for ‘;s’ (the primitive
-compiled for ‘;’ in ‘foo’).  ‘;s’ performs control flow (it returns), so
-it has to end with a NEXT.
+   最後に、 ‘;s’ のスレッド化されたネイティブ・コード(‘foo’ 内の ‘;’ 用
+にコンパイルされたプリミティブ)が表示されます。 ‘;s’ は制御フローを実行
+する(制御フローからリターンする)ため、 NEXT で終了する必要があります。
 
 
 File: gforth.info,  Node: Examining data,  Next: Forgetting words,  Prev: Examining compiled code,  Up: Programming Tools
@@ -5819,182 +5844,4 @@ parameters are cleaned up by the caller.
 
    For examples of 386 ‘abi-code’ words, see *note Assembler
 Definitions::.
-
-
-File: gforth.info,  Node: AMD64 Assembler,  Next: Alpha Assembler,  Prev: 386 Assembler,  Up: Assembler and Code Words
-
-6.29.5 AMD64 (x86_64) Assembler
--------------------------------
-
-AMD64 アセンブラは、 386 アセンブラをわずかに変更したバージョンであり、
-構文の大部分を共有しています。 2 つの新しい接頭辞 ‘.q’ と ‘.qa’ が、 そ
-れぞれ 64 ビット・サイズのオペランドやアドレスを選択するために提供されて
-います。 64 ビット・サイズがデフォルトであるため、 通常は他のプレフィッ
-クスを使用するだけで済みます。 また、 追加のレジスタ・オペランド ‘R8’ ～
-‘R15’ もあります。
-
-   レジスタには「e」または「r」プレフィックスがありません。 64 ビット・
-モードでも、 ‘rax’ は ‘ax’ と呼ばれます。 すべてのレジスタで最下位バイト
-を参照するために追加のレジスタ・オペランドを使用できます: ‘R8L’ 〜
--‘R15L’, ‘SPL’, ‘BPL’, ‘SIL’, ‘DIL’
-
-   Linux-AMD64 の呼び出し規則では、 最初の 6 つの整数パラメーターを rdi,
-rsi, rdx, rcx, r8, r9 で渡し、 結果を rax , rdx で返します。 最初の 8 つ
-の FP パラメータを xmm0 ～ xmm7 に渡し、 FP 結果を xmm0 ～ xmm1 に返しま
-す。 したがって、‘abi-code’ ワードは、 ‘di’ でデータ・スタック・ポインタ
-を取得し、 ‘si’ で FP スタック・ポインタのアドレスを取得し、 リターン時
-は ‘ax’ にデータ・スタック ポインタをセットします。 呼び出し元が保存する
-他のレジスタは、 r10, r11 xmm8 ～ xmm15 です。 この呼び出し規約は、
-Microsoft 以外の他の OS でも使用されていると報告されています。
-
-   Windows x64 は、 最初の 4 つの整数パラメータを rcx, rdx, r8, r9 に渡
-し、 整数の結果を rax に返します。 他の、呼び出し元保存レジスタは r10 と
-r11 です。
-
-   <https://uclibc.org/docs/psABI-x86_64.pdf> の 21ページによると、
-Linux プラットフォームでは、 レジスタ AX CX DX SI DI R8 R9 R10 R11 が自
-由(scratch)に使えます。
-
-   AMD64 のアドレッシング・モードは以下のとおりです:
-
-     \ ご注意: ワード A を実行すると、レジスタが初期化されていないため、 メモリ・エラーが発生します ;-)
-     ABI-CODE A  ( -- )
-         500        #               AX  MOV     \ immediate
-             DX              AX  MOV     \ register
-             200             AX  MOV     \ direct addressing
-             DX  )           AX  MOV     \ indirect addressing
-         40  DX  D)          AX  MOV     \ base with displacement
-             DX  CX      I)  AX  MOV     \ scaled index
-             DX  CX  *4  I)  AX  MOV     \ scaled index
-         40  DX  CX  *4  DI) AX  MOV     \ scaled index with displacement
-
-             DI              AX  MOV     \ SP Out := SP in
-                                 RET
-     END-CODE
-
-   AMD64 ‘abi-code’ ワードの例をいくつか示します:
-
-     abi-code my+  ( n1 n2 -- n3 )
-     \ SP passed in di, returned in ax,  address of FP passed in si
-     8 di d) ax lea        \ compute new sp in result reg ( 結果として di+8 → ax つまり drop と同じ)
-     di )    dx mov        \ get old tos ( [di] つまり n2   → dx )
-     dx    ax ) add        \ add to new tos ( dx + [ax] → [ax]
-     ret
-     end-code
-
-     \ Do nothing
-     ABI-CODE aNOP  ( -- )
-            DI  )       AX      LEA          \ SP out := SP in
-                                RET
-     END-CODE
-
-     \ Drop TOS
-     ABI-CODE aDROP  ( n -- )
-        8   DI  D)      AX      LEA          \ SPout := SPin - 1
-                                RET
-     END-CODE
-
-     \ Push 5 on the data stack
-     ABI-CODE aFIVE   ( -- 5 )
-        -8  DI  D)      AX      LEA          \ SPout := SPin + 1
-        5   #           AX  )   MOV          \ TOS := 5
-                                RET
-     END-CODE
-
-     \ Push 10 and 20 into data stack
-     ABI-CODE aTOS2  ( -- n n )
-        -16 DI  D)      AX      LEA          \ SPout := SPin + 2
-        10  #       8   AX  D)  MOV          \ TOS - 1 := 10
-        20  #           AX  )   MOV          \ TOS := 20
-                                RET
-     END-CODE
-
-     \ Get Time Stamp Counter as two 32 bit integers
-     \ The TSC is incremented every CPU clock pulse
-     ABI-CODE aRDTSC   ( -- TSCl TSCh )
-                                RDTSC        \ DX:AX := TSC
-        $FFFFFFFF #     AX      AND          \ Clear upper 32 bit AX
-       0xFFFFFFFF #     DX      AND          \ Clear upper 32 bit DX
-            AX          R8      MOV          \ Tempory save AX
-        -16 DI  D)      AX      LEA          \ SPout := SPin + 2
-            R8      8   AX  D)  MOV          \ TOS-1 := saved AX = TSC low
-            DX          AX  )   MOV          \ TOS := Dx = TSC high
-                                RET
-     END-CODE
-
-     \ Get Time Stamp Counter as 64 bit integer
-     ABI-CODE RDTSC   ( -- TSC )
-                                RDTSC        \ DX:AX := TSC
-        $FFFFFFFF #     AX      AND          \ Clear upper 32 bit AX
-        32  #           DX      SHL          \ Move lower 32 bit DX to upper 32 bit
-            AX          DX      OR           \ Combine AX wit DX in DX
-        -8  DI  D)      AX      LEA          \ SPout := SPin + 1
-            DX          AX  )   MOV          \ TOS := DX
-                                RET
-     END-CODE
-
-     VARIABLE V
-
-     \ Assign 4 to variable V
-     ABI-CODE V=4 ( -- )
-            BX                  PUSH         \ Save BX, used by gforth
-        V   #           BX      MOV          \ BX := address of V
-        4   #           BX )    MOV          \ Write 4 to V
-            BX                  POP          \ Restore BX
-            DI  )       AX      LEA          \ SPout := SPin
-                                RET
-     END-CODE
-
-     VARIABLE V
-
-     \ Assign 5 to variable V
-     ABI-CODE V=5 ( -- )
-        V   #           CX      MOV          \ CX := address of V
-        5   #           CX )    MOV          \ Write 5 to V
-        DI )            AX      LEA          \ SPout := SPin
-                                RET
-     END-CODE
-
-     ABI-CODE TEST2  ( -- n n )
-        -16 DI  D)  AX          LEA          \ SPout := SPin + 2
-        5   #       CX          MOV          \ CX := 5
-        5   #       CX          CMP
-        0= IF
-            1   #   8   AX  D)      MOV      \ If CX = 5 then TOS - 1 := 1  <--
-        ELSE
-            2   #   8   AX  D)      MOV      \ else TOS - 1 := 2
-        THEN
-        6   #       CX          CMP
-        0= IF
-            3   #       AX  )       MOV      \ If CX = 6 then TOS := 3
-        ELSE
-            4   #       AX  )       MOV      \ else TOS := 4  <--
-        THEN
-                                RET
-     END-CODE
-
-     \ Do four loops. Expect : ( 4 3 2 1 -- )
-     ABI-CODE LOOP4  ( -- n n n n )
-            DI          AX      MOV          \ SPout := SPin
-        4   #           DX      MOV          \ DX := 4  loop counter
-        BEGIN
-            8   #           AX      SUB      \ SP := SP + 1
-                DX          AX  )   MOV      \ TOS := DX
-            1   #           DX      SUB      \ DX := DX - 1
-        0= UNTIL
-                                RET
-     END-CODE
-
-   Here’s a AMD64 example that deals with FP values:
-
-     abi-code my-f+  ( r1 r2 -- r )
-     \ SP passed in di, returned in ax,  address of FP passed in si
-     si )       dx mov         \ load fp
-     8 dx d)  xmm0 movsd       \ r2
-     dx )     xmm0 addsd       \ r1+r2
-     xmm0  8 dx d) movsd       \ store r
-     8 #      si ) add         \ update fp
-     di         ax mov         \ sp into return reg
-     ret
-     end-code
 

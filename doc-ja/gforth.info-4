@@ -27,6 +27,184 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: AMD64 Assembler,  Next: Alpha Assembler,  Prev: 386 Assembler,  Up: Assembler and Code Words
+
+6.29.5 AMD64 (x86_64) Assembler
+-------------------------------
+
+AMD64 アセンブラは、 386 アセンブラをわずかに変更したバージョンであり、
+構文の大部分を共有しています。 2 つの新しい接頭辞 ‘.q’ と ‘.qa’ が、 そ
+れぞれ 64 ビット・サイズのオペランドやアドレスを選択するために提供されて
+います。 64 ビット・サイズがデフォルトであるため、 通常は他のプレフィッ
+クスを使用するだけで済みます。 また、 追加のレジスタ・オペランド ‘R8’ ～
+‘R15’ もあります。
+
+   レジスタには「e」または「r」プレフィックスがありません。 64 ビット・
+モードでも、 ‘rax’ は ‘ax’ と呼ばれます。 すべてのレジスタで最下位バイト
+を参照するために追加のレジスタ・オペランドを使用できます: ‘R8L’ 〜
+-‘R15L’, ‘SPL’, ‘BPL’, ‘SIL’, ‘DIL’
+
+   Linux-AMD64 の呼び出し規則では、 最初の 6 つの整数パラメーターを rdi,
+rsi, rdx, rcx, r8, r9 で渡し、 結果を rax , rdx で返します。 最初の 8 つ
+の FP パラメータを xmm0 ～ xmm7 に渡し、 FP 結果を xmm0 ～ xmm1 に返しま
+す。 したがって、‘abi-code’ ワードは、 ‘di’ でデータ・スタック・ポインタ
+を取得し、 ‘si’ で FP スタック・ポインタのアドレスを取得し、 リターン時
+は ‘ax’ にデータ・スタック ポインタをセットします。 呼び出し元が保存する
+他のレジスタは、 r10, r11 xmm8 ～ xmm15 です。 この呼び出し規約は、
+Microsoft 以外の他の OS でも使用されていると報告されています。
+
+   Windows x64 は、 最初の 4 つの整数パラメータを rcx, rdx, r8, r9 に渡
+し、 整数の結果を rax に返します。 他の、呼び出し元保存レジスタは r10 と
+r11 です。
+
+   <https://uclibc.org/docs/psABI-x86_64.pdf> の 21ページによると、
+Linux プラットフォームでは、 レジスタ AX CX DX SI DI R8 R9 R10 R11 が自
+由(scratch)に使えます。
+
+   AMD64 のアドレッシング・モードは以下のとおりです:
+
+     \ ご注意: ワード A を実行すると、レジスタが初期化されていないため、 メモリ・エラーが発生します ;-)
+     ABI-CODE A  ( -- )
+         500        #               AX  MOV     \ immediate
+             DX              AX  MOV     \ register
+             200             AX  MOV     \ direct addressing
+             DX  )           AX  MOV     \ indirect addressing
+         40  DX  D)          AX  MOV     \ base with displacement
+             DX  CX      I)  AX  MOV     \ scaled index
+             DX  CX  *4  I)  AX  MOV     \ scaled index
+         40  DX  CX  *4  DI) AX  MOV     \ scaled index with displacement
+
+             DI              AX  MOV     \ SP Out := SP in
+                                 RET
+     END-CODE
+
+   AMD64 ‘abi-code’ ワードの例をいくつか示します:
+
+     abi-code my+  ( n1 n2 -- n3 )
+     \ SP passed in di, returned in ax,  address of FP passed in si
+     8 di d) ax lea        \ compute new sp in result reg ( 結果として di+8 → ax つまり drop と同じ)
+     di )    dx mov        \ get old tos ( [di] つまり n2   → dx )
+     dx    ax ) add        \ add to new tos ( dx + [ax] → [ax]
+     ret
+     end-code
+
+     \ Do nothing
+     ABI-CODE aNOP  ( -- )
+            DI  )       AX      LEA          \ SP out := SP in
+                                RET
+     END-CODE
+
+     \ Drop TOS
+     ABI-CODE aDROP  ( n -- )
+        8   DI  D)      AX      LEA          \ SPout := SPin - 1
+                                RET
+     END-CODE
+
+     \ Push 5 on the data stack
+     ABI-CODE aFIVE   ( -- 5 )
+        -8  DI  D)      AX      LEA          \ SPout := SPin + 1
+        5   #           AX  )   MOV          \ TOS := 5
+                                RET
+     END-CODE
+
+     \ Push 10 and 20 into data stack
+     ABI-CODE aTOS2  ( -- n n )
+        -16 DI  D)      AX      LEA          \ SPout := SPin + 2
+        10  #       8   AX  D)  MOV          \ TOS - 1 := 10
+        20  #           AX  )   MOV          \ TOS := 20
+                                RET
+     END-CODE
+
+     \ Get Time Stamp Counter as two 32 bit integers
+     \ The TSC is incremented every CPU clock pulse
+     ABI-CODE aRDTSC   ( -- TSCl TSCh )
+                                RDTSC        \ DX:AX := TSC
+        $FFFFFFFF #     AX      AND          \ Clear upper 32 bit AX
+       0xFFFFFFFF #     DX      AND          \ Clear upper 32 bit DX
+            AX          R8      MOV          \ Tempory save AX
+        -16 DI  D)      AX      LEA          \ SPout := SPin + 2
+            R8      8   AX  D)  MOV          \ TOS-1 := saved AX = TSC low
+            DX          AX  )   MOV          \ TOS := Dx = TSC high
+                                RET
+     END-CODE
+
+     \ Get Time Stamp Counter as 64 bit integer
+     ABI-CODE RDTSC   ( -- TSC )
+                                RDTSC        \ DX:AX := TSC
+        $FFFFFFFF #     AX      AND          \ Clear upper 32 bit AX
+        32  #           DX      SHL          \ Move lower 32 bit DX to upper 32 bit
+            AX          DX      OR           \ Combine AX wit DX in DX
+        -8  DI  D)      AX      LEA          \ SPout := SPin + 1
+            DX          AX  )   MOV          \ TOS := DX
+                                RET
+     END-CODE
+
+     VARIABLE V
+
+     \ Assign 4 to variable V
+     ABI-CODE V=4 ( -- )
+            BX                  PUSH         \ Save BX, used by gforth
+        V   #           BX      MOV          \ BX := address of V
+        4   #           BX )    MOV          \ Write 4 to V
+            BX                  POP          \ Restore BX
+            DI  )       AX      LEA          \ SPout := SPin
+                                RET
+     END-CODE
+
+     VARIABLE V
+
+     \ Assign 5 to variable V
+     ABI-CODE V=5 ( -- )
+        V   #           CX      MOV          \ CX := address of V
+        5   #           CX )    MOV          \ Write 5 to V
+        DI )            AX      LEA          \ SPout := SPin
+                                RET
+     END-CODE
+
+     ABI-CODE TEST2  ( -- n n )
+        -16 DI  D)  AX          LEA          \ SPout := SPin + 2
+        5   #       CX          MOV          \ CX := 5
+        5   #       CX          CMP
+        0= IF
+            1   #   8   AX  D)      MOV      \ If CX = 5 then TOS - 1 := 1  <--
+        ELSE
+            2   #   8   AX  D)      MOV      \ else TOS - 1 := 2
+        THEN
+        6   #       CX          CMP
+        0= IF
+            3   #       AX  )       MOV      \ If CX = 6 then TOS := 3
+        ELSE
+            4   #       AX  )       MOV      \ else TOS := 4  <--
+        THEN
+                                RET
+     END-CODE
+
+     \ Do four loops. Expect : ( 4 3 2 1 -- )
+     ABI-CODE LOOP4  ( -- n n n n )
+            DI          AX      MOV          \ SPout := SPin
+        4   #           DX      MOV          \ DX := 4  loop counter
+        BEGIN
+            8   #           AX      SUB      \ SP := SP + 1
+                DX          AX  )   MOV      \ TOS := DX
+            1   #           DX      SUB      \ DX := DX - 1
+        0= UNTIL
+                                RET
+     END-CODE
+
+   Here’s a AMD64 example that deals with FP values:
+
+     abi-code my-f+  ( r1 r2 -- r )
+     \ SP passed in di, returned in ax,  address of FP passed in si
+     si )       dx mov         \ load fp
+     8 dx d)  xmm0 movsd       \ r2
+     dx )     xmm0 addsd       \ r1+r2
+     xmm0  8 dx d) movsd       \ store r
+     8 #      si ) add         \ update fp
+     di         ax mov         \ sp into return reg
+     ret
+     end-code
+
+
 File: gforth.info,  Node: Alpha Assembler,  Next: MIPS assembler,  Prev: AMD64 Assembler,  Up: Assembler and Code Words
 
 6.29.6 Alpha Assembler
@@ -5759,12 +5937,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * browse ( "SUBNAME" -- ) gforth-1.0:    Locating source code definitions.
                                                               (line  70)
 * bt ( -- ) gforth-1.0:                  Locating exception source.
-                                                              (line  10)
+                                                              (line  12)
 * buffer ( U -- A-ADDR ) block:          Blocks.              (line 168)
 * buffer% ( -- U1 U2 ) gforth-experimental: Heap Allocation.  (line  62)
 * buffer: ( U "NAME" -- ) core-ext:      Variables.           (line  46)
 * bw ( -- ) gforth-1.0:                  Locating uses of a word.
-                                                              (line  20)
+                                                              (line  24)
 * bw-cover ( -- ) gforth-1.0:            Code Coverage.       (line  56)
 * c! ( C C-ADDR -- ) core:               Memory Access.       (line  18)
 * C" ( COMPILATION "CCC<QUOTE>" -- ; RUN-TIME -- C-ADDR ) core-ext: Counted string words.
@@ -6121,7 +6299,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  46)
 * exitm ( -- ) objects:                  Objects Glossary.    (line  84)
 * expand-where ( -- ) gforth-1.0:        Locating uses of a word.
-                                                              (line  43)
+                                                              (line  51)
 * expect ( C-ADDR +N -- ) core-ext-obsolescent: Line input and conversion.
                                                               (line  75)
 * extend-mem ( ADDR1 U1 U -- ADDR ADDR2 U2 ) gforth-experimental: Heap Allocation.
@@ -6331,7 +6509,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * gforth ( -- C-ADDR U ) gforth-environment: Environmental Queries.
                                                               (line 136)
 * gg ( -- ) gforth-1.0:                  Locating uses of a word.
-                                                              (line  25)
+                                                              (line  31)
 * h ( -- R ) minos2:                     widget methods.      (line  24)
 * h. ( U -- ) gforth-1.0:                Simple numeric output.
                                                               (line  16)
@@ -6491,7 +6669,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * Literal ( COMPILATION N -- ; RUN-TIME -- N ) core: Literals.
                                                               (line  42)
 * ll ( -- ) gforth-1.0:                  Locating uses of a word.
-                                                              (line  30)
+                                                              (line  37)
 * lle ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  81)
 * load ( I*X U -- J*X ) block:           Blocks.              (line 198)
@@ -6627,11 +6805,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ns ( D -- ) gforth-1.0:                Keeping track of Time.
                                                               (line   8)
 * nt ( -- ) gforth-1.0:                  Locating exception source.
-                                                              (line   8)
+                                                              (line   9)
 * ntime ( -- DTIME ) gforth-1.0:         Keeping track of Time.
                                                               (line  23)
 * nw ( -- ) gforth-1.0:                  Locating uses of a word.
-                                                              (line  15)
+                                                              (line  17)
 * o> ( R:C-ADDR -- ) new:                Mini-OOF2.           (line  16)
 * object ( -- A-ADDR ) mini-oof:         Basic Mini-OOF Usage.
                                                               (line  12)
@@ -6718,7 +6896,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * precision ( -- U ) floating-ext:       Floating-point output.
                                                               (line  31)
 * prepend-where ( -- ) gforth-1.0:       Locating uses of a word.
-                                                              (line  47)
+                                                              (line  55)
 * preserve ( "NAME" -- ) gforth-1.0:     Deferred Words.      (line 118)
 * previous ( -- ) search-ext:            Word Lists.          (line  77)
 * print ( OBJECT -- ) objects:           Objects Glossary.    (line 144)
@@ -6855,11 +7033,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * search-wordlist ( C-ADDR COUNT WID -- 0 | XT +-1 ) search: Word Lists.
                                                               (line 125)
 * see ( "<SPACES>NAME" -- ) tools:       Examining compiled code.
-                                                              (line  11)
+                                                              (line  12)
 * see-code ( "NAME" -- ) gforth-0.7:     Examining compiled code.
-                                                              (line  30)
+                                                              (line  32)
 * see-code-range ( ADDR1 ADDR2 -- ) gforth-0.7: Examining compiled code.
-                                                              (line  44)
+                                                              (line  47)
 * select ( U1 U2 F -- U ) gforth-1.0:    Boolean Flags.       (line  23)
 * selector ( "NAME" -- ) objects:        Objects Glossary.    (line 157)
 * semaphore ( "NAME" -- ) gforth-experimental: Semaphores.    (line  14)
@@ -6906,7 +7084,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * shift-args ( -- ) gforth-0.7:          OS command line arguments.
                                                               (line  47)
 * short-where ( -- ) gforth-1.0:         Locating uses of a word.
-                                                              (line  40)
+                                                              (line  48)
 * show ( -- ) minos2:                    actor methods.       (line  48)
 * show-you ( -- ) minos2:                actor methods.       (line  60)
 * sign ( N -- ) core:                    Formatted numeric output.
@@ -6914,9 +7092,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * simple-fkey-string ( U1 -- C-ADDR U ) gforth-1.0: Single-key input.
                                                               (line 187)
 * simple-see ( "NAME" -- ) gforth-0.6:   Examining compiled code.
-                                                              (line  20)
+                                                              (line  21)
 * simple-see-range ( ADDR1 ADDR2 -- ) gforth-0.6: Examining compiled code.
-                                                              (line  27)
+                                                              (line  28)
 * skip ( C-ADDR1 U1 C -- C-ADDR2 U2 ) gforth-0.2: String words.
                                                               (line  40)
 * SLiteral ( COMPILATION C-ADDR1 U ; RUN-TIME -- C-ADDR2 U ) string: Literals.
@@ -7101,7 +7279,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * unused ( -- U ) core-ext:              Dictionary allocation.
                                                               (line  27)
 * unused-words ( -- ) gforth-1.0:        Locating uses of a word.
-                                                              (line  54)
+                                                              (line  62)
 * up@ ( -- A-ADDR ) new:                 Task-local data.     (line  35)
 * update ( -- ) block:                   Blocks.              (line 179)
 * updated? ( N -- F ) gforth-0.2:        Blocks.              (line 183)
@@ -7158,7 +7336,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * where ( "NAME" -- ) gforth-1.0:        Locating uses of a word.
                                                               (line   6)
 * whereg ( "NAME" -- ) gforth-1.0:       Locating uses of a word.
-                                                              (line  35)
+                                                              (line  43)
 * WHILE ( COMPILATION DEST -- ORIG DEST ; RUN-TIME F -- ) core: Arbitrary control structures.
                                                               (line  66)
 * widget ( -- CLASS ) minos2:            MINOS2 object framework.
@@ -7242,11 +7420,11 @@ this manual.  Each word is listed with its stack effect and wordset.
 * xt-new ( ... CLASS XT -- OBJECT ) objects: Objects Glossary.
                                                               (line 178)
 * xt-see ( XT -- ) gforth-0.2:           Examining compiled code.
-                                                              (line  17)
+                                                              (line  18)
 * xt-see-code ( XT -- ) gforth-1.0:      Examining compiled code.
-                                                              (line  41)
+                                                              (line  44)
 * xt-simple-see ( XT -- ) gforth-1.0:    Examining compiled code.
-                                                              (line  24)
+                                                              (line  25)
 * XT: ( COMPILATION "NAME" -- A-ADDR XT; RUN-TIME XT1 -- ) gforth-1.0: Locals definition words.
                                                               (line  79)
 * xt>name ( XT -- NT ) gforth-1.0:       Name token.          (line  48)
