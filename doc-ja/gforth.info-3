@@ -4245,62 +4245,64 @@ File: gforth.info,  Node: Examining data,  Next: Forgetting words,  Prev: Examin
 6.26.5 Examining data and code
 ------------------------------
 
-The following words inspect the stack non-destructively:
+以下のワード群は、 スタックを非破壊的に調査します:
 
 ‘...’ ( x1 .. xn – x1 .. xn  ) gforth-1.0 “...”
-   smart version of ‘.s’
+   ‘.s’ のスマート・バージョン
 
 ‘.s’ ( –  ) tools “dot-s”
-   Display the number of items on the data stack, followed by a list of
-the items (but not more than specified by ‘maxdepth-.s’; TOS is the
-right-most item.
+   データ・スタック上の項目の数を表示し、 その後に項目のリストを表示しま
+す(ただし、 ‘maxdepth-.s’ で指定された値を超えないようにします)。 右端が
+TOS になります。
 
 ‘f.s’ ( –  ) gforth-0.2 “f-dot-s”
-   Display the number of items on the floating-point stack, followed by
-a list of the items (but not more than specified by ‘maxdepth-.s’; TOS
-is the right-most item.
+   浮動小数点スタック上の項目の数を表示し、 その後に項目のリストを表示し
+ます(ただし、 ‘maxdepth-.s’ で指定された値を超えないようにします)。 右端
+が TOS になります。
 
 ‘f.s-precision’ ( – u  ) gforth-1.0 “f.s-precision”
-   A ‘value’.  U is the field width for f.s output.  Other precision
-details are derived from that value.
+   ‘value’ 型変数です。 u は f.s の出力のフィールド幅です。 他の精度の詳
+細はこの値から導出されます。
 
 ‘maxdepth-.s’ ( – addr  ) gforth-0.2 “maxdepth-dot-s”
-   A variable containing 9 by default.  ‘.s’ and ‘f.s’ display at most
-that many stack items.
+   変数(variable)。 デフォルトは 9 です。 ‘.s’ と ‘f.s’ は最大でその数の
+スタック項目を表示します。
 
-   There is a word ‘.r’ but it does not display the return stack!  It is
-used for formatted numeric output (*note Simple numeric output::).
+   ‘.r’ というワードがありますが、 リターン・戻りスタックは「表示されま
+せん」。 これは、 フォーマットされた数値出力に使用されるワードです(*note
+Simple numeric output::)。
 
-   The following words work on the stack as a whole, either by
-determining the depth or by clearing them:
+   以下のワード群は、 スタックの深さを決定したり、スタックをクリアしたり
+して、 スタック全体に作用します:
 
 ‘depth’ ( – +n  ) core “depth”
-   +N is the number of values that were on the data stack before +N
-itself was placed on the stack.
+   +N は、 +N 自体がスタックに置かれる前にデータ・スタックに置かれていた
+項目の数です。
 
 ‘fdepth’ ( – +n  ) floating “f-depth”
-   +n is the current number of (floating-point) values on the
-floating-point stack.
+   データ・スタックに積まれた +n は、 浮動小数点スタック上にある(浮動小
+数点)値の現在の数です。
 
 ‘clearstack’ ( ... –  ) gforth-0.2 “clear-stack”
-   remove and discard all/any items from the data stack.
+   データ・スタックから全ての項目を削除して破棄します(訳注: データ・スタ
+ックを空にします)。
 
 ‘fclearstack’ ( r0 .. rn –  ) gforth-1.0 “f-clearstack”
-   clear the floating point stack
+   浮動小数点スタックをクリアします
 
 ‘clearstacks’ ( ... –  ) gforth-0.7 “clear-stacks”
-   empty data and FP stack
+   データ・スタックと FP スタックを空にします
 
-   The following words inspect memory.
+   以下のワード群はメモリを調べます。
 
 ‘?’ ( a-addr –  ) tools “question”
-   Display the contents of address A-ADDR in the current number base.
+   アドレス A-ADDR の内容を現在の基数(base)で表示します。
 
 ‘dump’ ( addr u –  ) tools “dump”
-   Display U lines of memory starting at address ADDR.  Each line
-displays the contents of 16 bytes.  When Gforth is running under an
-operating system you may get ‘Invalid memory address’ errors if you
-attempt to access arbitrary locations.
+   メモリのアドレス ADDR から始まる U バイトを表示します。 各行には 16 バ
+イト分の内容が表示されます。 Gforth がオペレーティング・システム上で実行
+されている場合、 任意の場所にアクセスしようとすると、 ‘Invalid memory
+address’ エラーが発生する可能性があります。
 
 
 File: gforth.info,  Node: Forgetting words,  Next: Debugging,  Prev: Examining data,  Up: Programming Tools
@@ -4308,25 +4310,28 @@ File: gforth.info,  Node: Forgetting words,  Next: Debugging,  Prev: Examining d
 6.26.6 Forgetting words
 -----------------------
 
-Forth allows you to forget words (and everything that was alloted in the
-dictonary after them) in a LIFO manner.
+forth は、 ワード達 (および、 その後ろでディクショナリ割り当てられたすべ
+ての内容) を LIFO 方式で忘れさすことができます。
 
 ‘marker’ ( "<spaces> name" –  ) core-ext “marker”
-   Create a definition, name (called a mark) whose execution semantics
-are to remove itself and everything defined after it.
+   name という定義を作成します(マーク(mark)と呼ばれる)。 その実行機能
+(execution semantics)は、 それ自体とその後に定義されたすべてのものを削除
+します(訳注: 注意: 古典的な forth の ‘forget name’ と異なり、 任意のワー
+ド以降を「忘れる」コマンドでは無い事に注意。 あらかじめ ‘marker’ でマー
+クした位置でしか「忘れる」事はできない)。
 
-   The most common use of this feature is during progam development:
-when you change a source file, forget all the words it defined and load
-it again (since you also forget everything defined after the source file
-was loaded, you have to reload that, too).  Note that effects like
-storing to variables and destroyed system words are not undone when you
-forget words.  With a system like Gforth, that is fast enough at
-starting up and compiling, I find it more convenient to exit and restart
-Gforth, as this gives me a clean slate.
+   この機能の最も一般的な使用法は、 プログラム開発時です。 ソース・ファ
+イルを変更するときは、 定義されているワードをすべて忘れて、 再度ロードし
+ます(ソース・ファイルのロード後に定義されたワードもすべて忘れるので、 そ
+れも再ロードする必要があります)。 変数への保存やシステム・ワードの破壊な
+どの効果は、 ワードを忘れても元に戻されないことに注意してください。 著者
+は、 gforth のようなシステムでは、 起動とコンパイルが十分に速いので、
+gforth を終了して再起動する方が、 白紙の状態(clean state)で使えるので便
+利だと思います。
 
-   Here’s an example of using ‘marker’ at the start of a source file
-that you are debugging; it ensures that you only ever have one copy of
-the file’s definitions compiled at any time:
+   デバッグしているソース・ファイルの先頭で ‘marker’ を使用する例を以下
+に示します。 これにより、 そのファイルの定義は二重定義されないようになり
+ます。
 
      [IFDEF] my-code
          my-code
@@ -4346,67 +4351,80 @@ File: gforth.info,  Node: Debugging,  Next: Assertions,  Prev: Forgetting words,
 6.26.7 Debugging
 ----------------
 
-Languages with a slow edit/compile/link/test development loop tend to
-require sophisticated tracing/stepping debuggers to facilate debugging.
+編集/コンパイル/リンク/テスト の開発ループが遅い言語では、 デバッグを容
+易にするために高度な トレース/ステッピング デバッガが必要になる傾向があ
+ります。
 
-   A much better (faster) way in fast-compiling languages is to add
-printing code at well-selected places, let the program run, look at the
-output, see where things went wrong, add more printing code, etc., until
-the bug is found.
+   高速コンパイル言語でのより良い(より速い)方法は、 適切に選択した場所に
+表示コード(printing code)を追加し、 プログラムを実行してその出力を見て、
+問題が発生した箇所を確認し、 バグが見つかるまでさらに表示コード等を追加
+することです(訳注: C言語で言うところの printf デバッグすると言っている
+)。
 
-   The simple debugging aids provided in ‘debugs.fs’ are meant to
-support this style of debugging.
+   ‘debugs.fs’ で提供される単純なデバッグ支援機能は、 このスタイルのデバ
+ッグをサポートすることを目的としています。
 
-   The word ‘~~’ prints debugging information (by default the source
-location and the stack contents).  It is easy to insert.  If you use
-Emacs it is also easy to remove (‘C-x ~’ in the Emacs Forth mode to
-query-replace them with nothing).  The deferred words ‘printdebugdata’
-and ‘.debugline’ control the output of ‘~~’.  The default source
-location output format works well with Emacs’ compilation mode, so you
-can step through the program at the source level using ‘C-x `’ (the
-advantage over a stepping debugger is that you can step in any direction
-and you know where the crash has happened or where the strange data has
-occurred).
+   ‘~~’ というワードは、 デバッグ情報(デフォルトではソースの場所とスタッ
+クの内容)を出力します。 これは簡単にソース・コードに挿入できます。 Emacs
+を使用している場合は、 削除も簡単です(Emacs Forth モードで ‘C-x ~’ を実
+行すると、 ‘~~’ を ""(nothing) に query-replace します)。 defer ワード
+‘printdebugdata’ と ‘.debugline’ は、 ‘~~’ の出力を制御します。 デフォル
+トのソース位置出力形式は Emacs のコンパイル・モードで適切に動作するため
+、 ‘C-x `’ を使用してソース・レベルでプログラムをステップ実行できます(ス
+テップ実行デバッガーと比較した利点は、 任意の方向にステップ実行でき、 ク
+ラッシュが発生した場所や奇妙なデータが発生した箇所を知る事ができるという
+ことです)。
 
 ‘~~’ ( –  ) gforth-0.2 “tilde-tilde”
-   Prints the source code location of the ‘~~’ and the stack contents
-with ‘.debugline’.
+   ‘~~’ を記述したソース・コードの場所とスタックの内容を ‘.debugline’ を
+使って出力します。
 
 ‘printdebugdata’ ( –  ) gforth-0.2 “print-debug-data”
 
 ‘.debugline’ ( nfile nline –  ) gforth-0.6 “print-debug-line”
-   Print the source code location indicated by NFILE NLINE, and
-additional debugging information; the default ‘.debugline’ prints the
-additional information with ‘printdebugdata’.
+   NFILE NLINE で示されるソース・コードの場所と追加のデバッグ情報を出力
+します。 デフォルトの ‘.debugline’ は、 ‘printdebugdata’ を使用して追加
+情報を出力します。
 
 ‘debug-fid’ ( – file-id  ) gforth-1.0 “File-id”
-   debugging words for output.  By default it is the process’s ‘stderr’.
+   デバッグ用の出力先。 デフォルトでは、 当該プロセスの ‘stderr’ です。
 
-   ‘~~’ (and assertions) will usually print the wrong file name if a
-marker is executed in the same file after their occurance.  They will
-print ‘*somewhere*’ as file name if a marker is executed in the same
-file before their occurance.
+   ‘~~’ (およびアサート(assertions))は、 その出現後に同一ファイル内で
+marker が実行されると、 通常、 間違ったファイル名を出力します。 ‘~~’ (お
+よびアサート(assertions))は、 その出現前に同じファイル内で marker が実行
+されると、 ファイル名として「どこか」(somewhere)を出力します。
 
 ‘once’ ( –  ) gforth-1.0 “once”
-   do the following up to THEN only once
+   ‘once’ から THEN までの操作を 1 回だけ だけ実行します(訳注: 1度実行さ
+れるとその旨を body に書き込むので、 再度実行するには ‘once’ を含む定義
+を「忘れ」(forget)て再度定義(読み込み)する必要がある)
 
 ‘~~bt’ ( –  ) gforth-1.0 “~~bt”
-   print stackdump and backtrace
+   スタック・ダンプとバックトレースを出力
 
 ‘~~1bt’ ( –  ) gforth-1.0 “~~1bt”
    print stackdump and backtrace once
 
 ‘???’ ( –  ) gforth-0.2 “???”
-   Open a debuging shell
+   デバッグ・シェルを実行します
 
 ‘WTF??’ ( –  ) gforth-1.0 “WTF??”
-   Open a debugging shell with backtrace and stack dump
+   バックトレースとスタック・ダンプを使用してデバッグ・シェルを実行しま
+す
 
 ‘!!FIXME!!’ ( –  ) gforth-1.0 “!!FIXME!!”
-   word that should never be reached
+   決してこの場所に到達してはいけないワード(訳注: -2605 を throw する)
 
 ‘replace-word’ ( xt1 xt2 –  ) gforth-1.0 “replace-word”
-   make xt2 do xt1, both need to be colon definitions
+   xt2 が xt1 を実行するようにします。 両方ともコロン定義である必要があ
+ります。(訳注:
+: foo ."  foo" ;
+: bar ."  bar" ;
+foo foo ok
+bar bar ok
+’ foo ’ bar replace-word ok
+foo foo ok
+bar foo ok
 
 ‘~~Variable’ ( "name" –  ) gforth-1.0 “~~Variable”
    Variable that will be watched on every access
@@ -4508,7 +4526,8 @@ File: gforth.info,  Node: Singlestep Debugger,  Next: Code Coverage,  Prev: Asse
 6.26.9 Singlestep Debugger
 --------------------------
 
-シングルステップ・デバッガーは、 ‘gforth-itc’ エンジンでのみ動作します。
+シングルステップ・デバッガーは、 ‘gforth-itc’ エンジンでのみ動作します
+(訳注: OSコマンドラインから gforth ではなくて gforth-itc で起動する)。
 
    新しいワードを作成するとき、 それが正しく動作するかどうかを確認する必
 要があることがよくあります。 これを行うには、‘dbg badword’ と入力します
@@ -4579,10 +4598,12 @@ File: gforth.info,  Node: Code Coverage,  Prev: Singlestep Debugger,  Up: Progra
 6.26.10 Code Coverage and Execution Frequency
 ---------------------------------------------
 
-If you run extensive tests on your code, you often want to figure out if
-the tests exercise all parts of the code.  This is called (test)
-coverage.  The file ‘coverage.fs’ contains tools for measuring the
-coverage as well as execution frequency.
+あなたのコードに対して広範なテスト(extensive tests)を実行する場合、 その
+テストがコードのすべての部分を実行するかどうかを確認する必要が生じること
+がよくあります。 これを(テスト)カバレッジと呼びます。 ファイル
+‘coverage.fs’ には、 カバレッジと実行頻度を測定するためのツールが含まれ
+ています(訳注: gforth に組み込まれて無いので使う時は ‘coverage.fs’ をロ
+ードしてください)。
 
    Code coverage inserts counting code in every basic block
 (straight-line code sequence) loaded after ‘coverage.fs’.  Each time
