@@ -4403,7 +4403,7 @@ marker が実行されると、 通常、 間違ったファイル名を出力�
    スタック・ダンプとバックトレースを出力
 
 ‘~~1bt’ ( –  ) gforth-1.0 “~~1bt”
-   print stackdump and backtrace once
+   スタックダンプとバックトレースを(‘once’と同様) 1 回だけ実行します
 
 ‘???’ ( –  ) gforth-0.2 “???”
    デバッグ・シェルを実行します
@@ -4427,19 +4427,21 @@ foo foo ok
 bar foo ok
 
 ‘~~Variable’ ( "name" –  ) gforth-1.0 “~~Variable”
-   Variable that will be watched on every access
+   アクセスごとにワッチされる(‘~~’ する)変数(variable を ~~variable に一
+時的にリネームする)
 
 ‘~~Value’ ( n "name" –  ) gforth-1.0 “~~Value”
-   Value that will be watched on every access
+   アクセスごとにワッチされる(‘~~’ する) value ( value を 一時的に
+~~value にリネームする)
 
 ‘+ltrace’ ( –  ) gforth-1.0 “+ltrace”
-   turn on line tracing
+   行単位のトレースをONにする。
 
 ‘-ltrace’ ( –  ) gforth-1.0 “-ltrace”
-   turn off line tracing
+   行単位のトレースをOFFにする
 
 ‘#loc’ ( nline nchar "file" –  ) gforth-1.0 “#loc”
-   set next word’s location to NLINE NCHAR in "FILE"
+   次のワードの場所を "FILE" の NLINE NCHAR と設定します
 
 
 File: gforth.info,  Node: Assertions,  Next: Singlestep Debugger,  Prev: Debugging,  Up: Programming Tools
@@ -4447,78 +4449,80 @@ File: gforth.info,  Node: Assertions,  Next: Singlestep Debugger,  Prev: Debuggi
 6.26.8 Assertions
 -----------------
 
-It is a good idea to make your programs self-checking, especially if you
-make an assumption that may become invalid during maintenance (for
-example, that a certain field of a data structure is never zero).
-Gforth supports “assertions” for this purpose.  They are used like this:
+特にメンテナンス中に無効になる可能性があると仮定する場合(たとえば、 デー
+タ構造の特定のフィールドは決してゼロにならない、 等)、 プログラムを自己
+チェックするようにすることをお勧めします。 Gforth は、 こ​​の目的のため
+に「アサート」(“assertions”)をサポートしています。 それらは以下のように
+使用します:
 
      assert( flag )
 
-   The code between ‘assert(’ and ‘)’ should compute a flag, that should
-be true if everything is alright and false otherwise.  It should not
-change anything else on the stack.  The overall stack effect of the
-assertion is ‘( -- )’.  E.g.
+   ‘assert(’ と ‘)’ の間のコードは flag を計算する必要があります。 すべ
+てが正常な場合は true 、それ以外の場合は false になります。 スタック上の
+他のものは何も変更しないでください。 アサートの全体的なスタック効果は ‘(
+-- )’ です。 例:
 
      assert( 1 1 + 2 = ) \ what we learn in school
      assert( dup 0<> ) \ assert that the top of stack is not zero
-     assert( false ) \ this code should not be reached
+     assert( false ) \ このコードには決して到達してはならない
 
-   The need for assertions is different at different times.  During
-debugging, we want more checking, in production we sometimes care more
-for speed.  Therefore, assertions can be turned off, i.e., the assertion
-becomes a comment.  Depending on the importance of an assertion and the
-time it takes to check it, you may want to turn off some assertions and
-keep others turned on.  Gforth provides several levels of assertions for
-this purpose:
+   アサートの必要性は、 その時々によって異なります。 デバッグ中はより多
+くのチェックが必要ですが、 運用環境では速度をより重視することがあります
+。 したがって、アサートをオフにすることができます。 その場合、 つまり、
+アサートはコメントになります。 アサートの重要性とそのチェックにかかる時
+間に応じて、 一部のアサートをオフにし、 他のアサートをオンにしたほうがよ
+い場合があります。 Gforth は、こ​​の目的のためにいくつかのレベルのアサー
+トを提供します:
 
 ‘assert0(’ ( –  ) gforth-0.2 “assert-zero”
-   Important assertions that should always be turned on.
+   常にオンにする必要がある重要なアサート。
 
 ‘assert1(’ ( –  ) gforth-0.2 “assert-one”
-   Normal assertions; turned on by default.
+   通常のアサート: デフォルトではオンになっています。
 
 ‘assert2(’ ( –  ) gforth-0.2 “assert-two”
-   Debugging assertions.
+   デバッグ用のアサート。
 
 ‘assert3(’ ( –  ) gforth-0.2 “assert-three”
-   Slow assertions that you may not want to turn on in normal debugging;
-you would turn them on mainly for thorough checking.
+   通常のデバッグでは有効にしたくないであろう遅いアサート。 主に徹底的な
+チェックを行うためにオンにします。
 
 ‘assert(’ ( –  ) gforth-0.2 “assert(”
-   Equivalent to ‘assert1(’
+   ‘assert1(’ と同等です
 
 ‘)’ ( –  ) gforth-0.2 “close-paren”
-   End an assertion.  Generic end, can be used for other similar
-purposes
+   アサートを終了します。 汎用の終端なので、 他の同様の目的でも使用され
+ます
 
-   The variable ‘assert-level’ specifies the highest assertions that are
-turned on.  I.e., at the default ‘assert-level’ of one, ‘assert0(’ and
-‘assert1(’ assertions perform checking, while ‘assert2(’ and ‘assert3(’
-assertions are treated as comments.
+   変数 ‘assert-level’ は、オンにする最高のアサートを指定します。 つまり
+、デフォルトの ‘assert-level’ の 1 では、 ‘assert0(’ および ‘assert1(’ は
+チェックを実行しますが、 ‘assert2(’ および ‘assert3(’) はコメントとして
+扱われます。
 
-   The value of ‘assert-level’ is evaluated at compile-time, not at
-run-time.  Therefore you cannot turn assertions on or off at run-time;
-you have to set the ‘assert-level’ appropriately before compiling a
-piece of code.  You can compile different pieces of code at different
-‘assert-level’s (e.g., a trusted library at level 1 and newly-written
-code at level 3).
+   ‘assert-level’ の値は、 実行時ではなくコンパイル時に評価されます。 し
+たがって、 実行時にアサートをオンまたはオフにすることはできません。 あな
+たはコードをコンパイルする前に ‘assert-level’ を適切に設定する必要があり
+ます。 異なるコード部分を異なる ‘assert-level’ でコンパイルできます(例:
+信頼に足るライブラリはレベル 1 で、 新しく作成されたコードはレベル 3 な
+ど)。
 
 ‘assert-level’ ( – a-addr  ) gforth-0.2 “assert-level”
-   All assertions above this level are turned off.
+   変数(variable)。 指定のレベルを超えるすべてのアサートはオフになります
+。
 
-   If an assertion fails, a message compatible with Emacs’ compilation
-mode is produced and the execution is aborted (currently with ‘ABORT"’.
-If there is interest, we will introduce a special throw code.  But if
-you intend to ‘catch’ a specific condition, using ‘throw’ is probably
-more appropriate than an assertion).
+   アサートが失敗すると、 Emacs のコンパイル・モードと互換性のあるメッセ
+ージが生成され、 実行が中止(abort)されます(現在は ‘ABORT"’ を使用します
+。 あなたの興味があれば、 特別な throw コードを導入します。 ただし、 特
+定の条件をキャッチ(‘catch’)したい場合は、 おそらくアサートよりも ‘throw’
+を使用する方が適切です)。
 
-   Assertions (and ‘~~’) will usually print the wrong file name if a
-marker is executed in the same file after their occurance.  They will
-print ‘*somewhere*’ as file name if a marker is executed in the same
-file before their occurance.
+   アサート (および ‘~~’) の出現後に同じファイル内で marker が実行される
+と、 通常は間違ったファイル名が出力されます。 アサート (および ‘~~’) の
+出現前に同じファイル内で marker が実行された場合、 ファイル名として「ど
+れか」(somewhere)が出力されます。
 
-   Definitions in Standard Forth for these assertion words are provided
-in ‘compat/assert.fs’.
+   これらのアサート・ワードの標準 Forth での定義は、 ‘compat/assert.fs’
+で提供されます。
 
 
 File: gforth.info,  Node: Singlestep Debugger,  Next: Code Coverage,  Prev: Assertions,  Up: Programming Tools
@@ -4605,65 +4609,66 @@ File: gforth.info,  Node: Code Coverage,  Prev: Singlestep Debugger,  Up: Progra
 ています(訳注: gforth に組み込まれて無いので使う時は ‘coverage.fs’ をロ
 ードしてください)。
 
-   Code coverage inserts counting code in every basic block
-(straight-line code sequence) loaded after ‘coverage.fs’.  Each time
-that code is run, it increments the counter for that basic block.  Later
-you can show the source file with the counts inserted in these basic
-blocks.
+   コード・カバレッジは、 ‘coverage.fs’ の後にロードされるすべての基本ブ
+ロック(逐次実行のコード・シーケンス)にカウント(計数)コードを挿入します。
+コードが実行されるたびに、その基本ブロックのカウンター(計数器)がインクリ
+メントされます。 後で、これらの基本ブロックに挿入されたカウント(計数)を
+含むソース・ファイルを表示できます。
 
 ‘nocov[’ ( –  ) gforth-1.0 “nocov-bracket”
-   (Immediate) Turn coverage off temporarily.
+   (即実行ワード) 一時的にカバレッジをオフにすることを開始。
 
 ‘]nocov’ ( –  ) gforth-1.0 “bracket-nocov”
-   (Immediate) End of temporary turned off coverage.
+   (即実行ワード) 一時的にカバレッジをオフにすることを終了。
 
 ‘coverage?’ ( – f  ) gforth-internal “coverage?”
-   Value: Coverage check on/off
+   Value: カバレッジ・チェックの オン/オフ
 
 ‘cov+’ ( –  ) gforth-experimental “cov+”
-   (Immediate) Place a coverage counter here.
+   (即実行ワード) ここ(here)にカバレッジ・カウンターを配置します。
 
 ‘?cov+’ ( flag – flag  ) gforth-experimental “?cov+”
-   (Immediate) A coverage counter for a flag; in the coverage output you
-see three numbers behind ‘?cov’: The first is the number of executions
-where the top-of-stack was non-zero; the second is the number of
-executions where it was zero; the third is the total number of
-executions.
+   (即実行ワード) フラグ(flag)のカバレッジ・カウンター。 カバレッジの出
+力では、 ‘?cov’ の後ろに 3 つの数字が表示されます。 1 つ目はスタックの最
+上位が 0 以外だった実行の数です。 2 番目は、 ゼロだった場合の実行数です
+。 3 番目は実行の合計数です。
 
 ‘.coverage’ ( –  ) gforth-experimental “.coverage”
-   Show code with execution frequencies.
+   コードを実行頻度(execution frequencies)とともに表示します。
 
 ‘annotate-cov’ ( –  ) gforth-experimental “annotate-cov”
-   For every file with coverage information, produce a ‘.cov’ file that
-has the execution frequencies inserted.  We recommend to use ‘bw-cover’
-first (with the default ‘color-cover’ you get escape sequences in the
-files).
+   カバレッジ情報を含むファイルごとに、 実行頻度(execution frequencies)が
+挿入された ‘.cov’ ファイルを作成します。 最初に ‘bw-cover’ を使用するこ
+とをお勧めします(デフォルトの ‘color-cover’ を使用すると、 ファイル内に
+エスケープ シーケンスが含まれます)。
 
 ‘cov%’ ( –  ) gforth-experimental “cov-percent”
-   Print the percentage of basic blocks loaded after ‘coverage.fs’ that
-are executed at least once.
+   ‘coverage.fs’ の後でロードされ、 少なくとも 1 回実行された基本ブロッ
+クの割合を出力します。
 
 ‘.cover-raw’ ( –  ) gforth-experimental “.cover-raw”
-   Print raw execution counts.
+   生の実行カウントを出力します。
 
-   By default, the counts are shown in colour (using ANSI escape
-sequences), but you can use ‘bw-cover’ to show them in parenthesized
-form without escape sequences.
+   デフォルトでは、 カウント(計数)は(ANSI エスケープ・シーケンスを使用し
+て、)カラーで表示されますが、 ‘bw-cover’ を使用すると、 エスケープ・シー
+ケンスを使用せずに括弧で囲まれた形式でカウントを表示できます。
 
 ‘bw-cover’ ( –  ) gforth-1.0 “bw-cover”
-   Print execution counts in parentheses (source-code compatible).
+   実行カウントを(カラー表示ではなく)括弧内に出力します(ソース・コード互
+換)(訳注: つまり forth のコメントとして出力する。出力をそのまま forth の
+ソース・コードとして利用可能)。
 
 ‘color-cover’ ( –  ) gforth-1.0 “color-cover”
-   Print execution counts in colours (default).
+   実行カウントをカラーで表示します(デフォルト)。
 
-   You can save and reload the coverage counters in binary format, to
-aggregate coverage counters across several test runs.
+   カバレッジ・カウンター(計数器)をバイナリ形式で保存および再ロードして
+、 複数のテスト実行にわたるカバレッジ・カウンターを集計できます。
 
 ‘save-cov’ ( –  ) gforth-experimental “save-cov”
-   Save coverage counters.
+   カバレッジ・カウンターを保存します。
 
 ‘load-cov’ ( –  ) gforth-experimental “load-cov”
-   Load coverage counters.
+   カバレッジ・カウンターをロードします。
 
 
 File: gforth.info,  Node: Multitasker,  Next: C Interface,  Prev: Programming Tools,  Up: Words
@@ -4689,15 +4694,17 @@ File: gforth.info,  Node: Pthreads,  Next: Cilk,  Prev: Multitasker,  Up: Multit
 6.27.1 Pthreads
 ---------------
 
-Posix threads can run in parallel on several cores, or with pre-emptive
-multitasking on onecore.  However, many of the following words are the
-same as in the traditional cooperative multi-tasker.
+pthred 、 つまり posix スレッドは、 複数のコア上で並行実行することも、 1
+つのコア上でプリエンプティブ・マルチタスクで実行することもできます。 た
+だし、 以下のワード群の多くは、 従来の協調マルチタスク(traditional
+cooperative multi-tasker)の場合と同一です。
 
-   In addition, there are words that allow you to make sure that only
-one task at a time changes something, and for communicating between
-tasks.  These words are necessary for pre-emptive and multi-core
-multi-tasking, because the cooperative-multitasking way of performing
-transactions between calls to ‘pause’ does not work in this environment.
+   さらに、 一度に 1 つのタスクのみが何かを変更することを確認したり、 タ
+スク間のコミュニケーションに使用したりするためのワード群もあります。
+‘pause’ の呼び出し間でトランザクション(取引)を実行する協調マルチタスク
+(cooperative-multitasking)はこの環境では機能しないため、 これらのワード
+群はプリエンプティブ・マルチタスクおよびマルチコア・マルチタスクで必要な
+ものです。
 
 * Menu:
 
@@ -4713,98 +4720,107 @@ File: gforth.info,  Node: Basic multi-tasking,  Next: Task-local data,  Prev: Pt
 6.27.1.1 Basic multi-tasking
 ............................
 
-Tasks can be created with ‘newtask’ or ‘newtask4’ with a given amount of
-stack space (either all the same or each stack’s size specified).
+タスクは ‘newtask’ または ‘newtask4’ を使用して、 指定された量のスタック
+領域(すべて同じ、 または、 データ・スタックとリターン・スタックと FP ス
+タックとローカル変数スタックそれぞれのサイズを指定)で作成できます。
 
 ‘newtask’ ( stacksize – task  ) gforth-experimental “newtask”
-   creates task; each stack (data, return, FP, locals) has size
-stacksize.
+   タスク(taskを作成します。 データ・スタックとリターン・スタックと FP ス
+タックとローカル変数スタックのサイズは全て同じにします(stacksize)(訳注:
+スタックごとに個別サイズ指定したい時は ‘newtask4’ を使用してください)。
 
 ‘task’ ( ustacksize "name" –  ) gforth-experimental “task”
-   creates a task name; each stack (data, return, FP, locals) has size
-ustacksize.
-name execution: ( – task )
+   タスク name を作成します。 各スタック(データ・スタック、 リターン・ス
+タック、 FP スタック、 ローカル変数スタック) サイズは ustacksize です。
+実行時: ( – task )
 
 ‘newtask4’ ( u-data u-return u-fp u-locals – task  ) gforth-experimental “newtask4”
-   creates task with data stack size u-data, return stack size u-return,
-FP stack size u-fp and locals stack size u-locals.
+   データ・スタック・サイズ u-data、 リターン・スタック・サイズ
+u-return、 FP スタック・サイズ u-fp、 ローカル変数スタック・サイズ
+u-locals で task を作成します。
 
-   If you don’t know which stack sizes to use for the task, you can use
-the size(s) of the main task:
+   あなたが、 タスクにどのスタック・サイズを使用すればよいかわからない場
+合は、 メイン・タスクのサイズを流用できます:
 
 ‘stacksize’ ( – u  ) gforth-experimental “stacksize”
-   u is the data stack size of the main task.
+   u はメイン・タスクのデータ・スタックサイズです。
 
 ‘stacksize4’ ( – u-data u-return u-fp u-locals  ) gforth-experimental “stacksize4”
-   Pushes the data, return, FP, and locals stack sizes of the main task.
+   メイン・タスクのデータ・スタック・サイズと、 リターン・スタック・サイ
+ズと、 FP スタック・サイズと、 ローカル変数スタックサイズを、 プッシュし
+ます。
 
-   A task is created in an inactive state.  To let it run, you have to
-activate it with one of the following words:
+   タスクは非アクティブ状態(inactive state)で作成されます。 実行するには
+、 以下のいずれかのワードを使用してアクティブ化(activate)する必要があり
+ます:
 
 ‘initiate’ ( xt task –  ) gforth-experimental “initiate”
-   Let task execute xt.  Upon return from the xt, the task terminates
-itself (VFX compatible).  Use one-time executable closures to pass
-arbitrary paramenters to a task.
+   task に xt を execute させます。 xt から戻ると、 タスクは自動的に終了
+します(VFX 互換)。 ワンタイム実行可能クロージャ(one-time executable
+closures)を使用して、 任意のパラメータをタスクに渡せます。
 
-   The following legacy words provide the same functionality as
-‘initiate’, but with a different interface: Like ‘does>’, they split
-their containing colon definition in two parts: The part before
-‘activate’/‘pass’ runs in the activating task, and returns to its caller
-after activating the task.  The part behind ‘activate’/‘pass’ is
-executed in the activated target task.
+   以下の古い(legacy)ワード、 ‘activate’ と ‘pass’ は、 ‘initiate’ と同
+じ機能を提供しますが、 インターフェイスが異なります: ‘does>’ と同様に、
+含まれるコロン定義が 2 つの部分に分割されます: ‘activate’/‘pass’ より前
+の部分はタスクをアクティブ化する部分で実行され、 タスクをアクティブ化し
+た後に呼び出し元に戻ります。 ‘activate’/‘pass’ より後の部分は、 アクティ
+ブ化されたターゲット・タスク内で実行されます。
 
 ‘activate’ ( run-time nest-sys1 task –  ) gforth-experimental “activate”
-   Let task perform the code behind ‘activate’, and return to the caller
-of the word containing ‘activate’.  When the task returns from the code
-behind ‘activate’, it terminates itself.
+   指定のタスク(task)に ‘activate’ のより後ろにあるコードを実行させ、
+‘activate’ を含むワードの呼び出し元に戻ります。 タスクが ‘activate’ の後
+ろにあるコードから戻ると、 タスク自体が終了します。
 
 ‘pass’ ( x1 .. xn n task –  ) gforth-experimental “pass”
-   Pull x1 ..  xn n from the current task’s data stack and push x1 ..
-xn on task’s data stack.  Let task perform the code behind ‘pass’, and
-return to the caller of the word containing ‘pass’.  When the task
-returns from the code behind ‘pass’, it terminates itself.
+   現在のタスクのデータ・スタックから x1 ..  xn n を取り出し、 x1 ..  xn
+を task のデータ・スタックにプッシュします。 task に ‘pass’ の後ろのコー
+ドを実行させ、 ‘pass’ を含むワードの呼び出し元に戻ります。 タスクが
+‘pass’ の後ろにあるコードから戻ると、 タスク自体が終了します。
 
-   You can also do creation and activation in one step:
+   作成とアクティブ化(activation)をワン・ステップで行うこともできます:
 
 ‘execute-task’ ( xt – task  ) gforth-experimental “execute-task”
-   Create a new task TASK with the same stack sizes as the main task.
-Let task execute xt.  Upon return from the xt, the task terminates
-itself.
+   メイン・タスクと同じスタック・サイズで新しいタスク TASK を作成します
+。 task に xt を execute させます。 xt から戻ると、 タスクは自動的に終了
+します。
 
-   Apart from terminating by running to the end, a task can terminate
-itself with ‘kill-task’.  Other tasks can terminate it with ‘kill’.
+   タスクは最後まで実行して終了する以外に、 ‘kill-task’ を使用してタスク
+自身を終了することもできます。 他のタスクは ‘kill’ で終了できます。
 
 ‘kill-task’ ( –  ) gforth-experimental “kill-task”
-   Terminate the current task.
+   現在のタスクを終了(terminate)します。
 
 ‘kill’ ( task –  ) gforth-experimental “kill”
-   Terminate task.
+   指定のタスク(task)を終了(terminate)します。
 
-   Tasks can also temporarily stop themselves or be stopped:
+   タスク自体を一時的に停止(temporarily stop)したり、 タスクを停止(be
+stopped)したりすることもできます:
 
 ‘halt’ ( task –  ) gforth-experimental “halt”
-   Stop a task
+   タスクを停止(stop)する
 
 ‘stop’ ( –  ) gforth-experimental “stop”
-   stops the current task, and waits for events (which may restart it)
+   現在のタスクを停止(stop)し、 イベントを待ちます(再起動(restart)される
+可能性があります)
 
 ‘stop-ns’ ( timeout –  ) gforth-experimental “stop-ns”
-   Stop with timeout (in nanoseconds), better replacement for ms
+   タイムアウト(ナノ秒単位)まで停止(stop)します。 ms のより良い代替品で
+す
 
-   A task restarts when the timeout is over or when another task wakes
-it with:
+   タスクは、 タイムアウトが経過(timeout is over)するか、 別のタスクが以
+下のワードでウェイクアップ(wake)すると再起動(restart)します:
 
 ‘restart’ ( task –  ) gforth-experimental “restart”
-   Wake a task
+   タスクを起動(wake)する
 
-   There is also:
+   こちらもどうぞ:
 
 ‘pause’ ( –  ) gforth-experimental “pause”
-   voluntarily switch to the next waiting task (‘pause’ is the
-traditional cooperative task switcher; in the pthread multitasker, you
-don’t need ‘pause’ for cooperation, but you still can use it e.g.  when
-you have to resort to polling for some reason).  This also checks for
-events in the queue.
+   次の待機中のタスクに自発的に切り替えます(‘pause’ は従来の協調
+(cooperative)タスク・スイッチャー(切替器)です。 pthread マルチタスクでは
+、 協調するのに ‘pause’ は必要ありませんが、 それでも使用できます。 例え
+ば、 何らかの理由でポーリングに頼らなければならないときです)。 これによ
+り、 キュー内のイベントもチェックされます。
 
 
 File: gforth.info,  Node: Task-local data,  Next: Semaphores,  Prev: Basic multi-tasking,  Up: Pthreads
@@ -4812,46 +4828,48 @@ File: gforth.info,  Node: Task-local data,  Next: Semaphores,  Prev: Basic multi
 6.27.1.2 Task-local data
 ........................
 
-In Forth every task has essentially the same task-local data, called
-“user” area (early Forth systems were multi-user systems and there often
-was one user per task).  The task result of, e.g.  ‘newtask’ is the
-start address of its user area.  Each task gets the user data defined by
-the system (e.g., ‘base’).  You can define additional user data with:
+Forth では、 すべてのタスクには、 「ユーザー領域」(user area)と呼ばれる
+、 基本的に同じタスク・ローカル・データがあります(初期の Forth システム
+はマルチ・ユーザー・システムであり、 タスクごとに 1 人のユーザーが存在す
+ることがよくありました)。 task の結果、 たとえば‘newtask’ は、そのユーザ
+ー領域の開始アドレスです。 各タスクは、 システムによって定義されたユーザ
+ー・データ(例: ‘base’)を取得します。 あなたは以下を使用して追加のユーザ
+ー・データを定義できます:
 
 ‘User’ ( "name" –  ) gforth-0.2 “User”
-   Name is a user variable (1 cell).
-Name execution: ( – addr )
-Addr is the address of the user variable in the current task.
+   name という名前のユーザー変数(1 セル)を作成します。
+name 実行時: ( – addr )
+addr は現在のタスクのユーザー変数のアドレスです。
 
 ‘AUser’ ( "name" –  ) gforth-0.2 “AUser”
-   Name is a user variable containing an address (this only makes a
-difference in the cross-compiler).
+   name というユーザー変数を作成します( ‘User’ とはクロス・コンパイラー
+でのみ違いが生じます)。
 
 ‘uallot’ ( n1 – n2  ) gforth-0.3 “uallot”
-   Reserve n1 bytes of user data.  n2 is the offset of the start of the
-reserved area within the user area.
+   n1 バイトのユーザー・データを確保します。 確保した領域の先頭をユーザ
+ー領域内のオフセット値(n2)として返します。
 
 ‘UValue’ ( "name" –  ) gforth-1.0 “UValue”
-   Name is a user value.
-Name execution: ( – x )
+   name はユーザー value です。
+name 実行時: ( – x )
 
 ‘UDefer’ ( "name" –  ) gforth-1.0 “UDefer”
-   Name is a task-local deferred word.
-Name execution: ( ...  – ...  )
+   name はタスク・ローカルの deferされたワードです。
+Name 実行時: ( ...  – ...  )
 
-   There are also the following words for dealing with user data.
+   ユーザー・データを扱う場合には、 以下のようなワード群もあります。
 
-‘up@’ ( – a-addr ) new “up-fetch”
-   Addr is the start of the user area of the current task (addr also
-serves as the task identifier of the current task).
+‘up@’ ( – addr ) new “up-fetch”
+   addr は現在のタスクのユーザー領域の先頭です(addr は現在のタスクの
+task 識別子としても機能します)。
 
 ‘user'’ ( "name" – u  ) gforth-experimental “user”’
-   U is the offset of the user variable name in the user area of each
-task.
+   各タスクのユーザー領域のユーザー変数 name の、 ユーザー領域先頭からの
+オフセット値を U に返します。
 
 ‘'s’ ( addr1 task – addr2  ) gforth-experimental “’s”
-   With addr1 being an address in the user data of the current task,
-addr2 is the corresponding address in task’s user data.
+   addr1 が現在のタスクのユーザー・データ内のアドレスである場合、 addr2
+は 指定のタスク(task)のユーザー・データ内の対応するアドレスです。
 
 
 File: gforth.info,  Node: Semaphores,  Next: Hardware operations for multi-tasking,  Prev: Task-local data,  Up: Pthreads
@@ -4859,10 +4877,11 @@ File: gforth.info,  Node: Semaphores,  Next: Hardware operations for multi-taski
 6.27.1.3 Semaphores
 ...................
 
-A cooperative multitasker can ensure that there is no other task
-interacting between two invocations of ‘pause’.  Pthreads however are
-really concurrent tasks (at least on a multi-core CPU), and therefore,
-several techniques to avoid conflicts when accessing the same resources.
+協調的(cooperative)マルチタスカーは、 ‘pause’ の 2 つの呼び出しの間に相
+互作用する他のタスクがないことを保証できます。 しかしながら、 pthread は
+実際には(少なくともマルチコア CPU 上では)並列(concurrent)タスクであるた
+め、 同じリソースにアクセスする際の競合を回避するためのいくつかのテクニ
+ックが必要です。
 
    Semaphores can only be aquired by one thread, all other threads have
 to wait until the semapohre is released.
@@ -5674,195 +5693,4 @@ Assembler::.
      4 sp d) ax mov  \ sp into return reg
      ret             \ return from my-f+
      end-code
-
-
-File: gforth.info,  Node: Common Assembler,  Next: Common Disassembler,  Prev: Assembler Definitions,  Up: Assembler and Code Words
-
-6.29.2 Common Assembler
------------------------
-
-The assemblers in Gforth generally use a postfix syntax, i.e., the
-instruction name follows the operands.
-
-   The operands are passed in the usual order (the same that is used in
-the manual of the architecture).  Since they all are Forth words, they
-have to be separated by spaces; you can also use Forth words to compute
-the operands.
-
-   The instruction names usually end with a ‘,’.  This makes it easier
-to visually separate instructions if you put several of them on one
-line; it also avoids shadowing other Forth words (e.g., ‘and’).
-
-   Registers are usually specified by number; e.g., (decimal) ‘11’
-specifies registers R11 and F11 on the Alpha architecture (which one,
-depends on the instruction).  The usual names are also available, e.g.,
-‘s2’ for R11 on Alpha.
-
-   Control flow is specified similar to normal Forth code (*note
-Arbitrary control structures::), with ‘if,’, ‘ahead,’, ‘then,’,
-‘begin,’, ‘until,’, ‘again,’, ‘cs-roll’, ‘cs-pick’, ‘else,’, ‘while,’,
-and ‘repeat,’.  The conditions are specified in a way specific to each
-assembler.
-
-   The rest of this section is of interest mainly for those who want to
-define ‘code’ words (instead of the more portable ‘abi-code’ words).
-
-   Note that the register assignments of the Gforth engine can change
-between Gforth versions, or even between different compilations of the
-same Gforth version (e.g., if you use a different GCC version).  If you
-are using ‘CODE’ instead of ‘ABI-CODE’, and you want to refer to
-Gforth’s registers (e.g., the stack pointer or TOS), I recommend
-defining your own words for refering to these registers, and using them
-later on; then you can adapt to a changed register assignment.
-
-   The most common use of these registers is to end a ‘code’ definition
-with a dispatch to the next word (the ‘next’ routine).  A portable way
-to do this is to jump to ‘' noop >code-address’ (of course, this is less
-efficient than integrating the ‘next’ code and scheduling it well).
-When using ‘ABI-CODE’, you can just assemble a normal subroutine return
-(but make sure you return the data stack pointer).
-
-   Another difference between Gforth versions is that the top of stack
-is kept in memory in ‘gforth’ and, on most platforms, in a register in
-‘gforth-fast’.  For ‘ABI-CODE’ definitions, any stack caching registers
-are guaranteed to be flushed to the stack, allowing you to reliably
-access the top of stack in memory.
-
-
-File: gforth.info,  Node: Common Disassembler,  Next: 386 Assembler,  Prev: Common Assembler,  Up: Assembler and Code Words
-
-6.29.3 Common Disassembler
---------------------------
-
-You can disassemble a ‘code’ word with ‘see’ (*note Debugging::).  You
-can disassemble a section of memory with
-
-‘discode’ ( addr u –  ) gforth-0.2 “discode”
-   hook for the disassembler: disassemble u bytes of code at addr
-
-   There are two kinds of disassembler for Gforth: The Forth
-disassembler (available on some CPUs) and the gdb disassembler
-(available on platforms with ‘gdb’ and ‘mktemp’).  If both are
-available, the Forth disassembler is used by default.  If you prefer the
-gdb disassembler, say
-
-     ' disasm-gdb is discode
-
-   If neither is available, ‘discode’ performs ‘dump’.
-
-   The Forth disassembler generally produces output that can be fed into
-the assembler (i.e., same syntax, etc.).  It also includes additional
-information in comments.  In particular, the address of the instruction
-is given in a comment before the instruction.
-
-   The gdb disassembler produces output in the same format as the gdb
-‘disassemble’ command (*note Source and machine code: (gdb)Machine
-Code.), in the default flavour (AT&T syntax for the 386 and AMD64
-architectures).
-
-   ‘See’ may display more or less than the actual code of the word,
-because the recognition of the end of the code is unreliable.  You can
-use ‘discode’ if it did not display enough.  It may display more, if the
-code word is not immediately followed by a named word.  If you have
-something else there, you can follow the word with ‘align latest ,’ to
-ensure that the end is recognized.
-
-
-File: gforth.info,  Node: 386 Assembler,  Next: AMD64 Assembler,  Prev: Common Disassembler,  Up: Assembler and Code Words
-
-6.29.4 386 Assembler
---------------------
-
-The 386 assembler included in Gforth was written by Bernd Paysan, it’s
-available under GPL, and originally part of bigFORTH.
-
-   The 386 disassembler included in Gforth was written by Andrew McKewan
-and is in the public domain.
-
-   The disassembler displays code in an Intel-like prefix syntax.
-
-   The assembler uses a postfix syntax with AT&T-style parameter order
-(i.e., destination last).
-
-   The assembler includes all instruction of the Athlon, i.e.  486 core
-instructions, Pentium and PPro extensions, floating point, MMX, 3Dnow!,
-but not ISSE. It’s an integrated 16- and 32-bit assembler.  Default is
-32 bit, you can switch to 16 bit with .86 and back to 32 bit with .386.
-
-   There are several prefixes to switch between different operation
-sizes, ‘.b’ for byte accesses, ‘.w’ for word accesses, ‘.d’ for
-double-word accesses.  Addressing modes can be switched with ‘.wa’ for
-16 bit addresses, and ‘.da’ for 32 bit addresses.  You don’t need a
-prefix for byte register names (‘AL’ et al).
-
-   For floating point operations, the prefixes are ‘.fs’ (IEEE single),
-‘.fl’ (IEEE double), ‘.fx’ (extended), ‘.fw’ (word), ‘.fd’
-(double-word), and ‘.fq’ (quad-word).  The default is ‘.fx’, so you need
-to specify ‘.fl’ explicitly when dealing with Gforth FP values.
-
-   The MMX opcodes don’t have size prefixes, they are spelled out like
-in the Intel assembler.  Instead of move from and to memory, there are
-PLDQ/PLDD and PSTQ/PSTD.
-
-   The registers lack the ’e’ prefix; even in 32 bit mode, eax is called
-ax.  Immediate values are indicated by postfixing them with ‘#’, e.g.,
-‘3 #’.  Here are some examples of addressing modes in various syntaxes:
-
-     Gforth          Intel (NASM)   AT&T (gas)      Name
-     .w ax           ax             %ax             register (16 bit)
-     ax              eax            %eax            register (32 bit)
-     3 #             offset 3       $3              immediate
-     1000 #)         byte ptr 1000  1000            displacement
-     bx )            [ebx]          (%ebx)          base
-     100 di d)       100[edi]       100(%edi)       base+displacement
-     20 ax *4 i#)    20[eax*4]      20(,%eax,4)     (index*scale)+displacement
-     di ax *4 i)     [edi][eax*4]   (%edi,%eax,4)   base+(index*scale)
-     4 bx cx di)     4[ebx][ecx]    4(%ebx,%ecx)    base+index+displacement
-     12 sp ax *2 di) 12[esp][eax*2] 12(%esp,%eax,2) base+(index*scale)+displacement
-
-   You can use ‘L)’ and ‘LI)’ instead of ‘D)’ and ‘DI)’ to enforce
-32-bit displacement fields (useful for later patching).
-
-   Some example of instructions are:
-
-     ax bx mov             \ move ebx,eax
-     3 # ax mov            \ mov eax,3
-     100 di d) ax mov      \ mov eax,100[edi]
-     4 bx cx di) ax mov    \ mov eax,4[ebx][ecx]
-     .w ax bx mov          \ mov bx,ax
-
-   The following forms are supported for binary instructions:
-
-     <reg> <reg> <inst>
-     <n> # <reg> <inst>
-     <mem> <reg> <inst>
-     <reg> <mem> <inst>
-     <n> # <mem> <inst>
-
-   The shift/rotate syntax is:
-
-     <reg/mem> 1 # shl \ shortens to shift without immediate
-     <reg/mem> 4 # shl
-     <reg/mem> cl shl
-
-   Precede string instructions (‘movs’ etc.)  with ‘.b’ to get the byte
-version.
-
-   The control structure words ‘IF’ ‘UNTIL’ etc.  must be preceded by
-one of these conditions: ‘vs vc u< u>= 0= 0<> u<= u> 0< 0>= ps pc < >=
-<= >’.  (Note that most of these words shadow some Forth words when
-‘assembler’ is in front of ‘forth’ in the search path, e.g., in ‘code’
-words).  Currently the control structure words use one stack item, so
-you have to use ‘roll’ instead of ‘cs-roll’ to shuffle them (you can
-also use ‘swap’ etc.).
-
-   Based on the Intel ABI (used in Linux), ‘abi-code’ words can find the
-data stack pointer at ‘4 sp d)’, and the address of the FP stack pointer
-at ‘8 sp d)’; the data stack pointer is returned in ‘ax’; ‘Ax’, ‘cx’,
-and ‘dx’ are caller-saved, so you do not need to preserve their values
-inside the word.  You can return from the word with ‘ret’, the
-parameters are cleaned up by the caller.
-
-   For examples of 386 ‘abi-code’ words, see *note Assembler
-Definitions::.
 

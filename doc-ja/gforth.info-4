@@ -27,6 +27,197 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gforth.info,  Node: Common Assembler,  Next: Common Disassembler,  Prev: Assembler Definitions,  Up: Assembler and Code Words
+
+6.29.2 Common Assembler
+-----------------------
+
+The assemblers in Gforth generally use a postfix syntax, i.e., the
+instruction name follows the operands.
+
+   The operands are passed in the usual order (the same that is used in
+the manual of the architecture).  Since they all are Forth words, they
+have to be separated by spaces; you can also use Forth words to compute
+the operands.
+
+   The instruction names usually end with a ‘,’.  This makes it easier
+to visually separate instructions if you put several of them on one
+line; it also avoids shadowing other Forth words (e.g., ‘and’).
+
+   Registers are usually specified by number; e.g., (decimal) ‘11’
+specifies registers R11 and F11 on the Alpha architecture (which one,
+depends on the instruction).  The usual names are also available, e.g.,
+‘s2’ for R11 on Alpha.
+
+   Control flow is specified similar to normal Forth code (*note
+Arbitrary control structures::), with ‘if,’, ‘ahead,’, ‘then,’,
+‘begin,’, ‘until,’, ‘again,’, ‘cs-roll’, ‘cs-pick’, ‘else,’, ‘while,’,
+and ‘repeat,’.  The conditions are specified in a way specific to each
+assembler.
+
+   The rest of this section is of interest mainly for those who want to
+define ‘code’ words (instead of the more portable ‘abi-code’ words).
+
+   Note that the register assignments of the Gforth engine can change
+between Gforth versions, or even between different compilations of the
+same Gforth version (e.g., if you use a different GCC version).  If you
+are using ‘CODE’ instead of ‘ABI-CODE’, and you want to refer to
+Gforth’s registers (e.g., the stack pointer or TOS), I recommend
+defining your own words for refering to these registers, and using them
+later on; then you can adapt to a changed register assignment.
+
+   The most common use of these registers is to end a ‘code’ definition
+with a dispatch to the next word (the ‘next’ routine).  A portable way
+to do this is to jump to ‘' noop >code-address’ (of course, this is less
+efficient than integrating the ‘next’ code and scheduling it well).
+When using ‘ABI-CODE’, you can just assemble a normal subroutine return
+(but make sure you return the data stack pointer).
+
+   Another difference between Gforth versions is that the top of stack
+is kept in memory in ‘gforth’ and, on most platforms, in a register in
+‘gforth-fast’.  For ‘ABI-CODE’ definitions, any stack caching registers
+are guaranteed to be flushed to the stack, allowing you to reliably
+access the top of stack in memory.
+
+
+File: gforth.info,  Node: Common Disassembler,  Next: 386 Assembler,  Prev: Common Assembler,  Up: Assembler and Code Words
+
+6.29.3 Common Disassembler
+--------------------------
+
+You can disassemble a ‘code’ word with ‘see’ (*note Debugging::).  You
+can disassemble a section of memory with
+
+‘discode’ ( addr u –  ) gforth-0.2 “discode”
+   hook for the disassembler: disassemble u bytes of code at addr
+
+   There are two kinds of disassembler for Gforth: The Forth
+disassembler (available on some CPUs) and the gdb disassembler
+(available on platforms with ‘gdb’ and ‘mktemp’).  If both are
+available, the Forth disassembler is used by default.  If you prefer the
+gdb disassembler, say
+
+     ' disasm-gdb is discode
+
+   If neither is available, ‘discode’ performs ‘dump’.
+
+   The Forth disassembler generally produces output that can be fed into
+the assembler (i.e., same syntax, etc.).  It also includes additional
+information in comments.  In particular, the address of the instruction
+is given in a comment before the instruction.
+
+   The gdb disassembler produces output in the same format as the gdb
+‘disassemble’ command (*note Source and machine code: (gdb)Machine
+Code.), in the default flavour (AT&T syntax for the 386 and AMD64
+architectures).
+
+   ‘See’ may display more or less than the actual code of the word,
+because the recognition of the end of the code is unreliable.  You can
+use ‘discode’ if it did not display enough.  It may display more, if the
+code word is not immediately followed by a named word.  If you have
+something else there, you can follow the word with ‘align latest ,’ to
+ensure that the end is recognized.
+
+
+File: gforth.info,  Node: 386 Assembler,  Next: AMD64 Assembler,  Prev: Common Disassembler,  Up: Assembler and Code Words
+
+6.29.4 386 Assembler
+--------------------
+
+The 386 assembler included in Gforth was written by Bernd Paysan, it’s
+available under GPL, and originally part of bigFORTH.
+
+   The 386 disassembler included in Gforth was written by Andrew McKewan
+and is in the public domain.
+
+   The disassembler displays code in an Intel-like prefix syntax.
+
+   The assembler uses a postfix syntax with AT&T-style parameter order
+(i.e., destination last).
+
+   The assembler includes all instruction of the Athlon, i.e.  486 core
+instructions, Pentium and PPro extensions, floating point, MMX, 3Dnow!,
+but not ISSE. It’s an integrated 16- and 32-bit assembler.  Default is
+32 bit, you can switch to 16 bit with .86 and back to 32 bit with .386.
+
+   There are several prefixes to switch between different operation
+sizes, ‘.b’ for byte accesses, ‘.w’ for word accesses, ‘.d’ for
+double-word accesses.  Addressing modes can be switched with ‘.wa’ for
+16 bit addresses, and ‘.da’ for 32 bit addresses.  You don’t need a
+prefix for byte register names (‘AL’ et al).
+
+   For floating point operations, the prefixes are ‘.fs’ (IEEE single),
+‘.fl’ (IEEE double), ‘.fx’ (extended), ‘.fw’ (word), ‘.fd’
+(double-word), and ‘.fq’ (quad-word).  The default is ‘.fx’, so you need
+to specify ‘.fl’ explicitly when dealing with Gforth FP values.
+
+   The MMX opcodes don’t have size prefixes, they are spelled out like
+in the Intel assembler.  Instead of move from and to memory, there are
+PLDQ/PLDD and PSTQ/PSTD.
+
+   The registers lack the ’e’ prefix; even in 32 bit mode, eax is called
+ax.  Immediate values are indicated by postfixing them with ‘#’, e.g.,
+‘3 #’.  Here are some examples of addressing modes in various syntaxes:
+
+     Gforth          Intel (NASM)   AT&T (gas)      Name
+     .w ax           ax             %ax             register (16 bit)
+     ax              eax            %eax            register (32 bit)
+     3 #             offset 3       $3              immediate
+     1000 #)         byte ptr 1000  1000            displacement
+     bx )            [ebx]          (%ebx)          base
+     100 di d)       100[edi]       100(%edi)       base+displacement
+     20 ax *4 i#)    20[eax*4]      20(,%eax,4)     (index*scale)+displacement
+     di ax *4 i)     [edi][eax*4]   (%edi,%eax,4)   base+(index*scale)
+     4 bx cx di)     4[ebx][ecx]    4(%ebx,%ecx)    base+index+displacement
+     12 sp ax *2 di) 12[esp][eax*2] 12(%esp,%eax,2) base+(index*scale)+displacement
+
+   You can use ‘L)’ and ‘LI)’ instead of ‘D)’ and ‘DI)’ to enforce
+32-bit displacement fields (useful for later patching).
+
+   Some example of instructions are:
+
+     ax bx mov             \ move ebx,eax
+     3 # ax mov            \ mov eax,3
+     100 di d) ax mov      \ mov eax,100[edi]
+     4 bx cx di) ax mov    \ mov eax,4[ebx][ecx]
+     .w ax bx mov          \ mov bx,ax
+
+   The following forms are supported for binary instructions:
+
+     <reg> <reg> <inst>
+     <n> # <reg> <inst>
+     <mem> <reg> <inst>
+     <reg> <mem> <inst>
+     <n> # <mem> <inst>
+
+   The shift/rotate syntax is:
+
+     <reg/mem> 1 # shl \ shortens to shift without immediate
+     <reg/mem> 4 # shl
+     <reg/mem> cl shl
+
+   Precede string instructions (‘movs’ etc.)  with ‘.b’ to get the byte
+version.
+
+   The control structure words ‘IF’ ‘UNTIL’ etc.  must be preceded by
+one of these conditions: ‘vs vc u< u>= 0= 0<> u<= u> 0< 0>= ps pc < >=
+<= >’.  (Note that most of these words shadow some Forth words when
+‘assembler’ is in front of ‘forth’ in the search path, e.g., in ‘code’
+words).  Currently the control structure words use one stack item, so
+you have to use ‘roll’ instead of ‘cs-roll’ to shuffle them (you can
+also use ‘swap’ etc.).
+
+   Based on the Intel ABI (used in Linux), ‘abi-code’ words can find the
+data stack pointer at ‘4 sp d)’, and the address of the FP stack pointer
+at ‘8 sp d)’; the data stack pointer is returned in ‘ax’; ‘Ax’, ‘cx’,
+and ‘dx’ are caller-saved, so you do not need to preserve their values
+inside the word.  You can return from the word with ‘ret’, the
+parameters are cleaned up by the caller.
+
+   For examples of 386 ‘abi-code’ words, see *note Assembler
+Definitions::.
+
+
 File: gforth.info,  Node: AMD64 Assembler,  Next: Alpha Assembler,  Prev: 386 Assembler,  Up: Assembler and Code Words
 
 6.29.5 AMD64 (x86_64) Assembler
@@ -5353,7 +5544,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  84)
 * #line ( "U" "["FILE"]" -- ) gforth-1.0: Interpreter Directives.
                                                               (line 100)
-* #loc ( NLINE NCHAR "FILE" -- ) gforth-1.0: Debugging.       (line  93)
+* #loc ( NLINE NCHAR "FILE" -- ) gforth-1.0: Debugging.       (line  95)
 * #locals ( -- N ) environment:          Environmental Queries.
                                                               (line  73)
 * #s ( UD -- 0 0 ) core:                 Formatted numeric output.
@@ -5425,7 +5616,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * 'cold ( -- ) gforth-0.2:               Modifying the Startup Sequence.
                                                               (line  47)
 * 's ( ADDR1 TASK -- ADDR2 ) gforth-experimental: Task-local data.
-                                                              (line  43)
+                                                              (line  45)
 * ( ( COMPILATION 'CCC<CLOSE-PAREN>' -- ; RUN-TIME -- ) core,file: Comments.
                                                               (line   9)
 * (( ( ADDR U -- ) regexp-pattern:       Regular Expressions. (line  28)
@@ -5433,7 +5624,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  23)
 * (to) ( VAL OPERATION XT -- ) gforth-1.0: User-defined TO and DEFER@.
                                                               (line  13)
-* ) ( -- ) gforth-0.2:                   Assertions.          (line  46)
+* ) ( -- ) gforth-0.2:                   Assertions.          (line  47)
 * )) ( -- FLAG ) regexp-pattern:         Regular Expressions. (line  31)
 * * ( N1 N2 -- N ) core:                 Single precision.    (line  26)
 * **} ( SYS -- ) regexp-pattern:         Regular Expressions. (line 135)
@@ -5465,7 +5656,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * +load ( I*X N -- J*X ) gforth-0.2:     Blocks.              (line 205)
 * +LOOP ( COMPILATION DO-SYS -- ; RUN-TIME LOOP-SYS1 N -- | LOOP-SYS2 ) core: Counted Loops.
                                                               (line 228)
-* +ltrace ( -- ) gforth-1.0:             Debugging.           (line  87)
+* +ltrace ( -- ) gforth-1.0:             Debugging.           (line  89)
 * +thru ( I*X N1 N2 -- J*X ) gforth-0.2: Blocks.              (line 209)
 * +TO ( VALUE "NAME" -- ) gforth-1.0:    Values.              (line  39)
 * +x/string ( XC-ADDR1 U1 -- XC-ADDR2 U2 ) xchar-ext: Xchars and Unicode.
@@ -5488,7 +5679,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * -infinity ( -- R ) gforth-1.0:         Floating Point.      (line 192)
 * -LOOP ( COMPILATION DO-SYS -- ; RUN-TIME LOOP-SYS1 U -- | LOOP-SYS2 ) gforth-0.2: Counted Loops.
                                                               (line 231)
-* -ltrace ( -- ) gforth-1.0:             Debugging.           (line  90)
+* -ltrace ( -- ) gforth-1.0:             Debugging.           (line  92)
 * -rot ( W1 W2 W3 -- W3 W1 W2 ) gforth-0.2: Data stack.       (line  27)
 * -trailing ( C_ADDR U1 -- C_ADDR U2 ) string: String words.  (line  45)
 * -trailing-garbage ( XC-ADDR U1 -- XC-ADDR U2 ) xchar-ext: Xchars and Unicode.
@@ -5507,8 +5698,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ... ( X1 .. XN -- X1 .. XN ) gforth-1.0: Examining data.    (line   8)
 * ..char ( START END -- ) regexp-cg:     Regular Expressions. (line  48)
 * .? ( ADDR -- ADDR' ) regexp-pattern:   Regular Expressions. (line  86)
-* .cover-raw ( -- ) gforth-experimental: Code Coverage.       (line  51)
-* .coverage ( -- ) gforth-experimental:  Code Coverage.       (line  38)
+* .cover-raw ( -- ) gforth-experimental: Code Coverage.       (line  50)
+* .coverage ( -- ) gforth-experimental:  Code Coverage.       (line  37)
 * .debugline ( NFILE NLINE -- ) gforth-0.6: Debugging.        (line  36)
 * .fpath ( -- ) gforth-0.4:              Source Search Paths. (line  12)
 * .hm ( NT -- ) gforth-1.0:              Header methods.      (line  24)
@@ -5810,7 +6001,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ~~ ( -- ) gforth-0.2:                  Debugging.           (line  30)
 * ~~1bt ( -- ) gforth-1.0:               Debugging.           (line  57)
 * ~~bt ( -- ) gforth-1.0:                Debugging.           (line  54)
-* ~~Value ( N "NAME" -- ) gforth-1.0:    Debugging.           (line  84)
+* ~~Value ( N "NAME" -- ) gforth-1.0:    Debugging.           (line  85)
 * ~~Variable ( "NAME" -- ) gforth-1.0:   Debugging.           (line  81)
 * A, ( ADDR -- ) gforth-0.2:             Dictionary allocation.
                                                               (line  63)
@@ -5829,7 +6020,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * action-of ( INTERPRETATION "NAME" -- XT; COMPILATION "NAME" -- ; RUN-TIME -- XT ) core-ext: Deferred Words.
                                                               (line  97)
 * activate ( RUN-TIME NEST-SYS1 TASK -- ) gforth-experimental: Basic multi-tasking.
-                                                              (line  46)
+                                                              (line  52)
 * active-w ( -- OPTR ) minos2:           actor methods.       (line   9)
 * actor ( -- CLASS ) minos2:             MINOS2 object framework.
                                                               (line  14)
@@ -5869,7 +6060,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * also-path ( C-ADDR LEN PATH-ADDR -- ) gforth-0.4: General Search Paths.
                                                               (line  28)
 * and ( W1 W2 -- W ) core:               Bitwise operations.  (line   6)
-* annotate-cov ( -- ) gforth-experimental: Code Coverage.     (line  41)
+* annotate-cov ( -- ) gforth-experimental: Code Coverage.     (line  40)
 * append ( C-ADDR1 U1 C-ADDR2 U2 -- C-ADDR U ) gforth-0.7: String words.
                                                               (line  89)
 * arg ( U -- ADDR COUNT ) gforth-0.2:    OS command line arguments.
@@ -5882,17 +6073,17 @@ this manual.  Each word is listed with its stack effect and wordset.
 * asptr ( CLASS -- ) oof:                Class Declaration.   (line  16)
 * assembler ( -- ) tools-ext:            Assembler Definitions.
                                                               (line  31)
-* assert( ( -- ) gforth-0.2:             Assertions.          (line  43)
-* assert-level ( -- A-ADDR ) gforth-0.2: Assertions.          (line  62)
-* assert0( ( -- ) gforth-0.2:            Assertions.          (line  30)
-* assert1( ( -- ) gforth-0.2:            Assertions.          (line  33)
-* assert2( ( -- ) gforth-0.2:            Assertions.          (line  36)
-* assert3( ( -- ) gforth-0.2:            Assertions.          (line  39)
+* assert( ( -- ) gforth-0.2:             Assertions.          (line  44)
+* assert-level ( -- A-ADDR ) gforth-0.2: Assertions.          (line  63)
+* assert0( ( -- ) gforth-0.2:            Assertions.          (line  31)
+* assert1( ( -- ) gforth-0.2:            Assertions.          (line  34)
+* assert2( ( -- ) gforth-0.2:            Assertions.          (line  37)
+* assert3( ( -- ) gforth-0.2:            Assertions.          (line  40)
 * ASSUME-LIVE ( ORIG -- ORIG ) gforth-0.2: Where are locals visible by name?.
                                                               (line 137)
 * at-deltaxy ( DX DY -- ) gforth-0.7:    Terminal output.     (line  11)
 * at-xy ( X Y -- ) facility:             Terminal output.     (line   8)
-* AUser ( "NAME" -- ) gforth-0.2:        Task-local data.     (line  17)
+* AUser ( "NAME" -- ) gforth-0.2:        Task-local data.     (line  19)
 * authors ( -- ) gforth-1.0:             Help on Gforth.      (line  19)
 * AValue ( W "NAME" -- ) gforth-0.6:     Values.              (line  26)
 * AVariable ( "NAME" -- ) gforth-0.2:    Variables.           (line  35)
@@ -5948,7 +6139,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * buffer: ( U "NAME" -- ) core-ext:      Variables.           (line  46)
 * bw ( -- ) gforth-1.0:                  Locating uses of a word.
                                                               (line  24)
-* bw-cover ( -- ) gforth-1.0:            Code Coverage.       (line  58)
+* bw-cover ( -- ) gforth-1.0:            Code Coverage.       (line  57)
 * c! ( C C-ADDR -- ) core:               Memory Access.       (line  18)
 * C" ( COMPILATION "CCC<QUOTE>" -- ; RUN-TIME -- C-ADDR ) core-ext: Counted string words.
                                                               (line  22)
@@ -6043,7 +6234,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  64)
 * code-address! ( C_ADDR XT -- ) gforth-obsolete: Threading Words.
                                                               (line  76)
-* color-cover ( -- ) gforth-1.0:         Code Coverage.       (line  61)
+* color-cover ( -- ) gforth-1.0:         Code Coverage.       (line  62)
 * color: ( RGBA "NAME" -- ) minos2:      widget methods.      (line 128)
 * common-list ( LIST1 LIST2 -- LIST3 ) gforth-internal: Locals implementation.
                                                               (line 106)
@@ -6074,7 +6265,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  13)
 * Country ( <LANG> "NAME" -- ) gforth-experimental: i18n and l10n.
                                                               (line  45)
-* cov% ( -- ) gforth-experimental:       Code Coverage.       (line  47)
+* cov% ( -- ) gforth-experimental:       Code Coverage.       (line  46)
 * cov+ ( -- ) gforth-experimental:       Code Coverage.       (line  28)
 * coverage? ( -- F ) gforth-internal:    Code Coverage.       (line  25)
 * cputime ( -- DUSER DSYSTEM ) gforth-0.5: Keeping track of Time.
@@ -6087,7 +6278,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * create-from ( NT "NAME" -- ) gforth-1.0: Creating from a prototype.
                                                               (line  28)
 * critical-section ( XT SEMAPHORE -- ) gforth-experimental: Semaphores.
-                                                              (line  30)
+                                                              (line  31)
 * CS-DROP ( DEST -- ) gforth-1.0:        Arbitrary control structures.
                                                               (line  47)
 * CS-PICK ( ORIG0/DEST0 ORIG1/DEST1 ... ORIGU/DESTU U -- ... ORIG0/DEST0 ) tools-ext: Arbitrary control structures.
@@ -6299,7 +6490,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * execute-parsing-file ( I*X FILEID XT -- J*X ) gforth-0.6: The Input Stream.
                                                               (line  89)
 * execute-task ( XT -- TASK ) gforth-experimental: Basic multi-tasking.
-                                                              (line  59)
+                                                              (line  65)
 * EXIT ( COMPILATION -- ; RUN-TIME NEST-SYS -- ) core: Calls and returns.
                                                               (line  46)
 * exitm ( -- ) objects:                  Objects Glossary.    (line  84)
@@ -6518,7 +6709,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * h ( -- R ) minos2:                     widget methods.      (line  24)
 * h. ( U -- ) gforth-1.0:                Simple numeric output.
                                                               (line  16)
-* halt ( TASK -- ) gforth-experimental:  Basic multi-tasking. (line  75)
+* halt ( TASK -- ) gforth-experimental:  Basic multi-tasking. (line  82)
 * heap-new ( ... CLASS -- OBJECT ) objects: Objects Glossary. (line  87)
 * help ( "REST-OF-LINE" -- ) gforth-1.0: Help on Gforth.      (line   9)
 * here ( -- ADDR ) core:                 Dictionary allocation.
@@ -6567,7 +6758,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * init-object ( ... CLASS OBJECT -- ) objects: Objects Glossary.
                                                               (line  95)
 * initiate ( XT TASK -- ) gforth-experimental: Basic multi-tasking.
-                                                              (line  34)
+                                                              (line  40)
 * inline: ( "NAME" -- INLINE:-SYS ) gforth-experimental: Colon Definitions.
                                                               (line  24)
 * input-color ( -- ) gforth-1.0:         Terminal output.     (line  57)
@@ -6631,8 +6822,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * key-ior ( -- CHAR|IOR ) gforth-1.0:    Single-key input.    (line  12)
 * key? ( -- FLAG ) facility:             Single-key input.    (line  16)
 * key?-file ( WFILEID -- F ) gforth-0.4: General files.       (line  64)
-* kill ( TASK -- ) gforth-experimental:  Basic multi-tasking. (line  70)
-* kill-task ( -- ) gforth-experimental:  Basic multi-tasking. (line  67)
+* kill ( TASK -- ) gforth-experimental:  Basic multi-tasking. (line  76)
+* kill-task ( -- ) gforth-experimental:  Basic multi-tasking. (line  73)
 * l ( -- ) gforth-1.0:                   Locating source code definitions.
                                                               (line  38)
 * l! ( W C-ADDR -- ) gforth-0.7:         Special Memory Accesses.
@@ -6678,7 +6869,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * lle ( U1 -- U2 ) gforth-1.0:           Special Memory Accesses.
                                                               (line  81)
 * load ( I*X U -- J*X ) block:           Blocks.              (line 198)
-* load-cov ( -- ) gforth-experimental:   Code Coverage.       (line  70)
+* load-cov ( -- ) gforth-experimental:   Code Coverage.       (line  71)
 * locale! ( ADDR U LSID -- ) gforth-experimental: i18n and l10n.
                                                               (line  37)
 * locale-csv ( "NAME" -- ) gforth-experimental: i18n and l10n.
@@ -6690,7 +6881,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  33)
 * locate ( "NAME" -- ) gforth-1.0:       Locating source code definitions.
                                                               (line  26)
-* lock ( SEMAPHORE -- ) gforth-experimental: Semaphores.      (line  18)
+* lock ( SEMAPHORE -- ) gforth-experimental: Semaphores.      (line  19)
 * log2 ( U -- N ) gforth-1.0:            Bitwise operations.  (line  59)
 * LOOP ( COMPILATION DO-SYS -- ; RUN-TIME LOOP-SYS1 -- | LOOP-SYS2 ) core: Counted Loops.
                                                               (line 225)
@@ -6786,9 +6977,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * newline ( -- C-ADDR U ) gforth-0.5:    String and character literals.
                                                               (line  75)
 * newtask ( STACKSIZE -- TASK ) gforth-experimental: Basic multi-tasking.
-                                                              (line   9)
+                                                              (line  10)
 * newtask4 ( U-DATA U-RETURN U-FP U-LOCALS -- TASK ) gforth-experimental: Basic multi-tasking.
-                                                              (line  18)
+                                                              (line  20)
 * NEXT ( COMPILATION DO-SYS -- ; RUN-TIME LOOP-SYS1 -- | LOOP-SYS2 ) gforth-0.2: Counted Loops.
                                                               (line 234)
 * next-arg ( -- ADDR U ) gforth-0.7:     OS command line arguments.
@@ -6886,12 +7077,12 @@ this manual.  Each word is listed with its stack effect and wordset.
 * parse-word ( -- C-ADDR U ) gforth-obsolete: The Input Stream.
                                                               (line  40)
 * pass ( X1 .. XN N TASK -- ) gforth-experimental: Basic multi-tasking.
-                                                              (line  51)
+                                                              (line  57)
 * path+ ( PATH-ADDR "DIR" -- ) gforth-0.4: General Search Paths.
                                                               (line  34)
 * path= ( PATH-ADDR "DIR1|DIR2|DIR3" -- ) gforth-0.4: General Search Paths.
                                                               (line  38)
-* pause ( -- ) gforth-experimental:      Basic multi-tasking. (line  92)
+* pause ( -- ) gforth-experimental:      Basic multi-tasking. (line 101)
 * perform ( A-ADDR -- ) gforth-0.2:      Execution token.     (line 101)
 * pi ( -- R ) gforth-0.2:                Floating Point.      (line 141)
 * pick ( S:... U -- S:... W ) core-ext:  Data stack.          (line  22)
@@ -6979,7 +7170,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * resize-file ( UD WFILEID -- WIOR ) file: General files.     (line  95)
 * resized ( -- ) minos2:                 widget methods.      (line 108)
 * restart ( TASK -- ) gforth-experimental: Basic multi-tasking.
-                                                              (line  87)
+                                                              (line  96)
 * restore ( COMPILATION ORIG1 -- ; RUN-TIME -- ) gforth-0.7: Exception Handling.
                                                               (line 220)
 * restore-input ( X1 .. XN N -- FLAG ) core-ext: Input Sources.
@@ -7018,7 +7209,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  53)
 * save-buffer ( BUFFER -- ) gforth-0.2:  Blocks.              (line 193)
 * save-buffers ( -- ) block:             Blocks.              (line 187)
-* save-cov ( -- ) gforth-experimental:   Code Coverage.       (line  67)
+* save-cov ( -- ) gforth-experimental:   Code Coverage.       (line  68)
 * save-input ( -- X1 .. XN N ) core-ext: Input Sources.       (line  28)
 * save-mem ( ADDR1 U -- ADDR2 U ) gforth-0.2: Heap Allocation.
                                                               (line  38)
@@ -7045,7 +7236,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  47)
 * select ( U1 U2 F -- U ) gforth-1.0:    Boolean Flags.       (line  23)
 * selector ( "NAME" -- ) objects:        Objects Glossary.    (line 157)
-* semaphore ( "NAME" -- ) gforth-experimental: Semaphores.    (line  14)
+* semaphore ( "NAME" -- ) gforth-experimental: Semaphores.    (line  15)
 * send-event ( XT TASK -- ) gforth-experimental: Message queues.
                                                               (line  13)
 * set ( SOMETHING -- ) minos2:           actor methods.       (line  57)
@@ -7135,9 +7326,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * stack-cells ( -- N ) environment:      Environmental Queries.
                                                               (line  66)
 * stacksize ( -- U ) gforth-experimental: Basic multi-tasking.
-                                                              (line  25)
-* stacksize4 ( -- U-DATA U-RETURN U-FP U-LOCALS ) gforth-experimental: Basic multi-tasking.
                                                               (line  28)
+* stacksize4 ( -- U-DATA U-RETURN U-FP U-LOCALS ) gforth-experimental: Basic multi-tasking.
+                                                              (line  31)
 * staged/-divisor ( ADDR1 -- ADDR2 ) gforth-1.0: Two-stage integer division.
                                                               (line  91)
 * staged/-size ( -- U ) gforth-1.0:      Two-stage integer division.
@@ -7147,9 +7338,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * stderr ( -- WFILEID ) gforth-0.2:      General files.       (line 110)
 * stdin ( -- WFILEID ) gforth-0.4:       General files.       (line 104)
 * stdout ( -- WFILEID ) gforth-0.2:      General files.       (line 107)
-* stop ( -- ) gforth-experimental:       Basic multi-tasking. (line  78)
+* stop ( -- ) gforth-experimental:       Basic multi-tasking. (line  85)
 * stop-ns ( TIMEOUT -- ) gforth-experimental: Basic multi-tasking.
-                                                              (line  81)
+                                                              (line  89)
 * str< ( C-ADDR1 U1 C-ADDR2 U2 -- F ) gforth-0.6: String words.
                                                               (line  16)
 * str= ( C-ADDR1 U1 C-ADDR2 U2 -- F ) gforth-0.6: String words.
@@ -7178,7 +7369,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  12)
 * table ( -- WID ) gforth-0.2:           Word Lists.          (line  62)
 * task ( USTACKSIZE "NAME" -- ) gforth-experimental: Basic multi-tasking.
-                                                              (line  13)
+                                                              (line  15)
 * text-color: ( RGBA "NAME" -- ) minos2: widget methods.      (line 134)
 * text-emoji-color: ( RGBATEXT RGBAEMOJI "NAME" -- ) minos2: widget methods.
                                                               (line 138)
@@ -7255,14 +7446,14 @@ this manual.  Each word is listed with its stack effect and wordset.
 * u<= ( U1 U2 -- F ) gforth-0.2:         Numeric comparison.  (line  35)
 * u> ( U1 U2 -- F ) core-ext:            Numeric comparison.  (line  37)
 * u>= ( U1 U2 -- F ) gforth-0.2:         Numeric comparison.  (line  39)
-* uallot ( N1 -- N2 ) gforth-0.3:        Task-local data.     (line  21)
+* uallot ( N1 -- N2 ) gforth-0.3:        Task-local data.     (line  23)
 * ud. ( UD -- ) gforth-0.2:              Simple numeric output.
                                                               (line  47)
 * ud.r ( UD N -- ) gforth-0.2:           Simple numeric output.
                                                               (line  56)
 * ud/mod ( UD1 U2 -- UREM UDQUOT ) gforth-0.2: Integer division.
                                                               (line 118)
-* UDefer ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  29)
+* UDefer ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  31)
 * ukeyed ( ADDR U -- ) minos2:           actor methods.       (line  27)
 * um* ( U1 U2 -- UD ) core:              Mixed precision.     (line  10)
 * um/mod ( UD U1 -- U2 U3 ) core:        Integer division.    (line  84)
@@ -7275,7 +7466,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * under+ ( N1 N2 N3 -- N N2 ) gforth-0.3: Single precision.   (line  19)
 * unescape ( ADDR1 U1 DEST -- DEST U2 ) string-ext: Substitute.
                                                               (line  33)
-* unlock ( SEMAPHORE -- ) gforth-experimental: Semaphores.    (line  21)
+* unlock ( SEMAPHORE -- ) gforth-experimental: Semaphores.    (line  22)
 * unloop ( R:W1 R:W2 -- ) core:          Counted Loops.       (line 262)
 * UNREACHABLE ( -- ) gforth-0.2:         Where are locals visible by name?.
                                                               (line  49)
@@ -7285,15 +7476,15 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line  27)
 * unused-words ( -- ) gforth-1.0:        Locating uses of a word.
                                                               (line  62)
-* up@ ( -- A-ADDR ) new:                 Task-local data.     (line  35)
+* up@ ( -- A-ADDR ) new:                 Task-local data.     (line  37)
 * update ( -- ) block:                   Blocks.              (line 179)
 * updated? ( N -- F ) gforth-0.2:        Blocks.              (line 183)
 * use ( "FILE" -- ) gforth-0.2:          Blocks.              (line 128)
-* User ( "NAME" -- ) gforth-0.2:         Task-local data.     (line  12)
-* user' ( "NAME" -- U ) gforth-experimental: Task-local data. (line  39)
+* User ( "NAME" -- ) gforth-0.2:         Task-local data.     (line  14)
+* user' ( "NAME" -- U ) gforth-experimental: Task-local data. (line  41)
 * utime ( -- DTIME ) gforth-0.5:         Keeping track of Time.
                                                               (line  19)
-* UValue ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  25)
+* UValue ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  27)
 * v* ( F-ADDR1 NSTRIDE1 F-ADDR2 NSTRIDE2 UCOUNT -- R ) gforth-0.5: Floating Point.
                                                               (line  98)
 * Value ( W "NAME" -- ) core-ext:        Values.              (line  18)

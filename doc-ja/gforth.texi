@@ -23045,7 +23045,7 @@ printf デバッグすると言っている)。
 @format
 @code{~~1bt} ( @i{--  }) gforth-1.0 ``~~1bt''
 @end format
-print stackdump and backtrace once
+スタックダンプとバックトレースを(@code{once}と同様) 1 回だけ実行します
 
 
 @findex ??? ( @var{ --   } ) gforth-0.2
@@ -23092,7 +23092,7 @@ ok@*bar foo ok
 @format
 @code{~~Variable} ( @i{"name" --  }) gforth-1.0 ``~~Variable''
 @end format
-Variable that will be watched on every access
+アクセスごとにワッチされる(@code{~~} する)変数(variable を ~~variable に一時的にリネームする)
 
 
 @findex ~~Value ( @var{ n "name" --   } ) gforth-1.0
@@ -23101,7 +23101,7 @@ Variable that will be watched on every access
 @format
 @code{~~Value} ( @i{n "name" --  }) gforth-1.0 ``~~Value''
 @end format
-Value that will be watched on every access
+アクセスごとにワッチされる(@code{~~} する) value ( value を 一時的に ~~value にリネームする)
 
 
 @findex +ltrace ( @var{ --   } ) gforth-1.0
@@ -23110,7 +23110,7 @@ Value that will be watched on every access
 @format
 @code{+ltrace} ( @i{--  }) gforth-1.0 ``+ltrace''
 @end format
-turn on line tracing
+行単位のトレースをONにする。
 
 
 @findex -ltrace ( @var{ --   } ) gforth-1.0
@@ -23119,7 +23119,7 @@ turn on line tracing
 @format
 @code{-ltrace} ( @i{--  }) gforth-1.0 ``-ltrace''
 @end format
-turn off line tracing
+行単位のトレースをOFFにする
 
 
 @findex #loc ( @var{ nline nchar "file" --   } ) gforth-1.0
@@ -23128,7 +23128,7 @@ turn off line tracing
 @format
 @code{#loc} ( @i{nline nchar "file" --  }) gforth-1.0 ``#loc''
 @end format
-set next word's location to @var{nline nchar} in @var{"file"}
+次のワードの場所を @var{"file"} の @var{nline nchar} と設定します
 
 
 
@@ -23136,32 +23136,28 @@ set next word's location to @var{nline nchar} in @var{"file"}
 @subsection Assertions
 @cindex assertions
 
-It is a good idea to make your programs self-checking, especially if you
-make an assumption that may become invalid during maintenance (for example,
-that a certain field of a data structure is never zero). Gforth supports
-@dfn{assertions} for this purpose. They are used like this:
+特にメンテナンス中に無効になる可能性があると仮定する場合(たとえば、 データ構造の特定のフィールドは決してゼロにならない、 等)、
+プログラムを自己チェックするようにすることをお勧めします。 Gforth は、
+こ​​の目的のために「アサート」(@dfn{assertions})をサポートしています。 それらは以下のように使用します:
 
 @example
 assert( @i{flag} )
 @end example
 
-The code between @code{assert(} and @code{)} should compute a flag, that
-should be true if everything is alright and false otherwise. It should not
-change anything else on the stack. The overall stack effect of the assertion
-is @code{( -- )}. E.g.
+@code{assert(} と @code{)} の間のコードは @i{flag} を計算する必要があります。 すべてが正常な場合は true
+、それ以外の場合は false になります。 スタック上の他のものは何も変更しないでください。 アサートの全体的なスタック効果は @code{( --
+)} です。 例:
 
 @example
 assert( 1 1 + 2 = ) \ what we learn in school
 assert( dup 0<> ) \ assert that the top of stack is not zero
-assert( false ) \ this code should not be reached
+assert( false ) \ このコードには決して到達してはならない
 @end example
 
-The need for assertions is different at different times. During debugging,
-we want more checking, in production we sometimes care more for
-speed. Therefore, assertions can be turned off, i.e., the assertion becomes
-a comment. Depending on the importance of an assertion and the time it takes
-to check it, you may want to turn off some assertions and keep others turned
-on. Gforth provides several levels of assertions for this purpose:
+アサートの必要性は、 その時々によって異なります。 デバッグ中はより多くのチェックが必要ですが、 運用環境では速度をより重視することがあります。
+したがって、アサートをオフにすることができます。 その場合、 つまり、 アサートはコメントになります。
+アサートの重要性とそのチェックにかかる時間に応じて、 一部のアサートをオフにし、 他のアサートをオンにしたほうがよい場合があります。 Gforth
+は、こ​​の目的のためにいくつかのレベルのアサートを提供します:
 
 
 @findex assert0( ( @var{ --   } ) gforth-0.2
@@ -23170,7 +23166,7 @@ on. Gforth provides several levels of assertions for this purpose:
 @format
 @code{assert0(} ( @i{--  }) gforth-0.2 ``assert-zero''
 @end format
-Important assertions that should always be turned on.
+常にオンにする必要がある重要なアサート。
 
 
 @findex assert1( ( @var{ --   } ) gforth-0.2
@@ -23179,7 +23175,7 @@ Important assertions that should always be turned on.
 @format
 @code{assert1(} ( @i{--  }) gforth-0.2 ``assert-one''
 @end format
-Normal assertions; turned on by default.
+通常のアサート: デフォルトではオンになっています。
 
 
 @findex assert2( ( @var{ --   } ) gforth-0.2
@@ -23188,7 +23184,7 @@ Normal assertions; turned on by default.
 @format
 @code{assert2(} ( @i{--  }) gforth-0.2 ``assert-two''
 @end format
-Debugging assertions.
+デバッグ用のアサート。
 
 
 @findex assert3( ( @var{ --   } ) gforth-0.2
@@ -23197,8 +23193,7 @@ Debugging assertions.
 @format
 @code{assert3(} ( @i{--  }) gforth-0.2 ``assert-three''
 @end format
-Slow assertions that you may not want to turn on in normal debugging; you
-would turn them on mainly for thorough checking.
+通常のデバッグでは有効にしたくないであろう遅いアサート。 主に徹底的なチェックを行うためにオンにします。
 
 
 @findex assert( ( @var{ --   } ) gforth-0.2
@@ -23207,7 +23202,7 @@ would turn them on mainly for thorough checking.
 @format
 @code{assert(} ( @i{--  }) gforth-0.2 ``assert(''
 @end format
-Equivalent to @code{assert1(}
+@code{assert1(} と同等です
 
 
 @findex ) ( @var{ --   } ) gforth-0.2
@@ -23216,22 +23211,19 @@ Equivalent to @code{assert1(}
 @format
 @code{)} ( @i{--  }) gforth-0.2 ``close-paren''
 @end format
-End an assertion. Generic end, can be used for other similar purposes
+アサートを終了します。 汎用の終端なので、 他の同様の目的でも使用されます
 
 
 
 
-The variable @code{assert-level} specifies the highest assertions that are
-turned on. I.e., at the default @code{assert-level} of one, @code{assert0(}
-and @code{assert1(} assertions perform checking, while @code{assert2(} and
-@code{assert3(} assertions are treated as comments.
+変数 @code{assert-level} は、オンにする最高のアサートを指定します。 つまり、デフォルトの @code{assert-level}
+の 1 では、 @code{assert0(} および @code{assert1(} はチェックを実行しますが、 @code{assert2(}
+および @code{assert3(}) はコメントとして扱われます。
 
-The value of @code{assert-level} is evaluated at compile-time, not at
-run-time. Therefore you cannot turn assertions on or off at run-time; you
-have to set the @code{assert-level} appropriately before compiling a piece
-of code. You can compile different pieces of code at different
-@code{assert-level}s (e.g., a trusted library at level 1 and newly-written
-code at level 3).
+@code{assert-level} の値は、 実行時ではなくコンパイル時に評価されます。 したがって、
+実行時にアサートをオンまたはオフにすることはできません。 あなたはコードをコンパイルする前に @code{assert-level}
+を適切に設定する必要があります。 異なるコード部分を異なる @code{assert-level} でコンパイルできます(例:
+信頼に足るライブラリはレベル 1 で、 新しく作成されたコードはレベル 3 など)。
 
 
 @findex assert-level ( @var{ -- a-addr   } ) gforth-0.2
@@ -23240,25 +23232,21 @@ code at level 3).
 @format
 @code{assert-level} ( @i{-- a-addr  }) gforth-0.2 ``assert-level''
 @end format
-All assertions above this level are turned off.
+変数(variable)。 指定のレベルを超えるすべてのアサートはオフになります。
 
 
 
 
-If an assertion fails, a message compatible with Emacs' compilation mode is
-produced and the execution is aborted (currently with @code{ABORT"}.  If
-there is interest, we will introduce a special throw code. But if you intend
-to @code{catch} a specific condition, using @code{throw} is probably more
-appropriate than an assertion).
+アサートが失敗すると、 Emacs のコンパイル・モードと互換性のあるメッセージが生成され、 実行が中止(abort)されます(現在は
+@code{ABORT"} を使用します。 あなたの興味があれば、 特別な throw コードを導入します。 ただし、
+特定の条件をキャッチ(@code{catch})したい場合は、 おそらくアサートよりも @code{throw} を使用する方が適切です)。
 
 @cindex filenames in assertion output
-Assertions (and @code{~~}) will usually print the wrong file name if a
-marker is executed in the same file after their occurance.  They will print
-@samp{*somewhere*} as file name if a marker is executed in the same file
-before their occurance.
+アサート (および @code{~~}) の出現後に同じファイル内で marker が実行されると、 通常は間違ったファイル名が出力されます。 アサート
+(および @code{~~}) の出現前に同じファイル内で marker が実行された場合、
+ファイル名として「どれか」(somewhere)が出力されます。
 
-Definitions in Standard Forth for these assertion words are provided in
-@file{compat/assert.fs}.
+これらのアサート・ワードの標準 Forth での定義は、 @file{compat/assert.fs} で提供されます。
 
 
 @node Singlestep Debugger, Code Coverage, Assertions, Programming Tools
@@ -23358,10 +23346,10 @@ string"} コマンドを使用します。 これは @code{BREAK:} と同様に�
 @file{coverage.fs} には、 カバレッジと実行頻度を測定するためのツールが含まれています(訳注: gforth
 に組み込まれて無いので使う時は @file{coverage.fs} をロードしてください)。
 
-Code coverage inserts counting code in every basic block (straight-line code
-sequence) loaded after @file{coverage.fs}.  Each time that code is run, it
-increments the counter for that basic block.  Later you can show the source
-file with the counts inserted in these basic blocks.
+コード・カバレッジは、 @file{coverage.fs}
+の後にロードされるすべての基本ブロック(逐次実行のコード・シーケンス)にカウント(計数)コードを挿入します。
+コードが実行されるたびに、その基本ブロックのカウンター(計数器)がインクリメントされます。
+後で、これらの基本ブロックに挿入されたカウント(計数)を含むソース・ファイルを表示できます。
 
 @findex nocov[ ( @var{ --   } ) gforth-1.0
 @cindex @code{nocov[}
@@ -23369,7 +23357,7 @@ file with the counts inserted in these basic blocks.
 @format
 @code{nocov[} ( @i{--  }) gforth-1.0 ``nocov-bracket''
 @end format
-(Immediate) Turn coverage off temporarily.
+(即実行ワード) 一時的にカバレッジをオフにすることを開始。
 
 
 @findex ]nocov ( @var{ --   } ) gforth-1.0
@@ -23378,7 +23366,7 @@ file with the counts inserted in these basic blocks.
 @format
 @code{]nocov} ( @i{--  }) gforth-1.0 ``bracket-nocov''
 @end format
-(Immediate) End of temporary turned off coverage.
+(即実行ワード) 一時的にカバレッジをオフにすることを終了。
 
 
 @findex coverage? ( @var{ -- f   } ) gforth-internal
@@ -23387,7 +23375,7 @@ file with the counts inserted in these basic blocks.
 @format
 @code{coverage?} ( @i{-- f  }) gforth-internal ``coverage?''
 @end format
-Value: Coverage check on/off
+Value: カバレッジ・チェックの オン/オフ
 
 
 @findex cov+ ( @var{ --   } ) gforth-experimental
@@ -23396,7 +23384,7 @@ Value: Coverage check on/off
 @format
 @code{cov+} ( @i{--  }) gforth-experimental ``cov+''
 @end format
-(Immediate) Place a coverage counter here.
+(即実行ワード) ここ(here)にカバレッジ・カウンターを配置します。
 
 
 @findex ?cov+ ( @var{ flag -- flag   } ) gforth-experimental
@@ -23405,10 +23393,9 @@ Value: Coverage check on/off
 @format
 @code{?cov+} ( @i{flag -- flag  }) gforth-experimental ``?cov+''
 @end format
-(Immediate) A coverage counter for a flag; in the coverage output you see
-three numbers behind @code{?cov}: The first is the number of executions
-where the top-of-stack was non-zero; the second is the number of executions
-where it was zero; the third is the total number of executions.
+(即実行ワード) フラグ(@i{flag})のカバレッジ・カウンター。 カバレッジの出力では、 @code{?cov} の後ろに 3
+つの数字が表示されます。 1 つ目はスタックの最上位が 0 以外だった実行の数です。 2 番目は、 ゼロだった場合の実行数です。 3
+番目は実行の合計数です。
 
 
 @findex .coverage ( @var{ --   } ) gforth-experimental
@@ -23417,7 +23404,7 @@ where it was zero; the third is the total number of executions.
 @format
 @code{.coverage} ( @i{--  }) gforth-experimental ``.coverage''
 @end format
-Show code with execution frequencies.
+コードを実行頻度(execution frequencies)とともに表示します。
 
 
 @findex annotate-cov ( @var{ --   } ) gforth-experimental
@@ -23426,10 +23413,9 @@ Show code with execution frequencies.
 @format
 @code{annotate-cov} ( @i{--  }) gforth-experimental ``annotate-cov''
 @end format
-For every file with coverage information, produce a @code{.cov} file that
-has the execution frequencies inserted.  We recommend to use @code{bw-cover}
-first (with the default @code{color-cover} you get escape sequences in the
-files).
+カバレッジ情報を含むファイルごとに、 実行頻度(execution frequencies)が挿入された @code{.cov} ファイルを作成します。
+最初に @code{bw-cover} を使用することをお勧めします(デフォルトの @code{color-cover} を使用すると、
+ファイル内にエスケープ シーケンスが含まれます)。
 
 
 @findex cov% ( @var{ --   } ) gforth-experimental
@@ -23438,8 +23424,7 @@ files).
 @format
 @code{cov%} ( @i{--  }) gforth-experimental ``cov-percent''
 @end format
-Print the percentage of basic blocks loaded after @file{coverage.fs} that
-are executed at least once.
+@file{coverage.fs} の後でロードされ、 少なくとも 1 回実行された基本ブロックの割合を出力します。
 
 
 @findex .cover-raw ( @var{ --   } ) gforth-experimental
@@ -23448,7 +23433,7 @@ are executed at least once.
 @format
 @code{.cover-raw} ( @i{--  }) gforth-experimental ``.cover-raw''
 @end format
-Print raw execution counts.
+生の実行カウントを出力します。
 
 
 @c commented out because the included-file index is not a
@@ -23456,9 +23441,8 @@ Print raw execution counts.
 @c doc-.cover-file
 @c doc-covered?
 
-By default, the counts are shown in colour (using ANSI escape sequences),
-but you can use @code{bw-cover} to show them in parenthesized form without
-escape sequences.
+デフォルトでは、 カウント(計数)は(ANSI エスケープ・シーケンスを使用して、)カラーで表示されますが、 @code{bw-cover}
+を使用すると、 エスケープ・シーケンスを使用せずに括弧で囲まれた形式でカウントを表示できます。
 
 @findex bw-cover ( @var{ --   } ) gforth-1.0
 @cindex @code{bw-cover}
@@ -23466,7 +23450,8 @@ escape sequences.
 @format
 @code{bw-cover} ( @i{--  }) gforth-1.0 ``bw-cover''
 @end format
-Print execution counts in parentheses (source-code compatible).
+実行カウントを(カラー表示ではなく)括弧内に出力します(ソース・コード互換)(訳注: つまり forth のコメントとして出力する。出力をそのまま
+forth のソース・コードとして利用可能)。
 
 
 @findex color-cover ( @var{ --   } ) gforth-1.0
@@ -23475,12 +23460,11 @@ Print execution counts in parentheses (source-code compatible).
 @format
 @code{color-cover} ( @i{--  }) gforth-1.0 ``color-cover''
 @end format
-Print execution counts in colours (default).
+実行カウントをカラーで表示します(デフォルト)。
 
 
 
-You can save and reload the coverage counters in binary format, to aggregate
-coverage counters across several test runs.
+カバレッジ・カウンター(計数器)をバイナリ形式で保存および再ロードして、 複数のテスト実行にわたるカバレッジ・カウンターを集計できます。
 
 @findex save-cov ( @var{ --   } ) gforth-experimental
 @cindex @code{save-cov}
@@ -23488,7 +23472,7 @@ coverage counters across several test runs.
 @format
 @code{save-cov} ( @i{--  }) gforth-experimental ``save-cov''
 @end format
-Save coverage counters.
+カバレッジ・カウンターを保存します。
 
 
 @findex load-cov ( @var{ --   } ) gforth-experimental
@@ -23497,7 +23481,7 @@ Save coverage counters.
 @format
 @code{load-cov} ( @i{--  }) gforth-experimental ``load-cov''
 @end format
-Load coverage counters.
+カバレッジ・カウンターをロードします。
 
 
 
@@ -23522,15 +23506,14 @@ pthread ベースのマルチタスカーは現在、 実験的な機能とし�
 
 @c You need to include @file{unix/pthread.fs} to use the following words.
 
-Posix threads can run in parallel on several cores, or with pre-emptive
-multitasking on onecore.  However, many of the following words are the same
-as in the traditional cooperative multi-tasker.
+pthred 、 つまり posix スレッドは、 複数のコア上で並行実行することも、 1
+つのコア上でプリエンプティブ・マルチタスクで実行することもできます。  ただし、 以下のワード群の多くは、
+従来の協調マルチタスク(traditional cooperative multi-tasker)の場合と同一です。
 
-In addition, there are words that allow you to make sure that only one task
-at a time changes something, and for communicating between tasks.  These
-words are necessary for pre-emptive and multi-core multi-tasking, because
-the cooperative-multitasking way of performing transactions between calls to
-@code{pause} does not work in this environment.
+さらに、 一度に 1 つのタスクのみが何かを変更することを確認したり、 タスク間のコミュニケーションに使用したりするためのワード群もあります。
+@code{pause}
+の呼び出し間でトランザクション(取引)を実行する協調マルチタスク(cooperative-multitasking)はこの環境では機能しないため、
+これらのワード群はプリエンプティブ・マルチタスクおよびマルチコア・マルチタスクで必要なものです。
 
 @menu
 * Basic multi-tasking::
@@ -23543,8 +23526,8 @@ the cooperative-multitasking way of performing transactions between calls to
 @node Basic multi-tasking, Task-local data, Pthreads, Pthreads
 @subsubsection Basic multi-tasking
 
-Tasks can be created with @code{newtask} or @code{newtask4} with a given
-amount of stack space (either all the same or each stack's size specified).
+タスクは @code{newtask} または @code{newtask4} を使用して、 指定された量のスタック領域(すべて同じ、 または、
+データ・スタックとリターン・スタックと FP スタックとローカル変数スタックそれぞれのサイズを指定)で作成できます。
 
 @findex newtask ( @var{ stacksize -- task   } ) gforth-experimental
 @cindex @code{newtask}
@@ -23552,8 +23535,9 @@ amount of stack space (either all the same or each stack's size specified).
 @format
 @code{newtask} ( @i{stacksize -- task  }) gforth-experimental ``newtask''
 @end format
-creates @i{task}; each stack (data, return, FP, locals) has size
-@i{stacksize}.
+タスク(@i{task}を作成します。 データ・スタックとリターン・スタックと FP
+スタックとローカル変数スタックのサイズは全て同じにします(@i{stacksize})(訳注: スタックごとに個別サイズ指定したい時は
+@code{newtask4} を使用してください)。
 
 
 @findex task ( @var{ ustacksize "name" --   } ) gforth-experimental
@@ -23562,8 +23546,8 @@ creates @i{task}; each stack (data, return, FP, locals) has size
 @format
 @code{task} ( @i{ustacksize "name" --  }) gforth-experimental ``task''
 @end format
-creates a task @i{name}; each stack (data, return, FP, locals)  has size
-@i{ustacksize}.@* @i{name} execution: ( -- @i{task} )
+タスク @i{name} を作成します。 各スタック(データ・スタック、 リターン・スタック、 FP スタック、 ローカル変数スタック) サイズは
+@i{ustacksize} です。@*実行時: ( -- @i{task} )
 
 
 @findex newtask4 ( @var{ u-data u-return u-fp u-locals -- task   } ) gforth-experimental
@@ -23572,13 +23556,12 @@ creates a task @i{name}; each stack (data, return, FP, locals)  has size
 @format
 @code{newtask4} ( @i{u-data u-return u-fp u-locals -- task  }) gforth-experimental ``newtask4''
 @end format
-creates @i{task} with data stack size @i{u-data}, return stack size
-@i{u-return}, FP stack size @i{u-fp} and locals stack size @i{u-locals}.
+データ・スタック・サイズ @i{u-data}、 リターン・スタック・サイズ @i{u-return}、 FP スタック・サイズ @i{u-fp}、
+ローカル変数スタック・サイズ @i{u-locals} で @i{task} を作成します。
 
 
 
-If you don't know which stack sizes to use for the task, you can use the
-size(s) of the main task:
+あなたが、 タスクにどのスタック・サイズを使用すればよいかわからない場合は、 メイン・タスクのサイズを流用できます:
 
 @findex stacksize ( @var{ -- u   } ) gforth-experimental
 @cindex @code{stacksize}
@@ -23586,7 +23569,7 @@ size(s) of the main task:
 @format
 @code{stacksize} ( @i{-- u  }) gforth-experimental ``stacksize''
 @end format
-@i{u} is the data stack size of the main task.
+@i{u} はメイン・タスクのデータ・スタックサイズです。
 
 
 @findex stacksize4 ( @var{ -- u-data u-return u-fp u-locals   } ) gforth-experimental
@@ -23595,12 +23578,13 @@ size(s) of the main task:
 @format
 @code{stacksize4} ( @i{-- u-data u-return u-fp u-locals  }) gforth-experimental ``stacksize4''
 @end format
-Pushes the data, return, FP, and locals stack sizes of the main task.
+メイン・タスクのデータ・スタック・サイズと、 リターン・スタック・サイズと、 FP スタック・サイズと、 ローカル変数スタックサイズを、
+プッシュします。
 
 
 
-A task is created in an inactive state.  To let it run, you have to activate
-it with one of the following words:
+タスクは非アクティブ状態(inactive state)で作成されます。  実行するには、
+以下のいずれかのワードを使用してアクティブ化(activate)する必要があります:
 
 @findex initiate ( @var{ xt task --   } ) gforth-experimental
 @cindex @code{initiate}
@@ -23608,18 +23592,16 @@ it with one of the following words:
 @format
 @code{initiate} ( @i{xt task --  }) gforth-experimental ``initiate''
 @end format
-Let @i{task} execute @i{xt}.  Upon return from the @i{xt}, the task
-terminates itself (VFX compatible).  Use one-time executable closures to
-pass arbitrary paramenters to a task.
+@i{task} に @i{xt} を @i{execute} させます。  @i{xt} から戻ると、 タスクは自動的に終了します(VFX 互換)。
+ワンタイム実行可能クロージャ(one-time executable closures)を使用して、 任意のパラメータをタスクに渡せます。
 
 
 
-The following legacy words provide the same functionality as
-@code{initiate}, but with a different interface: Like @code{does>}, they
-split their containing colon definition in two parts: The part before
-@code{activate}/@code{pass} runs in the activating task, and returns to its
-caller after activating the task.  The part behind
-@code{activate}/@code{pass} is executed in the activated target task.
+以下の古い(legacy)ワード、 @code{activate} と @code{pass} は、 @code{initiate}
+と同じ機能を提供しますが、 インターフェイスが異なります:  @code{does>} と同様に、 含まれるコロン定義が 2 つの部分に分割されます:
+@code{activate}/@code{pass} より前の部分はタスクをアクティブ化する部分で実行され、
+タスクをアクティブ化した後に呼び出し元に戻ります。  @code{activate}/@code{pass} より後の部分は、
+アクティブ化されたターゲット・タスク内で実行されます。
 
 @findex activate ( @var{ run-time nest-sys1 task --   } ) gforth-experimental
 @cindex @code{activate}
@@ -23627,9 +23609,8 @@ caller after activating the task.  The part behind
 @format
 @code{activate} ( @i{run-time nest-sys1 task --  }) gforth-experimental ``activate''
 @end format
-Let @i{task} perform the code behind @code{activate}, and return to the
-caller of the word containing @code{activate}.  When the task returns from
-the code behind @code{activate}, it terminates itself.
+指定のタスク(@i{task})に @code{activate} のより後ろにあるコードを実行させ、 @code{activate}
+を含むワードの呼び出し元に戻ります。 タスクが @code{activate} の後ろにあるコードから戻ると、 タスク自体が終了します。
 
 
 @findex pass ( @var{ x1 .. xn n task --   } ) gforth-experimental
@@ -23638,14 +23619,13 @@ the code behind @code{activate}, it terminates itself.
 @format
 @code{pass} ( @i{x1 .. xn n task --  }) gforth-experimental ``pass''
 @end format
-Pull @i{x1 .. xn n} from the current task's data stack and push @i{x1 .. xn}
-on @i{task}'s data stack.  Let @i{task} perform the code behind @code{pass},
-and return to the caller of the word containing @code{pass}.  When the task
-returns from the code behind @code{pass}, it terminates itself.
+現在のタスクのデータ・スタックから @i{x1 .. xn n} を取り出し、 @i{x1 .. xn} を @i{task}
+のデータ・スタックにプッシュします。  @i{task} に @code{pass} の後ろのコードを実行させ、 @code{pass}
+を含むワードの呼び出し元に戻ります。  タスクが @code{pass} の後ろにあるコードから戻ると、 タスク自体が終了します。
 
 
 
-You can also do creation and activation in one step:
+作成とアクティブ化(activation)をワン・ステップで行うこともできます:
 
 @findex execute-task ( @var{ xt -- task   } ) gforth-experimental
 @cindex @code{execute-task}
@@ -23653,14 +23633,13 @@ You can also do creation and activation in one step:
 @format
 @code{execute-task} ( @i{xt -- task  }) gforth-experimental ``execute-task''
 @end format
-Create a new task @var{task} with the same stack sizes as the main task. Let
-@i{task} execute @i{xt}.  Upon return from the @i{xt}, the task terminates
-itself.
+メイン・タスクと同じスタック・サイズで新しいタスク @var{task} を作成します。 @i{task} に @i{xt} を @i{execute}
+させます。  @i{xt} から戻ると、 タスクは自動的に終了します。
 
 
 
-Apart from terminating by running to the end, a task can terminate itself
-with @code{kill-task}.  Other tasks can terminate it with @code{kill}.
+タスクは最後まで実行して終了する以外に、 @code{kill-task} を使用してタスク自身を終了することもできます。 他のタスクは
+@code{kill} で終了できます。
 
 @findex kill-task ( @var{ --   } ) gforth-experimental
 @cindex @code{kill-task}
@@ -23668,7 +23647,7 @@ with @code{kill-task}.  Other tasks can terminate it with @code{kill}.
 @format
 @code{kill-task} ( @i{--  }) gforth-experimental ``kill-task''
 @end format
-Terminate the current task.
+現在のタスクを終了(terminate)します。
 
 
 @findex kill ( @var{ task --   } ) gforth-experimental
@@ -23677,11 +23656,11 @@ Terminate the current task.
 @format
 @code{kill} ( @i{task --  }) gforth-experimental ``kill''
 @end format
-Terminate @i{task}.
+指定のタスク(@i{task})を終了(terminate)します。
 
 
 
-Tasks can also temporarily stop themselves or be stopped:
+タスク自体を一時的に停止(temporarily stop)したり、 タスクを停止(be stopped)したりすることもできます:
 
 @findex halt ( @var{ task --   } ) gforth-experimental
 @cindex @code{halt}
@@ -23689,7 +23668,7 @@ Tasks can also temporarily stop themselves or be stopped:
 @format
 @code{halt} ( @i{task --  }) gforth-experimental ``halt''
 @end format
-Stop a task
+タスクを停止(stop)する
 
 
 @findex stop ( @var{ --   } ) gforth-experimental
@@ -23698,7 +23677,7 @@ Stop a task
 @format
 @code{stop} ( @i{--  }) gforth-experimental ``stop''
 @end format
-stops the current task, and waits for events (which may restart it)
+現在のタスクを停止(stop)し、 イベントを待ちます(再起動(restart)される可能性があります)
 
 
 @findex stop-ns ( @var{ timeout --   } ) gforth-experimental
@@ -23707,11 +23686,12 @@ stops the current task, and waits for events (which may restart it)
 @format
 @code{stop-ns} ( @i{timeout --  }) gforth-experimental ``stop-ns''
 @end format
-Stop with timeout (in nanoseconds), better replacement for ms
+タイムアウト(ナノ秒単位)まで停止(stop)します。 ms のより良い代替品です
 
 
 
-A task restarts when the timeout is over or when another task wakes it with:
+タスクは、 タイムアウトが経過(timeout is over)するか、
+別のタスクが以下のワードでウェイクアップ(wake)すると再起動(restart)します:
 
 @findex restart ( @var{ task --   } ) gforth-experimental
 @cindex @code{restart}
@@ -23719,11 +23699,11 @@ A task restarts when the timeout is over or when another task wakes it with:
 @format
 @code{restart} ( @i{task --  }) gforth-experimental ``restart''
 @end format
-Wake a task
+タスクを起動(wake)する
 
 
 
-There is also:
+こちらもどうぞ:
 
 @findex pause ( @var{ --   } ) gforth-experimental
 @cindex @code{pause}
@@ -23731,11 +23711,9 @@ There is also:
 @format
 @code{pause} ( @i{--  }) gforth-experimental ``pause''
 @end format
-voluntarily switch to the next waiting task (@code{pause} is the traditional
-cooperative task switcher; in the pthread multitasker, you don't need
-@code{pause} for cooperation, but you still can use it e.g. when you have to
-resort to polling for some reason).  This also checks for events in the
-queue.
+次の待機中のタスクに自発的に切り替えます(@code{pause} は従来の協調(cooperative)タスク・スイッチャー(切替器)です。
+pthread マルチタスクでは、 協調するのに @code{pause} は必要ありませんが、 それでも使用できます。 例えば、
+何らかの理由でポーリングに頼らなければならないときです)。 これにより、 キュー内のイベントもチェックされます。
 
 
 
@@ -23745,11 +23723,10 @@ queue.
 @cindex user space
 @cindex task-local data
 
-In Forth every task has essentially the same task-local data, called
-``user'' area (early Forth systems were multi-user systems and there often
-was one user per task).  The @i{task} result of, e.g. @code{newtask} is the
-start address of its user area.  Each task gets the user data defined by the
-system (e.g., @code{base}).  You can define additional user data with:
+Forth では、 すべてのタスクには、 「ユーザー領域」(user area)と呼ばれる、 基本的に同じタスク・ローカル・データがあります(初期の
+Forth システムはマルチ・ユーザー・システムであり、 タスクごとに 1 人のユーザーが存在することがよくありました)。  @i{task} の結果、
+たとえば@code{newtask} は、そのユーザー領域の開始アドレスです。 各タスクは、 システムによって定義されたユーザー・データ(例:
+@code{base})を取得します。 あなたは以下を使用して追加のユーザー・データを定義できます:
 
 @findex User ( @var{ "name" --   } ) gforth-0.2
 @cindex @code{User}
@@ -23757,8 +23734,8 @@ system (e.g., @code{base}).  You can define additional user data with:
 @format
 @code{User} ( @i{"name" --  }) gforth-0.2 ``User''
 @end format
-@i{Name} is a user variable (1 cell).@* @i{Name} execution: ( -- @i{addr}
-)@* @i{Addr} is the address of the user variable in the current task.
+@i{name} という名前のユーザー変数(1 セル)を作成します。@*@i{name} 実行時: ( -- @i{addr} )@* @i{addr}
+は現在のタスクのユーザー変数のアドレスです。
 
 
 @findex AUser ( @var{ "name" --   } ) gforth-0.2
@@ -23767,8 +23744,7 @@ system (e.g., @code{base}).  You can define additional user data with:
 @format
 @code{AUser} ( @i{"name" --  }) gforth-0.2 ``AUser''
 @end format
-@i{Name} is a user variable containing an address (this only makes a
-difference in the cross-compiler).
+@i{name} というユーザー変数を作成します( @code{User} とはクロス・コンパイラーでのみ違いが生じます)。
 
 
 @findex uallot ( @var{ n1 -- n2   } ) gforth-0.3
@@ -23777,8 +23753,7 @@ difference in the cross-compiler).
 @format
 @code{uallot} ( @i{n1 -- n2  }) gforth-0.3 ``uallot''
 @end format
-Reserve @i{n1} bytes of user data.  @i{n2} is the offset of the start of the
-reserved area within the user area.
+@i{n1} バイトのユーザー・データを確保します。  確保した領域の先頭をユーザー領域内のオフセット値(@i{n2})として返します。
 
 
 @findex UValue ( @var{ "name" --   } ) gforth-1.0
@@ -23787,7 +23762,7 @@ reserved area within the user area.
 @format
 @code{UValue} ( @i{"name" --  }) gforth-1.0 ``UValue''
 @end format
-@i{Name} is a user value.@* @i{Name} execution: ( -- @i{x} )
+@i{name} はユーザー value です。@*@i{name} 実行時: ( -- @i{x} )
 
 
 @findex UDefer ( @var{ "name" --   } ) gforth-1.0
@@ -23796,20 +23771,19 @@ reserved area within the user area.
 @format
 @code{UDefer} ( @i{"name" --  }) gforth-1.0 ``UDefer''
 @end format
-@i{Name} is a task-local deferred word.@* @i{Name} execution: ( ... -- ... )
+@i{name} はタスク・ローカルの deferされたワードです。@*@i{Name} 実行時: ( ... -- ... )
 
 
 
-There are also the following words for dealing with user data.
+ユーザー・データを扱う場合には、 以下のようなワード群もあります。
 
 @findex up@@ ( @var{ -- a-addr  } ) new
 @cindex @code{up@@}
 @kindex up@@
 @format
-@code{up@@} ( @i{-- a-addr }) new ``up-fetch''
+@code{up@@} ( @i{-- addr }) new ``up-fetch''
 @end format
-@i{Addr} is the start of the user area of the current task (@i{addr} also
-serves as the @i{task} identifier of the current task).
+@i{addr} は現在のタスクのユーザー領域の先頭です(@i{addr} は現在のタスクの @i{task} 識別子としても機能します)。
 
 @findex user' ( @var{ "name" -- u   } ) gforth-experimental
 @cindex @code{user'}
@@ -23817,8 +23791,7 @@ serves as the @i{task} identifier of the current task).
 @format
 @code{user'} ( @i{"name" -- u  }) gforth-experimental ``user'''
 @end format
-@i{U} is the offset of the user variable @i{name} in the user area of each
-task.
+各タスクのユーザー領域のユーザー変数 @i{name} の、 ユーザー領域先頭からのオフセット値を @i{U} に返します。
 
 
 @findex 's ( @var{ addr1 task -- addr2   } ) gforth-experimental
@@ -23827,8 +23800,8 @@ task.
 @format
 @code{'s} ( @i{addr1 task -- addr2  }) gforth-experimental ``'s''
 @end format
-With @i{addr1} being an address in the user data of the current task,
-@i{addr2} is the corresponding address in @i{task}'s user data.
+@i{addr1} が現在のタスクのユーザー・データ内のアドレスである場合、 @i{addr2} は
+指定のタスク(@i{task})のユーザー・データ内の対応するアドレスです。
 
 
 
@@ -23837,10 +23810,9 @@ With @i{addr1} being an address in the user data of the current task,
 @node Semaphores, Hardware operations for multi-tasking, Task-local data, Pthreads
 @subsubsection Semaphores
 
-A cooperative multitasker can ensure that there is no other task interacting
-between two invocations of @code{pause}.  Pthreads however are really
-concurrent tasks (at least on a multi-core CPU), and therefore, several
-techniques to avoid conflicts when accessing the same resources.
+協調的(cooperative)マルチタスカーは、 @code{pause} の 2 つの呼び出しの間に相互作用する他のタスクがないことを保証できます。
+しかしながら、 pthread は実際には(少なくともマルチコア CPU 上では)並列(concurrent)タスクであるため、
+同じリソースにアクセスする際の競合を回避するためのいくつかのテクニックが必要です。
 
 Semaphores can only be aquired by one thread, all other threads have to wait
 until the semapohre is released.
