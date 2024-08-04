@@ -69,23 +69,21 @@ Previous: <a href="Pthreads.html" accesskey="p" rel="prev">Pthreads</a>, Up: <a 
 <hr>
 <span id="Cilk-1"></span><h4 class="subsection">6.27.2 Cilk</h4>
 
-<p>Gforth&rsquo;s Cilk is a framework for dividing work between multiple tasks
-running on several cores, inspired by the programming language of the same
-name.  Use <code>require cilk.fs</code> if you want to use Cilk.
+<p>gforth の Cilk は、 同じ名前のプログラミング言語からインスピレーションを得た、
+複数のコアで実行される複数のタスク間で作業を分割するためのフレームワークです。  Cilk を使用する場合は、 <code>require
+cilk.fs</code> としてください。
 </p>
-<p>The idea is that you identify subproblems that can be solved in parallel,
-and the framework assigns worker tasks to these subproblems.  In particular,
-you use one of the <code>spawn</code> words for each subtask.  Eventually you need
-to wait with <code>cilk-sync</code> for the subproblems to be solved.
+<p>考え方としては、 並行して解決できる部分問題(subproblems)を特定し、
+フレームワークがワーカー・タスクをこれらの部分問題に割り当てるというものです。 特に、 各サブ・タスクに対して <code>spawn</code> ワードの 1
+つを使用します。  最終的には、 部分問題が解決されるまで <code>cilk-sync</code> で待つ必要があります。
 </p>
-<p>Currently all the spawning has to happen from one task, and <code>cilk-sync</code>
-waits for all subproblems to complete, so using the current Gforth Cilk for
-recursive algorithms is not straightforward.
+<p>現在、 すべての生成は 1 つのタスクから発生する必要があり、 <code>cilk-sync</code>
+はすべての部分問題(subproblems)が完了するまで待機するため、 再帰アルゴリズムに現在の gforth Cilk
+を使用するのは簡単ではありません。
 </p>
-<p>Do not divide the subproblems too finely, in order to avoid overhead; how
-fine is too fine depends on how uniform the run-time for the subproblems is,
-but for problems with substantial run-time, having 5*<code>cores</code>
-subproblems is probably a good starting point.
+<p>オーバーヘッドを避けるために、 部分問題を細かく分割しすぎないでください。 どのくらい細かいかは、
+部分問題の実行時間がどの程度均一であるかによって決まりますが、 かなりの実行時間の問題の場合は、 5*<code>cores</code>
+個の部分問題(subproblems)にするのが、 おそらく良い出発点となります。
 </p>
 <span id="index-cores-_0028--_002d_002d-u--_0029-cilk"></span>
 <span id="index-cores"></span>
@@ -93,10 +91,9 @@ subproblems is probably a good starting point.
 <div class="format">
 <pre class="format"><code>cores</code> ( <i>&ndash; u  </i>) cilk &ldquo;cores&rdquo;
 </pre></div>
-<p>A value containing the number of worker tasks to use.  By default this is
-the number of hardware threads (with SMT/HT), if we can determine that,
-otherwise 1.  If you want to use a different number, change <code>cores</code>
-before calling <code>cilk-init</code>.
+<p>使用するワーカー・タスクの数を含む値。  デフォルトでは、 これはハードウェア・スレッドの数(SMT/HT の場合)です。
+(決定できれば、)それ以外の場合は 1 になります。 別の数を使用したい場合は、 <code>cilk-init</code> を呼び出す前に
+<code>cores</code> を変更します。 
 </p>
 
 <span id="index-cilk_002dinit-_0028--_002d_002d--_0029-cilk"></span>
@@ -105,7 +102,7 @@ before calling <code>cilk-init</code>.
 <div class="format">
 <pre class="format"><code>cilk-init</code> ( <i>&ndash;  </i>) cilk &ldquo;cilk-init&rdquo;
 </pre></div>
-<p>Start the worker tasks if not already done.
+<p>ワーカー・タスクがまだ実行されていない場合は開始します。
 </p>
 
 <span id="index-spawn-_0028--xt-_002d_002d--_0029-cilk"></span>
@@ -114,10 +111,10 @@ before calling <code>cilk-init</code>.
 <div class="format">
 <pre class="format"><code>spawn</code> ( <i>xt &ndash;  </i>) cilk &ldquo;spawn&rdquo;
 </pre></div>
-<p>Execute <i>xt</i> ( &ndash; ) in a worker task.  Use one-time executable closures to
-pass heap-allocated closures, allowing to pass arbitrary data from the
-spawner to the code running in the worker.<br> E.g.: <code>( n r ) [{: n f: r
-:}h1 code ;] spawn</code>
+<p>ワーカー・タスクで <i>xt</i> ( &ndash; ) を <i>execute</i> します。  使い捨て実行可能クロージャ(one-time
+executable closures)を使用して、 ヒープに割り当てられたクロージャを渡し、 <code>spawn</code> 呼び出し側から、
+ワーカーで実行されているコードに任意のデータを渡すことができます。<br> 例: <code>( n r ) [{: n f: r :}h1 code
+;] spawn</code>
 </p>
 
 <span id="index-spawn1-_0028--x-xt-_002d_002d--_0029-cilk"></span>
@@ -144,7 +141,7 @@ spawner to the code running in the worker.<br> E.g.: <code>( n r ) [{: n f: r
 <div class="format">
 <pre class="format"><code>cilk-sync</code> ( <i>&ndash;  </i>) cilk &ldquo;cilk-sync&rdquo;
 </pre></div>
-<p>Wait for all subproblems to complete.
+<p>すべての部分問題が完了(complete)するまで待ちます(wait)。
 </p>
 
 <span id="index-cilk_002dbye-_0028--_002d_002d--_0029-cilk"></span>
@@ -153,15 +150,10 @@ spawner to the code running in the worker.<br> E.g.: <code>( n r ) [{: n f: r
 <div class="format">
 <pre class="format"><code>cilk-bye</code> ( <i>&ndash;  </i>) cilk &ldquo;cilk-bye&rdquo;
 </pre></div>
-<p>Terminate all workers.
+<p>すべてのワーカーを終了(terminate)します。
 </p>
 
 
-</div>
-<hr>
-<div class="header">
-<p>
-Previous: <a href="Pthreads.html">Pthreads</a>, Up: <a href="Multitasker.html">Multitasker</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

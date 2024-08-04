@@ -23686,7 +23686,7 @@ pthred 、 つまり posix スレッドは、 複数のコア上で並行実行�
 @format
 @code{stop-ns} ( @i{timeout --  }) gforth-experimental ``stop-ns''
 @end format
-タイムアウト(ナノ秒単位)まで停止(stop)します。 ms のより良い代替品です
+タイムアウト(ナノ秒単位)まで停止(stop)します。 @code{ms} のより良い代替品です
 
 
 
@@ -23814,8 +23814,7 @@ Forth システムはマルチ・ユーザー・システムであり、 タス�
 しかしながら、 pthread は実際には(少なくともマルチコア CPU 上では)並列(concurrent)タスクであるため、
 同じリソースにアクセスする際の競合を回避するためのいくつかのテクニックが必要です。
 
-Semaphores can only be aquired by one thread, all other threads have to wait
-until the semapohre is released.
+セマフォ(semaphore)を取得できるのは 1 つのスレッドのみであり、 他のすべてのスレッドはセマフォが解放されるまで待機する必要があります。
 
 @findex semaphore ( @var{ "name" --   } ) gforth-experimental
 @cindex @code{semaphore}
@@ -23823,7 +23822,7 @@ until the semapohre is released.
 @format
 @code{semaphore} ( @i{"name" --  }) gforth-experimental ``semaphore''
 @end format
-create a named semaphore @i{name}@* @i{name} execution: ( -- @i{semaphore} )
+名前付きセマフォ @i{name} を作成します@*@i{name} 実行時: ( -- @i{semaphore} )
 
 
 @findex lock ( @var{ semaphore --   } ) gforth-experimental
@@ -23832,7 +23831,7 @@ create a named semaphore @i{name}@* @i{name} execution: ( -- @i{semaphore} )
 @format
 @code{lock} ( @i{semaphore --  }) gforth-experimental ``lock''
 @end format
-lock the semaphore
+セマフォをロック(lock)
 
 
 @findex unlock ( @var{ semaphore --   } ) gforth-experimental
@@ -23841,14 +23840,12 @@ lock the semaphore
 @format
 @code{unlock} ( @i{semaphore --  }) gforth-experimental ``unlock''
 @end format
-unlock the semaphore
+セマフォのロックを解除します(unlock)
 
 
 
-The other approach to prevent concurrent access is the critical section.
-Here, we implement a critical section with a semaphore, so you have to
-specify the semaphore which is used for the critical section.  Only those
-critical sections which use the same semaphore are mutually exclusive.
+同時アクセスを防ぐもう 1 つのアプローチが、 クリティカル・セクションです。 ここではクリティカル・セクションをセマフォで実装しているため、
+クリティカル・セクションに使用するセマフォを指定する必要があります。  同一のセマフォを使用するクリティカル・セクション達のみが相互に排他的です。
 
 @findex critical-section ( @var{ xt semaphore --   } ) gforth-experimental
 @cindex @code{critical-section}
@@ -23856,20 +23853,17 @@ critical sections which use the same semaphore are mutually exclusive.
 @format
 @code{critical-section} ( @i{xt semaphore --  }) gforth-experimental ``critical-section''
 @end format
-Execute @i{xt} while locking @i{semaphore}.  After leaving @i{xt},
-@i{semaphore} is unlocked even if an exception is thrown.
+@i{semaphore}をロックした状態で @i{xt} を @i{execute} します。  @i{xt} を離れた後は、 それが例外の
+throw によるものであっても @i{semaphore} のロックが解除されます。
 
 
 
 @node Hardware operations for multi-tasking, Message queues, Semaphores, Pthreads
 @subsubsection Hardware operations for multi-tasking
 
-Atomic hardware operations perform the whole operation, without any other
-task seeing an intermediate state.  These operations can be used to
-synchronize tasks without using slow OS primitives, but compared to the
-non-atomic sequences of operations they tend to be slow.  Atomic operations
-only work correctly on aligned addresses, even on hardware that otherwise
-does not require alignment.
+アトミックなハードウェア操作は、 他のタスクが中間状態を参照することなく、 操作全体を実行します。 これらの操作は、 遅い OS
+プリミティブを使用せずにタスクを同期するために使用できますが、 非アトミックな操作シーケンスと比較すると遅くなる傾向があります。 アトミックな操作は、
+アライメントを必要としないハードウェアであっても、 アライメントされたアドレスでのみ正しく機能します。
 
 @findex !@@ ( @var{ u1 a-addr -- u2  } ) gforth-experimental
 @cindex @code{!@@}
@@ -23877,8 +23871,8 @@ does not require alignment.
 @format
 @code{!@@} ( @i{u1 a-addr -- u2 }) gforth-experimental ``store-fetch''
 @end format
-load @var{u2} from @var{a_addr}, and store @var{u1} there, as atomic
-operation
+@var{a_addr} から 値を @var{u2} に取得し、 そして、 @var{a_addr} に 値 @var{u1} を格納する操作を、
+アトミック操作として行います。
 
 @findex +!@@ ( @var{ u1 a-addr -- u2  } ) gforth-experimental
 @cindex @code{+!@@}
@@ -23886,8 +23880,8 @@ operation
 @format
 @code{+!@@} ( @i{u1 a-addr -- u2 }) gforth-experimental ``add-store-fetch''
 @end format
-load @var{u2} from @var{a_addr}, and increment this location by @var{u1}, as
-atomic operation
+@var{a_addr} から 値 @var{u2} を取得し、 @var{a_addr} の値に @var{u1} を足し込む操作を、
+アトミック操作として行います。
 
 @findex ?!@@ ( @var{ unew uold a-addr -- uprev  } ) gforth-experimental
 @cindex @code{?!@@}
@@ -23895,14 +23889,13 @@ atomic operation
 @format
 @code{?!@@} ( @i{unew uold a-addr -- uprev }) gforth-experimental ``question-store-fetch''
 @end format
-load @var{uprev} from @var{a_addr}, compare it to @var{uold}, and if equal,
-store @var{unew} there, as atomic operation
+@var{a_addr} から値 @var{uprev} を取得し、それを @var{uold} と比較し、 等しい場合は @var{unew} を
+@var{a_addr} に格納する操作を、 アトミック操作として行います。
 
 
-Another hardware operation is the memory barrier.  Unfortunately modern
-hardware often can reorder memory operations relative to other memory
-operations (as seen by a different core), and the memory barrier suppresses
-this reordering for one point in the execution of the task.
+もう 1 つのハードウェア操作はメモリ・バリアです(memory barrier)。  残念ながら、 最新のハードウェアでは、
+メモリ操作を他のメモリ操作と比較して(別のコアから見た場合に)並べ替えることができることが多く、 メモリ・バリアにより、
+タスク実行のある時点でこの並べ替えを抑制します。
 
 @findex barrier ( @var{ --  } ) gforth-experimental
 @cindex @code{barrier}
@@ -23910,19 +23903,16 @@ this reordering for one point in the execution of the task.
 @format
 @code{barrier} ( @i{-- }) gforth-experimental ``barrier''
 @end format
-All memory operations before the barrier are performed before any memory
-operation after the barrier.
+バリア前のすべてのメモリ操作は、 バリア後のメモリ操作より前に実行されます。
 
 
 @node Message queues, , Hardware operations for multi-tasking, Pthreads
 @subsubsection Message queues
 
-Gforth's message queues are a variant of the actor model.
+Gforth のメッセージ・キューはアクター・モデルのバリエーションです。
 
-An event is an xt; the sending task tells the receiving task to run an
-event, and the receiving task performs one event from its message queue when
-it is ready.  Execute-once closures can be used for events that pass
-parameters.
+イベントは xt です。 送信タスクは受信タスクにイベントを実行するようにお願いし、 受信タスクは準備ができたらそのメッセージ・キューからイベントを 1
+つ実行します。  単一実行クロージャ(Execute-once closures)は、 パラメータを渡すイベントに使用できます。
 
 @findex send-event ( @var{ xt task --   } ) gforth-experimental
 @cindex @code{send-event}
@@ -23930,14 +23920,13 @@ parameters.
 @format
 @code{send-event} ( @i{xt task --  }) gforth-experimental ``send-event''
 @end format
-Task IPC: send @var{xt} to @var{task}.  The xt is executed there.  Use a
-one-shot closure to pass parameters with the xt.
+タスク IPC: @var{xt} を @var{task} に送信します。  @var{task} で @i{xt} が @i{execute}
+されます。 使い捨てクロージャ(one-shot closure)を使用して、 @i{xt} でパラメータを渡します。
 
 
 
-When several tasks send event to one task, the events may arrive in any
-order.  In order to receive events, you put one of the following words in
-the receiving task:
+複数のタスクが 1 つのタスクにイベントを送信する場合、 イベントは任意の順序で到着する可能性があります。  イベントを受信するには、
+受信タスクに以下のいずれかのワードを使います:
 
 @findex ?events ( @var{ --   } ) gforth-experimental
 @cindex @code{?events}
@@ -23945,8 +23934,7 @@ the receiving task:
 @format
 @code{?events} ( @i{--  }) gforth-experimental ``question-events''
 @end format
-Perform all event sequences in the current task's message queue, one event
-sequence at a time.
+現在のタスクのメッセージ・キュー内のすべてのイベント・シーケンスを一度に 1 つずつ実行します。
 
 
 @findex event-loop ( @var{ --   } ) gforth-experimental
@@ -23955,14 +23943,13 @@ sequence at a time.
 @format
 @code{event-loop} ( @i{--  }) gforth-experimental ``event-loop''
 @end format
-Wait for event sequences, and execute any event sequences when they arrive.
-Return to waiting if no event sequences are in the queue.  This word never
-returns.
+イベント・シーケンスを待ち、 イベント・シーケンスが到着したら実行します。  キューにイベント・シーケンスがない場合は待機に戻ります。
+このワードは二度と制御を戻しません(This word never returns.)。
 
 
 
-Alternatively, when a task is @code{stop}ped, it is also ready for receiving
-event, and receiving an event will wake it up.
+@code{event-loop} の代わりに、 タスクが @code{stop} 状態になると、 イベントを受信する準備も整い、 そして、
+イベントを受信するとタスクが起動(wake)されます。
 
 @c @node Conditions,  , Message queues, Pthreads
 @c @subsubsection Conditions
@@ -23979,23 +23966,21 @@ event, and receiving an event will wake it up.
 @node Cilk, , Pthreads, Multitasker
 @subsection Cilk
 
-Gforth's Cilk is a framework for dividing work between multiple tasks
-running on several cores, inspired by the programming language of the same
-name.  Use @code{require cilk.fs} if you want to use Cilk.
+gforth の Cilk は、 同じ名前のプログラミング言語からインスピレーションを得た、
+複数のコアで実行される複数のタスク間で作業を分割するためのフレームワークです。  Cilk を使用する場合は、 @code{require
+cilk.fs} としてください。
 
-The idea is that you identify subproblems that can be solved in parallel,
-and the framework assigns worker tasks to these subproblems.  In particular,
-you use one of the @code{spawn} words for each subtask.  Eventually you need
-to wait with @code{cilk-sync} for the subproblems to be solved.
+考え方としては、 並行して解決できる部分問題(subproblems)を特定し、
+フレームワークがワーカー・タスクをこれらの部分問題に割り当てるというものです。 特に、 各サブ・タスクに対して @code{spawn} ワードの 1
+つを使用します。  最終的には、 部分問題が解決されるまで @code{cilk-sync} で待つ必要があります。
 
-Currently all the spawning has to happen from one task, and @code{cilk-sync}
-waits for all subproblems to complete, so using the current Gforth Cilk for
-recursive algorithms is not straightforward.
+現在、 すべての生成は 1 つのタスクから発生する必要があり、 @code{cilk-sync}
+はすべての部分問題(subproblems)が完了するまで待機するため、 再帰アルゴリズムに現在の gforth Cilk
+を使用するのは簡単ではありません。
 
-Do not divide the subproblems too finely, in order to avoid overhead; how
-fine is too fine depends on how uniform the run-time for the subproblems is,
-but for problems with substantial run-time, having 5*@code{cores}
-subproblems is probably a good starting point.
+オーバーヘッドを避けるために、 部分問題を細かく分割しすぎないでください。 どのくらい細かいかは、
+部分問題の実行時間がどの程度均一であるかによって決まりますが、 かなりの実行時間の問題の場合は、 5*@code{cores}
+個の部分問題(subproblems)にするのが、 おそらく良い出発点となります。
 
 @findex cores ( @var{ -- u   } ) cilk
 @cindex @code{cores}
@@ -24003,10 +23988,9 @@ subproblems is probably a good starting point.
 @format
 @code{cores} ( @i{-- u  }) cilk ``cores''
 @end format
-A value containing the number of worker tasks to use.  By default this is
-the number of hardware threads (with SMT/HT), if we can determine that,
-otherwise 1.  If you want to use a different number, change @code{cores}
-before calling @code{cilk-init}.
+使用するワーカー・タスクの数を含む値。  デフォルトでは、 これはハードウェア・スレッドの数(SMT/HT の場合)です。
+(決定できれば、)それ以外の場合は 1 になります。 別の数を使用したい場合は、 @code{cilk-init} を呼び出す前に
+@code{cores} を変更します。 
 
 
 @findex cilk-init ( @var{ --   } ) cilk
@@ -24015,7 +23999,7 @@ before calling @code{cilk-init}.
 @format
 @code{cilk-init} ( @i{--  }) cilk ``cilk-init''
 @end format
-Start the worker tasks if not already done.
+ワーカー・タスクがまだ実行されていない場合は開始します。
 
 
 @findex spawn ( @var{ xt --   } ) cilk
@@ -24024,10 +24008,10 @@ Start the worker tasks if not already done.
 @format
 @code{spawn} ( @i{xt --  }) cilk ``spawn''
 @end format
-Execute @i{xt} ( -- ) in a worker task.  Use one-time executable closures to
-pass heap-allocated closures, allowing to pass arbitrary data from the
-spawner to the code running in the worker.@* E.g.: @code{( n r ) [@{: n f: r
-:@}h1 code ;] spawn}
+ワーカー・タスクで @i{xt} ( -- ) を @i{execute} します。  使い捨て実行可能クロージャ(one-time
+executable closures)を使用して、 ヒープに割り当てられたクロージャを渡し、 @code{spawn} 呼び出し側から、
+ワーカーで実行されているコードに任意のデータを渡すことができます。@* 例: @code{( n r ) [@{: n f: r :@}h1 code
+;] spawn}
 
 
 @findex spawn1 ( @var{ x xt --   } ) cilk
@@ -24054,7 +24038,7 @@ Execute @i{xt} ( x1 x2 -- ) in a worker task.
 @format
 @code{cilk-sync} ( @i{--  }) cilk ``cilk-sync''
 @end format
-Wait for all subproblems to complete.
+すべての部分問題が完了(complete)するまで待ちます(wait)。
 
 
 @findex cilk-bye ( @var{ --   } ) cilk
@@ -24063,7 +24047,7 @@ Wait for all subproblems to complete.
 @format
 @code{cilk-bye} ( @i{--  }) cilk ``cilk-bye''
 @end format
-Terminate all workers.
+すべてのワーカーを終了(terminate)します。
 
 
 
@@ -26320,14 +26304,14 @@ specifies a string 0 characters in length.
 @cindex @code{ms}
 @kindex ms
 @format
-@code{ms} ( @i{n --  }) facility-ext ``ms''
+@code{ms} ( @i{n --  }) facility-ext ``ms''@*\ 訳注: 指定のミリ秒ウエイトします(エポックでカウントします)。
 @end format
 
 @findex ns ( @var{ d --   } ) gforth-1.0
 @cindex @code{ns}
 @kindex ns
 @format
-@code{ns} ( @i{d --  }) gforth-1.0 ``ns''
+@code{ns} ( @i{d --  }) gforth-1.0 ``ns''@*\ 訳注: 指定のナノ秒ウエイトします(エポックでカウントします)
 @end format
 
 @findex time&date ( @var{ -- nsec nmin nhour nday nmonth nyear   } ) facility-ext
