@@ -5091,39 +5091,38 @@ C言語の関数関数が宣言されたら(*note Declaring C Functions:: 参照
 
      off_t lseek(int fd, off_t offset, int whence);
 
-   This function takes three integer arguments, and returns an integer
-argument, so a Forth call for setting the current file offset to the
-start of the file could look like this:
+   この関数は 3 つの整数引数を受け取り、 整数引数 1 つ返すため、 現在の
+ファイルのオフセットをファイルの先頭に設定するための Forth 呼び出しは以
+下のようになります:
 
      fd @ 0 SEEK_SET lseek -1 = if
        ... \ error handling
      then
 
-   You might be worried that an ‘off_t’ does not fit into a cell, so you
-could not pass larger offsets to lseek, and might get only a part of the
-return values.  In that case, in your declaration of the function (*note
-Declaring C Functions::) you should declare it to use double-cells for
-the off_t argument and return value, and maybe give the resulting Forth
-word a different name, like ‘dlseek’; the result could be called like
-this:
+   あなたは、 ‘off_t’ がセルに収まらないため、 lseek に大きなオフセット
+を渡すことができず、 戻り値の一部しか取得できないのではないかと心配する
+かもしれません。 その場合、 関数の宣言(*note Declaring C Functions::)で
+、off_t 引数と戻り値に 2倍長セルを使用するように宣言し、 結果の Forth ワ
+ードに ‘dlseek’ などの別の名前を付ける必要があります。 その結果は以下の
+ように呼び出すことができます:
 
-     fd @ 0. SEEK_SET dlseek -1. d= if
+     fd @ #0. SEEK_SET dlseek #-1. d= if
        ... \ error handling
      then
 
-   Passing and returning structs or unions is currently not supported by
-our interface(1).
+   構造体または共用体の受け渡しは現在、 このインターフェイスではサポート
+されていません(1)
 
-   Calling functions with a variable number of arguments (_variadic_
-functions, e.g., ‘printf()’) is only supported by having you declare one
-function-calling word for each argument pattern, and calling the
-appropriate word for the desired pattern.
+   可変数の引数を持つ関数の呼び出し(「variadic関数」例: ‘printf()’)は、
+引数パターンごとに 1 つの関数呼び出しワードを宣言し、 目的のパターンに適
+切なワードを呼び出すことによってのみサポートされます。
 
    ---------- Footnotes ----------
 
-   (1) If you know the calling convention of your C compiler, you
-usually can call such functions in some way, but that way is usually not
-portable between platforms, and sometimes not even between C compilers.
+   (1) あなたが C 言語コンパイラの呼び出し規則を知っていれば、 通常は何
+らかの方法でそのような関数を呼び出すことはできますが、 その方法は通常、
+プラットフォーム間で移植可能ではなく、 場合によっては C 言語コンパイラ間
+でさえ移植可能ではありません。
 
 
 File: gforth.info,  Node: Declaring C Functions,  Next: Calling C function pointers,  Prev: Calling C Functions,  Up: C Interface
