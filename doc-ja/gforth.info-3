@@ -5113,7 +5113,7 @@ C言語の関数関数が宣言されたら(*note Declaring C Functions:: 参照
    構造体または共用体の受け渡しは現在、 このインターフェイスではサポート
 されていません(1)
 
-   可変数の引数を持つ関数の呼び出し(「variadic関数」例: ‘printf()’)は、
+   可変個の引数を持つ関数の呼び出し(「variadic関数」例: ‘printf()’)は、
 引数パターンごとに 1 つの関数呼び出しワードを宣言し、 目的のパターンに適
 切なワードを呼び出すことによってのみサポートされます。
 
@@ -5130,20 +5130,18 @@ File: gforth.info,  Node: Declaring C Functions,  Next: Calling C function point
 6.28.2 Declaring C Functions
 ----------------------------
 
-Before you can call ‘lseek’ or ‘dlseek’, you have to declare it.  The
-declaration consists of two parts:
+あなたは、 先の例の ‘lseek’ や ‘dlseek’ を呼び出す前に、 宣言する必要が
+あります。 宣言は以下の 2 つの部分で構成されます:
 
-The C part
-     is the C declaration of the function, or more typically and
-     portably, a C-style ‘#include’ of a file that contains the
-     declaration of the C function.
+C言語部分
+     関数の C 言語宣言です。 より一般的かつ移植性の高いものとしては、 C
+     言語の関数の宣言を含むファイルの C 言語スタイルの ‘#include’ です。
 
-The Forth part
-     declares the Forth types of the parameters and the Forth word name
-     corresponding to the C function.
+Forth部分
+     パラメータの Forth 型と、 C言語の関数に対応する Forth ワード名を宣
+     言します。
 
-   For the words ‘lseek’ and ‘dlseek’ mentioned earlier, the
-declarations are:
+   前述の ‘lseek’ と ‘dlseek’ の宣言は以下のとおりです:
 
      \c #define _FILE_OFFSET_BITS 64
      \c #include <sys/types.h>
@@ -5151,76 +5149,78 @@ declarations are:
      c-function lseek lseek n n n -- n
      c-function dlseek lseek n d n -- d
 
-   The C part of the declarations is prefixed by ‘\c’, and the rest of
-the line is ordinary C code.  You can use as many lines of C
-declarations as you like, and they are visible for all further function
-declarations.
+   宣言の C言語部分は ‘\c’ という接頭辞が付けられ、 ‘\c’ の行の残りの部
+分は通常の C 言語のコードです。 C 言語の宣言の行は好きなだけ使用でき、 そ
+れ以降のすべての関数宣言で参照できます。
 
-   The Forth part declares each interface word with ‘c-function’,
-followed by the Forth name of the word, the C name of the called
-function, and the stack effect of the word.  The stack effect contains
-an arbitrary number of types of parameters, then ‘--’, and then exactly
-one type for the return value.  The possible types are:
+   Forth 部分は、 ‘c-function’ で各インターフェイス・ワードを宣言し、 そ
+の後にワードの Forth 名と、 呼び出される C 言語の関数名と、 ワードのスタ
+ック効果が続きます。 スタック効果には、 任意の数のパラメータのタイプ、
+‘--’、 そして戻り値の「 1 つ」のタイプが含まれます。 可能なタイプは以下
+のとおりです:
 
 ‘n’
-     single-cell integer
+     単一セル整数
 
 ‘a’
-     address (single-cell)
+     アドレス(単一セル)
 
 ‘d’
-     double-cell integer
+     2倍長セル整数
 
 ‘r’
-     floating-point value
+     浮動小数点数値
 
 ‘func’
-     C function pointer
+     C言語の関数へのポインタ
 
 ‘void’
-     no value (used as return type for void functions)
+     値なし(void 関数の戻り値の型として使用)
 
-   To deal with variadic C functions, you can declare one Forth word for
-every pattern you want to use, e.g.:
+   可変個の引数(variadic)の C 言語の関数を扱うには、 あなたが使用したい
+パターンごとに 1 つの Forth ワードを宣言します。 例:
 
      \c #include <stdio.h>
      c-function printf-nr printf a n r -- n
      c-function printf-rn printf a r n -- n
 
-   Note that with C functions declared as variadic (or if you don’t
-provide a prototype), the C interface has no C type to convert to, so no
-automatic conversion happens, which may lead to portability problems in
-some cases.  You can add the C type cast in curly braces after the Forth
-type.  This also allows to pass e.g.  structs to C functions, which in
-Forth cannot live on the stack.
+   注意: C 言語の関数が可変個(variadic)の引数として宣言されている場合(ま
+たは関数プロトタイプを提供していない場合)、 C 言語インターフェイスには変
+換先の C 言語の型がないため、 自動変換は行われず、 場合によっては移植性
+の問題が発生する可能性があることに注意してください。 C 言語の型キャスト
+を中括弧で囲んで Forth 型の後に追加できます。 これにより、 例えば、
+Forth ではスタック上に存在できない構造体を C 言語の関数へ渡す事も可能に
+なります。
 
      c-function printfll printf a n{(long long)} -- n
      c-function pass-struct pass_struct a{*(struct foo *)} -- n
 
-   This typecasting is not available to return values, as C does not
-allow typecasts for lvalues.
+   C言語では左辺値(lvalues)の型キャスト(typecast)が許可されていないため
+、 この型キャストは戻り値には使用できません。
 
 ‘\c’ ( "rest-of-line" –  ) gforth-0.7 “backslash-c”
-   One line of C declarations for the C interface
+   C言語インターフェイスのC言語宣言の1行
 
-‘c-function’ ( "forth-name" "c-name" "{type}" "—" "type" –  ) gforth-0.7 “c-function”
-   Define a Forth word forth-name.  Forth-name has the specified stack
-effect and calls the C function ‘c-name’.
+‘c-function’ ( "forth-name" "c-name" "{type}" "–" "type" –  ) gforth-0.7 “c-function”
+   Forth ワード forth-name を定義します。 Forth-name には指定されたスタ
+ック効果({type} と type)があり、 C言語関数 ‘c-name’ を呼び出します。
 
-‘c-value’ ( "forth-name" "c-name" "—" "type" –  ) gforth-1.0 “c-value”
-   Define a Forth word forth-name.  Forth-name has the specified stack
-effect and gives the C value of ‘c-name’.
+‘c-value’ ( "forth-name" "c-name" "–" "type" –  ) gforth-1.0 “c-value”
+   Forth ワード forth-name を定義します。 Forth-name には指定されたスタ
+ック効果(type)があり、 ‘c-name’ の C言語からの値を与えます(訳注: スタッ
+ク効果の通り、 読み取りのみ)。
 
 ‘c-variable’ ( "forth-name" "c-name" –  ) gforth-1.0 “c-variable”
-   Define a Forth word forth-name.  Forth-name returns the address of
-‘c-name’.
+   Forth ワード forth-name を定義します。 Forth-name は ‘c-name’ のアド
+レスを返します。
 
-   In order to work, this C interface invokes GCC at run-time and uses
-dynamic linking.  If these features are not available, there are other,
-less convenient and less portable C interfaces in ‘lib.fs’ and
-‘oldlib.fs’.  These interfaces are mostly undocumented and mostly
-incompatible with each other and with the documented C interface; you
-can find some examples for the ‘lib.fs’ interface in ‘lib.fs’.
+   この C言語インターフェイスが機能するために、 実行時に GCC を呼び出し
+、 動的リンク(dynamic linking)を使用します。 これらの機能が利用できない
+場合は、 ‘lib.fs’ と ‘oldlib.fs’ に、利便性と移植性に劣る他の C 言語イン
+ターフェイスが用意されています。 これらのインターフェイスはほとんど文書
+化されておらず、 また文書化された C言語インターフェイスとほとんど互換性
+がありません。 あなたが例を見たければ、 ‘lib.fs’ インターフェイスの例が
+‘lib.fs’ にあります。
 
 
 File: gforth.info,  Node: Calling C function pointers,  Next: Defining library interfaces,  Prev: Declaring C Functions,  Up: C Interface
@@ -5228,34 +5228,34 @@ File: gforth.info,  Node: Calling C function pointers,  Next: Defining library i
 6.28.3 Calling C function pointers from Forth
 ---------------------------------------------
 
-If you come across a C function pointer (e.g., in some C-constructed
-structure) and want to call it from your Forth program, you could use
-the structures as described above by defining a macro.  Or you use
-‘c-funptr’.
+C言語の関数へのポインタ(たとえば、 C言語で構築された構造体など)を見つけ
+て、 それを Forth プログラムから呼び出したい場合は、 マクロを定義するこ
+とで上記の構造体を使用できます。 または、 ‘c-funptr’ を使用します。
 
-‘c-funptr’ ( "forth-name" <{>"c-typecast"<}> "{type}" "—" "type" –  ) gforth-1.0 “c-funptr”
-   Define a Forth word forth-name.  Forth-name has the specified stack
-effect plus the called pointer on top of stack, i.e.  ‘( {type} ptr --
-type )’ and calls the C function pointer ‘ptr’ using the typecast or
-struct access ‘c-typecast’.
+‘c-funptr’ ( "forth-name" <{>"c-typecast"<}> "{type}" "–" "type" –  ) gforth-1.0 “c-funptr”
+   Forth ワード Forth-name を定義します。 Forth-name には、 その後続に記
+述されたスタック効果と、 スタックのTOSに置かれた呼び出されたポインタ(the
+called pointer)(つまり {type} ptr – type )があり、 型キャスト
+(typecast)または構造体アクセス(c-typecast)を使用して C 言語の関数へのポ
+インタ ‘ptr’ を呼び出します。
 
-   Let us assume that there is a C function pointer type ‘func1’ defined
-in some header file ‘func1.h’, and you know that these functions take
-one integer argument and return an integer result; and you want to call
-functions through such pointers.  Just define
+   ヘッダー・ファイル ‘func1.h’ に C言語の関数ポインタ型 ‘func1’ が定義
+されており、 これらの関数は 1 つの整数引数を受け取り、 整数の結果を返す
+ことがわかっているとします。 そして、 そのようなポインタを介して関数を呼
+び出したいとします。 あなたは以下のように定義するだけです
 
      \c #include <func1.h>
      c-funptr call-func1 {((func1)ptr)} n -- n
 
-   and then you can call a function pointed to by, say ‘func1a’ as
-follows:
+   そして、 例えば、 以下のようにして ‘func1-addr’ が指す関数を呼び出す
+ことができます:
 
-     -5 func1a call-func1 .
+     -5 func1-addr call-func1 .
 
-   The Forth word ‘call-func1’ is similar to ‘execute’, except that it
-takes a C ‘func1’ pointer instead of a Forth execution token, and it is
-specific to ‘func1’ pointers.  For each type of function pointer you
-want to call from Forth, you have to define a separate calling word.
+   Forth ワード ‘call-func1’ は ‘execute’ に似ていますが、Forth 実行トー
+クンの代わりに C 言語の ‘func1’ ポインタを使用し、 ‘func1’ ポインタ固有
+である点が異なります。 Forth から呼び出したい C 言語の関数ポインタのタイ
+プごとに、 個別の呼び出しワードを定義する必要があります。
 
 
 File: gforth.info,  Node: Defining library interfaces,  Next: Declaring OS-level libraries,  Prev: Calling C function pointers,  Up: C Interface
@@ -5263,56 +5263,58 @@ File: gforth.info,  Node: Defining library interfaces,  Next: Declaring OS-level
 6.28.4 Defining library interfaces
 ----------------------------------
 
-You can give a name to a bunch of C function declarations (a library
-interface), as follows:
+以下のように、 一連の C 言語関数宣言(ライブラリ・インターフェイス)に名前
+を付けることができます:
 
      c-library lseek-lib
      \c #define _FILE_OFFSET_BITS 64
      ...
      end-c-library
 
-   The effect of giving such a name to the interface is that the names
-of the generated files will contain that name, and when you use the
-interface a second time, it will use the existing files instead of
-generating and compiling them again, saving you time.  The generated
-file contains a 128 bit hash (not cryptographically safe, but good
-enough for that purpose) of the source code, so changing the
-declarations will cause a new compilation.  Normally these files are
-cached in ‘$HOME/.gforth/’ARCHITECTURE‘/libcc-named’, so if you
-experience problems or have other reasons to force a recompilation, you
-can delete the files there.
+   インターフェイスにこのような名前を付けると、 生成されるファイルの名前
+にその名前が含まれるようになり、 インターフェイスを 2 回目に使用するとき
+に、 再度生成してコンパイルする代わりに既存のファイルが使用されるため、
+時間を節約できます。 生成されたファイルにはソース・コードの 128 ビット・
+ハッシュ(暗号的に安全ではありませんが、 この目的には十分である)が含まれ
+ているため、 宣言を変更すると新しいコンパイルが発生します。 通常、 これ
+らのファイルは ‘$HOME/.gforth/’ARCHITECTURE‘/libcc-named’ にキャッシュさ
+れるため、 問題が発生した場合、 または再コンパイルの強制が必要なその他の
+理由がある場合は、そこにあるファイルを削除してください。
 
-   Note that you should use ‘c-library’ before everything else having
-anything to do with that library, as it resets some setup stuff.  The
-idea is that the typical use is to put each
-‘c-library’...‘end-c-library’ unit in its own file, and to be able to
-include these files in any order.  All other words dealing with the C
-interface are hidden in the vocabulary ‘c-lib’, which is put on top o
-the search stack by ‘c-library’ and removed by ‘end-c-library’.
+   注意: ‘c-library’ を使用すると、 一部の設定がリセットされるため、 そ
+のライブラリに関連する他のすべての処理の前に ‘c-library’ を使用する必要
+があることに注意してください。 ‘c-library’ の考え方は、 一般的な使用法と
+しては、 各 ‘c-library’...‘end-c-library’ ユニットを独自のファイルに配置
+し、 これらのファイルを任意の順序でインクルードできるようにすることです
+。 C 言語インターフェースを扱う他のすべてのワードは、 ボキャブラリ
+‘c-lib’ に隠されており、 ‘c-library’ によって検索順序スタックの最上位に
+置かれ、 ‘end-c-library’ によって検索順序スタックの最上位から削除されま
+す。
 
-   Note that the library name is not allocated in the dictionary and
-therefore does not shadow dictionary names.  It is used in the file
-system, so you have to use naming conventions appropriate for file
-systems.  The name is also used as part of the C symbols, but characters
-outside the legal C symbol names are replaced with underscores.  Also,
-you shall not call a function you declare after ‘c-library’ before you
-perform ‘end-c-library’.
+   注意: ライブラリ名はディクショナリに割り当てられないため、 ディクショ
+ナリ内の名前に影響を与えないことに注意してください。 ファイル・システム
+で使用されるため、 ファイル・システムに適した命名規則を使用する必要があ
+ります。 この名前はC言語のシンボルの一部としても使用されますが、 正当な
+C言語のシンボル名以外の文字はアンダースコアに置き換えられます。 また、
+‘c-library’ の後で宣言した関数を ‘end-c-library’ を実行する前に呼び出し
+てはなりません。
 
-   A major benefit of these named library interfaces is that, once they
-are generated, the tools used to generated them (in particular, the C
-compiler and libtool) are no longer needed, so the interface can be used
-even on machines that do not have the tools installed.  The build system
-of Gforth can even cross-compile these libraries, so that the libraries
-are available for plattforms on which build tools aren’t installed.
+   これらの名前付きライブラリ・インターフェイスの主な利点は、 それらが生
+成されると、 その生成に使用したツール(特に C 言語のコンパイラと
+libtool)が不要になるため、 ツールがインストールされていないマシンでもイ
+ンターフェイスを使用できることです。 Gforth のビルド・システムはこれらの
+ライブラリをクロス・コンパイルすることもできるため、 ビルド・ツールがイ
+ンストールされていないプラットフォームでもライブラリを利用できます。
 
 ‘c-library-name’ ( c-addr u –  ) gforth-0.7 “c-library-name”
-   Start a C library interface with name c-addr u.
+   c-addr u という名前で C ライブラリ・インターフェイスを開始。
 
 ‘c-library’ ( "name" –  ) gforth-0.7 “c-library”
-   Parsing version of ‘c-library-name’
+   ‘c-library-name’ のパース対応(parsing)バージョンです
 
 ‘end-c-library’ ( –  ) gforth-0.7 “end-c-library”
-   Finish and (if necessary) build the latest C library interface.
+   直近の C ライブラリ・インターフェイスを終了し、 (必要に応じて)ビルド
+します。
 
 
 File: gforth.info,  Node: Declaring OS-level libraries,  Next: Callbacks,  Prev: Defining library interfaces,  Up: C Interface
@@ -5320,53 +5322,53 @@ File: gforth.info,  Node: Declaring OS-level libraries,  Next: Callbacks,  Prev:
 6.28.5 Declaring OS-level libraries
 -----------------------------------
 
-For calling some C functions, you need to link with a specific OS-level
-library that contains that function.  E.g., the ‘sin’ function requires
-linking a special library by using the command line switch ‘-lm’.  In
-our C iterface you do the equivalent thing by calling ‘add-lib’ as
-follows:
+一部の C 言語の関数を呼び出すには、 その関数を含む特定の OS レベルのライ
+ブラリとリンクする必要があります。 たとえば、‘sin’ 関数では、 コマンドラ
+イン・スイッチ ‘-lm’ を使用して特別なライブラリをリンクする必要がありま
+す。 C 言語インターフェイスでは、 以下のように ‘add-lib’ を呼び出して同
+等のことを行います:
 
      clear-libs
      s" m" add-lib
      \c #include <math.h>
      c-function sin sin r -- r
 
-   First, you clear any libraries that may have been declared earlier
-(you don’t need them for ‘sin’); then you add the ‘m’ library (actually
-‘libm.so’ or somesuch) to the currently declared libraries; you can add
-as many as you need.  Finally you declare the function as shown above.
-Typically you will use the same set of library declarations for many
-function declarations; you need to write only one set for that, right at
-the beginning.
+   まず、 (あなたが ‘sin’ に必要としない、)以前に宣言された可能性のある
+ライブラリをすべてクリアします。 次に ‘m’ ライブラリ(実際には ‘libm.so’
+など) を現在宣言されているライブラリに追加します。 これは必要なだけ追加
+できます。 最後に、 上に示したように関数を宣言します。 通常は、 多くの関
+数宣言に同じライブラリ宣言のセットを使用します。 あなたは、 最初に、 こ
+の組を、 ただ 1 つだけ作成する必要があります。
 
-   Note that you must not call ‘clear-libs’ inside
-‘c-library...end-c-library’; however, ‘c-library’ performs the function
-of ‘clear-libs’, so ‘clear-libs’ is not necessary, and you usually want
-to put ‘add-lib’ calls inside ‘c-library...end-c-library’.
+   注意: ‘c-library...end-c-library’ 内で ‘clear-libs’ を呼び出してはい
+けないことに注意してください。 しかしながら、 ‘c-library’ は
+‘clear-libs’ の機能も実行するため、 ‘clear-libs’ は必要なく、 そして、 あ
+なたは、 通常は ‘add-lib’ 呼び出しを ‘c-library...end-c-library’ 内に置
+きたいと思うでしょう。
 
 ‘clear-libs’ ( –  ) gforth-0.7 “clear-libs”
-   Clear the list of libs
+   libs のリストをクリア
 
 ‘add-lib’ ( c-addr u –  ) gforth-0.7 “add-lib”
-   Add library libstring to the list of libraries, where string is
-represented by c-addr u.
+   ライブラリ libstring をライブラリのリストに追加します。ここで、
+string は c-addr u で表されます。
 
 ‘add-libpath’ ( c-addr u –  ) gforth-0.7 “add-libpath”
-   Add path string to the list of library search pathes, where string is
-represented by c-addr u.
+   パス string をライブラリ検索パスのリストに追加します。 ここで、string
+は c-addr u で表されます。
 
 ‘add-framework’ ( c-addr u –  ) gforth-1.0 “add-framework”
-   Add framework libstring to the list of frameworks, where string is
-represented by c-addr u.
+   フレームワーク libstring をフレームワークのリストに追加します。 ここ
+で、string は c-addr u で表されます。
 
 ‘add-incdir’ ( c-addr u –  ) gforth-1.0 “add-incdir”
-   Add path c-addr u to the list of include search pathes
+   パス c-addr u をインクルード検索パスのリストに追加します
 
 ‘add-cflags’ ( c-addr u –  ) gforth-1.0 “add-cflags”
-   add any kind of cflags to compilation
+   あらゆる種類の cflags をC言語コンパイラに追加します
 
 ‘add-ldflags’ ( c-addr u –  ) gforth-1.0 “add-ldflags”
-   add flag to linker
+   リンカにフラグを追加
 
 
 File: gforth.info,  Node: Callbacks,  Next: C interface internals,  Prev: Declaring OS-level libraries,  Up: C Interface

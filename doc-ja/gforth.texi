@@ -24130,7 +24130,7 @@ then
 言語コンパイラの呼び出し規則を知っていれば、 通常は何らかの方法でそのような関数を呼び出すことはできますが、 その方法は通常、
 プラットフォーム間で移植可能ではなく、 場合によっては C 言語コンパイラ間でさえ移植可能ではありません。}
 
-可変数の引数を持つ関数の呼び出し(「variadic関数」例: @code{printf()})は、 引数パターンごとに 1
+可変個の引数を持つ関数の呼び出し(「variadic関数」例: @code{printf()})は、 引数パターンごとに 1
 つの関数呼び出しワードを宣言し、 目的のパターンに適切なワードを呼び出すことによってのみサポートされます。
 
 
@@ -24140,24 +24140,21 @@ then
 @cindex C functions, declarations
 @cindex declaring C functions
 
-Before you can call @code{lseek} or @code{dlseek}, you have to declare it.
-The declaration consists of two parts: 
+あなたは、 先の例の @code{lseek} や @code{dlseek} を呼び出す前に、 宣言する必要があります。  宣言は以下の 2
+つの部分で構成されます: 
 
 @table @b
 
-@item The C part
-is the C declaration of the function, or more typically and portably, a
-C-style @code{#include} of a file that contains the declaration of the C
-function.
+@item C言語部分
+関数の C 言語宣言です。 より一般的かつ移植性の高いものとしては、 C 言語の関数の宣言を含むファイルの C 言語スタイルの
+@code{#include} です。
 
-@item The Forth part
-declares the Forth types of the parameters and the Forth word name
-corresponding to the C function.
+@item Forth部分
+パラメータの Forth 型と、 C言語の関数に対応する Forth ワード名を宣言します。
 
 @end table
 
-For the words @code{lseek} and @code{dlseek} mentioned earlier, the
-declarations are:
+前述の @code{lseek} と @code{dlseek} の宣言は以下のとおりです:
 
 @example
 \c #define _FILE_OFFSET_BITS 64
@@ -24167,42 +24164,38 @@ c-function lseek lseek n n n -- n
 c-function dlseek lseek n d n -- d
 @end example
 
-The C part of the declarations is prefixed by @code{\c}, and the rest of the
-line is ordinary C code.  You can use as many lines of C declarations as you
-like, and they are visible for all further function declarations.
+宣言の C言語部分は @code{\c} という接頭辞が付けられ、 @code{\c} の行の残りの部分は通常の C 言語のコードです。 C
+言語の宣言の行は好きなだけ使用でき、 それ以降のすべての関数宣言で参照できます。
 
-The Forth part declares each interface word with @code{c-function}, followed
-by the Forth name of the word, the C name of the called function, and the
-stack effect of the word.  The stack effect contains an arbitrary number of
-types of parameters, then @code{--}, and then exactly one type for the
-return value.  The possible types are:
+Forth 部分は、 @code{c-function} で各インターフェイス・ワードを宣言し、 その後にワードの Forth 名と、 呼び出される C
+言語の関数名と、 ワードのスタック効果が続きます。  スタック効果には、 任意の数のパラメータのタイプ、 @code{--}、 そして戻り値の「 1
+つ」のタイプが含まれます。  可能なタイプは以下のとおりです:
 
 @table @code
 
 @item n
-single-cell integer
+単一セル整数
 
 @item a
-address (single-cell)
+アドレス(単一セル)
 
 @item d
-double-cell integer
+2倍長セル整数
 
 @item r
-floating-point value
+浮動小数点数値
 
 @item func
-C function pointer
+C言語の関数へのポインタ
 
 @item void
-no value (used as return type for void functions)
+値なし(void 関数の戻り値の型として使用)
 
 @end table
 
 @cindex variadic C functions
 
-To deal with variadic C functions, you can declare one Forth word for every
-pattern you want to use, e.g.:
+可変個の引数(variadic)の C 言語の関数を扱うには、 あなたが使用したいパターンごとに 1 つの Forth ワードを宣言します。 例:
 
 @example
 \c #include <stdio.h>
@@ -24210,20 +24203,17 @@ c-function printf-nr printf a n r -- n
 c-function printf-rn printf a r n -- n
 @end example
 
-Note that with C functions declared as variadic (or if you don't provide a
-prototype), the C interface has no C type to convert to, so no automatic
-conversion happens, which may lead to portability problems in some cases.
-You can add the C type cast in curly braces after the Forth type.  This also
-allows to pass e.g. structs to C functions, which in Forth cannot live on
-the stack.
+注意: C 言語の関数が可変個(variadic)の引数として宣言されている場合(または関数プロトタイプを提供していない場合)、 C
+言語インターフェイスには変換先の C 言語の型がないため、 自動変換は行われず、
+場合によっては移植性の問題が発生する可能性があることに注意してください。  C 言語の型キャストを中括弧で囲んで Forth 型の後に追加できます。
+これにより、 例えば、 Forth ではスタック上に存在できない構造体を C 言語の関数へ渡す事も可能になります。
 
 @example
 c-function printfll printf a n@{(long long)@} -- n
 c-function pass-struct pass_struct a@{*(struct foo *)@} -- n
 @end example
 
-This typecasting is not available to return values, as C does not allow
-typecasts for lvalues.
+C言語では左辺値(lvalues)の型キャスト(typecast)が許可されていないため、 この型キャストは戻り値には使用できません。
 
 @findex \c ( @var{ "rest-of-line" --   } ) gforth-0.7
 @cindex @code{\c}
@@ -24231,27 +24221,27 @@ typecasts for lvalues.
 @format
 @code{\c} ( @i{"rest-of-line" --  }) gforth-0.7 ``backslash-c''
 @end format
-One line of C declarations for the C interface
+C言語インターフェイスのC言語宣言の1行
 
 
 @findex c-function ( @var{ "forth-name" "c-name" "@{type@}" "---" "type" --   } ) gforth-0.7
 @cindex @code{c-function}
 @kindex c-function
 @format
-@code{c-function} ( @i{"forth-name" "c-name" "@{type@}" "---" "type" --  }) gforth-0.7 ``c-function''
+@code{c-function} ( @i{"forth-name" "c-name" "@{type@}" "--" "type" --  }) gforth-0.7 ``c-function''
 @end format
-Define a Forth word @i{forth-name}.  @i{Forth-name} has the specified stack
-effect and calls the C function @code{c-name}.
+Forth ワード @i{forth-name} を定義します。  @i{Forth-name} には指定されたスタック効果(@i{@{type@}}
+と @i{type})があり、 C言語関数 @code{c-name} を呼び出します。
 
 
 @findex c-value ( @var{ "forth-name" "c-name" "---" "type" --   } ) gforth-1.0
 @cindex @code{c-value}
 @kindex c-value
 @format
-@code{c-value} ( @i{"forth-name" "c-name" "---" "type" --  }) gforth-1.0 ``c-value''
+@code{c-value} ( @i{"forth-name" "c-name" "--" "type" --  }) gforth-1.0 ``c-value''
 @end format
-Define a Forth word @i{forth-name}.  @i{Forth-name} has the specified stack
-effect and gives the C value of @code{c-name}.
+Forth ワード @i{forth-name} を定義します。  @i{Forth-name} には指定されたスタック効果(@i{type})があり、
+@code{c-name} の C言語からの値を与えます(訳注: スタック効果の通り、 読み取りのみ)。
 
 
 @findex c-variable ( @var{ "forth-name" "c-name" --   } ) gforth-1.0
@@ -24260,70 +24250,61 @@ effect and gives the C value of @code{c-name}.
 @format
 @code{c-variable} ( @i{"forth-name" "c-name" --  }) gforth-1.0 ``c-variable''
 @end format
-Define a Forth word @i{forth-name}.  @i{Forth-name} returns the address of
-@code{c-name}.
+Forth ワード @i{forth-name} を定義します。  @i{Forth-name} は @code{c-name} のアドレスを返します。
 
 
 
-In order to work, this C interface invokes GCC at run-time and uses dynamic
-linking.  If these features are not available, there are other, less
-convenient and less portable C interfaces in @file{lib.fs} and
-@file{oldlib.fs}.  These interfaces are mostly undocumented and mostly
-incompatible with each other and with the documented C interface; you can
-find some examples for the @file{lib.fs} interface in @file{lib.fs}.
+この C言語インターフェイスが機能するために、 実行時に GCC を呼び出し、 動的リンク(dynamic linking)を使用します。
+これらの機能が利用できない場合は、 @file{lib.fs} と @file{oldlib.fs} に、利便性と移植性に劣る他の C
+言語インターフェイスが用意されています。 これらのインターフェイスはほとんど文書化されておらず、 また文書化された
+C言語インターフェイスとほとんど互換性がありません。 あなたが例を見たければ、 @file{lib.fs} インターフェイスの例が
+@file{lib.fs} にあります。
 
 
 @node Calling C function pointers, Defining library interfaces, Declaring C Functions, C Interface
 @subsection Calling C function pointers from Forth
 @cindex C function pointers, calling from Forth
 
-If you come across a C function pointer (e.g., in some C-constructed
-structure) and want to call it from your Forth program, you could use the
-structures as described above by defining a macro.  Or you use
-@code{c-funptr}.
+C言語の関数へのポインタ(たとえば、 C言語で構築された構造体など)を見つけて、 それを Forth プログラムから呼び出したい場合は、
+マクロを定義することで上記の構造体を使用できます。 または、 @code{c-funptr} を使用します。
 
 @findex c-funptr ( @var{ "forth-name" <@{>"c-typecast"<@}> "@{type@}" "---" "type" --   } ) gforth-1.0
 @cindex @code{c-funptr}
 @kindex c-funptr
 @format
-@code{c-funptr} ( @i{"forth-name" <@{>"c-typecast"<@}> "@{type@}" "---" "type" --  }) gforth-1.0 ``c-funptr''
+@code{c-funptr} ( @i{"forth-name" <@{>"c-typecast"<@}> "@{type@}" "--" "type" --  }) gforth-1.0 ``c-funptr''
 @end format
-Define a Forth word @i{forth-name}.  @i{Forth-name} has the specified stack
-effect plus the called pointer on top of stack, i.e. @code{( @{type@} ptr --
-type )} and calls the C function pointer @code{ptr} using the typecast or
-struct access @code{c-typecast}.
+Forth ワード @i{Forth-name} を定義します。 @i{Forth-name} には、 その後続に記述されたスタック効果と、
+スタックのTOSに置かれた呼び出されたポインタ(the called pointer)(つまり @{type@} ptr -- type )があり、
+型キャスト(typecast)または構造体アクセス(c-typecast)を使用して C 言語の関数へのポインタ @code{ptr} を呼び出します。
 
 
 
-Let us assume that there is a C function pointer type @code{func1} defined
-in some header file @file{func1.h}, and you know that these functions take
-one integer argument and return an integer result; and you want to call
-functions through such pointers.  Just define
+ヘッダー・ファイル @file{func1.h} に C言語の関数ポインタ型 @code{func1} が定義されており、 これらの関数は 1
+つの整数引数を受け取り、 整数の結果を返すことがわかっているとします。 そして、 そのようなポインタを介して関数を呼び出したいとします。
+あなたは以下のように定義するだけです
 
 @example
 \c #include <func1.h>
 c-funptr call-func1 @{((func1)ptr)@} n -- n
 @end example
 
-and then you can call a function pointed to by, say @code{func1a} as
-follows:
+そして、 例えば、 以下のようにして @code{func1-addr} が指す関数を呼び出すことができます:
 
 @example
--5 func1a call-func1 .
+-5 func1-addr call-func1 .
 @end example
 
-The Forth word @code{call-func1} is similar to @code{execute}, except that
-it takes a C @code{func1} pointer instead of a Forth execution token, and it
-is specific to @code{func1} pointers.  For each type of function pointer you
-want to call from Forth, you have to define a separate calling word.
+Forth ワード @code{call-func1} は @code{execute} に似ていますが、Forth 実行トークンの代わりに C 言語の
+@code{func1} ポインタを使用し、 @code{func1} ポインタ固有である点が異なります。  Forth から呼び出したい C
+言語の関数ポインタのタイプごとに、 個別の呼び出しワードを定義する必要があります。
 
 @node Defining library interfaces, Declaring OS-level libraries, Calling C function pointers, C Interface
 @subsection Defining library interfaces
 @cindex giving a name to a library interface
 @cindex library interface names
 
-You can give a name to a bunch of C function declarations (a library
-interface), as follows:
+以下のように、 一連の C 言語関数宣言(ライブラリ・インターフェイス)に名前を付けることができます:
 
 @example
 c-library lseek-lib
@@ -24332,39 +24313,28 @@ c-library lseek-lib
 end-c-library
 @end example
 
-The effect of giving such a name to the interface is that the names of the
-generated files will contain that name, and when you use the interface a
-second time, it will use the existing files instead of generating and
-compiling them again, saving you time.  The generated file contains a 128
-bit hash (not cryptographically safe, but good enough for that purpose) of
-the source code, so changing the declarations will cause a new compilation.
-Normally these files are cached in
-@file{$HOME/.gforth/}@var{architecture}@file{/libcc-named}, so if you
-experience problems or have other reasons to force a recompilation, you can
-delete the files there.
+インターフェイスにこのような名前を付けると、 生成されるファイルの名前にその名前が含まれるようになり、 インターフェイスを 2 回目に使用するときに、
+再度生成してコンパイルする代わりに既存のファイルが使用されるため、時間を節約できます。 生成されたファイルにはソース・コードの 128
+ビット・ハッシュ(暗号的に安全ではありませんが、 この目的には十分である)が含まれているため、 宣言を変更すると新しいコンパイルが発生します。  通常、
+これらのファイルは @file{$HOME/.gforth/}@var{architecture}@file{/libcc-named}
+にキャッシュされるため、 問題が発生した場合、 または再コンパイルの強制が必要なその他の理由がある場合は、そこにあるファイルを削除してください。
 
-Note that you should use @code{c-library} before everything else having
-anything to do with that library, as it resets some setup stuff.  The idea
-is that the typical use is to put each
-@code{c-library}...@code{end-c-library} unit in its own file, and to be able
-to include these files in any order.  All other words dealing with the C
-interface are hidden in the vocabulary @code{c-lib}, which is put on top o
-the search stack by @code{c-library} and removed by @code{end-c-library}.
+注意: @code{c-library} を使用すると、 一部の設定がリセットされるため、 そのライブラリに関連する他のすべての処理の前に
+@code{c-library} を使用する必要があることに注意してください。 @code{c-library} の考え方は、 一般的な使用法としては、
+各 @code{c-library}...@code{end-c-library} ユニットを独自のファイルに配置し、
+これらのファイルを任意の順序でインクルードできるようにすることです。  C 言語インターフェースを扱う他のすべてのワードは、 ボキャブラリ
+@code{c-lib} に隠されており、 @code{c-library} によって検索順序スタックの最上位に置かれ、
+@code{end-c-library} によって検索順序スタックの最上位から削除されます。
 
-Note that the library name is not allocated in the dictionary and therefore
-does not shadow dictionary names.  It is used in the file system, so you
-have to use naming conventions appropriate for file systems.  The name is
-also used as part of the C symbols, but characters outside the legal C
-symbol names are replaced with underscores.  Also, you shall not call a
-function you declare after @code{c-library} before you perform
-@code{end-c-library}.
+注意: ライブラリ名はディクショナリに割り当てられないため、 ディクショナリ内の名前に影響を与えないことに注意してください。
+ファイル・システムで使用されるため、 ファイル・システムに適した命名規則を使用する必要があります。
+この名前はC言語のシンボルの一部としても使用されますが、 正当なC言語のシンボル名以外の文字はアンダースコアに置き換えられます。  また、
+@code{c-library} の後で宣言した関数を @code{end-c-library} を実行する前に呼び出してはなりません。
 
-A major benefit of these named library interfaces is that, once they are
-generated, the tools used to generated them (in particular, the C compiler
-and libtool) are no longer needed, so the interface can be used even on
-machines that do not have the tools installed.  The build system of Gforth
-can even cross-compile these libraries, so that the libraries are available
-for plattforms on which build tools aren't installed.
+これらの名前付きライブラリ・インターフェイスの主な利点は、 それらが生成されると、 その生成に使用したツール(特に C 言語のコンパイラと
+libtool)が不要になるため、 ツールがインストールされていないマシンでもインターフェイスを使用できることです。 Gforth
+のビルド・システムはこれらのライブラリをクロス・コンパイルすることもできるため、
+ビルド・ツールがインストールされていないプラットフォームでもライブラリを利用できます。
 
 @findex c-library-name ( @var{ c-addr u --   } ) gforth-0.7
 @cindex @code{c-library-name}
@@ -24372,7 +24342,7 @@ for plattforms on which build tools aren't installed.
 @format
 @code{c-library-name} ( @i{c-addr u --  }) gforth-0.7 ``c-library-name''
 @end format
-Start a C library interface with name @i{c-addr u}.
+@i{c-addr u} という名前で C ライブラリ・インターフェイスを開始。
 
 
 @findex c-library ( @var{ "name" --   } ) gforth-0.7
@@ -24381,7 +24351,7 @@ Start a C library interface with name @i{c-addr u}.
 @format
 @code{c-library} ( @i{"name" --  }) gforth-0.7 ``c-library''
 @end format
-Parsing version of @code{c-library-name}
+@code{c-library-name} のパース対応(parsing)バージョンです
 
 
 @findex end-c-library ( @var{ --   } ) gforth-0.7
@@ -24390,7 +24360,7 @@ Parsing version of @code{c-library-name}
 @format
 @code{end-c-library} ( @i{--  }) gforth-0.7 ``end-c-library''
 @end format
-Finish and (if necessary) build the latest C library interface.
+直近の C ライブラリ・インターフェイスを終了し、 (必要に応じて)ビルドします。
 
 
 
@@ -24401,11 +24371,9 @@ Finish and (if necessary) build the latest C library interface.
 @cindex Dynamically linked libraries in C interface
 @cindex Libraries in C interface
 
-For calling some C functions, you need to link with a specific OS-level
-library that contains that function.  E.g., the @code{sin} function requires
-linking a special library by using the command line switch @code{-lm}.  In
-our C iterface you do the equivalent thing by calling @code{add-lib} as
-follows:
+一部の C 言語の関数を呼び出すには、 その関数を含む特定の OS レベルのライブラリとリンクする必要があります。  たとえば、@code{sin}
+関数では、 コマンドライン・スイッチ @code{-lm} を使用して特別なライブラリをリンクする必要があります。 C 言語インターフェイスでは、
+以下のように @code{add-lib} を呼び出して同等のことを行います:
 
 @example
 clear-libs
@@ -24414,19 +24382,15 @@ s" m" add-lib
 c-function sin sin r -- r
 @end example
 
-First, you clear any libraries that may have been declared earlier (you
-don't need them for @code{sin}); then you add the @code{m} library (actually
-@code{libm.so} or somesuch) to the currently declared libraries; you can add
-as many as you need.  Finally you declare the function as shown above.
-Typically you will use the same set of library declarations for many
-function declarations; you need to write only one set for that, right at the
-beginning.
+まず、 (あなたが @code{sin} に必要としない、)以前に宣言された可能性のあるライブラリをすべてクリアします。 次に @code{m}
+ライブラリ(実際には @code{libm.so} など) を現在宣言されているライブラリに追加します。 これは必要なだけ追加できます。  最後に、
+上に示したように関数を宣言します。  通常は、 多くの関数宣言に同じライブラリ宣言のセットを使用します。 あなたは、 最初に、 この組を、 ただ 1
+つだけ作成する必要があります。
 
-Note that you must not call @code{clear-libs} inside
-@code{c-library...end-c-library}; however, @code{c-library} performs the
-function of @code{clear-libs}, so @code{clear-libs} is not necessary, and
-you usually want to put @code{add-lib} calls inside
-@code{c-library...end-c-library}.
+注意: @code{c-library...end-c-library} 内で @code{clear-libs}
+を呼び出してはいけないことに注意してください。 しかしながら、 @code{c-library} は @code{clear-libs}
+の機能も実行するため、 @code{clear-libs} は必要なく、 そして、 あなたは、 通常は @code{add-lib} 呼び出しを
+@code{c-library...end-c-library} 内に置きたいと思うでしょう。
 
 @findex clear-libs ( @var{ --   } ) gforth-0.7
 @cindex @code{clear-libs}
@@ -24434,7 +24398,7 @@ you usually want to put @code{add-lib} calls inside
 @format
 @code{clear-libs} ( @i{--  }) gforth-0.7 ``clear-libs''
 @end format
-Clear the list of libs
+libs のリストをクリア
 
 
 @findex add-lib ( @var{ c-addr u --   } ) gforth-0.7
@@ -24443,8 +24407,7 @@ Clear the list of libs
 @format
 @code{add-lib} ( @i{c-addr u --  }) gforth-0.7 ``add-lib''
 @end format
-Add library lib@i{string} to the list of libraries, where @i{string} is
-represented by @i{c-addr u}.
+ライブラリ lib@i{string} をライブラリのリストに追加します。ここで、 @i{string} は @i{c-addr u} で表されます。
 
 
 @findex add-libpath ( @var{ c-addr u --   } ) gforth-0.7
@@ -24453,8 +24416,7 @@ represented by @i{c-addr u}.
 @format
 @code{add-libpath} ( @i{c-addr u --  }) gforth-0.7 ``add-libpath''
 @end format
-Add path @i{string} to the list of library search pathes, where @i{string}
-is represented by @i{c-addr u}.
+パス @i{string} をライブラリ検索パスのリストに追加します。 ここで、@i{string} は @i{c-addr u} で表されます。
 
 
 @findex add-framework ( @var{ c-addr u --   } ) gforth-1.0
@@ -24463,8 +24425,8 @@ is represented by @i{c-addr u}.
 @format
 @code{add-framework} ( @i{c-addr u --  }) gforth-1.0 ``add-framework''
 @end format
-Add framework lib@i{string} to the list of frameworks, where @i{string} is
-represented by @i{c-addr u}.
+フレームワーク lib@i{string} をフレームワークのリストに追加します。 ここで、@i{string} は @i{c-addr u}
+で表されます。
 
 
 @findex add-incdir ( @var{ c-addr u --   } ) gforth-1.0
@@ -24473,7 +24435,7 @@ represented by @i{c-addr u}.
 @format
 @code{add-incdir} ( @i{c-addr u --  }) gforth-1.0 ``add-incdir''
 @end format
-Add path @i{c-addr u} to the list of include search pathes
+パス @i{c-addr u} をインクルード検索パスのリストに追加します
 
 
 @findex add-cflags ( @var{ c-addr u --   } ) gforth-1.0
@@ -24482,7 +24444,7 @@ Add path @i{c-addr u} to the list of include search pathes
 @format
 @code{add-cflags} ( @i{c-addr u --  }) gforth-1.0 ``add-cflags''
 @end format
-add any kind of cflags to compilation
+あらゆる種類の cflags をC言語コンパイラに追加します
 
 
 @findex add-ldflags ( @var{ c-addr u --   } ) gforth-1.0
@@ -24491,7 +24453,7 @@ add any kind of cflags to compilation
 @format
 @code{add-ldflags} ( @i{c-addr u --  }) gforth-1.0 ``add-ldflags''
 @end format
-add flag to linker
+リンカにフラグを追加
 
 
 
