@@ -24462,44 +24462,39 @@ libs のリストをクリア
 @cindex Callback functions written in Forth
 @cindex C function pointers to Forth words
 
-In some cases you have to pass a function pointer to a C function, i.e., the
-library wants to call back to your application (and the pointed-to function
-is called a callback function).  You can pass the address of an existing C
-function (that you get with @code{lib-sym}, @pxref{Low-Level C Interface
-Words}), but if there is no appropriate C function, you probably want to
-define the function as a Forth word.  Then you need to generate a callback
-as described below:
+場合によっては、 C言語の関数へ関数のポインタを渡す必要があります。 つまり、
+ライブラリがアプリケーションにコールバックしたい場合です(ポイント先の関数はコールバック関数と呼ばれます)。
+既存のC言語の関数のアドレス(@code{lib-sym} で取得。 @pxref{Low-Level C Interface
+Words})を渡すことができますが、 適切な C言語の関数がない場合、 あなたは Forth ワードをC言語の関数として定義したい筈です。 その際は、
+下記にて説明する、 コールバックを生成する必要があります:
 
-You can generate C callbacks from Forth code with @code{c-callback}.
+@code{c-callback} を使用して Forth コードからC言語のコールバックを生成できます。
 
 @findex c-callback ( @var{ "forth-name" "@{type@}" "---" "type" --   } ) gforth-1.0
 @cindex @code{c-callback}
 @kindex c-callback
 @format
-@code{c-callback} ( @i{"forth-name" "@{type@}" "---" "type" --  }) gforth-1.0 ``c-callback''
+@code{c-callback} ( @i{"forth-name" "@{type@}" "--" "type" --  }) gforth-1.0 ``c-callback''
 @end format
-Define a callback instantiator with the given signature.  The callback
-instantiator @i{forth-name} @code{( xt -- addr )} takes an @var{xt}, and
-returns the @var{addr}ess of the C function handling that callback.
+指定のシグネチャ @i{forth-name} を使用してコールバック・インスタンス化器(instantiator;インスタンシエーター)を定義します。
+コールバック・インスタンス化器 @i{forth-name} @code{( xt -- addr )} は、 @var{xt} を受け取り、
+そのコールバックを処理する C言語関数の @var{addr} を返します。
 
 
 @findex c-callback-thread ( @var{ "forth-name" "@{type@}" "---" "type" --   } ) gforth-1.0
 @cindex @code{c-callback-thread}
 @kindex c-callback-thread
 @format
-@code{c-callback-thread} ( @i{"forth-name" "@{type@}" "---" "type" --  }) gforth-1.0 ``c-callback-thread''
+@code{c-callback-thread} ( @i{"forth-name" "@{type@}" "--" "type" --  }) gforth-1.0 ``c-callback-thread''
 @end format
-Define a callback instantiator with the given signature.  The callback
-instantiator @i{forth-name} @code{( xt -- addr )} takes an @var{xt}, and
-returns the @var{addr}ess of the C function handling that callback.  This
-callback is safe when called from another thread
+指定のシグネチャ @i{forth-name} を使用してコールバック・インスタンス化器を定義します。  コールバック・インスタンス化器
+@i{forth-name} @code{( xt -- addr )} は、 @var{xt} を受け取り、 そのコールバックを処理する
+C言語の関数の @var{addr} を返します。  このコールバックは、 別のスレッドから呼び出された場合に安全です
 
 
 
-This precompiles a number of callback functions (up to the value
-@code{callback#}).  The prototype of the C function is deduced from its
-Forth signature.  If this is not sufficient, you can add types in curly
-braces after the Forth type.
+これにより、 (value @code{callback#} までの)多数のコールバック関数がプリコンパイルされます。  C言語の関数プロトタイプは、
+Forth シグネチャから推定されます。  これでは不十分な場合は、 Forth 型の後に中かっこで囲んで型を追加できます。
 
 @example
 c-callback vector4double: f f f f -- void
@@ -24528,27 +24523,20 @@ c-callback vector4single: f@{float@} f@{float@} f@{float@} f@{float@} -- void
 @node C interface internals, Low-Level C Interface Words, Callbacks, C Interface
 @subsection How the C interface works
 
-The documented C interface works by generating a C code out of the
-declarations.
+文書化されたC言語インターフェイスは、 宣言から C コードを生成することによって機能します。
 
-In particular, for every Forth word declared with @code{c-function}, it
-generates a wrapper function in C that takes the Forth data from the Forth
-stacks, and calls the target C function with these data as arguments.  The C
-compiler then performs an implicit conversion between the Forth type from
-the stack, and the C type for the parameter, which is given by the C
-function prototype.  After the C function returns, the return value is
-likewise implicitly converted to a Forth type and written back on the stack.
+特に、 @code{c-function} で宣言されたすべての Forth ワードに対して、 Forth スタックから Forth
+データを取得するラッパー関数をC言語で生成し、 これらのデータを引数としてターゲットのC言語の関数を呼び出します。  次に、 C言語のコンパイラは、
+スタックからの Forth 型と、 C言語の関数プロトタイプによって指定されるパラメーターのC言語の型、 の間で暗黙的な変換を実行します。
+C言語の関数から戻った後、 戻り値も同様に暗黙的に Forth 型に変換され、 スタックに書き戻されます。
 
-The @code{\c} lines are literally included in the C code (but without the
-@code{\c}), and provide the necessary declarations so that the C compiler
-knows the C types and has enough information to perform the conversion.
+@code{\c} 行はそのままC言語のコードに含まれており(ただし、@code{\c} は含まれません)、 C言語のコンパイラーがC言語の型を認識し、
+そして、 変換を実行するのに十分な情報を得るために必要な宣言を提供します。 
 
-These wrapper functions are eventually compiled and dynamically linked into
-Gforth, and then they can be called.
+これらのラッパー関数は最終的にコンパイルされ、そして、 Gforth に動的にリンクされ、 そして、 呼び出すことができるようになります。
 
-The libraries added with @code{add-lib} are used in the compile command line
-to specify dependent libraries with @code{-l@var{lib}}, causing these
-libraries to be dynamically linked when the wrapper function is linked.
+@code{add-lib} で追加されたライブラリは、 コンパイラのコマンド・ラインで @code{-l@var{lib}}
+で依存ライブラリを指定するために使用され、 ラッパー関数がリンクされるときにこれらのライブラリが動的にリンクされます。
 
 
 @node Low-Level C Interface Words, Automated interface generation using SWIG, C interface internals, C Interface
@@ -24558,14 +24546,14 @@ libraries to be dynamically linked when the wrapper function is linked.
 @cindex @code{open-lib}
 @kindex open-lib
 @format
-@code{open-lib} ( @i{c-addr1 u1 -- u2 }) gforth-0.4 ``open-lib''
+@code{open-lib} ( @i{c-addr1 u1 -- u2 }) gforth-0.4 ``open-lib''@*\ 訳注: 指定の名前のライブラリを開く。 @i{u2} にハンドルを返す。@*エラーの場合は @i{u2} に 0 を返し、 @code{lib-error} で参照できるエラーメッセージをセットする。
 @end format
 
 @findex lib-sym ( @var{ c-addr1 u1 u2 -- u3  } ) gforth-0.4
 @cindex @code{lib-sym}
 @kindex lib-sym
 @format
-@code{lib-sym} ( @i{c-addr1 u1 u2 -- u3 }) gforth-0.4 ``lib-sym''
+@code{lib-sym} ( @i{c-addr1 u1 u2 -- u3 }) gforth-0.4 ``lib-sym''@*\ 訳注: @code{open-lib} で取得したハンドル @i{u2} を使って@* シンボル文字列 @i{c-addr1 u1} のシンボル・テーブルのアドレスを @i{u3} に返す。@*エラーの場合は @i{u3} に 0 を返し、 @code{lib-error} で参照できるエラーメッセージをセットする。
 @end format
 
 @findex lib-error ( @var{ -- c-addr u  } ) gforth-0.7
@@ -24574,7 +24562,7 @@ libraries to be dynamically linked when the wrapper function is linked.
 @format
 @code{lib-error} ( @i{-- c-addr u }) gforth-0.7 ``lib-error''
 @end format
-Error message for last failed @code{open-lib} or @code{lib-sym}.
+最後に失敗した @code{open-lib} または @code{lib-sym} のエラー・メッセージ。
 
 @findex call-c ( @var{ ... w -- ...  } ) gforth-0.2
 @cindex @code{call-c}
@@ -24582,9 +24570,8 @@ Error message for last failed @code{open-lib} or @code{lib-sym}.
 @format
 @code{call-c} ( @i{... w -- ... }) gforth-0.2 ``call-c''
 @end format
-Call the C function pointed to by @i{w}. The C function has to access the
-stack itself. The stack pointers are exported into a ptrpair structure
-passed to the C function, and returned in that form.
+@i{w} が指す C言語の関数を呼び出します。 C言語関数はそれ自身でスタックにアクセスする必要があります。
+スタック・ポインタはC言語の関数に渡される ptrpair 構造体にエクスポートされ、 その形式でC言語関数から返されます。
 
 
 @node Automated interface generation using SWIG, Migrating the C interface from earlier Gforth, Low-Level C Interface Words, C Interface

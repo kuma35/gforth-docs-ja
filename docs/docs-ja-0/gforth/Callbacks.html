@@ -72,43 +72,38 @@ Next: <a href="C-interface-internals.html" accesskey="n" rel="next">How the C in
 <span id="index-Callback-functions-written-in-Forth"></span>
 <span id="index-C-function-pointers-to-Forth-words"></span>
 
-<p>In some cases you have to pass a function pointer to a C function, i.e., the
-library wants to call back to your application (and the pointed-to function
-is called a callback function).  You can pass the address of an existing C
-function (that you get with <code>lib-sym</code>, see <a href="Low_002dLevel-C-Interface-Words.html">Low-Level C Interface Words</a>), but if there is no appropriate C function, you probably want to
-define the function as a Forth word.  Then you need to generate a callback
-as described below:
+<p>場合によっては、 C言語の関数へ関数のポインタを渡す必要があります。 つまり、
+ライブラリがアプリケーションにコールバックしたい場合です(ポイント先の関数はコールバック関数と呼ばれます)。
+既存のC言語の関数のアドレス(<code>lib-sym</code> で取得。 see <a href="Low_002dLevel-C-Interface-Words.html">Low-Level C Interface Words</a>)を渡すことができますが、 適切な C言語の関数がない場合、 あなたは Forth ワードをC言語の関数として定義したい筈です。 その際は、
+下記にて説明する、 コールバックを生成する必要があります:
 </p>
-<p>You can generate C callbacks from Forth code with <code>c-callback</code>.
+<p><code>c-callback</code> を使用して Forth コードからC言語のコールバックを生成できます。
 </p>
 <span id="index-c_002dcallback-_0028--_0022forth_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-c_002dcallback"></span>
 <span id="index-c_002dcallback-1"></span>
 <div class="format">
-<pre class="format"><code>c-callback</code> ( <i>&quot;forth-name&quot; &quot;{type}&quot; &quot;&mdash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback&rdquo;
+<pre class="format"><code>c-callback</code> ( <i>&quot;forth-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback&rdquo;
 </pre></div>
-<p>Define a callback instantiator with the given signature.  The callback
-instantiator <i>forth-name</i> <code>( xt -- addr )</code> takes an <var>xt</var>, and
-returns the <var>addr</var>ess of the C function handling that callback.
+<p>指定のシグネチャ <i>forth-name</i> を使用してコールバック・インスタンス化器(instantiator;インスタンシエーター)を定義します。
+コールバック・インスタンス化器 <i>forth-name</i> <code>( xt -- addr )</code> は、 <var>xt</var> を受け取り、
+そのコールバックを処理する C言語関数の <var>addr</var> を返します。
 </p>
 
 <span id="index-c_002dcallback_002dthread-_0028--_0022forth_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-c_002dcallback_002dthread"></span>
 <span id="index-c_002dcallback_002dthread-1"></span>
 <div class="format">
-<pre class="format"><code>c-callback-thread</code> ( <i>&quot;forth-name&quot; &quot;{type}&quot; &quot;&mdash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback-thread&rdquo;
+<pre class="format"><code>c-callback-thread</code> ( <i>&quot;forth-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback-thread&rdquo;
 </pre></div>
-<p>Define a callback instantiator with the given signature.  The callback
-instantiator <i>forth-name</i> <code>( xt -- addr )</code> takes an <var>xt</var>, and
-returns the <var>addr</var>ess of the C function handling that callback.  This
-callback is safe when called from another thread
+<p>指定のシグネチャ <i>forth-name</i> を使用してコールバック・インスタンス化器を定義します。  コールバック・インスタンス化器
+<i>forth-name</i> <code>( xt -- addr )</code> は、 <var>xt</var> を受け取り、 そのコールバックを処理する
+C言語の関数の <var>addr</var> を返します。  このコールバックは、 別のスレッドから呼び出された場合に安全です
 </p>
 
 
-<p>This precompiles a number of callback functions (up to the value
-<code>callback#</code>).  The prototype of the C function is deduced from its
-Forth signature.  If this is not sufficient, you can add types in curly
-braces after the Forth type.
+<p>これにより、 (value <code>callback#</code> までの)多数のコールバック関数がプリコンパイルされます。  C言語の関数プロトタイプは、
+Forth シグネチャから推定されます。  これでは不十分な場合は、 Forth 型の後に中かっこで囲んで型を追加できます。
 </p>
 <div class="example">
 <pre class="example">c-callback vector4double: f f f f -- void
@@ -119,11 +114,6 @@ c-callback vector4single: f{float} f{float} f{float} f{float} -- void
 
 
 
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="C-interface-internals.html">How the C interface works</a>, Previous: <a href="Declaring-OS_002dlevel-libraries.html">Declaring OS-level libraries</a>, Up: <a href="C-Interface.html">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

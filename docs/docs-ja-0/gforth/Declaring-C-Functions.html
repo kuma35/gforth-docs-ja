@@ -72,25 +72,22 @@ Next: <a href="Calling-C-function-pointers.html" accesskey="n" rel="next">Callin
 <span id="index-C-functions_002c-declarations"></span>
 <span id="index-declaring-C-functions"></span>
 
-<p>あなたは、 先の例の <code>lseek</code> または <code>dlseek</code> を呼び出す前に、 それを宣言する必要があります。  宣言は以下の 2
+<p>あなたは、 先の例の <code>lseek</code> や <code>dlseek</code> を呼び出す前に、 宣言する必要があります。  宣言は以下の 2
 つの部分で構成されます: 
 </p>
 <dl compact="compact">
 <dt><span><b>C言語部分</b></span></dt>
-<dd><p>is the C declaration of the function, or more typically and portably, a
-C-style <code>#include</code> of a file that contains the declaration of the C
-function.
+<dd><p>関数の C 言語宣言です。 より一般的かつ移植性の高いものとしては、 C 言語の関数の宣言を含むファイルの C 言語スタイルの
+<code>#include</code> です。
 </p>
 </dd>
 <dt><span><b>Forth部分</b></span></dt>
-<dd><p>declares the Forth types of the parameters and the Forth word name
-corresponding to the C function.
+<dd><p>パラメータの Forth 型と、 C言語の関数に対応する Forth ワード名を宣言します。
 </p>
 </dd>
 </dl>
 
-<p>For the words <code>lseek</code> and <code>dlseek</code> mentioned earlier, the
-declarations are:
+<p>前述の <code>lseek</code> と <code>dlseek</code> の宣言は以下のとおりです:
 </p>
 <div class="example">
 <pre class="example">\c #define _FILE_OFFSET_BITS 64
@@ -100,47 +97,43 @@ c-function lseek lseek n n n -- n
 c-function dlseek lseek n d n -- d
 </pre></div>
 
-<p>The C part of the declarations is prefixed by <code>\c</code>, and the rest of the
-line is ordinary C code.  You can use as many lines of C declarations as you
-like, and they are visible for all further function declarations.
+<p>宣言の C言語部分は <code>\c</code> という接頭辞が付けられ、 <code>\c</code> の行の残りの部分は通常の C 言語のコードです。 C
+言語の宣言の行は好きなだけ使用でき、 それ以降のすべての関数宣言で参照できます。
 </p>
-<p>The Forth part declares each interface word with <code>c-function</code>, followed
-by the Forth name of the word, the C name of the called function, and the
-stack effect of the word.  The stack effect contains an arbitrary number of
-types of parameters, then <code>--</code>, and then exactly one type for the
-return value.  The possible types are:
+<p>Forth 部分は、 <code>c-function</code> で各インターフェイス・ワードを宣言し、 その後にワードの Forth 名と、 呼び出される C
+言語の関数名と、 ワードのスタック効果が続きます。  スタック効果には、 任意の数のパラメータのタイプ、 <code>--</code>、 そして戻り値の「 1
+つ」のタイプが含まれます。  可能なタイプは以下のとおりです:
 </p>
 <dl compact="compact">
 <dt><span><code>n</code></span></dt>
-<dd><p>single-cell integer
+<dd><p>単一セル整数
 </p>
 </dd>
 <dt><span><code>a</code></span></dt>
-<dd><p>address (single-cell)
+<dd><p>アドレス(単一セル)
 </p>
 </dd>
 <dt><span><code>d</code></span></dt>
-<dd><p>double-cell integer
+<dd><p>2倍長セル整数
 </p>
 </dd>
 <dt><span><code>r</code></span></dt>
-<dd><p>floating-point value
+<dd><p>浮動小数点数値
 </p>
 </dd>
 <dt><span><code>func</code></span></dt>
-<dd><p>C function pointer
+<dd><p>C言語の関数へのポインタ
 </p>
 </dd>
 <dt><span><code>void</code></span></dt>
-<dd><p>no value (used as return type for void functions)
+<dd><p>値なし(void 関数の戻り値の型として使用)
 </p>
 </dd>
 </dl>
 
 <span id="index-variadic-C-functions"></span>
 
-<p>To deal with variadic C functions, you can declare one Forth word for every
-pattern you want to use, e.g.:
+<p>可変個の引数(variadic)の C 言語の関数を扱うには、 あなたが使用したいパターンごとに 1 つの Forth ワードを宣言します。 例:
 </p>
 <div class="example">
 <pre class="example">\c #include &lt;stdio.h&gt;
@@ -148,20 +141,17 @@ c-function printf-nr printf a n r -- n
 c-function printf-rn printf a r n -- n
 </pre></div>
 
-<p>Note that with C functions declared as variadic (or if you don&rsquo;t provide a
-prototype), the C interface has no C type to convert to, so no automatic
-conversion happens, which may lead to portability problems in some cases.
-You can add the C type cast in curly braces after the Forth type.  This also
-allows to pass e.g. structs to C functions, which in Forth cannot live on
-the stack.
+<p>注意: C 言語の関数が可変個(variadic)の引数として宣言されている場合(または関数プロトタイプを提供していない場合)、 C
+言語インターフェイスには変換先の C 言語の型がないため、 自動変換は行われず、
+場合によっては移植性の問題が発生する可能性があることに注意してください。  C 言語の型キャストを中括弧で囲んで Forth 型の後に追加できます。
+これにより、 例えば、 Forth ではスタック上に存在できない構造体を C 言語の関数へ渡す事も可能になります。
 </p>
 <div class="example">
 <pre class="example">c-function printfll printf a n{(long long)} -- n
 c-function pass-struct pass_struct a{*(struct foo *)} -- n
 </pre></div>
 
-<p>This typecasting is not available to return values, as C does not allow
-typecasts for lvalues.
+<p>C言語では左辺値(lvalues)の型キャスト(typecast)が許可されていないため、 この型キャストは戻り値には使用できません。
 </p>
 <span id="index-_005cc-_0028--_0022rest_002dof_002dline_0022-_002d_002d--_0029-gforth_002d0_002e7"></span>
 <span id="index-_005cc"></span>
@@ -169,27 +159,27 @@ typecasts for lvalues.
 <div class="format">
 <pre class="format"><code>\c</code> ( <i>&quot;rest-of-line&quot; &ndash;  </i>) gforth-0.7 &ldquo;backslash-c&rdquo;
 </pre></div>
-<p>One line of C declarations for the C interface
+<p>C言語インターフェイスのC言語宣言の1行
 </p>
 
 <span id="index-c_002dfunction-_0028--_0022forth_002dname_0022-_0022c_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d0_002e7"></span>
 <span id="index-c_002dfunction"></span>
 <span id="index-c_002dfunction-1"></span>
 <div class="format">
-<pre class="format"><code>c-function</code> ( <i>&quot;forth-name&quot; &quot;c-name&quot; &quot;{type}&quot; &quot;&mdash;&quot; &quot;type&quot; &ndash;  </i>) gforth-0.7 &ldquo;c-function&rdquo;
+<pre class="format"><code>c-function</code> ( <i>&quot;forth-name&quot; &quot;c-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-0.7 &ldquo;c-function&rdquo;
 </pre></div>
-<p>Define a Forth word <i>forth-name</i>.  <i>Forth-name</i> has the specified stack
-effect and calls the C function <code>c-name</code>.
+<p>Forth ワード <i>forth-name</i> を定義します。  <i>Forth-name</i> には指定されたスタック効果(<i>{type}</i>
+と <i>type</i>)があり、 C言語関数 <code>c-name</code> を呼び出します。
 </p>
 
 <span id="index-c_002dvalue-_0028--_0022forth_002dname_0022-_0022c_002dname_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-c_002dvalue"></span>
 <span id="index-c_002dvalue-1"></span>
 <div class="format">
-<pre class="format"><code>c-value</code> ( <i>&quot;forth-name&quot; &quot;c-name&quot; &quot;&mdash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-value&rdquo;
+<pre class="format"><code>c-value</code> ( <i>&quot;forth-name&quot; &quot;c-name&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-value&rdquo;
 </pre></div>
-<p>Define a Forth word <i>forth-name</i>.  <i>Forth-name</i> has the specified stack
-effect and gives the C value of <code>c-name</code>.
+<p>Forth ワード <i>forth-name</i> を定義します。  <i>Forth-name</i> には指定されたスタック効果(<i>type</i>)があり、
+<code>c-name</code> の C言語からの値を与えます(訳注: スタック効果の通り、 読み取りのみ)。
 </p>
 
 <span id="index-c_002dvariable-_0028--_0022forth_002dname_0022-_0022c_002dname_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -198,17 +188,15 @@ effect and gives the C value of <code>c-name</code>.
 <div class="format">
 <pre class="format"><code>c-variable</code> ( <i>&quot;forth-name&quot; &quot;c-name&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-variable&rdquo;
 </pre></div>
-<p>Define a Forth word <i>forth-name</i>.  <i>Forth-name</i> returns the address of
-<code>c-name</code>.
+<p>Forth ワード <i>forth-name</i> を定義します。  <i>Forth-name</i> は <code>c-name</code> のアドレスを返します。
 </p>
 
 
-<p>In order to work, this C interface invokes GCC at run-time and uses dynamic
-linking.  If these features are not available, there are other, less
-convenient and less portable C interfaces in <samp>lib.fs</samp> and
-<samp>oldlib.fs</samp>.  These interfaces are mostly undocumented and mostly
-incompatible with each other and with the documented C interface; you can
-find some examples for the <samp>lib.fs</samp> interface in <samp>lib.fs</samp>.
+<p>この C言語インターフェイスが機能するために、 実行時に GCC を呼び出し、 動的リンク(dynamic linking)を使用します。
+これらの機能が利用できない場合は、 <samp>lib.fs</samp> と <samp>oldlib.fs</samp> に、利便性と移植性に劣る他の C
+言語インターフェイスが用意されています。 これらのインターフェイスはほとんど文書化されておらず、 また文書化された
+C言語インターフェイスとほとんど互換性がありません。 あなたが例を見たければ、 <samp>lib.fs</samp> インターフェイスの例が
+<samp>lib.fs</samp> にあります。
 </p>
 
 </div>

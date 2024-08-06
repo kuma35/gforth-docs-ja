@@ -71,45 +71,39 @@ Next: <a href="Defining-library-interfaces.html" accesskey="n" rel="next">Defini
 <span id="Calling-C-function-pointers-from-Forth"></span><h4 class="subsection">6.28.3 Calling C function pointers from Forth</h4>
 <span id="index-C-function-pointers_002c-calling-from-Forth"></span>
 
-<p>If you come across a C function pointer (e.g., in some C-constructed
-structure) and want to call it from your Forth program, you could use the
-structures as described above by defining a macro.  Or you use
-<code>c-funptr</code>.
+<p>C言語の関数へのポインタ(たとえば、 C言語で構築された構造体など)を見つけて、 それを Forth プログラムから呼び出したい場合は、
+マクロを定義することで上記の構造体を使用できます。 または、 <code>c-funptr</code> を使用します。
 </p>
 <span id="index-c_002dfunptr-_0028--_0022forth_002dname_0022-_003c_007b_003e_0022c_002dtypecast_0022_003c_007d_003e-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-c_002dfunptr"></span>
 <span id="index-c_002dfunptr-1"></span>
 <div class="format">
-<pre class="format"><code>c-funptr</code> ( <i>&quot;forth-name&quot; &lt;{&gt;&quot;c-typecast&quot;&lt;}&gt; &quot;{type}&quot; &quot;&mdash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-funptr&rdquo;
+<pre class="format"><code>c-funptr</code> ( <i>&quot;forth-name&quot; &lt;{&gt;&quot;c-typecast&quot;&lt;}&gt; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-funptr&rdquo;
 </pre></div>
-<p>Define a Forth word <i>forth-name</i>.  <i>Forth-name</i> has the specified stack
-effect plus the called pointer on top of stack, i.e. <code>( {type} ptr --
-type )</code> and calls the C function pointer <code>ptr</code> using the typecast or
-struct access <code>c-typecast</code>.
+<p>Forth ワード <i>Forth-name</i> を定義します。 <i>Forth-name</i> には、 その後続に記述されたスタック効果と、
+スタックのTOSに置かれた呼び出されたポインタ(the called pointer)(つまり {type} ptr &ndash; type )があり、
+型キャスト(typecast)または構造体アクセス(c-typecast)を使用して C 言語の関数へのポインタ <code>ptr</code> を呼び出します。
 </p>
 
 
-<p>Let us assume that there is a C function pointer type <code>func1</code> defined
-in some header file <samp>func1.h</samp>, and you know that these functions take
-one integer argument and return an integer result; and you want to call
-functions through such pointers.  Just define
+<p>ヘッダー・ファイル <samp>func1.h</samp> に C言語の関数ポインタ型 <code>func1</code> が定義されており、 これらの関数は 1
+つの整数引数を受け取り、 整数の結果を返すことがわかっているとします。 そして、 そのようなポインタを介して関数を呼び出したいとします。
+あなたは以下のように定義するだけです
 </p>
 <div class="example">
 <pre class="example">\c #include &lt;func1.h&gt;
 c-funptr call-func1 {((func1)ptr)} n -- n
 </pre></div>
 
-<p>and then you can call a function pointed to by, say <code>func1a</code> as
-follows:
+<p>そして、 例えば、 以下のようにして <code>func1-addr</code> が指す関数を呼び出すことができます:
 </p>
 <div class="example">
-<pre class="example">-5 func1a call-func1 .
+<pre class="example">-5 func1-addr call-func1 .
 </pre></div>
 
-<p>The Forth word <code>call-func1</code> is similar to <code>execute</code>, except that
-it takes a C <code>func1</code> pointer instead of a Forth execution token, and it
-is specific to <code>func1</code> pointers.  For each type of function pointer you
-want to call from Forth, you have to define a separate calling word.
+<p>Forth ワード <code>call-func1</code> は <code>execute</code> に似ていますが、Forth 実行トークンの代わりに C 言語の
+<code>func1</code> ポインタを使用し、 <code>func1</code> ポインタ固有である点が異なります。  Forth から呼び出したい C
+言語の関数ポインタのタイプごとに、 個別の呼び出しワードを定義する必要があります。
 </p>
 </div>
 

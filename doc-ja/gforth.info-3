@@ -5376,31 +5376,34 @@ File: gforth.info,  Node: Callbacks,  Next: C interface internals,  Prev: Declar
 6.28.6 Callbacks
 ----------------
 
-In some cases you have to pass a function pointer to a C function, i.e.,
-the library wants to call back to your application (and the pointed-to
-function is called a callback function).  You can pass the address of an
-existing C function (that you get with ‘lib-sym’, *note Low-Level C
-Interface Words::), but if there is no appropriate C function, you
-probably want to define the function as a Forth word.  Then you need to
-generate a callback as described below:
+場合によっては、 C言語の関数へ関数のポインタを渡す必要があります。 つま
+り、 ライブラリがアプリケーションにコールバックしたい場合です(ポイント先
+の関数はコールバック関数と呼ばれます)。 既存のC言語の関数のアドレス
+(‘lib-sym’ で取得。 *note Low-Level C Interface Words::)を渡すことができ
+ますが、 適切な C言語の関数がない場合、 あなたは Forth ワードをC言語の関
+数として定義したい筈です。 その際は、 下記にて説明する、 コールバックを
+生成する必要があります:
 
-   You can generate C callbacks from Forth code with ‘c-callback’.
+   ‘c-callback’ を使用して Forth コードからC言語のコールバックを生成でき
+ます。
 
-‘c-callback’ ( "forth-name" "{type}" "—" "type" –  ) gforth-1.0 “c-callback”
-   Define a callback instantiator with the given signature.  The
-callback instantiator forth-name ‘( xt -- addr )’ takes an XT, and
-returns the ADDRess of the C function handling that callback.
+‘c-callback’ ( "forth-name" "{type}" "–" "type" –  ) gforth-1.0 “c-callback”
+   指定のシグネチャ forth-name を使用してコールバック・インスタンス化器
+(instantiator;インスタンシエーター)を定義します。 コールバック・インスタ
+ンス化器 forth-name ‘( xt -- addr )’ は、 XT を受け取り、 そのコールバッ
+クを処理する C言語関数の ADDR を返します。
 
-‘c-callback-thread’ ( "forth-name" "{type}" "—" "type" –  ) gforth-1.0 “c-callback-thread”
-   Define a callback instantiator with the given signature.  The
-callback instantiator forth-name ‘( xt -- addr )’ takes an XT, and
-returns the ADDRess of the C function handling that callback.  This
-callback is safe when called from another thread
+‘c-callback-thread’ ( "forth-name" "{type}" "–" "type" –  ) gforth-1.0 “c-callback-thread”
+   指定のシグネチャ forth-name を使用してコールバック・インスタンス化器
+を定義します。 コールバック・インスタンス化器 forth-name ‘( xt -- addr
+)’ は、 XT を受け取り、 そのコールバックを処理する C言語の関数の ADDR を
+返します。 このコールバックは、 別のスレッドから呼び出された場合に安全で
+す
 
-   This precompiles a number of callback functions (up to the value
-‘callback#’).  The prototype of the C function is deduced from its Forth
-signature.  If this is not sufficient, you can add types in curly braces
-after the Forth type.
+   これにより、 (value ‘callback#’ までの)多数のコールバック関数がプリコ
+ンパイルされます。 C言語の関数プロトタイプは、 Forth シグネチャから推定
+されます。 これでは不十分な場合は、 Forth 型の後に中かっこで囲んで型を追
+加できます。
 
      c-callback vector4double: f f f f -- void
      c-callback vector4single: f{float} f{float} f{float} f{float} -- void
@@ -5411,28 +5414,27 @@ File: gforth.info,  Node: C interface internals,  Next: Low-Level C Interface Wo
 6.28.7 How the C interface works
 --------------------------------
 
-The documented C interface works by generating a C code out of the
-declarations.
+文書化されたC言語インターフェイスは、 宣言から C コードを生成することに
+よって機能します。
 
-   In particular, for every Forth word declared with ‘c-function’, it
-generates a wrapper function in C that takes the Forth data from the
-Forth stacks, and calls the target C function with these data as
-arguments.  The C compiler then performs an implicit conversion between
-the Forth type from the stack, and the C type for the parameter, which
-is given by the C function prototype.  After the C function returns, the
-return value is likewise implicitly converted to a Forth type and
-written back on the stack.
+   特に、 ‘c-function’ で宣言されたすべての Forth ワードに対して、 Forth
+スタックから Forth データを取得するラッパー関数をC言語で生成し、 これら
+のデータを引数としてターゲットのC言語の関数を呼び出します。 次に、 C言語
+のコンパイラは、 スタックからの Forth 型と、 C言語の関数プロトタイプによ
+って指定されるパラメーターのC言語の型、 の間で暗黙的な変換を実行します。
+C言語の関数から戻った後、 戻り値も同様に暗黙的に Forth 型に変換され、 ス
+タックに書き戻されます。
 
-   The ‘\c’ lines are literally included in the C code (but without the
-‘\c’), and provide the necessary declarations so that the C compiler
-knows the C types and has enough information to perform the conversion.
+   ‘\c’ 行はそのままC言語のコードに含まれており(ただし、‘\c’ は含まれま
+せん)、 C言語のコンパイラーがC言語の型を認識し、 そして、 変換を実行する
+のに十分な情報を得るために必要な宣言を提供します。
 
-   These wrapper functions are eventually compiled and dynamically
-linked into Gforth, and then they can be called.
+   これらのラッパー関数は最終的にコンパイルされ、そして、 Gforth に動的
+にリンクされ、 そして、 呼び出すことができるようになります。
 
-   The libraries added with ‘add-lib’ are used in the compile command
-line to specify dependent libraries with ‘-lLIB’, causing these
-libraries to be dynamically linked when the wrapper function is linked.
+   ‘add-lib’ で追加されたライブラリは、 コンパイラのコマンド・ラインで
+‘-lLIB’ で依存ライブラリを指定するために使用され、 ラッパー関数がリンク
+されるときにこれらのライブラリが動的にリンクされます。
 
 
 File: gforth.info,  Node: Low-Level C Interface Words,  Next: Automated interface generation using SWIG,  Prev: C interface internals,  Up: C Interface
@@ -5441,16 +5443,21 @@ File: gforth.info,  Node: Low-Level C Interface Words,  Next: Automated interfac
 ----------------------------------
 
 ‘open-lib’ ( c-addr1 u1 – u2 ) gforth-0.4 “open-lib”
+\ 訳注: 指定の名前のライブラリを開く。 u2 にハンドルを返す。
+エラーの場合は u2 に 0 を返し、 ‘lib-error’ で参照できるエラーメッセージをセットする。
 
 ‘lib-sym’ ( c-addr1 u1 u2 – u3 ) gforth-0.4 “lib-sym”
+\ 訳注: ‘open-lib’ で取得したハンドル u2 を使って
+ シンボル文字列 c-addr1 u1 のシンボル・テーブルのアドレスを u3 に返す。
+エラーの場合は u3 に 0 を返し、 ‘lib-error’ で参照できるエラーメッセージをセットする。
 
 ‘lib-error’ ( – c-addr u ) gforth-0.7 “lib-error”
-   Error message for last failed ‘open-lib’ or ‘lib-sym’.
+   最後に失敗した ‘open-lib’ または ‘lib-sym’ のエラー・メッセージ。
 
 ‘call-c’ ( ... w – ... ) gforth-0.2 “call-c”
-   Call the C function pointed to by w.  The C function has to access
-the stack itself.  The stack pointers are exported into a ptrpair
-structure passed to the C function, and returned in that form.
+   w が指す C言語の関数を呼び出します。 C言語関数はそれ自身でスタックに
+アクセスする必要があります。 スタック・ポインタはC言語の関数に渡される
+ptrpair 構造体にエクスポートされ、 その形式でC言語関数から返されます。
 
 
 File: gforth.info,  Node: Automated interface generation using SWIG,  Next: Migrating the C interface from earlier Gforth,  Prev: Low-Level C Interface Words,  Up: C Interface
