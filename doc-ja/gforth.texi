@@ -24577,20 +24577,18 @@ C言語の関数から戻った後、 戻り値も同様に暗黙的に Forth �
 @node Automated interface generation using SWIG, Migrating the C interface from earlier Gforth, Low-Level C Interface Words, C Interface
 @subsection Automated interface generation using SWIG
 
-SWIG, the Simple Wrapper Interface Generator, is used to create C interfaces
-for a lot of programming languages.  The SWIG version extended with a Forth
-module can be found on @uref{https://github.com/GeraldWodni/swig,github}.
+SWIG (Simple Wrapper Interface Generator)は、
+多くのプログラミング言語でC言語インターフェイスを作成するために使用されています。  Forth モジュールで拡張された SWIG バージョンは、
+@uref{https://github.com/GeraldWodni/swig,github} にあります。
 
 @subsubsection Basic operation
-C-headers are parsed and converted to Forth-Sourcecode which uses the
-previously describe C interface functions.
+C言語のヘッダーはパースされ、 前述のC言語インターフェイス関数を使用する Forth のソース・コードに変換されます。
 
 @subsubsection Detailed operation:
 @enumerate 1
-@item Select a target, in this example we are using @code{example.h}
-@item Create an interface file for the header. This can be used to pass options, switches and define variables.
-    In the simplest case it just instructs to translate all of
-@code{example.h}:@/
+@item ターゲットを選択します。 この例では @code{example.h} を使用しています。
+@item ヘッダー用のインターフェイス・ファイルを作成します。 これは、 オプションと、スイッチと、変数の定義を、 渡すために使用できます。
+    最も単純なケースでは、@code{example.h} のすべてを変換(translate)するよう指示するだけです:@/
 @example
 %module example
 %insert("include")
@@ -24599,45 +24597,42 @@ previously describe C interface functions.
 @}
 %include "example.h"
 @end example
-@item Use SWIG to create a @code{.fsi-c} file. @*
+@item SWIG を使用して @code{.fsi-c} ファイルを作成します。@*
     @code{swig -forth -stackcomments -use-structs -enumcomments -o example-fsi.c
-example.i}. @* FSI stands ``Forth Source Independent'' meaning it can be
-transferred to any host having a C-compiler. SWIG is not required past this
-point.
-@item On the target machine compile the @code{.fsi-c} file to a @code{.fsx} (x stands for executable) @*
-    @code{gcc -o example.fsx example-fsi.c} @* The compilation will resolve all
-constants to the values on the target.
-@item The last step is to run the executable and capture its output to a @code{.fs} ``Forth Source'' file. @*
-    @code{./example.fsx -gforth > example.fs} @* This code can now be used on
-the target platform.
+example.i}@*FSI は「Forth Source Independent」の略で、
+C言語コンパイラを備えた任意のホストに転送できることを意味します。 この時点以降、 SWIG は必要ありません。
+@item ターゲット・マシンで @code{.fsi-c} ファイルを @code{.fsx} にコンパイルします(x は executable(実行可能)の意味です)@*
+    @code{gcc -o example.fsx example-fsi.c}@*コンパイルすると、
+すべての定数(constant)がターゲット上の値(value)に解決されます。
+@item 最後のステップは、 実行可能ファイルを実行し、 その出力を Forth のソース・ファイルである @code{.fs} ファイルにキャプチャすることです。@*
+    @code{./example.fsx -gforth > example.fs}@*これで、
+このコードはターゲット・プラットフォームで使用できるようになりました。
 @end enumerate
 
 @subsubsection Examples
-You can find some examples in SWIG's
+いくつかの例: SWIG's
 @uref{https://github.com/GeraldWodni/swig/tree/master/Examples/forth, Forth
-Example section}.
+Example section}
 
-A lot of interface files can be found in
-@uref{https://github.com/GeraldWodni/posix, Forth Posix C-Interface} and
+たくさんのインターフェイス・ファイルがこちらにあります: @uref{https://github.com/GeraldWodni/posix,
+Forth Posix C-Interface} と
 @uref{https://github.com/GeraldWodni/forth-c-interfaces, Forth C-Interface
-Modules}.
+Modules}
 
-Contribution to the @uref{https://github.com/GeraldWodni/forth-c-interfaces,
-Forth C-Interface Module repository} is always welcome.
+@uref{https://github.com/GeraldWodni/forth-c-interfaces, Forth C-Interface
+Module repository} への貢献はいつでも歓迎です！
 
 @node Migrating the C interface from earlier Gforth, , Automated interface generation using SWIG, C Interface
 @subsection Migrating from Gforth 0.7
 @cindex Must now be used inside C-LIBRARY, see C interface doc
 
-In this version, you can use @code{\c}, @code{c-function} and @code{add-lib}
-only inside @code{c-library}...@code{end-c-library}.  @code{add-lib} now
-always starts from a clean slate inside a @code{c-library}, so you don't
-need to use @code{clear-libs} in most cases.
+このバージョンでは、 @code{\c} と @code{c-function} と @code{add-lib} は
+@code{c-library}...@code{end-c-library} 内でのみ使用できます。 @code{add-lib} は常に
+@code{c-library} 内の白紙の状態から開始されるため、 ほとんどの場合 @code{clear-libs} を使用する必要はありません。
 
-If you have a program that uses these words outside
-@code{c-library}...@code{end-c-library}, just wrap them in
-@code{c-library}...@code{end-c-library}.  You may have to add some instances
-of @code{add-lib}, however.
+@code{c-library}...@code{end-c-library} の外側でこれらのワードを使用するプログラムがあった場合は、 あなたは、
+それらを @code{c-library}...@code{end-c-library} で囲むだけです。 ただし、 @code{add-lib}
+のインスタンスをいくつか追加する必要がある場合があります。
 
 @c -------------------------------------------------------------
 @node Assembler and Code Words, Carnal words, C Interface, Words
