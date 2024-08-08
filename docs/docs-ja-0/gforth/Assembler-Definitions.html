@@ -143,9 +143,8 @@ Next: <a href="Common-Assembler.html" accesskey="n" rel="next">Common Assembler<
 <div class="format">
 <pre class="format"><code>end-code</code> ( <i>colon-sys &ndash;  </i>) gforth-0.2 &ldquo;end-code&rdquo;
 </pre></div>
-<p>End a code definition.  Note that you have to assemble the return from the
-ABI call (for <code>abi-code</code>) or the dispatch to the next VM instruction
-(for <code>code</code> and <code>;code</code>)  yourself.
+<p>コード定義を終了します。  ABI 呼び出しからの戻り(<code>abi-code</code> の場合)、 または次の VM
+命令へのディスパッチ(<code>code</code> および <code>;code</code> の場合)を自分でアセンブルする必要があることに注意してください。
 </p>
 
 <span id="index-code-_0028--_0022name_0022-_002d_002d-colon_002dsys--_0029-tools_002dext"></span>
@@ -154,11 +153,9 @@ ABI call (for <code>abi-code</code>) or the dispatch to the next VM instruction
 <div class="format">
 <pre class="format"><code>code</code> ( <i>&quot;name&quot; &ndash; colon-sys  </i>) tools-ext &ldquo;code&rdquo;
 </pre></div>
-<p>Start a native code definition that runs in the context of the Gforth
-virtual machine (engine).  Such a definition is not portable between Gforth
-installations, so we recommend using <code>abi-code</code> instead of
-<code>code</code>.  You have to end a <code>code</code> definition with a dispatch to
-the next virtual machine instruction.
+<p>Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・ード定義を開始します。  このような定義は Gforth
+インストール間で移植できないため、 <code>code</code> の代わりに <code>abi-code</code> を使用することをお勧めします。
+<code>code</code> 定義は、 次の仮想マシン命令へのディスパッチで終了する必要があります。
 </p>
 
 <span id="index-_003bcode-_0028--compilation_002e-colon_002dsys1-_002d_002d-colon_002dsys2--_0029-tools_002dext"></span>
@@ -167,9 +164,9 @@ the next virtual machine instruction.
 <div class="format">
 <pre class="format"><code>;code</code> ( <i>compilation. colon-sys1 &ndash; colon-sys2  </i>) tools-ext &ldquo;semicolon-code&rdquo;
 </pre></div>
-<p>The code after <code>;code</code> becomes the behaviour of the last defined word
-(which must be a <code>create</code>d word).  The same caveats apply as for
-<code>code</code>, so we recommend using <code>;abi-code</code> instead.
+<p><code>;code</code> の後のコードが、 最後に定義されたワード(<code>create</code> されたワードである必要があります)
+の振る舞いになります。  <code>code</code> の場合と同じ注意事項が適用されるため、 代わりに <code>;abi-code</code>
+を使用することをお勧めします。
 </p>
 
 <span id="index-flush_002dicache-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e2"></span>
@@ -178,22 +175,18 @@ the next virtual machine instruction.
 <div class="format">
 <pre class="format"><code>flush-icache</code> ( <i>c-addr u &ndash; </i>) gforth-0.2 &ldquo;flush-icache&rdquo;
 </pre></div>
-<p>Make sure that the instruction cache of the processor (if there is one) does
-not contain stale data at <i>c-addr</i> and <i>u</i> bytes
-afterwards. <code>END-CODE</code> performs a <code>flush-icache</code>
-automatically. Caveat: <code>flush-icache</code> might not work on your
-installation; this is usually the case if direct threading is not supported
-on your machine (take a look at your <samp>machine.h</samp>) and your machine has
-a separate instruction cache. In such cases, <code>flush-icache</code> does
-nothing instead of flushing the instruction cache.
+<p>プロセッサの命令キャッシュ(存在する場合)の <i>c-addr</i> と <i>u</i> バイト以降に古いデータが含まれていないことを確認してください。
+<code>END-CODE</code> は <code>flush-icache</code> を自動的に実行します。 注意(Caveat):
+<code>flush-icache</code> はあなたのインストール環境では機能しない可能性があります。 これは通常、
+マシンでダイレクト・スレッドがサポートされておらず(<samp>machine.h</samp> を確認してください)、
+マシンに別個の命令キャッシュがある場合に当てはまります。 このような場合、 <code>flush-icache</code>
+は命令キャッシュをフラッシュする代わりに何も行いません。
 </p>
 
 
-<p>If <code>flush-icache</code> does not work correctly, <code>abi-code</code> words
-etc. will not work (reliably), either.
+<p><code>flush-icache</code> が正しく動作しない場合、 <code>abi-code</code> ワードなども(まず確実に)動作しません。
 </p>
-<p>The typical usage of these words can be shown most easily by analogy to the
-equivalent high-level defining words:
+<p>これらのワードの一般的な使用法は、 同等の高レベルの定義ワードから類推することで最も簡単に示すことができます:
 </p>
 <div class="example">
 <pre class="example">: foo                              abi-code foo
@@ -209,28 +202,23 @@ equivalent high-level defining words:
 ;                                  end-code
 </pre></div>
 
-<p>For using <code>abi-code</code>, take a look at the ABI documentation of your
-platform to see how the parameters are passed (so you know where you get the
-stack pointers) and how the return value is passed (so you know where the
-data stack pointer is returned).  The ABI documentation also tells you which
-registers are saved by the caller (caller-saved), so you are free to destroy
-them in your code, and which registers have to be preserved by the called
-word (callee-saved), so you have to save them before using them, and restore
-them afterwards.  For some architectures and OSs we give short summaries of
-the parts of the calling convention in the appropriate sections.  More
-reverse-engineering oriented people can also find out about the passing and
-returning of the stack pointers through <code>see abi-call</code>.
+<p><code>abi-code</code> を使用する場合は、 あなたのプラットフォームの ABI ドキュメントを参照して、
+パラメーターがどのように渡されるか(スタック・ポインターをどこで取得するかがわかります)、
+戻り値がどのように渡されるか(データ・スタック・ポインタがどこに返されるかがわかります)を確認してください。 ABI のドキュメントでは、
+どのレジスタが呼び出し元によって保存されるか(caller-saved)や、 コード内で自由に破棄できるかや、
+どのレジスタが呼び出されたワードによって保存される必要があるか(callee-saved)についても説明されています。
+あなたはそれらを使用する前に保存し、 後で復元します。  一部のアーキテクチャと OS
+については、適切なセクションで呼び出し規約の各部分の短い概要を示します。  リバース・エンジニアリング志向の人々は、 <code>see
+abi-call</code> を通じてスタック・ポインタの受け渡しと戻りについて知ることもできます。
 </p>
-<p>Most ABIs pass the parameters through registers, but some (in particular the
-most common 386 (aka IA-32) calling conventions) pass them on the
-architectural stack.  The common ABIs all pass the return value in a
-register.
+<p>ほとんどの ABI はレジスタを介してパラメータを渡しますが、 一部の ABI(特に最も一般的な 386 (別名 IA-32) 呼び出し規約)
+はアーキテクチャ・スタック上でパラメータを渡します。  共通の ABI はすべてレジスタで戻り値を渡します。
 </p>
-<p>Other things you need to know for using <code>abi-code</code> is that both the
-data and the FP stack grow downwards (towards lower addresses) in Gforth,
-with <code>1 cells</code> size per cell, and <code>1 floats</code> size per FP value.
+<p><code>abi-code</code> を使用する際に知っておく必要があるその他のことは、 Gforth ではデータと FP
+スタックの両方が下方向(下位アドレスに向かって)に成長し、 セルあたりのサイズは <code>1 cells</code> になり、 FP 値ごとのサイズは
+<code>1 floats</code> になるということです。
 </p>
-<p>Here&rsquo;s an example of using <code>abi-code</code> on the 386 architecture:
+<p>386 アーキテクチャで <code>abi-code</code> を使用する例を以下に示します:
 </p>
 <div class="example">
 <pre class="example">abi-code my+ ( n1 n2 -- n )
@@ -242,9 +230,9 @@ ret            \ return from my+
 end-code
 </pre></div>
 
-<p>An AMD64 variant of this example can be found in <a href="AMD64-Assembler.html">AMD64 (x86_64) Assembler</a>.
+<p>この例の AMD64 バリエーションは <a href="AMD64-Assembler.html">AMD64 (x86_64) Assembler</a> にあります。
 </p>
-<p>Here&rsquo;s a 386 example that deals with FP values:
+<p>386 で FP 値を扱う例を以下に示します:
 </p>
 <div class="example">
 <pre class="example">abi-code my-f+ ( r1 r2 -- r )

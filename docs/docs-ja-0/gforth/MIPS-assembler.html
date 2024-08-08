@@ -70,40 +70,33 @@ Next: <a href="PowerPC-assembler.html" accesskey="n" rel="next">PowerPC assemble
 <hr>
 <span id="MIPS-assembler-1"></span><h4 class="subsection">6.29.7 MIPS assembler</h4>
 
-<p>The MIPS assembler was originally written by Christian Pirker.
+<p>MIPS アセンブラは、もともとは Christian Pirker によって書かれました。
 </p>
-<p>Currently the assembler and disassembler covers most of the MIPS32
-architecture and doesn&rsquo;t support FP instructions.
+<p>現在、 アセンブラと逆アセンブラは MIPS32 アーキテクチャの大部分をカバーしていますが、 FP 命令はサポートしていません。
 </p>
-<p>The register names <code>$a0</code>&ndash;<code>$a3</code> are not available to avoid
-shadowing hex numbers.  Use register numbers <code>$4</code>&ndash;<code>$7</code> instead.
+<p>レジスタ名 <code>$a0</code>〜<code>$a3</code> は、 16 進数を隠してしまう(shadowing)のを避けるために使用できません。
+代わりにレジスタ番号 <code>$4</code>〜<code>$7</code> を使用してください。
 </p>
-<p>Nothing distinguishes registers from immediate values.  Use explicit opcode
-names with the <code>i</code> suffix for instructions with immediate argument.
-E.g. <code>addiu,</code> in place of <code>addu,</code>.
+<p>レジスタと即値を区別するものはありません。  即値引数を持つ命令には、 <code>i</code> 接尾辞を付けた明示的なオペコード名を使用します。  例えば。
+<code>addu,</code> の代わりに <code>addiu,</code> です。
 </p>
-<p>Where the architecture manual specifies several formats for the instruction
-(e.g., for <code>jalr,</code>),use the one with more arguments (i.e. two for
-<code>jalr,</code>).  When in doubt, see <code>arch/mips/testasm.fs</code> for an
-example of correct use.
+<p>アーキテクチャ・マニュアルで命令の形式が複数指定されている場合(例: <code>jalr,</code>
+の場合)、より多くの引数を持つ形式(つまり、<code>jalr,</code> の場合は 2 つ)を使用してください。  疑問がある場合は、 正しい使用例について
+<code>arch/mips/testasm.fs</code> を参照してください。
 </p>
-<p>Branches and jumps in the MIPS architecture have a delay slot.  You have to
-fill it manually (the simplest way is to use <code>nop,</code>), the assembler
-does not do it for you (unlike <code>as</code>).  Even <code>if,</code>,
-<code>ahead,</code>, <code>until,</code>, <code>again,</code>, <code>while,</code>, <code>else,</code> and
-<code>repeat,</code> need a delay slot.  Since <code>begin,</code> and <code>then,</code> just
-specify branch targets, they are not affected.  For branches the argument
-specifying the target is a relative address.  Add the address of the delay
-slot to get the absolute address.
+<p>MIPS アーキテクチャの分岐とジャンプには遅延スロット(delay slot)があります。  手動で入力する必要があります(最も簡単な方法は
+<code>nop,</code> を使用することです)。 アセンブラは(<code>as</code> とは異なり)自動的に入力しません。 <code>if,</code>,
+<code>ahead,</code>, <code>until,</code>, <code>again,</code>, <code>while,</code>, <code>else,</code>,
+<code>repeat,</code> でも遅延スロットが必要です。 <code>begin,</code> と <code>then,</code>
+は分岐ターゲットを指定するだけなので影響を受けません。  ブランチの場合、 ターゲットを指定する引数は相対アドレスです。
+遅延スロットのアドレスを追加して絶対アドレスを取得します。
 </p>
-<p>Note that you must not put branches nor jumps (nor control-flow
-instructions) into the delay slot.  Also it is a bad idea to put pseudo-ops
-such as <code>li,</code> into a delay slot, as these may expand to several
-instructions.  The MIPS I architecture also had load delay slots, and newer
-MIPSes still have restrictions on using <code>mfhi,</code> and <code>mflo,</code>.  Be
-careful to satisfy these restrictions, the assembler does not do it for you.
+<p>注意: 遅延スロットに分岐やジャンプ(または制御フロー命令)を入れてはいけないことに注意してください。  また、<code>li,</code>
+などの疑似演算を遅延スロットに入れることは、 複数の命令に拡張される可能性があるため、お勧めできません。  MIPS I
+アーキテクチャにもロード遅延スロットがあり、 新しい MIPS では依然として <code>mfhi,</code> および <code>mflo,</code>
+の使用に制限があります。  これらの制限を満たすように注意してください。 アセンブラが自動的に制限を満たしてくれるわけではありません。
 </p>
-<p>Some example of instructions are:
+<p>いくつかの命令の例は以下のとおりです:
 </p>
 <div class="example">
 <pre class="example">$ra  12 $sp  sw,         \ sw    ra,12(sp)
@@ -114,9 +107,8 @@ $s0  $s4  $4  addu,      \ addu  s0,s4,$a0
 $ra  $t9  jalr,          \ jalr  t9
 </pre></div>
 
-<p>You can specify the conditions for <code>if,</code> etc. by taking a conditional
-branch and leaving away the <code>b</code> at the start and the <code>,</code> at the
-end.  E.g.,
+<p><code>if,</code> などの条件を指定するには、 条件分岐を実行し、 先頭の <code>b</code> と末尾の <code>,</code> を省略します。
+例えば以下のようにします:
 </p>
 <div class="example">
 <pre class="example">4 5 eq if,
@@ -124,17 +116,15 @@ end.  E.g.,
 then,
 </pre></div>
 
-<p>The calling conventions for 32-bit MIPS machines is to pass the first 4
-arguments in registers <code>$4</code>..<code>$7</code>, and to use
-<code>$v0</code>-<code>$v1</code> for return values.  In addition to these registers, it
-is ok to clobber registers <code>$t0</code>-<code>$t8</code> without saving and
-restoring them.
+<p>32 ビット MIPS マシンの呼び出し規則では、 最初の 4 つの引数をレジスタ <code>$4</code>〜<code>$7</code> に渡し、 戻り値に
+<code>$v0</code>〜<code>$v1</code> を使用します。 これらのレジスタに加えて、 レジスタ <code>$t0</code> ～ <code>$t8</code>
+は保存・復元せずに上書きしても問題ありません。
 </p>
-<p>If you use <code>jalr,</code> to call into dynamic library routines, you must
-first load the called function&rsquo;s address into <code>$t9</code>, which is used by
-position-indirect code to do relative memory accesses.
+<p><code>jalr,</code> を使用してダイナミック・ライブラリ・ルーチンを呼び出す場合は、 最初に呼び出される関数のアドレスを <code>$t9</code>
+にロードする必要があります。 これは、 相対メモリ・アクセスを行うために位置間接コード(position-indirect
+code)によって使用されます。
 </p>
-<p>Here is an example of a MIPS32 <code>abi-code</code> word:
+<p>MIPS32 <code>abi-code</code> ワードの例を以下に示します:
 </p>
 <div class="example">
 <pre class="example">abi-code my+  ( n1 n2 -- n3 )
@@ -148,11 +138,6 @@ position-indirect code to do relative memory accesses.
 end-code
 </pre></div>
 
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="PowerPC-assembler.html">PowerPC assembler</a>, Previous: <a href="Alpha-Assembler.html">Alpha Assembler</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

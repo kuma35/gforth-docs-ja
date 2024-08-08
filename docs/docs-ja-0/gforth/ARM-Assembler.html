@@ -70,28 +70,24 @@ Next: <a href="Other-assemblers.html" accesskey="n" rel="next">Other assemblers<
 <hr>
 <span id="ARM-Assembler-1"></span><h4 class="subsection">6.29.9 ARM Assembler</h4>
 
-<p>The ARM assembler includes all instruction of ARM architecture version 4,
-and the BLX instruction from architecture 5.  It does not (yet)  have
-support for Thumb instructions.  It also lacks support for any
-co-processors.
+<p>ARM アセンブラには、 ARM アーキテクチャ・バージョン 4 のすべての命令と、 アーキテクチャ・バージョン 5 の BLX 命令が含まれています。
+Thumb 命令は (まだ) サポートされていません。  また、 コ・プロセッサーもサポートされていません。
 </p>
-<p>The assembler uses a postfix syntax with the same operand order as used in
-the ARM Architecture Reference Manual.  Mnemonics are suffixed by a comma.
+<p>アセンブラは、 「ARM Architecture Reference
+Manual」で使用されているのと同じオペランド順序を持つ後置構文(postfix syntax)を使用します。
+ニーモニックにはカンマが付けられます。
 </p>
-<p>Registers are specified by their names <code>r0</code> through <code>r15</code>, with
-the aliases <code>pc</code>, <code>lr</code>, <code>sp</code>, <code>ip</code> and <code>fp</code>
-provided for convenience.  Note that <code>ip</code> refers to the&ldquo;intra
-procedure call scratch register&rdquo; (<code>r12</code>) and does not refer to an
-instruction pointer.  <code>sp</code> refers to the ARM ABI stack pointer
-(<code>r13</code>) and not the Forth stack pointer.
+<p>レジスタは <code>r0</code>〜<code>r15</code> までの名前で指定され、別名は <code>pc</code>, <code>lr</code>, <code>sp</code>,
+<code>ip</code>, <code>fp</code> で、これらは利便性のために提供されています。  <code>ip</code>
+は「プロシージャ内呼び出しスクラッチ・レジスタ」(intra procedure call scratch register)(注意:
+<code>r12</code>) を指し、 命令ポインタを指すわけではないことに注意してください。  <code>sp</code> は、 Forth
+のスタック・ポインターではなく、 ARM ABI スタック・ポインター (<code>r13</code>) を指します。
 </p>
-<p>Condition codes can be specified anywhere in the instruction, but will be
-most readable if specified just in front of the mnemonic.  The &rsquo;S&rsquo; flag is
-not a separate word, but encoded into instruction mnemonics, ie. just use
-<code>adds,</code> instead of <code>add,</code> if you want the status register to be
-updated.
+<p>条件コードは命令内のどこにでも指定できますが、 ニーモニックの直前に指定すると最も読みやすくなります。  「S」フラグは別個のワードではなく、
+命令ニーモニックにエンコードされます。 ステータス・レジスタを更新したい場合は、 <code>add,</code> の代わりに <code>adds,</code>
+を使用してください。
 </p>
-<p>The following table lists the syntax of operands for general instructions:
+<p>以下の表に、 一般的な命令のオペランドの構文を示します:
 </p>
 <div class="example">
 <pre class="example">Gforth          normal assembler      description
@@ -108,7 +104,7 @@ r12 r1 ROR      r12, ROR r1           ... by register
 r12 RRX         r12, RRX              rotate right with extend by 1
 </pre></div>
 
-<p>Memory operand syntax is listed in this table:
+<p>メモリ・オペランドの構文を以下の表に示します:
 </p>
 <div class="example">
 <pre class="example">Gforth            normal assembler      description
@@ -129,19 +125,16 @@ r4 r1 2 #LSL ]-   [r4], -r1, LSL #2     shifted postdecrement
 ' xyz &gt;body [#]   xyz                   PC-relative addressing
 </pre></div>
 
-<p>Register lists for load/store multiple instructions are started and
-terminated by using the words <code>{</code> and <code>}</code> respectively.  Between
-braces, register names can be listed one by one or register ranges can be
-formed by using the postfix operator <code>r-r</code>.  The <code>^</code> flag is not
-encoded in the register list operand, but instead directly encoded into the
-instruction mnemonic, ie. use <code>^ldm,</code> and <code>^stm,</code>.
+<p>複数のロード/ストア命令のレジスタ・リストは、 それぞれ <code>{</code> および <code>}</code> というワードを使用して開始および終了します。
+<code>{</code> 〜 <code>}</code>  の間に、 レジスタ名を 1 つずつリストすることも、 後置演算子 <code>r-r</code>
+を使用してレジスタ範囲を形成することもできます。  <code>^</code> フラグはレジスタ・リスト・オペランドではエンコードされませんが、
+命令ニーモニックに直接エンコードされます。 つまり、 <code>^ldm,</code> と <code>^stm,</code> を使用します。
 </p>
-<p>Addressing modes for load/store multiple are not encoded as instruction
-suffixes, but instead specified like an addressing mode, Use one of
+<p>複数のロード/ストアのアドレッシング・モードは命令接尾辞としてエンコードされず、 代わりにアドレッシング・モードのように指定されます。
 <code>DA</code>, <code>IA</code>, <code>DB</code>, <code>IB</code>, <code>DA!</code>, <code>IA!</code>,
-<code>DB!</code> or <code>IB!</code>.
+<code>DB!</code>, <code>IB!</code> のいずれかを使います。
 </p>
-<p>The following table gives some examples:
+<p>以下の表にいくつかの例を示します:
 </p>
 <div class="example">
 <pre class="example">Gforth                           normal assembler
@@ -150,10 +143,9 @@ r4 db!  { r0 r7 r8 }  ldm,       ldmdb    r4!, {r0,r7,r8}
 sp ia!  { r0 r15 r-r }  ^ldm,    ldmfd    sp!, {r0-r15}^
 </pre></div>
 
-<p>Control structure words typical for Forth assemblers are available:
-<code>if,</code> <code>ahead,</code> <code>then,</code> <code>else,</code> <code>begin,</code>
-<code>until,</code> <code>again,</code> <code>while,</code> <code>repeat,</code>
-<code>repeat-until,</code>.  Conditions are specified in front of these words:
+<p>Forth アセンブラに典型的な制御構造ワードが利用可能です: <code>if,</code>, <code>ahead,</code>, <code>then,</code>,
+<code>else,</code>, <code>begin,</code>, <code>until,</code>, <code>again,</code>, <code>while,</code>,
+<code>repeat,</code>, <code>repeat-until,</code> 。 条件は以下のワードの前に指定します:
 </p>
 <div class="example">
 <pre class="example">r1 r2 cmp,    \ compare r1 and r2
@@ -162,7 +154,7 @@ eq if,        \ equal?
 then,
 </pre></div>
 
-<p>Example of a definition using the ARM assembler:
+<p>ARM アセンブラを使用した定義の例:
 </p>
 <div class="example">
 <pre class="example">abi-code my+ ( n1 n2 --  n3 )

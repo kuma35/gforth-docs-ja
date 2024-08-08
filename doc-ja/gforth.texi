@@ -24729,9 +24729,8 @@ FP スタック・ポインタは、 FP スタック・ポインタを含むメ�
 @format
 @code{end-code} ( @i{colon-sys --  }) gforth-0.2 ``end-code''
 @end format
-End a code definition.  Note that you have to assemble the return from the
-ABI call (for @code{abi-code}) or the dispatch to the next VM instruction
-(for @code{code} and @code{;code})  yourself.
+コード定義を終了します。  ABI 呼び出しからの戻り(@code{abi-code} の場合)、 または次の VM
+命令へのディスパッチ(@code{code} および @code{;code} の場合)を自分でアセンブルする必要があることに注意してください。
 
 
 @findex code ( @var{ "name" -- colon-sys   } ) tools-ext
@@ -24740,11 +24739,9 @@ ABI call (for @code{abi-code}) or the dispatch to the next VM instruction
 @format
 @code{code} ( @i{"name" -- colon-sys  }) tools-ext ``code''
 @end format
-Start a native code definition that runs in the context of the Gforth
-virtual machine (engine).  Such a definition is not portable between Gforth
-installations, so we recommend using @code{abi-code} instead of
-@code{code}.  You have to end a @code{code} definition with a dispatch to
-the next virtual machine instruction.
+Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・ード定義を開始します。  このような定義は Gforth
+インストール間で移植できないため、 @code{code} の代わりに @code{abi-code} を使用することをお勧めします。
+@code{code} 定義は、 次の仮想マシン命令へのディスパッチで終了する必要があります。
 
 
 @findex ;code ( @var{ compilation. colon-sys1 -- colon-sys2   } ) tools-ext
@@ -24753,9 +24750,9 @@ the next virtual machine instruction.
 @format
 @code{;code} ( @i{compilation. colon-sys1 -- colon-sys2  }) tools-ext ``semicolon-code''
 @end format
-The code after @code{;code} becomes the behaviour of the last defined word
-(which must be a @code{create}d word).  The same caveats apply as for
-@code{code}, so we recommend using @code{;abi-code} instead.
+@code{;code} の後のコードが、 最後に定義されたワード(@code{create} されたワードである必要があります)
+の振る舞いになります。  @code{code} の場合と同じ注意事項が適用されるため、 代わりに @code{;abi-code}
+を使用することをお勧めします。
 
 
 @findex flush-icache ( @var{ c-addr u --  } ) gforth-0.2
@@ -24764,22 +24761,18 @@ The code after @code{;code} becomes the behaviour of the last defined word
 @format
 @code{flush-icache} ( @i{c-addr u -- }) gforth-0.2 ``flush-icache''
 @end format
-Make sure that the instruction cache of the processor (if there is one) does
-not contain stale data at @i{c-addr} and @i{u} bytes
-afterwards. @code{END-CODE} performs a @code{flush-icache}
-automatically. Caveat: @code{flush-icache} might not work on your
-installation; this is usually the case if direct threading is not supported
-on your machine (take a look at your @file{machine.h}) and your machine has
-a separate instruction cache. In such cases, @code{flush-icache} does
-nothing instead of flushing the instruction cache.
+プロセッサの命令キャッシュ(存在する場合)の @i{c-addr} と @i{u} バイト以降に古いデータが含まれていないことを確認してください。
+@code{END-CODE} は @code{flush-icache} を自動的に実行します。 注意(Caveat):
+@code{flush-icache} はあなたのインストール環境では機能しない可能性があります。 これは通常、
+マシンでダイレクト・スレッドがサポートされておらず(@file{machine.h} を確認してください)、
+マシンに別個の命令キャッシュがある場合に当てはまります。 このような場合、 @code{flush-icache}
+は命令キャッシュをフラッシュする代わりに何も行いません。
 
 
 
-If @code{flush-icache} does not work correctly, @code{abi-code} words
-etc. will not work (reliably), either.
+@code{flush-icache} が正しく動作しない場合、 @code{abi-code} ワードなども(まず確実に)動作しません。
 
-The typical usage of these words can be shown most easily by analogy to the
-equivalent high-level defining words:
+これらのワードの一般的な使用法は、 同等の高レベルの定義ワードから類推することで最も簡単に示すことができます:
 
 @example
 : foo                              abi-code foo
@@ -24795,28 +24788,23 @@ equivalent high-level defining words:
 ;                                  end-code
 @end example
 
-For using @code{abi-code}, take a look at the ABI documentation of your
-platform to see how the parameters are passed (so you know where you get the
-stack pointers) and how the return value is passed (so you know where the
-data stack pointer is returned).  The ABI documentation also tells you which
-registers are saved by the caller (caller-saved), so you are free to destroy
-them in your code, and which registers have to be preserved by the called
-word (callee-saved), so you have to save them before using them, and restore
-them afterwards.  For some architectures and OSs we give short summaries of
-the parts of the calling convention in the appropriate sections.  More
-reverse-engineering oriented people can also find out about the passing and
-returning of the stack pointers through @code{see abi-call}.
+@code{abi-code} を使用する場合は、 あなたのプラットフォームの ABI ドキュメントを参照して、
+パラメーターがどのように渡されるか(スタック・ポインターをどこで取得するかがわかります)、
+戻り値がどのように渡されるか(データ・スタック・ポインタがどこに返されるかがわかります)を確認してください。 ABI のドキュメントでは、
+どのレジスタが呼び出し元によって保存されるか(caller-saved)や、 コード内で自由に破棄できるかや、
+どのレジスタが呼び出されたワードによって保存される必要があるか(callee-saved)についても説明されています。
+あなたはそれらを使用する前に保存し、 後で復元します。  一部のアーキテクチャと OS
+については、適切なセクションで呼び出し規約の各部分の短い概要を示します。  リバース・エンジニアリング志向の人々は、 @code{see
+abi-call} を通じてスタック・ポインタの受け渡しと戻りについて知ることもできます。
 
-Most ABIs pass the parameters through registers, but some (in particular the
-most common 386 (aka IA-32) calling conventions) pass them on the
-architectural stack.  The common ABIs all pass the return value in a
-register.
+ほとんどの ABI はレジスタを介してパラメータを渡しますが、 一部の ABI(特に最も一般的な 386 (別名 IA-32) 呼び出し規約)
+はアーキテクチャ・スタック上でパラメータを渡します。  共通の ABI はすべてレジスタで戻り値を渡します。
 
-Other things you need to know for using @code{abi-code} is that both the
-data and the FP stack grow downwards (towards lower addresses) in Gforth,
-with @code{1 cells} size per cell, and @code{1 floats} size per FP value.
+@code{abi-code} を使用する際に知っておく必要があるその他のことは、 Gforth ではデータと FP
+スタックの両方が下方向(下位アドレスに向かって)に成長し、 セルあたりのサイズは @code{1 cells} になり、 FP 値ごとのサイズは
+@code{1 floats} になるということです。
 
-Here's an example of using @code{abi-code} on the 386 architecture:
+386 アーキテクチャで @code{abi-code} を使用する例を以下に示します:
 
 @example
 abi-code my+ ( n1 n2 -- n )
@@ -24828,9 +24816,9 @@ ret            \ return from my+
 end-code
 @end example
 
-An AMD64 variant of this example can be found in @ref{AMD64 Assembler}.
+この例の AMD64 バリエーションは @ref{AMD64 Assembler} にあります。
 
-Here's a 386 example that deals with FP values:
+386 で FP 値を扱う例を以下に示します:
 
 @example
 abi-code my-f+ ( r1 r2 -- r )
@@ -24850,60 +24838,47 @@ end-code
 @node Common Assembler, Common Disassembler, Assembler Definitions, Assembler and Code Words
 @subsection Common Assembler
 
-The assemblers in Gforth generally use a postfix syntax, i.e., the
-instruction name follows the operands.
+Gforth のアセンブラは通常、 後置構文(postfix syntax)を使用します。 つまり、命令名がオペランドの後に続きます。
 
-The operands are passed in the usual order (the same that is used in the
-manual of the architecture).  Since they all are Forth words, they have to
-be separated by spaces; you can also use Forth words to compute the
-operands.
+オペランドは通常の順序(アーキテクチャのマニュアルで使用されている順序と同じ)で渡されます。  これらはすべて Forth ワードであるため、
+スペースで区切る必要があります。 Forth ワードを使用してオペランドを計算することもできます。
 
-The instruction names usually end with a @code{,}.  This makes it easier to
-visually separate instructions if you put several of them on one line; it
-also avoids shadowing other Forth words (e.g., @code{and}).
+通常、 命令名は @code{,} で終わります。  これにより、 複数の命令を 1 行に配置した場合に、 命令を視覚的に分離しやすくなります。 また、
+他の Forth ワード (例: @code{and}) が紛れてしまう(shadowing)のも回避します。
 
-Registers are usually specified by number; e.g., (decimal) @code{11}
-specifies registers R11 and F11 on the Alpha architecture (which one,
-depends on the instruction).  The usual names are also available, e.g.,
-@code{s2} for R11 on Alpha.
+レジスタは通常、 番号で指定します。 たとえば、 (10 進数の) @code{11} は、 Alpha アーキテクチャ上のレジスタ R11 および
+F11 を指定します(どちらかは命令によって異なります)。  通常の名前も使用できます(例: Alpha の R11 の @code{s2})。
 
-Control flow is specified similar to normal Forth code (@pxref{Arbitrary
-control structures}), with @code{if,}, @code{ahead,}, @code{then,},
-@code{begin,}, @code{until,}, @code{again,}, @code{cs-roll}, @code{cs-pick},
-@code{else,}, @code{while,}, and @code{repeat,}.  The conditions are
-specified in a way specific to each assembler.
+制御フローは、 通常の Forth コード(@pxref{Arbitrary control structures})と同様に、 @code{if,},
+@code{ahead,}, @code{then,}, @code{begin,}, @code{until,}, @code{again,},
+@code{cs-roll}, @code{cs-pick}, @code{else,}, @code{while,}, @code{repeat,}
+で指定します。 条件は各アセンブラに固有の方法で指定されます。
 
-The rest of this section is of interest mainly for those who want to define
-@code{code} words (instead of the more portable @code{abi-code} words).
+このセクションの残りの部分は、 (移植性の高い @code{abi-code} ワードではなく、)主に @code{code}
+ワードを定義したい人にとって興味深いものです。
 
-Note that the register assignments of the Gforth engine can change between
-Gforth versions, or even between different compilations of the same Gforth
-version (e.g., if you use a different GCC version).  If you are using
-@code{CODE} instead of @code{ABI-CODE}, and you want to refer to Gforth's
-registers (e.g., the stack pointer or TOS), I recommend defining your own
-words for refering to these registers, and using them later on; then you can
-adapt to a changed register assignment.
+注意: Gforth エンジンのレジスタ割り当ては、 Gforth バージョン間、 または同じ Gforth
+バージョンの異なるコンパイル間でも変更される可能性があることに注意してください(たとえば、 異なる GCC バージョンを使用する場合)。
+@code{ABI-CODE} の代わりに @code{CODE} を使用していて、 Gforth のレジスター (スタック・ポインターや TOS
+など) を参照したい場合は、 これらのレジスターを参照するための独自のワードを定義して使用することをお勧めします。 そうすれば、
+変更されたレジスタ割り当てに適応できます。
 
-The most common use of these registers is to end a @code{code} definition
-with a dispatch to the next word (the @code{next} routine).  A portable way
-to do this is to jump to @code{' noop >code-address} (of course, this is
-less efficient than integrating the @code{next} code and scheduling it
-well).  When using @code{ABI-CODE}, you can just assemble a normal
-subroutine return (but make sure you return the data stack pointer).
+これらのレジスタの最も一般的な使用法は、 @code{code} 定義を次のワードへのディスパッチ(@code{next}
+ルーチン)で終了することです。  これを行う移植可能な方法は、@code{' noop >code-address} にジャンプすることです(もちろん、
+これは @code{next} コードを統合して適切にスケジュールするほど効率的ではありません)。  @code{ABI-CODE} を使用する場合は、
+通常のサブルーチンの戻り値をアセンブルするだけです(ただし、 必ずデータ・スタック・ポインターを返すようにしてください)。
 
-Another difference between Gforth versions is that the top of stack is kept
-in memory in @code{gforth} and, on most platforms, in a register in
-@code{gforth-fast}.  For @code{ABI-CODE} definitions, any stack caching
-registers are guaranteed to be flushed to the stack, allowing you to
-reliably access the top of stack in memory.
+Gforth バージョン間のもう 1 つの違いは、 ほとんどのプラットフォームではスタックの最上位が @code{gforth} のメモリに保持され、
+@code{gforth-fast} ではレジスタに保持されることです。  @code{ABI-CODE} 定義の場合、
+スタック・キャッシュ・レジスタは必ずスタックにフラッシュされるため、 メモリ内のスタックの先頭に確実にアクセスできます。
 
 @node Common Disassembler, 386 Assembler, Common Assembler, Assembler and Code Words
 @subsection Common Disassembler
 @cindex disassembler, general
 @cindex gdb disassembler
 
-You can disassemble a @code{code} word with @code{see} (@pxref{Debugging}).
-You can disassemble a section of memory with
+@code{code} ワードは @code{see} で逆アセンブルできます(@pxref{Debugging})。
+以下を使用してメモリのセクションを逆アセンブルできます
 
 @findex discode ( @var{ addr u --   } ) gforth-0.2
 @cindex @code{discode}
@@ -24911,76 +24886,65 @@ You can disassemble a section of memory with
 @format
 @code{discode} ( @i{addr u --  }) gforth-0.2 ``discode''
 @end format
-hook for the disassembler: disassemble u bytes of code at addr
+逆アセンブラのフック: addr から u バイトのコードを逆アセンブルします。
 
 
 
-There are two kinds of disassembler for Gforth: The Forth disassembler
-(available on some CPUs) and the gdb disassembler (available on platforms
-with @command{gdb} and @command{mktemp}).  If both are available, the Forth
-disassembler is used by default.  If you prefer the gdb disassembler, say
+Gforth には 2 種類の逆アセンブラがあります。 Forth 逆アセンブラ(一部の CPU で利用可能) と gdb
+逆アセンブラ(@command{gdb} および @command{mktemp} を備えたプラットフォームで利用可能)です。
+両方が使用可能な場合は、 Forth 逆アセンブラがデフォルトで使用されます。  gdb 逆アセンブラを使いたい場合は、 以下のようにします
 
 @example
 ' disasm-gdb is discode
 @end example
 
-If neither is available, @code{discode} performs @code{dump}.
+どちらも使用できない場合は、@code{discode} が @code{dump} を実行します。
 
-The Forth disassembler generally produces output that can be fed into the
-assembler (i.e., same syntax, etc.).  It also includes additional
-information in comments.  In particular, the address of the instruction is
-given in a comment before the instruction.
+Forth 逆アセンブラは通常、 アセンブラに入力できる出力(つまり、同じ構文など)を生成します。 コメントには追加情報も含まれます。  特に、
+命令のアドレスは命令の前のコメントで示されます。
 
-The gdb disassembler produces output in the same format as the gdb
-@code{disassemble} command (@pxref{Machine Code,,Source and machine
-code,gdb,Debugging with GDB}), in the default flavour (AT&T syntax for the
-386 and AMD64 architectures).
+gdb 逆アセンブラは、 デフォルトの形式(flavour)(386 および AMD64 アーキテクチャの AT&T 構文)で、 gdb
+@code{disassemble} コマンドと同じ形式で出力を生成します(@pxref{Machine Code,,Source and
+machine code,gdb,Debugging with GDB})。
 
-@code{See} may display more or less than the actual code of the word,
-because the recognition of the end of the code is unreliable.  You can use
-@code{discode} if it did not display enough.  It may display more, if the
-code word is not immediately followed by a named word.  If you have
-something else there, you can follow the word with @code{align latest ,} to
-ensure that the end is recognized.
+@code{see} は、 コードの終わりの認識が信頼できないため、 ワードの実際のコードより多めに表示したり少なめに表示したりする場合があります。
+十分に表示されない場合は、 @code{discode} を使用できます。  コード・ワードの直後に名前付きワードが続かない場合は、
+さらに表示される可能性があります。  他に何かがある場合は、 ワードの後に @code{align latest ,} を付けると、
+末尾が認識されるようになります。
 
 @node 386 Assembler, AMD64 Assembler, Common Disassembler, Assembler and Code Words
 @subsection 386 Assembler
 
-The 386 assembler included in Gforth was written by Bernd Paysan, it's
-available under GPL, and originally part of bigFORTH.
+Gforth に含まれる 386 アセンブラは Bernd Paysan によって書かれ、 GPL の下で入手可能で、 元々は bigFORTH
+の一部でした。
 
-The 386 disassembler included in Gforth was written by Andrew McKewan and is
-in the public domain.
+Gforth に含まれる 386 逆アセンブラは Andrew McKewan によって作成され、 パブリック・ドメインです。
 
-The disassembler displays code in an Intel-like prefix syntax.
+逆アセンブラは、 Intel のようなプレフィックス構文(Intel-like prefix syntax)でコードを表示します。
 
-The assembler uses a postfix syntax with AT&T-style parameter order (i.e.,
-destination last).
+アセンブラは、 AT&T スタイルのパラメータ順序(つまり、宛先が最後;destination last)で後置構文(postfix
+syntax)を使用します。
 
-The assembler includes all instruction of the Athlon, i.e. 486 core
-instructions, Pentium and PPro extensions, floating point, MMX, 3Dnow!, but
-not ISSE. It's an integrated 16- and 32-bit assembler. Default is 32 bit,
-you can switch to 16 bit with .86 and back to 32 bit with .386.
+アセンブラには、 Athlon のすべての命令、 つまり 486 コア命令や、Pentium および PPro
+拡張機能や、浮動小数点、MMX、3Dnow! が含まれていますが、 ISSE は含まれていません。 これは、16 ビットおよび 32
+ビットの統合アセンブラです。デフォルトは 32 ビットですが、 @code{.86} で 16 ビットに切り替え、@code{.386} で 32
+ビットに戻すことができます。
 
-There are several prefixes to switch between different operation sizes,
-@code{.b} for byte accesses, @code{.w} for word accesses, @code{.d} for
-double-word accesses. Addressing modes can be switched with @code{.wa} for
-16 bit addresses, and @code{.da} for 32 bit addresses. You don't need a
-prefix for byte register names (@code{AL} et al).
+異なる操作サイズを切り替えるためのプレフィックスがいくつかあります。 バイト・アクセスの場合は @code{.b} 、 ワード・アクセスの場合は
+@code{.w} 、 ダブルワード・アクセスの場合は @code{.d} です。 アドレッシング・モードは、 16 ビットアドレスの場合は
+@code{.wa} 、32 ビットアドレスの場合は @code{.da} で切り替えることができます。 (@code{AL} など、
+)バイト・レジスタ名のプレフィックスは必要ありません 。
 
-For floating point operations, the prefixes are @code{.fs} (IEEE single),
-@code{.fl} (IEEE double), @code{.fx} (extended), @code{.fw} (word),
-@code{.fd} (double-word), and @code{.fq} (quad-word).  The default is
-@code{.fx}, so you need to specify @code{.fl} explicitly when dealing with
-Gforth FP values.
+浮動小数点演算の場合、 プレフィックスは @code{.fs} (IEEE single)、@code{.fl} (IEEE
+double)、@code{.fx} (extended)、@code{.fw} (word)、 @code{.fd} (double-word)、
+@code{.fq} (quad-word)。  デフォルトは @code{.fx} であるため、 Gforth FP 値を扱うときは
+@code{.fl} を明示的に指定する必要があります。
 
-The MMX opcodes don't have size prefixes, they are spelled out like in the
-Intel assembler. Instead of move from and to memory, there are PLDQ/PLDD and
-PSTQ/PSTD.
+MMX オペコードにはサイズのプレフィックスはなく、 Intel アセンブラと同じように記述されます。 メモリ間での移動の代わりに、 PLDQ/PLDD
+と PSTQ/PSTD があります。
 
-The registers lack the 'e' prefix; even in 32 bit mode, eax is called ax.
-Immediate values are indicated by postfixing them with @code{#}, e.g.,
-@code{3 #}.  Here are some examples of addressing modes in various syntaxes:
+レジスタには「e」接頭辞がありません。 32 ビット モードでも、 eax は ax と呼ばれます。  即値は、@code{#}
+を接尾辞として付けることによって示されます(例: @code{3 #})。  以下に、 さまざまな構文でのアドレス指定モードの例をいくつか示します:
 
 @example
 Gforth          Intel (NASM)   AT&T (gas)      Name
@@ -24996,10 +24960,10 @@ di ax *4 i)     [edi][eax*4]   (%edi,%eax,4)   base+(index*scale)
 12 sp ax *2 di) 12[esp][eax*2] 12(%esp,%eax,2) base+(index*scale)+displacement
 @end example
 
-You can use @code{L)} and @code{LI)} instead of @code{D)} and @code{DI)} to
-enforce 32-bit displacement fields (useful for later patching).
+@code{D)} と @code{DI)} の代わりに @code{L)} と @code{LI)} を使用して、32 ビット
+displacement フィールドを強制できます(後のパッチ適用に役立ちます)。
 
-Some example of instructions are:
+いくつかの命令の例は以下のとおりです:
 
 @example
 ax bx mov             \ move ebx,eax
@@ -25009,7 +24973,7 @@ ax bx mov             \ move ebx,eax
 .w ax bx mov          \ mov bx,ax
 @end example
 
-The following forms are supported for binary instructions:
+バイナリ命令では以下の形式がサポートされています:
 
 @example
 <reg> <reg> <inst>
@@ -25019,7 +24983,7 @@ The following forms are supported for binary instructions:
 <n> # <mem> <inst>
 @end example
 
-The shift/rotate syntax is:
+シフト/ローテート の構文は以下のとおりです:
 
 @example
 <reg/mem> 1 # shl \ shortens to shift without immediate
@@ -25027,25 +24991,22 @@ The shift/rotate syntax is:
 <reg/mem> cl shl
 @end example
 
-Precede string instructions (@code{movs} etc.) with @code{.b} to get the
-byte version.
+バイト・バージョンを取得するには、 (@code{movs} などの)文字列命令(string instructions)の前に @code{.b}
+を付けます。
 
-The control structure words @code{IF} @code{UNTIL} etc. must be preceded by
-one of these conditions: @code{vs vc u< u>= 0= 0<> u<= u> 0< 0>= ps pc < >=
-<= >}. (Note that most of these words shadow some Forth words when
-@code{assembler} is in front of @code{forth} in the search path, e.g., in
-@code{code} words).  Currently the control structure words use one stack
-item, so you have to use @code{roll} instead of @code{cs-roll} to shuffle
-them (you can also use @code{swap} etc.).
+制御構造ワードの @code{IF} や @code{UNTIL} などの前に、 次の条件のいずれかを指定する必要があります: @code{vs vc
+u< u>= 0= 0<> u<= u> 0< 0>= ps pc < >= <= >} (注意: @code{code} ワードなど、 検索パス内で
+@code{assembler} が @code{forth} の前にある場合、 これらのワードのほとんどは Forth
+ワードの一部を隠してしまう事に注意してください)。  現在、 制御構造ワードは 1 つのスタック項目を使用しているため、 それらをいじるには
+@code{cs-roll} の代わりに @code{roll} を使用する必要があります(@code{swap} などを使用することもできます)。
 
-Based on the Intel ABI (used in Linux), @code{abi-code} words can find the
-data stack pointer at @code{4 sp d)}, and the address of the FP stack
-pointer at @code{8 sp d)}; the data stack pointer is returned in @code{ax};
-@code{Ax}, @code{cx}, and @code{dx} are caller-saved, so you do not need to
-preserve their values inside the word.  You can return from the word with
-@code{ret}, the parameters are cleaned up by the caller.
+Intel ABI (Linux で使用)に基づいて、@code{abi-code} ワードは @code{4 sp d)}
+でデータ・スタック・ポインターを見つけ、 @code{8 sp d)} で FP スタック・ポインターのアドレスを見つけることができます;
+データ・スタック・ポインタは @code{ax} で返されます。 @code{Ax} や @code{cx} や @code{dx}
+は呼び出し元で保存されるため、 ワード内に値を保存する必要はありません。  @code{ret} を使用してワードから戻ることができます。
+パラメータは呼び出し元によってクリーンアップされます。
 
-For examples of 386 @code{abi-code} words, see @ref{Assembler Definitions}.
+386 の @code{abi-code} ワードの例については、 @ref{Assembler Definitions}
 
 
 @node AMD64 Assembler, Alpha Assembler, 386 Assembler, Assembler and Code Words
@@ -25238,7 +25199,7 @@ ABI-CODE LOOP4  ( -- n n n n )
 END-CODE
 @end example
 
-Here's a AMD64 example that deals with FP values:
+以下は、FP 値を扱う AMD64 用の例です:
 
 @example
 abi-code my-f+  ( r1 r2 -- r )
@@ -25256,22 +25217,18 @@ end-code
 @node Alpha Assembler, MIPS assembler, AMD64 Assembler, Assembler and Code Words
 @subsection Alpha Assembler
 
-The Alpha assembler and disassembler were originally written by Bernd
-Thallner.
+Alpha アセンブラと逆アセンブラは、もともとは Bernd Thallner によって書かれました。
 
-The register names @code{a0}--@code{a5} are not available to avoid shadowing
-hex numbers.
+レジスタ名 @code{a0}〜@code{a5} は、 16 進数を隠してしまう(shadowing)のを避けるために使用できません。
 
-Immediate forms of arithmetic instructions are distinguished by a @code{#}
-just before the @code{,}, e.g., @code{and#,} (note: @code{lda,} does not
-count as arithmetic instruction).
+算術命令の即時形式は、 @code{,} の直前の @code{#} によって区別されます(例: @code{and#,})(注:
+@code{lda,} は算術命令としてカウントされません)。
 
-You have to specify all operands to an instruction, even those that other
-assemblers consider optional, e.g., the destination register for @code{br,},
-or the destination register and hint for @code{jmp,}.
+他のアセンブラがオプションとみなすオペランドも含めて、 命令にすべてのオペランドを指定する必要があります。 たとえば、@code{br,}
+の宛先レジスタ、 または @code{jmp,} の宛先レジスタとヒントです。
 
-You can specify conditions for @code{if,} by removing the first @code{b} and
-the trailing @code{,} from a branch with a corresponding name; e.g.,
+@code{if,} の条件を指定するには、 対応する名前のブランチから最初の @code{b} と末尾の @code{,} を削除します。
+たとえば、以下のようにします:
 
 @example
 11 fgt if, \ if F11>0e
@@ -25279,45 +25236,38 @@ the trailing @code{,} from a branch with a corresponding name; e.g.,
 endif,
 @end example
 
-@code{fbgt,} gives @code{fgt}.  
+@code{fbgt,} は @code{fgt} になります。  
 
 @node MIPS assembler, PowerPC assembler, Alpha Assembler, Assembler and Code Words
 @subsection MIPS assembler
 
-The MIPS assembler was originally written by Christian Pirker.
+MIPS アセンブラは、もともとは Christian Pirker によって書かれました。
 
-Currently the assembler and disassembler covers most of the MIPS32
-architecture and doesn't support FP instructions.
+現在、 アセンブラと逆アセンブラは MIPS32 アーキテクチャの大部分をカバーしていますが、 FP 命令はサポートしていません。
 
-The register names @code{$a0}--@code{$a3} are not available to avoid
-shadowing hex numbers.  Use register numbers @code{$4}--@code{$7} instead.
+レジスタ名 @code{$a0}〜@code{$a3} は、 16 進数を隠してしまう(shadowing)のを避けるために使用できません。
+代わりにレジスタ番号 @code{$4}〜@code{$7} を使用してください。
 
-Nothing distinguishes registers from immediate values.  Use explicit opcode
-names with the @code{i} suffix for instructions with immediate argument.
-E.g. @code{addiu,} in place of @code{addu,}.
+レジスタと即値を区別するものはありません。  即値引数を持つ命令には、 @code{i} 接尾辞を付けた明示的なオペコード名を使用します。  例えば。
+@code{addu,} の代わりに @code{addiu,} です。
 
-Where the architecture manual specifies several formats for the instruction
-(e.g., for @code{jalr,}),use the one with more arguments (i.e. two for
-@code{jalr,}).  When in doubt, see @code{arch/mips/testasm.fs} for an
-example of correct use.
+アーキテクチャ・マニュアルで命令の形式が複数指定されている場合(例: @code{jalr,}
+の場合)、より多くの引数を持つ形式(つまり、@code{jalr,} の場合は 2 つ)を使用してください。  疑問がある場合は、 正しい使用例について
+@code{arch/mips/testasm.fs} を参照してください。
 
-Branches and jumps in the MIPS architecture have a delay slot.  You have to
-fill it manually (the simplest way is to use @code{nop,}), the assembler
-does not do it for you (unlike @command{as}).  Even @code{if,},
-@code{ahead,}, @code{until,}, @code{again,}, @code{while,}, @code{else,} and
-@code{repeat,} need a delay slot.  Since @code{begin,} and @code{then,} just
-specify branch targets, they are not affected.  For branches the argument
-specifying the target is a relative address.  Add the address of the delay
-slot to get the absolute address.
+MIPS アーキテクチャの分岐とジャンプには遅延スロット(delay slot)があります。  手動で入力する必要があります(最も簡単な方法は
+@code{nop,} を使用することです)。 アセンブラは(@command{as} とは異なり)自動的に入力しません。 @code{if,},
+@code{ahead,}, @code{until,}, @code{again,}, @code{while,}, @code{else,},
+@code{repeat,} でも遅延スロットが必要です。 @code{begin,} と @code{then,}
+は分岐ターゲットを指定するだけなので影響を受けません。  ブランチの場合、 ターゲットを指定する引数は相対アドレスです。
+遅延スロットのアドレスを追加して絶対アドレスを取得します。
 
-Note that you must not put branches nor jumps (nor control-flow
-instructions) into the delay slot.  Also it is a bad idea to put pseudo-ops
-such as @code{li,} into a delay slot, as these may expand to several
-instructions.  The MIPS I architecture also had load delay slots, and newer
-MIPSes still have restrictions on using @code{mfhi,} and @code{mflo,}.  Be
-careful to satisfy these restrictions, the assembler does not do it for you.
+注意: 遅延スロットに分岐やジャンプ(または制御フロー命令)を入れてはいけないことに注意してください。  また、@code{li,}
+などの疑似演算を遅延スロットに入れることは、 複数の命令に拡張される可能性があるため、お勧めできません。  MIPS I
+アーキテクチャにもロード遅延スロットがあり、 新しい MIPS では依然として @code{mfhi,} および @code{mflo,}
+の使用に制限があります。  これらの制限を満たすように注意してください。 アセンブラが自動的に制限を満たしてくれるわけではありません。
 
-Some example of instructions are:
+いくつかの命令の例は以下のとおりです:
 
 @example
 $ra  12 $sp  sw,         \ sw    ra,12(sp)
@@ -25328,9 +25278,8 @@ $s0  $s4  $4  addu,      \ addu  s0,s4,$a0
 $ra  $t9  jalr,          \ jalr  t9
 @end example
 
-You can specify the conditions for @code{if,} etc. by taking a conditional
-branch and leaving away the @code{b} at the start and the @code{,} at the
-end.  E.g.,
+@code{if,} などの条件を指定するには、 条件分岐を実行し、 先頭の @code{b} と末尾の @code{,} を省略します。
+例えば以下のようにします:
 
 @example
 4 5 eq if,
@@ -25338,17 +25287,15 @@ end.  E.g.,
 then,
 @end example
 
-The calling conventions for 32-bit MIPS machines is to pass the first 4
-arguments in registers @code{$4}..@code{$7}, and to use
-@code{$v0}-@code{$v1} for return values.  In addition to these registers, it
-is ok to clobber registers @code{$t0}-@code{$t8} without saving and
-restoring them.
+32 ビット MIPS マシンの呼び出し規則では、 最初の 4 つの引数をレジスタ @code{$4}〜@code{$7} に渡し、 戻り値に
+@code{$v0}〜@code{$v1} を使用します。 これらのレジスタに加えて、 レジスタ @code{$t0} ～ @code{$t8}
+は保存・復元せずに上書きしても問題ありません。
 
-If you use @code{jalr,} to call into dynamic library routines, you must
-first load the called function's address into @code{$t9}, which is used by
-position-indirect code to do relative memory accesses.
+@code{jalr,} を使用してダイナミック・ライブラリ・ルーチンを呼び出す場合は、 最初に呼び出される関数のアドレスを @code{$t9}
+にロードする必要があります。 これは、 相対メモリ・アクセスを行うために位置間接コード(position-indirect
+code)によって使用されます。
 
-Here is an example of a MIPS32 @code{abi-code} word:
+MIPS32 @code{abi-code} ワードの例を以下に示します:
 
 @example
 abi-code my+  ( n1 n2 -- n3 )
@@ -25365,49 +25312,41 @@ end-code
 @node PowerPC assembler, ARM Assembler, MIPS assembler, Assembler and Code Words
 @subsection PowerPC assembler
 
-The PowerPC assembler and disassembler were contributed by Michal Revucky.
+PowerPC アセンブラと逆アセンブラは、 Michal Revucky の貢献に依ります。
 
-This assembler does not follow the convention of ending mnemonic names with
-a ``,'', so some mnemonic names shadow regular Forth words (in particular:
-@code{and or xor fabs}); so if you want to use the Forth words, you have to
-make them visible first, e.g., with @code{also forth}.
+このアセンブラは、 ニーモニック名を「,」で終了する規則に従っていないため、 一部のニーモニック名は通常の Forth ワード (特に:
+@code{and or xor fabs}) を隠し(shadow)ます。 そのため、 Forth ワードを使用したい場合は、 最初に、 たとえば
+@code{ also forward} を使用して、 Forth ワードを表示できるようにする必要があります。
 
-Registers are referred to by their number, e.g., @code{9} means the integer
-register 9 or the FP register 9 (depending on the instruction).
+レジスタは番号によって参照されます。 たとえば、@code{9} は、 (命令に応じて、)整数レジスタ 9 または FP レジスタ 9  を意味します。
 
-Because there is no way to distinguish registers from immediate values, you
-have to explicitly use the immediate forms of instructions, i.e.,
-@code{addi,}, not just @code{add,}.
+レジスタと即値を区別する方法がないため、 @code{add,} だけでなく @code{add,}
+などの即値用の命令を明示的に使用する必要があります。
 
-The assembler and disassembler usually support the most general form of an
-instruction, but usually not the shorter forms (especially for branches).
+アセンブラと逆アセンブラは通常、 最も一般的な形式の命令をサポートしますが、 通常は短い形式(特に分岐)はサポートしません。
 
 
 @node ARM Assembler, Other assemblers, PowerPC assembler, Assembler and Code Words
 @subsection ARM Assembler
 
-The ARM assembler includes all instruction of ARM architecture version 4,
-and the BLX instruction from architecture 5.  It does not (yet)  have
-support for Thumb instructions.  It also lacks support for any
-co-processors.
+ARM アセンブラには、 ARM アーキテクチャ・バージョン 4 のすべての命令と、 アーキテクチャ・バージョン 5 の BLX 命令が含まれています。
+Thumb 命令は (まだ) サポートされていません。  また、 コ・プロセッサーもサポートされていません。
 
-The assembler uses a postfix syntax with the same operand order as used in
-the ARM Architecture Reference Manual.  Mnemonics are suffixed by a comma.
+アセンブラは、 「ARM Architecture Reference
+Manual」で使用されているのと同じオペランド順序を持つ後置構文(postfix syntax)を使用します。
+ニーモニックにはカンマが付けられます。
 
-Registers are specified by their names @code{r0} through @code{r15}, with
-the aliases @code{pc}, @code{lr}, @code{sp}, @code{ip} and @code{fp}
-provided for convenience.  Note that @code{ip} refers to the``intra
-procedure call scratch register'' (@code{r12}) and does not refer to an
-instruction pointer.  @code{sp} refers to the ARM ABI stack pointer
-(@code{r13}) and not the Forth stack pointer.
+レジスタは @code{r0}〜@code{r15} までの名前で指定され、別名は @code{pc}, @code{lr}, @code{sp},
+@code{ip}, @code{fp} で、これらは利便性のために提供されています。  @code{ip}
+は「プロシージャ内呼び出しスクラッチ・レジスタ」(intra procedure call scratch register)(注意:
+@code{r12}) を指し、 命令ポインタを指すわけではないことに注意してください。  @code{sp} は、 Forth
+のスタック・ポインターではなく、 ARM ABI スタック・ポインター (@code{r13}) を指します。
 
-Condition codes can be specified anywhere in the instruction, but will be
-most readable if specified just in front of the mnemonic.  The 'S' flag is
-not a separate word, but encoded into instruction mnemonics, ie. just use
-@code{adds,} instead of @code{add,} if you want the status register to be
-updated.
+条件コードは命令内のどこにでも指定できますが、 ニーモニックの直前に指定すると最も読みやすくなります。  「S」フラグは別個のワードではなく、
+命令ニーモニックにエンコードされます。 ステータス・レジスタを更新したい場合は、 @code{add,} の代わりに @code{adds,}
+を使用してください。
 
-The following table lists the syntax of operands for general instructions:
+以下の表に、 一般的な命令のオペランドの構文を示します:
 
 @example
 Gforth          normal assembler      description
@@ -25424,7 +25363,7 @@ r12 r1 ROR      r12, ROR r1           ... by register
 r12 RRX         r12, RRX              rotate right with extend by 1
 @end example
 
-Memory operand syntax is listed in this table:
+メモリ・オペランドの構文を以下の表に示します:
 
 @example
 Gforth            normal assembler      description
@@ -25445,19 +25384,16 @@ r4 r1 2 #LSL ]-   [r4], -r1, LSL #2     shifted postdecrement
 ' xyz >body [#]   xyz                   PC-relative addressing
 @end example
 
-Register lists for load/store multiple instructions are started and
-terminated by using the words @code{@{} and @code{@}} respectively.  Between
-braces, register names can be listed one by one or register ranges can be
-formed by using the postfix operator @code{r-r}.  The @code{^} flag is not
-encoded in the register list operand, but instead directly encoded into the
-instruction mnemonic, ie. use @code{^ldm,} and @code{^stm,}.
+複数のロード/ストア命令のレジスタ・リストは、 それぞれ @code{@{} および @code{@}} というワードを使用して開始および終了します。
+@code{@{} 〜 @code{@}}  の間に、 レジスタ名を 1 つずつリストすることも、 後置演算子 @code{r-r}
+を使用してレジスタ範囲を形成することもできます。  @code{^} フラグはレジスタ・リスト・オペランドではエンコードされませんが、
+命令ニーモニックに直接エンコードされます。 つまり、 @code{^ldm,} と @code{^stm,} を使用します。
 
-Addressing modes for load/store multiple are not encoded as instruction
-suffixes, but instead specified like an addressing mode, Use one of
+複数のロード/ストアのアドレッシング・モードは命令接尾辞としてエンコードされず、 代わりにアドレッシング・モードのように指定されます。
 @code{DA}, @code{IA}, @code{DB}, @code{IB}, @code{DA!}, @code{IA!},
-@code{DB!} or @code{IB!}.
+@code{DB!}, @code{IB!} のいずれかを使います。
 
-The following table gives some examples:
+以下の表にいくつかの例を示します:
 
 @example
 Gforth                           normal assembler
@@ -25466,10 +25402,9 @@ r4 db!  @{ r0 r7 r8 @}  ldm,       ldmdb    r4!, @{r0,r7,r8@}
 sp ia!  @{ r0 r15 r-r @}  ^ldm,    ldmfd    sp!, @{r0-r15@}^
 @end example
 
-Control structure words typical for Forth assemblers are available:
-@code{if,} @code{ahead,} @code{then,} @code{else,} @code{begin,}
-@code{until,} @code{again,} @code{while,} @code{repeat,}
-@code{repeat-until,}.  Conditions are specified in front of these words:
+Forth アセンブラに典型的な制御構造ワードが利用可能です: @code{if,}, @code{ahead,}, @code{then,},
+@code{else,}, @code{begin,}, @code{until,}, @code{again,}, @code{while,},
+@code{repeat,}, @code{repeat-until,} 。 条件は以下のワードの前に指定します:
 
 @example
 r1 r2 cmp,    \ compare r1 and r2
@@ -25478,7 +25413,7 @@ eq if,        \ equal?
 then,
 @end example
 
-Example of a definition using the ARM assembler:
+ARM アセンブラを使用した定義の例:
 
 @example
 abi-code my+ ( n1 n2 --  n3 )
@@ -25496,27 +25431,19 @@ end-code
 @node Other assemblers, , ARM Assembler, Assembler and Code Words
 @subsection Other assemblers
 
-If you want to contribute another assembler/disassembler, please contact us
-(@email{anton@@mips.complang.tuwien.ac.at}) to check if we have such an
-assembler already.  If you are writing them from scratch, please use a
-similar syntax style as the one we use (i.e., postfix, commas at the end of
-the instruction names, @pxref{Common Assembler}); make the output of the
-disassembler be valid input for the assembler, and keep the style similar to
-the style we used.
+別のアセンブラ/逆アセンブラを提供したい場合は、
+そのようなアセンブラがすでに存在するかどうかを確認するために著者達(@email{anton@@mips.complang.tuwien.ac.at})までご連絡ください。
+これらを最初から作成する場合は、 著者たちが使用しているものと同様の構文スタイルを使用してください(つまり、 後置や命令名の末尾のカンマ
+@pxref{Common Assembler})。 逆アセンブラの出力をアセンブラの有効な入力にし、使用したスタイルと同様のスタイルを維持します。
 
-Hints on implementation: The most important part is to have a good test
-suite that contains all instructions.  Once you have that, the rest is
-easy.  For actual coding you can take a look at @file{arch/mips/disasm.fs}
-to get some ideas on how to use data for both the assembler and
-disassembler, avoiding redundancy and some potential bugs.  You can also
-look at that file (and @pxref{Advanced does> usage example}) to get ideas
-how to factor a disassembler.
+実装に関するヒント: 最も重要なのは、 すべての手順を含む優れたテスト・スイートを用意することです。  それができたら、 あとは簡単です。
+実際のコーディングについては、 @file{arch/mips/disasm.fs} を参照して、 アセンブラと逆アセンブラの両方でデータを使用し、
+冗長性や潜在的なバグを回避する方法についてアイデアを得ることができます。  また、そのファイル (および @pxref{Advanced does>
+usage example}) を見て、 逆アセンブラーをファクタリングする方法のアイデアを得ることができます。
 
-Start with the disassembler, because it's easier to reuse data from the
-disassembler for the assembler than the other way round.
+逆アセンブラから始めます。 逆アセンブラからのデータをアセンブラで再利用する方が、 その逆よりも簡単だからです。
 
-For the assembler, take a look at @file{arch/alpha/asm.fs}, which shows how
-simple it can be.
+アセンブラについては、 @file{arch/alpha/asm.fs} を見てください。 これがいかに簡単であるかを示しています。
 
 
 

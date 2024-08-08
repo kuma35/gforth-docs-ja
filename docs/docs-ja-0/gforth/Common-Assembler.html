@@ -70,57 +70,40 @@ Next: <a href="Common-Disassembler.html" accesskey="n" rel="next">Common Disasse
 <hr>
 <span id="Common-Assembler-1"></span><h4 class="subsection">6.29.2 Common Assembler</h4>
 
-<p>The assemblers in Gforth generally use a postfix syntax, i.e., the
-instruction name follows the operands.
+<p>Gforth のアセンブラは通常、 後置構文(postfix syntax)を使用します。 つまり、命令名がオペランドの後に続きます。
 </p>
-<p>The operands are passed in the usual order (the same that is used in the
-manual of the architecture).  Since they all are Forth words, they have to
-be separated by spaces; you can also use Forth words to compute the
-operands.
+<p>オペランドは通常の順序(アーキテクチャのマニュアルで使用されている順序と同じ)で渡されます。  これらはすべて Forth ワードであるため、
+スペースで区切る必要があります。 Forth ワードを使用してオペランドを計算することもできます。
 </p>
-<p>The instruction names usually end with a <code>,</code>.  This makes it easier to
-visually separate instructions if you put several of them on one line; it
-also avoids shadowing other Forth words (e.g., <code>and</code>).
+<p>通常、 命令名は <code>,</code> で終わります。  これにより、 複数の命令を 1 行に配置した場合に、 命令を視覚的に分離しやすくなります。 また、
+他の Forth ワード (例: <code>and</code>) が紛れてしまう(shadowing)のも回避します。
 </p>
-<p>Registers are usually specified by number; e.g., (decimal) <code>11</code>
-specifies registers R11 and F11 on the Alpha architecture (which one,
-depends on the instruction).  The usual names are also available, e.g.,
-<code>s2</code> for R11 on Alpha.
+<p>レジスタは通常、 番号で指定します。 たとえば、 (10 進数の) <code>11</code> は、 Alpha アーキテクチャ上のレジスタ R11 および
+F11 を指定します(どちらかは命令によって異なります)。  通常の名前も使用できます(例: Alpha の R11 の <code>s2</code>)。
 </p>
-<p>Control flow is specified similar to normal Forth code (see <a href="Arbitrary-control-structures.html">Arbitrary control structures</a>), with <code>if,</code>, <code>ahead,</code>, <code>then,</code>,
-<code>begin,</code>, <code>until,</code>, <code>again,</code>, <code>cs-roll</code>, <code>cs-pick</code>,
-<code>else,</code>, <code>while,</code>, and <code>repeat,</code>.  The conditions are
-specified in a way specific to each assembler.
+<p>制御フローは、 通常の Forth コード(see <a href="Arbitrary-control-structures.html">Arbitrary control structures</a>)と同様に、 <code>if,</code>,
+<code>ahead,</code>, <code>then,</code>, <code>begin,</code>, <code>until,</code>, <code>again,</code>,
+<code>cs-roll</code>, <code>cs-pick</code>, <code>else,</code>, <code>while,</code>, <code>repeat,</code>
+で指定します。 条件は各アセンブラに固有の方法で指定されます。
 </p>
-<p>The rest of this section is of interest mainly for those who want to define
-<code>code</code> words (instead of the more portable <code>abi-code</code> words).
+<p>このセクションの残りの部分は、 (移植性の高い <code>abi-code</code> ワードではなく、)主に <code>code</code>
+ワードを定義したい人にとって興味深いものです。
 </p>
-<p>Note that the register assignments of the Gforth engine can change between
-Gforth versions, or even between different compilations of the same Gforth
-version (e.g., if you use a different GCC version).  If you are using
-<code>CODE</code> instead of <code>ABI-CODE</code>, and you want to refer to Gforth&rsquo;s
-registers (e.g., the stack pointer or TOS), I recommend defining your own
-words for refering to these registers, and using them later on; then you can
-adapt to a changed register assignment.
+<p>注意: Gforth エンジンのレジスタ割り当ては、 Gforth バージョン間、 または同じ Gforth
+バージョンの異なるコンパイル間でも変更される可能性があることに注意してください(たとえば、 異なる GCC バージョンを使用する場合)。
+<code>ABI-CODE</code> の代わりに <code>CODE</code> を使用していて、 Gforth のレジスター (スタック・ポインターや TOS
+など) を参照したい場合は、 これらのレジスターを参照するための独自のワードを定義して使用することをお勧めします。 そうすれば、
+変更されたレジスタ割り当てに適応できます。
 </p>
-<p>The most common use of these registers is to end a <code>code</code> definition
-with a dispatch to the next word (the <code>next</code> routine).  A portable way
-to do this is to jump to <code>' noop &gt;code-address</code> (of course, this is
-less efficient than integrating the <code>next</code> code and scheduling it
-well).  When using <code>ABI-CODE</code>, you can just assemble a normal
-subroutine return (but make sure you return the data stack pointer).
+<p>これらのレジスタの最も一般的な使用法は、 <code>code</code> 定義を次のワードへのディスパッチ(<code>next</code>
+ルーチン)で終了することです。  これを行う移植可能な方法は、<code>' noop &gt;code-address</code> にジャンプすることです(もちろん、
+これは <code>next</code> コードを統合して適切にスケジュールするほど効率的ではありません)。  <code>ABI-CODE</code> を使用する場合は、
+通常のサブルーチンの戻り値をアセンブルするだけです(ただし、 必ずデータ・スタック・ポインターを返すようにしてください)。
 </p>
-<p>Another difference between Gforth versions is that the top of stack is kept
-in memory in <code>gforth</code> and, on most platforms, in a register in
-<code>gforth-fast</code>.  For <code>ABI-CODE</code> definitions, any stack caching
-registers are guaranteed to be flushed to the stack, allowing you to
-reliably access the top of stack in memory.
+<p>Gforth バージョン間のもう 1 つの違いは、 ほとんどのプラットフォームではスタックの最上位が <code>gforth</code> のメモリに保持され、
+<code>gforth-fast</code> ではレジスタに保持されることです。  <code>ABI-CODE</code> 定義の場合、
+スタック・キャッシュ・レジスタは必ずスタックにフラッシュされるため、 メモリ内のスタックの先頭に確実にアクセスできます。
 </p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Common-Disassembler.html">Common Disassembler</a>, Previous: <a href="Assembler-Definitions.html">Definitions in assembly language</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
