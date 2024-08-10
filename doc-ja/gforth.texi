@@ -25452,9 +25452,8 @@ usage example}) を見て、 逆アセンブラーをファクタリングする
 @node Carnal words, Passing Commands to the OS, Assembler and Code Words, Words
 @section Carnal words
 
-These words deal with the mechanics of Gforth (in Forth circles called
-``carnal knowledge'' of a Forth system), but we consider them stable enough
-to document them.
+これらのワードは Gforth の仕組み(Forth サークルでは Forth システムの「肉体的知識」(carnal
+knowledge)と呼ばれる)を扱っていますが、 著者等は文書化するに当たって、 これらが十分安定(stable)していると考えています。
 
 @menu
 * Header fields::
@@ -25466,15 +25465,13 @@ to document them.
 @subsection Header fields
 @cindex header fields
 
-In Gforth 1.0 we switched to a new word header layout.  For a detailed
-description, read: Bernd Paysan and M. Anton Ertl.
+Gforth 1.0 では、 新しいワード・ヘッダー・レイアウトに切り替えられました。  詳細な説明については、 Bernd Paysan and
+M. Anton Ertl.
 @cite{@uref{http://www.euroforth.org/ef19/papers/paysan.pdf,The new Gforth
-header}}. In 35th EuroForth Conference, pages 5-20, 2019.  Since this paper
-was published, xt and nt have been changed to point to the parameter field,
-like the body, but otherwise it is still up-to-date.
+header}} を参照してください。  この論文の公開以後に、xt と nt
+は本体(body)のようにパラメーター・フィールドを指すように変更されましたが、 それ以外は依然としてこの文献が最新です。
 
-This section explains just the data structure and the words used to access
-it.  A header has the following fields:
+このセクションでは、 データ構造とそれにアクセスするために使用されるワードについてのみ説明します。  ヘッダーには以下のフィールドがあります:
 
 @example
 name
@@ -25485,16 +25482,13 @@ name
 >body
 @end example
 
-Currently Gforth has the names shown above for getting from the xt/nt/body
-to the field, but apart from the standard @code{>body} they are not stable
-Gforth words.  Instead, we provide access words.  Note that the documented
-access words have survived the reorganization of the header layout.
+現在、 Gforth には xt/nt/body から各フィールドに到達するために上に示した名前がありますが、 標準の @code{>body}
+を除けば、 これらは定着した Gforth ワードではありません。  これらの代わりアクセス用ワードを提供しています。
+注意:文書化されたアクセス・ワードはヘッダー・レイアウトの再編成後も生き残ることに注意してください。
 
-Some of the words expect an nt, some expect an xt.  Given that both nt and
-xt point to the body of a word, what is the difference? For most words, the
-xt and nt use the same header, and with nt=xt, they point to the same
-place.  However, for a synonym (@pxref{Aliases}) there is a difference;
-consider the example
+ワードの中には nt を期待するものもあれば、 xt を期待するものもあります。  nt と xt が両方ともワードの本体を指しているとすると、
+その違いは何でしょうか？ ほとんどのワードでは、xt と nt は同一ヘッダーを使用するので、 nt=xt となり、 同じ場所を指します。  ただし、
+同義語(synonym)(@pxref{Aliases})では違いがあります。 以下の例で考えてみましょう
 
 @example
 create x
@@ -25502,15 +25496,14 @@ synonym y x
 synonym z y
 @end example
 
-In this case the nt of @code{z} points to the body of @code{z}, while the xt
-of @code{z} points to the body of @code{x}.  Words defined with @code{alias}
-or @code{forward} (@pxref{Forward}) also have different nts and xts.
+この場合、@code{z} の nt は @code{z} の本体を指し、 @code{z} の xt は @code{x} の本体を指します。
+@code{alias} または @code{forward} (@pxref{Forward}) で定義されたワードも、 nt と異なる xt
+を持ちます。
 
-The name field is variable-length and is accessed with @code{name>string}
-(@pxref{Name token}).
+名前フィールドは可変長で、 @code{name>string} (@pxref{Name token}) でアクセスします。
 
-The @code{>f+c} field contains flags and the name length (count).  You read
-the count with @code{name>string}, and the flags with
+@code{>f+c} フィールドには、フラグと名前の長さ(カウント)が含まれます。 @code{name>string} でカウントを読み取り、
+以下でフラグを読み取ります。
 
 @findex compile-only? ( @var{ nt -- flag   } ) gforth-1.0
 @cindex @code{compile-only?}
@@ -25518,37 +25511,34 @@ the count with @code{name>string}, and the flags with
 @format
 @code{compile-only?} ( @i{nt -- flag  }) gforth-1.0 ``compile-only?''
 @end format
-true if @i{nt} is marked as compile-only.
+@i{nt} がコンパイル専用(compile-only)としてマークされている場合は true 。
 
 
 
-The @code{>link} field contains a link to the previous word in the same word
-list.  You can read it with @code{name>link} (@pxref{Name token}).
+@code{>link} フィールドには、 同じワードリスト内の前のワードへのリンクが含まれます。  @code{name>link}
+(@pxref{Name token}) で読み取ることができます。
 
-The name, @code{>f+c} and @code{>link} fields are not present for
-@code{noname} words, but @code{name>string} and @code{name>link} work
-nevertheless, producing 0 0 and 0, respectively.
+name と @code{>f+c} と @code{>link} フィールドは @code{noname} ワードには存在しませんが、 それでも
+@code{name>string} と @code{name>link} は機能し、 @code{name>string} は 0 0 を返し、
+@code{name>link} は 0 を返します。
 
-The @code{>cfa} field (aka code field) contains the code address used for
-@code{execute}ing the word; you can read it with @code{>code-address} and
-write it with @code{code-address!} (@pxref{Threading Words}).
+@code{>cfa} フィールド(別名 コード・フィールド) には、 ワードを @code{execute}
+するために使用されるコード・アドレスが含まれます。  @code{>code-address} で読み取り、 @code{code-address!}
+(@pxref{Threading Words}) で書き込むことができます。
 
-The @code{>namehm} field contains the address of the header methods table,
-described below.  You access it by performing or accessing header methods
-(@pxref{Header methods}).
+@code{>namehm} フィールドには、 後述するするヘッダー・メソッド・テーブルのアドレスが含まれます。  これにアクセスするには、
+ヘッダー・メソッド (@pxref{Header methods}) を実行するか、または、 ヘッダー・メソッドにアクセスします。
 
-The @code{>body} (aka parameter) field contains data or threaded code
-specific to the word type; its length depends on the word type.  E.g., for a
-@code{constant} it contains a cell with the value of the constant.  You can
-access it through @code{>body} (@pxref{CREATE..DOES> details}), but this is
-only standard for words you defined with @code{create}.
+@code{>body} (別名 パラメーター・フィールド)には、 ワードの種類に固有のデータまたはスレッド化コードが含まれます。
+その長さはワードの種類によって異なります。  たとえば、 @code{constant} の場合、 定数の値を含むセルが含まれます。
+@code{>body} (@pxref{CREATE..DOES> details}) を通じてアクセスできますが、 これは標準の
+@code{create} で定義したワードのみです。
 
 @node Header methods, Threading Words, Header fields, Carnal words
 @subsection Header methods
 @cindex header methods
 
-The new Gforth word header is object-oriented and supports the following
-methods (method selectors):
+新しい Gforth ワード・ヘッダーはオブジェクト指向であり、 以下のメソッド(メソッド・セレクター)をサポートします:
 
 @example
 .hm label method          overrider        field
@@ -25562,10 +25552,9 @@ extra:                                     >hmextra
 >link:    name>link       set-name>link    >hm>link
 @end example
 
-Many of these words are not stable Gforth words, but Gforth has stable
-higher-level words that we mention below.
+これらのワードの多くは定着(stable)した Gforth ワードではありませんが、 Gforth には後述する定着した高レベルのワードがあります。
 
-You can look at the header methods of a word with
+以下を使用すると、 ワードのヘッダー・メソッドを確認できます
 
 @findex .hm ( @var{ nt --   } ) gforth-1.0
 @cindex @code{.hm}
@@ -25573,24 +25562,21 @@ You can look at the header methods of a word with
 @format
 @code{.hm} ( @i{nt --  }) gforth-1.0 ``dot-h-m''
 @end format
-print the header methods of @i{nt}
+@i{nt} のヘッダー・メソッドを出力します
 
 
 
-Overrider (setter) words change the method implementation for the most
-recent definition.  Quotations or closures restore the previous most recent
-definition when they are completed, so they are not considered most recent,
-and you can do things like:
+オーバーライダー(overrider)(セッター)ワードは、 最新の定義のメソッド実装を変更します。  クォーテーションまたはクロージャーは、
+完了時に以前の最新の定義を復元するため、 最新のものとはみなされず、 以下のようなことができます:
 
 @example
 : my2dup over over ;
 [: drop ]] over over [[ ;] set-optimizer
 @end example
 
-The @code{execute} method is actually stored in the @code{>cfa} field in the
-header rather than in the header-methods table for performance reasons; also
-it is implemented through a native-code address, while the other methods are
-implemented by calling an xt.  The high-level way to set this method is
+@code{execute} メソッドは、 パフォーマンス上の理由から、 実際にはヘッダー・メソッド・テーブルではなくヘッダーの @code{>cfa}
+フィールドに格納されます。 また、 他のメソッドは xt を呼び出すことによって実装されますが、 ネイティブ・コード・アドレスを通じて実装されます。
+このメソッドを設定する大まかな方法​​は以下のとおりです
 
 @findex set-execute ( @var{ ca --   } ) gforth-1.0
 @cindex @code{set-execute}
@@ -25598,30 +25584,28 @@ implemented by calling an xt.  The high-level way to set this method is
 @format
 @code{set-execute} ( @i{ca --  }) gforth-1.0 ``set-execute''
 @end format
-Changes the current word such that it jumps to the native code at @i{ca}.
-Also changes the @code{compile,} implementation to the most general (and
-slowest) one.  Call @code{set-optimizer} afterwards if you want a more
-efficient @code{compile,} implementation.
+@i{ca} のネイティブ・コードにジャンプするように現在のワードを変更します。  また、 @code{compile,}
+実装を最も一般的な(そして最も遅い)実装に変更します。  より効率的な @code{compile,} 実装が必要な場合は、 後で
+@code{set-optimizer} を呼び出します。
 
 
 
-To get a code address for use with @code{set-execute}, you can use words
-like @code{docol:} or @code{>code-address}, @xref{Threading Words}.
+@code{set-execute} で使用するコード・アドレスを取得するには、 @code{docol:} または
+@code{>code-address} などのワードを使用できます。 @xref{Threading Words}
 
-As an alternative to @code{set-execute}, there is also @code{set-does>}
-(@pxref{User-defined Defining Words}), which takes an xt.
+@code{set-execute} の代わりに、 xt を受け取る @code{set-does>} (@pxref{User-defined
+Defining Words})もあります。
 
-Moreover, there are the low-level @code{code-address!} and @code{definer!}
-(@pxref{Threading Words}).
+さらに、 低レベルの @code{code-address!} と @code{definer!} があります。 (@pxref{Threading
+Words})
 
-The @code{opt-compile,} method is what @code{compile,} does on most Gforth
-engines (@code{gforth-itc} uses @code{,} instead).  You can define a more
-efficient implementation of @code{compile,} for the current word with
-@code{set-optimizer} (@pxref{User-defined compile-comma}).  Note that the
-end result must be equivalent to @code{postpone literal postpone execute}.
+@code{opt-compile,} メソッドは、 ほとんどの Gforth エンジンで動く @code{compile,}
+です(@code{gforth-itc} は代わりに @code{,} を使用します)。  @code{set-optimizer} を使用して、
+現在のワードに対する @code{compile,} のより効率的な実装を定義できます((@pxref{User-defined
+compile-comma}))。 注意: 最終結果は @code{postpone literal postpone execute}
+と同等でなければならないことに注意してください。
 
-As an example of the use of @code{set-optimizer}, consider the following
-definition of @code{constant}:
+@code{set-optimizer} の使用例として、 以下の @code{constant} の定義を考えてみましょう:
 
 @example
 : constant ( n "name" -- ; name: -- n )
@@ -25633,11 +25617,10 @@ definition of @code{constant}:
 : foo five ; see foo
 @end example
 
-The Forth system does not know that the value of a constant must not be
-changed, and just sees a @code{create}d word (which can be changed with
-@code{>body}), and @code{foo} first pushes the body address of @code{five}
-and then fetches from there.  With @code{set-optimizer} the definition of
-@code{constant} can be optimized as follows:
+Forth システムは、 定数の値を変更してはならないことを認識せず、 単に @code{create} されたワード (@code{>body}
+で変更可能)として見て、 @code{foo} は最初に @code{five} のボティのアドレスをスタックにプッシュし、
+その次にそこから値を取得します。 @code{set-optimizer} を使用すると、 @code{constant}
+の定義を以下のように最適化できます:
 
 @example
 : constant ( n "name" -- ; name: -- n )
@@ -25647,19 +25630,16 @@ and then fetches from there.  With @code{set-optimizer} the definition of
 ;
 @end example
 
-Now @code{foo} contains the literal 5 rather than a call to @code{five}.
+いまや、 @code{foo} には、 @code{five} の呼び出しではなく、 即値(literal)の 5 が含まれるようになりました。
 
-Note that @code{set-execute} and @code{set-does>} perform
-@code{set-optimizer} themselves in order to ensure that @code{execute} and
-@code{compile,} agree, so if you want to add your own optimizer, you should
-add it afterwards.
+注意: @code{set-execute} と @code{set-does>} は、@code{execute} と @code{compile,}
+が一致していることを確認するために、 @code{set-optimizer} 自体を実行することに注意してください。
+あなた独自のオプティマイザーを追加するには、 後で追加する必要があります。
 
-The @code{defer!} (aka @code{(to)} method (@pxref{User-defined TO and
-DEFER@@}) implements @code{defer!} for words defined with @code{defer} and
-similar words, but it is also the core of @code{to}.  The general stack
-effect of the @code{defer!}/@code{(to)} method is @code{( val xt -- )},
-where @i{xt} identifies the word stored into, and @i{val} is the value (of
-appropriate type) stored there.
+@code{defer!} (別名 @code{(to)} メソッド(@pxref{User-defined TO and DEFER@@})は、
+@code{defer} で定義されたワードおよび類似のワードに対して @code{defer!} を実装します。 ですが、 これは @code{to}
+の核心(core)でもあります。 @code{defer!}/@code{(to)} メソッドの一般的なスタック効果は @code{( val xt
+-- )} です。 ここで @i{xt} は格納されているワードを示し、 @i{val} はそこに格納されている(適切な型の)値です。
 
 たとえば、 以下のように @code{fvalue} を実装できます:
 
@@ -25676,7 +25656,7 @@ appropriate type) stored there.
 see bar
 @end example
 
-You can improve the generated code with @code{set-optimizer}:
+@code{set-optimizer} を使用して、 生成されたコードを改善できます:
 
 @example
 : compile-fvalue-to ( xt-value-to -- )
@@ -25696,29 +25676,25 @@ You can improve the generated code with @code{set-optimizer}:
 see bar
 @end example
 
-In practice Gforth has a few additional twists to implement, e.g.,
-@code{+TO}.
+実際には、 Gforth には、 @code{+TO} など、 実装するための追加の工夫がいくつかあります。
 
-@code{Set-defer@@} (@pxref{User-defined TO and DEFER@@}) allows to implement
-variants of the @code{defer@@} (@pxref{Deferred Words})  method for
-@code{defer}-like words.
+@code{Set-defer@@} (@pxref{User-defined TO and DEFER@@}) を使用すると、
+@code{defer} のようなワードに対して @code{defer@@} (@pxref{Deferred Words})
+メソッドのバリエーションを実装できます。
 
-The @code{>hmextra} field is used for cases where additional data needs to
-be stored in the header methods table.  In particular, it stores the xt
-passed to @code{set-does>} (and @code{does>} calls @code{set-does>}) and the
-code address behind @code{;abi-code}.
+@code{>hmextra} フィールドは、 追加のデータをヘッダー・メソッド・テーブルに保存する必要がある場合に使用されます。  特に、 それは
+@code{set-does>} に渡す xt を保存し(そして @code{does>} は @code{set-does>} を呼び出し)、
+そして、 @code{;abi-code} の後のコードのアドレスを保存します。
 
-The methods above all consume an xt, not an nt, but the override words work
-on the most recent definition.  This means that if you use, e.g.,
-@code{set-optimizer} on a synonym, the effect will probably not be what you
-intended: When @code{compile,}ing the xt of the word, the
-@code{opt-compile,} implementation of the original word will be used, not
-the freshly-set one of the synonym.
+これらのメソッドはすべて、 nt ではなく xt を使用しますが、 オーバーライド・ワード(override words)は最新の定義で機能します。
+これは、 たとえば、 同義語(synonym)に対して @code{set-optimizer} を使用した場合、
+その効果はおそらくあなたが意図したものとは異なることを意味します。 ワードの xt を @code{compile,} する場合、
+新たに設定された同義語(synonym)ではなく、 元のワードの @code{opt-compile,} 実装が使用されます。
 
-The following methods consume an nt.
+以下のメソッド達は nt を消費します。
 
-The @code{name>interpret} method is implemented as noop for most words,
-except synonyms and similar words.
+@code{name>interpret} メソッドは、 同義語(synonym)や類似のワードを除くほとんどのワードに対して noop
+として実装されます。
 
 @findex set->int ( @var{ xt --   } ) gforth-1.0
 @cindex @code{set->int}
@@ -25726,18 +25702,15 @@ except synonyms and similar words.
 @format
 @code{set->int} ( @i{xt --  }) gforth-1.0 ``set-to-int''
 @end format
-Sets the implementation of the @code{name>interpret ( nt -- xt2 )} method of
-the current word to @i{xt}.
+現在のワードの @code{name>interpret (nt -- xt2 )} メソッドの実装を @i{xt} に設定します。
 
 
 
-The @code{name>compile} method produces the compilation semantics of the
-nt.  By changing it with @code{set->comp}, you can change the compilation
-semantics, but it's not as simple as just pushing the xt of the desired
-compilation semantics, because of the stack effect of @code{name>compile}.
-Generally you should avoid changing the compilation semantics, and if you
-do, use a higher-level word like @code{immediate} or
-@code{interpret/compile:}, @xref{Combined words}.
+@code{name>compile} メソッドは、 nt のコンパイル機能(compilation semantics)を生成します。
+@code{set->comp} で変更することでコンパイル機能を変更できますが、 @code{name>compile} のスタック効果のため、
+目的のコンパイル機能の xt をプッシュするだけというほど単純ではありません。  一般に、 コンパイル機能の変更は避ける必要があり、 変更する場合は、
+@code{immediate} または @code{interpret/compile:}
+などの高レベル・ワードを使用してください(@xref{Combined words})。
 
 @findex set->comp ( @var{ xt --   } ) gforth-1.0
 @cindex @code{set->comp}
@@ -25745,8 +25718,7 @@ do, use a higher-level word like @code{immediate} or
 @format
 @code{set->comp} ( @i{xt --  }) gforth-1.0 ``set-to-comp''
 @end format
-Sets the implementation of the @code{name>compile ( nt -- w xt2 )} method of
-the current word to @i{xt}.
+現在のワードの @code{name>compile ( nt -- w xt2 )} メソッドの実装を @i{xt} に設定します。
 
 
 @findex immediate? ( @var{ nt -- flag   } ) gforth-1.0
@@ -25755,17 +25727,16 @@ the current word to @i{xt}.
 @format
 @code{immediate?} ( @i{nt -- flag  }) gforth-1.0 ``immediate?''
 @end format
-true if the word @i{nt} has non-default compilation semantics (that's not
-quite according to the definition of immediacy, but many people mean that
-when they call a word ``immediate'').
+ワード @i{nt} がデフォルト以外のコンパイル機能(compilation semantics)を持っている場合は true
+(これは即時性(immediacy)の定義と完全には一致しませんが、
+多くの人はワード語を「即時」(immediate)と呼ぶときはこれを意味しています)。
 
 
 
-@code{Name>string} and @code{Name>link} are methods in order to make it
-possible to eliminate the name, @code{>f+c} and @code{link} fields from
-noname headers, but still produce meaningful results when using these
-words.  You will typically not change the implementations of these methods
-except with @code{noname}, but we still have
+@code{Name>string} および @code{Name>link} は、 noname ヘッダーから  name と @code{>f+c}
+と @code{link} フィールドを削除できるようにするためのメソッドです。 これらのワードを使用すると意味のある結果が得られます。  通常、
+@code{noname} を使用する場合を除き、 これらのメソッドの実装を変更することはありませんが、
+あなたがそれでも必要とするなら以下をご覧ください
 
 @findex set-name>string ( @var{ xt --   } ) gforth-1.0
 @cindex @code{set-name>string}
@@ -25773,8 +25744,7 @@ except with @code{noname}, but we still have
 @format
 @code{set-name>string} ( @i{xt --  }) gforth-1.0 ``set-name-to-string''
 @end format
-Sets the implementation of the @code{name>string ( nt -- addr u )} method of
-the current word to @i{xt}.
+現在のワードの @code{name>string ( nt -- addr u )} メソッドの実装を @i{xt} に設定します。
 
 
 @findex set-name>link ( @var{ xt --   } ) gforth-1.0
@@ -25783,8 +25753,7 @@ the current word to @i{xt}.
 @format
 @code{set-name>link} ( @i{xt --  }) gforth-1.0 ``set-name-to-link''
 @end format
-Sets the implementation of the @code{name>link ( nt1 -- nt2|0 )} method of
-the current word to @i{xt}.
+現在のワードの @code{name>link (nt1 -- nt2|0 )} メソッドの実装を @i{xt} に設定します。
 
 
 
@@ -25795,12 +25764,10 @@ the current word to @i{xt}.
 @cindex code field
 @cindex CFA
 @cindex code address
-The terminology used here stems from indirect threaded Forth systems; in
-such a system, the XT of a word is represented by the CFA (code field
-address) of a word; the CFA points to a cell that contains the code
-address.  The code address is the address of some machine code that performs
-the run-time action of invoking the word (e.g., the @code{dovar:} routine
-pushes the address of the body of the word (a variable) on the stack).
+ここで使用される用語は、 間接スレッド Forth システム(indirect threaded Forth systems)に由来しています。
+間接スレッド Forth システムでは、 ワードの XT はワードの CFA (コード・フィールド・アドレス) によって表されます。 CFA は、
+コード・アドレスを含むセルを指します。  コード・アドレスは、 ワードを呼び出すj実行時のアクションを実行するマシン・コードのアドレスです(たとえば、
+@code{dovar:} ルーチンは、 ワード(変数)の本体のアドレスをスタックにプッシュします)。
 
 These words provide access to code fields, code addresses and other
 threading stuff in Gforth. It more or less abstracts away the differences

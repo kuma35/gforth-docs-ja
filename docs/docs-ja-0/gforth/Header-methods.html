@@ -71,8 +71,7 @@ Next: <a href="Threading-Words.html" accesskey="n" rel="next">Threading Words</a
 <span id="Header-methods-1"></span><h4 class="subsection">6.30.2 Header methods</h4>
 <span id="index-header-methods"></span>
 
-<p>The new Gforth word header is object-oriented and supports the following
-methods (method selectors):
+<p>新しい Gforth ワード・ヘッダーはオブジェクト指向であり、 以下のメソッド(メソッド・セレクター)をサポートします:
 </p>
 <div class="example">
 <pre class="example">.hm label method          overrider        field
@@ -86,10 +85,9 @@ extra:                                     &gt;hmextra
 &gt;link:    name&gt;link       set-name&gt;link    &gt;hm&gt;link
 </pre></div>
 
-<p>Many of these words are not stable Gforth words, but Gforth has stable
-higher-level words that we mention below.
+<p>これらのワードの多くは定着(stable)した Gforth ワードではありませんが、 Gforth には後述する定着した高レベルのワードがあります。
 </p>
-<p>You can look at the header methods of a word with
+<p>以下を使用すると、 ワードのヘッダー・メソッドを確認できます
 </p>
 <span id="index-_002ehm-_0028--nt-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-_002ehm"></span>
@@ -97,24 +95,21 @@ higher-level words that we mention below.
 <div class="format">
 <pre class="format"><code>.hm</code> ( <i>nt &ndash;  </i>) gforth-1.0 &ldquo;dot-h-m&rdquo;
 </pre></div>
-<p>print the header methods of <i>nt</i>
+<p><i>nt</i> のヘッダー・メソッドを出力します
 </p>
 
 
-<p>Overrider (setter) words change the method implementation for the most
-recent definition.  Quotations or closures restore the previous most recent
-definition when they are completed, so they are not considered most recent,
-and you can do things like:
+<p>オーバーライダー(overrider)(セッター)ワードは、 最新の定義のメソッド実装を変更します。  クォーテーションまたはクロージャーは、
+完了時に以前の最新の定義を復元するため、 最新のものとはみなされず、 以下のようなことができます:
 </p>
 <div class="example">
 <pre class="example">: my2dup over over ;
 [: drop ]] over over [[ ;] set-optimizer
 </pre></div>
 
-<p>The <code>execute</code> method is actually stored in the <code>&gt;cfa</code> field in the
-header rather than in the header-methods table for performance reasons; also
-it is implemented through a native-code address, while the other methods are
-implemented by calling an xt.  The high-level way to set this method is
+<p><code>execute</code> メソッドは、 パフォーマンス上の理由から、 実際にはヘッダー・メソッド・テーブルではなくヘッダーの <code>&gt;cfa</code>
+フィールドに格納されます。 また、 他のメソッドは xt を呼び出すことによって実装されますが、 ネイティブ・コード・アドレスを通じて実装されます。
+このメソッドを設定する大まかな方法​​は以下のとおりです
 </p>
 <span id="index-set_002dexecute-_0028--ca-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-set_002dexecute"></span>
@@ -122,30 +117,25 @@ implemented by calling an xt.  The high-level way to set this method is
 <div class="format">
 <pre class="format"><code>set-execute</code> ( <i>ca &ndash;  </i>) gforth-1.0 &ldquo;set-execute&rdquo;
 </pre></div>
-<p>Changes the current word such that it jumps to the native code at <i>ca</i>.
-Also changes the <code>compile,</code> implementation to the most general (and
-slowest) one.  Call <code>set-optimizer</code> afterwards if you want a more
-efficient <code>compile,</code> implementation.
+<p><i>ca</i> のネイティブ・コードにジャンプするように現在のワードを変更します。  また、 <code>compile,</code>
+実装を最も一般的な(そして最も遅い)実装に変更します。  より効率的な <code>compile,</code> 実装が必要な場合は、 後で
+<code>set-optimizer</code> を呼び出します。
 </p>
 
 
-<p>To get a code address for use with <code>set-execute</code>, you can use words
-like <code>docol:</code> or <code>&gt;code-address</code>, See <a href="Threading-Words.html">Threading Words</a>.
+<p><code>set-execute</code> で使用するコード・アドレスを取得するには、 <code>docol:</code> または
+<code>&gt;code-address</code> などのワードを使用できます。 See <a href="Threading-Words.html">Threading Words</a>
 </p>
-<p>As an alternative to <code>set-execute</code>, there is also <code>set-does&gt;</code>
-(see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>), which takes an xt.
+<p><code>set-execute</code> の代わりに、 xt を受け取る <code>set-does&gt;</code> (see <a href="User_002ddefined-Defining-Words.html">User-defined Defining Words</a>)もあります。
 </p>
-<p>Moreover, there are the low-level <code>code-address!</code> and <code>definer!</code>
-(see <a href="Threading-Words.html">Threading Words</a>).
+<p>さらに、 低レベルの <code>code-address!</code> と <code>definer!</code> があります。 (see <a href="Threading-Words.html">Threading Words</a>)
 </p>
-<p>The <code>opt-compile,</code> method is what <code>compile,</code> does on most Gforth
-engines (<code>gforth-itc</code> uses <code>,</code> instead).  You can define a more
-efficient implementation of <code>compile,</code> for the current word with
-<code>set-optimizer</code> (see <a href="User_002ddefined-compile_002dcomma.html">User-defined <code>compile,</code></a>).  Note that the
-end result must be equivalent to <code>postpone literal postpone execute</code>.
+<p><code>opt-compile,</code> メソッドは、 ほとんどの Gforth エンジンで動く <code>compile,</code>
+です(<code>gforth-itc</code> は代わりに <code>,</code> を使用します)。  <code>set-optimizer</code> を使用して、
+現在のワードに対する <code>compile,</code> のより効率的な実装を定義できます((see <a href="User_002ddefined-compile_002dcomma.html">User-defined <code>compile,</code></a>))。 注意: 最終結果は <code>postpone literal postpone execute</code>
+と同等でなければならないことに注意してください。
 </p>
-<p>As an example of the use of <code>set-optimizer</code>, consider the following
-definition of <code>constant</code>:
+<p><code>set-optimizer</code> の使用例として、 以下の <code>constant</code> の定義を考えてみましょう:
 </p>
 <div class="example">
 <pre class="example">: constant ( n &quot;name&quot; -- ; name: -- n )
@@ -157,11 +147,10 @@ definition of <code>constant</code>:
 : foo five ; see foo
 </pre></div>
 
-<p>The Forth system does not know that the value of a constant must not be
-changed, and just sees a <code>create</code>d word (which can be changed with
-<code>&gt;body</code>), and <code>foo</code> first pushes the body address of <code>five</code>
-and then fetches from there.  With <code>set-optimizer</code> the definition of
-<code>constant</code> can be optimized as follows:
+<p>Forth システムは、 定数の値を変更してはならないことを認識せず、 単に <code>create</code> されたワード (<code>&gt;body</code>
+で変更可能)として見て、 <code>foo</code> は最初に <code>five</code> のボティのアドレスをスタックにプッシュし、
+その次にそこから値を取得します。 <code>set-optimizer</code> を使用すると、 <code>constant</code>
+の定義を以下のように最適化できます:
 </p>
 <div class="example">
 <pre class="example">: constant ( n &quot;name&quot; -- ; name: -- n )
@@ -171,18 +160,16 @@ and then fetches from there.  With <code>set-optimizer</code> the definition of
 ;
 </pre></div>
 
-<p>Now <code>foo</code> contains the literal 5 rather than a call to <code>five</code>.
+<p>いまや、 <code>foo</code> には、 <code>five</code> の呼び出しではなく、 即値(literal)の 5 が含まれるようになりました。
 </p>
-<p>Note that <code>set-execute</code> and <code>set-does&gt;</code> perform
-<code>set-optimizer</code> themselves in order to ensure that <code>execute</code> and
-<code>compile,</code> agree, so if you want to add your own optimizer, you should
-add it afterwards.
+<p>注意: <code>set-execute</code> と <code>set-does&gt;</code> は、<code>execute</code> と <code>compile,</code>
+が一致していることを確認するために、 <code>set-optimizer</code> 自体を実行することに注意してください。
+あなた独自のオプティマイザーを追加するには、 後で追加する必要があります。
 </p>
-<p>The <code>defer!</code> (aka <code>(to)</code> method (see <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>) implements <code>defer!</code> for words defined with <code>defer</code> and
-similar words, but it is also the core of <code>to</code>.  The general stack
-effect of the <code>defer!</code>/<code>(to)</code> method is <code>( val xt -- )</code>,
-where <i>xt</i> identifies the word stored into, and <i>val</i> is the value (of
-appropriate type) stored there.
+<p><code>defer!</code> (別名 <code>(to)</code> メソッド(see <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>)は、
+<code>defer</code> で定義されたワードおよび類似のワードに対して <code>defer!</code> を実装します。 ですが、 これは <code>to</code>
+の核心(core)でもあります。 <code>defer!</code>/<code>(to)</code> メソッドの一般的なスタック効果は <code>( val xt
+-- )</code> です。 ここで <i>xt</i> は格納されているワードを示し、 <i>val</i> はそこに格納されている(適切な型の)値です。
 </p>
 <p>たとえば、 以下のように <code>fvalue</code> を実装できます:
 </p>
@@ -199,7 +186,7 @@ appropriate type) stored there.
 see bar
 </pre></div>
 
-<p>You can improve the generated code with <code>set-optimizer</code>:
+<p><code>set-optimizer</code> を使用して、 生成されたコードを改善できます:
 </p>
 <div class="example">
 <pre class="example">: compile-fvalue-to ( xt-value-to -- )
@@ -219,29 +206,25 @@ see bar
 see bar
 </pre></div>
 
-<p>In practice Gforth has a few additional twists to implement, e.g.,
-<code>+TO</code>.
+<p>実際には、 Gforth には、 <code>+TO</code> など、 実装するための追加の工夫がいくつかあります。
 </p>
-<p><code>Set-defer@</code> (see <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>) allows to implement
-variants of the <code>defer@</code> (see <a href="Deferred-Words.html">Deferred Words</a>)  method for
-<code>defer</code>-like words.
+<p><code>Set-defer@</code> (see <a href="User_002ddefined-TO-and-DEFER_0040.html">User-defined <code>to</code> and <code>defer@</code></a>) を使用すると、
+<code>defer</code> のようなワードに対して <code>defer@</code> (see <a href="Deferred-Words.html">Deferred Words</a>)
+メソッドのバリエーションを実装できます。
 </p>
-<p>The <code>&gt;hmextra</code> field is used for cases where additional data needs to
-be stored in the header methods table.  In particular, it stores the xt
-passed to <code>set-does&gt;</code> (and <code>does&gt;</code> calls <code>set-does&gt;</code>) and the
-code address behind <code>;abi-code</code>.
+<p><code>&gt;hmextra</code> フィールドは、 追加のデータをヘッダー・メソッド・テーブルに保存する必要がある場合に使用されます。  特に、 それは
+<code>set-does&gt;</code> に渡す xt を保存し(そして <code>does&gt;</code> は <code>set-does&gt;</code> を呼び出し)、
+そして、 <code>;abi-code</code> の後のコードのアドレスを保存します。
 </p>
-<p>The methods above all consume an xt, not an nt, but the override words work
-on the most recent definition.  This means that if you use, e.g.,
-<code>set-optimizer</code> on a synonym, the effect will probably not be what you
-intended: When <code>compile,</code>ing the xt of the word, the
-<code>opt-compile,</code> implementation of the original word will be used, not
-the freshly-set one of the synonym.
+<p>これらのメソッドはすべて、 nt ではなく xt を使用しますが、 オーバーライド・ワード(override words)は最新の定義で機能します。
+これは、 たとえば、 同義語(synonym)に対して <code>set-optimizer</code> を使用した場合、
+その効果はおそらくあなたが意図したものとは異なることを意味します。 ワードの xt を <code>compile,</code> する場合、
+新たに設定された同義語(synonym)ではなく、 元のワードの <code>opt-compile,</code> 実装が使用されます。
 </p>
-<p>The following methods consume an nt.
+<p>以下のメソッド達は nt を消費します。
 </p>
-<p>The <code>name&gt;interpret</code> method is implemented as noop for most words,
-except synonyms and similar words.
+<p><code>name&gt;interpret</code> メソッドは、 同義語(synonym)や類似のワードを除くほとんどのワードに対して noop
+として実装されます。
 </p>
 <span id="index-set_002d_003eint-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-set_002d_003eint"></span>
@@ -249,18 +232,15 @@ except synonyms and similar words.
 <div class="format">
 <pre class="format"><code>set-&gt;int</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-to-int&rdquo;
 </pre></div>
-<p>Sets the implementation of the <code>name&gt;interpret ( nt -- xt2 )</code> method of
-the current word to <i>xt</i>.
+<p>現在のワードの <code>name&gt;interpret (nt -- xt2 )</code> メソッドの実装を <i>xt</i> に設定します。
 </p>
 
 
-<p>The <code>name&gt;compile</code> method produces the compilation semantics of the
-nt.  By changing it with <code>set-&gt;comp</code>, you can change the compilation
-semantics, but it&rsquo;s not as simple as just pushing the xt of the desired
-compilation semantics, because of the stack effect of <code>name&gt;compile</code>.
-Generally you should avoid changing the compilation semantics, and if you
-do, use a higher-level word like <code>immediate</code> or
-<code>interpret/compile:</code>, See <a href="Combined-words.html">Combined Words</a>.
+<p><code>name&gt;compile</code> メソッドは、 nt のコンパイル機能(compilation semantics)を生成します。
+<code>set-&gt;comp</code> で変更することでコンパイル機能を変更できますが、 <code>name&gt;compile</code> のスタック効果のため、
+目的のコンパイル機能の xt をプッシュするだけというほど単純ではありません。  一般に、 コンパイル機能の変更は避ける必要があり、 変更する場合は、
+<code>immediate</code> または <code>interpret/compile:</code>
+などの高レベル・ワードを使用してください(See <a href="Combined-words.html">Combined Words</a>)。
 </p>
 <span id="index-set_002d_003ecomp-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-set_002d_003ecomp"></span>
@@ -268,8 +248,7 @@ do, use a higher-level word like <code>immediate</code> or
 <div class="format">
 <pre class="format"><code>set-&gt;comp</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-to-comp&rdquo;
 </pre></div>
-<p>Sets the implementation of the <code>name&gt;compile ( nt -- w xt2 )</code> method of
-the current word to <i>xt</i>.
+<p>現在のワードの <code>name&gt;compile ( nt -- w xt2 )</code> メソッドの実装を <i>xt</i> に設定します。
 </p>
 
 <span id="index-immediate_003f-_0028--nt-_002d_002d-flag--_0029-gforth_002d1_002e0"></span>
@@ -278,17 +257,16 @@ the current word to <i>xt</i>.
 <div class="format">
 <pre class="format"><code>immediate?</code> ( <i>nt &ndash; flag  </i>) gforth-1.0 &ldquo;immediate?&rdquo;
 </pre></div>
-<p>true if the word <i>nt</i> has non-default compilation semantics (that&rsquo;s not
-quite according to the definition of immediacy, but many people mean that
-when they call a word &ldquo;immediate&rdquo;).
+<p>ワード <i>nt</i> がデフォルト以外のコンパイル機能(compilation semantics)を持っている場合は true
+(これは即時性(immediacy)の定義と完全には一致しませんが、
+多くの人はワード語を「即時」(immediate)と呼ぶときはこれを意味しています)。
 </p>
 
 
-<p><code>Name&gt;string</code> and <code>Name&gt;link</code> are methods in order to make it
-possible to eliminate the name, <code>&gt;f+c</code> and <code>link</code> fields from
-noname headers, but still produce meaningful results when using these
-words.  You will typically not change the implementations of these methods
-except with <code>noname</code>, but we still have
+<p><code>Name&gt;string</code> および <code>Name&gt;link</code> は、 noname ヘッダーから  name と <code>&gt;f+c</code>
+と <code>link</code> フィールドを削除できるようにするためのメソッドです。 これらのワードを使用すると意味のある結果が得られます。  通常、
+<code>noname</code> を使用する場合を除き、 これらのメソッドの実装を変更することはありませんが、
+あなたがそれでも必要とするなら以下をご覧ください
 </p>
 <span id="index-set_002dname_003estring-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
 <span id="index-set_002dname_003estring"></span>
@@ -296,8 +274,7 @@ except with <code>noname</code>, but we still have
 <div class="format">
 <pre class="format"><code>set-name&gt;string</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-name-to-string&rdquo;
 </pre></div>
-<p>Sets the implementation of the <code>name&gt;string ( nt -- addr u )</code> method of
-the current word to <i>xt</i>.
+<p>現在のワードの <code>name&gt;string ( nt -- addr u )</code> メソッドの実装を <i>xt</i> に設定します。
 </p>
 
 <span id="index-set_002dname_003elink-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
@@ -306,8 +283,7 @@ the current word to <i>xt</i>.
 <div class="format">
 <pre class="format"><code>set-name&gt;link</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;set-name-to-link&rdquo;
 </pre></div>
-<p>Sets the implementation of the <code>name&gt;link ( nt1 -- nt2|0 )</code> method of
-the current word to <i>xt</i>.
+<p>現在のワードの <code>name&gt;link (nt1 -- nt2|0 )</code> メソッドの実装を <i>xt</i> に設定します。
 </p>
 
 

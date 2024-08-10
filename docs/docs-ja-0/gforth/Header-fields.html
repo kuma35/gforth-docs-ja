@@ -71,15 +71,13 @@ Next: <a href="Header-methods.html" accesskey="n" rel="next">Header methods</a>,
 <span id="Header-fields-1"></span><h4 class="subsection">6.30.1 Header fields</h4>
 <span id="index-header-fields"></span>
 
-<p>In Gforth 1.0 we switched to a new word header layout.  For a detailed
-description, read: Bernd Paysan and M. Anton Ertl.
+<p>Gforth 1.0 では、 新しいワード・ヘッダー・レイアウトに切り替えられました。  詳細な説明については、 Bernd Paysan and
+M. Anton Ertl.
 <cite><a href="http://www.euroforth.org/ef19/papers/paysan.pdf">The new Gforth
-header</a></cite>. In 35th EuroForth Conference, pages 5-20, 2019.  Since this paper
-was published, xt and nt have been changed to point to the parameter field,
-like the body, but otherwise it is still up-to-date.
+header</a></cite> を参照してください。  この論文の公開以後に、xt と nt
+は本体(body)のようにパラメーター・フィールドを指すように変更されましたが、 それ以外は依然としてこの文献が最新です。
 </p>
-<p>This section explains just the data structure and the words used to access
-it.  A header has the following fields:
+<p>このセクションでは、 データ構造とそれにアクセスするために使用されるワードについてのみ説明します。  ヘッダーには以下のフィールドがあります:
 </p>
 <div class="example">
 <pre class="example">name
@@ -90,16 +88,13 @@ it.  A header has the following fields:
 &gt;body
 </pre></div>
 
-<p>Currently Gforth has the names shown above for getting from the xt/nt/body
-to the field, but apart from the standard <code>&gt;body</code> they are not stable
-Gforth words.  Instead, we provide access words.  Note that the documented
-access words have survived the reorganization of the header layout.
+<p>現在、 Gforth には xt/nt/body から各フィールドに到達するために上に示した名前がありますが、 標準の <code>&gt;body</code>
+を除けば、 これらは定着した Gforth ワードではありません。  これらの代わりアクセス用ワードを提供しています。
+注意:文書化されたアクセス・ワードはヘッダー・レイアウトの再編成後も生き残ることに注意してください。
 </p>
-<p>Some of the words expect an nt, some expect an xt.  Given that both nt and
-xt point to the body of a word, what is the difference? For most words, the
-xt and nt use the same header, and with nt=xt, they point to the same
-place.  However, for a synonym (see <a href="Aliases.html">Aliases</a>) there is a difference;
-consider the example
+<p>ワードの中には nt を期待するものもあれば、 xt を期待するものもあります。  nt と xt が両方ともワードの本体を指しているとすると、
+その違いは何でしょうか？ ほとんどのワードでは、xt と nt は同一ヘッダーを使用するので、 nt=xt となり、 同じ場所を指します。  ただし、
+同義語(synonym)(see <a href="Aliases.html">Aliases</a>)では違いがあります。 以下の例で考えてみましょう
 </p>
 <div class="example">
 <pre class="example">create x
@@ -107,15 +102,14 @@ synonym y x
 synonym z y
 </pre></div>
 
-<p>In this case the nt of <code>z</code> points to the body of <code>z</code>, while the xt
-of <code>z</code> points to the body of <code>x</code>.  Words defined with <code>alias</code>
-or <code>forward</code> (see <a href="Forward.html">Forward</a>) also have different nts and xts.
+<p>この場合、<code>z</code> の nt は <code>z</code> の本体を指し、 <code>z</code> の xt は <code>x</code> の本体を指します。
+<code>alias</code> または <code>forward</code> (see <a href="Forward.html">Forward</a>) で定義されたワードも、 nt と異なる xt
+を持ちます。
 </p>
-<p>The name field is variable-length and is accessed with <code>name&gt;string</code>
-(see <a href="Name-token.html">Name token</a>).
+<p>名前フィールドは可変長で、 <code>name&gt;string</code> (see <a href="Name-token.html">Name token</a>) でアクセスします。
 </p>
-<p>The <code>&gt;f+c</code> field contains flags and the name length (count).  You read
-the count with <code>name&gt;string</code>, and the flags with
+<p><code>&gt;f+c</code> フィールドには、フラグと名前の長さ(カウント)が含まれます。 <code>name&gt;string</code> でカウントを読み取り、
+以下でフラグを読み取ります。
 </p>
 <span id="index-compile_002donly_003f-_0028--nt-_002d_002d-flag--_0029-gforth_002d1_002e0"></span>
 <span id="index-compile_002donly_003f"></span>
@@ -123,36 +117,29 @@ the count with <code>name&gt;string</code>, and the flags with
 <div class="format">
 <pre class="format"><code>compile-only?</code> ( <i>nt &ndash; flag  </i>) gforth-1.0 &ldquo;compile-only?&rdquo;
 </pre></div>
-<p>true if <i>nt</i> is marked as compile-only.
+<p><i>nt</i> がコンパイル専用(compile-only)としてマークされている場合は true 。
 </p>
 
 
-<p>The <code>&gt;link</code> field contains a link to the previous word in the same word
-list.  You can read it with <code>name&gt;link</code> (see <a href="Name-token.html">Name token</a>).
+<p><code>&gt;link</code> フィールドには、 同じワードリスト内の前のワードへのリンクが含まれます。  <code>name&gt;link</code>
+(see <a href="Name-token.html">Name token</a>) で読み取ることができます。
 </p>
-<p>The name, <code>&gt;f+c</code> and <code>&gt;link</code> fields are not present for
-<code>noname</code> words, but <code>name&gt;string</code> and <code>name&gt;link</code> work
-nevertheless, producing 0 0 and 0, respectively.
+<p>name と <code>&gt;f+c</code> と <code>&gt;link</code> フィールドは <code>noname</code> ワードには存在しませんが、 それでも
+<code>name&gt;string</code> と <code>name&gt;link</code> は機能し、 <code>name&gt;string</code> は 0 0 を返し、
+<code>name&gt;link</code> は 0 を返します。
 </p>
-<p>The <code>&gt;cfa</code> field (aka code field) contains the code address used for
-<code>execute</code>ing the word; you can read it with <code>&gt;code-address</code> and
-write it with <code>code-address!</code> (see <a href="Threading-Words.html">Threading Words</a>).
+<p><code>&gt;cfa</code> フィールド(別名 コード・フィールド) には、 ワードを <code>execute</code>
+するために使用されるコード・アドレスが含まれます。  <code>&gt;code-address</code> で読み取り、 <code>code-address!</code>
+(see <a href="Threading-Words.html">Threading Words</a>) で書き込むことができます。
 </p>
-<p>The <code>&gt;namehm</code> field contains the address of the header methods table,
-described below.  You access it by performing or accessing header methods
-(see <a href="Header-methods.html">Header methods</a>).
+<p><code>&gt;namehm</code> フィールドには、 後述するするヘッダー・メソッド・テーブルのアドレスが含まれます。  これにアクセスするには、
+ヘッダー・メソッド (see <a href="Header-methods.html">Header methods</a>) を実行するか、または、 ヘッダー・メソッドにアクセスします。
 </p>
-<p>The <code>&gt;body</code> (aka parameter) field contains data or threaded code
-specific to the word type; its length depends on the word type.  E.g., for a
-<code>constant</code> it contains a cell with the value of the constant.  You can
-access it through <code>&gt;body</code> (see <a href="CREATE_002e_002eDOES_003e-details.html">The gory details of <code>CREATE..DOES&gt;</code></a>), but this is
-only standard for words you defined with <code>create</code>.
+<p><code>&gt;body</code> (別名 パラメーター・フィールド)には、 ワードの種類に固有のデータまたはスレッド化コードが含まれます。
+その長さはワードの種類によって異なります。  たとえば、 <code>constant</code> の場合、 定数の値を含むセルが含まれます。
+<code>&gt;body</code> (see <a href="CREATE_002e_002eDOES_003e-details.html">The gory details of <code>CREATE..DOES&gt;</code></a>) を通じてアクセスできますが、 これは標準の
+<code>create</code> で定義したワードのみです。
 </p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Header-methods.html">Header methods</a>, Previous: <a href="Carnal-words.html">Carnal words</a>, Up: <a href="Carnal-words.html">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

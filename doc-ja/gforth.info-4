@@ -813,9 +813,9 @@ File: gforth.info,  Node: Carnal words,  Next: Passing Commands to the OS,  Prev
 6.30 Carnal words
 =================
 
-These words deal with the mechanics of Gforth (in Forth circles called
-“carnal knowledge” of a Forth system), but we consider them stable
-enough to document them.
+これらのワードは Gforth の仕組み(Forth サークルでは Forth システムの「肉
+体的知識」(carnal knowledge)と呼ばれる)を扱っていますが、 著者等は文書化
+するに当たって、 これらが十分安定(stable)していると考えています。
 
 * Menu:
 
@@ -829,15 +829,15 @@ File: gforth.info,  Node: Header fields,  Next: Header methods,  Prev: Carnal wo
 6.30.1 Header fields
 --------------------
 
-In Gforth 1.0 we switched to a new word header layout.  For a detailed
-description, read: Bernd Paysan and M. Anton Ertl.  ‘The new Gforth
-header (http://www.euroforth.org/ef19/papers/paysan.pdf)’.  In 35th
-EuroForth Conference, pages 5-20, 2019.  Since this paper was published,
-xt and nt have been changed to point to the parameter field, like the
-body, but otherwise it is still up-to-date.
+Gforth 1.0 では、 新しいワード・ヘッダー・レイアウトに切り替えられました
+。 詳細な説明については、 Bernd Paysan and M. Anton Ertl.  ‘The new
+Gforth header (http://www.euroforth.org/ef19/papers/paysan.pdf)’ を参照
+してください。 この論文の公開以後に、xt と nt は本体(body)のようにパラメ
+ーター・フィールドを指すように変更されましたが、 それ以外は依然としてこ
+の文献が最新です。
 
-   This section explains just the data structure and the words used to
-access it.  A header has the following fields:
+   このセクションでは、 データ構造とそれにアクセスするために使用されるワ
+ードについてのみ説明します。 ヘッダーには以下のフィールドがあります:
 
      name
      >f+c
@@ -846,55 +846,57 @@ access it.  A header has the following fields:
      >namehm
      >body
 
-   Currently Gforth has the names shown above for getting from the
-xt/nt/body to the field, but apart from the standard ‘>body’ they are
-not stable Gforth words.  Instead, we provide access words.  Note that
-the documented access words have survived the reorganization of the
-header layout.
+   現在、 Gforth には xt/nt/body から各フィールドに到達するために上に示
+した名前がありますが、 標準の ‘>body’ を除けば、 これらは定着した Gforth
+ワードではありません。 これらの代わりアクセス用ワードを提供しています。
+注意:文書化されたアクセス・ワードはヘッダー・レイアウトの再編成後も生き
+残ることに注意してください。
 
-   Some of the words expect an nt, some expect an xt.  Given that both
-nt and xt point to the body of a word, what is the difference?  For most
-words, the xt and nt use the same header, and with nt=xt, they point to
-the same place.  However, for a synonym (*note Aliases::) there is a
-difference; consider the example
+   ワードの中には nt を期待するものもあれば、 xt を期待するものもありま
+す。 nt と xt が両方ともワードの本体を指しているとすると、 その違いは何
+でしょうか？ ほとんどのワードでは、xt と nt は同一ヘッダーを使用するので
+、 nt=xt となり、 同じ場所を指します。 ただし、 同義語(synonym)(*note
+Aliases::)では違いがあります。 以下の例で考えてみましょう
 
      create x
      synonym y x
      synonym z y
 
-   In this case the nt of ‘z’ points to the body of ‘z’, while the xt of
-‘z’ points to the body of ‘x’.  Words defined with ‘alias’ or ‘forward’
-(*note Forward::) also have different nts and xts.
+   この場合、‘z’ の nt は ‘z’ の本体を指し、 ‘z’ の xt は ‘x’ の本体を指
+します。 ‘alias’ または ‘forward’ (*note Forward::) で定義されたワードも
+、 nt と異なる xt を持ちます。
 
-   The name field is variable-length and is accessed with ‘name>string’
-(*note Name token::).
+   名前フィールドは可変長で、 ‘name>string’ (*note Name token::) でアク
+セスします。
 
-   The ‘>f+c’ field contains flags and the name length (count).  You
-read the count with ‘name>string’, and the flags with
+   ‘>f+c’ フィールドには、フラグと名前の長さ(カウント)が含まれます。
+‘name>string’ でカウントを読み取り、 以下でフラグを読み取ります。
 
 ‘compile-only?’ ( nt – flag  ) gforth-1.0 “compile-only?”
-   true if nt is marked as compile-only.
+   nt がコンパイル専用(compile-only)としてマークされている場合は true 。
 
-   The ‘>link’ field contains a link to the previous word in the same
-word list.  You can read it with ‘name>link’ (*note Name token::).
+   ‘>link’ フィールドには、 同じワードリスト内の前のワードへのリンクが含
+まれます。 ‘name>link’ (*note Name token::) で読み取ることができます。
 
-   The name, ‘>f+c’ and ‘>link’ fields are not present for ‘noname’
-words, but ‘name>string’ and ‘name>link’ work nevertheless, producing 0
-0 and 0, respectively.
+   name と ‘>f+c’ と ‘>link’ フィールドは ‘noname’ ワードには存在しませ
+んが、 それでも ‘name>string’ と ‘name>link’ は機能し、 ‘name>string’ は
+0 0 を返し、 ‘name>link’ は 0 を返します。
 
-   The ‘>cfa’ field (aka code field) contains the code address used for
-‘execute’ing the word; you can read it with ‘>code-address’ and write it
-with ‘code-address!’ (*note Threading Words::).
+   ‘>cfa’ フィールド(別名 コード・フィールド) には、 ワードを ‘execute’
+するために使用されるコード・アドレスが含まれます。 ‘>code-address’ で読
+み取り、 ‘code-address!’ (*note Threading Words::) で書き込むことができ
+ます。
 
-   The ‘>namehm’ field contains the address of the header methods table,
-described below.  You access it by performing or accessing header
-methods (*note Header methods::).
+   ‘>namehm’ フィールドには、 後述するするヘッダー・メソッド・テーブルの
+アドレスが含まれます。 これにアクセスするには、 ヘッダー・メソッド
+(*note Header methods::) を実行するか、または、 ヘッダー・メソッドにアク
+セスします。
 
-   The ‘>body’ (aka parameter) field contains data or threaded code
-specific to the word type; its length depends on the word type.  E.g.,
-for a ‘constant’ it contains a cell with the value of the constant.  You
-can access it through ‘>body’ (*note CREATE..DOES> details::), but this
-is only standard for words you defined with ‘create’.
+   ‘>body’ (別名 パラメーター・フィールド)には、 ワードの種類に固有のデ
+ータまたはスレッド化コードが含まれます。 その長さはワードの種類によって
+異なります。 たとえば、 ‘constant’ の場合、 定数の値を含むセルが含まれま
+す。 ‘>body’ (*note CREATE..DOES> details::) を通じてアクセスできますが
+、 これは標準の ‘create’ で定義したワードのみです。
 
 
 File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header fields,  Up: Carnal words
@@ -902,8 +904,8 @@ File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header 
 6.30.2 Header methods
 ---------------------
 
-The new Gforth word header is object-oriented and supports the following
-methods (method selectors):
+新しい Gforth ワード・ヘッダーはオブジェクト指向であり、 以下のメソッド
+(メソッド・セレクター)をサポートします:
 
      .hm label method          overrider        field
                execute         set-execute      >cfa
@@ -915,51 +917,53 @@ methods (method selectors):
      >string:  name>string     set-name>string  >hm>string
      >link:    name>link       set-name>link    >hm>link
 
-   Many of these words are not stable Gforth words, but Gforth has
-stable higher-level words that we mention below.
+   これらのワードの多くは定着(stable)した Gforth ワードではありませんが
+、 Gforth には後述する定着した高レベルのワードがあります。
 
-   You can look at the header methods of a word with
+   以下を使用すると、 ワードのヘッダー・メソッドを確認できます
 
 ‘.hm’ ( nt –  ) gforth-1.0 “dot-h-m”
-   print the header methods of nt
+   nt のヘッダー・メソッドを出力します
 
-   Overrider (setter) words change the method implementation for the
-most recent definition.  Quotations or closures restore the previous
-most recent definition when they are completed, so they are not
-considered most recent, and you can do things like:
+   オーバーライダー(overrider)(セッター)ワードは、 最新の定義のメソッド
+実装を変更します。 クォーテーションまたはクロージャーは、 完了時に以前の
+最新の定義を復元するため、 最新のものとはみなされず、 以下のようなことが
+できます:
 
      : my2dup over over ;
      [: drop ]] over over [[ ;] set-optimizer
 
-   The ‘execute’ method is actually stored in the ‘>cfa’ field in the
-header rather than in the header-methods table for performance reasons;
-also it is implemented through a native-code address, while the other
-methods are implemented by calling an xt.  The high-level way to set
-this method is
+   ‘execute’ メソッドは、 パフォーマンス上の理由から、 実際にはヘッダー
+・メソッド・テーブルではなくヘッダーの ‘>cfa’ フィールドに格納されます。
+また、 他のメソッドは xt を呼び出すことによって実装されますが、 ネイティ
+ブ・コード・アドレスを通じて実装されます。 このメソッドを設定する大まか
+な方法​​は以下のとおりです
 
 ‘set-execute’ ( ca –  ) gforth-1.0 “set-execute”
-   Changes the current word such that it jumps to the native code at ca.
-Also changes the ‘compile,’ implementation to the most general (and
-slowest) one.  Call ‘set-optimizer’ afterwards if you want a more
-efficient ‘compile,’ implementation.
+   ca のネイティブ・コードにジャンプするように現在のワードを変更します。
+また、 ‘compile,’ 実装を最も一般的な(そして最も遅い)実装に変更します。 よ
+り効率的な ‘compile,’ 実装が必要な場合は、 後で ‘set-optimizer’ を呼び出
+します。
 
-   To get a code address for use with ‘set-execute’, you can use words
-like ‘docol:’ or ‘>code-address’, *Note Threading Words::.
+   ‘set-execute’ で使用するコード・アドレスを取得するには、 ‘docol:’ ま
+たは ‘>code-address’ などのワードを使用できます。 *Note Threading
+Words::
 
-   As an alternative to ‘set-execute’, there is also ‘set-does>’ (*note
-User-defined Defining Words::), which takes an xt.
+   ‘set-execute’ の代わりに、 xt を受け取る ‘set-does>’ (*note
+User-defined Defining Words::)もあります。
 
-   Moreover, there are the low-level ‘code-address!’ and ‘definer!’
-(*note Threading Words::).
+   さらに、 低レベルの ‘code-address!’ と ‘definer!’ があります。 (*note
+Threading Words::)
 
-   The ‘opt-compile,’ method is what ‘compile,’ does on most Gforth
-engines (‘gforth-itc’ uses ‘,’ instead).  You can define a more
-efficient implementation of ‘compile,’ for the current word with
-‘set-optimizer’ (*note User-defined compile-comma::).  Note that the end
-result must be equivalent to ‘postpone literal postpone execute’.
+   ‘opt-compile,’ メソッドは、 ほとんどの Gforth エンジンで動く
+‘compile,’ です(‘gforth-itc’ は代わりに ‘,’ を使用します)。
+‘set-optimizer’ を使用して、 現在のワードに対する ‘compile,’ のより効率
+的な実装を定義できます((*note User-defined compile-comma::))。 注意: 最
+終結果は ‘postpone literal postpone execute’ と同等でなければならないこ
+とに注意してください。
 
-   As an example of the use of ‘set-optimizer’, consider the following
-definition of ‘constant’:
+   ‘set-optimizer’ の使用例として、 以下の ‘constant’ の定義を考えてみま
+しょう:
 
      : constant ( n "name" -- ; name: -- n )
        create ,
@@ -969,11 +973,11 @@ definition of ‘constant’:
      5 constant five
      : foo five ; see foo
 
-   The Forth system does not know that the value of a constant must not
-be changed, and just sees a ‘create’d word (which can be changed with
-‘>body’), and ‘foo’ first pushes the body address of ‘five’ and then
-fetches from there.  With ‘set-optimizer’ the definition of ‘constant’
-can be optimized as follows:
+   Forth システムは、 定数の値を変更してはならないことを認識せず、 単に
+‘create’ されたワード (‘>body’ で変更可能)として見て、 ‘foo’ は最初に
+‘five’ のボティのアドレスをスタックにプッシュし、 その次にそこから値を取
+得します。 ‘set-optimizer’ を使用すると、 ‘constant’ の定義を以下のよう
+に最適化できます:
 
      : constant ( n "name" -- ; name: -- n )
        create ,
@@ -981,17 +985,19 @@ can be optimized as follows:
        [: >body @ postpone literal ;] set-optimizer
      ;
 
-   Now ‘foo’ contains the literal 5 rather than a call to ‘five’.
+   いまや、 ‘foo’ には、 ‘five’ の呼び出しではなく、 即値(literal)の 5 が
+含まれるようになりました。
 
-   Note that ‘set-execute’ and ‘set-does>’ perform ‘set-optimizer’
-themselves in order to ensure that ‘execute’ and ‘compile,’ agree, so if
-you want to add your own optimizer, you should add it afterwards.
+   注意: ‘set-execute’ と ‘set-does>’ は、‘execute’ と ‘compile,’ が一致
+していることを確認するために、 ‘set-optimizer’ 自体を実行することに注意
+してください。 あなた独自のオプティマイザーを追加するには、 後で追加する
+必要があります。
 
-   The ‘defer!’ (aka ‘(to)’ method (*note User-defined TO and DEFER@::)
-implements ‘defer!’ for words defined with ‘defer’ and similar words,
-but it is also the core of ‘to’.  The general stack effect of the
-‘defer!’/‘(to)’ method is ‘( val xt -- )’, where xt identifies the word
-stored into, and val is the value (of appropriate type) stored there.
+   ‘defer!’ (別名 ‘(to)’ メソッド(*note User-defined TO and DEFER@::)は
+、 ‘defer’ で定義されたワードおよび類似のワードに対して ‘defer!’ を実装
+します。 ですが、 これは ‘to’ の核心(core)でもあります。 ‘defer!’/‘(to)’
+メソッドの一般的なスタック効果は ‘( val xt -- )’ です。 ここで xt は格納
+されているワードを示し、 val はそこに格納されている(適切な型の)値です。
 
    たとえば、 以下のように ‘fvalue’ を実装できます:
 
@@ -1006,7 +1012,7 @@ stored into, and val is the value (of appropriate type) stored there.
      : bar foo 1e f+ to foo ;
      see bar
 
-   You can improve the generated code with ‘set-optimizer’:
+   ‘set-optimizer’ を使用して、 生成されたコードを改善できます:
 
      : compile-fvalue-to ( xt-value-to -- )
        drop ]] >body f! [[ ;
@@ -1024,64 +1030,65 @@ stored into, and val is the value (of appropriate type) stored there.
      : bar foo 1e f+ to foo ;
      see bar
 
-   In practice Gforth has a few additional twists to implement, e.g.,
-‘+TO’.
+   実際には、 Gforth には、 ‘+TO’ など、 実装するための追加の工夫がいく
+つかあります。
 
-   ‘Set-defer@’ (*note User-defined TO and DEFER@::) allows to implement
-variants of the ‘defer@’ (*note Deferred Words::) method for
-‘defer’-like words.
+   ‘Set-defer@’ (*note User-defined TO and DEFER@::) を使用すると、
+‘defer’ のようなワードに対して ‘defer@’ (*note Deferred Words::) メソッ
+ドのバリエーションを実装できます。
 
-   The ‘>hmextra’ field is used for cases where additional data needs to
-be stored in the header methods table.  In particular, it stores the xt
-passed to ‘set-does>’ (and ‘does>’ calls ‘set-does>’) and the code
-address behind ‘;abi-code’.
+   ‘>hmextra’ フィールドは、 追加のデータをヘッダー・メソッド・テーブル
+に保存する必要がある場合に使用されます。 特に、 それは ‘set-does>’ に渡
+す xt を保存し(そして ‘does>’ は ‘set-does>’ を呼び出し)、 そして、
+‘;abi-code’ の後のコードのアドレスを保存します。
 
-   The methods above all consume an xt, not an nt, but the override
-words work on the most recent definition.  This means that if you use,
-e.g., ‘set-optimizer’ on a synonym, the effect will probably not be what
-you intended: When ‘compile,’ing the xt of the word, the ‘opt-compile,’
-implementation of the original word will be used, not the freshly-set
-one of the synonym.
+   これらのメソッドはすべて、 nt ではなく xt を使用しますが、 オーバーラ
+イド・ワード(override words)は最新の定義で機能します。 これは、 たとえば
+、 同義語(synonym)に対して ‘set-optimizer’ を使用した場合、 その効果はお
+そらくあなたが意図したものとは異なることを意味します。 ワードの xt を
+‘compile,’ する場合、 新たに設定された同義語(synonym)ではなく、 元のワー
+ドの ‘opt-compile,’ 実装が使用されます。
 
-   The following methods consume an nt.
+   以下のメソッド達は nt を消費します。
 
-   The ‘name>interpret’ method is implemented as noop for most words,
-except synonyms and similar words.
+   ‘name>interpret’ メソッドは、 同義語(synonym)や類似のワードを除くほと
+んどのワードに対して noop として実装されます。
 
 ‘set->int’ ( xt –  ) gforth-1.0 “set-to-int”
-   Sets the implementation of the ‘name>interpret ( nt -- xt2 )’ method
-of the current word to xt.
+   現在のワードの ‘name>interpret (nt -- xt2 )’ メソッドの実装を xt に設
+定します。
 
-   The ‘name>compile’ method produces the compilation semantics of the
-nt.  By changing it with ‘set->comp’, you can change the compilation
-semantics, but it’s not as simple as just pushing the xt of the desired
-compilation semantics, because of the stack effect of ‘name>compile’.
-Generally you should avoid changing the compilation semantics, and if
-you do, use a higher-level word like ‘immediate’ or
-‘interpret/compile:’, *Note Combined words::.
+   ‘name>compile’ メソッドは、 nt のコンパイル機能(compilation
+semantics)を生成します。 ‘set->comp’ で変更することでコンパイル機能を変
+更できますが、 ‘name>compile’ のスタック効果のため、 目的のコンパイル機
+能の xt をプッシュするだけというほど単純ではありません。 一般に、 コンパ
+イル機能の変更は避ける必要があり、 変更する場合は、 ‘immediate’ または
+‘interpret/compile:’ などの高レベル・ワードを使用してください(*Note
+Combined words::)。
 
 ‘set->comp’ ( xt –  ) gforth-1.0 “set-to-comp”
-   Sets the implementation of the ‘name>compile ( nt -- w xt2 )’ method
-of the current word to xt.
+   現在のワードの ‘name>compile ( nt -- w xt2 )’ メソッドの実装を xt に
+設定します。
 
 ‘immediate?’ ( nt – flag  ) gforth-1.0 “immediate?”
-   true if the word nt has non-default compilation semantics (that’s not
-quite according to the definition of immediacy, but many people mean
-that when they call a word “immediate”).
+   ワード nt がデフォルト以外のコンパイル機能(compilation semantics)を持
+っている場合は true (これは即時性(immediacy)の定義と完全には一致しません
+が、 多くの人はワード語を「即時」(immediate)と呼ぶときはこれを意味してい
+ます)。
 
-   ‘Name>string’ and ‘Name>link’ are methods in order to make it
-possible to eliminate the name, ‘>f+c’ and ‘link’ fields from noname
-headers, but still produce meaningful results when using these words.
-You will typically not change the implementations of these methods
-except with ‘noname’, but we still have
+   ‘Name>string’ および ‘Name>link’ は、 noname ヘッダーから name と
+‘>f+c’ と ‘link’ フィールドを削除できるようにするためのメソッドです。 こ
+れらのワードを使用すると意味のある結果が得られます。 通常、 ‘noname’ を
+使用する場合を除き、 これらのメソッドの実装を変更することはありませんが
+、 あなたがそれでも必要とするなら以下をご覧ください
 
 ‘set-name>string’ ( xt –  ) gforth-1.0 “set-name-to-string”
-   Sets the implementation of the ‘name>string ( nt -- addr u )’ method
-of the current word to xt.
+   現在のワードの ‘name>string ( nt -- addr u )’ メソッドの実装を xt に
+設定します。
 
 ‘set-name>link’ ( xt –  ) gforth-1.0 “set-name-to-link”
-   Sets the implementation of the ‘name>link ( nt1 -- nt2|0 )’ method of
-the current word to xt.
+   現在のワードの ‘name>link (nt1 -- nt2|0 )’ メソッドの実装を xt に設定
+します。
 
 
 File: gforth.info,  Node: Threading Words,  Prev: Header methods,  Up: Carnal words
@@ -1089,13 +1096,13 @@ File: gforth.info,  Node: Threading Words,  Prev: Header methods,  Up: Carnal wo
 6.30.3 Threading Words
 ----------------------
 
-The terminology used here stems from indirect threaded Forth systems; in
-such a system, the XT of a word is represented by the CFA (code field
-address) of a word; the CFA points to a cell that contains the code
-address.  The code address is the address of some machine code that
-performs the run-time action of invoking the word (e.g., the ‘dovar:’
-routine pushes the address of the body of the word (a variable) on the
-stack).
+ここで使用される用語は、 間接スレッド Forth システム(indirect threaded
+Forth systems)に由来しています。 間接スレッド Forth システムでは、 ワー
+ドの XT はワードの CFA (コード・フィールド・アドレス) によって表されます
+。 CFA は、 コード・アドレスを含むセルを指します。 コード・アドレスは、
+ワードを呼び出すj実行時のアクションを実行するマシン・コードのアドレスで
+す(たとえば、 ‘dovar:’ ルーチンは、 ワード(変数)の本体のアドレスをスタッ
+クにプッシュします)。
 
    These words provide access to code fields, code addresses and other
 threading stuff in Gforth.  It more or less abstracts away the
@@ -6890,7 +6897,7 @@ this manual.  Each word is listed with its stack effect and wordset.
                                                               (line 146)
 * immediate ( -- ) core:                 Interpretation and Compilation Semantics.
                                                               (line  48)
-* immediate? ( NT -- FLAG ) gforth-1.0:  Header methods.      (line 168)
+* immediate? ( NT -- FLAG ) gforth-1.0:  Header methods.      (line 172)
 * implementation ( INTERFACE -- ) objects: Objects Glossary.  (line  90)
 * include ( ... "FILE" -- ... ) file-ext: Forth source files. (line  48)
 * include-file ( I*X WFILEID -- J*X ) file: Forth source files.
@@ -7395,8 +7402,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * send-event ( XT TASK -- ) gforth-experimental: Message queues.
                                                               (line  13)
 * set ( SOMETHING -- ) minos2:           actor methods.       (line  57)
-* set->comp ( XT -- ) gforth-1.0:        Header methods.      (line 164)
-* set->int ( XT -- ) gforth-1.0:         Header methods.      (line 152)
+* set->comp ( XT -- ) gforth-1.0:        Header methods.      (line 168)
+* set->int ( XT -- ) gforth-1.0:         Header methods.      (line 156)
 * set-current ( WID -- ) search:         Word Lists.          (line  43)
 * set-dir ( C-ADDR U -- WIOR ) gforth-0.7: Directories.       (line  55)
 * set-does> ( XT -- ) gforth-1.0:        CREATE..DOES> details.
@@ -7404,8 +7411,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * set-execute ( CA -- ) gforth-1.0:      Header methods.      (line  41)
 * set-forth-recognize ( XT -- ) recognizer: Dealing with existing Recognizers.
                                                               (line  91)
-* set-name>link ( XT -- ) gforth-1.0:    Header methods.      (line 183)
-* set-name>string ( XT -- ) gforth-1.0:  Header methods.      (line 179)
+* set-name>link ( XT -- ) gforth-1.0:    Header methods.      (line 188)
+* set-name>string ( XT -- ) gforth-1.0:  Header methods.      (line 184)
 * set-optimizer ( XT -- ) gforth-1.0:    User-defined compile-comma.
                                                               (line   9)
 * set-order ( WIDN .. WID1 N -- ) search: Word Lists.         (line  52)
