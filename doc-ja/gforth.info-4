@@ -1104,139 +1104,142 @@ Forth systems)に由来しています。 間接スレッド Forth システム�
 す(たとえば、 ‘dovar:’ ルーチンは、 ワード(変数)の本体のアドレスをスタッ
 クにプッシュします)。
 
-   These words provide access to code fields, code addresses and other
-threading stuff in Gforth.  It more or less abstracts away the
-differences between direct and indirect threading.
+   以下のワード群は、 Gforth のコード・フィールドやコード・アドレスやそ
+の他のスレッド機能へのアクセスを提供します。 これにより、直接スレッドと
+間接スレッドの違いは、 多かれ少なかれ抽象化されます。
 
-   Up to and including Gforth 0.7, the code address (plus, for
-‘does>’-defined words, the address returned by ‘>does-code’) was
-sufficient to know the type of the word.  However, since Gforth-1.0 the
-behaviour or at least implementation of words like ‘compile,’ and
-‘name>compile’ can be determined independently as described in *note
-Header methods::.
+   Gforth 0.7 までは、 ワードの種類を知るのに、 コード・アドレス(さらに
+、 ‘does>’ で定義されたワードの場合は、 ‘>does-code’ によって返されるア
+ドレス)で十分でした。 ただし、 Gforth-1.0 以降、 少なくとも、 ‘compile,’
+や ‘name>compile’ のようなワードの振る舞いや実装は、 *note Header
+methods:: で説明されているように独立して決定できます。
 
-   The following words for create a code field and at the same time
-initialize the header methods:
+   以下のワード達は、 コード・フィールドを作成し、 そして、 同時にヘッダ
+ー・メソッドを初期化します:
 
 ‘hmcopy,’ ( xt –  ) gforth-experimental “hmcopy-comma”
-   While constructing a header, allocate the code field, and use xt as
-prototype for setting the code field and the header methods.
+   ヘッダーの構築中に、 コード・フィールドを割り当て、 コード・フィール
+ドとヘッダー・メソッドを設定するためのプロトタイプとして xt を使用します
+。
 
 ‘docol,’ ( –  ) gforth-1.0 “docol,”
-   The code address of a colon definition.
+   コロン定義のコード・アドレスを書き込む。
 
 ‘docon,’ ( –  ) gforth-1.0 “docon,”
-   The code address of a ‘CONSTANT’.
+   ‘CONSTANT’ のコード・アドレスを書き込む。
 
 ‘dovar,’ ( –  ) gforth-1.0 “dovar,”
-   The code address of a ‘CREATE’d word.
+   ‘CREATE’ されたワードのコード・アドレスを書き込む。
 
 ‘douser,’ ( –  ) gforth-1.0 “douser,”
-   The code address of a ‘USER’ variable.
+   ‘USER’ 変数のコード・アドレスを書き込む。
 
 ‘dodefer,’ ( –  ) gforth-1.0 “dodefer,”
-   The code address of a ‘defer’ed word.
+   ‘defer’ されたワードのコード・アドレスを書き込む。
 
 ‘dofield,’ ( –  ) gforth-1.0 “dofield,”
-   The code address of a ‘field’.
+   ‘field’ のコード・アドレスを書き込む。
 
 ‘dovalue,’ ( –  ) gforth-1.0 “dovalue,”
-   The code address of a ‘CONSTANT’.
+   ‘CONSTANT’ のコード・アドレスを書き込む。
 
 ‘doabicode,’ ( –  ) gforth-1.0 “doabicode,”
-   The code address of a ‘ABI-CODE’ definition.
+   ‘ABI-CODE’ 定義のコード・アドレスを書き込む。
 
-   For ‘does>’-defined words, use ‘hmcopy,’.
+   ‘does>’ で定義されたワードの場合、 ‘hmcopy,’ を使用してください。
 
-   Or you use a higher-level word like ‘create-from’ (*note Creating
-from a prototype::).
+   または、 ‘create-from’ のような高レベルのワードを使用します(*note
+Creating from a prototype::)。
 
-   The following words were designed before the introduction of header
-methods, and are therefore not the best (and recommended) way to deal
-with different word types in Gforth.
+   以下のワード群はヘッダー・メソッドが導入される前に設計されたものであ
+るため、 Gforth でさまざまなワード・タイプを処理する最良の(推奨される)方
+法ではありません。
 
-   In an indirect threaded Forth, you can get the code address of name
-with ‘' name @’; in Gforth you can get it with ‘' name >code-address’,
-independent of the threading method.
+   間接スレッド Forth では、 ‘' name @’ を使用して name のコード・アドレ
+スを取得できます。 Gforth では、 スレッド化方式とは関係なく、 ‘' name
+>code-address’ で取得できます。
 
 ‘threading-method’ ( – n ) gforth-0.2 “threading-method”
-   0 if the engine is direct threaded.  Note that this may change during
-the lifetime of an image.
+   エンジンが直接スレッドの場合は 0。 注意: これはイメージの存続期間中
+(lifetime)に変更される可能性があることに注意してください。
 
 ‘>code-address’ ( xt – c_addr  ) gforth-0.2 “>code-address”
-   c-addr is the code address of the word xt.
+   c-addr は、 ワード xt のコード・アドレスです。
 
 ‘code-address!’ ( c_addr xt –  ) gforth-obsolete “code-address!”
-   Change a code field with code address c-addr at xt.
+   コード・アドレス c-addr のコード・フィールドを xt に変更します。
 
-   The code addresses produced by various defining words are produced by
-the following words:
+   さまざまな定義ワードによって生成されるコード・アドレスは、 以下のワー
+ド群によって生成されます:
 
 ‘docol:’ ( – addr  ) gforth-0.2 “docol:”
-   The code address of a colon definition.
+   コロン定義のコード・アドレスを書き込む。
 
 ‘docon:’ ( – addr  ) gforth-0.2 “docon:”
-   The code address of a ‘CONSTANT’.
+   ‘CONSTANT’ のコード・アドレスを書き込む。
 
 ‘dovar:’ ( – addr  ) gforth-0.2 “dovar:”
-   The code address of a ‘CREATE’d word.
+   ‘CREATE’ されたワードのコード・アドレスを書き込む。
 
 ‘douser:’ ( – addr  ) gforth-0.2 “douser:”
-   The code address of a ‘USER’ variable.
+   ‘USER’ 変数のコード・アドレスを書き込む。
 
 ‘dodefer:’ ( – addr  ) gforth-0.2 “dodefer:”
-   The code address of a ‘defer’ed word.
+   ‘defer’ されたワードのコード・アドレスを書き込む。
 
 ‘dofield:’ ( – addr  ) gforth-0.2 “dofield:”
-   The code address of a ‘field’.
+   ‘field’ のコード・アドレスを書き込む。
 
 ‘dovalue:’ ( – addr  ) gforth-0.7 “dovalue:”
-   The code address of a ‘CONSTANT’.
+   ‘CONSTANT’ のコード・アドレスを書き込む。
 
 ‘dodoes:’ ( – addr  ) gforth-0.6 “dodoes:”
-   The code address of a ‘DOES>’-defined word.
+   ‘DOES>’ で定義されたワードのコード・アドレス。
 
 ‘doabicode:’ ( – addr  ) gforth-1.0 “doabicode:”
-   The code address of a ‘ABI-CODE’ definition.
+   ‘ABI-CODE’ 定義のコード・アドレスを書き込む。
 
-   For a word X defined with ‘set-does>’, the code address points to
-‘dodoes:’, and the ‘>hmextra’ field of the header methods contains the
-xt of the word that is called after pushing the body addres of X.
+   ‘set-does>’ で定義されたワード X の場合、 コード・アドレスは
+‘dodoes:’ を指し、 そして、 ヘッダー・メソッドの ‘>hmextra’ フィールドに
+は、 X の本体(body)アドレスをプッシュした後に呼び出されるワードの xt が
+含まれます。
 
-   If you want to know whether a word is a ‘DOES>’-defined word, and
-what Forth code it executes, ‘>does-code’ tells you that:
+   ワードが ‘DOES>’ で定義されたワードであるかどうか、 そしてそのワード
+が execute する Forth コードを知りたい場合は、‘>does-code’ で以下のこと
+がわかります:
 
 ‘>does-code’ ( xt1 – xt2  ) gforth-0.2 “>does-code”
-   If xt1 is the execution token of a child of a ‘set-does>’-defined
-word, xt2 is the xt passed to ‘set-does>’, i.e, the xt of the word that
-is executed when executing xt1 (but first the body address of xt1 is
-pushed).  If xt1 does not belong to a ‘set-does>’-defined word, xt2 is
-0.
+   xt1 が ‘set-does>’ で定義されたワードの子の実行トークンである場合、
+xt2 は ‘set-does>’ に渡される xt 、 つまり xt1 実行時に実行されるワード
+の xt です(ただし、 最初に xt1 の本体(body)アドレスがプッシュされます)。
+xt1 が ‘set-does>’ で定義されたワードに属していない場合、 xt2 は 0 です
+。
 
-   You can use the resulting xt2 with ‘set-does>’ (preferred) to change
-the latest word or with
+   結果の xt2 を ‘set-does>’ (推奨) とともに使用して、 もっとも最新のワ
+ードを変更するか以下を使用して変更できます
 
 ‘does-code!’ ( xt2 xt1 –  ) gforth-0.2 “does-code!”
-   Change xt1 to be a ‘xt2 set-does>’-defined word.
+   xt1 を ‘xt2 set-does>’ で定義されたワードに変更します。
 
-   to change an arbitrary word.
+   任意のワードを変更するためには…
 
-   The following two words generalize ‘>code-address’, ‘>does-code’,
-‘code-address!’, and ‘does-code!’:
+   以下の 2 つのワードは、 ‘>code-address’ や ‘>does-code’ や
+‘code-address!’ や ‘does-code!’ を一般化します:
 
 ‘>definer’ ( xt – definer  ) gforth-0.2 “>definer”
-   DEFINER is a unique identifier for the way the XT was defined.  Words
-defined with different ‘does>’-codes have different definers.  The
-definer can be used for comparison and in ‘definer!’.
+   DEFINER (definer;定義者)は、 XT の定義方法を示す一意の識別子です。 異
+なる ‘does>’ コードで定義されたワードには、 異なる definer が存在します
+。 definer は比較や ‘definer!’ で使用できます。
 
 ‘definer!’ ( definer xt –  ) gforth-obsolete “definer!”
-   The word represented by XT changes its behaviour to the behaviour
-associated with DEFINER.
+   XT で表されるワードは、 その振る舞いを DEFINER に関連付けられた振る舞
+いに変更します。
 
-   ‘Code-address!’, ‘does-code!’, and ‘definer!’ update the
-‘opt-compile,’ method to a somewhat generic compiler for that word type
-(in particular, primitives get the slow ‘general-compile,’ method rather
-than the primitive-specific ‘peephole-compile,’).
+   ‘Code-address!’ や ‘does-code!’ や ‘definer!’ は、 ‘opt-compile,’ メ
+ソッドをそのワード型用のやや汎用的なコンパイラーに更新します(特に、 プリ
+ミティブに対しては、 プリミティブ固有の ‘peephole-compile,’
+(peephole-compile;のぞき穴最適化コンパイル)ではなく、 遅い
+‘general-compile,’ (一般コンパイル)メソッドが使用されます)。
 
 
 File: gforth.info,  Node: Passing Commands to the OS,  Next: Keeping track of Time,  Prev: Carnal words,  Up: Words
@@ -1244,34 +1247,37 @@ File: gforth.info,  Node: Passing Commands to the OS,  Next: Keeping track of Ti
 6.31 Passing Commands to the Operating System
 =============================================
 
-Gforth allows you to pass an arbitrary string to the host operating
-system shell (if such a thing exists) for execution.
+Gforth を使用すると、 (そのようなものが存在する場合、)ホスト・オペレーテ
+ィング・システムのシェルで実行するための任意の文字列をシェルに渡すことが
+できます。
 
 ‘sh’ ( "..." –  ) gforth-0.2 “sh”
-   Execute the rest of the command line as shell command(s).
-Afterwards, ‘$?’ produces the exit status of the command.
+   行(コマンド・ライン)の残りの部分をシェルコマンドとして実行します。 そ
+の後、 ワード ‘$?’ によってコマンドの終了ステータスを取得します。
 
 ‘system’ ( c-addr u –  ) gforth-0.2 “system”
-   Pass the string specified by C-ADDR U to the host operating system
-for execution in a sub-shell.  Afterwards, ‘$?’ produces the exit status
-of the command.  The value of the environment variable
-‘GFORTHSYSTEMPREFIX’ (or its default value) is prepended to the string
-(mainly to support using ‘command.com’ as shell in Windows instead of
-whatever shell Cygwin uses by default; *note Environment variables::).
+   C-ADDR U で指定された文字列をホスト・オペレーティング・システムに渡し
+、 サブ・シェルで実行します。 その後、 ワード ‘$?’ によってコマンドの終
+了ステータスが生成されます。 環境変数 ‘GFORTHSYSTEMPREFIX’ の値 (または
+そのデフォルト値) が文字列の先頭に付加されます(主に、 Cygwin がデフォル
+トで使用するシェルではなく、 Windows のシェルとして ‘command.com’ の使用
+をサポートするためです。)。 *note Environment variables::
 
 ‘sh-get’ ( c-addr u – c-addr2 u2  ) gforth-1.0 “sh-get”
-   Run the shell command addr u; c-addr2 u2 is the output of the
-command.  The exit code is in ‘$?’, the output also in ‘sh$ 2@’.
+   シェル・コマンド addr u を実行します。 c-addr2 u2 はコマンドの出力で
+す。 終了コードは ‘$?’ にあります。 コマンドの出力は ‘sh$ 2@’ にもありま
+す。
 
 ‘$?’ ( – n  ) gforth-0.2 “dollar-question”
-   ‘Value’ – the exit status returned by the most recently executed
-‘system’ command.
+   Value – 最後に実行された ‘system’ コマンドによって返された終了ステー
+タス。
 
 ‘getenv’ ( c-addr1 u1 – c-addr2 u2 ) gforth-0.2 “getenv”
-   The string c-addr1 u1 specifies an environment variable.  The string
-c-addr2 u2 is the host operating system’s expansion of that environment
-variable.  If the environment variable does not exist, c-addr2 u2
-specifies a string 0 characters in length.
+   文字列 c-addr1 u1 は環境変数名を指定します。 文字列 c-addr2 u2 は、 ホ
+スト・オペレーティング・システムによる、 その環境変数の展開結果です。 環
+境変数が存在しない場合、 c-addr2 u2 は長さ 0 文字の文字列を返します(訳注
+: 存在しない:c-addr2,u2 = 0, 0 存在するけど中身が空: 【有効なアドレス】,
+0)
 
 
 File: gforth.info,  Node: Keeping track of Time,  Next: Miscellaneous Words,  Prev: Passing Commands to the OS,  Up: Words
@@ -5725,7 +5731,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * $+[]! ( C-ADDR U $[]ADDR -- ) gforth-1.0: ＄tring words.    (line 122)
 * $. ( ADDR -- ) gforth-1.0:             ＄tring words.       (line  91)
 * $? ( -- N ) gforth-0.2:                Passing Commands to the OS.
-                                                              (line  25)
+                                                              (line  27)
 * $@ ( $ADDR -- ADDR2 U ) gforth-0.7:    ＄tring words.       (line  30)
 * $@len ( $ADDR -- U ) gforth-0.7:       ＄tring words.       (line  33)
 * $boot ( $ADDR -- ) gforth-1.0:         ＄tring words.       (line 158)
@@ -6009,8 +6015,8 @@ this manual.  Each word is listed with its stack effect and wordset.
 * >code-address ( XT -- C_ADDR ) gforth-0.2: Threading Words. (line  73)
 * >compile ( TRANSLATOR -- ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line 127)
-* >definer ( XT -- DEFINER ) gforth-0.2: Threading Words.     (line 134)
-* >does-code ( XT1 -- XT2 ) gforth-0.2:  Threading Words.     (line 116)
+* >definer ( XT -- DEFINER ) gforth-0.2: Threading Words.     (line 136)
+* >does-code ( XT1 -- XT2 ) gforth-0.2:  Threading Words.     (line 118)
 * >float ( C-ADDR U -- F:... FLAG ) floating: Line input and conversion.
                                                               (line  53)
 * >float1 ( C-ADDR U C -- F:... FLAG ) gforth-1.0: Line input and conversion.
@@ -6504,7 +6510,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * defers ( COMPILATION "NAME" -- ; RUN-TIME ... -- ... ) gforth-0.2: Deferred Words.
                                                               (line 103)
 * definer! ( DEFINER XT -- ) gforth-obsolete: Threading Words.
-                                                              (line 139)
+                                                              (line 141)
 * defines ( XT CLASS "NAME" -- ) mini-oof: Basic Mini-OOF Usage.
                                                               (line  27)
 * definitions ( -- ) search:             Word Lists.          (line  36)
@@ -6549,7 +6555,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * dodefer, ( -- ) gforth-1.0:            Threading Words.     (line  44)
 * dodefer: ( -- ADDR ) gforth-0.2:       Threading Words.     (line  94)
 * dodoes: ( -- ADDR ) gforth-0.6:        Threading Words.     (line 103)
-* does-code! ( XT2 XT1 -- ) gforth-0.2:  Threading Words.     (line 126)
+* does-code! ( XT2 XT1 -- ) gforth-0.2:  Threading Words.     (line 128)
 * DOES> ( COMPILATION COLON-SYS1 -- COLON-SYS2 ) core: CREATE..DOES> details.
                                                               (line   6)
 * dofield, ( -- ) gforth-1.0:            Threading Words.     (line  47)
@@ -6863,7 +6869,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * get-recognizers ( -- XT1 .. XTN N ) gforth-experimental: Dealing with existing Recognizers.
                                                               (line  67)
 * getenv ( C-ADDR1 U1 -- C-ADDR2 U2 ) gforth-0.2: Passing Commands to the OS.
-                                                              (line  29)
+                                                              (line  31)
 * gforth ( -- C-ADDR U ) gforth-environment: Environmental Queries.
                                                               (line 136)
 * gg ( -- ) gforth-1.0:                  Locating uses of a word.
@@ -6882,7 +6888,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * hglue ( -- RTYP RSUB RADD ) minos2:    widget methods.      (line  69)
 * hglue@ ( -- RTYP RSUB RADD ) minos2:   widget methods.      (line  78)
 * hide ( -- ) minos2:                    actor methods.       (line  51)
-* hmcopy, ( XT -- ) gforth-experimental: Threading Words.     (line  28)
+* hmcopy, ( XT -- ) gforth-experimental: Threading Words.     (line  27)
 * hold ( CHAR -- ) core:                 Formatted numeric output.
                                                               (line  60)
 * holds ( ADDR U -- ) core-ext:          Formatted numeric output.
@@ -7436,9 +7442,9 @@ this manual.  Each word is listed with its stack effect and wordset.
 * sfloat/ ( N1 -- N2 ) gforth-1.0:       Address arithmetic.  (line  91)
 * sfloats ( N1 -- N2 ) floating-ext:     Address arithmetic.  (line  85)
 * sh ( "..." -- ) gforth-0.2:            Passing Commands to the OS.
-                                                              (line   9)
+                                                              (line  10)
 * sh-get ( C-ADDR U -- C-ADDR2 U2 ) gforth-1.0: Passing Commands to the OS.
-                                                              (line  21)
+                                                              (line  22)
 * shift-args ( -- ) gforth-0.7:          OS command line arguments.
                                                               (line  47)
 * short-where ( -- ) gforth-1.0:         Locating uses of a word.
@@ -7526,7 +7532,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * swap ( W1 W2 -- W2 W1 ) core:          Data stack.          (line  20)
 * Synonym ( "NAME" "OLDNAME" -- ) tools-ext: Aliases.         (line  14)
 * system ( C-ADDR U -- ) gforth-0.2:     Passing Commands to the OS.
-                                                              (line  13)
+                                                              (line  14)
 * s\" ( COMPILATION 'CCC"' -- ; RUN-TIME -- C-ADDR U ) core-ext,file-ext: String and character literals.
                                                               (line  12)
 * table ( -- WID ) gforth-0.2:           Word Lists.          (line  62)
