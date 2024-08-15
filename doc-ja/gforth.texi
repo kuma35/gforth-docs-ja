@@ -26134,8 +26134,7 @@ Value -- 最後に実行された @code{system} コマンドによって返さ�
 @format
 @code{time&date} ( @i{-- nsec nmin nhour nday nmonth nyear  }) facility-ext ``time-and-date''
 @end format
-Report the current time of day. Seconds, minutes and hours are numbered from
-0. Months are numbered from 1.
+現在の時刻を報告します。 nsec 、 nmin、 nhour は 0 から数えます。 nmonth は 1 から数えます。
 
 
 @findex >time&date&tz ( @var{ udtime -- nsec nmin nhour nday nmonth nyear fdst ndstoff c-addrtz utz  } ) gforth-1.0
@@ -26144,9 +26143,11 @@ Report the current time of day. Seconds, minutes and hours are numbered from
 @format
 @code{>time&date&tz} ( @i{udtime -- nsec nmin nhour nday nmonth nyear fdst ndstoff c-addrtz utz }) gforth-1.0 ``to-time-and-date''
 @end format
-Convert time in seconds since 1.1.1970 0:00Z to the current time of
-day. Seconds, minutes and hours are numbered from 0.  Months are numbered
-from 1.
+1970 年 1 月 1 日 0:00Z からの時間を秒単位で現在の時刻に変換します。 nsec、 nmin、 nhourは 0 から数えます。
+nmonth は 1 から数えます(訳注: 使い方: 秒単位の値を与える必要があるので、 例えば @code{utime #1000000 ud/mod
+rot drop >time&date&tz} とする。 fdst: 夏時間を 採用しているときに負数 、採用していないときに
+0、この情報が得られないときに正数。 ndstoff : GMTからのオフセット(秒単位)、 c-addrtz utz : タイムゾーン文字列(例:
+JST))
 
 @findex utime ( @var{ -- dtime  } ) gforth-0.5
 @cindex @code{utime}
@@ -26154,8 +26155,8 @@ from 1.
 @format
 @code{utime} ( @i{-- dtime }) gforth-0.5 ``utime''
 @end format
-Report the current time in microseconds since some epoch.  Use
-@code{#1000000 um/mod nip} to convert to seconds
+エポック(some epoch)以降の現在時刻をマイクロ秒単位で報告します。  @code{#1000000 um/mod nip}
+を使用して秒に変換します
 
 @findex ntime ( @var{ -- dtime  } ) gforth-1.0
 @cindex @code{ntime}
@@ -26163,7 +26164,7 @@ Report the current time in microseconds since some epoch.  Use
 @format
 @code{ntime} ( @i{-- dtime }) gforth-1.0 ``ntime''
 @end format
-Report the current time in nanoseconds since some epoch.
+エポック(some epoch)以降の現在時刻をナノ秒単位で報告します。
 
 @findex cputime ( @var{ -- duser dsystem  } ) gforth-0.5
 @cindex @code{cputime}
@@ -26171,11 +26172,9 @@ Report the current time in nanoseconds since some epoch.
 @format
 @code{cputime} ( @i{-- duser dsystem }) gforth-0.5 ``cputime''
 @end format
-duser and dsystem are the respective user- and system-level CPU times used
-since the start of the Forth system (excluding child processes), in
-microseconds (the granularity may be much larger, however).  On platforms
-without the getrusage call, it reports elapsed time (since some epoch) for
-duser and 0 for dsystem.
+duser と dsystem は、 Forth システムの開始以降に使用されたユーザー・レベルとシステム・レベルの CPU
+時間(子プロセスを除く)をマイクロ秒単位で表したものです(ただし、 粒度はさらに粗くなる可能性があります)。  getrusage
+コールのないプラットフォームでは、 duser については経過時間(エポック)が報告され、 dsystem については 0 が報告されます。
 
 
 
@@ -26186,8 +26185,8 @@ duser and 0 for dsystem.
 
 @comment TODO find homes for these
 
-This section lists the Standard Forth words that are not documented
-elsewhere in this manual. Ultimately, they all need proper homes.
+このセクションでは、 このマニュアルの他の場所で説明されていない標準 Forth のワードをリストします。 いつかは、
+これらのワードはそれぞれ適切なセクションに配置されることになるでしょう。
 
 @findex quit ( @var{ ?? -- ??   } ) core
 @cindex @code{quit}
@@ -26195,15 +26194,15 @@ elsewhere in this manual. Ultimately, they all need proper homes.
 @format
 @code{quit} ( @i{?? -- ??  }) core ``quit''
 @end format
-Empty the return stack, make the user input device the input source, enter
-interpret state and start the text interpreter.
+リターン・スタックを空にし、 ユーザー入力デバイスを入力ソースにして、 インタプリタ状態にして、 テキスト・ インタプリタを開始します。
 
 
 
-The following Standard Forth words are not currently supported by Gforth
-(@pxref{Standard conformance}):
+以下の標準 Forth のワードは現在、 Gforth ではサポートされていません(@pxref{Standard conformance}):
 
-@code{EDITOR} @code{EMIT?} @code{FORGET} 
+@code{EDITOR} @code{EMIT?} @code{FORGET} (訳注: forth で書かれたラインエディタである EDITOR
+ボキャブラリはありません。 @i{FORGET} はありません。任意の箇所で「忘れる」ことはできません。代わりに @code{marker name}
+で忘れるポイントを「マーク」しておきます。 @i{name} を実行するとそのポイントまで「忘れ」ます。) 
 
 @c ******************************************************************
 @node Error messages, Tools, Words, Top
@@ -26211,7 +26210,7 @@ The following Standard Forth words are not currently supported by Gforth
 @cindex error messages
 @cindex backtrace
 
-A typical Gforth error message looks like this:
+Gforth の典型的なエラー・メッセージは以下のようになります:
 
 @example
 in file included from \evaluated string/:-1
@@ -26223,62 +26222,52 @@ $400E664C @@
 $400E6664 foo
 @end example
 
-The message identifying the error is @code{Invalid memory address}.  The
-error happened when text-interpreting line 4 of the file
-@file{./xxx.fs}. This line is given (it contains @code{bar}), and the word
-on the line where the error happened, is pointed out (with @code{>>>} and
-@code{<<<}).
+エラーを特定するメッセージは @code{Invalid memory address} です。  そのエラーはファイル @file{./xxx.fs}
+の 4 行目をテキスト解釈(text-interpreting)しているときに発生しました。 その行のエラーが発生したワードを(@code{>>>} と
+@code{<<<} で囲んで)指摘します。
 
-The file containing the error was included in line 1 of @file{./yyy.fs}, and
-@file{yyy.fs} was included from a non-file (in this case, by giving
-@file{yyy.fs} as command-line parameter to Gforth).
+エラーを含むファイルは @file{./yyy.fs} の 1 行目でインクルード(included)されており、 @file{yyy.fs}
+はファイル以外からインクルードされています(この場合、 @file{yyy.fs} を Gforth へのコマンドライン
+パラメータとして指定することにより)。
 
-At the end of the error message you find a return stack dump that can be
-interpreted as a backtrace (possibly empty). On top you find the top of the
-return stack when the @code{throw} happened, and at the bottom you find the
-return stack entry just above the return stack of the topmost text
-interpreter.
+エラー・メッセージの最後には、 バックトレースとして解釈できるリターン・スタック・ダンプが表示されます(空の可能性があります)。 その一番上の行には
+@code{throw} が発生したときのリターン・スタックのTOSが表示され、
+その一番下の行には最上位のテキスト・インタプリタのリターン・スタックのすぐ上にあるリターン・スタック・エントリが表示されます。
 
-To the right of most return stack entries you see a guess for the word that
-pushed that return stack entry as its return address. This gives a
-backtrace. In our case we see that @code{bar} called @code{foo}, and
-@code{foo} called @code{@@} (and @code{@@} had an @emph{Invalid memory
-address} exception).
+ほとんどのリターン・スタック・エントリの右側には、 そのリターン・スタック・エントリをリターン・アドレスとしてプッシュしたワードを推測して表示します。
+これによりバックトレースが得られます。 この例では、 @code{bar} が @code{foo} を呼び出し、 @code{foo} が
+@code{@@} を呼び出していることがわかります(そして、 この @code{@@} には 「Invalid Memory
+address」例外がありました)。
 
-Note that the backtrace is not perfect: We don't know which return stack
-entries are return addresses (so we may get false positives); and in some
-cases (e.g., for @code{abort"}) we cannot determine from the return address
-the word that pushed the return address, so for some return addresses you
-see no names in the return stack dump.
+注意: バックトレースは完璧では無いことに注意してください。 どのリターン・スタック・エントリがリターン・アドレスであるかは知りません(そのため、
+誤検知が発生する可能性があります)。 また、 (@code{abort"} など、)場合によっては、 リターン・アドレスからはリターン・
+アドレスをプッシュしたワードを特定できないため、 リターン・アドレスによってはリターン・スタック・ダンプに名前が表示されません。
 
 @cindex @code{catch} and backtraces
-The return stack dump represents the return stack at the time when a
-specific @code{throw} was executed.  In programs that make use of
-@code{catch}, it is not necessarily clear which @code{throw} should be used
-for the return stack dump (e.g., consider one @code{throw} that indicates an
-error, which is caught, and during recovery another error happens; which
-@code{throw} should be used for the stack dump?).  Gforth presents the
-return stack dump for the first @code{throw} after the last executed (not
-returned-to) @code{catch} or @code{nothrow}; this works well in the usual
-case. To get the right backtrace, you usually want to insert @code{nothrow}
-or @code{['] false catch 2drop} after a @code{catch} if the error is not
-rethrown.
+リターン・スタック・ダンプは、 特定の @code{throw} が execute されたときのリターン・スタックを表します。
+@code{catch} を使用するプログラムでは、 リターン・スタック・ダンプにどの @code{throw}
+を使用する必要があるかが必ずしも明確ではありません(たとえば、 エラーを示すある @code{throw} がキャッチされ、
+そのリカバリ中に別のエラーが発生したとすると、 スタック・ダンプにはどの @code{throw} のを使用するべきでしょうか？)。 Gforth は、
+最後に execute された(そして、 その execute からまだ返ってきていない状態で、 ) @code{catch} または
+@code{nothrow} の後の最初の @code{throw} のリターン・スタック・ダンプを表示します: 通常、 これはうまく機能します。
+正しいバック・トレースを取得するためには、 通常、 エラーが再 throw されない場合は @code{catch} の後に
+@code{nothrow} または @code{['] false catch 2drop} を挿入します。
 
 @cindex @code{gforth-fast} and backtraces
 @cindex @code{gforth-fast}, difference from @code{gforth}
 @cindex backtraces with @code{gforth-fast}
 @cindex return stack dump with @code{gforth-fast}
-@code{Gforth} is able to do a return stack dump for throws generated from
-primitives (e.g., invalid memory address, stack empty etc.);
-@code{gforth-fast} is only able to do a return stack dump from a directly
-called @code{throw} (including @code{abort} etc.).  Given an exception
-caused by a primitive in @code{gforth-fast}, you will typically see no
-return stack dump at all; however, if the exception is caught by
-@code{catch} (e.g., for restoring some state), and then @code{throw}n again,
-the return stack dump will be for the first such @code{throw}.
+@code{gforth} エンジン(訳注: OSコマンドラインから @i{gforth} で起動)は、 プリミティブが生成した throw
+のリターン・スタック・ダンプを行えます(例: invalid memory address(不正なメモリアクセス), stack
+empty(スタックが空) 等)。 @code{gforth-fast} エンジン(訳注: OSコマンドラインから @i{gforth-fast}
+で起動)は、 直接呼び出された @code{throw} (@code{abort} などを含む)
+からのリターン・スタック・ダンプのみを行うことができます。 @code{gforth-fast} エンジンのプリミティブによって例外が発生した場合、
+通常はリターン・スタック・ダンプは全く見れません。 しかしながら、 @code{catch} によって例外がキャッチされ(たとえば、
+何らかの状態を復元するため)、 その後再び @code{throw} が返される場合、 最初の @code{throw}
+に対するリターン・スタック・ダンプは見れます。
 
-@code{gforth-fast} also does not attempt to differentiate between division
-by zero and division overflow, because that costs time in every division.
+また、 @code{gforth-fast} は、 ゼロ除算と除算オーバーフローを区別しようとしません。 これは、
+どの除算も時間が掛かる処理だからです。
 
 @c ******************************************************************
 @node Tools, Standard conformance, Error messages, Top
@@ -26289,7 +26278,7 @@ by zero and division overflow, because that costs time in every division.
 * Stack depth changes::      このスタック値はどこから来たのか?
 @end menu
 
-See also @ref{Emacs and Gforth}.
+こちらもご覧ください @ref{Emacs and Gforth}
 
 @node Standard Report, Stack depth changes, Tools, Tools
 @section @file{ans-report.fs}: Report the words used, sorted by wordset
@@ -26297,20 +26286,17 @@ See also @ref{Emacs and Gforth}.
 @cindex report the words used in your program
 @cindex words used in your program
 
-If you want to label a Forth program as Standard Program, you must document
-which wordsets the program uses.
+Forth プログラムを標準プログラムとしてラベル付けしたい場合は、 プログラムがどのワードセットを使用するかを文書化する必要があります。
 
-The @file{ans-report.fs} tool makes it easy for you to determine which words
-from which wordset and which non-standard words your application uses. You
-simply have to include @file{ans-report.fs} before loading the program you
-want to check. After loading your program, you can get the report with
-@code{print-ans-report}. A typical use is to run this as batch job like
-this:
+@file{ans-report.fs} ツールを使用すると、アプリケーションでどのワードセットのどのワードが使用されているか、
+どの非標準ワードが使用されているかを簡単に判断できます。 チェックしたいプログラムをロードする前に @file{ans-report.fs}
+をインクルードするだけです。 プログラムをロードした後、 @code{print-ans-report} を使用してレポートを取得できます。
+一般的な使用法は、 以下のようにこれをバッチ・ジョブとして実行することです:
 @example
 gforth ans-report.fs myprog.fs -e "print-ans-report bye"
 @end example
 
-The output looks like this (for @file{compat/control.fs}):
+出力は以下のようになります (@file{compat/control.fs} の場合):
 @example
 The program uses the following words
 from CORE :
@@ -26321,24 +26307,20 @@ from FILE :
 ( 
 @end example
 
-@file{ans-report.fs} reports both Forth-94 and Forth-2012 wordsets.  For
-words that are in both standards, it reports the wordset without suffix
-(e.g., @code{CORE-EXT}).  For Forth-2012-only words, it reports the wordset
-with a @code{-2012} suffix (e.g., @code{CORE-EXT-2012}); and likewise for
-the words that are Forth-94-only (i.e., that have been removed in
-Forth-2012).
+@file{ans-report.fs} は、 Forth-94 と Forth-2012 の両方のワードセットをレポートします。
+両方の標準に含まれるワードについては、 接尾辞なしでワードセットが報告されます(例: @code{CORE-EXT})。  Forth-2012
+専用のワードの場合、@code{-2012} 接尾辞が付いたワードセットが報告されます(例: @code{CORE-EXT-2012})。
+Forth-94 のみのワード(つまり、Forth-2012 で削除されたワード)についても同様です。
 
 @subsection Caveats
 
-Note that @file{ans-report.fs} just checks which words are used, not whether
-they are used in a standard-conforming way!
+注意: @file{ans-report.fs} は、 どのワードが使用されているかをチェックするだけで、
+標準に準拠した方法で使用されているかどうかをチェックするわけではないことに注意してください。
 
-Some words are defined in several wordsets in the
-standard. @file{ans-report.fs} reports them for only one of the wordsets,
-and not necessarily the one you expect. It depends on usage which wordset is
-the right one to specify. E.g., if you only use the compilation semantics of
-@code{S"}, it is a Core word; if you also use its interpretation semantics,
-it is a File word.
+一部のワードは、 標準で複数のワードセットで定義されています。 @file{ans-report.fs} は、 それらのワードセットのうちの 1
+つについてのみレポートし、 それは必ずしもあなたが期待したワードセットとは限りません。 どのワードセットを指定するのが適切かは、
+用途によって異なります。 たとえば、@code{S"} のコンパイル機能(compilation semantics)のみを使用する場合、それは
+CORE ワードです。 インタプリタ機能(interpretation semantics)も使用する場合、 それは FILE ワードです。
 
 
 @node Stack depth changes, , Standard Report, Tools
@@ -26348,42 +26330,35 @@ it is a File word.
 @cindex stack depth changes during interpretation
 @cindex items on the stack after interpretation
 
-Sometimes you notice that, after loading a file, there are items left on the
-stack.  The tool @file{depth-changes.fs} helps you find out quickly where in
-the file these stack items are coming from.
+ファイルをロードした後、 スタックに項目が残っていることに気づくことがあります。  @file{ Depth-changes.fs}
+ツールを使用すると、 これらのスタック項目がファイル内のどこから来たのかをすばやく見つけることができます。
 
-The simplest way of using @file{depth-changes.fs} is to include it before
-the file(s) you want to check, e.g.:
+@file{ Depth-changes.fs} を使用する最も簡単な方法は、 チェックするファイルの前にこれをインクルードすることです。 例:
 
 @example
 gforth depth-changes.fs my-file.fs
 @end example
 
-This will compare the stack depths of the data and FP stack at every empty
-line (in interpretation state) against these depths at the last empty line
-(in interpretation state).  If the depths are not equal, the position in the
-file and the stack contents are printed with @code{~~} (@pxref{Debugging}).
-This indicates that a stack depth change has occured in the paragraph of
-non-empty lines before the indicated line.  It is a good idea to leave an
-empty line at the end of the file, so the last paragraph is checked, too.
+これにより、 すべての空行(インタプリタ状態)でのデータ・スタックの深さと FP スタックの深さが、
+最後の空行(インタプリタ状態)での深さと比較されます。 深さが等しくない場合は、 ファイル内の位置とスタックの内容が @code{~~}
+(@pxref{Debugging}) で出力されます。  これは、
+指摘行より前の空ではない行内の段落(paragraph)でスタックの深さの変更が発生したことを示します。  ファイルの最後に空行を残しておいて、
+最後の段落もチェックされるようにすることをお勧めします。
 
-Checking only at empty lines usually works well, but sometimes you have big
-blocks of non-empty lines (e.g., when building a big table), and you want to
-know where in this block the stack depth changed.  You can check all
-interpreted lines with
+通常、 空行のみをチェックするのはうまく機能しますが、 空行ではない大きなブロックが存在する場合(大きなテーブルを構築する場合など)、
+このブロックのどこでスタックの深さが変更されたのかを知りたい場合があります。 以下を使用すると、
+解釈(interpret)されたすべての行をチェックできます
 
 @example
 gforth depth-changes.fs -e "' all-lines is depth-changes-filter" my-file.fs
 @end example
 
-This checks the stack depth at every end-of-line.  So the depth change
-occured in the line reported by the @code{~~} (not in the line before).
+これにより、 各行末ごとにスタックの深さがチェックされます。  したがって、 深さの変更は @code{~~}
+によって報告された行で発生しています(それより前の行ではありません)。
 
-Note that, while this offers better accuracy in indicating where the stack
-depth changes, it will often report many intentional stack depth changes
-(e.g., when an interpreted computation stretches across several lines).  You
-can suppress the checking of some lines by putting backslashes at the end of
-these lines (not followed by white space), and using
+注意: これにより、 スタックの深さが変更される場所を示す精度が向上しますが、 多くの、 意図した、
+スタックの深さの変更が報告されることが多いことに注意してください(たとえば、 解釈(interpret)された計算が複数の行にまたがる場合)。
+一部の行のチェックを抑制するには、 これらの行の末尾にバックスラッシュを置き(その後に空白は続きません)、 以下を使用します
 
 @example
 gforth depth-changes.fs -e "' most-lines is depth-changes-filter" my-file.fs
@@ -26396,62 +26371,57 @@ gforth depth-changes.fs -e "' most-lines is depth-changes-filter" my-file.fs
 
 (標準適合度)私達の知る限り、 Gforth は…
 
-ANS Forth System and a Forth-2012 System
+ANS Forth システムと Forth-2012 システムに関しては
 @itemize @bullet
-@item providing the Core Extensions word set
-@item providing the Block word set
-@item providing the Block Extensions word set
-@item providing the Double-Number word set
-@item providing the Double-Number Extensions word set
-@item providing the Exception word set
-@item providing the Exception Extensions word set
-@item providing the Facility word set
-@item providing the Facility Extensions word set, except @code{EMIT?}
-@item providing the File Access word set
-@item providing the File Access Extensions word set
-@item providing the Floating-Point word set
-@item providing the Floating-Point Extensions word set
-@item providing the Locals word set
-@item providing the Locals Extensions word set
-@item providing the Memory-Allocation word set
-@item providing the Memory-Allocation Extensions word set
-@item providing the Programming-Tools word set
-@item providing the Programming-Tools Extensions word set, except @code{EDITOR} and @code{FORGET}
-@item providing the Search-Order word set
-@item providing the Search-Order Extensions word set
-@item providing the String word set
-@item providing the String Extensions word set
-@item providing the Extended-Character wordset
+@item Core Extensions ワード・セットを提供します
+@item Block  ワード・セットを提供します
+@item Block Extensions ワード・セットを提供します
+@item Double-Number ワード・セットを提供します
+@item Double-Number Extensions ワード・セットを提供します
+@item Exception ワード・セットを提供します
+@item Exception Extensions ワード・セットを提供します
+@item Facility ワード・セットを提供します
+@item Facility Extensions  ワード・セットを提供します(@code{EMIT?} を除く)
+@item File Access ワード・セットを提供します
+@item File Access Extensions ワード・セットを提供します
+@item Floating-Point ワード・セットを提供します
+@item Floating-Point Extensions ワード・セットを提供します
+@item Locals ワード・セットを提供します
+@item Locals Extensions ワード・セットを提供します
+@item Memory-Allocation ワード・セットを提供します
+@item Memory-Allocation Extensions ワード・セットを提供します
+@item Programming-Tools ワード・セットを提供します
+@item Programming-Tools Extensions ワード・セットを提供します(@code{EDITOR} と @code{FORGET} を除く)
+@item Search-Order ワード・セットを提供します
+@item Search-Order Extensions ワード・セットを提供します
+@item String ワード・セットを提供します
+@item String Extensions ワード・セットを提供します
+@item Extended-Character ワード・セットを提供します
 @end itemize
 
-Gforth has the following environmental restrictions:
+Gforth には以下の環境的制限(environmental restrictions)があります:
 
 @cindex environmental restrictions
 @itemize @bullet
 @item
-While processing the OS command line, if an exception is not caught, Gforth
-exits with a non-zero exit code instead of performing QUIT.
+OS コマンド・ラインの処理中に例外がキャッチされなかった場合、 Gforth は QUIT を実行する代わりにゼロ以外の終了コード(exit
+code)で終了(exit)します。
 
 @item
-When an @code{throw} is performed after a @code{query}, Gforth does not
-always restore the input source specification in effect at the corresponding
-catch.
+@code{query} の後に @code{throw} が実行される場合、 Gforth は対応する @code{catch}
+で有効な入力ソース仕様を常に復元するとは限りません。
 
 @end itemize
 
 
 @cindex system documentation
-In addition, Standard Forth systems are required to document certain
-implementation choices. This chapter tries to meet these requirements for
-the Forth-94 standard.  For the Forth-2012 standard, we decided to produce
-the additional documentation only if there is demand.  So if you are really
-missing this documentation, please let us know.
+さらに、 標準 Forth システムでは、 特定の実装での選択を文書化する必要があります。 この章では、 Forth-94
+標準のこれらの要件を満たすことを試みます。  Forth-2012 標準については、 需要がある場合にのみ追加のドキュメントを作成することにしました。
+したがって、 このドキュメントで本当に足りないという場合は、 著者達までご連絡ください。
 
-In many cases, the following documentation gives a way to ask the system for
-the information instead of providing the information directly, in
-particular, if the information depends on the processor, the operating
-system or the installation options chosen, or if they are likely to change
-during the maintenance of Gforth.
+多くの場合、 以下のドキュメント群においては、 特に、 情報がプロセッサに依存する場合、
+オペレーティング・システムまたは選択したインストール・オプション、 または、 Gforth のメンテナンス中に変更される可能性があるかどうについては、
+情報を直接提供する代わりに、 システムに情報を要求する方法が説明されています。
 
 @comment The framework for the rest has been taken from pfe.
 
@@ -26493,61 +26463,55 @@ during the maintenance of Gforth.
 
 
 @table @i
-@item (Cell) aligned addresses:
+@item セル単位に整列されたアドレス:
 @cindex cell-aligned addresses
 @cindex aligned addresses
-processor-dependent. Gforth's alignment words perform natural alignment
-(e.g., an address aligned for a datum of size 8 is divisible by
-8). Unaligned accesses usually result in a @code{-23 THROW}.
+プロセッサ依存です。 Gforth の整列(alignment)ワードは自然な整列(natural alignment)を実行します(たとえば、 サイズ
+8 のデータに対して整列されたアドレスは 8 で割り切れます)。 通常、 非整列アクセス(unaligned accesses)では @code{-23
+THROW} が発生します。
 
-@item @code{EMIT} and non-graphic characters:
+@item @code{EMIT} と非表示文字:
 @cindex @code{EMIT} and non-graphic characters
 @cindex non-graphic characters and @code{EMIT}
-The character is output using the C library function (actually, macro)
-@code{putc}.
+文字(character)は C 言語のライブラリ関数(実際にはマクロ) @code{putc} を使用して出力されます。
 
-@item character editing of @code{ACCEPT} and @code{EXPECT}:
+@item @code{ACCEPT} と @code{EXPECT} の文字編集:
 @cindex character editing of @code{ACCEPT} and @code{EXPECT}
 @cindex editing in @code{ACCEPT} and @code{EXPECT}
 @cindex @code{ACCEPT}, editing
 @cindex @code{EXPECT}, editing
-This is modeled on the GNU readline library (@pxref{Readline Interaction, ,
-Command Line Editing, readline, The GNU Readline Library}) with Emacs-like
-key bindings. @kbd{Tab} deviates a little by producing a full word
-completion every time you type it (instead of producing the common prefix of
-all completions). @xref{Command-line editing}.
+これは、 Emacs のようなキー・バインディングを備えた GNU readline ライブラリ(@pxref{Readline
+Interaction, , Command Line Editing, readline, The GNU Readline
+Library})をモデルにしています。 @kbd{Tab} を入力するたびに
+(すべての補完に共通のプレフィックスを生成するのではなく)完全なワード語補完を生成するという点で少し異なります。 @xref{Command-line
+editing}
 
-@item character set:
+@item 文字セット:
 @cindex character set
-The character set of your computer and display device. Gforth is 8-bit-clean
-(but some other component in your system may make trouble).
+あなたのコンピュータと表示デバイスの文字セット。 Gforth は 8 ビットクリーンです(ただし、
+システム内の他のコンポーネントが問題を引き起こす可能性があります)。
 
-@item Character-aligned address requirements:
+@item 文字単位に整列されたアドレスの要件:
 @cindex character-aligned address requirements
-installation-dependent. Currently a character is represented by a C
-@code{unsigned char}; in the future we might switch to @code{wchar_t}
-(Comments on that requested).
+インストールに依存します。 現在、 文字は C言語の @code{unsigned char} で表されます。 (リクエストへのコメントですけども、
+)将来的には @code{wchar_t} に切り替える可能性があります。
 
-@item character-set extensions and matching of names:
+@item 文字セット拡張と名前の照合:
 @cindex character-set extensions and matching of names
 @cindex case-sensitivity for name lookup
 @cindex name lookup, case-sensitivity
 @cindex locale and case-sensitivity
-Any character except the ASCII NUL character can be used in a name. Matching
-is case-insensitive (except in @code{TABLE}s). The matching is performed
-using the C library function @code{strncasecmp}, whose function is probably
-influenced by the locale. E.g., the @code{C} locale does not know about
-accents and umlauts, so they are matched case-sensitively in that
-locale. For portability reasons it is best to write programs such that they
-work in the @code{C} locale. Then one can use libraries written by a Polish
-programmer (who might use words containing ISO Latin-2 encoded characters)
-and by a French programmer (ISO Latin-1) in the same program (of course,
-@code{WORDS} will produce funny results for some of the words (which ones,
-depends on the font you are using)). Also, the locale you prefer may not be
-available in other operating systems. Hopefully, Unicode will solve these
-problems one day.
+ASCII NUL 文字を除く任意の文字を名前に使用できます。 照合では大文字と小文字が区別されません(@code{TABLE} を除く)。 照合は C
+言語ライブラリ関数 @code{strncasecmp} を使用して実行されますが、 その関数はおそらくロケールの影響を受けます。
+たとえば、@code{C} ロケールではアクセントとウムラウトが認識されないため、 そのロケールでは大文字と小文字が区別されて照合されます。
+移植性の理由から、 @code{C} ロケールで動作するようにプログラムを作成することが最善です。 そうすれば、 ポーランド人のプログラマ(ISO
+Latin-2 でエンコードされた文字を含むワードを使用する可能性がある)と、 フランスのプログラマ(ISO
+Latin-1)が作成したライブラリを同じプログラム内で使用できます(もちろん、 @code{WORDS}
+は一部のワードに対して愉快な結果を生成します(どのワードでそうなるかは、 使用しているフォントによって異なります))。 また、
+あなたのご希望のロケールが他のオペレーティング・システムでは利用できない場合もあります。 Unicode
+がいつかこれらの問題を解決してくれることを願っています。
 
-@item conditions under which control characters match a space delimiter:
+@item 制御文字がスペース区切り文字と一致する条件:
 @cindex space delimiters
 @cindex control characters as delimiters
 If @code{word} is called with the space character as a delimiter, all

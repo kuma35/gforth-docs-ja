@@ -72,7 +72,7 @@ Next: <a href="Tools.html" accesskey="n" rel="next">Tools</a>, Previous: <a href
 <span id="index-error-messages"></span>
 <span id="index-backtrace"></span>
 
-<p>A typical Gforth error message looks like this:
+<p>Gforth の典型的なエラー・メッセージは以下のようになります:
 </p>
 <div class="example">
 <pre class="example">in file included from \evaluated string/:-1
@@ -84,68 +84,53 @@ $400E664C @
 $400E6664 foo
 </pre></div>
 
-<p>The message identifying the error is <code>Invalid memory address</code>.  The
-error happened when text-interpreting line 4 of the file
-<samp>./xxx.fs</samp>. This line is given (it contains <code>bar</code>), and the word
-on the line where the error happened, is pointed out (with <code>&gt;&gt;&gt;</code> and
-<code>&lt;&lt;&lt;</code>).
+<p>エラーを特定するメッセージは <code>Invalid memory address</code> です。  そのエラーはファイル <samp>./xxx.fs</samp>
+の 4 行目をテキスト解釈(text-interpreting)しているときに発生しました。 その行のエラーが発生したワードを(<code>&gt;&gt;&gt;</code> と
+<code>&lt;&lt;&lt;</code> で囲んで)指摘します。
 </p>
-<p>The file containing the error was included in line 1 of <samp>./yyy.fs</samp>, and
-<samp>yyy.fs</samp> was included from a non-file (in this case, by giving
-<samp>yyy.fs</samp> as command-line parameter to Gforth).
+<p>エラーを含むファイルは <samp>./yyy.fs</samp> の 1 行目でインクルード(included)されており、 <samp>yyy.fs</samp>
+はファイル以外からインクルードされています(この場合、 <samp>yyy.fs</samp> を Gforth へのコマンドライン
+パラメータとして指定することにより)。
 </p>
-<p>At the end of the error message you find a return stack dump that can be
-interpreted as a backtrace (possibly empty). On top you find the top of the
-return stack when the <code>throw</code> happened, and at the bottom you find the
-return stack entry just above the return stack of the topmost text
-interpreter.
+<p>エラー・メッセージの最後には、 バックトレースとして解釈できるリターン・スタック・ダンプが表示されます(空の可能性があります)。 その一番上の行には
+<code>throw</code> が発生したときのリターン・スタックのTOSが表示され、
+その一番下の行には最上位のテキスト・インタプリタのリターン・スタックのすぐ上にあるリターン・スタック・エントリが表示されます。
 </p>
-<p>To the right of most return stack entries you see a guess for the word that
-pushed that return stack entry as its return address. This gives a
-backtrace. In our case we see that <code>bar</code> called <code>foo</code>, and
-<code>foo</code> called <code>@</code> (and <code>@</code> had an <em>Invalid memory
-address</em> exception).
+<p>ほとんどのリターン・スタック・エントリの右側には、 そのリターン・スタック・エントリをリターン・アドレスとしてプッシュしたワードを推測して表示します。
+これによりバックトレースが得られます。 この例では、 <code>bar</code> が <code>foo</code> を呼び出し、 <code>foo</code> が
+<code>@</code> を呼び出していることがわかります(そして、 この <code>@</code> には 「Invalid Memory
+address」例外がありました)。
 </p>
-<p>Note that the backtrace is not perfect: We don&rsquo;t know which return stack
-entries are return addresses (so we may get false positives); and in some
-cases (e.g., for <code>abort&quot;</code>) we cannot determine from the return address
-the word that pushed the return address, so for some return addresses you
-see no names in the return stack dump.
+<p>注意: バックトレースは完璧では無いことに注意してください。 どのリターン・スタック・エントリがリターン・アドレスであるかは知りません(そのため、
+誤検知が発生する可能性があります)。 また、 (<code>abort&quot;</code> など、)場合によっては、 リターン・アドレスからはリターン・
+アドレスをプッシュしたワードを特定できないため、 リターン・アドレスによってはリターン・スタック・ダンプに名前が表示されません。
 </p>
 <span id="index-catch-and-backtraces"></span>
-<p>The return stack dump represents the return stack at the time when a
-specific <code>throw</code> was executed.  In programs that make use of
-<code>catch</code>, it is not necessarily clear which <code>throw</code> should be used
-for the return stack dump (e.g., consider one <code>throw</code> that indicates an
-error, which is caught, and during recovery another error happens; which
-<code>throw</code> should be used for the stack dump?).  Gforth presents the
-return stack dump for the first <code>throw</code> after the last executed (not
-returned-to) <code>catch</code> or <code>nothrow</code>; this works well in the usual
-case. To get the right backtrace, you usually want to insert <code>nothrow</code>
-or <code>['] false catch 2drop</code> after a <code>catch</code> if the error is not
-rethrown.
+<p>リターン・スタック・ダンプは、 特定の <code>throw</code> が execute されたときのリターン・スタックを表します。
+<code>catch</code> を使用するプログラムでは、 リターン・スタック・ダンプにどの <code>throw</code>
+を使用する必要があるかが必ずしも明確ではありません(たとえば、 エラーを示すある <code>throw</code> がキャッチされ、
+そのリカバリ中に別のエラーが発生したとすると、 スタック・ダンプにはどの <code>throw</code> のを使用するべきでしょうか？)。 Gforth は、
+最後に execute された(そして、 その execute からまだ返ってきていない状態で、 ) <code>catch</code> または
+<code>nothrow</code> の後の最初の <code>throw</code> のリターン・スタック・ダンプを表示します: 通常、 これはうまく機能します。
+正しいバック・トレースを取得するためには、 通常、 エラーが再 throw されない場合は <code>catch</code> の後に
+<code>nothrow</code> または <code>['] false catch 2drop</code> を挿入します。
 </p>
 <span id="index-gforth_002dfast-and-backtraces"></span>
 <span id="index-gforth_002dfast_002c-difference-from-gforth"></span>
 <span id="index-backtraces-with-gforth_002dfast"></span>
 <span id="index-return-stack-dump-with-gforth_002dfast"></span>
-<p><code>Gforth</code> is able to do a return stack dump for throws generated from
-primitives (e.g., invalid memory address, stack empty etc.);
-<code>gforth-fast</code> is only able to do a return stack dump from a directly
-called <code>throw</code> (including <code>abort</code> etc.).  Given an exception
-caused by a primitive in <code>gforth-fast</code>, you will typically see no
-return stack dump at all; however, if the exception is caught by
-<code>catch</code> (e.g., for restoring some state), and then <code>throw</code>n again,
-the return stack dump will be for the first such <code>throw</code>.
+<p><code>gforth</code> エンジン(訳注: OSコマンドラインから <i>gforth</i> で起動)は、 プリミティブが生成した throw
+のリターン・スタック・ダンプを行えます(例: invalid memory address(不正なメモリアクセス), stack
+empty(スタックが空) 等)。 <code>gforth-fast</code> エンジン(訳注: OSコマンドラインから <i>gforth-fast</i>
+で起動)は、 直接呼び出された <code>throw</code> (<code>abort</code> などを含む)
+からのリターン・スタック・ダンプのみを行うことができます。 <code>gforth-fast</code> エンジンのプリミティブによって例外が発生した場合、
+通常はリターン・スタック・ダンプは全く見れません。 しかしながら、 <code>catch</code> によって例外がキャッチされ(たとえば、
+何らかの状態を復元するため)、 その後再び <code>throw</code> が返される場合、 最初の <code>throw</code>
+に対するリターン・スタック・ダンプは見れます。
 </p>
-<p><code>gforth-fast</code> also does not attempt to differentiate between division
-by zero and division overflow, because that costs time in every division.
+<p>また、 <code>gforth-fast</code> は、 ゼロ除算と除算オーバーフローを区別しようとしません。 これは、
+どの除算も時間が掛かる処理だからです。
 </p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Tools.html">Tools</a>, Previous: <a href="Words.html">Forth Words</a>, Up: <a href="index.html">Gforth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

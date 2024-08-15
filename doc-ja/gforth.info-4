@@ -1292,27 +1292,30 @@ File: gforth.info,  Node: Keeping track of Time,  Next: Miscellaneous Words,  Pr
 \ 訳注: 指定のナノ秒ウエイトします(エポックでカウントします)
 
 ‘time&date’ ( – nsec nmin nhour nday nmonth nyear  ) facility-ext “time-and-date”
-   Report the current time of day.  Seconds, minutes and hours are
-numbered from 0.  Months are numbered from 1.
+   現在の時刻を報告します。 nsec 、 nmin、 nhour は 0 から数えます。
+nmonth は 1 から数えます。
 
 ‘>time&date&tz’ ( udtime – nsec nmin nhour nday nmonth nyear fdst ndstoff c-addrtz utz ) gforth-1.0 “to-time-and-date”
-   Convert time in seconds since 1.1.1970 0:00Z to the current time of
-day.  Seconds, minutes and hours are numbered from 0.  Months are
-numbered from 1.
+   1970 年 1 月 1 日 0:00Z からの時間を秒単位で現在の時刻に変換します。
+nsec、 nmin、 nhourは 0 から数えます。 nmonth は 1 から数えます(訳注: 使
+い方: 秒単位の値を与える必要があるので、 例えば ‘utime #1000000 ud/mod
+rot drop >time&date&tz’ とする。 fdst: 夏時間を 採用しているときに負数 、
+採用していないときに 0、この情報が得られないときに正数。 ndstoff : GMTか
+らのオフセット(秒単位)、 c-addrtz utz : タイムゾーン文字列(例: JST))
 
 ‘utime’ ( – dtime ) gforth-0.5 “utime”
-   Report the current time in microseconds since some epoch.  Use
-‘#1000000 um/mod nip’ to convert to seconds
+   エポック(some epoch)以降の現在時刻をマイクロ秒単位で報告します。
+‘#1000000 um/mod nip’ を使用して秒に変換します
 
 ‘ntime’ ( – dtime ) gforth-1.0 “ntime”
-   Report the current time in nanoseconds since some epoch.
+   エポック(some epoch)以降の現在時刻をナノ秒単位で報告します。
 
 ‘cputime’ ( – duser dsystem ) gforth-0.5 “cputime”
-   duser and dsystem are the respective user- and system-level CPU times
-used since the start of the Forth system (excluding child processes), in
-microseconds (the granularity may be much larger, however).  On
-platforms without the getrusage call, it reports elapsed time (since
-some epoch) for duser and 0 for dsystem.
+   duser と dsystem は、 Forth システムの開始以降に使用されたユーザー・
+レベルとシステム・レベルの CPU 時間(子プロセスを除く)をマイクロ秒単位で
+表したものです(ただし、 粒度はさらに粗くなる可能性があります)。
+getrusage コールのないプラットフォームでは、 duser については経過時間(エ
+ポック)が報告され、 dsystem については 0 が報告されます。
 
 
 File: gforth.info,  Node: Miscellaneous Words,  Prev: Keeping track of Time,  Up: Words
@@ -1320,17 +1323,21 @@ File: gforth.info,  Node: Miscellaneous Words,  Prev: Keeping track of Time,  Up
 6.33 Miscellaneous Words
 ========================
 
-This section lists the Standard Forth words that are not documented
-elsewhere in this manual.  Ultimately, they all need proper homes.
+このセクションでは、 このマニュアルの他の場所で説明されていない標準
+Forth のワードをリストします。 いつかは、 これらのワードはそれぞれ適切な
+セクションに配置されることになるでしょう。
 
 ‘quit’ ( ?? – ??  ) core “quit”
-   Empty the return stack, make the user input device the input source,
-enter interpret state and start the text interpreter.
+   リターン・スタックを空にし、 ユーザー入力デバイスを入力ソースにして、
+インタプリタ状態にして、 テキスト・ インタプリタを開始します。
 
-   The following Standard Forth words are not currently supported by
-Gforth (*note Standard conformance::):
+   以下の標準 Forth のワードは現在、 Gforth ではサポートされていません
+(*note Standard conformance::):
 
-   ‘EDITOR’ ‘EMIT?’ ‘FORGET’
+   ‘EDITOR’ ‘EMIT?’ ‘FORGET’ (訳注: forth で書かれたラインエディタである
+EDITOR ボキャブラリはありません。 FORGET はありません。任意の箇所で「忘
+れる」ことはできません。代わりに ‘marker name’ で忘れるポイントを「マー
+ク」しておきます。 name を実行するとそのポイントまで「忘れ」ます。)
 
 
 File: gforth.info,  Node: Error messages,  Next: Tools,  Prev: Words,  Up: Top
@@ -1338,7 +1345,7 @@ File: gforth.info,  Node: Error messages,  Next: Tools,  Prev: Words,  Up: Top
 7 Error messages
 ****************
 
-A typical Gforth error message looks like this:
+Gforth の典型的なエラー・メッセージは以下のようになります:
 
      in file included from \evaluated string/:-1
      in file included from ./yyy.fs:1
@@ -1348,55 +1355,60 @@ A typical Gforth error message looks like this:
      $400E664C @
      $400E6664 foo
 
-   The message identifying the error is ‘Invalid memory address’.  The
-error happened when text-interpreting line 4 of the file ‘./xxx.fs’.
-This line is given (it contains ‘bar’), and the word on the line where
-the error happened, is pointed out (with ‘>>>’ and ‘<<<’).
+   エラーを特定するメッセージは ‘Invalid memory address’ です。 そのエラ
+ーはファイル ‘./xxx.fs’ の 4 行目をテキスト解釈(text-interpreting)してい
+るときに発生しました。 その行のエラーが発生したワードを(‘>>>’ と ‘<<<’ で
+囲んで)指摘します。
 
-   The file containing the error was included in line 1 of ‘./yyy.fs’,
-and ‘yyy.fs’ was included from a non-file (in this case, by giving
-‘yyy.fs’ as command-line parameter to Gforth).
+   エラーを含むファイルは ‘./yyy.fs’ の 1 行目でインクルード(included)さ
+れており、 ‘yyy.fs’ はファイル以外からインクルードされています(この場合
+、 ‘yyy.fs’ を Gforth へのコマンドライン パラメータとして指定することに
+より)。
 
-   At the end of the error message you find a return stack dump that can
-be interpreted as a backtrace (possibly empty).  On top you find the top
-of the return stack when the ‘throw’ happened, and at the bottom you
-find the return stack entry just above the return stack of the topmost
-text interpreter.
+   エラー・メッセージの最後には、 バックトレースとして解釈できるリターン
+・スタック・ダンプが表示されます(空の可能性があります)。 その一番上の行
+には ‘throw’ が発生したときのリターン・スタックのTOSが表示され、 その一
+番下の行には最上位のテキスト・インタプリタのリターン・スタックのすぐ上に
+あるリターン・スタック・エントリが表示されます。
 
-   To the right of most return stack entries you see a guess for the
-word that pushed that return stack entry as its return address.  This
-gives a backtrace.  In our case we see that ‘bar’ called ‘foo’, and
-‘foo’ called ‘@’ (and ‘@’ had an _Invalid memory address_ exception).
+   ほとんどのリターン・スタック・エントリの右側には、 そのリターン・スタ
+ック・エントリをリターン・アドレスとしてプッシュしたワードを推測して表示
+します。 これによりバックトレースが得られます。 この例では、 ‘bar’ が
+‘foo’ を呼び出し、 ‘foo’ が ‘@’ を呼び出していることがわかります(そして
+、 この ‘@’ には 「Invalid Memory address」例外がありました)。
 
-   Note that the backtrace is not perfect: We don’t know which return
-stack entries are return addresses (so we may get false positives); and
-in some cases (e.g., for ‘abort"’) we cannot determine from the return
-address the word that pushed the return address, so for some return
-addresses you see no names in the return stack dump.
+   注意: バックトレースは完璧では無いことに注意してください。 どのリター
+ン・スタック・エントリがリターン・アドレスであるかは知りません(そのため
+、 誤検知が発生する可能性があります)。 また、 (‘abort"’ など、)場合によ
+っては、 リターン・アドレスからはリターン・ アドレスをプッシュしたワード
+を特定できないため、 リターン・アドレスによってはリターン・スタック・ダ
+ンプに名前が表示されません。
 
-   The return stack dump represents the return stack at the time when a
-specific ‘throw’ was executed.  In programs that make use of ‘catch’, it
-is not necessarily clear which ‘throw’ should be used for the return
-stack dump (e.g., consider one ‘throw’ that indicates an error, which is
-caught, and during recovery another error happens; which ‘throw’ should
-be used for the stack dump?).  Gforth presents the return stack dump for
-the first ‘throw’ after the last executed (not returned-to) ‘catch’ or
-‘nothrow’; this works well in the usual case.  To get the right
-backtrace, you usually want to insert ‘nothrow’ or ‘['] false catch
-2drop’ after a ‘catch’ if the error is not rethrown.
+   リターン・スタック・ダンプは、 特定の ‘throw’ が execute されたときの
+リターン・スタックを表します。 ‘catch’ を使用するプログラムでは、 リター
+ン・スタック・ダンプにどの ‘throw’ を使用する必要があるかが必ずしも明確
+ではありません(たとえば、 エラーを示すある ‘throw’ がキャッチされ、 その
+リカバリ中に別のエラーが発生したとすると、 スタック・ダンプにはどの
+‘throw’ のを使用するべきでしょうか？)。 Gforth は、 最後に execute され
+た(そして、 その execute からまだ返ってきていない状態で、 ) ‘catch’ また
+は ‘nothrow’ の後の最初の ‘throw’ のリターン・スタック・ダンプを表示しま
+す: 通常、 これはうまく機能します。 正しいバック・トレースを取得するため
+には、 通常、 エラーが再 throw されない場合は ‘catch’ の後に ‘nothrow’ ま
+たは ‘['] false catch 2drop’ を挿入します。
 
-   ‘Gforth’ is able to do a return stack dump for throws generated from
-primitives (e.g., invalid memory address, stack empty etc.);
-‘gforth-fast’ is only able to do a return stack dump from a directly
-called ‘throw’ (including ‘abort’ etc.).  Given an exception caused by a
-primitive in ‘gforth-fast’, you will typically see no return stack dump
-at all; however, if the exception is caught by ‘catch’ (e.g., for
-restoring some state), and then ‘throw’n again, the return stack dump
-will be for the first such ‘throw’.
+   ‘gforth’ エンジン(訳注: OSコマンドラインから gforth で起動)は、 プリ
+ミティブが生成した throw のリターン・スタック・ダンプを行えます(例:
+invalid memory address(不正なメモリアクセス), stack empty(スタックが空)
+等)。 ‘gforth-fast’ エンジン(訳注: OSコマンドラインから gforth-fast で起
+動)は、 直接呼び出された ‘throw’ (‘abort’ などを含む) からのリターン・ス
+タック・ダンプのみを行うことができます。 ‘gforth-fast’ エンジンのプリミ
+ティブによって例外が発生した場合、 通常はリターン・スタック・ダンプは全
+く見れません。 しかしながら、 ‘catch’ によって例外がキャッチされ(たとえ
+ば、 何らかの状態を復元するため)、 その後再び ‘throw’ が返される場合、 最
+初の ‘throw’ に対するリターン・スタック・ダンプは見れます。
 
-   ‘gforth-fast’ also does not attempt to differentiate between division
-by zero and division overflow, because that costs time in every
-division.
+   また、 ‘gforth-fast’ は、 ゼロ除算と除算オーバーフローを区別しようと
+しません。 これは、 どの除算も時間が掛かる処理だからです。
 
 
 File: gforth.info,  Node: Tools,  Next: Standard conformance,  Prev: Error messages,  Up: Top
@@ -1409,7 +1421,7 @@ File: gforth.info,  Node: Tools,  Next: Standard conformance,  Prev: Error messa
 * Standard Report::          使用されたワードをワードセットごとにソートして報告します
 * Stack depth changes::      このスタック値はどこから来たのか?
 
-See also *note Emacs and Gforth::.
+こちらもご覧ください *note Emacs and Gforth::
 
 
 File: gforth.info,  Node: Standard Report,  Next: Stack depth changes,  Prev: Tools,  Up: Tools
@@ -1417,18 +1429,18 @@ File: gforth.info,  Node: Standard Report,  Next: Stack depth changes,  Prev: To
 8.1 ‘ans-report.fs’: Report the words used, sorted by wordset
 =============================================================
 
-If you want to label a Forth program as Standard Program, you must
-document which wordsets the program uses.
+Forth プログラムを標準プログラムとしてラベル付けしたい場合は、 プログラ
+ムがどのワードセットを使用するかを文書化する必要があります。
 
-   The ‘ans-report.fs’ tool makes it easy for you to determine which
-words from which wordset and which non-standard words your application
-uses.  You simply have to include ‘ans-report.fs’ before loading the
-program you want to check.  After loading your program, you can get the
-report with ‘print-ans-report’.  A typical use is to run this as batch
-job like this:
+   ‘ans-report.fs’ ツールを使用すると、アプリケーションでどのワードセッ
+トのどのワードが使用されているか、 どの非標準ワードが使用されているかを
+簡単に判断できます。 チェックしたいプログラムをロードする前に
+‘ans-report.fs’ をインクルードするだけです。 プログラムをロードした後、
+‘print-ans-report’ を使用してレポートを取得できます。 一般的な使用法は、
+以下のようにこれをバッチ・ジョブとして実行することです:
      gforth ans-report.fs myprog.fs -e "print-ans-report bye"
 
-   The output looks like this (for ‘compat/control.fs’):
+   出力は以下のようになります (‘compat/control.fs’ の場合):
      The program uses the following words
      from CORE :
      : POSTPONE THEN ; immediate ?dup IF 0=
@@ -1437,25 +1449,27 @@ job like this:
      from FILE :
      (
 
-   ‘ans-report.fs’ reports both Forth-94 and Forth-2012 wordsets.  For
-words that are in both standards, it reports the wordset without suffix
-(e.g., ‘CORE-EXT’).  For Forth-2012-only words, it reports the wordset
-with a ‘-2012’ suffix (e.g., ‘CORE-EXT-2012’); and likewise for the
-words that are Forth-94-only (i.e., that have been removed in
-Forth-2012).
+   ‘ans-report.fs’ は、 Forth-94 と Forth-2012 の両方のワードセットをレ
+ポートします。 両方の標準に含まれるワードについては、 接尾辞なしでワード
+セットが報告されます(例: ‘CORE-EXT’)。 Forth-2012 専用のワードの場合、
+‘-2012’ 接尾辞が付いたワードセットが報告されます(例: ‘CORE-EXT-2012’)。
+Forth-94 のみのワード(つまり、Forth-2012 で削除されたワード)についても同
+様です。
 
 8.1.1 Caveats
 -------------
 
-Note that ‘ans-report.fs’ just checks which words are used, not whether
-they are used in a standard-conforming way!
+注意: ‘ans-report.fs’ は、 どのワードが使用されているかをチェックするだ
+けで、 標準に準拠した方法で使用されているかどうかをチェックするわけでは
+ないことに注意してください。
 
-   Some words are defined in several wordsets in the standard.
-‘ans-report.fs’ reports them for only one of the wordsets, and not
-necessarily the one you expect.  It depends on usage which wordset is
-the right one to specify.  E.g., if you only use the compilation
-semantics of ‘S"’, it is a Core word; if you also use its interpretation
-semantics, it is a File word.
+   一部のワードは、 標準で複数のワードセットで定義されています。
+‘ans-report.fs’ は、 それらのワードセットのうちの 1 つについてのみレポー
+トし、 それは必ずしもあなたが期待したワードセットとは限りません。 どのワ
+ードセットを指定するのが適切かは、 用途によって異なります。 たとえば、
+‘S"’ のコンパイル機能(compilation semantics)のみを使用する場合、それは
+CORE ワードです。 インタプリタ機能(interpretation semantics)も使用する場
+合、 それは FILE ワードです。
 
 
 File: gforth.info,  Node: Stack depth changes,  Prev: Standard Report,  Up: Tools
@@ -1463,41 +1477,39 @@ File: gforth.info,  Node: Stack depth changes,  Prev: Standard Report,  Up: Tool
 8.2 Stack depth changes during interpretation
 =============================================
 
-Sometimes you notice that, after loading a file, there are items left on
-the stack.  The tool ‘depth-changes.fs’ helps you find out quickly where
-in the file these stack items are coming from.
+ファイルをロードした後、 スタックに項目が残っていることに気づくことがあ
+ります。 ‘ Depth-changes.fs’ ツールを使用すると、 これらのスタック項目が
+ファイル内のどこから来たのかをすばやく見つけることができます。
 
-   The simplest way of using ‘depth-changes.fs’ is to include it before
-the file(s) you want to check, e.g.:
+   ‘ Depth-changes.fs’ を使用する最も簡単な方法は、 チェックするファイル
+の前にこれをインクルードすることです。 例:
 
      gforth depth-changes.fs my-file.fs
 
-   This will compare the stack depths of the data and FP stack at every
-empty line (in interpretation state) against these depths at the last
-empty line (in interpretation state).  If the depths are not equal, the
-position in the file and the stack contents are printed with ‘~~’ (*note
-Debugging::).  This indicates that a stack depth change has occured in
-the paragraph of non-empty lines before the indicated line.  It is a
-good idea to leave an empty line at the end of the file, so the last
-paragraph is checked, too.
+   これにより、 すべての空行(インタプリタ状態)でのデータ・スタックの深さ
+と FP スタックの深さが、 最後の空行(インタプリタ状態)での深さと比較され
+ます。 深さが等しくない場合は、 ファイル内の位置とスタックの内容が ‘~~’
+(*note Debugging::) で出力されます。 これは、 指摘行より前の空ではない行
+内の段落(paragraph)でスタックの深さの変更が発生したことを示します。 ファ
+イルの最後に空行を残しておいて、 最後の段落もチェックされるようにするこ
+とをお勧めします。
 
-   Checking only at empty lines usually works well, but sometimes you
-have big blocks of non-empty lines (e.g., when building a big table),
-and you want to know where in this block the stack depth changed.  You
-can check all interpreted lines with
+   通常、 空行のみをチェックするのはうまく機能しますが、 空行ではない大
+きなブロックが存在する場合(大きなテーブルを構築する場合など)、 このブロ
+ックのどこでスタックの深さが変更されたのかを知りたい場合があります。 以
+下を使用すると、 解釈(interpret)されたすべての行をチェックできます
 
      gforth depth-changes.fs -e "' all-lines is depth-changes-filter" my-file.fs
 
-   This checks the stack depth at every end-of-line.  So the depth
-change occured in the line reported by the ‘~~’ (not in the line
-before).
+   これにより、 各行末ごとにスタックの深さがチェックされます。 したがっ
+て、 深さの変更は ‘~~’ によって報告された行で発生しています(それより前の
+行ではありません)。
 
-   Note that, while this offers better accuracy in indicating where the
-stack depth changes, it will often report many intentional stack depth
-changes (e.g., when an interpreted computation stretches across several
-lines).  You can suppress the checking of some lines by putting
-backslashes at the end of these lines (not followed by white space), and
-using
+   注意: これにより、 スタックの深さが変更される場所を示す精度が向上しま
+すが、 多くの、 意図した、 スタックの深さの変更が報告されることが多いこ
+とに注意してください(たとえば、 解釈(interpret)された計算が複数の行にま
+たがる場合)。 一部の行のチェックを抑制するには、 これらの行の末尾にバッ
+クスラッシュを置き(その後に空白は続きません)、 以下を使用します
 
      gforth depth-changes.fs -e "' most-lines is depth-changes-filter" my-file.fs
 
@@ -1509,54 +1521,53 @@ File: gforth.info,  Node: Standard conformance,  Next: Standard vs Extensions,  
 
 (標準適合度)私達の知る限り、 Gforth は…
 
-   ANS Forth System and a Forth-2012 System
-   • providing the Core Extensions word set
-   • providing the Block word set
-   • providing the Block Extensions word set
-   • providing the Double-Number word set
-   • providing the Double-Number Extensions word set
-   • providing the Exception word set
-   • providing the Exception Extensions word set
-   • providing the Facility word set
-   • providing the Facility Extensions word set, except ‘EMIT?’
-   • providing the File Access word set
-   • providing the File Access Extensions word set
-   • providing the Floating-Point word set
-   • providing the Floating-Point Extensions word set
-   • providing the Locals word set
-   • providing the Locals Extensions word set
-   • providing the Memory-Allocation word set
-   • providing the Memory-Allocation Extensions word set
-   • providing the Programming-Tools word set
-   • providing the Programming-Tools Extensions word set, except
-     ‘EDITOR’ and ‘FORGET’
-   • providing the Search-Order word set
-   • providing the Search-Order Extensions word set
-   • providing the String word set
-   • providing the String Extensions word set
-   • providing the Extended-Character wordset
+   ANS Forth システムと Forth-2012 システムに関しては
+   • Core Extensions ワード・セットを提供します
+   • Block ワード・セットを提供します
+   • Block Extensions ワード・セットを提供します
+   • Double-Number ワード・セットを提供します
+   • Double-Number Extensions ワード・セットを提供します
+   • Exception ワード・セットを提供します
+   • Exception Extensions ワード・セットを提供します
+   • Facility ワード・セットを提供します
+   • Facility Extensions ワード・セットを提供します(‘EMIT?’ を除く)
+   • File Access ワード・セットを提供します
+   • File Access Extensions ワード・セットを提供します
+   • Floating-Point ワード・セットを提供します
+   • Floating-Point Extensions ワード・セットを提供します
+   • Locals ワード・セットを提供します
+   • Locals Extensions ワード・セットを提供します
+   • Memory-Allocation ワード・セットを提供します
+   • Memory-Allocation Extensions ワード・セットを提供します
+   • Programming-Tools ワード・セットを提供します
+   • Programming-Tools Extensions ワード・セットを提供します(‘EDITOR’ と
+     ‘FORGET’ を除く)
+   • Search-Order ワード・セットを提供します
+   • Search-Order Extensions ワード・セットを提供します
+   • String ワード・セットを提供します
+   • String Extensions ワード・セットを提供します
+   • Extended-Character ワード・セットを提供します
 
-   Gforth has the following environmental restrictions:
+   Gforth には以下の環境的制限(environmental restrictions)があります:
 
-   • While processing the OS command line, if an exception is not
-     caught, Gforth exits with a non-zero exit code instead of
-     performing QUIT.
+   • OS コマンド・ラインの処理中に例外がキャッチされなかった場合、
+     Gforth は QUIT を実行する代わりにゼロ以外の終了コード(exit code)で
+     終了(exit)します。
 
-   • When an ‘throw’ is performed after a ‘query’, Gforth does not
-     always restore the input source specification in effect at the
-     corresponding catch.
+   • ‘query’ の後に ‘throw’ が実行される場合、 Gforth は対応する ‘catch’
+     で有効な入力ソース仕様を常に復元するとは限りません。
 
-   In addition, Standard Forth systems are required to document certain
-implementation choices.  This chapter tries to meet these requirements
-for the Forth-94 standard.  For the Forth-2012 standard, we decided to
-produce the additional documentation only if there is demand.  So if you
-are really missing this documentation, please let us know.
+   さらに、 標準 Forth システムでは、 特定の実装での選択を文書化する必要
+があります。 この章では、 Forth-94 標準のこれらの要件を満たすことを試み
+ます。 Forth-2012 標準については、 需要がある場合にのみ追加のドキュメン
+トを作成することにしました。 したがって、 このドキュメントで本当に足りな
+いという場合は、 著者達までご連絡ください。
 
-   In many cases, the following documentation gives a way to ask the
-system for the information instead of providing the information
-directly, in particular, if the information depends on the processor,
-the operating system or the installation options chosen, or if they are
-likely to change during the maintenance of Gforth.
+   多くの場合、 以下のドキュメント群においては、 特に、 情報がプロセッサ
+に依存する場合、 オペレーティング・システムまたは選択したインストール・
+オプション、 または、 Gforth のメンテナンス中に変更される可能性があるか
+どうについては、 情報を直接提供する代わりに、 システムに情報を要求する方
+法が説明されています。
 
 * Menu:
 
@@ -1590,50 +1601,50 @@ File: gforth.info,  Node: core-idef,  Next: core-ambcond,  Prev: The Core Words,
 9.1.1 Implementation Defined Options
 ------------------------------------
 
-(Cell) aligned addresses:
-     processor-dependent.  Gforth’s alignment words perform natural
-     alignment (e.g., an address aligned for a datum of size 8 is
-     divisible by 8).  Unaligned accesses usually result in a ‘-23
-     THROW’.
+セル単位に整列されたアドレス:
+     プロセッサ依存です。 Gforth の整列(alignment)ワードは自然な整列
+     (natural alignment)を実行します(たとえば、 サイズ 8 のデータに対し
+     て整列されたアドレスは 8 で割り切れます)。 通常、 非整列アクセス
+     (unaligned accesses)では ‘-23 THROW’ が発生します。
 
-‘EMIT’ and non-graphic characters:
-     The character is output using the C library function (actually,
-     macro) ‘putc’.
+‘EMIT’ と非表示文字:
+     文字(character)は C 言語のライブラリ関数(実際にはマクロ) ‘putc’ を
+     使用して出力されます。
 
-character editing of ‘ACCEPT’ and ‘EXPECT’:
-     This is modeled on the GNU readline library (*note Command Line
-     Editing: (readline)Readline Interaction.) with Emacs-like key
-     bindings.  ‘Tab’ deviates a little by producing a full word
-     completion every time you type it (instead of producing the common
-     prefix of all completions).  *Note Command-line editing::.
+‘ACCEPT’ と ‘EXPECT’ の文字編集:
+     これは、 Emacs のようなキー・バインディングを備えた GNU readline ラ
+     イブラリ(*note Command Line Editing: (readline)Readline
+     Interaction.)をモデルにしています。 ‘Tab’ を入力するたびに (すべて
+     の補完に共通のプレフィックスを生成するのではなく)完全なワード語補完
+     を生成するという点で少し異なります。 *Note Command-line editing::
 
-character set:
-     The character set of your computer and display device.  Gforth is
-     8-bit-clean (but some other component in your system may make
-     trouble).
+文字セット:
+     あなたのコンピュータと表示デバイスの文字セット。 Gforth は 8 ビット
+     クリーンです(ただし、 システム内の他のコンポーネントが問題を引き起
+     こす可能性があります)。
 
-Character-aligned address requirements:
-     installation-dependent.  Currently a character is represented by a
-     C ‘unsigned char’; in the future we might switch to ‘wchar_t’
-     (Comments on that requested).
+文字単位に整列されたアドレスの要件:
+     インストールに依存します。 現在、 文字は C言語の ‘unsigned char’ で
+     表されます。 (リクエストへのコメントですけども、 )将来的には
+     ‘wchar_t’ に切り替える可能性があります。
 
-character-set extensions and matching of names:
-     Any character except the ASCII NUL character can be used in a name.
-     Matching is case-insensitive (except in ‘TABLE’s).  The matching is
-     performed using the C library function ‘strncasecmp’, whose
-     function is probably influenced by the locale.  E.g., the ‘C’
-     locale does not know about accents and umlauts, so they are matched
-     case-sensitively in that locale.  For portability reasons it is
-     best to write programs such that they work in the ‘C’ locale.  Then
-     one can use libraries written by a Polish programmer (who might use
-     words containing ISO Latin-2 encoded characters) and by a French
-     programmer (ISO Latin-1) in the same program (of course, ‘WORDS’
-     will produce funny results for some of the words (which ones,
-     depends on the font you are using)).  Also, the locale you prefer
-     may not be available in other operating systems.  Hopefully,
-     Unicode will solve these problems one day.
+文字セット拡張と名前の照合:
+     ASCII NUL 文字を除く任意の文字を名前に使用できます。 照合では大文字
+     と小文字が区別されません(‘TABLE’ を除く)。 照合は C 言語ライブラリ
+     関数 ‘strncasecmp’ を使用して実行されますが、 その関数はおそらくロ
+     ケールの影響を受けます。 たとえば、‘C’ ロケールではアクセントとウム
+     ラウトが認識されないため、 そのロケールでは大文字と小文字が区別され
+     て照合されます。 移植性の理由から、 ‘C’ ロケールで動作するようにプ
+     ログラムを作成することが最善です。 そうすれば、 ポーランド人のプロ
+     グラマ(ISO Latin-2 でエンコードされた文字を含むワードを使用する可能
+     性がある)と、 フランスのプログラマ(ISO Latin-1)が作成したライブラリ
+     を同じプログラム内で使用できます(もちろん、 ‘WORDS’ は一部のワード
+     に対して愉快な結果を生成します(どのワードでそうなるかは、 使用して
+     いるフォントによって異なります))。 また、 あなたのご希望のロケール
+     が他のオペレーティング・システムでは利用できない場合もあります。
+     Unicode がいつかこれらの問題を解決してくれることを願っています。
 
-conditions under which control characters match a space delimiter:
+制御文字がスペース区切り文字と一致する条件:
      If ‘word’ is called with the space character as a delimiter, all
      white-space characters (as identified by the C macro ‘isspace()’)
      are delimiters.  ‘Parse’, on the other hand, treats space like
@@ -6437,7 +6448,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * cov+ ( -- ) gforth-experimental:       Code Coverage.       (line  28)
 * coverage? ( -- F ) gforth-internal:    Code Coverage.       (line  25)
 * cputime ( -- DUSER DSYSTEM ) gforth-0.5: Keeping track of Time.
-                                                              (line  28)
+                                                              (line  31)
 * cr ( -- ) core:                        Miscellaneous output.
                                                               (line   6)
 * Create ( "NAME" -- ) core:             CREATE.              (line  19)
@@ -7171,7 +7182,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * nt ( -- ) gforth-1.0:                  Locating exception source.
                                                               (line   9)
 * ntime ( -- DTIME ) gforth-1.0:         Keeping track of Time.
-                                                              (line  25)
+                                                              (line  28)
 * nw ( -- ) gforth-1.0:                  Locating uses of a word.
                                                               (line  17)
 * o> ( R:C-ADDR -- ) new:                Mini-OOF2.           (line  16)
@@ -7271,7 +7282,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * ptr ( -- ) oof:                        Class Declaration.   (line  13)
 * public ( -- ) objects:                 Objects Glossary.    (line 152)
 * query ( -- ) core-ext-obsolescent:     Input Sources.       (line  49)
-* quit ( ?? -- ?? ) core:                Miscellaneous Words. (line   9)
+* quit ( ?? -- ?? ) core:                Miscellaneous Words. (line  10)
 * r/o ( -- FAM ) file:                   General files.       (line   9)
 * r/w ( -- FAM ) file:                   General files.       (line  11)
 * r> ( R:W -- W ) core:                  Return stack.        (line  15)
@@ -7651,7 +7662,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * User ( "NAME" -- ) gforth-0.2:         Task-local data.     (line  14)
 * user' ( "NAME" -- U ) gforth-experimental: Task-local data. (line  41)
 * utime ( -- DTIME ) gforth-0.5:         Keeping track of Time.
-                                                              (line  21)
+                                                              (line  24)
 * UValue ( "NAME" -- ) gforth-1.0:       Task-local data.     (line  27)
 * v* ( F-ADDR1 NSTRIDE1 F-ADDR2 NSTRIDE2 UCOUNT -- R ) gforth-0.5: Floating Point.
                                                               (line  98)
