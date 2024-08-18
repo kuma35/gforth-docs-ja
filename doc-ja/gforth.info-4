@@ -1645,143 +1645,148 @@ File: gforth.info,  Node: core-idef,  Next: core-ambcond,  Prev: The Core Words,
      Unicode がいつかこれらの問題を解決してくれることを願っています。
 
 制御文字がスペース区切り文字と一致する条件:
-     If ‘word’ is called with the space character as a delimiter, all
-     white-space characters (as identified by the C macro ‘isspace()’)
-     are delimiters.  ‘Parse’, on the other hand, treats space like
-     other delimiters.  ‘Parse-name’, which is used by the outer
-     interpreter (aka text interpreter) by default, treats all
-     white-space characters as delimiters.
+     ‘word’ がスペース文字を区切り文字として使用して呼び出された場合、 す
+     べての空白文字(C 言語マクロ ‘isspace()’ で識別される)が区切り文字に
+     なります。 一方、 ‘parse’ はスペースを他の区切り文字と同様に扱いま
+     す。 ‘parse-name’ はデフォルトで外部インタープリター (別名テキスト
+     ・インタープリター) によって使用され、 すべての空白文字を区切り文字
+     として扱います。
 
-format of the control-flow stack:
-     The data stack is used as control-flow stack.  The size of a
-     control-flow stack item in cells is given by the constant
-     ‘cs-item-size’.  At the time of this writing, an item consists of a
-     (pointer to a) locals list (third), an address in the code
-     (second), and a tag for identifying the item (TOS). The following
-     tags are used: ‘defstart’, ‘live-orig’, ‘dead-orig’, ‘dest’,
-     ‘do-dest’, ‘scopestart’.
+制御フロースタックの形式:
+     データ・スタックは制御フロー・スタックとして使用されます。 制御フロ
+     ー・スタック項目のセル単位でのサイズは、 constant ‘cs-item-size’ に
+     よって与えられます。 この記事の執筆時点では、 制御フロー・スタック
+     項目はローカル変数リスト(3番目)、 コード内のアドレス(2 番目)、 アイ
+     テムを識別するためのタグ(TOS) で構成されています。 タグとして次のタ
+     グが使用されています: ‘defstart’, ‘live-orig’, ‘dead-orig’, ‘dest’,
+     ‘do-dest’, ‘scopestart’
 
-conversion of digits > 35
-     The characters ‘[\]^_'’ are the digits with the decimal value
-     36−41.  There is no way to input many of the larger digits.
+35を超える「数字」の変換
+     文字 ‘[\]^_'’ は、 10 進数値で 36〜41 の「数字」として解釈されます
+     (訳注: 基数による)。 それより大きな「数字」の多くは(直接)入力する方
+     法がありません。
 
-display after input terminates in ‘ACCEPT’ and ‘EXPECT’:
-     The cursor is moved to the end of the entered string.  If the input
-     is terminated using the ‘Return’ key, a space is typed.
+‘ACCEPT’ および ‘EXPECT’ で入力が終了した後の表示:
+     入力した文字列の末尾にカーソルが移動します。 ‘Return’ キーを使用し
+     て入力を終了する場合は、 スペースが入力されます。
 
-exception abort sequence of ‘ABORT"’:
-     The error string is stored into the variable ‘"error’ and a ‘-2
-     throw’ is performed.
+‘ABORT"’ の 例外中止(exception abort)シーケンス:
+     エラー文字列は変数 ‘"error’ に保存され、 ‘-2 throw’ が実行されます
+     。
 
-input line terminator:
-     For interactive input, ‘C-m’ (CR) and ‘C-j’ (LF) terminate lines.
-     One of these characters is typically produced when you type the
-     ‘Enter’ or ‘Return’ key.
+入力行終端文字:
+     対話入力の場合は、 ‘C-m’ (CR) および ‘C-j’ (LF) で行を終了します。
+     通常、 これらの文字は、 ‘Enter’ キーまたは ‘Return’ キーを入力した
+     ときに生成されます。
 
-maximum size of a counted string:
-     ‘s" /counted-string" environment? drop .’.  Currently 255
-     characters on all platforms, but this may change.
+カウンタ付き文字列の最大サイズ:
+     ‘s" /counted-string" environment? drop .’ で得られます。 現在、 す
+     べてのプラットフォームで 255 文字ですが、 これは変更される可能性が
+     あります。
 
-maximum size of a parsed string:
-     Given by the constant ‘/line’.  Currently 255 characters.
+パースされる字列の最大サイズ:
+     constant ‘/line’ によって与えられます。 現在 255 文字です。
 
-maximum size of a definition name, in characters:
-     MAXU/8
+定義名の最大サイズ(文字単位):
+     MAX-U / 8 (‘s" max-u" environment? drop 8 u/ u.’)
 
-maximum string length for ‘ENVIRONMENT?’, in characters:
-     MAXU/8
+‘ENVIRONMENT?’ の最大文字列長(文字単位):
+     MAX-U / 8 (‘s" max-u" environment? drop 8 u/ u.’)
 
-method of selecting the user input device:
-     The user input device is the standard input.  There is currently no
-     way to change it from within Gforth.  However, the input can
-     typically be redirected in the command line that starts Gforth.
+ユーザー入力デバイスを選択する方法:
+     ユーザー入力デバイスは標準入力です。 現時点では、 Gforth 内から変更
+     する方法はありません。 ただし、 入力は通常、Gforth を起動するOSコマ
+     ンド・ラインでリダイレクトできます。
 
-method of selecting the user output device:
-     ‘EMIT’ and ‘TYPE’ output to the file-id stored in the value
-     ‘outfile-id’ (‘stdout’ by default).  Gforth uses unbuffered output
-     when the user output device is a terminal, otherwise the output is
-     buffered.
+ユーザー出力デバイスを選択する方法:
+     ‘EMIT’ および ‘TYPE’ は、値 ‘outfile-id’ (デフォルトでは ‘stdout’)
+     に格納されているファイル ID に出力します。 Gforth は、ユーザー出力
+     デバイスが端末の場合はバッファなしの出力を使用します。 それ以外の場
+     合、 出力はバッファリングされます。
 
-methods of dictionary compilation:
-     What are we expected to document here?
+ディクショナリのコンパイル方法:
+     わざわざここで文書化する必要ある？(What are we expected to document
+     here?)
 
-number of bits in one address unit:
-     ‘s" address-units-bits" environment? drop .’.  8 in all current
-     platforms.
+アドレス単位 1 つ分のビット数:
+     ‘s" address-units-bits" environment? drop .’ で得られます。 現在は
+     すべてのプラットフォームで 8
 
-number representation and arithmetic:
-     Processor-dependent.  Binary two’s complement on all current
-     platforms.
+数値の表現と算術演算:
+     プロセッサに依存します。 現在のすべてのプラットフォームでは 2 進数
+     は 2 の補数表現です。
 
-ranges for integer types:
-     Installation-dependent.  Make environmental queries for ‘MAX-N’,
-     ‘MAX-U’, ‘MAX-D’ and ‘MAX-UD’.  The lower bounds for unsigned (and
-     positive) types is 0.  The lower bound for signed types on two’s
-     complement and one’s complement machines machines can be computed
-     by adding 1 to the upper bound.
+整数型の範囲:
+     インストールに依存します。 ‘MAX-N’ と ‘MAX-U’ と ‘MAX-D’ と
+     ‘MAX-UD’ の環境クエリ(environmental queries)を作成します。 符号なし
+     (および正)型の下限は 0 です。 2 の補数マシンおよび 1 の補数マシンの
+     符号付き型の下限は、 その上限に 1 を加算することで計算できます。
 
-read-only data space regions:
-     The whole Forth data space is writable.
+読み取り専用データ空間領域:
+     Forth データ空間全体が書き込み可能です。
 
-size of buffer at ‘WORD’:
-     ‘PAD HERE - .’.  104 characters on 32-bit machines.  The buffer is
-     shared with the pictured numeric output string.  If overwriting
-     ‘PAD’ is acceptable, it is as large as the remaining dictionary
-     space, although only as much can be sensibly used as fits in a
-     counted string.
+‘WORD’ のバッファのサイズ:
+     ‘PAD HERE - .’ で得られます。 32 ビット マシンでは 104 文字。 バッ
+     ファは、 数値表示出力文字列(pictured numeric output string)と共有さ
+     れます。 ‘PAD’ の上書きが許容される場合、 そのサイズは残りの辞書ス
+     ペースと同じになりますが、 実用になるのはカウンタ付き文字列に収まる
+     範囲程度です。
 
-size of one cell in address units:
-     ‘1 cells .’.
+アドレス単位での 1 セルのサイズ:
+     ‘1 cells .’ で得られます。
 
-size of one character in address units:
-     ‘1 chars .’.  1 on all current platforms.
+アドレス単位での 1 文字のサイズ:
+     ‘1 chars .’ で得られます。 現在のすべてのプラットフォームで 1
 
-size of the keyboard terminal buffer:
-     Varies.  You can determine the size at a specific time using ‘lp@
-     tib - .’.  It is shared with the locals stack and TIBs of files
-     that include the current file.  You can change the amount of space
-     for TIBs and locals stack at Gforth startup with the command line
-     option ‘-l’.
+キーボード・ターミナル・バッファのサイズ:
+     さまざまです。 ‘lp@ tib - .’ を使用して、 特定の時点でのサイズを確
+     認できます。 これは、 現在のファイルを含むファイルのローカル変数ス
+     タックおよび TIB と共有されます。 コマンド・ライン・オプション ‘-l’
+     を使用して、 Gforth 起動時に TIB とローカル変数スタックのスペースの
+     量を変更できます。
 
-size of the pictured numeric output buffer:
-     ‘PAD HERE - .’.  104 characters on 32-bit machines.  The buffer is
-     shared with ‘WORD’.
+表示数値出力(pictured numeric output)バッファのサイズ:
+     ‘PAD HERE - .’ で得られます。 32 ビット マシンでは 104 文字。 バッ
+     ファは ‘WORD’ と共有されます。
 
-size of the scratch area returned by ‘PAD’:
-     The remainder of dictionary space.  ‘unused pad here - - .’.
+‘PAD’ によって返されるスクラッチ領域のサイズ:
+     ディクショナリ・スペースの残りまるごと。 ‘unused pad here - - .’ で
+     得られます。
 
-system case-sensitivity characteristics:
-     Dictionary searches are case-insensitive (except in ‘TABLE’s).
-     However, as explained above under character-set extensions, the
-     matching for non-ASCII characters is determined by the locale you
-     are using.  In the default ‘C’ locale all non-ASCII characters are
-     matched case-sensitively.
+システムが英大文字・小文字を区別するか(case-sensitivity characteristics):
+     ディクショナリの検索では大文字と小文字が区別されません(‘TABLE’ を除
+     く)。 ただし、 上記 character-set extensions で説明したように、 非
+     ASCII 文字のマッチングは使用しているロケールによって決まります。 デ
+     フォルトの ‘C’ ロケールでは、 すべての非 ASCII 文字は大文字と小文字
+     を区別して照合されます。
 
-system prompt:
-     ‘ ok’ in interpret state, ‘ compiled’ in compile state.
+システムのプロンプト:
+     インタプリタ状態では ‘ ok’ で、 コンパイル状態では ‘ compiled’ です
+     。
 
-division rounding:
-     The ordinary division words ‘/ mod /mod */ */mod’ perform floored
-     division (with the default installation of Gforth).  You can check
-     this with ‘s" floored" environment? drop .’.  If you write programs
-     that need a specific division rounding, best use ‘fm/mod’ or
-     ‘sm/rem’ for portability.
+除算の四捨五入(division rounding):
+     通常の除算ワード ‘/ mod /mod */ */mod’ は、フロア除算(floored
+     division)を実行します (Gforth のデフォルトのインストールを使用の場
+     合)。 ‘s" floored" environment? drop .’ でこれを確認できます。 特定
+     の除算の四捨五入が必要なプログラムを作成する場合は、 移植性を高める
+     ために ‘fm/mod’ または ‘sm/rem’ を使用するのが最適です。
 
-values of ‘STATE’ when true:
+true の場合の ‘STATE’ の値:
      -1.
 
-values returned after arithmetic overflow:
-     On two’s complement machines, arithmetic is performed modulo
-     2**bits-per-cell for single arithmetic and 4**bits-per-cell for
-     double arithmetic (with appropriate mapping for signed types).
-     Division by zero typically results in a ‘-55 throw’ (Floating-point
-     unidentified fault) or ‘-10 throw’ (divide by zero).  Integer
-     division overflow can result in these throws, or in ‘-11 throw’; in
-     ‘gforth-fast’ division overflow and divide by zero may also result
-     in returning bogus results without producing an exception.
+算術オーバーフロー後に返される値:
+     2 の補数マシンでは、 1倍長の場合は 2**bits-per-cell 、 2倍長の場合
+     はセルあたり 4**bits-per-cell を法として演算(modulo)が実行されます
+     (符号付き型では適切なマッピングを使用)。 ゼロによる除算は通常、
+     ‘-55 throw’ (Floating-point unidentified fault) または ‘-10 throw’
+     (divide by zero) を引き起こします。 整数除算のオーバーフローにより
+     、 ‘-55 throw’ や ‘-10 throw’ 、 または ‘-11 throw’ が発生する可能
+     性があります。 ‘gforth-fast’ エンジン(OSコマンドラインから
+     ‘gforth-fast’ で起動)の除算オーバーフローやゼロ除算では、 例外が生
+     成されずに偽の結果が返される可能性があります。
 
-whether the current definition can be found after DOES>:
-     No.
+現在の定義(current definition)が ‘DOES>’ の後ろで見つかる(可視)かどうか:
+     いいえ(No)。
 
 
 File: gforth.info,  Node: core-ambcond,  Next: core-other,  Prev: core-idef,  Up: The Core Words
@@ -1789,194 +1794,203 @@ File: gforth.info,  Node: core-ambcond,  Next: core-other,  Prev: core-idef,  Up
 9.1.2 Ambiguous conditions
 --------------------------
 
-a name is neither a word nor a number:
-     ‘-13 throw’ (Undefined word).
-
-a definition name exceeds the maximum length allowed:
-     ‘-19 throw’ (Word name too long)
-
-addressing a region not inside the various data spaces of the forth system:
-     The stacks, code space and header space are accessible.  Machine
-     code space is typically readable.  Accessing other addresses gives
-     results dependent on the operating system.  On decent systems: ‘-9
-     throw’ (Invalid memory address).
-
-argument type incompatible with parameter:
-     This is usually not caught.  Some words perform checks, e.g., the
-     control flow words, and issue a ‘ABORT"’ or ‘-12 THROW’ (Argument
-     type mismatch).
-
-attempting to obtain the execution token of a word with undefined execution semantics:
-     The execution token represents the interpretation semantics of the
-     word.  Gforth defines interpretation semantics for all words; for
-     words where the standard does not define interpretation semantics,
-     but defines the execution semantics (except ‘LEAVE’), the
-     interpretation semantics are to perform the execution semantics.
-     For words where the standard defines no interprtation semantics,
-     but defined compilation semantics (plus ‘LEAVE’), the
-     interpretation semantics are to perform the compilation semantics.
-     Some words are marked as compile-only, and ‘'’ gives a warning for
-     these words.
-
-dividing by zero:
-     On some platforms, this produces a ‘-10 throw’ (Division by zero);
-     on other systems, this typically results in a ‘-55 throw’
-     (Floating-point unidentified fault).
-
-insufficient data stack or return stack space:
-     Depending on the operating system, the installation, and the
-     invocation of Gforth, this is either checked by the memory
-     management hardware, or it is not checked.  If it is checked, you
-     typically get a ‘-3 throw’ (Stack overflow), ‘-5 throw’ (Return
-     stack overflow), or ‘-9 throw’ (Invalid memory address) (depending
-     on the platform and how you achieved the overflow) as soon as the
-     overflow happens.  If it is not checked, overflows typically result
-     in mysterious illegal memory accesses, producing ‘-9 throw’
-     (Invalid memory address) or ‘-23 throw’ (Address alignment
-     exception); they might also destroy the internal data structure of
-     ‘ALLOCATE’ and friends, resulting in various errors in these words.
-
-insufficient space for loop control parameters:
-     Like other return stack overflows.
-
-insufficient space in the dictionary:
-     If you try to allot (either directly with ‘allot’, or indirectly
-     with ‘,’, ‘create’ etc.)  more memory than available in the
-     dictionary, you get a ‘-8 throw’ (Dictionary overflow).  If you try
-     to access memory beyond the end of the dictionary, the results are
-     similar to stack overflows.
-
-interpreting a word with undefined interpretation semantics:
-     Gforth defines interpretation semantics for all words; for words
-     where the standard defines execution semantics (except ‘LEAVE’),
-     the interpretation semantics are to perform the execution
-     semantics.  For words where the standard defines no interprtation
-     semantics, but defined compilation semantics (plus ‘LEAVE’), the
-     interpretation semantics are to perform the compilation semantics.
-     Some words are marked as compile-only, and text-interpreting them
-     gives a warning.
-
-modifying the contents of the input buffer or a string literal:
-     These are located in writable memory and can be modified.
-
-overflow of the pictured numeric output string:
-     ‘-17 throw’ (Pictured numeric ouput string overflow).
-
-parsed string overflow:
-     ‘PARSE’ cannot overflow.  ‘WORD’ does not check for overflow.
-
-producing a result out of range:
-     On two’s complement machines, arithmetic is performed modulo
-     2**bits-per-cell for single arithmetic and 4**bits-per-cell for
-     double arithmetic (with appropriate mapping for signed types).
-     Division by zero typically results in a ‘-10 throw’ (divide by
-     zero) or ‘-55 throw’ (floating point unidentified fault).  Overflow
-     on division may result in these errors or in ‘-11 throw’ (result
-     out of range).  ‘Gforth-fast’ may silently produce bogus results on
-     division overflow or division by zero.  ‘Convert’ and ‘>number’
-     currently overflow silently.
-
-reading from an empty data or return stack:
-     The data stack is checked by the outer (aka text) interpreter after
-     every word executed.  If it has underflowed, a ‘-4 throw’ (Stack
-     underflow) is performed.  Apart from that, stacks may be checked or
-     not, depending on operating system, installation, and invocation.
-     If they are caught by a check, they typically result in ‘-4 throw’
-     (Stack underflow), ‘-6 throw’ (Return stack underflow) or ‘-9
-     throw’ (Invalid memory address), depending on the platform and
-     which stack underflows and by how much.  Note that even if the
-     system uses checking (through the MMU), your program may have to
-     underflow by a significant number of stack items to trigger the
-     reaction (the reason for this is that the MMU, and therefore the
-     checking, works with a page-size granularity).  If there is no
-     checking, the symptoms resulting from an underflow are similar to
-     those from an overflow.  Unbalanced return stack errors can result
-     in a variety of symptoms, including ‘-9 throw’ (Invalid memory
-     address) and Illegal Instruction (typically ‘-260 throw’).
-
-unexpected end of the input buffer, resulting in an attempt to use a zero-length string as a name:
-     ‘Create’ and its descendants perform a ‘-16 throw’ (Attempt to use
-     zero-length string as a name).  Words like ‘'’ probably will not
-     find what they search.  Note that it is possible to create
-     zero-length names with ‘nextname’ (should it not?).
-
-‘>IN’ greater than input buffer:
-     The next invocation of a parsing word returns a string with length
-     0.
-
-‘RECURSE’ appears after ‘DOES>’:
-     Compiles a recursive call to the code after ‘DOES>’.
-
-argument input source different than current input source for ‘RESTORE-INPUT’:
-     ‘-12 THROW’.  Note that, once an input file is closed (e.g.,
-     because the end of the file was reached), its source-id may be
-     reused.  Therefore, restoring an input source specification
-     referencing a closed file may lead to unpredictable results instead
-     of a ‘-12 THROW’.
-
-     In the future, Gforth may be able to restore input source
-     specifications from other than the current input source.
-
-data space containing definitions gets de-allocated:
-     Deallocation with ‘allot’ is not checked.  This typically results
-     in memory access faults or execution of illegal instructions.
-
-data space read/write with incorrect alignment:
-     Processor-dependent.  Typically results in a ‘-23 throw’ (Address
-     alignment exception).  Under Linux-Intel on a 486 or later
-     processor with alignment turned on, incorrect alignment results in
-     a ‘-9 throw’ (Invalid memory address).  There are reportedly some
-     processors with alignment restrictions that do not report
-     violations.
-
-data space pointer not properly aligned, ‘,’, ‘C,’:
-     Like other alignment errors.
-
-less than u+2 stack items (‘PICK’ and ‘ROLL’):
-     Like other stack underflows.
-
-loop control parameters not available:
-     Not checked.  The counted loop words simply assume that the top of
-     return stack items are loop control parameters and behave
-     accordingly.
-
-most recent definition does not have a name (‘IMMEDIATE’):
-     ‘abort" last word was headerless"’.
-
-name not defined by ‘VALUE’ used by ‘TO’:
-     ‘-32 throw’ (Invalid name argument) (unless name is a local or was
-     defined by ‘CONSTANT’; in the latter case it just changes the
-     constant).
-
-name not found (‘'’, ‘POSTPONE’, ‘[']’, ‘[COMPILE]’):
+ワードでも数字でもない名前:
      ‘-13 throw’ (Undefined word)
 
-parameters are not of the same type (‘DO’, ‘?DO’, ‘WITHIN’):
-     Gforth behaves as if they were of the same type.  I.e., you can
-     predict the behaviour by interpreting all parameters as, e.g.,
-     signed.
+定義名が許可される最大長を超えています:
+     ‘-19 throw’ (Word name too long)
 
-‘POSTPONE’ or ‘[COMPILE]’ applied to ‘TO’:
-     Assume ‘: X POSTPONE TO ; IMMEDIATE’.  ‘X’ performs the compilation
-     semantics of ‘TO’.
+forth システムのさまざまなデータ空間内で無い領域をアドレス指定しようとした:
+     スタックやコード・スペースやヘッダー・スペースはアクセス可能です。
+     マシン・コード空間は通常、読み取り可能です。 他のアドレスにアクセス
+     すると、 オペレーティング・システムに応じた結果が得られます。 まと
+     もなシステムの場合: ‘-9 throw’ (Invalid memory address)
 
-String longer than a counted string returned by ‘WORD’:
-     Not checked.  The string will be ok, but the count will, of course,
-     contain only the least significant bits of the length.
+引数の型がパラメータと互換性がありません:
+     これは通常はキャッチされません。 一部のワード(制御フロー・ワードな
+     ど)はチェックを実行し、 ‘ABORT"’ または ‘-12 THROW’ (Argument type
+     mismatch) となります。
 
-u greater than or equal to the number of bits in a cell (‘LSHIFT’, ‘RSHIFT’):
-     Processor-dependent.  Typical behaviours are returning 0 and using
-     only the low bits of the shift count.
+実行機能(execution semantics)が未定義であるワードの実行トークンを取得しようとしています:
+     実行トークンは、 ワードのインタプリタ機能(interpretation
+     semantics)を表します。 Gforth はすべてのワードのインタプリタ機能を
+     定義します。 標準でインタプリタ機能が定義されていないが、 実行機能
+     (execution semantics)が定義されているワード(‘LEAVE’ を除く)について
+     は、 インタプリタ機能が実行機能を実行します。 標準でインタプリタ機
+     能が定義されていないが、 コンパイル機能(compilation semantics)(およ
+     び ‘LEAVE’)が定義されているワードの場合、 インタプリタ機能はコンパ
+     イル機能を実行します。 一部の単語はコンパイル専用(compile-only)とし
+     てマークされており、 ‘'’ はこれらのワードに対して警告を出します。
 
-word not defined via ‘CREATE’:
-     ‘>BODY’ produces the PFA of the word no matter how it was defined.
+ゼロ除算:
+     一部のプラットフォームでは、 これにより ‘-10 throw’ (Division by
+     zero) が生成されます。 他のシステムでは、 通常、 これにより ‘-55
+     throw’ (Floating-point unidentified fault) が生成されます。
+
+データ・スタックのスペースまたはリターン・スタックのスペースが不十分:
+     オペレーティング・システムやインストール時の設定や Gforth の起動時
+     の設定に応じて、 これはメモリ管理ハードウェアによって、 チェックさ
+     れたり、チェックされなかったり。 これがチェックされている場合、 通
+     常はオーバーフローが発生するするやいなや、 (プラットフォームとオー
+     バーフローを達成した方法によって異なりますが、) ‘-3 throw’ (Stack
+     overflow) または ‘-5 throw’ (Return stack overflow) または ‘-9
+     throw’ (Invalid memory address) を受け取ります。 これがチェックされ
+     ていない場合、 オーバーフローは通常、 原因不明の不正なメモリ・アク
+     セスを引き起こし、 ‘-9 throw’ (Invalid memory address) または ‘-23
+     throw’ (Address alignment exception) を生成します。 また、
+     ‘ALLOCATE’ とそのファミリーの内部データ構造も破壊し、 これらのワー
+     ドにさまざまなエラーが発生する可能性があります。
+
+ループ制御パラメータ用のスペース不足:
+     他のリターン・スタック・オーバーフローと同様。
+
+ディクショナリのスペースが不足:
+     ディクショナリで利用可能なメモリを超えるメモリを(‘allot’ で直接、 ま
+     たは ‘,’ や ‘create’ などで間接的に)割り当てようとすると、 ‘-8
+     throw’ (Dictionary overflow) が発生します。 ディクショナリの末尾を
+     超えてメモリにアクセスしようとすると、 結果はスタック・オーバーフロ
+     ーと同様になります。
+
+未定義のインタプリタ機能(interpretation semantics)でワードを解釈(interpret):
+     Gforth は全てのワードのインタプリタ機能(interpretation semantics)を
+     定義します。 標準で実行機能(execution semantics)が定義されているワ
+     ード(‘LEAVE’ を除く)については、 インタプリタ機能が実行機能を実行し
+     ます。 標準ではインタプリタ機能が定義されていないが、 コンパイル機
+     能(compilation semantics)(および ‘LEAVE’)が定義されているワードの場
+     合、 インタプリタ機能はコンパイル機能。 一部のワードはコンパイル専
+     用(compile-only)としてマークされており、 テキスト解釈
+     (text-interpreting)すると警告が表示されます。
+
+入力バッファまたは文字列リテラルの内容を変更:
+     これらは書き込み可能なメモリに配置されており、 変更することができま
+     す。
+
+表示数値出力文字列(pictured numeric output string)のオーバーフロー:
+     ‘-17 throw’ (Pictured numeric ouput string overflow)
+
+パースする文字列のオーバーフロー:
+     ‘PARSE’ はオーバーフロー不可能です。 ‘WORD’ はオーバーフローをチェ
+     ックしません。
+
+範囲外の結果の生成:
+     2 の補数マシンでは、 1倍長演算の場合は 2**bits-per-cell 、2倍長演算
+     の場合は 4**bits-per-cell を法(modulo)として演算が実行されます(符号
+     付き型は適切なマッピングを使用)。 ゼロ除算は通常、‘-10 throw’
+     (divide by zero) または ‘-55 throw’ (floating point unidentified
+     fault) を引き起こします。 除算のオーバーフローにより、 ‘-10 throw’
+     (divide by zero) または ‘-55 throw’ (floating point unidentified
+     fault) が発生したり、 ‘-11 throw’ (result out of range) が発生した
+     りする可能性があります。 ‘Gforth-fast’ エンジン(訳注: OSコマンドラ
+     インから ‘Gforth-fast’ で起動)では、 除算のオーバーフローまたはゼロ
+     による除算の際に、 暗黙的に偽の結果を生成する可能性があります。
+     ‘Convert’ と ‘>number’ は現在、 何も警告を出さずにオーバーフローし
+     ます。
+
+空のデータ・スタックまたは空のリターン・スタックからの読み取り:
+     データ・スタックは、 各ワード execute 後、 外部インタプリタ(別名 テ
+     キスト・インタプリタ)によってチェックされます。 アンダーフローした
+     場合は、 ‘-4 throw’ (Stack underflow) が発出されます。 それとは別に
+     、 オペレーティング・システムやインストール時の設定や(OSからの
+     gforth)起動時の設定に応じて、 スタックがチェックされるかどうかが異
+     なります。 チェックで検出された場合、 通常は、プラットフォームや、
+     どのスタックがどの程度アンダーフローしたかに応じて、 通常は ‘-4
+     throw’ (Stack underflow) または ‘-6 throw’ (Return stack underflow)
+     または ‘-9 throw’ (Invalid memory address) が発生します。 注意: シ
+     ステムが(MMU を介した)チェックを使用している場合でも、 リアクション
+     をトリガーするには、 プログラムがかなりの数のスタック項目をアンダー
+     フローする必要がある場合があることに注意してください(その理由は、
+     MMU 絡みチェックがページ・サイズの粒度で動作するためです)。 チェッ
+     クが行われない場合、アンダーフローによる症状はオーバーフローによる
+     症状と似ています。 アンバランスなリターン スタック エラーは ‘-9
+     throw’ (Invalid memory address) や不正な命令(通常は ‘-260 throw’)な
+     ど、さまざまな症状を引き起こす可能性があります。
+
+予期せず入力バッファの終わりに達したため、 長さ 0 の文字列を名前として使用しようとした:
+     ‘Create’ とその子孫は ‘-16 throw’ (Attempt to use zero-length
+     string as a name;長さ 0 の文字列を名前として使用しようとします)を発
+     出します。 ‘'’ のようなワードは検索しても見つからない可能性がありま
+     す。 注意: ‘nextname’ を使用して長さゼロの名前を作成できることに注
+     意してください(ホントにそうすべきかどうかをよく確認してください)。
+
+‘>IN’ が指し示す値が入力バッファの長さより大きい:
+     次にパース・ワードを呼び出すと、 長さ 0 の文字列が返されます。
+
+‘RECURSE’ が ‘DOES>’ の後に現れた:
+     ‘DOES>’ の後のコードへの再帰呼び出しをコンパイルします。
+
+‘RESTORE-INPUT’ の引数の入力ソースが現在の入力ソースと異なります:
+     ‘-12 THROW’ 注意: 入力ファイルが閉じられると(たとえば、 ファイルの
+     終わりに達したため、 その source-id は再利用される可能性があること
+     に注意してください。 したがって、 閉じられたファイルを参照する入力
+     ソース仕様(input source specification)を復元(restore)すると、 ‘-12
+     THROW’ ではなく、 予期しない結果が発生する可能性があります。
+
+     将来的には、 Gforth は現在の入力ソース以外から入力ソースの仕様を復
+     元(input source specifications)できるようになる可能性があります。
+
+定義を含むデータス・ペースの割り当てを解除:
+     ‘allot’ による割り当て解除はチェックされません。 これにより、通常、
+     メモリ・アクセス・フォールト(memory access faults)や不正な命令の実
+     行(execution of illegal instructions)が発生します。
+
+不正なアライメント(alignment)によるデータ空間の 読み取り/書き込み:
+     プロセッサに依存します。 通常、 ‘-23 throw’ (Address alignment
+     exception) が発生します。 アライメントがオンになっている 486 以降の
+     プロセッサ上の Linux-Intel では、 アライメントが正しくないと ‘-9
+     throw’ (Invalid memory address) が発生します。 報告によると、 アラ
+     イメント制限があるのに違反を報告しない一部のプロセッサがあるとのこ
+     とです。
+
+データ空間ポインタが正しくアライメントされていない ‘,’, ‘C,’:
+     他のアライメント・エラーと同様。
+
+u+2 未満のスタック項目で ‘PICK’ および ‘ROLL’ を実行:
+     他のスタック・アンダーフローと同様。
+
+ループ制御パラメータが無効:
+     チェックされていません。 カウンタ付きループのワード群は、 リターン
+     ・スタック項目の先頭がループ制御パラメータであると単純に想定し、 そ
+     れに応じて動作します。
+
+最新の定義は名前を持っていません(‘IMMEDIATE’):
+     ‘abort" last word was headerless"’.
+
+‘TO’ で使用される ‘VALUE’ で名前が定義されていません:
+     ‘-32 throw’ (Invalid name argument) (名前がローカル変数であるか、
+     ‘CONSTANT’ によって定義されている場合を除きます。 後者の場合は、 定
+     数が変更されるだけです)。
+
+名前が見つかりません(‘'’, ‘POSTPONE’, ‘[']’, ‘[COMPILE]’):
+     ‘-13 throw’ (Undefined word)
+
+パラメータが同じ型(type)ではありません(‘DO’, ‘?DO’, ‘WITHIN’):
+     Gforth は、 それらが同じタイプであるかのように振る舞います。 つまり
+     、 あなたは、 すべてのパラメータを符号付きなどとして解釈することで
+     、振る舞いを予測できます。
+
+‘POSTPONE’ または ‘[COMPILE]’ が ‘TO’ に適用されました:
+     ‘: X POSTPONE TO ; IMMEDIATE’ と仮定します。 ‘X’ は ‘TO’ のコンパイ
+     ル機能(compilation semantics)を実行します。
+
+‘WORD’ によって返されるカウンタ付き文字列よりも長い文字列:
+     チェックされていません。 文字列は問題ありませんが、 当然ながら、 そ
+     のカウントにはその長さの最下位ビット達のみが含まれます。
+
+指定の u がセル内のビット数以上(‘LSHIFT’、‘RSHIFT’):
+     プロセッサに依存します。 一般的な振る舞いは、 0 を返し、 シフト・カ
+     ウントの下位ビット達のみを使用することです。
+
+‘CREATE’ によって定義されたワードではない:
+     ‘>BODY’ は、 ワードの定義方法に関係なく、 ワードの PFA を生成します
+     。
 
      ‘DOES>’ changes the execution semantics of the last defined word no
      matter how it was defined.  E.g., ‘CONSTANT DOES>’ is equivalent to
      ‘CREATE , DOES>’.
 
-words improperly used outside ‘<#’ and ‘#>’:
-     Not checked.  As usual, you can expect memory faults.
+‘<#’ 〜 ‘#>’ の外で不適切に使用されているワード:
+     チェックされていません。 いつものように、 メモリ障害が発生すること
+     が予想されます。
 
 
 File: gforth.info,  Node: core-other,  Prev: core-ambcond,  Up: The Core Words
@@ -1984,10 +1998,10 @@ File: gforth.info,  Node: core-other,  Prev: core-ambcond,  Up: The Core Words
 9.1.3 Other system documentation
 --------------------------------
 
-nonstandard words using ‘PAD’:
-     None.
+‘PAD’ を使用した非標準ワード:
+     無し。
 
-operator’s terminal facilities available:
+利用可能なオペレータの端末設備(operator’s terminal facilities):
      After processing the OS’s command line, Gforth goes into
      interactive mode, and you can give commands to Gforth
      interactively.  The actual facilities available depend on how you
@@ -2349,7 +2363,7 @@ Using ‘FTAN’ on an argument r1 where cos(r1) is zero:
 d cannot be presented precisely as a float in ‘D>F’:
      The result is rounded to the nearest float.
 
-dividing by zero:
+ゼロ除算:
      Platform-dependent; can produce an Infinity, NaN, ‘-42 throw’
      (floating point divide by zero) or ‘-55 throw’ (Floating-point
      unidentified fault).
