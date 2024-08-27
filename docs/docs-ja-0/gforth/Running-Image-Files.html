@@ -75,32 +75,28 @@ Next: <a href="Modifying-the-Startup-Sequence.html" accesskey="n" rel="next">Mod
 
 <span id="index-_002di_002c-invoke-image-file"></span>
 <span id="index-_002d_002dimage-file_002c-invoke-image-file"></span>
-<p>You can invoke Gforth with an image file <i>image</i> instead of the default
-<samp>gforth.fi</samp> with the <code>-i</code> flag (see <a href="Invoking-Gforth.html">Invoking Gforth</a>):
+<p><code>-i</code> フラグを使用したデフォルトの <samp>gforth.fi</samp> の代わりに、 イメージ・ファイル <i>image</i> を使用して
+Gforth を呼び出すことができます(see <a href="Invoking-Gforth.html">Invoking Gforth</a>):
 </p><div class="example">
 <pre class="example">gforth -i <i>image</i>
 </pre></div>
 
 <span id="index-executable-image-file"></span>
 <span id="index-image-file_002c-executable"></span>
-<p>If your operating system supports starting scripts with a line of the form
-<code>#! ...</code>, you just have to type the image file name to start Gforth
-with this image file (note that the file extension <code>.fi</code> is just a
-convention). I.e., to run Gforth with the image file <i>image</i>, you can just
-type <i>image</i> instead of <code>gforth -i <i>image</i></code>.  This works because
-every <code>.fi</code> file starts with a line of this format:
+<p>オペレーティング・システムが <code>#! ...</code> 形式の行によるスクリプトの開始をサポートしている場合は、
+イメージ・ファイル名を入力するだけで、 そのイメージ・ファイルで Gforth を起動できます(ファイル拡張子 <code>.fi</code>
+は単なる慣例であることに注意してください)。 つまり、 イメージ・ファイル <i>image</i> を使用して Gforth を実行するには、
+<code>gforth -i <i>image</i></code> の代わりに <i>image</i> と入力するだけです。  これが機能するのは、すべての
+<code>.fi</code> ファイルが以下の形式の行で始まるためです:
 </p>
 <div class="example">
 <pre class="example">#! /usr/local/bin/gforth-0.4.0 -i
 </pre></div>
 
-<p>The file and pathname for the Gforth engine specified on this line is the
-specific Gforth executable that it was built against; i.e. the value of the
-environment variable <code>GFORTH</code> at the time that <samp>gforthmi</samp> was
-executed.
+<p>この行で指定された Gforth エンジンのファイルとパス名は、 そのエンジンがビルドされた特定の Gforth 実行可能ファイルです。 つまり、
+<samp>gforthmi</samp> が実行されたときの環境変数 <code>GFORTH</code> の値です。
 </p>
-<p>You can make use of the same shell capability to make a Forth source file
-into an executable. For example, if you place this text in a file:
+<p>同じシェル機能を利用して、 Forth ソース・ファイルを実行可能ファイルにできます。 たとえば、 以下のテキストをファイルに配置します:
 </p>
 <div class="example">
 <pre class="example">#! /usr/local/bin/gforth
@@ -109,16 +105,13 @@ into an executable. For example, if you place this text in a file:
 bye
 </pre></div>
 
-<p>and then make the file executable (chmod +x in Unix), you can run it
-directly from the command line. The sequence <code>#!</code> is used in two ways;
-firstly, it is recognised as a &ldquo;magic sequence&rdquo; by the operating
-system<a id="DOCF37" href="#FOOT37"><sup>37</sup></a> secondly it is treated as a comment character by
-Gforth. Because of the second usage, a space is required between <code>#!</code>
-and the path to the executable (moreover, some Unixes require the sequence
-<code>#! /</code>).
+<p>そして、 ファイルを実行可能にすると(Unix の場合は chmod +x)、 コマンド・ラインから直接実行できます。 シーケンス <code>#!</code>
+は 2 つの側面から使用されます。 まず、 オペレーティング・システムによって「マジック・シーケンス」として認識され<a id="DOCF37" href="#FOOT37"><sup>37</sup></a>、 次に Gforth
+によってコメント文字として扱われます。  2 番目の使用法のため、<code>#!</code> と実行可能ファイルへのパスの間に空白が必要です(さらに、 一部の
+Unix ではシーケンス <code>#! /</code> が必要です)。
 </p>
-<p>Most Unix systems (including Linux) support exactly one option after the
-binary name.  If that is not enough, you can use the following trick:
+<p>ほとんどの Unix システム(Linux を含む)は、 バイナリ名の後​​に 1 つのオプションだけをサポートします。  それでも十分でない場合は、
+以下のトリックを使用できます:
 </p>
 <div class="example">
 <pre class="example">#! /bin/sh
@@ -129,24 +122,20 @@ exec gforth -m 10M -d 1M $0 &quot;$@&quot;
 bye \ caution: this prevents (further) processing of &quot;$@&quot;
 </pre></div>
 
-<p>First this script is interpreted as shell script, which treats the first two
-lines as (mostly) comments, then performs the third line, which invokes
-gforth with this script (<code>$0</code>) as parameter and its parameters as
-additional parameters (<code>&quot;$@&quot;</code>).  Then this script is interpreted as
-Forth script, which first defines a colon definition <code>##</code>, then ignores
-everything up to <code>[then]</code> and finally processes the following Forth
-code.  You can also use
+<p>最初に、 このスクリプトはシェル・スクリプトとして解釈され、 最初の 2 行が(ほとんど)コメントとして扱われ、 次に 3 行目が実行されると、
+このスクリプト (<code>$0</code>) をパラメータとして、 そのパラメータを追加パラメータ (<code>&quot;$@&quot;</code>) として gforth
+を呼び出します。 さらに次に、 このスクリプトは Forth スクリプトとして解釈され、 最初にコロン定義 <code>##</code> が定義され、 次に
+<code>[then]</code> までのすべてが無視され、 最後にそれに続く Forth コードが処理されます。 あなたは以下を使用することもできます
 </p>
 <div class="example">
 <pre class="example">#0 [if]
 </pre></div>
 
-<p>in the second line, but this works only in Gforth-0.7.0 and later.
+<p>2 行目ですが、 これは Gforth-0.7.0 以降でのみ機能します。
 </p>
-<p>The <samp>gforthmi</samp> approach is the fastest one, the shell-based one is
-slowest (needs to start an additional shell).  An additional advantage of
-the shell approach is that it is unnecessary to know where the Gforth binary
-resides, as long as it is in the <code>$PATH</code>.
+<p><samp>gforthmi</samp> のアプローチは最も高速で、 シェル・ベースのアプローチは最も遅くなります(追加のシェルを起動する必要があるため)。
+シェル・アプローチの追加の利点は、 Gforth バイナリ が <code>$PATH</code> 内にある限り、 Gforth
+バイナリがどこにあるかを知る必要がないことです。
 </p>
 <span id="index-_0023_0021-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
 <span id="index-_0023_0021"></span>
@@ -154,7 +143,7 @@ resides, as long as it is in the <code>$PATH</code>.
 <div class="format">
 <pre class="format"><code>#!</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;hash-bang&rdquo;
 </pre></div>
-<p>An alias for <code>\</code>
+<p><code>\</code> の alias です。
 </p>
 
 
@@ -165,17 +154,10 @@ resides, as long as it is in the <code>$PATH</code>.
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT37" href="#DOCF37">(37)</a></h5>
-<p>The Unix kernel actually recognises two types of files:
-executable files and files of data, where the data is processed by an
-interpreter that is specified on the &ldquo;interpreter line&rdquo; &ndash; the first line
-of the file, starting with the sequence #!. There may be a small limit
-(e.g., 32) on the number of characters that may be specified on the
-interpreter line.</p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Modifying-the-Startup-Sequence.html">Modifying the Startup Sequence</a>, Previous: <a href="Stack-and-Dictionary-Sizes.html">Stack and Dictionary Sizes</a>, Up: <a href="Image-Files.html">Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+<p>Unix
+シェルは実際には 2 種類のファイルを認識します。 それは実行可能ファイルとデータ・ファイルです。
+データ・ファイルは「インタプリタ行」で指定されたインタプリタによって処理されます。 このインタプリタ行は、 シーケンス #!
+で始まるデータ・ファイルの最初の行です。 インタプリタ行で指定できる文字数には小さな制限(例: 32)がある場合があります。</p>
 </div>
 
 

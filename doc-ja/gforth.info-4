@@ -3136,17 +3136,18 @@ File: gforth.info,  Node: Non-Relocatable Image Files,  Next: Data-Relocatable I
 14.3 Non-Relocatable Image Files
 ================================
 
-These files are simple memory dumps of the dictionary.  They are
-specific to the executable (i.e., ‘gforth’ file) they were created with.
-What’s worse, they are specific to the place on which the dictionary
-resided when the image was created.  Now, there is no guarantee that the
-dictionary will reside at the same place the next time you start Gforth,
-so there’s no guarantee that a non-relocatable image will work the next
-time (Gforth will complain instead of crashing, though).  Indeed, on OSs
-with (enabled) address-space randomization non-relocatable images are
-unlikely to work.
+これらのファイルは、 ディクショナリの単純なメモリ・ダンプです。 これらは
+、 作成された実行可能ファイル(つまり、‘gforth’ ファイル)に固有のものです
+。さらに悪いことに、 それらは、 イメージが作成されたときにディクショナリ
+が存在していた場所に固有のものです。 ええ、はい、 次回 Gforth を起動する
+ときにディクショナリが同じ場所に存在するという保証はありません。 したが
+って、 再配置不可能なイメージが次回動作するという保証もありません(ただし
+、 Gforth はクラッシュする代わりにエラーを出します)。 実際、 アドレス空
+間のランダム化(が有効になっている) OS では、 再配置不可能なイメージが機
+能する可能性は低いです。
 
-   You can create a non-relocatable image file with ‘savesystem’, e.g.:
+   ‘savesystem’ を使用して、 再配置不可能なイメージ・ファイルを作成でき
+ます。例:
 
      gforth app.fs -e "savesystem app.fi bye"
 
@@ -3158,19 +3159,18 @@ File: gforth.info,  Node: Data-Relocatable Image Files,  Next: Fully Relocatable
 14.4 Data-Relocatable Image Files
 =================================
 
-These files contain relocatable data addresses, but fixed code addresses
-(instead of tokens).  They are specific to the executable (i.e.,
-‘gforth’ file) they were created with.  Also, they disable dynamic
-native code generation (typically a factor of 2 in speed).  You get a
-data-relocatable image, if you pass the engine you want to use through
-the ‘GFORTHD’ environment variable to ‘gforthmi’ (*note gforthmi::),
-e.g.
+これらのファイルには、 再配置可能なデータ・アドレスが含まれていますが、
+(トークンではなく)固定コード・アドレスが含まれています。 これらは、 作成
+された実行可能ファイル(つまり、‘gforth’ ファイル)に固有のものです。 また
+、 動的ネイティブ・コード生成も無効になります(通常、 速度が 2 倍になりま
+す)。 ‘GFORTHD’ 環境変数を通じて使用するエンジンを ‘gforthmi’ (*note
+gforthmi::) に渡すと、 データ再配置可能なイメージを取得できます。
 
      GFORTHD="/usr/bin/gforth-fast --no-dynamic" gforthmi myimage.fi source.fs
 
-   Note that the ‘--no-dynamic’ is required here for the image to work
-(otherwise it will contain references to dynamically generated code that
-is not saved in the image).
+   注意: ここでイメージが機能するには ‘--no-dynamic’ が必要であることに
+注意してください(そうしないと、 イメージに保存されていない動的に生成され
+たコードへの参照が含まれてしまいます)。
 
 
 File: gforth.info,  Node: Fully Relocatable Image Files,  Next: Stack and Dictionary Sizes,  Prev: Data-Relocatable Image Files,  Up: Image Files
@@ -3178,15 +3178,16 @@ File: gforth.info,  Node: Fully Relocatable Image Files,  Next: Stack and Dictio
 14.5 Fully Relocatable Image Files
 ==================================
 
-These image files have relocatable data addresses, and tokens for code
-addresses.  They can be used with different binaries (e.g., with and
-without debugging) on the same machine, and even across machines with
-the same data formats (byte order, cell size, floating point format),
-and they work with dynamic native code generation.  However, they are
-usually specific to the version of Gforth they were created with.  The
-files ‘gforth.fi’ and ‘kernl*.fi’ are fully relocatable.
+これらのイメージ・ファイルには、 再配置可能なデータ・アドレスとコード・
+アドレスのトークンが含まれています。 これらは、 同じマシン上で異なるバイ
+ナリ(デバッグの有無など)で使用でき、 同一データ形式(バイト・オーダー、 セ
+ル・サイズ、 浮動小数点形式)を持つ複数のマシン間でも使用でき、 動的なネ
+イティブ・コード生成で動作します。 ただし、 これらは通常、 作成された
+Gforth のバージョンに固有です。 ファイル ‘gforth.fi’ と ‘kernl*.fi’ は完
+全に再配置可能です。
 
-   There are two ways to create a fully relocatable image file:
+   完全に再配置可能なイメージ・ファイルを作成するには 2 つの方法がありま
+す:
 
 * Menu:
 
@@ -3199,55 +3200,56 @@ File: gforth.info,  Node: gforthmi,  Next: cross.fs,  Prev: Fully Relocatable Im
 14.5.1 ‘gforthmi’
 -----------------
 
-You will usually use ‘gforthmi’.  If you want to create an image file
-that contains everything you would load by invoking Gforth with ‘gforth
-options’, you simply say:
+通常は ‘gforthmi’ を使用します。 ‘gforth options’ で Gforth を呼び出して
+ロードするすべてのものを含むイメージ file を作成したい場合は、以下のよう
+に言うだけです:
      gforthmi file options
 
-   E.g., if you want to create an image ‘asm.fi’ that has the file
-‘asm.fs’ loaded in addition to the usual stuff, you could do it like
-this:
+   たとえば、 通常のものに加えてファイル ‘asm.fs’ がロードされたイメージ
+‘asm.fi’ を作成したい場合は、 以下のように実行できます:
 
      gforthmi asm.fi asm.fs
 
-   ‘gforthmi’ is implemented as a sh script and works like this: It
-produces two non-relocatable images for different addresses and then
-compares them.  Its output reflects this: first you see the output (if
-any) of the two Gforth invocations that produce the non-relocatable
-image files, then you see the output of the comparing program: It
-displays the offset used for data addresses and the offset used for code
-addresses; moreover, for each cell that cannot be represented correctly
-in the image files, it displays a line like this:
+   ‘gforthmi’ は sh スクリプトとして実装され、 次のように動作します: 異
+なるアドレスに対して 2 つの再配置不可能なイメージを生成し、 それらを比較
+します。 その出力はこの比較を反映しています: まず、 再配置不可能なイメー
+ジ・ファイルを生成する 2 つの Gforth 呼び出しの出力(存在する場合)が表示
+され、 次に比較プログラムの出力が表示されます: データ・アドレスに使用さ
+れるオフセットとコードアドレスに使用されるオフセットを表示します。 デー
+タ・アドレスに使用されるオフセットと使用されるオフセットが表示されます。
+さらに、 イメージ・ファイル内で正しく表現できないセルごとに、 以下のよう
+な行が表示されます:
 
           78DC         BFFFFA50         BFFFFA40
 
-   This means that at offset $78dc from ‘forthstart’, one input image
-contains $bffffa50, and the other contains $bffffa40.  Since these cells
-cannot be represented correctly in the output image, you should examine
-these places in the dictionary and verify that these cells are dead
-(i.e., not read before they are written).
+   これは、 ‘forthstart’ からのオフセット $78dc に、一方の入力イメージに
+は $bffffa50 が含まれ、 もう一方の入力イメージには $bffffa40 が含まれて
+いることを意味します。 これらのセルは出力イメージでは正しく表現できない
+ため、 ディクショナリ内のこれらの場所を調べて、 これらのセルが死んでいる
+こと (つまり、書き込まれる前に読み取られていないこと)を確認する必要があ
+ります。
 
-   If you insert the option ‘--application’ in front of the image file
-name, you will get an image that uses the ‘--appl-image’ option instead
-of the ‘--image-file’ option (*note Invoking Gforth::).  When you
-execute such an image on Unix (by typing the image name as command), the
-Gforth engine will pass all options to the image instead of trying to
-interpret them as engine options.
+   イメージ・ファイル名の前に ‘--application’ オプションを挿入すると、
+‘--image-file’ オプションの代わりに ‘--appl-image’ オプションを使用した
+イメージを取得します(*note Invoking Gforth::)。 (イメージ名をコマンドと
+して入力して、 )このようなイメージを Unix 上で実行すると、 Gforth エンジ
+ンは、 オプションをエンジン・オプションとして解釈しようとはせず、 すべて
+のオプションをイメージに渡します。
 
-   If you type ‘gforthmi’ with no arguments, it prints some usage
-instructions.
+   引数を指定せずに ‘gforthmi’ と入力すると、 いくつかの使用説明が表示さ
+れます。
 
-   There are a few wrinkles: After processing the passed options, the
-words ‘savesystem’ and ‘bye’ must be visible.  A special doubly indirect
-threaded version of the ‘gforth’ executable is used for creating the
-non-relocatable images; you can pass the exact filename of this
-executable through the environment variable ‘GFORTHD’ (default:
-‘gforth-ditc’); if you pass a version that is not doubly indirect
-threaded, you will not get a fully relocatable image, but a
-data-relocatable image (*note Data-Relocatable Image Files::), because
-there is no code address offset).  The normal ‘gforth’ executable is
-used for creating the relocatable image; you can pass the exact filename
-of this executable through the environment variable ‘GFORTH’.
+   ちょっとだけ説明すると、 渡された gforth-options 処理後、
+‘savesystem’ と ‘bye’ というワードが現れる必要があります。 ‘gforth’ 実行
+可能ファイルの特別な二重間接スレッド化(doubly indirect threaded)バージョ
+ンは、 再配置不可能なイメージの作成に使用されます。 この実行可能ファイル
+の正確なファイル名は、 環境変数 ‘GFORTHD’(デフォルト: ‘gforth-ditc’) を
+介して渡すことができます。 二重間接スレッド化ではないバージョンを渡すと
+、 完全に再配置可能なイメージではなく、 データ再配置可能なイメージ(*note
+Data-Relocatable Image Files::)を取得します。 これは、 コード・アドレス
+・オフセットがないためです。 通常の ‘gforth’ 実行可能ファイルは、 再配置
+可能イメージの作成に使用されます。 この実行可能ファイルの正確なファイル
+名は、 環境変数 ‘GFORTH’ を介して渡すことができます。
 
 
 File: gforth.info,  Node: cross.fs,  Prev: gforthmi,  Up: Fully Relocatable Image Files
@@ -3255,16 +3257,16 @@ File: gforth.info,  Node: cross.fs,  Prev: gforthmi,  Up: Fully Relocatable Imag
 14.5.2 ‘cross.fs’
 -----------------
 
-You can also use ‘cross’, a batch compiler that accepts a Forth-like
-programming language (*note Cross Compiler::).
+‘cross’ という、 Forth風のプログラミング言語を受け入れるバッチ・コンパイ
+ラーを使用することもできます(*note Cross Compiler::)。
 
-   ‘cross’ allows you to create image files for machines with different
-data sizes and data formats than the one used for generating the image
-file.  You can also use it to create an application image that does not
-contain a Forth compiler.  These features are bought with restrictions
-and inconveniences in programming.  E.g., addresses have to be stored in
-memory with special words (‘A!’, ‘A,’, etc.)  in order to make the code
-relocatable.
+   ‘cross’ を使用すると、 イメージ・ファイルの生成に使用したものとは異な
+るデータ・サイズとデータ形式を持つマシン用のイメージ・ファイルを作成でき
+ます。これを使用して、 Forth コンパイラを含まないアプリケーション・イメ
+ージを作成することもできます。 これらの機能は、 プログラミング上の制限と
+不便を許容することで利用可能になります。 たとえば、 コードを再配置可能に
+するには、 アドレスを特別なワード (‘A!’、 ‘A,’ など) を使用してメモリに
+保存する必要があります。
 
 
 File: gforth.info,  Node: Stack and Dictionary Sizes,  Next: Running Image Files,  Prev: Fully Relocatable Image Files,  Up: Image Files
@@ -3272,23 +3274,25 @@ File: gforth.info,  Node: Stack and Dictionary Sizes,  Next: Running Image Files
 14.6 Stack and Dictionary Sizes
 ===============================
 
-If you invoke Gforth with a command line flag for the size (*note
-Invoking Gforth::), the size you specify is stored in the dictionary.
-If you save the dictionary with ‘savesystem’ or create an image with
-‘gforthmi’, this size will become the default for the resulting image
-file.  E.g., the following will create a fully relocatable version of
-‘gforth.fi’ with a 1MB dictionary:
+サイズのコマンド・ライン・フラグを指定して Gforth を呼び出すと(*note
+Invoking Gforth::)、 指定したサイズがディクショナリに保存されます。
+‘savesystem’ でディクショナリを保存するか、 ‘gforthmi’ でイメージを作成
+すると、 このサイズが結果のイメージ・ファイルのデフォルトになります。 た
+とえば、 以下の例では、 1MB のディクショナリを備えた完全に再配置可能なバ
+ージョンの ‘gforth.fi’ が作成されます。
 
      gforthmi gforth.fi -m 1M
 
-   In other words, if you want to set the default size for the
-dictionary and the stacks of an image, just invoke ‘gforthmi’ with the
-appropriate options when creating the image.
+   つまり、 ディクショナリとイメージの、 スタックのデフォルト・サイズを
+設定したい場合は、 イメージの作成時に適切なオプションを指定して
+‘gforthmi’ を呼び出すだけです。
 
-   Note: For cache-friendly behaviour (i.e., good performance), you
-should make the sizes of the stacks modulo, say, 2K, somewhat different.
-E.g., the default stack sizes are: data: 16k (mod 2k=0); fp: 15.5k (mod
-2k=1.5k); return: 15k(mod 2k=1k); locals: 14.5k (mod 2k=0.5k).
+   注意: キャッシュに優しい振る舞い(cache-friendly behaviour)(つまり、良
+好なパフォーマンス)を実現するには、 スタックのモジュロ(stacks modulo)の
+サイズ、 つまり 2K、と多少異なるものにする必要があります。 たとえば、デ
+フォルトのスタック・サイズは次のとおりです: データ・スタック 16k (mod
+2k=0); FPスタック 15.5k (mod 2k=1.5k); リターン・スタック 15k(mod
+2k=1k); ローカル変数スタック 14.5k (mod 2k=0.5k)
 
 
 File: gforth.info,  Node: Running Image Files,  Next: Modifying the Startup Sequence,  Prev: Stack and Dictionary Sizes,  Up: Image Files
@@ -3296,43 +3300,43 @@ File: gforth.info,  Node: Running Image Files,  Next: Modifying the Startup Sequ
 14.7 Running Image Files
 ========================
 
-You can invoke Gforth with an image file image instead of the default
-‘gforth.fi’ with the ‘-i’ flag (*note Invoking Gforth::):
+‘-i’ フラグを使用したデフォルトの ‘gforth.fi’ の代わりに、 イメージ・フ
+ァイル image を使用して Gforth を呼び出すことができます(*note Invoking
+Gforth::):
      gforth -i image
 
-   If your operating system supports starting scripts with a line of the
-form ‘#! ...’, you just have to type the image file name to start Gforth
-with this image file (note that the file extension ‘.fi’ is just a
-convention).  I.e., to run Gforth with the image file image, you can
-just type image instead of ‘gforth -i image’.  This works because every
-‘.fi’ file starts with a line of this format:
+   オペレーティング・システムが ‘#! ...’ 形式の行によるスクリプトの開始
+をサポートしている場合は、 イメージ・ファイル名を入力するだけで、 そのイ
+メージ・ファイルで Gforth を起動できます(ファイル拡張子 ‘.fi’ は単なる慣
+例であることに注意してください)。 つまり、 イメージ・ファイル image を使
+用して Gforth を実行するには、 ‘gforth -i image’ の代わりに image と入力
+するだけです。 これが機能するのは、すべての ‘.fi’ ファイルが以下の形式の
+行で始まるためです:
 
      #! /usr/local/bin/gforth-0.4.0 -i
 
-   The file and pathname for the Gforth engine specified on this line is
-the specific Gforth executable that it was built against; i.e.  the
-value of the environment variable ‘GFORTH’ at the time that ‘gforthmi’
-was executed.
+   この行で指定された Gforth エンジンのファイルとパス名は、 そのエンジン
+がビルドされた特定の Gforth 実行可能ファイルです。 つまり、 ‘gforthmi’ が
+実行されたときの環境変数 ‘GFORTH’ の値です。
 
-   You can make use of the same shell capability to make a Forth source
-file into an executable.  For example, if you place this text in a file:
+   同じシェル機能を利用して、 Forth ソース・ファイルを実行可能ファイルに
+できます。 たとえば、 以下のテキストをファイルに配置します:
 
      #! /usr/local/bin/gforth
 
      ." Hello, world" CR
      bye
 
-and then make the file executable (chmod +x in Unix), you can run it
-directly from the command line.  The sequence ‘#!’ is used in two ways;
-firstly, it is recognised as a “magic sequence” by the operating
-system(1) secondly it is treated as a comment character by Gforth.
-Because of the second usage, a space is required between ‘#!’ and the
-path to the executable (moreover, some Unixes require the sequence ‘#!
-/’).
+そして、 ファイルを実行可能にすると(Unix の場合は chmod +x)、 コマンド・
+ラインから直接実行できます。 シーケンス ‘#!’ は 2 つの側面から使用されま
+す。 まず、 オペレーティング・システムによって「マジック・シーケンス」と
+して認識され(1)、 次に Gforth によってコメント文字として扱われます。 2 番
+目の使用法のため、‘#!’ と実行可能ファイルへのパスの間に空白が必要です(さ
+らに、 一部の Unix ではシーケンス ‘#! /’ が必要です)。
 
-   Most Unix systems (including Linux) support exactly one option after
-the binary name.  If that is not enough, you can use the following
-trick:
+   ほとんどの Unix システム(Linux を含む)は、 バイナリ名の後​​に 1 つの
+オプションだけをサポートします。 それでも十分でない場合は、 以下のトリッ
+クを使用できます:
 
      #! /bin/sh
      : ## ; 0 [if]
@@ -3341,34 +3345,33 @@ trick:
      ." Hello, world" cr
      bye \ caution: this prevents (further) processing of "$@"
 
-   First this script is interpreted as shell script, which treats the
-first two lines as (mostly) comments, then performs the third line,
-which invokes gforth with this script (‘$0’) as parameter and its
-parameters as additional parameters (‘"$@"’).  Then this script is
-interpreted as Forth script, which first defines a colon definition
-‘##’, then ignores everything up to ‘[then]’ and finally processes the
-following Forth code.  You can also use
+   最初に、 このスクリプトはシェル・スクリプトとして解釈され、 最初の 2
+行が(ほとんど)コメントとして扱われ、 次に 3 行目が実行されると、 このス
+クリプト (‘$0’) をパラメータとして、 そのパラメータを追加パラメータ
+(‘"$@"’) として gforth を呼び出します。 さらに次に、 このスクリプトは
+Forth スクリプトとして解釈され、 最初にコロン定義 ‘##’ が定義され、 次に
+‘[then]’ までのすべてが無視され、 最後にそれに続く Forth コードが処理さ
+れます。 あなたは以下を使用することもできます
 
      #0 [if]
 
-   in the second line, but this works only in Gforth-0.7.0 and later.
+   2 行目ですが、 これは Gforth-0.7.0 以降でのみ機能します。
 
-   The ‘gforthmi’ approach is the fastest one, the shell-based one is
-slowest (needs to start an additional shell).  An additional advantage
-of the shell approach is that it is unnecessary to know where the Gforth
-binary resides, as long as it is in the ‘$PATH’.
+   ‘gforthmi’ のアプローチは最も高速で、 シェル・ベースのアプローチは最
+も遅くなります(追加のシェルを起動する必要があるため)。 シェル・アプロー
+チの追加の利点は、 Gforth バイナリ が ‘$PATH’ 内にある限り、 Gforth バイ
+ナリがどこにあるかを知る必要がないことです。
 
 ‘#!’ ( –  ) gforth-0.2 “hash-bang”
-   An alias for ‘\’
+   ‘\’ の alias です。
 
    ---------- Footnotes ----------
 
-   (1) The Unix kernel actually recognises two types of files:
-executable files and files of data, where the data is processed by an
-interpreter that is specified on the “interpreter line” – the first line
-of the file, starting with the sequence #!.  There may be a small limit
-(e.g., 32) on the number of characters that may be specified on the
-interpreter line.
+   (1) Unix シェルは実際には 2 種類のファイルを認識します。 それは実行可
+能ファイルとデータ・ファイルです。 データ・ファイルは「インタプリタ行」
+で指定されたインタプリタによって処理されます。 このインタプリタ行は、 シ
+ーケンス #!  で始まるデータ・ファイルの最初の行です。 インタプリタ行で指
+定できる文字数には小さな制限(例: 32)がある場合があります。
 
 
 File: gforth.info,  Node: Modifying the Startup Sequence,  Prev: Running Image Files,  Up: Image Files
@@ -7450,7 +7453,7 @@ this manual.  Each word is listed with its stack effect and wordset.
 * save-mem ( ADDR1 U -- ADDR2 U ) gforth-0.2: Heap Allocation.
                                                               (line  38)
 * savesystem ( "IMAGE" -- ) gforth-0.2:  Non-Relocatable Image Files.
-                                                              (line  20)
+                                                              (line  21)
 * scan ( C-ADDR1 U1 C -- C-ADDR2 U2 ) gforth-0.2: String words.
                                                               (line  32)
 * scan-back ( C-ADDR U1 C -- C-ADDR U2 ) gforth-0.7: String words.

@@ -28176,16 +28176,13 @@ Win32Forth 3.4 と、  Mitch Bradley の @code{cforth} は実行時に再配置�
 @cindex non-relocatable image files
 @cindex image file, non-relocatable
 
-These files are simple memory dumps of the dictionary. They are specific to
-the executable (i.e., @file{gforth} file) they were created with. What's
-worse, they are specific to the place on which the dictionary resided when
-the image was created. Now, there is no guarantee that the dictionary will
-reside at the same place the next time you start Gforth, so there's no
-guarantee that a non-relocatable image will work the next time (Gforth will
-complain instead of crashing, though).  Indeed, on OSs with (enabled)
-address-space randomization non-relocatable images are unlikely to work.
+これらのファイルは、 ディクショナリの単純なメモリ・ダンプです。 これらは、 作成された実行可能ファイル(つまり、@file{gforth}
+ファイル)に固有のものです。さらに悪いことに、 それらは、 イメージが作成されたときにディクショナリが存在していた場所に固有のものです。 ええ、はい、
+次回 Gforth を起動するときにディクショナリが同じ場所に存在するという保証はありません。 したがって、
+再配置不可能なイメージが次回動作するという保証もありません(ただし、 Gforth はクラッシュする代わりにエラーを出します)。  実際、
+アドレス空間のランダム化(が有効になっている) OS では、 再配置不可能なイメージが機能する可能性は低いです。
 
-You can create a non-relocatable image file with @code{savesystem}, e.g.:
+@code{savesystem} を使用して、 再配置不可能なイメージ・ファイルを作成できます。例:
 
 @example
 gforth app.fs -e "savesystem app.fi bye"
@@ -28205,21 +28202,17 @@ gforth app.fs -e "savesystem app.fi bye"
 @cindex data-relocatable image files
 @cindex image file, data-relocatable
 
-These files contain relocatable data addresses, but fixed code addresses
-(instead of tokens). They are specific to the executable (i.e.,
-@file{gforth} file) they were created with.  Also, they disable dynamic
-native code generation (typically a factor of 2 in speed).  You get a
-data-relocatable image, if you pass the engine you want to use through the
-@code{GFORTHD} environment variable to @file{gforthmi} (@pxref{gforthmi}),
-e.g.
+これらのファイルには、 再配置可能なデータ・アドレスが含まれていますが、 (トークンではなく)固定コード・アドレスが含まれています。 これらは、
+作成された実行可能ファイル(つまり、@file{gforth} ファイル)に固有のものです。  また、
+動的ネイティブ・コード生成も無効になります(通常、 速度が 2 倍になります)。  @code{GFORTHD} 環境変数を通じて使用するエンジンを
+@file{gforthmi} (@pxref{gforthmi}) に渡すと、 データ再配置可能なイメージを取得できます。
 
 @example
 GFORTHD="/usr/bin/gforth-fast --no-dynamic" gforthmi myimage.fi source.fs
 @end example
 
-Note that the @code{--no-dynamic} is required here for the image to work
-(otherwise it will contain references to dynamically generated code that is
-not saved in the image).
+注意: ここでイメージが機能するには @code{--no-dynamic} が必要であることに注意してください(そうしないと、
+イメージに保存されていない動的に生成されたコードへの参照が含まれてしまいます)。
 
 
 @node Fully Relocatable Image Files, Stack and Dictionary Sizes, Data-Relocatable Image Files, Image Files
@@ -28229,15 +28222,12 @@ not saved in the image).
 
 @cindex @file{kern*.fi}, relocatability
 @cindex @file{gforth.fi}, relocatability
-These image files have relocatable data addresses, and tokens for code
-addresses. They can be used with different binaries (e.g., with and without
-debugging) on the same machine, and even across machines with the same data
-formats (byte order, cell size, floating point format), and they work with
-dynamic native code generation.  However, they are usually specific to the
-version of Gforth they were created with. The files @file{gforth.fi} and
-@file{kernl*.fi} are fully relocatable.
+これらのイメージ・ファイルには、 再配置可能なデータ・アドレスとコード・アドレスのトークンが含まれています。 これらは、
+同じマシン上で異なるバイナリ(デバッグの有無など)で使用でき、 同一データ形式(バイト・オーダー、 セル・サイズ、
+浮動小数点形式)を持つ複数のマシン間でも使用でき、 動的なネイティブ・コード生成で動作します。  ただし、 これらは通常、 作成された Gforth
+のバージョンに固有です。 ファイル @file{gforth.fi} と @file{kernl*.fi} は完全に再配置可能です。
 
-There are two ways to create a fully relocatable image file:
+完全に再配置可能なイメージ・ファイルを作成するには 2 つの方法があります:
 
 @menu
 * gforthmi::                 通常の方法
@@ -28249,50 +28239,41 @@ There are two ways to create a fully relocatable image file:
 @cindex @file{comp-i.fs}
 @cindex @file{gforthmi}
 
-You will usually use @file{gforthmi}. If you want to create an image
-@i{file} that contains everything you would load by invoking Gforth with
-@code{gforth @i{options}}, you simply say:
+通常は @file{gforthmi} を使用します。 @code{gforth @i{options}} で Gforth
+を呼び出してロードするすべてのものを含むイメージ @i{file} を作成したい場合は、以下のように言うだけです:
 @example
 gforthmi @i{file} @i{options}
 @end example
 
-E.g., if you want to create an image @file{asm.fi} that has the file
-@file{asm.fs} loaded in addition to the usual stuff, you could do it like
-this:
+たとえば、 通常のものに加えてファイル @file{asm.fs} がロードされたイメージ @file{asm.fi} を作成したい場合は、
+以下のように実行できます:
 
 @example
 gforthmi asm.fi asm.fs
 @end example
 
-@file{gforthmi} is implemented as a sh script and works like this: It
-produces two non-relocatable images for different addresses and then
-compares them. Its output reflects this: first you see the output (if any)
-of the two Gforth invocations that produce the non-relocatable image files,
-then you see the output of the comparing program: It displays the offset
-used for data addresses and the offset used for code addresses; moreover,
-for each cell that cannot be represented correctly in the image files, it
-displays a line like this:
+@file{gforthmi} は sh スクリプトとして実装され、 次のように動作します: 異なるアドレスに対して 2
+つの再配置不可能なイメージを生成し、 それらを比較します。 その出力はこの比較を反映しています: まず、 再配置不可能なイメージ・ファイルを生成する 2
+つの Gforth 呼び出しの出力(存在する場合)が表示され、 次に比較プログラムの出力が表示されます:
+データ・アドレスに使用されるオフセットとコードアドレスに使用されるオフセットを表示します。
+データ・アドレスに使用されるオフセットと使用されるオフセットが表示されます。 さらに、 イメージ・ファイル内で正しく表現できないセルごとに、
+以下のような行が表示されます:
 
 @example
      78DC         BFFFFA50         BFFFFA40
 @end example
 
-This means that at offset $78dc from @code{forthstart}, one input image
-contains $bffffa50, and the other contains $bffffa40. Since these cells
-cannot be represented correctly in the output image, you should examine
-these places in the dictionary and verify that these cells are dead (i.e.,
-not read before they are written).
+これは、 @code{forthstart} からのオフセット $78dc に、一方の入力イメージには $bffffa50 が含まれ、
+もう一方の入力イメージには $bffffa40 が含まれていることを意味します。 これらのセルは出力イメージでは正しく表現できないため、
+ディクショナリ内のこれらの場所を調べて、 これらのセルが死んでいること (つまり、書き込まれる前に読み取られていないこと)を確認する必要があります。
 
 @cindex --application, @code{gforthmi} option
-If you insert the option @code{--application} in front of the image file
-name, you will get an image that uses the @code{--appl-image} option instead
-of the @code{--image-file} option (@pxref{Invoking Gforth}). When you
-execute such an image on Unix (by typing the image name as command), the
-Gforth engine will pass all options to the image instead of trying to
-interpret them as engine options.
+イメージ・ファイル名の前に @code{--application} オプションを挿入すると、 @code{--image-file}
+オプションの代わりに @code{--appl-image} オプションを使用したイメージを取得します(@pxref{Invoking
+Gforth})。 (イメージ名をコマンドとして入力して、 )このようなイメージを Unix 上で実行すると、 Gforth エンジンは、
+オプションをエンジン・オプションとして解釈しようとはせず、 すべてのオプションをイメージに渡します。
 
-If you type @file{gforthmi} with no arguments, it prints some usage
-instructions.
+引数を指定せずに @file{gforthmi} と入力すると、 いくつかの使用説明が表示されます。
 
 @cindex @code{savesystem} during @file{gforthmi}
 @cindex @code{bye} during @file{gforthmi}
@@ -28301,17 +28282,14 @@ instructions.
 @cindex @code{GFORTHD} -- environment variable
 @cindex @code{GFORTH} -- environment variable
 @cindex @code{gforth-ditc}
-There are a few wrinkles: After processing the passed @i{options}, the words
-@code{savesystem} and @code{bye} must be visible. A special doubly indirect
-threaded version of the @file{gforth} executable is used for creating the
-non-relocatable images; you can pass the exact filename of this executable
-through the environment variable @code{GFORTHD} (default:
-@file{gforth-ditc}); if you pass a version that is not doubly indirect
-threaded, you will not get a fully relocatable image, but a data-relocatable
-image (@pxref{Data-Relocatable Image Files}), because there is no code
-address offset). The normal @file{gforth} executable is used for creating
-the relocatable image; you can pass the exact filename of this executable
-through the environment variable @code{GFORTH}.
+ちょっとだけ説明すると、 渡された @i{gforth-options} 処理後、 @code{savesystem} と @code{bye}
+というワードが現れる必要があります。 @file{gforth} 実行可能ファイルの特別な二重間接スレッド化(doubly indirect
+threaded)バージョンは、 再配置不可能なイメージの作成に使用されます。 この実行可能ファイルの正確なファイル名は、 環境変数
+@code{GFORTHD}(デフォルト: @file{gforth-ditc}) を介して渡すことができます。
+二重間接スレッド化ではないバージョンを渡すと、 完全に再配置可能なイメージではなく、
+データ再配置可能なイメージ(@pxref{Data-Relocatable Image Files})を取得します。 これは、
+コード・アドレス・オフセットがないためです。 通常の @file{gforth} 実行可能ファイルは、 再配置可能イメージの作成に使用されます。
+この実行可能ファイルの正確なファイル名は、 環境変数 @code{GFORTH} を介して渡すことができます。
 
 @node cross.fs, , gforthmi, Fully Relocatable Image Files
 @subsection @file{cross.fs}
@@ -28320,16 +28298,14 @@ through the environment variable @code{GFORTH}.
 @cindex metacompiler
 @cindex target compiler
 
-You can also use @code{cross}, a batch compiler that accepts a Forth-like
-programming language (@pxref{Cross Compiler}).
+@code{cross} という、 Forth風のプログラミング言語を受け入れるバッチ・コンパイラーを使用することもできます(@pxref{Cross
+Compiler})。
 
-@code{cross} allows you to create image files for machines with different
-data sizes and data formats than the one used for generating the image
-file. You can also use it to create an application image that does not
-contain a Forth compiler. These features are bought with restrictions and
-inconveniences in programming. E.g., addresses have to be stored in memory
-with special words (@code{A!}, @code{A,}, etc.) in order to make the code
-relocatable.
+@code{cross} を使用すると、
+イメージ・ファイルの生成に使用したものとは異なるデータ・サイズとデータ形式を持つマシン用のイメージ・ファイルを作成できます。これを使用して、 Forth
+コンパイラを含まないアプリケーション・イメージを作成することもできます。 これらの機能は、
+プログラミング上の制限と不便を許容することで利用可能になります。 たとえば、 コードを再配置可能にするには、 アドレスを特別なワード
+(@code{A!}、 @code{A,} など) を使用してメモリに保存する必要があります。
 
 
 @node Stack and Dictionary Sizes, Running Image Files, Fully Relocatable Image Files, Image Files
@@ -28338,26 +28314,23 @@ relocatable.
 @cindex dictionary size default
 @cindex stack size default
 
-If you invoke Gforth with a command line flag for the size (@pxref{Invoking
-Gforth}), the size you specify is stored in the dictionary. If you save the
-dictionary with @code{savesystem} or create an image with @file{gforthmi},
-this size will become the default for the resulting image file. E.g., the
-following will create a fully relocatable version of @file{gforth.fi} with a
-1MB dictionary:
+サイズのコマンド・ライン・フラグを指定して Gforth を呼び出すと(@pxref{Invoking Gforth})、
+指定したサイズがディクショナリに保存されます。 @code{savesystem} でディクショナリを保存するか、 @file{gforthmi}
+でイメージを作成すると、 このサイズが結果のイメージ・ファイルのデフォルトになります。 たとえば、 以下の例では、 1MB
+のディクショナリを備えた完全に再配置可能なバージョンの @file{gforth.fi} が作成されます。
 
 @example
 gforthmi gforth.fi -m 1M
 @end example
 
-In other words, if you want to set the default size for the dictionary and
-the stacks of an image, just invoke @file{gforthmi} with the appropriate
-options when creating the image.
+つまり、 ディクショナリとイメージの、 スタックのデフォルト・サイズを設定したい場合は、 イメージの作成時に適切なオプションを指定して
+@file{gforthmi} を呼び出すだけです。
 
 @cindex stack size, cache-friendly
-Note: For cache-friendly behaviour (i.e., good performance), you should make
-the sizes of the stacks modulo, say, 2K, somewhat different. E.g., the
-default stack sizes are: data: 16k (mod 2k=0); fp: 15.5k (mod 2k=1.5k);
-return: 15k(mod 2k=1k); locals: 14.5k (mod 2k=0.5k).
+注意: キャッシュに優しい振る舞い(cache-friendly behaviour)(つまり、良好なパフォーマンス)を実現するには、
+スタックのモジュロ(stacks modulo)のサイズ、 つまり 2K、と多少異なるものにする必要があります。
+たとえば、デフォルトのスタック・サイズは次のとおりです: データ・スタック 16k (mod 2k=0); FPスタック 15.5k (mod
+2k=1.5k); リターン・スタック 15k(mod 2k=1k); ローカル変数スタック 14.5k (mod 2k=0.5k)
 
 @node Running Image Files, Modifying the Startup Sequence, Stack and Dictionary Sizes, Image Files
 @section Running Image Files
@@ -28367,32 +28340,28 @@ return: 15k(mod 2k=1k); locals: 14.5k (mod 2k=0.5k).
 
 @cindex -i, invoke image file
 @cindex --image file, invoke image file
-You can invoke Gforth with an image file @i{image} instead of the default
-@file{gforth.fi} with the @code{-i} flag (@pxref{Invoking Gforth}):
+@code{-i} フラグを使用したデフォルトの @file{gforth.fi} の代わりに、 イメージ・ファイル @i{image} を使用して
+Gforth を呼び出すことができます(@pxref{Invoking Gforth}):
 @example
 gforth -i @i{image}
 @end example
 
 @cindex executable image file
 @cindex image file, executable
-If your operating system supports starting scripts with a line of the form
-@code{#! ...}, you just have to type the image file name to start Gforth
-with this image file (note that the file extension @code{.fi} is just a
-convention). I.e., to run Gforth with the image file @i{image}, you can just
-type @i{image} instead of @code{gforth -i @i{image}}.  This works because
-every @code{.fi} file starts with a line of this format:
+オペレーティング・システムが @code{#! ...} 形式の行によるスクリプトの開始をサポートしている場合は、
+イメージ・ファイル名を入力するだけで、 そのイメージ・ファイルで Gforth を起動できます(ファイル拡張子 @code{.fi}
+は単なる慣例であることに注意してください)。 つまり、 イメージ・ファイル @i{image} を使用して Gforth を実行するには、
+@code{gforth -i @i{image}} の代わりに @i{image} と入力するだけです。  これが機能するのは、すべての
+@code{.fi} ファイルが以下の形式の行で始まるためです:
 
 @example
 #! /usr/local/bin/gforth-0.4.0 -i
 @end example
 
-The file and pathname for the Gforth engine specified on this line is the
-specific Gforth executable that it was built against; i.e. the value of the
-environment variable @code{GFORTH} at the time that @file{gforthmi} was
-executed.
+この行で指定された Gforth エンジンのファイルとパス名は、 そのエンジンがビルドされた特定の Gforth 実行可能ファイルです。 つまり、
+@file{gforthmi} が実行されたときの環境変数 @code{GFORTH} の値です。
 
-You can make use of the same shell capability to make a Forth source file
-into an executable. For example, if you place this text in a file:
+同じシェル機能を利用して、 Forth ソース・ファイルを実行可能ファイルにできます。 たとえば、 以下のテキストをファイルに配置します:
 
 @example
 #! /usr/local/bin/gforth
@@ -28402,21 +28371,16 @@ bye
 @end example
 
 @noindent
-and then make the file executable (chmod +x in Unix), you can run it
-directly from the command line. The sequence @code{#!} is used in two ways;
-firstly, it is recognised as a ``magic sequence'' by the operating
-system@footnote{The Unix kernel actually recognises two types of files:
-executable files and files of data, where the data is processed by an
-interpreter that is specified on the ``interpreter line'' -- the first line
-of the file, starting with the sequence #!. There may be a small limit
-(e.g., 32) on the number of characters that may be specified on the
-interpreter line.} secondly it is treated as a comment character by
-Gforth. Because of the second usage, a space is required between @code{#!}
-and the path to the executable (moreover, some Unixes require the sequence
-@code{#! /}).
+そして、 ファイルを実行可能にすると(Unix の場合は chmod +x)、 コマンド・ラインから直接実行できます。 シーケンス @code{#!}
+は 2 つの側面から使用されます。 まず、 オペレーティング・システムによって「マジック・シーケンス」として認識され@footnote{Unix
+シェルは実際には 2 種類のファイルを認識します。 それは実行可能ファイルとデータ・ファイルです。
+データ・ファイルは「インタプリタ行」で指定されたインタプリタによって処理されます。 このインタプリタ行は、 シーケンス #!
+で始まるデータ・ファイルの最初の行です。 インタプリタ行で指定できる文字数には小さな制限(例: 32)がある場合があります。}、 次に Gforth
+によってコメント文字として扱われます。  2 番目の使用法のため、@code{#!} と実行可能ファイルへのパスの間に空白が必要です(さらに、 一部の
+Unix ではシーケンス @code{#! /} が必要です)。
 
-Most Unix systems (including Linux) support exactly one option after the
-binary name.  If that is not enough, you can use the following trick:
+ほとんどの Unix システム(Linux を含む)は、 バイナリ名の後​​に 1 つのオプションだけをサポートします。  それでも十分でない場合は、
+以下のトリックを使用できます:
 
 @example
 #! /bin/sh
@@ -28427,24 +28391,20 @@ exec gforth -m 10M -d 1M $0 "$@@"
 bye \ caution: this prevents (further) processing of "$@@"
 @end example
 
-First this script is interpreted as shell script, which treats the first two
-lines as (mostly) comments, then performs the third line, which invokes
-gforth with this script (@code{$0}) as parameter and its parameters as
-additional parameters (@code{"$@@"}).  Then this script is interpreted as
-Forth script, which first defines a colon definition @code{##}, then ignores
-everything up to @code{[then]} and finally processes the following Forth
-code.  You can also use
+最初に、 このスクリプトはシェル・スクリプトとして解釈され、 最初の 2 行が(ほとんど)コメントとして扱われ、 次に 3 行目が実行されると、
+このスクリプト (@code{$0}) をパラメータとして、 そのパラメータを追加パラメータ (@code{"$@@"}) として gforth
+を呼び出します。 さらに次に、 このスクリプトは Forth スクリプトとして解釈され、 最初にコロン定義 @code{##} が定義され、 次に
+@code{[then]} までのすべてが無視され、 最後にそれに続く Forth コードが処理されます。 あなたは以下を使用することもできます
 
 @example
 #0 [if]
 @end example
 
-in the second line, but this works only in Gforth-0.7.0 and later.
+2 行目ですが、 これは Gforth-0.7.0 以降でのみ機能します。
 
-The @file{gforthmi} approach is the fastest one, the shell-based one is
-slowest (needs to start an additional shell).  An additional advantage of
-the shell approach is that it is unnecessary to know where the Gforth binary
-resides, as long as it is in the @code{$PATH}.
+@file{gforthmi} のアプローチは最も高速で、 シェル・ベースのアプローチは最も遅くなります(追加のシェルを起動する必要があるため)。
+シェル・アプローチの追加の利点は、 Gforth バイナリ が @code{$PATH} 内にある限り、 Gforth
+バイナリがどこにあるかを知る必要がないことです。
 
 @findex #! ( @var{ --   } ) gforth-0.2
 @cindex @code{#!}
@@ -28452,7 +28412,7 @@ resides, as long as it is in the @code{$PATH}.
 @format
 @code{#!} ( @i{--  }) gforth-0.2 ``hash-bang''
 @end format
-An alias for @code{\}
+@code{\} の alias です。
 
 
 
