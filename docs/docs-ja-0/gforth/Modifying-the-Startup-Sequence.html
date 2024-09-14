@@ -72,12 +72,10 @@ Previous: <a href="Running-Image-Files.html" accesskey="p" rel="prev">Running Im
 <span id="index-image-file-initialization-sequence"></span>
 <span id="index-initialization-sequence-of-image-file"></span>
 
-<p>You can add your own initialization to the startup sequence of an image
-through the deferred word <code>'cold</code>. <code>'cold</code> is invoked just before
-the image-specific command line processing (i.e., loading files and
-evaluating (<code>-e</code>) strings) starts.
+<p>defer されたワード <code>'cold</code> を使用して、 イメージの起動シーケンスに独自の初期化を追加できます。  <code>'cold</code>
+は、 イメージ固有のコマンドライン処理 (つまり、 ファイルのロードと (<code>-e</code>) 文字列の評価)が開始される直前に呼び出されます。
 </p>
-<p>A sequence for adding your initialization usually looks like this:
+<p>初期化を追加するシーケンスは通常以下のようになります:
 </p>
 <div class="example">
 <pre class="example">:noname
@@ -86,36 +84,33 @@ evaluating (<code>-e</code>) strings) starts.
 ; IS 'cold
 </pre></div>
 
-<p>After <code>'cold</code>, Gforth processes the image options (see <a href="Invoking-Gforth.html">Invoking Gforth</a>), and then it performs <code>bootmessage</code>, another deferred word.
-This normally prints Gforth&rsquo;s startup message and does nothing else.
+<p><code>'cold</code> の後、 Gforth はイメージ用のオプションを処理し(see <a href="Invoking-Gforth.html">Invoking Gforth</a>)、 別の defer
+されたワードである <code>bootmessage</code> を実行します。  これは通常は、 Gforth の起動メッセージを出力し、
+他には何も行いません。
 </p>
 <span id="index-turnkey-image-files"></span>
 <span id="index-image-file_002c-turnkey-applications"></span>
-<p>So, if you want to make a turnkey image (i.e., an image for an application
-instead of an extended Forth system), you can do this in several ways:
+<p>したがって、 ターンキー・イメージ(つまり、 拡張された Forth システムではなくアプリケーション用のイメージ)を作成したい場合は、
+以下のいくつかの方法でこれを行うことができます:
 </p>
 <ul>
-<li> If you want to do your interpretation of the OS command-line arguments, hook
-into <code>'cold</code>.  In that case you probably also want to build the image
-with <code>gforthmi --application</code> (see <a href="gforthmi.html"><samp>gforthmi</samp></a>) to keep the engine
-from processing OS command line options.  You can then do your own
-command-line processing with <code>next-arg</code> 
+<li> OS コマンドライン引数を独自に解釈したい場合は、 <code>'cold</code> にフックします。  その場合、 エンジンが OS
+コマンド・ライン・オプションを処理しないように、 <code>gforthmi --application</code>
+(see <a href="gforthmi.html"><samp>gforthmi</samp></a>)を使用してイメージをビルドすることも必要になるでしょう。  その後、  <code>next-arg</code>
+を使用してあなた独自のコマンドライン処理を実行できます。 
 
-</li><li> If you want to have the normal Gforth processing of OS command-line
-arguments, but specify your own command-line options, hook into
-<code>process-option</code>.
+</li><li> OS コマンドライン引数を通常の Gforth 処理で処理したいが、 あなた独自のコマンドライン・オプションを指定する場合、
+<code>process-option</code> にフックします。
 
-</li><li> If you want to have more options in addition to the ones that come with
-Gforth, define words into the <code>options</code> vocabulary.
+</li><li> Gforth に付属しているオプションに加えてさらに多くのオプションが必要な場合は、 <code>options</code> ボキャブラリでワードを定義します。
 
-</li><li> If you want to display your own boot message, hook into <code>bootmessage</code>.
+</li><li> あなた独自のブート・メッセージを表示したい場合は、 <code>bootmessage</code> にフックします。
 
 </li></ul>
 
-<p>In either case, you probably do not want the word that you execute in these
-hooks to exit normally, but use <code>bye</code> or <code>throw</code>.  Otherwise the
-Gforth startup process would continue and eventually present the Forth
-command line to the user.
+<p>いずれの場合も、 あなたは、 おそらくこれらのフックで execute するワードを普通に終了さずに、 <code>bye</code> または
+<code>throw</code> を使用したいでしょう。  そうしないと、 Gforth 起動プロセスが続行され、 最終的に Forth
+コマンド・ラインがユーザーに表示されます。
 </p>
 <span id="index-_0027cold-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
 <span id="index-_0027cold"></span>
@@ -123,9 +118,8 @@ command line to the user.
 <div class="format">
 <pre class="format"><code>'cold</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;tick-cold&rdquo;
 </pre></div>
-<p>Hook (deferred word) for things to do right before interpreting the OS
-command-line arguments.  Normally does some initializations that you also
-want to perform.
+<p>OS コマンドライン引数を解釈(interpret)する直前に何かするためのフック( defer されたワード)。
+あなたが実行したい幾つかの初期化を行うためにあります。 通常、 あなたが実行したいいくつかの初期化も行います。
 </p>
 
 <span id="index-bootmessage-_0028--_002d_002d--_0029-gforth_002d0_002e4"></span>
@@ -134,27 +128,22 @@ want to perform.
 <div class="format">
 <pre class="format"><code>bootmessage</code> ( <i>&ndash;  </i>) gforth-0.4 &ldquo;bootmessage&rdquo;
 </pre></div>
-<p>Hook (deferred word) executed right after interpreting the OS command-line
-arguments.  Normally prints the Gforth startup message.
+<p>OS コマンドライン引数を解釈(interpret)した直後のフック(deferされたワード)。 通常は Gforth
+起動メッセージを出力します(訳注: つまり、 あなたが何かしらワードをセットすると起動メッセージは出力されなくなります)。
 </p>
 
-<p>doc-&rsquo;quit
+<p>( &rsquo;quit :原文未記述)
 <span id="index-process_002doption-_0028--addr-u-_002d_002d-true-_002f-addr-u-false--_0029-gforth_002d0_002e7"></span>
 <span id="index-process_002doption"></span>
 <span id="index-process_002doption-1"></span>
 </p><div class="format">
 <pre class="format"><code>process-option</code> ( <i>addr u &ndash; true / addr u false  </i>) gforth-0.7 &ldquo;process-option&rdquo;
 </pre></div>
-<p>Process an option <var>addr u</var>, return true, if the option is processed;
-unprocessed options are loaded as files throu <code>required</code>.
+<p>オプション <var>addr u</var> を処理し、 オプションが処理された場合は true を返します。 未処理のオプションは
+<code>required</code> を通じてファイルとしてロードされます。
 </p>
 
 
-</div>
-<hr>
-<div class="header">
-<p>
-Previous: <a href="Running-Image-Files.html">Running Image Files</a>, Up: <a href="Image-Files.html">Image Files</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
