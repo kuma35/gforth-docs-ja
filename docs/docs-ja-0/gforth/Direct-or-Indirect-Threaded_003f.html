@@ -71,65 +71,46 @@ Next: <a href="Dynamic-Superinstructions.html" accesskey="n" rel="next">Dynamic 
 <span id="Direct-or-Indirect-Threaded_003f-1"></span><h4 class="subsection">15.2.2 Direct or Indirect Threaded?</h4>
 <span id="index-threading_002c-direct-or-indirect_003f"></span>
 
-<p>Threaded forth code consists of references to primitives (simple machine
-code routines like <code>+</code>) and to non-primitives (e.g., colon definitions,
-variables, constants); for a specific class of non-primitives (e.g.,
-variables) there is one code routine (e.g., <code>dovar</code>), but each variable
-needs a separate reference to its data.
+<p>スレッド化された forth コードは、 プリミティブ(<code>+</code> のような単純なマシン・コード・ルーチン)と非プリミティブ(コロン定義、 変数、
+定数など)への参照で構成されます。 非プリミティブの特定の種類(変数など)では、 コード・ルーチン(<code>dovar</code> など) は 1
+つだけですが、 各変数は各変数それぞれのデータへの個別の参照が必要です。
 </p>
-<p>Traditionally Forth has been implemented as indirect threaded code, because
-this allows to use only one cell to reference a non-primitive (basically you
-point to the data, and find the code address there).
+<p>伝統的に、 Forth は間接スレッド化コードとして実装されてきました。 これにより、 非プリミティブの参照は 1
+つのセルのみの使用で済ませられるためです(基本的に、 データをポイントし、 ポイントした先でコード・アドレスを見つけます)。
 </p>
 <span id="index-primitive_002dcentric-threaded-code"></span>
-<p>However, threaded code in Gforth (since 0.6.0) uses two cells for
-non-primitives, one for the code address, and one for the data address; the
-data pointer is an immediate argument for the virtual machine instruction
-represented by the code address.  We call this <em>primitive-centric</em>
-threaded code, because all code addresses point to simple primitives.  E.g.,
-for a variable, the code address is for <code>lit</code> (also used for integer
-literals like <code>99</code>).
+<p>しかしながら  Gforth (0.6.0 以降) のスレッド化コードは、 非プリミティブに 2 つのセルを使用します。 1 つはコード・アドレス用で、
+もう 1 つはデータ・アドレス用です。 データ・ポインタは、 コード・アドレスで表される仮想マシン命令の直接の引数です。
+すべてのコード・アドレスが単純なプリミティブを指しているため、 これを「プリミティブ指向」スレッド化コードと呼びます。  たとえば、 変数の場合、
+コード・アドレスは <code>lit</code> 用です(<code>99</code> などの整数リテラルにも使用されます)。
 </p>
-<p>Primitive-centric threaded code allows us to use (faster) direct threading
-as dispatch method, completely portably (direct threaded code in Gforth
-before 0.6.0 required architecture-specific code).  It also eliminates the
-performance problems related to I-cache consistency that 386 implementations
-have with direct threaded code, and allows additional optimizations.
+<p>プリミティブ指向スレッド化コードにより、 ディスパッチ手法として(より高速な)直接スレッド化を完全に移植可能な状態で使用できます(0.6.0 より前の
+Gforth の直接スレッド化コードにはアーキテクチャ固有のコードが必要でした)。  また、386 実装で直接スレッド・コードによる I
+キャッシュの一貫性に関連するパフォーマンスの問題も解消され、 追加の最適化が可能になります。
 </p>
 <span id="index-hybrid-direct_002findirect-threaded-code"></span>
-<p>There is a catch, however: the <var>xt</var> parameter of <code>execute</code> can
-occupy only one cell, so how do we pass non-primitives with their code
-<em>and</em> data addresses to them? Our answer is to use indirect threaded
-dispatch for <code>execute</code> and other words that use a single-cell xt.  So,
-normal threaded code in colon definitions uses direct threading, and
-<code>execute</code> and similar words, which dispatch to xts on the data stack,
-use indirect threaded code.  We call this <em>hybrid direct/indirect</em>
-threaded code.
+<p>ただし、 問題があります。 <code>execute</code> の <var>xt</var> パラメータは 1 つのセルしか占有できないため、
+「コードとデータ・アドレス」を持つ非プリミティブをどのように渡せばよいのでしょうか？  これに対する私達の答えは、 <code>execute</code>
+や単一セル xt を使用する他のワードに間接スレッド化ディスパッチを使用することです。  したがって、
+コロン定義内の通常のスレッド化コードは直接スレッドを使用し、 データ・スタック上の xt にディスパッチする <code>execute</code>
+や同様のワードは間接スレッド化コードを使用します。  これを 「ハイブリッド 直接/間接 スレッド化コード」と呼びます。
 </p>
 <span id="index-engines_002c-gforth-vs_002e-gforth_002dfast-vs_002e-gforth_002ditc"></span>
 <span id="index-gforth-engine"></span>
 <span id="index-gforth_002dfast-engine"></span>
-<p>The engines <code>gforth</code> and <code>gforth-fast</code> use hybrid
-direct/indirect threaded code.  This means that with these engines you
-cannot use <code>,</code> to compile an xt.  Instead, you have to use
-<code>compile,</code>.
+<p><code>gforth</code> エンジンと <code>gforth-fast</code> エンジンは、 ハイブリッド 直接/間接
+スレッド化コードを使用します。  つまり、 これらのエンジンでは <code>,</code> を使用して xt をコンパイルできないことを意味します。
+代わりに、 <code>compile,</code> を使用する必要があります。
 </p>
 <span id="index-gforth_002ditc-engine"></span>
-<p>If you want to compile xts with <code>,</code>, use <code>gforth-itc</code>.  This
-engine uses plain old indirect threaded code.  It still compiles in a
-primitive-centric style, so you cannot use <code>compile,</code> instead of
-<code>,</code> (e.g., for producing tables of xts with <code>] word1 word2
-... [</code>).  If you want to do that, you have to use <code>gforth-itc</code> and
-execute <code>' , is compile,</code>.  Your program can check if it is running on
-a hybrid direct/indirect threaded engine or a pure indirect threaded engine
-with <code>threading-method</code> (see <a href="Threading-Words.html">Threading Words</a>).
+<p><code>,</code> を使用して xt をコンパイルする場合は、 <code>gforth-itc</code> エンジンを使用します。  このエンジンは、
+単純な古い間接スレッド化コードを使用します。 しかし、 それでもプリミティブ指向のスタイルでコンパイルされるため、  <code>,</code> の代わりに
+<code>compile,</code> を使用することはできません(たとえば、 <code>] word1 word2 ... [</code> で xt
+達のテーブルを生成する場合)。  それを行いたい場合は、 <code>gforth-itc</code> を使用して <code>' , is
+compile,</code> を実行する必要があります。 あなたのプログラムでは、 <code>threading-method</code> を使用して、 ハイブリッド
+直接/間接 スレッド化エンジンで実行されているか、 純粋な間接スレッド化エンジンで実行されているかを確認できます。
 </p>
 
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Dynamic-Superinstructions.html">Dynamic Superinstructions</a>, Previous: <a href="Scheduling.html">Scheduling</a>, Up: <a href="Threading.html">Threading</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

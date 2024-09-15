@@ -73,14 +73,10 @@ Next: <a href="TOS-Optimization.html" accesskey="n" rel="next">TOS Optimization<
 
 <span id="index-prims2x_002efs"></span>
 
-<p>Since the primitives are implemented in a portable language, there is no
-longer any need to minimize the number of primitives. On the contrary,
-having many primitives has an advantage: speed. In order to reduce the
-number of errors in primitives and to make programming them easier, we
-provide a tool, the primitive generator (<samp>prims2x.fs</samp> aka Vmgen,
-see <a data-manual="vmgen" href="../vmgen/index.html#Top">Introduction</a> in <cite>Vmgen</cite>), that automatically
-generates most (and sometimes all) of the C code for a primitive from the
-stack effect notation.  The source for a primitive has the following form:
+<p>プリミティブは移植可能な言語(portable language)で実装されているため、 最早プリミティブの数を最小限に抑える必要はありません。 逆に、
+多くのプリミティブを持つことには速度という利点があります。 プリミティブでのエラーの数を減らし、 プリミティブのプログラミングを容易にするために、
+プリミティブ・ジェネレーター (<samp>prims2x.fs</samp> 別名 Vmgen see <a data-manual="vmgen" href="../vmgen/index.html#Top">Introduction</a> in <cite>Vmgen</cite>)というツールを提供しており、 それは、 スタック効果の表記からプリミティブの
+C言語コードの大部分(場合によってはすべて)を自動的に生成します。  プリミティブのソースの形式は以下のとおりです:
 </p>
 <span id="index-primitive-source-format"></span>
 <div class="format">
@@ -91,21 +87,18 @@ stack effect notation.  The source for a primitive has the following form:
 <i>Forth code</i>]
 </pre></div>
 
-<p>The items in brackets are optional. The category and glossary fields are
-there for generating the documentation, the Forth code is there for manual
-implementations on machines without GNU C. E.g., the source for the
-primitive <code>+</code> is:
+<p>角括弧(brackets)内の項目はオプションです。
+カテゴリ(category)と用語集(glossary)のフィールドはドキュメントを生成するためにあり、 Forth コードは GNU C
+を持たないマシンでの手動実装のためにあります。 たとえば、 プリミティブ <code>+</code> のソースは以下のとおりです:
 </p><div class="example">
 <pre class="example">+    ( n1 n2 -- n )   core    plus
 n = n1+n2;
 </pre></div>
 
-<p>This looks like a specification, but in fact <code>n = n1+n2</code> is C code. Our
-primitive generation tool extracts a lot of information from the stack
-effect notations<a id="DOCF38" href="#FOOT38"><sup>38</sup></a>: The number of items popped
-from and pushed on the stack, their type, and by what name they are referred
-to in the C code. It then generates a C code prelude and postlude for each
-primitive. The final C code for <code>+</code> looks like this:
+<p>これは仕様のように見えますが、 実際には <code>n = n1+n2</code> は C言語のコードです。 私たちのプリミティブ生成ツールは、
+スタック効果の表記から多くの情報を抽出します<a id="DOCF38" href="#FOOT38"><sup>38</sup></a>: それらは、 スタックからポップされた項目とスタックにプッシュされた項目の数、 その型、
+および C言語のコード内で参照される名前 です。 その次に、 各プリミティブの C言語コードの prelude と postlude を生成します。
+<code>+</code> の最終的な C言語コードは以下のようになります:
 </p>
 <div class="example">
 <pre class="example">I_plus: /* + ( n1 n2 -- n ) */  /* label, stack effect */
@@ -129,26 +122,20 @@ NEXT_P2;                        /* NEXT part 2 */
 }
 </pre></div>
 
-<p>This looks long and inefficient, but the GNU C compiler optimizes quite well
-and produces optimal code for <code>+</code> on, e.g., the R3000 and the HP RISC
-machines: Defining the <code>n</code>s does not produce any code, and using them
-as intermediate storage also adds no cost.
+<p>これは長くて非効率に見えますが、 GNU C コンパイラーは非常に適切に最適化して、 例えば R3000 や HP RISC マシンなどで
+<code>+</code> に最適なコードを生成します。 <code>n</code> 達を定義してもコードは生成されませんし、 また、
+それら中間ストレージとして使用してもコストはかかりません。
 </p>
-<p>There are also other optimizations that are not illustrated by this example:
-assignments between simple variables are usually for free (copy
-propagation). If one of the stack items is not used by the primitive (e.g.
-in <code>drop</code>), the compiler eliminates the load from the stack (dead code
-elimination). On the other hand, there are some things that the compiler
-does not do, therefore they are performed by <samp>prims2x.fs</samp>: The compiler
-does not optimize code away that stores a stack item to the place where it
-just came from (e.g., <code>over</code>).
+<p>この例では示されていない他の最適化もあります。 単純な変数間の代入は通常はコストがかかりません(コピー伝播)。 スタック項目の 1
+つがプリミティブによって使用されていない場合(<code>drop</code> など)、
+コンパイラーはスタックのその部分の負荷を削除します(デッド・コードの削除)。 一方、 コンパイラが実行しない処理もいくつかあり、 そのため、 それらは
+<samp>prims2x.fs</samp> によって実行されます。 コンパイラは、 スタック項目を元の場所に格納するコードを最適化しません(例:
+<code>over</code>).
 </p>
-<p>While programming a primitive is usually easy, there are a few cases where
-the programmer has to take the actions of the generator into account, most
-notably <code>?dup</code>, but also words that do not (always)  fall through to
-<code>NEXT</code>.
+<p>プリミティブのプログラミングは通常は簡単ですが、 最も顕著な <code>?dup</code> だけでなく、 <code>NEXT</code>
+に(常に)フローが流れていかないワードについても、 プログラマがジェネレーターのアクションを考慮する必要があるケースがいくつかあります。 
 </p>
-<p>For more information
+<p>詳細について(原文未記述)
 </p>
 </div>
 <div class="footnote">
@@ -156,14 +143,8 @@ notably <code>?dup</code>, but also words that do not (always)  fall through to
 <h4 class="footnotes-heading">Footnotes</h4>
 
 <h5><a id="FOOT38" href="#DOCF38">(38)</a></h5>
-<p>We use a one-stack notation, even though we have
-separate data and floating-point stacks; The separate notation can be
-generated easily from the unified notation.</p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="TOS-Optimization.html">TOS Optimization</a>, Previous: <a href="Primitives.html">Primitives</a>, Up: <a href="Primitives.html">Primitives</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+<p>データと浮動小数点スタックが別々に存在する場合でも、1 つのスタック表記法を使用します。
+個別の表記は、 統一された表記から簡単に生成できます。</p>
 </div>
 
 

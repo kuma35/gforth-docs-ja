@@ -18489,10 +18489,10 @@ valueフレーバーのローカル変数はレジスタに常駐できるため
 一部の Forth システムでは初期化されないままになっています。
 
 @cindex data structure locals
-Gforth は、 ローカル・バッファーとデータデータ構造体のための角括弧(square bracket)表記をサポートしています。
-これらのローカル変数は variableフレーバー のローカル変数に似ており、 サイズは定数式として指定します。  宣言は
-@code{@i{name}[ @i{size} ]} のようになります。  Forth の式 @code{@i{size}} は宣言中に評価され、
-サイズをバイト単位で指定するスタック効果 @code{( -- +n )} が必要です。  角括弧 @code{[} は定義された名前の一部です。
+Gforth は、 ローカル・バッファーとデータ構造体のための角括弧(square bracket)表記をサポートしています。  これらのローカル変数は
+variableフレーバーのローカル変数に似ており、 サイズは定数式として指定します。  宣言は @code{@i{name}[ @i{size} ]}
+のようになります。  Forth の式 @code{@i{size}} は宣言中に評価され、 サイズをバイト単位で指定するスタック効果 @code{(
+-- +n )} が必要です。  なお、 角括弧 @code{[} は定義された名前の一部です。
 
 ローカルのデータ構造体は、 データ・スタックに渡されたアドレスから @i{size} バイトをコピーすることによって初期化されます。 (宣言内の
 @code{|} の後の、)初期化されていないローカルのデータ構造体は消去されず、 以前にローカル・スタックにあったデータをすべて含むだけです。
@@ -18553,8 +18553,8 @@ Gforth では、コロン定義内のあらゆる場所でローカル変数を�
 @format
 @code{|} ( @i{--  }) gforth-1.0 ``bar''
 @end format
-@code{|} の後ろで定義されたローカル変数はスタックから初期化されません。 したがって、 @code{W:} のようなワードの実行時のスタック効果
-@code{( -- )} に変わります。
+@code{|} の後ろで定義されたローカル変数はスタックから初期化されません。 したがって、 @code{W:}
+のようなワードの実行時のスタック効果は @code{( -- )} に変わります。
 
 
 @findex :@} ( @var{ hmaddr u latest latestnt wid 0 xt1 ... xtn --   } ) gforth-1.0
@@ -28610,28 +28610,24 @@ goto *ca;
 @subsection Scheduling
 @cindex inner interpreter optimization
 
-There is a little complication: Pipelined and superscalar processors, i.e.,
-RISC and some modern CISC machines can process independent instructions
-while waiting for the results of an instruction. The compiler usually
-reorders (schedules) the instructions in a way that achieves good usage of
-these delay slots. However, on our first tries the compiler did not do well
-on scheduling primitives. E.g., for @code{+} implemented as
+スケジューリングについては少々複雑です。 パイプライン・プロセッサとスーパースカラ・プロセッサ、 つまり RISC と一部の最新の CISC マシンは、
+ある命令の結果が出るのを待つ間に別の命令を処理できます。 通常、 コンパイラは、
+これらの遅延スロットを有効に使用できるように命令を並べ替え(スケジューリング)します。 ただし、 我々の最初の挑戦では、
+コンパイラーはプリミティブのスケジューリングをうまく機能させられませんでした。 たとえば、 @code{+} は以下のように実装されます
 @example
 n=sp[0]+sp[1];
 sp++;
 sp[0]=n;
 NEXT;
 @end example
-the @code{NEXT} comes strictly after the other code, i.e., there is nearly
-no scheduling. After a little thought the problem becomes clear: The
-compiler cannot know that @code{sp} and @code{ip} point to different
-addresses (and the version of @code{gcc} we used would not know it even if
-it was possible), so it could not move the load of the cfa above the store
-to the TOS. Indeed the pointers could be the same, if code on or very near
-the top of stack were executed. In the interest of speed we chose to forbid
-this probably unused ``feature'' and helped the compiler in scheduling:
-@code{NEXT} is divided into several parts: @code{NEXT_P0}, @code{NEXT_P1}
-and @code{NEXT_P2}). @code{+} now looks like:
+@code{NEXT} は厳密に他のコードの後に配置されます。 つまり、 スケジューリングはまずありえません。
+ちょっと考えると問題が明らかになってきます: コンパイラは、 @code{sp} と @code{ip}
+が異なるアドレスを指していることを認識できないため(そして、 たとえ認識が可能だったとしても、  私たちが使用した @code{gcc}
+のバージョンはそれを知りません。)、 ストア上の cfa の負荷を TOS に移動できませんでした。 実際、
+スタックのTOSまたはTOS付近に対するコードが実行された場合、 これらのポインタは同一になる可能性があります。 速度を重視して、 私達は、 この、
+おそらく未使用の「認識機能」を禁止した上でコンパイラーのスケジューリングを支援します(@code{NEXT} を幾つかの部分、 すなわち、
+@code{NEXT_P0} と @code{NEXT_P1} と @code{NEXT_P2} に分割します): そうすると、 @code{+}
+は以下のようになります:
 @example
 NEXT_P0;
 n=sp[0]+sp[1];
@@ -28641,69 +28637,54 @@ sp[0]=n;
 NEXT_P2;
 @end example
 
-There are various schemes that distribute the different operations of NEXT
-between these parts in several ways; in general, different schemes perform
-best on different processors.  We use a scheme for most architectures that
-performs well for most processors of this architecture; in the future we may
-switch to benchmarking and chosing the scheme on installation time.
+さまざまな操作を NEXT の部分間でいくつかの方法で分散するさまざまな仕組みがあります。 一般に、
+異なる仕組みは異なるプロセッサ上で最高のパフォーマンスを発揮します。  私たちは、 ほとんどのアーキテクチャに対して、
+そのアーキテクチャのほとんどのプロセッサで良好に動作する仕組みを使用しています。 将来的には、 ベンチマークを実施し、
+インストール時に仕組みを選択するように切り替える可能性があります。
 
 
 @node Direct or Indirect Threaded?, Dynamic Superinstructions, Scheduling, Threading
 @subsection Direct or Indirect Threaded?
 @cindex threading, direct or indirect?
 
-Threaded forth code consists of references to primitives (simple machine
-code routines like @code{+}) and to non-primitives (e.g., colon definitions,
-variables, constants); for a specific class of non-primitives (e.g.,
-variables) there is one code routine (e.g., @code{dovar}), but each variable
-needs a separate reference to its data.
+スレッド化された forth コードは、 プリミティブ(@code{+} のような単純なマシン・コード・ルーチン)と非プリミティブ(コロン定義、 変数、
+定数など)への参照で構成されます。 非プリミティブの特定の種類(変数など)では、 コード・ルーチン(@code{dovar} など) は 1
+つだけですが、 各変数は各変数それぞれのデータへの個別の参照が必要です。
 
-Traditionally Forth has been implemented as indirect threaded code, because
-this allows to use only one cell to reference a non-primitive (basically you
-point to the data, and find the code address there).
+伝統的に、 Forth は間接スレッド化コードとして実装されてきました。 これにより、 非プリミティブの参照は 1
+つのセルのみの使用で済ませられるためです(基本的に、 データをポイントし、 ポイントした先でコード・アドレスを見つけます)。
 
 @cindex primitive-centric threaded code
-However, threaded code in Gforth (since 0.6.0) uses two cells for
-non-primitives, one for the code address, and one for the data address; the
-data pointer is an immediate argument for the virtual machine instruction
-represented by the code address.  We call this @emph{primitive-centric}
-threaded code, because all code addresses point to simple primitives.  E.g.,
-for a variable, the code address is for @code{lit} (also used for integer
-literals like @code{99}).
+しかしながら  Gforth (0.6.0 以降) のスレッド化コードは、 非プリミティブに 2 つのセルを使用します。 1 つはコード・アドレス用で、
+もう 1 つはデータ・アドレス用です。 データ・ポインタは、 コード・アドレスで表される仮想マシン命令の直接の引数です。
+すべてのコード・アドレスが単純なプリミティブを指しているため、 これを「プリミティブ指向」スレッド化コードと呼びます。  たとえば、 変数の場合、
+コード・アドレスは @code{lit} 用です(@code{99} などの整数リテラルにも使用されます)。
 
-Primitive-centric threaded code allows us to use (faster) direct threading
-as dispatch method, completely portably (direct threaded code in Gforth
-before 0.6.0 required architecture-specific code).  It also eliminates the
-performance problems related to I-cache consistency that 386 implementations
-have with direct threaded code, and allows additional optimizations.
+プリミティブ指向スレッド化コードにより、 ディスパッチ手法として(より高速な)直接スレッド化を完全に移植可能な状態で使用できます(0.6.0 より前の
+Gforth の直接スレッド化コードにはアーキテクチャ固有のコードが必要でした)。  また、386 実装で直接スレッド・コードによる I
+キャッシュの一貫性に関連するパフォーマンスの問題も解消され、 追加の最適化が可能になります。
 
 @cindex hybrid direct/indirect threaded code
-There is a catch, however: the @var{xt} parameter of @code{execute} can
-occupy only one cell, so how do we pass non-primitives with their code
-@emph{and} data addresses to them? Our answer is to use indirect threaded
-dispatch for @code{execute} and other words that use a single-cell xt.  So,
-normal threaded code in colon definitions uses direct threading, and
-@code{execute} and similar words, which dispatch to xts on the data stack,
-use indirect threaded code.  We call this @emph{hybrid direct/indirect}
-threaded code.
+ただし、 問題があります。 @code{execute} の @var{xt} パラメータは 1 つのセルしか占有できないため、
+「コードとデータ・アドレス」を持つ非プリミティブをどのように渡せばよいのでしょうか？  これに対する私達の答えは、 @code{execute}
+や単一セル xt を使用する他のワードに間接スレッド化ディスパッチを使用することです。  したがって、
+コロン定義内の通常のスレッド化コードは直接スレッドを使用し、 データ・スタック上の xt にディスパッチする @code{execute}
+や同様のワードは間接スレッド化コードを使用します。  これを 「ハイブリッド 直接/間接 スレッド化コード」と呼びます。
 
 @cindex engines, gforth vs.@: gforth-fast vs.@: gforth-itc
 @cindex gforth engine
 @cindex gforth-fast engine
-The engines @command{gforth} and @command{gforth-fast} use hybrid
-direct/indirect threaded code.  This means that with these engines you
-cannot use @code{,} to compile an xt.  Instead, you have to use
-@code{compile,}.
+@command{gforth} エンジンと @command{gforth-fast} エンジンは、 ハイブリッド 直接/間接
+スレッド化コードを使用します。  つまり、 これらのエンジンでは @code{,} を使用して xt をコンパイルできないことを意味します。
+代わりに、 @code{compile,} を使用する必要があります。
 
 @cindex gforth-itc engine
-If you want to compile xts with @code{,}, use @command{gforth-itc}.  This
-engine uses plain old indirect threaded code.  It still compiles in a
-primitive-centric style, so you cannot use @code{compile,} instead of
-@code{,} (e.g., for producing tables of xts with @code{] word1 word2
-... [}).  If you want to do that, you have to use @command{gforth-itc} and
-execute @code{' , is compile,}.  Your program can check if it is running on
-a hybrid direct/indirect threaded engine or a pure indirect threaded engine
-with @code{threading-method} (@pxref{Threading Words}).
+@code{,} を使用して xt をコンパイルする場合は、 @command{gforth-itc} エンジンを使用します。  このエンジンは、
+単純な古い間接スレッド化コードを使用します。 しかし、 それでもプリミティブ指向のスタイルでコンパイルされるため、  @code{,} の代わりに
+@code{compile,} を使用することはできません(たとえば、 @code{] word1 word2 ... [} で xt
+達のテーブルを生成する場合)。  それを行いたい場合は、 @command{gforth-itc} を使用して @code{' , is
+compile,} を実行する必要があります。 あなたのプログラムでは、 @code{threading-method} を使用して、 ハイブリッド
+直接/間接 スレッド化エンジンで実行されているか、 純粋な間接スレッド化エンジンで実行されているかを確認できます。
 
 
 @node Dynamic Superinstructions, DOES>, Direct or Indirect Threaded?, Threading
@@ -28712,16 +28693,16 @@ with @code{threading-method} (@pxref{Threading Words}).
 @cindex Superinstructions
 @cindex Replication
 
-The engines @command{gforth} and @command{gforth-fast} use another
-optimization: Dynamic superinstructions with replication.  As an example,
-consider the following colon definition:
+@command{gforth} エンジンと @command{gforth-fast} エンジンは、 別の最適化、 つまり、
+レプリケーションを伴う動的スーパー命令(Dynamic superinstructions with replication)を使用します。
+例として、 以下のコロン定義について考えてみましょう:
 
 @example
 : squared ( n1 -- n2 )
   dup * ;
 @end example
 
-Gforth compiles this into the threaded code sequence
+Gforth はこれを以下のスレッド化コード・シーケンスにコンパイルします
 
 @example
 dup
@@ -28729,14 +28710,12 @@ dup
 ;s
 @end example
 
-Use @code{simple-see} (@pxref{Examining compiled code}) to see the threaded
-code of a colon definition.
+@code{simple-see} (@pxref{Examining compiled code})を使用して、
+コロン定義のスレッド化コードを確認します。
 
-In normal direct threaded code there is a code address occupying one cell
-for each of these primitives.  Each code address points to a machine code
-routine, and the interpreter jumps to this machine code in order to execute
-the primitive.  The routines for these three primitives are (in
-@command{gforth-fast} on the 386):
+通常の直接スレッド化コードでは、 上記のプリミティブごとに 1 つのセルを占めるコード・アドレスがあります。
+各コード・アドレスはマシン・コード・ルーチンを指し、 インタプリタはプリミティブを実行するためにこのマシン・コードにジャンプします。  上記 3
+つのプリミティブのルーチンは以下のとおりです(386 の @command{gforth-fast} の場合):
 
 @example
 Code dup  
@@ -28760,9 +28739,8 @@ Code ;s
 end-code
 @end example
 
-With dynamic superinstructions and replication the compiler does not just
-lay down the threaded code, but also copies the machine code fragments,
-usually without the jump at the end.
+動的なスーパー命令とレプリケーションを使用すると、 コンパイラーはスレッド化されたコードを配置しないだけでなく、 コード断片のコピーも行い、
+通常は各コード断片最後で行うジャンプを行いません。
 
 @example
 ( $4057D27D )  add     esi , # -4  \ $83 $C6 $FC 
@@ -28778,14 +28756,11 @@ usually without the jump at the end.
 ( $4057D29A )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC 
 @end example
 
-Only when a threaded-code control-flow change happens (e.g., in @code{;s}),
-the jump is appended.  This optimization eliminates many of these jumps and
-makes the rest much more predictable.  The speedup depends on the processor
-and the application; on the Athlon and Pentium III this optimization
-typically produces a speedup by a factor of 2.
+スレッド化コードの制御フローに変更が発生した場合(@code{;s} など)にのみジャンプが追加されます。 この最適化により、
+これらのジャンプの多くが排除され、 残りの部分がより予測可能になります。  高速化はプロセッサとアプリケーションによって異なります。 Athlon
+および Pentium III では、 この最適化により通常 2 倍の速度向上が得られます。
 
-The code addresses in the direct-threaded code are set to point to the
-appropriate points in the copied machine code, in this example like this:
+直接スレッド化コード内のコード・アドレスは、 コピーされたマシン・コード内の適切なポイントを指すように設定されます。 この例では以下のようになります:
 
 @example
 primitive  code address
@@ -28794,14 +28769,13 @@ primitive  code address
    ;s        $4057D292
 @end example
 
-Thus there can be threaded-code jumps to any place in this piece of code.
-This also simplifies decompilation quite a bit.
+したがって、 このコード部分の任意の場所にスレッド化コードからのジャンプ先が存在する可能性があります。  これにより、
+逆コンパイルもかなり簡素化されます。
 
-@code{See-code} (@pxref{Examining compiled code}) shows the threaded code
-intermingled with the native code of dynamic superinstructions.  These days
-some additional optimizations are applied for the dynamically-generated
-native code, so the output of @code{see-code squared} on @code{gforth-fast}
-on one particular AMD64 installation looks like this:
+@code{See-code} (@pxref{Examining compiled code})は、 動的スーパー命令(dynamic
+superinstructions)のネイティブ・コードと混在するスレッド化コードを示します。  最近では、
+動的に生成されたネイティブ・コードに追加の最適化が適用されているため、 特定の AMD64 インストール上の @code{gforth-fast} での
+@code{see-code squared} の出力は以下のようになります:
 
 @example
 $7FB689C678C8 dup    1->2 
@@ -28817,22 +28791,20 @@ $7FB689C678D8 ;s    1->1
 
 @cindex --no-dynamic command-line option
 @cindex --no-super command-line option
-You can disable this optimization with @option{--no-dynamic}.  You can use
-the copying without eliminating the jumps (i.e., dynamic replication, but
-without superinstructions) with @option{--no-super}; this gives the branch
-prediction benefit alone; the effect on performance depends on the CPU; on
-the Athlon and Pentium III the speedup is a little less than for dynamic
-superinstructions with replication.
+@option{--no-dynamic} を使用してこの最適化を無効にできます。  @option{--no-super} を使用すると、
+ジャンプを排除せずにコピーを使用できます(つまり、 動的レプリケーション、 しかしスーパー命令は使用しません)。
+これは分岐予測のみに利点をもたらします。 パフォーマンスへの影響は CPU によって異なります。 Athlon および Pentium III では、
+レプリケーションを伴う動的スーパー命令(dynamic superinstructions with
+replication)よりも高速化が若干損なわれます。
 
 @cindex patching threaded code
-One use of these options is if you want to patch the threaded code.  With
-superinstructions, many of the dispatch jumps are eliminated, so patching
-often has no effect.  These options preserve all the dispatch jumps.
+これらのオプションの用途の 1 つは、 スレッド化されたコードにパッチを適用する場合です。  スーパー命令を使用すると、
+ディスパッチ・ジャンプの多くが削除されるため、 パッチを当てても効果がなくなることがよくあります。  これらのオプションは、
+すべてのディスパッチ・ジャンプを保持します。
 
 @cindex --dynamic command-line option
-On some machines dynamic superinstructions are disabled by default, because
-it is unsafe on these machines.  However, if you feel adventurous, you can
-enable it with @option{--dynamic}.
+一部のマシンでは動的スーパー命令(dynamic superinstructions)は安全ではないため、 デフォルトで無効になっています。
+しかしながら、 あなたが冒険してみたい場合は、 @option{--dynamic} を使用して有効にすることができます。
 
 @node DOES>, , Dynamic Superinstructions, Threading
 @subsection DOES>
@@ -28840,21 +28812,17 @@ enable it with @option{--dynamic}.
 
 @cindex @code{dodoes} routine
 @cindex @code{DOES>}-code
-One of the most complex parts of a Forth engine is @code{dodoes}, i.e., the
-chunk of code executed by every word defined by a
-@code{CREATE}...@code{DOES>} pair; actually with primitive-centric code,
-this is only needed if the xt of the word is @code{execute}d. The main
-problem here is: How to find the Forth code to be executed, i.e. the code
-after the @code{DOES>} (the @code{DOES>}-code)? There are two solutions:
+Forth エンジンの最も複雑な部分の 1 つは @code{dodoes} です。つまり、 @code{CREATE}...@code{DOES>}
+ペアで定義されたすべてのワードによって実行されるコードの塊(chunk)です。 実際のところプリミティブ指向のコードでは、
+@code{CREATE}...@code{DOES>} ペアで定義されたすべてのワードによって実行されるコードの塊(chunk)は、 ワードの xt
+が @code{execute} された場合にのみ必要です。 ここでの主な問題は、 実行される Forth コード、 つまり @code{DOES>}
+の後のコード(the @code{DOES>}-code) をどのようにして見つけるかということです。 この解決策は 2 つあります:
 
-In fig-Forth the code field points directly to the @code{dodoes} and the
-@code{DOES>}-code address is stored in the cell after the code address
-(i.e. at @code{@i{CFA} cell+}). It may seem that this solution is illegal in
-the Forth-79 and all later standards, because in fig-Forth this address lies
-in the body (which is illegal in these standards). However, by making the
-code field larger for all words this solution becomes legal again.  We use
-this approach.  Leaving a cell unused in most words is a bit wasteful, but
-on the machines we are targeting this is hardly a problem.
+fig-Forth では、 コード・フィールドは @code{dodoes} を直接指しており、 @code{DOES>}
+コード・アドレスはコード・アドレスの後のセル(つまり @code{@i{CFA} cell+})に格納されます。 この解決策は、 Forth-79
+以降のすべての標準では違法であるように見えるかもしれません。 fig-Forth ではこのアドレスがボディ内にあるためです(標準では違法です)。
+しかしながら、 すべてのワードに対してコード・フィールドを大きくすることで、 この解決策は再び有効になります。 私たちはこのアプローチを採用しています。
+ほとんどの場合、 セルを未使用のままにしておくのはちょっと無駄ですが、 私たちが対象としているマシンでは、 これはほとんど問題になりません。
 
 
 @node Primitives, Performance, Threading, Engine
@@ -28874,14 +28842,11 @@ on the machines we are targeting this is hardly a problem.
 
 @cindex @file{prims2x.fs}
 
-Since the primitives are implemented in a portable language, there is no
-longer any need to minimize the number of primitives. On the contrary,
-having many primitives has an advantage: speed. In order to reduce the
-number of errors in primitives and to make programming them easier, we
-provide a tool, the primitive generator (@file{prims2x.fs} aka Vmgen,
-@pxref{Top, Vmgen, Introduction, vmgen, Vmgen}), that automatically
-generates most (and sometimes all) of the C code for a primitive from the
-stack effect notation.  The source for a primitive has the following form:
+プリミティブは移植可能な言語(portable language)で実装されているため、 最早プリミティブの数を最小限に抑える必要はありません。 逆に、
+多くのプリミティブを持つことには速度という利点があります。 プリミティブでのエラーの数を減らし、 プリミティブのプログラミングを容易にするために、
+プリミティブ・ジェネレーター (@file{prims2x.fs} 別名 Vmgen @pxref{Top, Vmgen, Introduction,
+vmgen, Vmgen})というツールを提供しており、 それは、 スタック効果の表記からプリミティブの
+C言語コードの大部分(場合によってはすべて)を自動的に生成します。  プリミティブのソースの形式は以下のとおりです:
 
 @cindex primitive source format
 @format
@@ -28892,23 +28857,19 @@ stack effect notation.  The source for a primitive has the following form:
 @i{Forth code}]
 @end format
 
-The items in brackets are optional. The category and glossary fields are
-there for generating the documentation, the Forth code is there for manual
-implementations on machines without GNU C. E.g., the source for the
-primitive @code{+} is:
+角括弧(brackets)内の項目はオプションです。
+カテゴリ(category)と用語集(glossary)のフィールドはドキュメントを生成するためにあり、 Forth コードは GNU C
+を持たないマシンでの手動実装のためにあります。 たとえば、 プリミティブ @code{+} のソースは以下のとおりです:
 @example
 +    ( n1 n2 -- n )   core    plus
 n = n1+n2;
 @end example
 
-This looks like a specification, but in fact @code{n = n1+n2} is C code. Our
-primitive generation tool extracts a lot of information from the stack
-effect notations@footnote{We use a one-stack notation, even though we have
-separate data and floating-point stacks; The separate notation can be
-generated easily from the unified notation.}: The number of items popped
-from and pushed on the stack, their type, and by what name they are referred
-to in the C code. It then generates a C code prelude and postlude for each
-primitive. The final C code for @code{+} looks like this:
+これは仕様のように見えますが、 実際には @code{n = n1+n2} は C言語のコードです。 私たちのプリミティブ生成ツールは、
+スタック効果の表記から多くの情報を抽出します@footnote{データと浮動小数点スタックが別々に存在する場合でも、1 つのスタック表記法を使用します。
+個別の表記は、 統一された表記から簡単に生成できます。}: それらは、 スタックからポップされた項目とスタックにプッシュされた項目の数、 その型、
+および C言語のコード内で参照される名前 です。 その次に、 各プリミティブの C言語コードの prelude と postlude を生成します。
+@code{+} の最終的な C言語コードは以下のようになります:
 
 @example
 I_plus: /* + ( n1 n2 -- n ) */  /* label, stack effect */
@@ -28932,42 +28893,36 @@ NEXT_P2;                        /* NEXT part 2 */
 @}
 @end example
 
-This looks long and inefficient, but the GNU C compiler optimizes quite well
-and produces optimal code for @code{+} on, e.g., the R3000 and the HP RISC
-machines: Defining the @code{n}s does not produce any code, and using them
-as intermediate storage also adds no cost.
+これは長くて非効率に見えますが、 GNU C コンパイラーは非常に適切に最適化して、 例えば R3000 や HP RISC マシンなどで
+@code{+} に最適なコードを生成します。 @code{n} 達を定義してもコードは生成されませんし、 また、
+それら中間ストレージとして使用してもコストはかかりません。
 
-There are also other optimizations that are not illustrated by this example:
-assignments between simple variables are usually for free (copy
-propagation). If one of the stack items is not used by the primitive (e.g.
-in @code{drop}), the compiler eliminates the load from the stack (dead code
-elimination). On the other hand, there are some things that the compiler
-does not do, therefore they are performed by @file{prims2x.fs}: The compiler
-does not optimize code away that stores a stack item to the place where it
-just came from (e.g., @code{over}).
+この例では示されていない他の最適化もあります。 単純な変数間の代入は通常はコストがかかりません(コピー伝播)。 スタック項目の 1
+つがプリミティブによって使用されていない場合(@code{drop} など)、
+コンパイラーはスタックのその部分の負荷を削除します(デッド・コードの削除)。 一方、 コンパイラが実行しない処理もいくつかあり、 そのため、 それらは
+@file{prims2x.fs} によって実行されます。 コンパイラは、 スタック項目を元の場所に格納するコードを最適化しません(例:
+@code{over}).
 
-While programming a primitive is usually easy, there are a few cases where
-the programmer has to take the actions of the generator into account, most
-notably @code{?dup}, but also words that do not (always)  fall through to
-@code{NEXT}.
+プリミティブのプログラミングは通常は簡単ですが、 最も顕著な @code{?dup} だけでなく、 @code{NEXT}
+に(常に)フローが流れていかないワードについても、 プログラマがジェネレーターのアクションを考慮する必要があるケースがいくつかあります。 
 
-For more information
+詳細について(原文未記述)
 
 @node TOS Optimization, Produced code, Automatic Generation, Primitives
 @subsection TOS Optimization
 @cindex TOS optimization for primitives
 @cindex primitives, keeping the TOS in a register
 
-An important optimization for stack machine emulators, e.g., Forth engines,
-is keeping one or more of the top stack items in registers.  If a word has
-the stack effect @i{in1}...@i{inx} @code{--} @i{out1}...@i{outy}, keeping
-the top @i{n} items in registers
+Forth エンジンなどのスタック・マシン・エミュレータの重要な最適化は、 1 つ以上の最上位側スタック項目をレジスタに保持することです。
+ワードにスタック効果  @code{( @i{in1}...@i{inx} -- @i{out1}...@i{outy} )} がある場合、 上位の
+@i{n} 項目をレジスタに保持します:
 @itemize @bullet
 @item
-is better than keeping @i{n-1} items, if @i{x>=n} and @i{y>=n}, due to fewer
-loads from and stores to the stack.
-@item is slower than keeping @i{n-1} items, if @i{x<>y} and @i{x<n} and
-@i{y<n}, due to additional moves between registers.
+@i{x>=n} かつ @i{y>=n} の場合、 スタックへのロードとスタックへのストアがより少なくなるため、 @i{n}
+項目をレジスタに保持する方が @i{n-1} 項目をレジスタに保持するよりも優れています。
+@item
+@i{x<>y} かつ @i{x<n} かつ @i{y<n} の場合、 レジスタ間の追加の移動により、 @i{n} 項目をレジスタに保持することは
+@i{n-1} 項目を保持するよりも遅くなります。
 @end itemize
 
 @cindex -DUSE_TOS

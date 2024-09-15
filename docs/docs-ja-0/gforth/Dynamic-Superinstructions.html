@@ -73,16 +73,16 @@ Next: <a href="DOES_003e.html" accesskey="n" rel="next">DOES&gt;</a>, Previous: 
 <span id="index-Superinstructions"></span>
 <span id="index-Replication"></span>
 
-<p>The engines <code>gforth</code> and <code>gforth-fast</code> use another
-optimization: Dynamic superinstructions with replication.  As an example,
-consider the following colon definition:
+<p><code>gforth</code> エンジンと <code>gforth-fast</code> エンジンは、 別の最適化、 つまり、
+レプリケーションを伴う動的スーパー命令(Dynamic superinstructions with replication)を使用します。
+例として、 以下のコロン定義について考えてみましょう:
 </p>
 <div class="example">
 <pre class="example">: squared ( n1 -- n2 )
   dup * ;
 </pre></div>
 
-<p>Gforth compiles this into the threaded code sequence
+<p>Gforth はこれを以下のスレッド化コード・シーケンスにコンパイルします
 </p>
 <div class="example">
 <pre class="example">dup
@@ -90,14 +90,12 @@ consider the following colon definition:
 ;s
 </pre></div>
 
-<p>Use <code>simple-see</code> (see <a href="Examining-compiled-code.html">Examining compiled code</a>) to see the threaded
-code of a colon definition.
+<p><code>simple-see</code> (see <a href="Examining-compiled-code.html">Examining compiled code</a>)を使用して、
+コロン定義のスレッド化コードを確認します。
 </p>
-<p>In normal direct threaded code there is a code address occupying one cell
-for each of these primitives.  Each code address points to a machine code
-routine, and the interpreter jumps to this machine code in order to execute
-the primitive.  The routines for these three primitives are (in
-<code>gforth-fast</code> on the 386):
+<p>通常の直接スレッド化コードでは、 上記のプリミティブごとに 1 つのセルを占めるコード・アドレスがあります。
+各コード・アドレスはマシン・コード・ルーチンを指し、 インタプリタはプリミティブを実行するためにこのマシン・コードにジャンプします。  上記 3
+つのプリミティブのルーチンは以下のとおりです(386 の <code>gforth-fast</code> の場合):
 </p>
 <div class="example">
 <pre class="example">Code dup  
@@ -121,9 +119,8 @@ Code ;s
 end-code
 </pre></div>
 
-<p>With dynamic superinstructions and replication the compiler does not just
-lay down the threaded code, but also copies the machine code fragments,
-usually without the jump at the end.
+<p>動的なスーパー命令とレプリケーションを使用すると、 コンパイラーはスレッド化されたコードを配置しないだけでなく、 コード断片のコピーも行い、
+通常は各コード断片最後で行うジャンプを行いません。
 </p>
 <div class="example">
 <pre class="example">( $4057D27D )  add     esi , # -4  \ $83 $C6 $FC 
@@ -139,14 +136,11 @@ usually without the jump at the end.
 ( $4057D29A )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC 
 </pre></div>
 
-<p>Only when a threaded-code control-flow change happens (e.g., in <code>;s</code>),
-the jump is appended.  This optimization eliminates many of these jumps and
-makes the rest much more predictable.  The speedup depends on the processor
-and the application; on the Athlon and Pentium III this optimization
-typically produces a speedup by a factor of 2.
+<p>スレッド化コードの制御フローに変更が発生した場合(<code>;s</code> など)にのみジャンプが追加されます。 この最適化により、
+これらのジャンプの多くが排除され、 残りの部分がより予測可能になります。  高速化はプロセッサとアプリケーションによって異なります。 Athlon
+および Pentium III では、 この最適化により通常 2 倍の速度向上が得られます。
 </p>
-<p>The code addresses in the direct-threaded code are set to point to the
-appropriate points in the copied machine code, in this example like this:
+<p>直接スレッド化コード内のコード・アドレスは、 コピーされたマシン・コード内の適切なポイントを指すように設定されます。 この例では以下のようになります:
 </p>
 <div class="example">
 <pre class="example">primitive  code address
@@ -155,14 +149,13 @@ appropriate points in the copied machine code, in this example like this:
    ;s        $4057D292
 </pre></div>
 
-<p>Thus there can be threaded-code jumps to any place in this piece of code.
-This also simplifies decompilation quite a bit.
+<p>したがって、 このコード部分の任意の場所にスレッド化コードからのジャンプ先が存在する可能性があります。  これにより、
+逆コンパイルもかなり簡素化されます。
 </p>
-<p><code>See-code</code> (see <a href="Examining-compiled-code.html">Examining compiled code</a>) shows the threaded code
-intermingled with the native code of dynamic superinstructions.  These days
-some additional optimizations are applied for the dynamically-generated
-native code, so the output of <code>see-code squared</code> on <code>gforth-fast</code>
-on one particular AMD64 installation looks like this:
+<p><code>See-code</code> (see <a href="Examining-compiled-code.html">Examining compiled code</a>)は、 動的スーパー命令(dynamic
+superinstructions)のネイティブ・コードと混在するスレッド化コードを示します。  最近では、
+動的に生成されたネイティブ・コードに追加の最適化が適用されているため、 特定の AMD64 インストール上の <code>gforth-fast</code> での
+<code>see-code squared</code> の出力は以下のようになります:
 </p>
 <div class="example">
 <pre class="example">$7FB689C678C8 dup    1-&gt;2 
@@ -178,22 +171,20 @@ $7FB689C678D8 ;s    1-&gt;1
 
 <span id="index-_002d_002dno_002ddynamic-command_002dline-option"></span>
 <span id="index-_002d_002dno_002dsuper-command_002dline-option"></span>
-<p>You can disable this optimization with <samp>--no-dynamic</samp>.  You can use
-the copying without eliminating the jumps (i.e., dynamic replication, but
-without superinstructions) with <samp>--no-super</samp>; this gives the branch
-prediction benefit alone; the effect on performance depends on the CPU; on
-the Athlon and Pentium III the speedup is a little less than for dynamic
-superinstructions with replication.
+<p><samp>--no-dynamic</samp> を使用してこの最適化を無効にできます。  <samp>--no-super</samp> を使用すると、
+ジャンプを排除せずにコピーを使用できます(つまり、 動的レプリケーション、 しかしスーパー命令は使用しません)。
+これは分岐予測のみに利点をもたらします。 パフォーマンスへの影響は CPU によって異なります。 Athlon および Pentium III では、
+レプリケーションを伴う動的スーパー命令(dynamic superinstructions with
+replication)よりも高速化が若干損なわれます。
 </p>
 <span id="index-patching-threaded-code"></span>
-<p>One use of these options is if you want to patch the threaded code.  With
-superinstructions, many of the dispatch jumps are eliminated, so patching
-often has no effect.  These options preserve all the dispatch jumps.
+<p>これらのオプションの用途の 1 つは、 スレッド化されたコードにパッチを適用する場合です。  スーパー命令を使用すると、
+ディスパッチ・ジャンプの多くが削除されるため、 パッチを当てても効果がなくなることがよくあります。  これらのオプションは、
+すべてのディスパッチ・ジャンプを保持します。
 </p>
 <span id="index-_002d_002ddynamic-command_002dline-option"></span>
-<p>On some machines dynamic superinstructions are disabled by default, because
-it is unsafe on these machines.  However, if you feel adventurous, you can
-enable it with <samp>--dynamic</samp>.
+<p>一部のマシンでは動的スーパー命令(dynamic superinstructions)は安全ではないため、 デフォルトで無効になっています。
+しかしながら、 あなたが冒険してみたい場合は、 <samp>--dynamic</samp> を使用して有効にすることができます。
 </p>
 </div>
 <hr>

@@ -71,28 +71,24 @@ Next: <a href="Direct-or-Indirect-Threaded_003f.html" accesskey="n" rel="next">D
 <span id="Scheduling-1"></span><h4 class="subsection">15.2.1 Scheduling</h4>
 <span id="index-inner-interpreter-optimization"></span>
 
-<p>There is a little complication: Pipelined and superscalar processors, i.e.,
-RISC and some modern CISC machines can process independent instructions
-while waiting for the results of an instruction. The compiler usually
-reorders (schedules) the instructions in a way that achieves good usage of
-these delay slots. However, on our first tries the compiler did not do well
-on scheduling primitives. E.g., for <code>+</code> implemented as
+<p>スケジューリングについては少々複雑です。 パイプライン・プロセッサとスーパースカラ・プロセッサ、 つまり RISC と一部の最新の CISC マシンは、
+ある命令の結果が出るのを待つ間に別の命令を処理できます。 通常、 コンパイラは、
+これらの遅延スロットを有効に使用できるように命令を並べ替え(スケジューリング)します。 ただし、 我々の最初の挑戦では、
+コンパイラーはプリミティブのスケジューリングをうまく機能させられませんでした。 たとえば、 <code>+</code> は以下のように実装されます
 </p><div class="example">
 <pre class="example">n=sp[0]+sp[1];
 sp++;
 sp[0]=n;
 NEXT;
 </pre></div>
-<p>the <code>NEXT</code> comes strictly after the other code, i.e., there is nearly
-no scheduling. After a little thought the problem becomes clear: The
-compiler cannot know that <code>sp</code> and <code>ip</code> point to different
-addresses (and the version of <code>gcc</code> we used would not know it even if
-it was possible), so it could not move the load of the cfa above the store
-to the TOS. Indeed the pointers could be the same, if code on or very near
-the top of stack were executed. In the interest of speed we chose to forbid
-this probably unused &ldquo;feature&rdquo; and helped the compiler in scheduling:
-<code>NEXT</code> is divided into several parts: <code>NEXT_P0</code>, <code>NEXT_P1</code>
-and <code>NEXT_P2</code>). <code>+</code> now looks like:
+<p><code>NEXT</code> は厳密に他のコードの後に配置されます。 つまり、 スケジューリングはまずありえません。
+ちょっと考えると問題が明らかになってきます: コンパイラは、 <code>sp</code> と <code>ip</code>
+が異なるアドレスを指していることを認識できないため(そして、 たとえ認識が可能だったとしても、  私たちが使用した <code>gcc</code>
+のバージョンはそれを知りません。)、 ストア上の cfa の負荷を TOS に移動できませんでした。 実際、
+スタックのTOSまたはTOS付近に対するコードが実行された場合、 これらのポインタは同一になる可能性があります。 速度を重視して、 私達は、 この、
+おそらく未使用の「認識機能」を禁止した上でコンパイラーのスケジューリングを支援します(<code>NEXT</code> を幾つかの部分、 すなわち、
+<code>NEXT_P0</code> と <code>NEXT_P1</code> と <code>NEXT_P2</code> に分割します): そうすると、 <code>+</code>
+は以下のようになります:
 </p><div class="example">
 <pre class="example">NEXT_P0;
 n=sp[0]+sp[1];
@@ -102,18 +98,12 @@ sp[0]=n;
 NEXT_P2;
 </pre></div>
 
-<p>There are various schemes that distribute the different operations of NEXT
-between these parts in several ways; in general, different schemes perform
-best on different processors.  We use a scheme for most architectures that
-performs well for most processors of this architecture; in the future we may
-switch to benchmarking and chosing the scheme on installation time.
+<p>さまざまな操作を NEXT の部分間でいくつかの方法で分散するさまざまな仕組みがあります。 一般に、
+異なる仕組みは異なるプロセッサ上で最高のパフォーマンスを発揮します。  私たちは、 ほとんどのアーキテクチャに対して、
+そのアーキテクチャのほとんどのプロセッサで良好に動作する仕組みを使用しています。 将来的には、 ベンチマークを実施し、
+インストール時に仕組みを選択するように切り替える可能性があります。
 </p>
 
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Direct-or-Indirect-Threaded_003f.html">Direct or Indirect Threaded?</a>, Previous: <a href="Threading.html">Threading</a>, Up: <a href="Threading.html">Threading</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

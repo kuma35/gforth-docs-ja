@@ -3551,27 +3551,28 @@ File: gforth.info,  Node: Scheduling,  Next: Direct or Indirect Threaded?,  Prev
 15.2.1 Scheduling
 -----------------
 
-There is a little complication: Pipelined and superscalar processors,
-i.e., RISC and some modern CISC machines can process independent
-instructions while waiting for the results of an instruction.  The
-compiler usually reorders (schedules) the instructions in a way that
-achieves good usage of these delay slots.  However, on our first tries
-the compiler did not do well on scheduling primitives.  E.g., for ‘+’
-implemented as
+スケジューリングについては少々複雑です。 パイプライン・プロセッサとスー
+パースカラ・プロセッサ、 つまり RISC と一部の最新の CISC マシンは、 ある
+命令の結果が出るのを待つ間に別の命令を処理できます。 通常、 コンパイラは
+、 これらの遅延スロットを有効に使用できるように命令を並べ替え(スケジュー
+リング)します。 ただし、 我々の最初の挑戦では、 コンパイラーはプリミティ
+ブのスケジューリングをうまく機能させられませんでした。 たとえば、 ‘+’ は
+以下のように実装されます
      n=sp[0]+sp[1];
      sp++;
      sp[0]=n;
      NEXT;
-   the ‘NEXT’ comes strictly after the other code, i.e., there is nearly
-no scheduling.  After a little thought the problem becomes clear: The
-compiler cannot know that ‘sp’ and ‘ip’ point to different addresses
-(and the version of ‘gcc’ we used would not know it even if it was
-possible), so it could not move the load of the cfa above the store to
-the TOS. Indeed the pointers could be the same, if code on or very near
-the top of stack were executed.  In the interest of speed we chose to
-forbid this probably unused “feature” and helped the compiler in
-scheduling: ‘NEXT’ is divided into several parts: ‘NEXT_P0’, ‘NEXT_P1’
-and ‘NEXT_P2’).  ‘+’ now looks like:
+   ‘NEXT’ は厳密に他のコードの後に配置されます。 つまり、 スケジューリン
+グはまずありえません。 ちょっと考えると問題が明らかになってきます: コン
+パイラは、 ‘sp’ と ‘ip’ が異なるアドレスを指していることを認識できないた
+め(そして、 たとえ認識が可能だったとしても、 私たちが使用した ‘gcc’ のバ
+ージョンはそれを知りません。)、 ストア上の cfa の負荷を TOS に移動できま
+せんでした。 実際、 スタックのTOSまたはTOS付近に対するコードが実行された
+場合、 これらのポインタは同一になる可能性があります。 速度を重視して、 私
+達は、 この、 おそらく未使用の「認識機能」を禁止した上でコンパイラーのス
+ケジューリングを支援します(‘NEXT’ を幾つかの部分、 すなわち、 ‘NEXT_P0’
+と ‘NEXT_P1’ と ‘NEXT_P2’ に分割します): そうすると、 ‘+’ は以下のように
+なります:
      NEXT_P0;
      n=sp[0]+sp[1];
      sp++;
@@ -3579,12 +3580,12 @@ and ‘NEXT_P2’).  ‘+’ now looks like:
      sp[0]=n;
      NEXT_P2;
 
-   There are various schemes that distribute the different operations of
-NEXT between these parts in several ways; in general, different schemes
-perform best on different processors.  We use a scheme for most
-architectures that performs well for most processors of this
-architecture; in the future we may switch to benchmarking and chosing
-the scheme on installation time.
+   さまざまな操作を NEXT の部分間でいくつかの方法で分散するさまざまな仕
+組みがあります。 一般に、 異なる仕組みは異なるプロセッサ上で最高のパフォ
+ーマンスを発揮します。 私たちは、 ほとんどのアーキテクチャに対して、 そ
+のアーキテクチャのほとんどのプロセッサで良好に動作する仕組みを使用してい
+ます。 将来的には、 ベンチマークを実施し、 インストール時に仕組みを選択
+するように切り替える可能性があります。
 
 
 File: gforth.info,  Node: Direct or Indirect Threaded?,  Next: Dynamic Superinstructions,  Prev: Scheduling,  Up: Threading
@@ -3592,51 +3593,54 @@ File: gforth.info,  Node: Direct or Indirect Threaded?,  Next: Dynamic Superinst
 15.2.2 Direct or Indirect Threaded?
 -----------------------------------
 
-Threaded forth code consists of references to primitives (simple machine
-code routines like ‘+’) and to non-primitives (e.g., colon definitions,
-variables, constants); for a specific class of non-primitives (e.g.,
-variables) there is one code routine (e.g., ‘dovar’), but each variable
-needs a separate reference to its data.
+スレッド化された forth コードは、 プリミティブ(‘+’ のような単純なマシン
+・コード・ルーチン)と非プリミティブ(コロン定義、 変数、 定数など)への参
+照で構成されます。 非プリミティブの特定の種類(変数など)では、 コード・ル
+ーチン(‘dovar’ など) は 1 つだけですが、 各変数は各変数それぞれのデータ
+への個別の参照が必要です。
 
-   Traditionally Forth has been implemented as indirect threaded code,
-because this allows to use only one cell to reference a non-primitive
-(basically you point to the data, and find the code address there).
+   伝統的に、 Forth は間接スレッド化コードとして実装されてきました。 こ
+れにより、 非プリミティブの参照は 1 つのセルのみの使用で済ませられるため
+です(基本的に、 データをポイントし、 ポイントした先でコード・アドレスを
+見つけます)。
 
-   However, threaded code in Gforth (since 0.6.0) uses two cells for
-non-primitives, one for the code address, and one for the data address;
-the data pointer is an immediate argument for the virtual machine
-instruction represented by the code address.  We call this
-_primitive-centric_ threaded code, because all code addresses point to
-simple primitives.  E.g., for a variable, the code address is for ‘lit’
-(also used for integer literals like ‘99’).
+   しかしながら Gforth (0.6.0 以降) のスレッド化コードは、 非プリミティ
+ブに 2 つのセルを使用します。 1 つはコード・アドレス用で、 もう 1 つはデ
+ータ・アドレス用です。 データ・ポインタは、 コード・アドレスで表される仮
+想マシン命令の直接の引数です。 すべてのコード・アドレスが単純なプリミテ
+ィブを指しているため、 これを「プリミティブ指向」スレッド化コードと呼び
+ます。 たとえば、 変数の場合、 コード・アドレスは ‘lit’ 用です(‘99’ など
+の整数リテラルにも使用されます)。
 
-   Primitive-centric threaded code allows us to use (faster) direct
-threading as dispatch method, completely portably (direct threaded code
-in Gforth before 0.6.0 required architecture-specific code).  It also
-eliminates the performance problems related to I-cache consistency that
-386 implementations have with direct threaded code, and allows
-additional optimizations.
+   プリミティブ指向スレッド化コードにより、 ディスパッチ手法として(より
+高速な)直接スレッド化を完全に移植可能な状態で使用できます(0.6.0 より前の
+Gforth の直接スレッド化コードにはアーキテクチャ固有のコードが必要でした
+)。 また、386 実装で直接スレッド・コードによる I キャッシュの一貫性に関
+連するパフォーマンスの問題も解消され、 追加の最適化が可能になります。
 
-   There is a catch, however: the XT parameter of ‘execute’ can occupy
-only one cell, so how do we pass non-primitives with their code _and_
-data addresses to them?  Our answer is to use indirect threaded dispatch
-for ‘execute’ and other words that use a single-cell xt.  So, normal
-threaded code in colon definitions uses direct threading, and ‘execute’
-and similar words, which dispatch to xts on the data stack, use indirect
-threaded code.  We call this _hybrid direct/indirect_ threaded code.
+   ただし、 問題があります。 ‘execute’ の XT パラメータは 1 つのセルしか
+占有できないため、 「コードとデータ・アドレス」を持つ非プリミティブをど
+のように渡せばよいのでしょうか？ これに対する私達の答えは、 ‘execute’ や
+単一セル xt を使用する他のワードに間接スレッド化ディスパッチを使用するこ
+とです。 したがって、 コロン定義内の通常のスレッド化コードは直接スレッド
+を使用し、 データ・スタック上の xt にディスパッチする ‘execute’ や同様の
+ワードは間接スレッド化コードを使用します。 これを 「ハイブリッド 直接/間
+接 スレッド化コード」と呼びます。
 
-   The engines ‘gforth’ and ‘gforth-fast’ use hybrid direct/indirect
-threaded code.  This means that with these engines you cannot use ‘,’ to
-compile an xt.  Instead, you have to use ‘compile,’.
+   ‘gforth’ エンジンと ‘gforth-fast’ エンジンは、 ハイブリッド 直接/間接
+スレッド化コードを使用します。 つまり、 これらのエンジンでは ‘,’ を使用
+して xt をコンパイルできないことを意味します。 代わりに、 ‘compile,’ を
+使用する必要があります。
 
-   If you want to compile xts with ‘,’, use ‘gforth-itc’.  This engine
-uses plain old indirect threaded code.  It still compiles in a
-primitive-centric style, so you cannot use ‘compile,’ instead of ‘,’
-(e.g., for producing tables of xts with ‘] word1 word2 ... [’).  If you
-want to do that, you have to use ‘gforth-itc’ and execute ‘' , is
-compile,’.  Your program can check if it is running on a hybrid
-direct/indirect threaded engine or a pure indirect threaded engine with
-‘threading-method’ (*note Threading Words::).
+   ‘,’ を使用して xt をコンパイルする場合は、 ‘gforth-itc’ エンジンを使
+用します。 このエンジンは、 単純な古い間接スレッド化コードを使用します。
+しかし、 それでもプリミティブ指向のスタイルでコンパイルされるため、 ‘,’
+の代わりに ‘compile,’ を使用することはできません(たとえば、 ‘] word1
+word2 ... [’ で xt 達のテーブルを生成する場合)。 それを行いたい場合は、
+‘gforth-itc’ を使用して ‘' , is compile,’ を実行する必要があります。 あ
+なたのプログラムでは、 ‘threading-method’ を使用して、 ハイブリッド 直接
+/間接 スレッド化エンジンで実行されているか、 純粋な間接スレッド化エンジ
+ンで実行されているかを確認できます。
 
 
 File: gforth.info,  Node: Dynamic Superinstructions,  Next: DOES>,  Prev: Direct or Indirect Threaded?,  Up: Threading
@@ -3644,27 +3648,28 @@ File: gforth.info,  Node: Dynamic Superinstructions,  Next: DOES>,  Prev: Direct
 15.2.3 Dynamic Superinstructions
 --------------------------------
 
-The engines ‘gforth’ and ‘gforth-fast’ use another optimization: Dynamic
-superinstructions with replication.  As an example, consider the
-following colon definition:
+‘gforth’ エンジンと ‘gforth-fast’ エンジンは、 別の最適化、 つまり、 レ
+プリケーションを伴う動的スーパー命令(Dynamic superinstructions with
+replication)を使用します。 例として、 以下のコロン定義について考えてみま
+しょう:
 
      : squared ( n1 -- n2 )
        dup * ;
 
-   Gforth compiles this into the threaded code sequence
+   Gforth はこれを以下のスレッド化コード・シーケンスにコンパイルします
 
      dup
      *
      ;s
 
-   Use ‘simple-see’ (*note Examining compiled code::) to see the
-threaded code of a colon definition.
+   ‘simple-see’ (*note Examining compiled code::)を使用して、 コロン定義
+のスレッド化コードを確認します。
 
-   In normal direct threaded code there is a code address occupying one
-cell for each of these primitives.  Each code address points to a
-machine code routine, and the interpreter jumps to this machine code in
-order to execute the primitive.  The routines for these three primitives
-are (in ‘gforth-fast’ on the 386):
+   通常の直接スレッド化コードでは、 上記のプリミティブごとに 1 つのセル
+を占めるコード・アドレスがあります。 各コード・アドレスはマシン・コード
+・ルーチンを指し、 インタプリタはプリミティブを実行するためにこのマシン
+・コードにジャンプします。 上記 3 つのプリミティブのルーチンは以下のとお
+りです(386 の ‘gforth-fast’ の場合):
 
      Code dup
      ( $804B950 )  add     esi , # -4  \ $83 $C6 $FC
@@ -3686,9 +3691,9 @@ are (in ‘gforth-fast’ on the 386):
      ( $804A69B )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC
      end-code
 
-   With dynamic superinstructions and replication the compiler does not
-just lay down the threaded code, but also copies the machine code
-fragments, usually without the jump at the end.
+   動的なスーパー命令とレプリケーションを使用すると、 コンパイラーはスレ
+ッド化されたコードを配置しないだけでなく、 コード断片のコピーも行い、 通
+常は各コード断片最後で行うジャンプを行いません。
 
      ( $4057D27D )  add     esi , # -4  \ $83 $C6 $FC
      ( $4057D280 )  add     ebx , # 4  \ $83 $C3 $4
@@ -3702,29 +3707,30 @@ fragments, usually without the jump at the end.
      ( $4057D297 )  lea     ebx , dword ptr 4 [eax]  \ $8D $58 $4
      ( $4057D29A )  jmp     dword ptr FC [ebx]  \ $FF $63 $FC
 
-   Only when a threaded-code control-flow change happens (e.g., in
-‘;s’), the jump is appended.  This optimization eliminates many of these
-jumps and makes the rest much more predictable.  The speedup depends on
-the processor and the application; on the Athlon and Pentium III this
-optimization typically produces a speedup by a factor of 2.
+   スレッド化コードの制御フローに変更が発生した場合(‘;s’ など)にのみジャ
+ンプが追加されます。 この最適化により、 これらのジャンプの多くが排除され
+、 残りの部分がより予測可能になります。 高速化はプロセッサとアプリケーシ
+ョンによって異なります。 Athlon および Pentium III では、 この最適化によ
+り通常 2 倍の速度向上が得られます。
 
-   The code addresses in the direct-threaded code are set to point to
-the appropriate points in the copied machine code, in this example like
-this:
+   直接スレッド化コード内のコード・アドレスは、 コピーされたマシン・コー
+ド内の適切なポイントを指すように設定されます。 この例では以下のようにな
+ります:
 
      primitive  code address
         dup       $4057D27D
         *         $4057D286
         ;s        $4057D292
 
-   Thus there can be threaded-code jumps to any place in this piece of
-code.  This also simplifies decompilation quite a bit.
+   したがって、 このコード部分の任意の場所にスレッド化コードからのジャン
+プ先が存在する可能性があります。 これにより、 逆コンパイルもかなり簡素化
+されます。
 
-   ‘See-code’ (*note Examining compiled code::) shows the threaded code
-intermingled with the native code of dynamic superinstructions.  These
-days some additional optimizations are applied for the
-dynamically-generated native code, so the output of ‘see-code squared’
-on ‘gforth-fast’ on one particular AMD64 installation looks like this:
+   ‘See-code’ (*note Examining compiled code::)は、 動的スーパー命令
+(dynamic superinstructions)のネイティブ・コードと混在するスレッド化コー
+ドを示します。 最近では、 動的に生成されたネイティブ・コードに追加の最適
+化が適用されているため、 特定の AMD64 インストール上の ‘gforth-fast’ で
+の ‘see-code squared’ の出力は以下のようになります:
 
      $7FB689C678C8 dup    1->2
      7FB68990C1B2:   mov     r15,r8
@@ -3736,21 +3742,22 @@ on ‘gforth-fast’ on one particular AMD64 installation looks like this:
      7FB68990C1C0:   mov     rax,[rbx]
      7FB68990C1C3:   jmp     eax
 
-   You can disable this optimization with ‘--no-dynamic’.  You can use
-the copying without eliminating the jumps (i.e., dynamic replication,
-but without superinstructions) with ‘--no-super’; this gives the branch
-prediction benefit alone; the effect on performance depends on the CPU;
-on the Athlon and Pentium III the speedup is a little less than for
-dynamic superinstructions with replication.
+   ‘--no-dynamic’ を使用してこの最適化を無効にできます。 ‘--no-super’ を
+使用すると、 ジャンプを排除せずにコピーを使用できます(つまり、 動的レプ
+リケーション、 しかしスーパー命令は使用しません)。 これは分岐予測のみに
+利点をもたらします。 パフォーマンスへの影響は CPU によって異なります。
+Athlon および Pentium III では、 レプリケーションを伴う動的スーパー命令
+(dynamic superinstructions with replication)よりも高速化が若干損なわれま
+す。
 
-   One use of these options is if you want to patch the threaded code.
-With superinstructions, many of the dispatch jumps are eliminated, so
-patching often has no effect.  These options preserve all the dispatch
-jumps.
+   これらのオプションの用途の 1 つは、 スレッド化されたコードにパッチを
+適用する場合です。 スーパー命令を使用すると、 ディスパッチ・ジャンプの多
+くが削除されるため、 パッチを当てても効果がなくなることがよくあります。
+これらのオプションは、 すべてのディスパッチ・ジャンプを保持します。
 
-   On some machines dynamic superinstructions are disabled by default,
-because it is unsafe on these machines.  However, if you feel
-adventurous, you can enable it with ‘--dynamic’.
+   一部のマシンでは動的スーパー命令(dynamic superinstructions)は安全では
+ないため、 デフォルトで無効になっています。 しかしながら、 あなたが冒険
+してみたい場合は、 ‘--dynamic’ を使用して有効にすることができます。
 
 
 File: gforth.info,  Node: DOES>,  Prev: Dynamic Superinstructions,  Up: Threading
@@ -3758,21 +3765,24 @@ File: gforth.info,  Node: DOES>,  Prev: Dynamic Superinstructions,  Up: Threadin
 15.2.4 DOES>
 ------------
 
-One of the most complex parts of a Forth engine is ‘dodoes’, i.e., the
-chunk of code executed by every word defined by a ‘CREATE’...‘DOES>’
-pair; actually with primitive-centric code, this is only needed if the
-xt of the word is ‘execute’d.  The main problem here is: How to find the
-Forth code to be executed, i.e.  the code after the ‘DOES>’ (the
-‘DOES>’-code)?  There are two solutions:
+Forth エンジンの最も複雑な部分の 1 つは ‘dodoes’ です。つまり、
+‘CREATE’...‘DOES>’ ペアで定義されたすべてのワードによって実行されるコー
+ドの塊(chunk)です。 実際のところプリミティブ指向のコードでは、
+‘CREATE’...‘DOES>’ ペアで定義されたすべてのワードによって実行されるコー
+ドの塊(chunk)は、 ワードの xt が ‘execute’ された場合にのみ必要です。 こ
+こでの主な問題は、 実行される Forth コード、 つまり ‘DOES>’ の後のコード
+(the ‘DOES>’-code) をどのようにして見つけるかということです。 この解決策
+は 2 つあります:
 
-   In fig-Forth the code field points directly to the ‘dodoes’ and the
-‘DOES>’-code address is stored in the cell after the code address (i.e.
-at ‘CFA cell+’).  It may seem that this solution is illegal in the
-Forth-79 and all later standards, because in fig-Forth this address lies
-in the body (which is illegal in these standards).  However, by making
-the code field larger for all words this solution becomes legal again.
-We use this approach.  Leaving a cell unused in most words is a bit
-wasteful, but on the machines we are targeting this is hardly a problem.
+   fig-Forth では、 コード・フィールドは ‘dodoes’ を直接指しており、
+‘DOES>’ コード・アドレスはコード・アドレスの後のセル(つまり ‘CFA
+cell+’)に格納されます。 この解決策は、 Forth-79 以降のすべての標準では違
+法であるように見えるかもしれません。 fig-Forth ではこのアドレスがボディ
+内にあるためです(標準では違法です)。 しかしながら、 すべてのワードに対し
+てコード・フィールドを大きくすることで、 この解決策は再び有効になります
+。 私たちはこのアプローチを採用しています。 ほとんどの場合、 セルを未使
+用のままにしておくのはちょっと無駄ですが、 私たちが対象としているマシン
+では、 これはほとんど問題になりません。
 
 
 File: gforth.info,  Node: Primitives,  Next: Performance,  Prev: Threading,  Up: Engine
@@ -3792,14 +3802,14 @@ File: gforth.info,  Node: Automatic Generation,  Next: TOS Optimization,  Prev: 
 15.3.1 Automatic Generation
 ---------------------------
 
-Since the primitives are implemented in a portable language, there is no
-longer any need to minimize the number of primitives.  On the contrary,
-having many primitives has an advantage: speed.  In order to reduce the
-number of errors in primitives and to make programming them easier, we
-provide a tool, the primitive generator (‘prims2x.fs’ aka Vmgen, *note
-Vmgen: (vmgen)Top.), that automatically generates most (and sometimes
-all) of the C code for a primitive from the stack effect notation.  The
-source for a primitive has the following form:
+プリミティブは移植可能な言語(portable language)で実装されているため、 最
+早プリミティブの数を最小限に抑える必要はありません。 逆に、 多くのプリミ
+ティブを持つことには速度という利点があります。 プリミティブでのエラーの
+数を減らし、 プリミティブのプログラミングを容易にするために、 プリミティ
+ブ・ジェネレーター (‘prims2x.fs’ 別名 Vmgen *note Vmgen: (vmgen)Top.)と
+いうツールを提供しており、 それは、 スタック効果の表記からプリミティブの
+C言語コードの大部分(場合によってはすべて)を自動的に生成します。 プリミテ
+ィブのソースの形式は以下のとおりです:
 
 Forth-name  ( stack-effect )        category    [pronounc.]
 [‘""’glossary entry‘""’]
@@ -3807,19 +3817,19 @@ C code
 [‘:’
 Forth code]
 
-   The items in brackets are optional.  The category and glossary fields
-are there for generating the documentation, the Forth code is there for
-manual implementations on machines without GNU C. E.g., the source for
-the primitive ‘+’ is:
+   角括弧(brackets)内の項目はオプションです。 カテゴリ(category)と用語集
+(glossary)のフィールドはドキュメントを生成するためにあり、 Forth コード
+は GNU C を持たないマシンでの手動実装のためにあります。 たとえば、 プリ
+ミティブ ‘+’ のソースは以下のとおりです:
      +    ( n1 n2 -- n )   core    plus
      n = n1+n2;
 
-   This looks like a specification, but in fact ‘n = n1+n2’ is C code.
-Our primitive generation tool extracts a lot of information from the
-stack effect notations(1): The number of items popped from and pushed on
-the stack, their type, and by what name they are referred to in the C
-code.  It then generates a C code prelude and postlude for each
-primitive.  The final C code for ‘+’ looks like this:
+   これは仕様のように見えますが、 実際には ‘n = n1+n2’ は C言語のコード
+です。 私たちのプリミティブ生成ツールは、 スタック効果の表記から多くの情
+報を抽出します(1): それらは、 スタックからポップされた項目とスタックにプ
+ッシュされた項目の数、 その型、 および C言語のコード内で参照される名前 で
+す。 その次に、 各プリミティブの C言語コードの prelude と postlude を生
+成します。 ‘+’ の最終的な C言語コードは以下のようになります:
 
      I_plus: /* + ( n1 n2 -- n ) */  /* label, stack effect */
      /*  */                          /* documentation */
@@ -3841,32 +3851,31 @@ primitive.  The final C code for ‘+’ looks like this:
      NEXT_P2;                        /* NEXT part 2 */
      }
 
-   This looks long and inefficient, but the GNU C compiler optimizes
-quite well and produces optimal code for ‘+’ on, e.g., the R3000 and the
-HP RISC machines: Defining the ‘n’s does not produce any code, and using
-them as intermediate storage also adds no cost.
+   これは長くて非効率に見えますが、 GNU C コンパイラーは非常に適切に最適
+化して、 例えば R3000 や HP RISC マシンなどで ‘+’ に最適なコードを生成し
+ます。 ‘n’ 達を定義してもコードは生成されませんし、 また、 それら中間ス
+トレージとして使用してもコストはかかりません。
 
-   There are also other optimizations that are not illustrated by this
-example: assignments between simple variables are usually for free (copy
-propagation).  If one of the stack items is not used by the primitive
-(e.g.  in ‘drop’), the compiler eliminates the load from the stack (dead
-code elimination).  On the other hand, there are some things that the
-compiler does not do, therefore they are performed by ‘prims2x.fs’: The
-compiler does not optimize code away that stores a stack item to the
-place where it just came from (e.g., ‘over’).
+   この例では示されていない他の最適化もあります。 単純な変数間の代入は通
+常はコストがかかりません(コピー伝播)。 スタック項目の 1 つがプリミティブ
+によって使用されていない場合(‘drop’ など)、 コンパイラーはスタックのその
+部分の負荷を削除します(デッド・コードの削除)。 一方、 コンパイラが実行し
+ない処理もいくつかあり、 そのため、 それらは ‘prims2x.fs’ によって実行さ
+れます。 コンパイラは、 スタック項目を元の場所に格納するコードを最適化し
+ません(例: ‘over’).
 
-   While programming a primitive is usually easy, there are a few cases
-where the programmer has to take the actions of the generator into
-account, most notably ‘?dup’, but also words that do not (always) fall
-through to ‘NEXT’.
+   プリミティブのプログラミングは通常は簡単ですが、 最も顕著な ‘?dup’ だ
+けでなく、 ‘NEXT’ に(常に)フローが流れていかないワードについても、 プロ
+グラマがジェネレーターのアクションを考慮する必要があるケースがいくつかあ
+ります。
 
-   For more information
+   詳細について(原文未記述)
 
    ---------- Footnotes ----------
 
-   (1) We use a one-stack notation, even though we have separate data
-and floating-point stacks; The separate notation can be generated easily
-from the unified notation.
+   (1) データと浮動小数点スタックが別々に存在する場合でも、1 つのスタッ
+ク表記法を使用します。 個別の表記は、 統一された表記から簡単に生成できま
+す。
 
 
 File: gforth.info,  Node: TOS Optimization,  Next: Produced code,  Prev: Automatic Generation,  Up: Primitives
@@ -3874,14 +3883,15 @@ File: gforth.info,  Node: TOS Optimization,  Next: Produced code,  Prev: Automat
 15.3.2 TOS Optimization
 -----------------------
 
-An important optimization for stack machine emulators, e.g., Forth
-engines, is keeping one or more of the top stack items in registers.  If
-a word has the stack effect in1...inx ‘--’ out1...outy, keeping the top
-n items in registers
-   • is better than keeping n-1 items, if x>=n and y>=n, due to fewer
-     loads from and stores to the stack.
-   • is slower than keeping n-1 items, if x<>y and x<n and y<n, due to
-     additional moves between registers.
+Forth エンジンなどのスタック・マシン・エミュレータの重要な最適化は、 1 つ
+以上の最上位側スタック項目をレジスタに保持することです。 ワードにスタッ
+ク効果 ‘( in1...inx -- out1...outy )’ がある場合、 上位の n 項目をレジス
+タに保持します:
+   • x>=n かつ y>=n の場合、 スタックへのロードとスタックへのストアがよ
+     り少なくなるため、 n 項目をレジスタに保持する方が n-1 項目をレジス
+     タに保持するよりも優れています。
+   • x<>y かつ x<n かつ y<n の場合、 レジスタ間の追加の移動により、 n 項
+     目をレジスタに保持することは n-1 項目を保持するよりも遅くなります。
 
    In particular, keeping one item in a register is never a
 disadvantage, if there are enough registers.  Keeping two items in
