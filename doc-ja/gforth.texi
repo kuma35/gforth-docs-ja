@@ -18747,7 +18747,7 @@ order)に含まれないことに注意してください(これらは @code{loc
 
 可視性の質問に対するより正確な答えが必要な場合のために、 ここで基本原則を示します: ローカル変数は、
 ローカル変数の定義を通じてのみ到達できるすべての場所で可視です@footnote{コンパイラ構築用語では「すべての場所はローカル変数の定義によって支配される」と言う}。
-つまり、 ローカル変数という定義を経由しないと到達できる場所では不可視です。 たとえば、 @code{IF}...@code{ENDIF}
+言い換えると、 ローカル変数の定義を経由せずに到達できる場所では不可視です。 たとえば、 @code{IF}...@code{ENDIF}
 の中で定義されたローカル変数は @code{ENDIF} まで可視で、 @code{BEGIN}...@code{UNTIL}
 内で定義されたローカル変数は @code{UNTIL} の後(たとえば、後続の @code{ENDSCOPE} まで)で可視です。
 
@@ -28927,41 +28927,33 @@ Forth エンジンなどのスタック・マシン・エミュレータの重�
 
 @cindex -DUSE_TOS
 @cindex -DUSE_NO_TOS
-In particular, keeping one item in a register is never a disadvantage, if
-there are enough registers. Keeping two items in registers is a disadvantage
-for frequent words like @code{?branch}, constants, variables, literals and
-@code{i}. Therefore our generator only produces code that keeps zero or one
-items in registers. The generated C code covers both cases; the selection
-between these alternatives is made at C-compile time using the switch
-@code{-DUSE_TOS}. @code{TOS} in the C code for @code{+} is just a simple
-variable name in the one-item case, otherwise it is a macro that expands
-into @code{sp[0]}. Note that the GNU C compiler tries to keep simple
-variables like @code{TOS} in registers, and it usually succeeds, if there
-are enough registers.
+特に、 レジスターの数が十分であれば、 1 つの項目をレジスターに保持しておくことは決して不利にはなりません。 @code{?branch}
+や定数や変数やリテラルや @code{i} などの頻繁に使用されるワードにとって、 2 つの項目をレジスターに保持することは不利になります。
+したがって、 ジェネレーターは、 レジスターに 0 個または 1 つの項目を保持するコードのみを生成します。 生成された
+C言語のコードは両方のケースをカバーします。 これらの選択肢の選択は、 C言語のコンパイル時にスイッチ @code{-DUSE_TOS}
+を使用して行われます。 @code{+} の C言語コードの @code{TOS} は、 1 項目の場合は単なる変数名ですが、 それ以外の場合は
+@code{sp[0]} に展開されるマクロです。  注意: GNU C コンパイラは @code{TOS}
+のような単純な変数をレジスタに保持しようと試み、 十分な数のレジスタがあれば、 それは通常は成功することに注意してください。
 
 @cindex -DUSE_FTOS
 @cindex -DUSE_NO_FTOS
-The primitive generator performs the TOS optimization for the floating-point
-stack, too (@code{-DUSE_FTOS}). For floating-point operations the benefit of
-this optimization is even larger: floating-point operations take quite long
-on most processors, but can be performed in parallel with other operations
-as long as their results are not used. If the FP-TOS is kept in a register,
-this works. If it is kept on the stack, i.e., in memory, the store into
-memory has to wait for the result of the floating-point operation,
-lengthening the execution time of the primitive considerably.
+プリミティブ・ジェネレーターは、 浮動小数点数スタックの TOS 最適化も実行します(@code{-DUSE_FTOS})。 浮動小数点数演算の場合、
+この最適化の利点はさらに大きくなります。 浮動小数点数演算は、 ほとんどのプロセッサで非常に時間がかかりますが、
+その結果が利用されない間は他の演算と並行して実行できます。 FP-TOS がレジスターに保持されている場合、 他の演算との並行しての実行が機能します。
+スタック上、 つまりメモリ内に保持されている場合、 メモリへのストアは浮動小数点数演算の結果を待つ必要があり、
+プリミティブの実行時間が大幅に長くなります。
 
-The TOS optimization makes the automatic generation of primitives a bit more
-complicated. Just replacing all occurrences of @code{sp[0]} by @code{TOS} is
-not sufficient. There are some special cases to consider:
+TOS の最適化により、 プリミティブの自動生成がちょっぴり複雑になります。 @code{sp[0]} のすべての出現を @code{TOS}
+に置き換えるだけでは十分ではありません。 考慮すべき特殊なケースがいくつかあります:
 @itemize @bullet
-@item In the case of @code{dup ( w -- w w )} the generator must not
-eliminate the store to the original location of the item on the stack, if
-the TOS optimization is turned on.
-@item Primitives with stack effects of the form @code{--}
-@i{out1}...@i{outy} must store the TOS to the stack at the start.  Likewise,
-primitives with the stack effect @i{in1}...@i{inx} @code{--} must load the
-TOS from the stack at the end. But for the null stack effect @code{--} no
-stores or loads should be generated.
+@item
+@code{dup ( w -- w w )} で、 TOS 最適化がオンになっている場合、
+ジェネレーターはスタック上の項目の元の場所へのストアを削除してはなりません。
+@item
+@code{(-- @i{out1}...@i{outy})} の形式のスタック効果を持つプリミティブは、 開始時に TOS
+をスタックに保存する必要があります。  同様に、 スタック効果 @code{@i{in1}...@i{inx} --)} を持つプリミティブは、
+最後にスタックから TOS をロードする必要があります。 ただし、 null スタック効果 @code{--} の場合、
+ストアやロードは生成されません。
 @end itemize
 
 @node Produced code, , TOS Optimization, Primitives
@@ -28969,10 +28961,9 @@ stores or loads should be generated.
 @cindex primitives, assembly code listing
 
 @cindex @file{engine.s}
-To see what assembly code is produced for the primitives on your machine
-with your compiler and your flag settings, type @code{make engine.s} and
-look at the resulting file @file{engine.s}.  Alternatively, you can also
-disassemble the code of primitives with @code{see} on some architectures.
+コンパイラとフラグ設定を使用してマシン上のプリミティブに対してどのようなアセンブリ・コードが生成されるかを確認するには、 @code{make
+engine.s} と入力し、結果のファイル @file{engine.s} を確認します。  あるいは、 一部のアーキテクチャでは
+@code{see} を使用してプリミティブのコードを逆アセンブルすることもできます。
 
 @node Performance, , Primitives, Engine
 @section Performance
@@ -28981,21 +28972,16 @@ disassemble the code of primitives with @code{see} on some architectures.
 @cindex benchmarking Forth systems
 @cindex Gforth performance
 
-On RISCs the Gforth engine is very close to optimal; i.e., it is usually
-impossible to write a significantly faster threaded-code engine.
+RISC では、Gforth エンジンは限りなく最適な状態に近くなります。 逆に、 通常、 RISC以外では、
+顕著に高速なスレッド化コード・エンジンを作成することは不可能です。
 
-On register-starved machines like the 386 architecture processors
-improvements are possible, because @code{gcc} does not utilize the registers
-as well as a human, even with explicit register declarations; e.g., Bernd
-Beuster wrote a Forth system fragment in assembly language and hand-tuned it
-for the 486; this system is 1.19 times faster on the Sieve benchmark on a
-486DX2/66 than Gforth compiled with @code{gcc-2.6.3} with
-@code{-DFORCE_REG}.  The situation has improved with gcc-2.95 and
-gforth-0.4.9; now the most important virtual machine registers fit in real
-registers (and we can even afford to use the TOS optimization), resulting in
-a speedup of 1.14 on the sieve over the earlier results.  And dynamic
-superinstructions provide another speedup (but only around a factor 1.2 on
-the 486).
+386 アーキテクチャ・プロセッサのようにレジスタの数が不足しているマシンでは、 明示的なレジスタ宣言があっても @code{gcc}
+が人間ほどにはレジスタを利用しないため、 人間による改善が可能です。 たとえば、Bernd Beuster は Forth
+システムの断片をアセンブリ言語で作成し、 486 用に手動で調整しました。 このシステムは、 486DX2/66 での Sieve ベンチマークでは、
+@code{-DFORCE_REG} を使用して @code{gcc-2.6.3} でコンパイルした Gforth よりも 1.19 倍高速です。
+この状況は gcc-2.95 と gforth-0.4.9 で改善されました。 これで、
+最も重要な仮想マシンのレジスタが実際のレジスタに収まるようになり(更に、 TOS 最適化を使用する余裕さえあります)、 結果として以前の結果よりも
+1.14 高速化されました。  また、動的スーパー命令によりさらに高速化が実現されます(ただし、 486 では約 1.2 倍にすぎません)。
 
 @cindex Win32Forth performance
 @cindex NT Forth performance
@@ -29003,32 +28989,25 @@ the 486).
 @cindex ThisForth performance
 @cindex PFE performance
 @cindex TILE performance
-The potential advantage of assembly language implementations is not
-necessarily realized in complete Forth systems: We compared Gforth-0.5.9
-(direct threaded, compiled with @code{gcc-2.95.1} and @code{-DFORCE_REG})
-with Win32Forth 1.2093 (newer versions are reportedly much faster), LMI's NT
-Forth (Beta, May 1994) and Eforth (with and without peephole (aka pinhole)
-optimization of the threaded code); all these systems were written in
-assembly language. We also compared Gforth with three systems written in C:
-PFE-0.9.14 (compiled with @code{gcc-2.6.3} with the default configuration
-for Linux: @code{-O2 -fomit-frame-pointer -DUSE_REGS -DUNROLL_NEXT}),
-ThisForth Beta (compiled with @code{gcc-2.6.3 -O3 -fomit-frame-pointer};
-ThisForth employs peephole optimization of the threaded code) and TILE
-(compiled with @code{make opt}). We benchmarked Gforth, PFE, ThisForth and
-TILE on a 486DX2/66 under Linux. Kenneth O'Heskin kindly provided the
-results for Win32Forth and NT Forth on a 486DX2/66 with similar memory
-performance under Windows NT. Marcel Hendrix ported Eforth to Linux, then
-extended it to run the benchmarks, added the peephole optimizer, ran the
-benchmarks and reported the results.
+アセンブリ言語で実装する潜在的な利点は、 Forth システムでは必ずしも現実のモノにはなりません。 Gforth
+をアセンブリ言語で書かれたシステムと比較しました: Gforth-0.5.9 (直接スレッド化、 @code{gcc-2.95.1} 、
+@code{-DFORCE_REG} でコンパイル)、 Gforth-0.5.9 の Win32Forth 版 1.2093
+(新しいバージョンははるかに高速であると報告されています))、 LMI の NT Forth (1994年5月のベータ版)、
+Eforth(スレッド化されたコードののぞき穴(別名ピンホール)最適化の有無)。 また、Gforth を C言語で書かれた 3
+つのシステムと比較しました: PFE-0.9.14 (Linux のデフォルト構成で @code{gcc-2.6.3} でコンパイル:
+@code{-O2 -fomit-frame-pointer -DUSE_REGS -DUNROLL_NEXT})、 ThisForth Beta
+(@code{gcc-2.6.3 -O3 -fomit-frame-pointer} でコンパイル; ThisForth
+はスレッド化されたコードののぞき穴最適化を採用)、 TILE (@code{make opt} でコンパイル)。 Linux 上の 486DX2/66
+で、 Gforth と PFE と ThisForth と TILE のベンチマークを実行しました。 Kenneth O'Heskin は、
+Windows NT で同様のメモリ・パフォーマンスを備えた 486DX2/66 上の Win32Forth と NT Forth
+の結果を親切に提供してくれました。 Marcel Hendrix は Eforth を Linux に移植し、 ベンチマークを実行できるように拡張し、
+覗き穴・オプティマイザーを追加してベンチマークを実行し、 結果を報告しました。
 
-We used four small benchmarks: the ubiquitous Sieve; bubble-sorting and
-matrix multiplication come from the Stanford integer benchmarks and have
-been translated into Forth by Martin Fraeman; we used the versions included
-in the TILE Forth package, but with bigger data set sizes; and a recursive
-Fibonacci number computation for benchmarking calling performance. The
-following table shows the time taken for the benchmarks scaled by the time
-taken by Gforth (in other words, it shows the speedup factor that Gforth
-achieved over the other systems).
+私たちは 4 つの小さなベンチマークを使用しました。 ユビキタスのふるい。 バブルソートと行列乗算はスタンフォード整数ベンチマーク由来で、 Martin
+Fraeman によって Forth に変換されました。 TILE Forth パッケージに含まれているバージョンを使用しましたが、
+データ・セット・サイズが大きくなりました。 そして、 呼び出しパフォーマンス(calling
+performance)のベンチマークのための再帰的フィボナッチ数計算です。 以下の表は、 ベンチマークにかかる時間を Gforth
+にかかった時間で換算したものです(つまり、 Gforth が他のシステムに対して達成した高速化係数を示しています)。
 
 @example
 relative       Win32-    NT       eforth       This-      
@@ -29039,44 +29018,35 @@ matmul     1.00  1.92  1.76   1.90  0.96  2.06        5.32
 fib        1.00  2.32  2.03   1.86  1.31  2.64  4.55  6.54
 @end example
 
-You may be quite surprised by the good performance of Gforth when compared
-with systems written in assembly language. One important reason for the
-disappointing performance of these other systems is probably that they are
-not written optimally for the 486 (e.g., they use the @code{lods}
-instruction). In addition, Win32Forth uses a comfortable, but costly method
-for relocating the Forth image: like @code{cforth}, it computes the actual
-addresses at run time, resulting in two address computations per @code{NEXT}
-(@pxref{Image File Background}).
+あなたは、 アセンブリ言語で書かれたシステムと比較したとき、 Gforth の優れたパフォーマンスに驚かれるかもしれません。
+これら他のシステムのパフォーマンスが期待外れである重要な理由の 1 つは、 おそらく、 それらが 486
+用に最適化して書かれていないことです(たとえば、@code{lods} 命令を使用している)。 さらに、 Win32Forth は、 Forth
+イメージを再配置するために快適ではありますがコストのかかる方法を使用します: これは @code{cforth} と同様に、
+実行時に実際のアドレスが計算され、 @code{NEXT} 毎に 2 つのアドレス計算が行われます(@pxref{Image File
+Background})。
 
-The speedup of Gforth over PFE, ThisForth and TILE can be easily explained
-with the self-imposed restriction of the latter systems to standard C, which
-makes efficient threading impossible (however, the measured implementation
-of PFE uses a GNU C extension: @pxref{Global Reg Vars, , Defining Global
-Register Variables, gcc, GNU C Manual}).  Moreover, current C compilers have
-a hard time optimizing other aspects of the ThisForth and the TILE source.
+PFE や ThisForth や TILE に対する Gforth の高速化は、 前者達のシステムが標準 C
+に対して自ら課した制限によって簡単に説明できます: これにより、 効率的なスレッド化が不可能になります(ただし、 観測された PFE の実装では GNU
+C 拡張機能が使用されています @pxref{Global Reg Vars, , Defining Global Register
+Variables, gcc, GNU C Manual})。  さらに言えば、 現在の C コンパイラは、 ThisForth や TILE
+ソースの他の側面を最適化するのに苦労しています。
 
-The performance of Gforth on 386 architecture processors varies widely with
-the version of @code{gcc} used. E.g., @code{gcc-2.5.8} failed to allocate
-any of the virtual machine registers into real machine registers by itself
-and would not work correctly with explicit register declarations, giving a
-significantly slower engine (on a 486DX2/66 running the Sieve) than the one
-measured above.
+386 アーキテクチャ・プロセッサ上の Gforth のパフォーマンスは、 使用する @code{gcc} のバージョンによって大きく異なります。
+たとえば、@code{gcc-2.5.8} は、 それ自身では仮想マシン・レジスタを実マシン・レジスタに割り当てることに失敗し、 かつ、
+明示的なレジスタ宣言では正しく動作しないため、 (Sieve ベンチマークを実行している 486DX2/66
+では、)上記で測定したエンジンよりも大幅に遅いエンジンが出来上がります。
 
-Note that there have been several releases of Win32Forth since the release
-presented here, so the results presented above may have little predictive
-value for the performance of Win32Forth today (results for the current
-release on an i486DX2/66 are welcome).
+注意: ここで紹介したリリース以降、 Win32Forth のリリースがいくつかあるため、 上記の結果は現在の Win32Forth
+のパフォーマンスを予測する値がほとんどない可能性があることに注意してください(i486DX2/66 での現在のリリースの結果報告をお待ちしています)。
 
 @cindex @file{Benchres}
-In
 @cite{@uref{https://www.complang.tuwien.ac.at/papers/ertl&maierhofer95.ps.gz,
 Translating Forth to Efficient C}} by M. Anton Ertl and Martin Maierhofer
-(presented at EuroForth '95), an indirect threaded version of Gforth is
-compared with Win32Forth, NT Forth, PFE, ThisForth, and several native code
-systems; that version of Gforth is slower on a 486 than the version used
-here. You can find a newer version of these measurements at
-@uref{https://www.complang.tuwien.ac.at/forth/performance.html}. You can
-find numbers for Gforth on various machines in @file{Benchres}.
+(presented at EuroForth '95) では、 Gforth の間接スレッド化バージョンが、 Win32Forth や NT
+Forth や PFE や ThisForth や、 いくつかのネイティブ・コード・システムと比較されます。 そのバージョンの Gforth は、
+486 ではここで使用されているバージョンよりも遅くなります。 これらの測定値の新しいバージョンは
+@uref{https://www.complang.tuwien.ac.at/forth/performance.html}
+で見つけることができます。  あなたは @file{Benchres} でさまざまなマシン上の Gforth の数値を見つけることができます。
 
 @c ******************************************************************
 @c @node Binding to System Library, Cross Compiler, Engine, Top
