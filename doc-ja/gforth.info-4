@@ -4039,11 +4039,12 @@ File: gforth.info,  Node: Cross Compiler,  Next: MINOS2,  Prev: Engine,  Up: Top
 16 Cross Compiler
 *****************
 
-The cross compiler is used to bootstrap a Forth kernel.  Since Gforth is
-mostly written in Forth, including crucial parts like the outer
-interpreter and compiler, it needs compiled Forth code to get started.
-The cross compiler allows to create new images for other architectures,
-even running under another Forth system.
+クロス・コンパイラは、 Forth カーネルをブート・ストラップするために使用
+されます。 Gforth は、 外部インタプリタやコンパイラなどの重要な部分を含
+め、 ほとんどが Forth で書かれているため、 開始するにはコンパイル済みの
+Forth コードが必要です。 クロス・コンパイラを使用すると、 他のアーキテク
+チャ用の新しいイメージを作成でき、 別の Forth システムで実行することもで
+きます。
 
 * Menu:
 
@@ -4056,22 +4057,24 @@ File: gforth.info,  Node: Using the Cross Compiler,  Next: How the Cross Compile
 16.1 Using the Cross Compiler
 =============================
 
-The cross compiler uses a language that resembles Forth, but isn’t.  The
-main difference is that you can execute Forth code after definition,
-while you usually can’t execute the code compiled by cross, because the
-code you are compiling is typically for a different computer than the
-one you are compiling on.
+クロス・コンパイラは、 Forth そっくりの言語を使用しますが、 Forth ではあ
+りません。 主な違いは、 Forth コードは定義後に実行できるのに対し、 cross
+によってコンパイルされたコードは通常は実行できないことです。 これは、 コ
+ンパイルしているコードは通常、 コンパイルしているコンピュータとは異なる
+コンピュータ用であるためです。
 
-   The Makefile is already set up to allow you to create kernels for new
-architectures with a simple make command.  The generic kernels using the
-GCC compiled virtual machine are created in the normal build process
-with ‘make’.  To create a embedded Gforth executable for e.g.  the 8086
-processor (running on a DOS machine), type
+   Makefile はすでにセットアップされており、 簡単な make コマンドで新し
+いアーキテクチャ用のカーネルを作成できるようになります。 GCC でコンパイ
+ルされた仮想マシンを使用する汎用カーネルは、 ‘make’ を使用した通常のビル
+ド・プロセスで作成されます。 たとえば、 8086 プロセッサ用の埋め込み
+Gforth 実行可能ファイル(embedded Gforth executable)(DOS マシン上で実行
+)を作成するには、 以下のようにタイプします
 
      make kernl-8086.fi
 
-   This will use the machine description from the ‘arch/8086’ directory
-to create a new kernel.  A machine file may look like that:
+   これにより、 ‘arch/8086’ ディレクトリのマシンの説明(machine
+description)が使用されて、 新しいカーネルが作成されます。 マシン・ファイ
+ルは以下のようになります:
 
      \ Parameter for target systems                         06oct92py
 
@@ -4087,14 +4090,16 @@ to create a new kernel.  A machine file may look like that:
 
      include machpc.fs               \ feature list
 
-   This part is obligatory for the cross compiler itself, the feature
-list is used by the kernel to conditionally compile some features in and
-out, depending on whether the target supports these features.
+   この部分はクロス・コンパイラにとって必須であり、 機能リスト(feature
+list)は、 ターゲットがこれらの機能をサポートしているかどうかに応じて、 い
+くつかの機能を条件付きでコンパイルしたりしなかったりするためにカーネルに
+よって使用される。
 
-   There are some optional features, if you define your own primitives,
-have an assembler, or need special, nonstandard preparation to make the
-boot process work.  ‘asm-include’ includes an assembler, ‘prims-include’
-includes primitives, and ‘>boot’ prepares for booting.
+   あなた独自のプリミティブを定義する場合、 またはアセンブラを使用する場
+合、 またはブート・プロセスを機能させるために特別な非標準の準備が必要な
+場合は、 オプションの機能(feature)がいくつかあります。 ‘asm-include’ に
+はアセンブラが含まれ、 ‘prims-include’ にはプリミティブが含まれ、
+‘>boot’ はブートの準備をします。
 
      : asm-include    ." Include assembler" cr
        s" arch/8086/asm.fs" included ;
@@ -4105,21 +4110,22 @@ includes primitives, and ‘>boot’ prepares for booting.
      : >boot          ." Prepare booting" cr
        s" ' boot >body into-forth 1+ !" evaluate ;
 
-   These words are used as sort of macro during the cross compilation in
-the file ‘kernel/main.fs’.  Instead of using these macros, it would be
-possible — but more complicated — to write a new kernel project file,
-too.
+   これらのワードは、 ファイル ‘kernel/main.fs’ をクロス・コンパイルする
+時に一種のマクロとして使用されます。 これらのマクロを使用する代わりに、
+新しいカーネル・プロジェクト・ファイルを作成することも可能ですが、 より
+複雑になります。
 
-   ‘kernel/main.fs’ expects the machine description file name on the
-stack; the cross compiler itself (‘cross.fs’) assumes that either
-‘mach-file’ leaves a counted string on the stack, or ‘machine-file’
-leaves an address, count pair of the filename on the stack.
+   ‘kernel/main.fs’ はスタック上にマシン記述ファイル名(machine
+description file name)を期待します。 クロス・コンパイラ自体
+(‘cross.fs’)は、 ‘mach-file’ がカウンタ付き文字列をスタックに残すか、 ま
+たは ‘machine-file’ がファイル名のアドレスとカウントのペアをスタックに残
+すかのいずれかを想定します。
 
-   The feature list is typically controlled using ‘SetValue’, generic
-files that are used by several projects can use ‘DefaultValue’ instead.
-Both functions work like ‘Value’, when the value isn’t defined, but
-‘SetValue’ works like ‘to’ if the value is defined, and ‘DefaultValue’
-doesn’t set anything, if the value is defined.
+   機能リスト(feature list)は通常​​ ‘SetValue’ を使用して制御されますが
+、 複数のプロジェクトで使用される汎用ファイルは代わりに ‘DefaultValue’ を
+使用できます。 どちらのワードも、 値が定義されていない場合は ‘Value’ の
+ように動作しますが、 値が定義されている場合は ‘SetValue’ は ‘to’ のよう
+に動作し、 値が定義されている場合は ‘DefaultValue’ は何も設定しません。
 
      \ generic mach file for pc gforth                       03sep97jaw
 
