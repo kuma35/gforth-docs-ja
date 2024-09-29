@@ -149,108 +149,89 @@ Copying This Manual
 @node Introduction, Why interpreters?, Top, Top
 @chapter Introduction
 
-Vmgen is a tool for writing efficient interpreters.  It takes a simple
-virtual machine description and generates efficient C code for dealing with
-the virtual machine code in various ways (in particular, executing it).  The
-run-time efficiency of the resulting interpreters is usually within a factor
-of 10 of machine code produced by an optimizing compiler.
+Vmgen は、 効率的なインタプリタを作成するためのツールです。  これは、 単純な仮想マシンの記述を受け取り、
+さまざまな方法で仮想マシン・コードを処理する(特に、 それを実行する)ための効率的な C 言語のコードを生成します。
+その結果得られるインタプリタの実行効率は、 最適化コンパイラーによって生成されるマシンコードの10分の1以内に収まるのが普通です。
 
-The interpreter design strategy supported by Vmgen is to divide the
-interpreter into two parts:
+Vmgen がサポートするインタプリタ設計戦略は、 インタプリタを以下の 2 つの部分に分割することです:
 
 @itemize @bullet
 
 @item
-The @emph{front end} takes the source code of the language to be
-implemented, and translates it into virtual machine code.  This is similar
-to an ordinary compiler front end; typically an interpreter front-end
-performs no optimization, so it is relatively simple to implement and runs
-fast.
+「フロント・ンド」は、 実装する言語のソース・コードを取得し、 それを仮想マシン・コードに変換します。
+これは通常のコンパイラ・フロント・エンドに似ています。 通常、 インタプリタのフロント・エンドは最適化を実行しないため、 実装が比較的簡単で、
+高速に実行されます。
 
 @item
-The @emph{virtual machine interpreter} executes the virtual machine code.
+「仮想マシン・インタプリタ」は仮想マシン・コードを実行します。
 
 @end itemize
 
-Such a division is usually used in interpreters, for modularity as well as
-for efficiency.  The virtual machine code is typically passed between front
-end and virtual machine interpreter in memory, like in a load-and-go
-compiler; this avoids the complexity and time cost of writing the code to a
-file and reading it again.
+このような分割は通常、 モジュール性と効率性のためにインタプリタで使用されます。  仮想マシン・コードは通常、 load-and-go
+コンパイラのように、 フロント・エンドとメモリ内の仮想マシン・インタプリタの間で受け渡されます。 これにより、
+コードをファイルに書き込んで再度読み取るという複雑さと時間のコストが回避されます。
 
-A @emph{virtual machine} (VM) represents the program as a sequence of
-@emph{VM instructions}, following each other in memory, similar to real
-machine code.  Control flow occurs through VM branch instructions, like in a
-real machine.
+「仮想マシン」(VM) は、 実際のマシン・コードと同様に、 メモリ内で相互に続く「VM 命令」のシーケンスとしてプログラムを表します。
+制御フローは、 実際のマシンと同様に、 VM 分岐命令を通じて発生します。
 
 @cindex functionality features overview
-In this setup, Vmgen can generate most of the code dealing with virtual
-machine instructions from a simple description of the virtual machine
-instructions (@pxref{Input File Format}), in particular:
+このセットアップでは、 Vmgen は、 仮想マシン命令の簡単な記述(@pxref{Input File
+Format})から仮想マシン命令を処理するほとんどのコードを生成できます。 特に以下のようなものです:
 
 @table @strong
 
 @item VM instruction execution
 
 @item VM code generation
-Useful in the front end.
+フロントエンドで役立ちます。
 
 @item VM code decompiler
-Useful for debugging the front end.
+フロントエンドのデバッグに役立ちます。
 
 @item VM code tracing
-Useful for debugging the front end and the VM interpreter.  You will
-typically provide other means for debugging the user's programs at the
-source level.
+フロントエンドと VM インタプリタのデバッグに役立ちます。  あなたは、 通常は、
+ユーザーのプログラムをソース・レベルでデバッグするための他の手段を提供するでしょう。
 
 @item VM code profiling
-Useful for optimizing the VM interpreter with superinstructions (@pxref{VM
-profiler}).
+スーパー命令(superinstructions)を使用して VM インタプリタを最適化するのに役立ちます(@pxref{VM profiler})。
 
 @end table
 
-To create parts of the interpretive system that do not deal with VM
-instructions, you have to use other tools (e.g., @command{bison}) and/or
-hand-code them.
+VM 命令を処理しないインタプリタ・システムのパーツを作成するには、 他のツール(例: @command{bison})を使用するか、
+手動でコーディングする必要があります。
 
 @cindex efficiency features overview
 @noindent
-Vmgen supports efficient interpreters though various optimizations, in
-particular
+Vmgen は、さまざまな最適化を通じて効率的なインタプリタをサポートします。 特に
 
 @itemize @bullet
 
-@item Threaded code
+@item コードのスレッド化
 
-@item Caching the top-of-stack in a register
+@item TOSをレジスタにキャッシュ
 
-@item Combining VM instructions into superinstructions
+@item VM 命令をスーパー命令(superinstructions)に結合
 
 @item
-Replicating VM (super)instructions for better BTB prediction accuracy (not
-yet in vmgen-ex, but already in Gforth).
+BTB 予測精度を向上させるために VM (スーパー) 命令を複製(vmgen-ex にはまだ含まれていませんが、 Gforth
+にはすでに含まれています)。
 
 @end itemize
 
 @cindex speed for JVM
-As a result, Vmgen-based interpreters are only about an order of magnitude
-slower than native code from an optimizing C compiler on small benchmarks;
-on large benchmarks, which spend more time in the run-time system, the
-slowdown is often less (e.g., the slowdown of a Vmgen-generated JVM
-interpreter over the best JVM JIT compiler we measured is only a factor of
-2-3 for large benchmarks; some other JITs and all other interpreters we
-looked at were slower than our interpreter).
+その結果、Vmgen ベースのインタプリタは、 小規模なベンチマークでは、 最適化された C 言語コンパイラからのネイティブ・コードよりも 1
+桁ほど遅いだけです。 ランタイム・システムでより多くの時間を費やす大規模なベンチマークでは、 多くの場合、 速度低下は少なくなります(たとえば、
+Vmgen で生成された JVM インタプリタの速度の低下は、 大規模なベンチマークの場合、 測定した最高​​の JVM JIT
+コンパイラーと比べてわずか 2 から 3 分の 1 です。 他のいくつかの JIT と、 私たちが調べた他のすべてのインタプリタは、
+私たちのインタプリタよりも遅かったです)。
 
-VMs are usually designed as stack machines (passing data between VM
-instructions on a stack), and Vmgen supports such designs especially well;
-however, you can also use Vmgen for implementing a register VM
-(@pxref{Register Machines}) and still benefit from most of the advantages
-offered by Vmgen.
+VM は通常、 スタック・シン(VM 命令間のデータを受け渡しをスタック上で行う)として設計されており、 Vmgen
+はそのような設計を特に適切にサポートします。 ただし、 Vmgen を使用して レジスタ型 VM (@pxref{Register Machines})
+を実装することもでき、 それでも Vmgen が提供する利点のほとんどを活用できます。
 
-There are many potential uses of the instruction descriptions that are not
-implemented at the moment, but we are open for feature requests, and we will
-consider new features if someone asks for them; so the feature list above is
-not exhaustive.
+今現在では実装されていない命令(instruction descriptions)には多くの潜在的な用途がありうるものと思います。
+私達は機能のリクエストは受け付けており、 誰かがリクエストした場合は新しい機能を検討します。 そのため、
+上記の機能リストはすべてを網羅したものではありません。
 
 @c *********************************************************************
 @node Why interpreters?, Concepts, Introduction, Top
@@ -259,32 +240,27 @@ not exhaustive.
 @cindex advantages of interpreters
 @cindex advantages of vmgen
 
-Interpreters are a popular language implementation technique because they
-combine all three of the following advantages:
+インタプリタは、 以下の 3 つの利点をすべて兼ね備えた、 人気のある言語実装手法です:
 
 @itemize @bullet
 
-@item Ease of implementation
+@item 実装の容易さ
 
-@item Portability
+@item 移植性が高い
 
-@item Fast edit-compile-run cycle
+@item 編集、コンパイル、実行のサイクルが速い
 
 @end itemize
 
-Vmgen makes it even easier to implement interpreters.
+Vmgen を使用すると、 インタプリタの実装がさらに簡単になります。
 
 @cindex speed of interpreters
-The main disadvantage of interpreters is their run-time speed.  However,
-there are huge differences between different interpreters in this area: the
-slowdown over optimized C code on programs consisting of simple operations
-is typically a factor of 10 for the more efficient interpreters, and a
-factor of 1000 for the less efficient ones (the slowdown for programs
-executing complex operations is less, because the time spent in libraries
-for executing complex operations is the same in all implementation
-strategies).
+インタプリタの主な欠点は、 実行速度です。 ただし、 実行速度の分野では、 インタプリタごとに大きな違いがあります。
+単純な操作で構成されるプログラム上の最適化された C 言語コードの速度の低下は、 通常、 より効率的なインタプリタでは 10 倍、
+効率の低いインタープリタでは 1000 倍になります(複雑な操作を実行するためのライブラリで費やされる時間はすべての実装戦略で同一であるため、
+複雑な操作を実行するプログラムの速度低下は少なくなります)。
 
-Vmgen supports techniques for building efficient interpreters.
+Vmgen は、 効率的なインタプリタを構築するための手法をサポートしています。
 
 @c ********************************************************************
 @node Concepts, Invoking Vmgen, Why interpreters?, Top
@@ -302,10 +278,8 @@ Vmgen supports techniques for building efficient interpreters.
 @cindex modularization of interpreters
 
 @cindex front-end
-Interpretive systems are typically divided into a @emph{front end} that
-parses the input language and produces an intermediate representation for
-the program, and an interpreter that executes the intermediate
-representation of the program.
+インタプリタ・ステムは通常、 入力言語をパースしてプログラムの中間表現を生成する「フロント・エンド」と、
+プログラムの中間表現を実行するインタプリタに分かれます。
 
 @cindex virtual machine
 @cindex VM
