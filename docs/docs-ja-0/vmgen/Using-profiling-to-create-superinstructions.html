@@ -67,52 +67,48 @@ Previous: <a href="Example-overview.html" accesskey="p" rel="prev">Example overv
 <span id="index-profiling-example"></span>
 <span id="index-superinstructions-example"></span>
 
-<p>I have not added rules for this in the <samp>Makefile</samp> (there are many
-options for selecting superinstructions, and I did not want to hardcode one
-into the <samp>Makefile</samp>), but there are some supporting scripts, and here&rsquo;s
-an example:
+<p>作者は <samp>Makefile</samp> には、
+プロファイリングを使用してスーパー命令を作成するためのルールを追加していません(スーパー命令選択の選択肢はたくさんありますが、 それらの選択肢を
+<samp>Makefile</samp> にハードコードしたくありませんでした)が、 サポートするスクリプトがいくつかあります。 例:
 </p>
-<p>Suppose you want to use <samp>fib.mini</samp> and <samp>test.mini</samp> as training
-programs, you get the profiles like this:
+<p><samp>fib.mini</samp> と <samp>test.mini</samp> をトレーニング・プログラムとして使用すると、
+以下のようなプロファイルが得られます:
 </p>
 <div class="example">
-<pre class="example">make fib.prof test.prof #takes a few seconds
+<pre class="example">make fib.prof test.prof #数秒かかります
 </pre></div>
 
-<p>You can aggregate these profiles with <samp>stat.awk</samp>:
+<p>これらのプロファイルは <samp>stat.awk</samp> で集約できます:
 </p>
 <div class="example">
 <pre class="example">awk -f stat.awk fib.prof test.prof
 </pre></div>
 
-<p>The result contains lines like:
+<p>結果には以下のような行が含まれます:
 </p>
 <div class="example">
 <pre class="example">      2      16        36910041 loadlocal lit
 </pre></div>
 
-<p>This means that the sequence <code>loadlocal lit</code> statically occurs a total
-of 16 times in 2 profiles, with a dynamic execution count of 36910041.
+<p>これは、 シーケンス <code>loadlocal lit</code> が 2 つのプロファイルで合計 16 回静的に発生し、 動的実行数が 36910041
+であることを意味します。
 </p>
-<p>The numbers can be used in various ways to select superinstructions.  E.g.,
-if you just want to select all sequences with a dynamic execution count
-exceeding 10000, you would use the following pipeline:
+<p>数値はスーパー命令を選択するためにさまざまな方法で使用できます。  たとえば、 動的実行数が 10000 を超えるシーケンスをすべて選択したい場合は、
+以下のパイプラインを使用します:
 </p>
 <div class="example">
 <pre class="example">awk -f stat.awk fib.prof test.prof|
-awk '$3&gt;=10000'|                #select sequences
-fgrep -v -f peephole-blacklist| #eliminate wrong instructions
-awk -f seq2rule.awk|  #transform sequences into superinstruction rules
-sort -k 3 &gt;mini-super.vmg       #sort sequences
+awk '$3&gt;=10000'|                #シーケンスを選択
+fgrep -v -f peephole-blacklist| #良くない命令を排除
+awk -f seq2rule.awk|  #シーケンスをスーパー命令ルールに変換
+sort -k 3 &gt;mini-super.vmg       #シーケンスを並べ替え
 </pre></div>
 
-<p>The file <samp>peephole-blacklist</samp> contains all instructions that directly
-access a stack or stack pointer (for mini: <code>call</code>, <code>return</code>); the
-sort step is necessary to ensure that prefixes precede larger
-superinstructions.
+<p>ファイル <samp>peephole-blacklist</samp> には、スタックまたはスタック・ポインター(mini 言語の場合: <code>call</code>
+、<code>return</code>)に直接アクセスするすべての命令が含まれています。 並べ替え手順は、 プレフィックスが、
+大きなスーパー命令よりも前に配置されるようにするために必要です。
 </p>
-<p>Now you can create a version of mini with superinstructions by just saying
-&lsquo;<samp>make</samp>&rsquo;
+<p>いまや、 あなたは &lsquo;<samp>make</samp>&rsquo; と言うだけでスーパー命令を備えたバージョンの mini 言語を作成できるようになりました。
 </p>
 
 </div>

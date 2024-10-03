@@ -67,38 +67,31 @@ Previous: <a href="Data-handling.html" accesskey="p" rel="prev">Data handling</a
 <span id="index-Dispatch-of-VM-instructions"></span>
 <span id="index-main-interpreter-loop"></span>
 
-<p>Understanding this section is probably not necessary for using Vmgen, but it
-may help.  You may want to skip it now, and read it if you find statements
-about dispatch methods confusing.
+<p>Vmgen を使用する場合、 このセクションを理解する必要はおそらくありませんが、 役立つ場合もあります。 ここでスキップして、
+あとでディスパッチ方法に関する記述がわかりにくい場合にこのセクションを読むといいでしょう。
 </p>
-<p>After executing one VM instruction, the VM interpreter has to dispatch the
-next VM instruction (Vmgen calls the dispatch routine &lsquo;<samp>NEXT</samp>&rsquo;).  Vmgen
-supports two methods of dispatch:
+<p>1 つの VM 命令を実行した後、 VM インタープリターは次の VM
+命令にディスパッチ(dispatch;切り替え作業)する必要があります(Vmgen はディスパッチ・ルーチン「NEXT」を呼び出します)。  Vmgen
+は 2 つのディスパッチ方法をサポートしています:
 </p>
 <dl compact="compact">
 <dt id='index-switch-dispatch'><span><strong>switch dispatch</strong><a href='#index-switch-dispatch' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>In this method the VM interpreter contains a giant <code>switch</code> statement,
-with one <code>case</code> for each VM instruction.  The VM instruction opcodes
-are represented by integers (e.g., produced by an <code>enum</code>) in the VM
-code, and dispatch occurs by loading the next opcode, <code>switch</code>ing on
-it, and continuing at the appropriate <code>case</code>; after executing the VM
-instruction, the VM interpreter jumps back to the dispatch code.
+<dd><p>この方法では、 VM インタープリターに巨大な <code>switch</code> ステートメントが含まれており、 VM 命令ごとに 1 つの
+<code>case</code> があります。  VM 命令のオペコードは、 VM コード内の整数(<code>enum</code>
+によって生成されるなどする)によって表され、 ディスパッチは、 次のオペコードをロードし、 <code>switch</code> して、 適切な
+<code>case</code> で続行することによって行います。 VM 命令の実行後、 VM インタープリタはディスパッチ・コードに戻ります。
 </p>
 </dd>
 <dt id='index-threaded-code'><span><strong>threaded code</strong><a href='#index-threaded-code' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>This method represents a VM instruction opcode by the address of the start
-of the machine code fragment for executing the VM instruction.  Dispatch
-consists of loading this address, jumping to it, and incrementing the VM
-instruction pointer.  Typically the threaded-code dispatch code is appended
-directly to the code for executing the VM instruction.  Threaded code cannot
-be implemented in ANSI C, but it can be implemented using GNU C&rsquo;s
-labels-as-values extension (see <a data-manual="gcc.info" href="https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values">Labels as Values</a> in <cite>GNU C Manual</cite>).
+<dd><p>このメソッドは、 VM 命令を実行するためのマシン・コード断片の開始アドレスによって VM 命令オペコードを表します。 ディスパッチ(切り替え作業)は、
+このアドレスのロードと、 そこへのジャンプと VM 命令ポインターのインクリメントで構成されます。  通常、 スレッド化コードのディスパッチ・コードは、
+VM 命令を実行するコードに直接追加されます。  スレッド化コードは ANSI C では実装できませんが、 GNU C の
+label-as-values 拡張機能を使用して実装できます(see <a data-manual="gcc.info" href="https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values">Labels as Values</a> in <cite>GNU C Manual</cite>)。
 </p>
 </dd>
 </dl>
 
-<p>Threaded code can be twice as fast as switch dispatch, depending on the
-interpreter, the benchmark, and the machine.
+<p>インタープリターやベンチマークやマシンによっては、 スレッド化コードはスイッチ・ディスパッチより 2 倍早くなることがあります。
 </p>
 </div>
 

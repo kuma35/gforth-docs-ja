@@ -68,14 +68,13 @@ Next: <a href="Simple-instructions.html" accesskey="n" rel="next">Simple instruc
 <span id="index-grammar_002c-input-file"></span>
 <span id="index-input-file-grammar"></span>
 
-<p>The grammar is in EBNF format, with <code><var>a</var>|<var>b</var></code> meaning &ldquo;<var>a</var>
-or <var>b</var>&rdquo;, <code>{<var>c</var>}</code> meaning 0 or more repetitions of <var>c</var>
-and <code>[<var>d</var>]</code> meaning 0 or 1 repetitions of <var>d</var>.
+<p>文法は EBNF 形式で、 <code><var>a</var>|<var>b</var></code> は「<var>a</var> または <var>b</var>」、
+<code>{<var>c</var>}</code> は <var>c</var> の 0 回以上の繰り返しを意味し、 <code>[<var>d</var>]</code> は <var>d</var> の
+0 回または 1 回の繰り返しを意味します。
 </p>
 <span id="index-free_002dformat_002c-not"></span>
 <span id="index-newlines_002c-significance-in-syntax"></span>
-<p>Vmgen input is not free-format, so you have to take care where you put
-newlines (and, in a few cases, white space).
+<p>Vmgen の入力は自由書式ではないため、 改行(および場合によっては空白)をどこに入れるかに注意する必要があります。
 </p>
 <div class="example">
 <pre class="example">description: {instruction|comment|eval-escape|c-escape}
@@ -95,57 +94,43 @@ eval-escape:  '\E ' text newline
 c-escape:     '\C ' text newline
 </pre></div>
 
-<p>Note that the <code>\</code>s in this grammar are meant literally, not as C-style
-encodings for non-printable characters.
+<p>注意: この文法の <code>\</code> は、 印刷不可能な文字の C 言語スタイルのエンコーディングではなく、
+文字通りの意味であることに注意してください。
 </p>
-<p>There are two ways to delimit the C code in <code>simple-inst</code>:
+<p><code>simple-inst</code> で C 言語コードを区切る(delimit)方法は 2 つあります:
 </p>
 <ul>
-<li> If you start it with a &lsquo;<samp>{</samp>&rsquo; at the start of a line (i.e., not even
-white space before it), you have to end it with a &lsquo;<samp>}</samp>&rsquo; at the start of
-a line (followed by a newline).  In this case you may have empty lines
-within the C code (typically used between variable definitions and
-statements).
+<li> 行頭が &lsquo;<samp>{</samp>&rsquo; で始まる場合(つまり、 その前に空白も無い場合)、 (改行に続いて)行頭の &lsquo;<samp>}</samp>&rsquo; で終了する必要があります。
+この場合、 C 言語コード内に空行が含まれる可能性があります(通常、 変数定義とステートメントの間で使用されます)。
 
-</li><li> You do not start it with &lsquo;<samp>{</samp>&rsquo;.  Then the C code ends at the first empty
-line, so you cannot have empty lines within this code.
+</li><li> &lsquo;<samp>{</samp>&rsquo; で始めない場合。 この場合、 C 言語コードは最初の空行で終了するため、 このコード内に空行を含めることはできません。
 
 </li></ul>
 
-<p>The text in <code>comment</code>, <code>eval-escape</code> and <code>c-escape</code> must not
-contain a newline.  <code>Ident</code> must conform to the usual conventions of C
-identifiers (otherwise the C compiler would choke on the Vmgen output),
-except that idents in <code>stack-effect</code> may have a stack prefix (for stack
-prefix syntax, see <a href="Eval-escapes.html">Eval escapes</a>).
+<p><code>comment</code> と <code>eval-escape</code> と <code>c-escape</code> 内の text
+には改行を含めることはできません。  <code>Ide​​nt</code> は、 C 言語識別子の通常の規則に準拠する必要があります(そうしないと、 Vmgen
+出力で C 言語のコンパイラーが詰まり(choke)ます)。 <code>Ide​​nt</code> は、 <code>stack-effect</code> の ident
+にスタック・プレフィックス(スタック・プレフィックス構文については see <a href="Eval-escapes.html">Eval escapes</a> 参照)が付いている場合がある点を除き、 C
+言語識別子の通常の規則に準拠する必要があります。
 </p>
 <span id="index-C-escape"></span>
 <span id="index-_005cC"></span>
 <span id="index-conditional-compilation-of-Vmgen-output"></span>
-<p>The <code>c-escape</code> passes the text through to each output file (without the
-&lsquo;<samp>\C</samp>&rsquo;).  This is useful mainly for conditional compilation (i.e., you
-write &lsquo;<samp>\C #if ...</samp>&rsquo; etc.).
+<p><code>c-escape</code> は text を各出力ファイルに渡します(&lsquo;<samp>\C</samp>&rsquo; 無しで)。
+これは主に条件付きコンパイルに役立ちます(つまり、 &lsquo;<samp>\C #if ...</samp>&rsquo; などを記述します)。
 </p>
 <span id="index-sync-lines"></span>
 <span id="index-_0023line"></span>
-<p>In addition to the syntax given in the grammer, Vmgen also processes sync
-lines (lines starting with &lsquo;<samp>#line</samp>&rsquo;), as produced by &lsquo;<samp>m4 -s</samp>&rsquo;
-(see <a data-manual="m4.info" href="https://www.gnu.org/software/m4/manual/html_node/Invoking-m4.html#Invoking-m4">Invoking m4</a> in <cite>GNU m4</cite>) and similar tools.
-This allows associating C compiler error messages with the original source
-of the C code.
+<p>文法で指定された構文に加えて、 Vmgen は &lsquo;<samp>m4 -s</samp>&rsquo; (see <a data-manual="m4.info" href="https://www.gnu.org/software/m4/manual/html_node/Invoking-m4.html#Invoking-m4">Invoking m4</a> in <cite>GNU m4</cite>)や、 同様のツールによって生成された同期行(sync lines)(&lsquo;<samp>#line</samp>&rsquo;
+で始まる行)も処理します。 これにより、 C 言語コンパイラーのエラー・メッセージを C 言語コードの元のソースに関連付けることができます。
 </p>
-<p>Vmgen understands a few extensions beyond the grammar given here, but these
-extensions are only useful for building Gforth.  You can find a description
-of the format used for Gforth in <samp>prim</samp>.
+<p>Vmgen は、 ここで説明した文法を超えたいくつかの拡張機能を理解しますが、 これらの拡張機能は Gforth を構築する場合にのみ役立ちます。
+Gforth に使用される書式の説明は <samp>prim</samp> にあります。
 </p>
 
 <ul class="section-toc">
 <li><a href="Eval-escapes.html" accesskey="1">Eval escapes</a></li>
 </ul>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Simple-instructions.html">Simple instructions</a>, Previous: <a href="Input-File-Format.html">Input File Format</a>, Up: <a href="Input-File-Format.html">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

@@ -183,13 +183,13 @@ Format})から仮想マシン命令を処理するほとんどのコードを生
 @item VM instruction execution
 
 @item VM code generation
-フロントエンドで役立ちます。
+フロント・エンドで役立ちます。
 
 @item VM code decompiler
-フロントエンドのデバッグに役立ちます。
+フロント・エンドのデバッグに役立ちます。
 
 @item VM code tracing
-フロントエンドと VM インタープリターのデバッグに役立ちます。  あなたは、 通常は、
+フロント・エンドと VM インタープリターのデバッグに役立ちます。  あなたは、 通常は、
 ユーザーのプログラムをソース・レベルでデバッグするための他の手段を提供するでしょう。
 
 @item VM code profiling
@@ -230,7 +230,7 @@ VM は通常、 スタック・シン(VM 命令間のデータを受け渡しを
 はそのような設計を特に適切にサポートします。 ただし、 Vmgen を使用して レジスター型 VM (@pxref{Register
 Machines}) を実装することもでき、 それでも Vmgen が提供する利点のほとんどを活用できます。
 
-今現在では実装されていない命令(instruction descriptions)には多くの潜在的な用途がありうるものと思います。
+今現在では実装されていない命令記述(instruction descriptions)には多くの潜在的な用途がありうるものと思います。
 私達は機能のリクエストは受け付けており、 誰かがリクエストした場合は新しい機能を検討します。 そのため、
 上記の機能リストはすべてを網羅したものではありません。
 
@@ -292,29 +292,21 @@ Vmgen は、 効率的なインタープリターを構築するための手法�
 @cindex register, VM
 @cindex opcode, VM instruction
 @cindex immediate argument, VM instruction
-For efficient interpreters the intermediate representation of choice is
-virtual machine code (rather than, e.g., an abstract syntax tree).
-@emph{Virtual machine} (VM) code consists of VM instructions arranged
-sequentially in memory; they are executed in sequence by the VM interpreter,
-but VM branch instructions can change the control flow and are used for
-implementing control structures.  The conceptual similarity to real machine
-code results in the name @emph{virtual machine}.  Various terms similar to
-terms for real machines are used; e.g., there are @emph{VM registers} (like
-the instruction pointer and stack pointer(s)), and the VM instruction
-consists of an @emph{opcode} and @emph{immediate arguments}.
+効率的なインタープリターの場合、 選択される中間表現は(抽象構文ツリーなどではなく、 )仮想マシン・コードです。 「仮想仮想マシン」(VM) コードは、
+メモリー内に順番に配置された VM 命令で構成されます。 これらは VM インタープリターによって順番に実行されますが、 VM
+分岐命令は制御フローを変更することができ、 制御構造の実装に使用されます。  実際のマシン・コードと概念的に類似しているため、
+「仮想マシン」という名前が付けられます。  実機の用語に類似したさまざまな用語が使用されています。 たとえば、 「VM
+レジスター」(命令ポインターやスタック・ポインターなど)があり、 VM 命令は 「オペコード」と 「直接引数」(immediate
+arguments)で構成されます。
 
-In this framework, Vmgen supports building the VM interpreter and any other
-component dealing with VM instructions.  It does not have any support for
-the front end, apart from VM code generation support.  The front end can be
-implemented with classical compiler front-end techniques, supported by tools
-like @command{flex} and @command{bison}.
+このフレームワークでは、 Vmgen は VM インタープリターと、 VM 命令を処理するその他のコンポーネントの構築をサポートします。  VM
+コード生成のサポートを除いて、 フロント・エンドのサポートはありません。  フロント・エンドは、 @command{flex} や
+@command{bison} などのツールでサポートされる、 従来のコンパイラー・フロント・エンド手法を使用して実装できます。
 
-The intermediate representation is usually just internal to the interpreter,
-but some systems also support saving it to a file, either as an image file,
-or in a full-blown linkable file format (e.g., JVM).  Vmgen currently has no
-special support for such features, but the information in the instruction
-descriptions can be helpful, and we are open to feature requests and
-suggestions.
+中間表現は通常、 インタープリターの内部にのみ存在しますが、 一部のシステムでは、 イメージ・ファイルとして、
+または完全なリンク可能なファイル形式(JVM など)でのファイルへの保存もサポートしています。  現在、 Vmgen
+ではそのような機能に対する特別なサポートはありませんが、 命令記述に記載されている情報が役に立つ可能性があります。 また、
+私達は機能のリクエストや提案をお待ちしています。
 
 @c --------------------------------------------------------------------
 @node Data handling, Dispatch, Front end and VM interpreter, Concepts
@@ -322,42 +314,35 @@ suggestions.
 
 @cindex stack machine
 @cindex register machine
-Most VMs use one or more stacks for passing temporary data between VM
-instructions.  Another option is to use a register machine architecture for
-the virtual machine; we believe that using a stack architecture is usually
-both simpler and faster.
+ほとんどの VM は、 VM 命令間で一時データを渡すために 1 つ以上のスタックを使用します。  私達は、 通常、
+スタック・アーキテクチャを使用する方が簡単かつ高速であると考えていますが、 もう一つのオプションとして、
+仮想マシンにレジスター・マシン・アーキテクチャを使用することが考えられます。
 
-However, this option is slower or significantly more complex to implement
-than a stack machine architecture.
+ただし、 このオプションはスタック・マシン・アーキテクチャよりも実装に時間がかかるか、 非常に複雑です。
 
-Vmgen has special support and optimizations for stack VMs, making their
-implementation easy and efficient.
+Vmgen にはスタック VM に対する特別なサポートと最適化があり、 スタック VM の実装が簡単かつ効率的に行えます。
 
-You can also implement a register VM with Vmgen (@pxref{Register Machines}),
-and you will still profit from most Vmgen features.
+また、 Vmgen (@pxref{Register Machines}) を使用して レジスター VM を実装することもできます。 その場合でも、
+あなたは Vmgen のほとんどの機能を活用できます。
 
 @cindex stack item size
 @cindex size, stack items
-Stack items all have the same size, so they typically will be as wide as an
-integer, pointer, or floating-point value.  Vmgen supports treating two
-consecutive stack items as a single value, but anything larger is best kept
-in some other memory area (e.g., the heap), with pointers to the data on the
-stack.
+スタック項目はすべて同一サイズなので、 通常は整数やポインターや浮動小数点数値は同じサイズ幅になります。  Vmgen は、 2
+つの連続したスタック項目を単一の値として扱うことをサポートしていますが、 それより大きいものは、 スタックに置いた、 データへのポインターを使用して、
+他のメモリ領域(ヒープなど)に保持するのが最適です。
 
 @cindex instruction stream
 @cindex immediate arguments
-Another source of data is immediate arguments VM instructions (in the VM
-instruction stream).  The VM instruction stream is handled similar to a
-stack in Vmgen.
+もう 1 つのデータ源は、 (VM 命令ストリーム内の) 即時引数 VM 命令達(immediate arguments VM
+instructions)です。 VM 命令ストリームは、 Vmgen のスタックと同様に処理されます。
 
 @cindex garbage collection
 @cindex reference counting
 @c reference counting might be possible by including counting code in 
 @c the conversion macros.
-Vmgen has no built-in support for, nor restrictions against @emph{garbage
-collection}.  If you need garbage collection, you need to provide it in your
-run-time libraries.  Using @emph{reference counting} is probably harder, but
-might be possible (contact us if you are interested).
+Vmgen には、 「ガーベジ・コレクション」に対するサポートも制限も組み込まれていません。  ガベージ・コレクションが必要な場合は、
+ランタイム・ライブラリでそれを提供する必要があります。  「参照カウント」(reference counting)を使用するのはおそらく困難、
+可能な場合もあります(興味がある場合は私達にお問い合わせください)。
 
 @c --------------------------------------------------------------------
 @node Dispatch, , Data handling, Concepts
@@ -365,63 +350,55 @@ might be possible (contact us if you are interested).
 @cindex Dispatch of VM instructions
 @cindex main interpreter loop
 
-Understanding this section is probably not necessary for using Vmgen, but it
-may help.  You may want to skip it now, and read it if you find statements
-about dispatch methods confusing.
+Vmgen を使用する場合、 このセクションを理解する必要はおそらくありませんが、 役立つ場合もあります。 ここでスキップして、
+あとでディスパッチ方法に関する記述がわかりにくい場合にこのセクションを読むといいでしょう。
 
-After executing one VM instruction, the VM interpreter has to dispatch the
-next VM instruction (Vmgen calls the dispatch routine @samp{NEXT}).  Vmgen
-supports two methods of dispatch:
+1 つの VM 命令を実行した後、 VM インタープリターは次の VM
+命令にディスパッチ(dispatch;切り替え作業)する必要があります(Vmgen はディスパッチ・ルーチン「NEXT」を呼び出します)。  Vmgen
+は 2 つのディスパッチ方法をサポートしています:
 
 @table @strong
 
 @item switch dispatch
 @cindex switch dispatch
-In this method the VM interpreter contains a giant @code{switch} statement,
-with one @code{case} for each VM instruction.  The VM instruction opcodes
-are represented by integers (e.g., produced by an @code{enum}) in the VM
-code, and dispatch occurs by loading the next opcode, @code{switch}ing on
-it, and continuing at the appropriate @code{case}; after executing the VM
-instruction, the VM interpreter jumps back to the dispatch code.
+この方法では、 VM インタープリターに巨大な @code{switch} ステートメントが含まれており、 VM 命令ごとに 1 つの
+@code{case} があります。  VM 命令のオペコードは、 VM コード内の整数(@code{enum}
+によって生成されるなどする)によって表され、 ディスパッチは、 次のオペコードをロードし、 @code{switch} して、 適切な
+@code{case} で続行することによって行います。 VM 命令の実行後、 VM インタープリタはディスパッチ・コードに戻ります。
 
 @item threaded code
 @cindex threaded code
-This method represents a VM instruction opcode by the address of the start
-of the machine code fragment for executing the VM instruction.  Dispatch
-consists of loading this address, jumping to it, and incrementing the VM
-instruction pointer.  Typically the threaded-code dispatch code is appended
-directly to the code for executing the VM instruction.  Threaded code cannot
-be implemented in ANSI C, but it can be implemented using GNU C's
-labels-as-values extension (@pxref{Labels as Values, , Labels as Values,
-gcc.info, GNU C Manual}).
+このメソッドは、 VM 命令を実行するためのマシン・コード断片の開始アドレスによって VM 命令オペコードを表します。 ディスパッチ(切り替え作業)は、
+このアドレスのロードと、 そこへのジャンプと VM 命令ポインターのインクリメントで構成されます。  通常、 スレッド化コードのディスパッチ・コードは、
+VM 命令を実行するコードに直接追加されます。  スレッド化コードは ANSI C では実装できませんが、 GNU C の
+label-as-values 拡張機能を使用して実装できます(@pxref{Labels as Values, , Labels as Values,
+gcc.info, GNU C Manual})。
 
 @c call threading
 @end table
 
-Threaded code can be twice as fast as switch dispatch, depending on the
-interpreter, the benchmark, and the machine.
+インタープリターやベンチマークやマシンによっては、 スレッド化コードはスイッチ・ディスパッチより 2 倍早くなることがあります。
 
 @c *************************************************************
 @node Invoking Vmgen, Example, Concepts, Top
 @chapter Invoking Vmgen
 @cindex Invoking Vmgen
 
-The usual way to invoke Vmgen is as follows:
+Vmgen を呼び出す通常の方法は以下のとおりです:
 
 @example
 vmgen @var{inputfile}
 @end example
 
-Here @var{inputfile} is the VM instruction description file, which usually
-ends in @file{.vmg}.  The output filenames are made by taking the basename
-of @file{inputfile} (i.e., the output files will be created in the current
-working directory) and replacing @file{.vmg} with @file{-vm.i},
-@file{-disasm.i}, @file{-gen.i}, @file{-labels.i}, @file{-profile.i}, and
-@file{-peephole.i}.  E.g., @command{vmgen hack/foo.vmg} will create
-@file{foo-vm.i}, @file{foo-disasm.i}, @file{foo-gen.i}, @file{foo-labels.i},
-@file{foo-profile.i} and @file{foo-peephole.i}.
+ここで @var{inputfile} は VM 命令記述ファイルで、 通常は @file{.vmg} で終わります。  それぞれの出力ファイル名は、
+@file{inputfile} のベース名を取得し(つまり、 出力ファイルは現在の作業ディレクトリに作成されます)、 @file{.vmg}
+の部分を、 @file{-vm.i} と @file{-disasm.i} と @file{-gen.i} と  @file{-labels.i} と
+@file{-profile.i} と @file{-peephole.i} とにに置き換えることによって作成されます。
+たとえば、@command{vmgen hack/foo.vmg} なら、 @file{foo-vm.i} と @file{foo-disasm.i}
+と @file{foo-gen.i} と @file{foo-labels.i} と @file{foo-profile.i} と
+@file{foo-peephole.i} を作成します。
 
-The command-line options supported by Vmgen are
+Vmgen でサポートされるコマンドライン・オプションは以下のとおりです
 
 @table @option
 
@@ -429,13 +406,13 @@ The command-line options supported by Vmgen are
 @cindex --help, command-line option
 @item --help
 @itemx -h
-Print a message about the command-line options
+コマンドライン・オプションに関するメッセージを出力します
 
 @cindex -v, command-line option
 @cindex --version, command-line option
 @item --version
 @itemx -v
-Print version and exit
+バージョンを出力して終了(exit)
 @end table
 
 @c env vars GFORTHDIR GFORTHDATADIR
@@ -457,20 +434,18 @@ Print version and exit
 @cindex @file{vmgen-ex}
 @cindex @file{vmgen-ex2}
 
-There are two versions of the same example for using Vmgen: @file{vmgen-ex}
-and @file{vmgen-ex2} (you can also see Gforth as example, but it uses
-additional (undocumented) features, and also differs in some other
-respects).  The example implements @emph{mini}, a tiny Modula-2-like
-language with a small JavaVM-like virtual machine.
+Vmgen を使用する同一の例として、 @file{vmgen-ex} と @file{vmgen-ex2} の 2 つのバージョンがあります(例として
+Gforth もありますが、 追加の(文書化されていない)機能が使用されており、 他のいくつかの点でも異なります)。  この例では、 JavaVM
+のような小さな仮想マシンを備えた小さな Modula-2 のような言語である「mini」言語を実装しています。
 
-The difference between the examples is that @file{vmgen-ex} uses many casts,
-and @file{vmgen-ex2} tries to avoids most casts and uses unions instead.  In
-the rest of this manual we usually mention just files in @file{vmgen-ex}; if
-you want to use unions, use the equivalent file in @file{vmgen-ex2}.
+2つの例の違いは、 @file{vmgen-ex} は多くのキャスト(cast)を使用するのに対し、 @file{vmgen-ex2}
+はほとんどのキャストを回避し、 代わりに共用体(unions)を使用することです。  このマニュアルの残りの部分では、 通常、
+@file{vmgen-ex} 内のファイルについてのみ言及します。 共用体(union)を使用したい場合は、 @file{vmgen-ex2}
+内の同等のファイルを使用してください。
 @cindex unions example
 @cindex casts example
 
-The files provided with each example are:
+各例で提供されるファイルは以下のとおりです:
 @cindex example files
 
 @example
@@ -490,13 +465,12 @@ fib.mini           example mini program
 simple.mini        example mini program
 test.mini          example mini program (tests everything)
 test.out           test.mini output
-stat.awk           script for aggregating profile information
-peephole-blacklist list of instructions not allowed in superinstructions
-seq2rule.awk       script for creating superinstructions
+stat.awk           プロファイル情報を集約するためのスクリプト
+peephole-blacklist スーパー命令で許可されない命令のリスト
+seq2rule.awk       スーパー命令を生成するためのスクリプト
 @end example
 
-For your own interpreter, you would typically copy the following files and
-change little, if anything:
+あなた独自のインタープリターを作る場合、 通常、 以下のファイル群はコピーして使い、 変更することはほとんどないでしょう:
 @cindex wrapper files
 
 @example
@@ -504,12 +478,12 @@ disasm.c           wrapper file
 engine.c           wrapper file
 peephole.c         wrapper file
 profile.c          wrapper file
-stat.awk           script for aggregating profile information
-seq2rule.awk       script for creating superinstructions
+stat.awk           プロファイル情報を集約するためのスクリプト
+seq2rule.awk       スーパー命令を生成するためのスクリプト
 @end example
 
 @noindent
-You would typically change much in or replace the following files:
+そして、 通常、 あなたは、 以下のファイル群を大幅に変更するか、 置き換える事になります:
 
 @example
 Makefile
@@ -518,18 +492,17 @@ mini.h             common declarations
 mini.l             scanner
 mini.y             front end (parser, VM code generator)
 support.c          main() and other support functions
-peephole-blacklist list of instructions not allowed in superinstructions
+peephole-blacklist スーパー命令で許可されない命令のリスト
 @end example
 
-You can build the example by @code{cd}ing into the example's directory, and
-then typing @code{make}; you can check that it works with @code{make
-check}.  You can run run mini programs like this:
+example のディレクトリに @code{cd} してから @code{make} と入力すると、 example をビルドできます。
+@code{make check} で動作することを確認できます。  以下のようにして mini 言語のプログラムを実行できます:
 
 @example
 ./mini fib.mini
 @end example
 
-To learn about the options, type @code{./mini -h}.
+オプションについて詳しくは、 @code{./mini -h} と入力してください。
 
 @c --------------------------------------------------------------------
 @node Using profiling to create superinstructions, , Example overview, Example
@@ -537,52 +510,48 @@ To learn about the options, type @code{./mini -h}.
 @cindex profiling example
 @cindex superinstructions example
 
-I have not added rules for this in the @file{Makefile} (there are many
-options for selecting superinstructions, and I did not want to hardcode one
-into the @file{Makefile}), but there are some supporting scripts, and here's
-an example:
+作者は @file{Makefile} には、
+プロファイリングを使用してスーパー命令を作成するためのルールを追加していません(スーパー命令選択の選択肢はたくさんありますが、 それらの選択肢を
+@file{Makefile} にハードコードしたくありませんでした)が、 サポートするスクリプトがいくつかあります。 例:
 
-Suppose you want to use @file{fib.mini} and @file{test.mini} as training
-programs, you get the profiles like this:
+@file{fib.mini} と @file{test.mini} をトレーニング・プログラムとして使用すると、
+以下のようなプロファイルが得られます:
 
 @example
-make fib.prof test.prof #takes a few seconds
+make fib.prof test.prof #数秒かかります
 @end example
 
-You can aggregate these profiles with @file{stat.awk}:
+これらのプロファイルは @file{stat.awk} で集約できます:
 
 @example
 awk -f stat.awk fib.prof test.prof
 @end example
 
-The result contains lines like:
+結果には以下のような行が含まれます:
 
 @example
       2      16        36910041 loadlocal lit
 @end example
 
-This means that the sequence @code{loadlocal lit} statically occurs a total
-of 16 times in 2 profiles, with a dynamic execution count of 36910041.
+これは、 シーケンス @code{loadlocal lit} が 2 つのプロファイルで合計 16 回静的に発生し、 動的実行数が 36910041
+であることを意味します。
 
-The numbers can be used in various ways to select superinstructions.  E.g.,
-if you just want to select all sequences with a dynamic execution count
-exceeding 10000, you would use the following pipeline:
+数値はスーパー命令を選択するためにさまざまな方法で使用できます。  たとえば、 動的実行数が 10000 を超えるシーケンスをすべて選択したい場合は、
+以下のパイプラインを使用します:
 
 @example
 awk -f stat.awk fib.prof test.prof|
-awk '$3>=10000'|                #select sequences
-fgrep -v -f peephole-blacklist| #eliminate wrong instructions
-awk -f seq2rule.awk|  #transform sequences into superinstruction rules
-sort -k 3 >mini-super.vmg       #sort sequences
+awk '$3>=10000'|                #シーケンスを選択
+fgrep -v -f peephole-blacklist| #良くない命令を排除
+awk -f seq2rule.awk|  #シーケンスをスーパー命令ルールに変換
+sort -k 3 >mini-super.vmg       #シーケンスを並べ替え
 @end example
 
-The file @file{peephole-blacklist} contains all instructions that directly
-access a stack or stack pointer (for mini: @code{call}, @code{return}); the
-sort step is necessary to ensure that prefixes precede larger
-superinstructions.
+ファイル @file{peephole-blacklist} には、スタックまたはスタック・ポインター(mini 言語の場合: @code{call}
+、@code{return})に直接アクセスするすべての命令が含まれています。 並べ替え手順は、 プレフィックスが、
+大きなスーパー命令よりも前に配置されるようにするために必要です。
 
-Now you can create a version of mini with superinstructions by just saying
-@samp{make}
+いまや、 あなたは @samp{make} と言うだけでスーパー命令を備えたバージョンの mini 言語を作成できるようになりました。
 
 
 @c ***************************************************************
@@ -591,10 +560,9 @@ Now you can create a version of mini with superinstructions by just saying
 @cindex input file format
 @cindex format, input file
 
-Vmgen takes as input a file containing specifications of virtual machine
-instructions.  This file usually has a name ending in @file{.vmg}.
+Vmgen は、 仮想マシン命令の仕様を含むファイルを入力として受け取ります。  通常、 このファイルの名前は @file{.vmg} で終わります。
 
-Most examples are taken from the example in @file{vmgen-ex}.
+ほとんどの例は @file{vmgen-ex} のを使っています。
 
 @menu
 * Input File Grammar::       
@@ -610,14 +578,13 @@ Most examples are taken from the example in @file{vmgen-ex}.
 @cindex grammar, input file
 @cindex input file grammar
 
-The grammar is in EBNF format, with @code{@var{a}|@var{b}} meaning ``@var{a}
-or @var{b}'', @code{@{@var{c}@}} meaning 0 or more repetitions of @var{c}
-and @code{[@var{d}]} meaning 0 or 1 repetitions of @var{d}.
+文法は EBNF 形式で、 @code{@var{a}|@var{b}} は「@var{a} または @var{b}」、
+@code{@{@var{c}@}} は @var{c} の 0 回以上の繰り返しを意味し、 @code{[@var{d}]} は @var{d} の
+0 回または 1 回の繰り返しを意味します。
 
 @cindex free-format, not
 @cindex newlines, significance in syntax
-Vmgen input is not free-format, so you have to take care where you put
-newlines (and, in a few cases, white space).
+Vmgen の入力は自由書式ではないため、 改行(および場合によっては空白)をどこに入れるかに注意する必要があります。
 
 @example
 description: @{instruction|comment|eval-escape|c-escape@}
@@ -638,50 +605,42 @@ c-escape:     '\C ' text newline
 @end example
 @c \+ \- \g \f \c
 
-Note that the @code{\}s in this grammar are meant literally, not as C-style
-encodings for non-printable characters.
+注意: この文法の @code{\} は、 印刷不可能な文字の C 言語スタイルのエンコーディングではなく、
+文字通りの意味であることに注意してください。
 
-There are two ways to delimit the C code in @code{simple-inst}:
+@code{simple-inst} で C 言語コードを区切る(delimit)方法は 2 つあります:
 
 @itemize @bullet
 
 @item
-If you start it with a @samp{@{} at the start of a line (i.e., not even
-white space before it), you have to end it with a @samp{@}} at the start of
-a line (followed by a newline).  In this case you may have empty lines
-within the C code (typically used between variable definitions and
-statements).
+行頭が @samp{@{} で始まる場合(つまり、 その前に空白も無い場合)、 (改行に続いて)行頭の @samp{@}} で終了する必要があります。
+この場合、 C 言語コード内に空行が含まれる可能性があります(通常、 変数定義とステートメントの間で使用されます)。
 
 @item
-You do not start it with @samp{@{}.  Then the C code ends at the first empty
-line, so you cannot have empty lines within this code.
+@samp{@{} で始めない場合。 この場合、 C 言語コードは最初の空行で終了するため、 このコード内に空行を含めることはできません。
 
 @end itemize
 
-The text in @code{comment}, @code{eval-escape} and @code{c-escape} must not
-contain a newline.  @code{Ident} must conform to the usual conventions of C
-identifiers (otherwise the C compiler would choke on the Vmgen output),
-except that idents in @code{stack-effect} may have a stack prefix (for stack
-prefix syntax, @pxref{Eval escapes}).
+@code{comment} と @code{eval-escape} と @code{c-escape} 内の text
+には改行を含めることはできません。  @code{Ide​​nt} は、 C 言語識別子の通常の規則に準拠する必要があります(そうしないと、 Vmgen
+出力で C 言語のコンパイラーが詰まり(choke)ます)。 @code{Ide​​nt} は、 @code{stack-effect} の ident
+にスタック・プレフィックス(スタック・プレフィックス構文については @pxref{Eval escapes} 参照)が付いている場合がある点を除き、 C
+言語識別子の通常の規則に準拠する必要があります。
 
 @cindex C escape
 @cindex @code{\C}
 @cindex conditional compilation of Vmgen output
-The @code{c-escape} passes the text through to each output file (without the
-@samp{\C}).  This is useful mainly for conditional compilation (i.e., you
-write @samp{\C #if ...} etc.).
+@code{c-escape} は text を各出力ファイルに渡します(@samp{\C} 無しで)。
+これは主に条件付きコンパイルに役立ちます(つまり、 @samp{\C #if ...} などを記述します)。
 
 @cindex sync lines
 @cindex @code{#line}
-In addition to the syntax given in the grammer, Vmgen also processes sync
-lines (lines starting with @samp{#line}), as produced by @samp{m4 -s}
-(@pxref{Invoking m4, , Invoking m4, m4.info, GNU m4}) and similar tools.
-This allows associating C compiler error messages with the original source
-of the C code.
+文法で指定された構文に加えて、 Vmgen は @samp{m4 -s} (@pxref{Invoking m4, , Invoking m4,
+m4.info, GNU m4})や、 同様のツールによって生成された同期行(sync lines)(@samp{#line}
+で始まる行)も処理します。 これにより、 C 言語コンパイラーのエラー・メッセージを C 言語コードの元のソースに関連付けることができます。
 
-Vmgen understands a few extensions beyond the grammar given here, but these
-extensions are only useful for building Gforth.  You can find a description
-of the format used for Gforth in @file{prim}.
+Vmgen は、 ここで説明した文法を超えたいくつかの拡張機能を理解しますが、 これらの拡張機能は Gforth を構築する場合にのみ役立ちます。
+Gforth に使用される書式の説明は @file{prim} にあります。
 
 @menu
 * Eval escapes::             what follows \E
@@ -694,13 +653,11 @@ of the format used for Gforth in @file{prim}.
 @cindex @code{\E}
 
 @c woanders?
-The text in @code{eval-escape} is Forth code that is evaluated when Vmgen
-reads the line.  You will normally use this feature to define stacks and
-types.
+@code{eval-escape} 内の text は、 Vmgen が行を読み取るときに評価(eval)される Forth コードです。  通常、
+この機能を使用してスタックと型を定義します。
 
-If you do not know (and do not want to learn) Forth, you can build the text
-according to the following grammar; these rules are normally all Forth you
-need for using Vmgen:
+あなたが Forth を知らない (そして学びたくない) 場合は、 以下の文法に従って text を作成できます。 これらのルールは通常、 Vmgen
+を使用するために必要な Forth の全てです:
 
 @example
 text: stack-decl|type-prefix-decl|stack-prefix-decl|set-flag
@@ -712,15 +669,14 @@ stack-prefix-decl:  ident 'stack-prefix' string
 set-flag: ('store-optimization'|'include-skipped-insts') ('on'|'off')
 @end example
 
-Note that the syntax of this code is not checked thoroughly (there are many
-other Forth program fragments that could be written in an eval-escape).
+このコードの構文は完全にはチェックされていないことに注意してください(eval-escape で記述できる Forth
+プログラムの断片は他にも多数あります)。
 
-A stack prefix can contain letters, digits, or @samp{:}, and may start with
-an @samp{#}; e.g., in Gforth the return stack has the stack prefix
-@samp{R:}.  This restriction is not checked during the stack prefix
-definition, but it is enforced by the parsing rules for stack items later.
+スタック・プレフィックスには文字または数字または @samp{:} を含めることができ、@samp{#} で始まる場合もあります。
+たとえば、Gforth では、 リターン・スタックにはスタック・プレフィックス @samp{R:} が付きます。  この制限は、
+スタック・プレフィックスの定義ではチェックされませんが、 後でスタック項目のパース・ルールによって強制されます。
 
-If you know Forth, the stack effects of the non-standard words involved are:
+あなたが既に Forth をご存知の場合、 関連する非標準ワードのスタック効果は以下のとおりです:
 @findex stack
 @findex type-prefix
 @findex single
@@ -738,7 +694,7 @@ store-optimization    ( -- addr )
 include-skipped-insts ( -- addr )
 @end example
 
-An @var{item-size} takes three cells on the stack.
+@var{item-size} はスタック上で 3 つのセルを占有します。
 
 @c --------------------------------------------------------------------
 @node Simple instructions, Superinstructions, Input File Grammar, Input File Format
