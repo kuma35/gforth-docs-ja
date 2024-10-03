@@ -102,9 +102,9 @@ Simple instructions
 
 
 
-* Explicit stack access::    If the C code accesses a stack pointer
-* C Code Macros::            Macros recognized by Vmgen
-* C Code restrictions::      Vmgen makes assumptions about C code
+* Explicit stack access::    C言語コードからスタック・ポインターへアクセス
+* C Code Macros::            Vmgen が認識するマクロ
+* C Code restrictions::      Vmgen が仮定するC言語コード
 * Stack growth direction::   is configurable per stack
 
 Using the generated code
@@ -655,75 +655,76 @@ File: vmgen.info,  Node: Simple instructions,  Next: Superinstructions,  Prev: I
 6.2 Simple instructions
 =======================
 
-We will use the following simple VM instruction description as example:
+例として、 以下の簡単な VM 命令の記述を使用します:
 
      sub ( i1 i2 -- i )
      i = i1-i2;
 
-   The first line specifies the name of the VM instruction ('sub') and
-its stack effect ('i1 i2 -- i').  The rest of the description is just
-plain C code.
+   最初の行には、 VM 命令の名前 ('sub') とそのスタック効果 ('i1 i2 --
+i') を指定します。 最初の行以外の記述の残りの部分は単なる C 言語コードで
+す。
 
-   The stack effect specifies that 'sub' pulls two integers from the
-data stack and puts them in the C variables 'i1' and 'i2' (with the
-rightmost item ('i2') taken from the top of stack; intuition: if you
-push 'i1', then 'i2' on the stack, the resulting stack picture is 'i1
-i2') and later pushes one integer ('i') on the data stack (the rightmost
-item is on the top afterwards).
+   スタック効果では、 'sub' がデータ・スタックから 2 つの整数を取得し、
+それらを C 言語の変数 'i1' と 'i2' に格納することを指定します(右端の項目
+('i2') が、 スタックのトップです: 'i1' をスタックにプッシュし、 次に
+'i2' をスタックにプッシュすると、 結果のスタック状態は 'i1 i2' になりま
+す)。 そしてその後、 その後 1 つの整数 ('i') をスタックにプッシュします
+(右端の項目がスタックの一番上になります)。
 
-   How do we know the type and stack of the stack items?  Vmgen uses
-prefixes, similar to Fortran; in contrast to Fortran, you have to define
-the prefix first:
+   スタック項目の型とスタックを知るにはどうすればよいでしょうか?  Vmgen
+は、 Fortran と同様にプレフィックスを使用します。 Fortran とは対照的に、
+あなたは最初にプレフィックスを定義する必要があります:
 
      \E s" Cell"   single data-stack type-prefix i
 
-   This defines the prefix 'i' to refer to the type 'Cell' (defined as
-'long' in 'mini.h') and, by default, to the 'data-stack'.  It also
-specifies that this type takes one stack item ('single').  The type
-prefix is part of the variable name.
+   これは、 型 'Cell' ('mini.h' では 'long' として定義)を参照するプレフ
+ィックス 'i' を定義し、 デフォルトでは 'data-stack' を参照します。 また
+、 この型が 1 つのスタック項目('single')を占めることも指定します。 型プ
+レフィックスは変数名の一部です。
 
-   Before we can use 'data-stack' in this way, we have to define it:
+   'data-stack' を使用する前に、 この方法で 'data-stack' を定義する必要
+があります:
 
      \E stack data-stack sp Cell
 
-   This line defines the stack 'data-stack', which uses the stack
-pointer 'sp', and each item has the basic type 'Cell'; other types have
-to fit into one or two 'Cell's (depending on whether the type is
-'single' or 'double' wide), and are cast from and to Cells on accessing
-the 'data-stack' with type cast macros (*note VM engine::).  By default,
-stacks grow towards lower addresses in Vmgen-erated interpreters (*note
-Stack growth direction::).
+   この行は、 スタック・ポインター 'sp' を使用するスタック 'data-stack'
+を定義し、 各項目の基本タイプは 'Cell' です。 他の型は 1 つまたは 2 つの
+'Cell' に収まる必要があり(型の幅が 'single' か 'double' かによって異なり
+ます)、 型キャスト・マクロ(*note VM engine::)を使用して 'data-stack' に
+アクセスするときに Cell との間でキャストされます。 Vmgen 製インタープリ
+ターではスタックは、 デフォルトでは、 より低いアドレスに向かって伸長しま
+す(*note Stack growth direction::)。
 
-   We can override the default stack of a stack item by using a stack
-prefix.  E.g., consider the following instruction:
+   スタック・プレフィックスを使用して、 スタック項目のデフォルト・スタッ
+クをオーバーライドできます。 たとえば、 以下の命令について考えてみましょ
+う:
 
      lit ( #i -- i )
 
-   The VM instruction 'lit' takes the item 'i' from the instruction
-stream (indicated by the prefix '#'), and pushes it on the (default)
-data stack.  The stack prefix is not part of the variable name.  Stack
-prefixes are defined like this:
+   VM 命令 'lit' は、 命令ストリームから(プレフィックス '#' で示される)
+項目 'i' を取得し、 それを(デフォルトの)データ・スタックにプッシュします
+。 スタック・プレフィックスは変数名の一部ではありません。 スタック・プレ
+フィックスは以下のように定義されます:
 
      \E inst-stream stack-prefix #
      \E data-stack  stack-prefix S:
 
-   This definition defines that the stack prefix '#' specifies the
-"stack" 'inst-stream'.  Since the instruction stream behaves a little
-differently than an ordinary stack, it is predefined, and you do not
-need to define it.
+   この定義は、 スタック・プレフィックス '#' が「スタック」
+'inst-stream' を指定することを定義します。 命令ストリームは通常のスタッ
+クとは振る舞いが少し異なるため、 事前に定義されており、 あなたが定義する
+必要はありません。
 
-   The instruction stream contains instructions and their immediate
-arguments, so specifying that an argument comes from the instruction
-stream indicates an immediate argument.  Of course, instruction stream
-arguments can only appear to the left of '--' in the stack effect.  If
-there are multiple instruction stream arguments, the leftmost is the
-first one (just as the intuition suggests).
+   命令ストリームには命令とその直接引数(immediate arguments)が含まれるた
+め、 引数が命令ストリームからのものであることを指定することは、 直接引数
+であることを示しています。 もちろん、 命令ストリーム引数は、 スタック効
+果の '--' の左側にのみ出現できます。 複数の命令ストリーム引数がある場合
+、 (あなたの直観どおり)左端が最初の引数になります。
 
 * Menu:
 
-* Explicit stack access::    If the C code accesses a stack pointer
-* C Code Macros::            Macros recognized by Vmgen
-* C Code restrictions::      Vmgen makes assumptions about C code
+* Explicit stack access::    C言語コードからスタック・ポインターへアクセス
+* C Code Macros::            Vmgen が認識するマクロ
+* C Code restrictions::      Vmgen が仮定するC言語コード
 * Stack growth direction::   is configurable per stack
 
 
@@ -2163,7 +2164,7 @@ Index
 * advantages of vmgen:                   Why interpreters?.   (line   6)
 * assumptions about C code:              C Code restrictions. (line   6)
 * basic block, VM level:                 C Code Macros.       (line   6)
-* basic type of a stack:                 Simple instructions. (line  37)
+* basic type of a stack:                 Simple instructions. (line  38)
 * BB_BOUNDARY in profiling:              VM profiler.         (line  59)
 * branch instruction, VM:                Front end and VM interpreter.
                                                               (line  10)
@@ -2220,7 +2221,7 @@ Index
 * instruction pointer definition:        VM engine.           (line 123)
 * instruction pointer, access:           C Code restrictions. (line   6)
 * instruction stream:                    Data handling.       (line  27)
-* instruction stream <1>:                Simple instructions. (line  63)
+* instruction stream <1>:                Simple instructions. (line  65)
 * instruction stream, basic type:        VM engine.           (line 104)
 * instruction table:                     VM instruction table.
                                                               (line   6)
@@ -2248,7 +2249,7 @@ Index
                                                               (line   6)
 * prefix for this combination must be defined earlier error: Error messages.
                                                               (line  13)
-* prefix, stack:                         Simple instructions. (line  45)
+* prefix, stack:                         Simple instructions. (line  46)
 * prefix, type:                          Simple instructions. (line  22)
 * prefixes of superinstructions:         Superinstructions.   (line  24)
 * profile.c:                             VM profiler.         (line   6)
@@ -2268,7 +2269,7 @@ Index
 * speed of interpreters:                 Why interpreters?.   (line  17)
 * stack access, explicit:                Explicit stack access.
                                                               (line   6)
-* stack basic type:                      Simple instructions. (line  37)
+* stack basic type:                      Simple instructions. (line  38)
 * stack caching:                         VM engine.           (line 136)
 * stack caching, restriction on C code:  C Code restrictions. (line  14)
 * stack definition:                      Simple instructions. (line  33)
@@ -2281,7 +2282,7 @@ Index
                                                               (line   6)
 * stack pointer definition:              VM engine.           (line 123)
 * stack pointer, access:                 C Code restrictions. (line   6)
-* stack prefix:                          Simple instructions. (line  45)
+* stack prefix:                          Simple instructions. (line  46)
 * stack stores, optimization:            Store Optimization.  (line   6)
 * stack-access-transform:                Stack growth direction.
                                                               (line   6)
@@ -2311,7 +2312,7 @@ Index
 * tracing VM code:                       VM engine.           (line  22)
 * type cast macro:                       VM engine.           (line  93)
 * type casting between floats and integers: VM engine.        (line 108)
-* type of a stack, basic:                Simple instructions. (line  37)
+* type of a stack, basic:                Simple instructions. (line  38)
 * type prefix:                           Simple instructions. (line  22)
 * unions example:                        Example overview.    (line  16)
 * unions in type cast macros:            VM engine.           (line 108)
@@ -2347,43 +2348,43 @@ Index
 
 Tag Table:
 Node: Top1143
-Node: Introduction4044
-Node: Why interpreters?9337
-Node: Concepts10597
-Node: Front end and VM interpreter10929
-Node: Data handling13346
-Node: Dispatch15605
-Node: Invoking Vmgen17881
-Node: Example18992
-Node: Example overview19187
-Node: Using profiling to create superinstructions22605
-Node: Input File Format24924
-Node: Input File Grammar25470
-Node: Eval escapes28708
-Node: Simple instructions30883
-Node: Explicit stack access34049
-Node: C Code Macros36345
-Node: C Code restrictions38540
-Node: Stack growth direction40956
-Node: Superinstructions42108
-Node: Store Optimization44426
-Node: Register Machines46296
-Node: Error messages48184
-Node: Using the generated code50260
-Node: VM engine51105
-Node: VM instruction table59737
-Node: VM code generation61584
-Node: Peephole optimization64341
-Node: VM disassembler65789
-Node: VM profiler67068
-Node: Hints70714
-Node: Floating point70877
-Node: The future72710
-Node: Changes73827
-Node: Contact75387
-Node: Copying This Manual75849
-Node: GNU Free Documentation License76079
-Node: Index98496
+Node: Introduction4078
+Node: Why interpreters?9371
+Node: Concepts10631
+Node: Front end and VM interpreter10963
+Node: Data handling13380
+Node: Dispatch15639
+Node: Invoking Vmgen17915
+Node: Example19026
+Node: Example overview19221
+Node: Using profiling to create superinstructions22639
+Node: Input File Format24958
+Node: Input File Grammar25504
+Node: Eval escapes28742
+Node: Simple instructions30917
+Node: Explicit stack access35206
+Node: C Code Macros37502
+Node: C Code restrictions39697
+Node: Stack growth direction42113
+Node: Superinstructions43265
+Node: Store Optimization45583
+Node: Register Machines47453
+Node: Error messages49341
+Node: Using the generated code51417
+Node: VM engine52262
+Node: VM instruction table60894
+Node: VM code generation62741
+Node: Peephole optimization65498
+Node: VM disassembler66946
+Node: VM profiler68225
+Node: Hints71871
+Node: Floating point72034
+Node: The future73867
+Node: Changes74984
+Node: Contact76544
+Node: Copying This Manual77006
+Node: GNU Free Documentation License77236
+Node: Index99653
 
 End Tag Table
 

@@ -111,9 +111,9 @@ Simple instructions
 
 
 
-* Explicit stack access::    If the C code accesses a stack pointer
-* C Code Macros::            Macros recognized by Vmgen
-* C Code restrictions::      Vmgen makes assumptions about C code
+* Explicit stack access::    C言語コードからスタック・ポインターへアクセス
+* C Code Macros::            Vmgen が認識するマクロ
+* C Code restrictions::      Vmgen が仮定するC言語コード
 * Stack growth direction::   is configurable per stack
 
 Using the generated code
@@ -702,45 +702,40 @@ include-skipped-insts ( -- addr )
 @cindex simple VM instruction
 @cindex instruction, simple VM
 
-We will use the following simple VM instruction description as example:
+例として、 以下の簡単な VM 命令の記述を使用します:
 
 @example
 sub ( i1 i2 -- i )
 i = i1-i2;
 @end example
 
-The first line specifies the name of the VM instruction (@code{sub}) and its
-stack effect (@code{i1 i2 -- i}).  The rest of the description is just plain
-C code.
+最初の行には、 VM 命令の名前 (@code{sub}) とそのスタック効果 (@code{i1 i2 -- i}) を指定します。
+最初の行以外の記述の残りの部分は単なる C 言語コードです。
 
 @cindex stack effect
 @cindex effect, stack
-The stack effect specifies that @code{sub} pulls two integers from the data
-stack and puts them in the C variables @code{i1} and @code{i2} (with the
-rightmost item (@code{i2}) taken from the top of stack; intuition: if you
-push @code{i1}, then @code{i2} on the stack, the resulting stack picture is
-@code{i1 i2}) and later pushes one integer (@code{i}) on the data stack (the
-rightmost item is on the top afterwards).
+スタック効果では、 @code{sub} がデータ・スタックから 2 つの整数を取得し、 それらを C 言語の変数 @code{i1} と
+@code{i2} に格納することを指定します(右端の項目 (@code{i2}) が、 スタックのトップです: @code{i1}
+をスタックにプッシュし、 次に @code{i2} をスタックにプッシュすると、 結果のスタック状態は @code{i1 i2} になります)。
+そしてその後、 その後 1 つの整数 (@code{i}) をスタックにプッシュします(右端の項目がスタックの一番上になります)。
 
 @cindex prefix, type
 @cindex type prefix
 @cindex default stack of a type prefix
-How do we know the type and stack of the stack items? Vmgen uses prefixes,
-similar to Fortran; in contrast to Fortran, you have to define the prefix
-first:
+スタック項目の型とスタックを知るにはどうすればよいでしょうか?  Vmgen は、 Fortran と同様にプレフィックスを使用します。 Fortran
+とは対照的に、 あなたは最初にプレフィックスを定義する必要があります:
 
 @example
 \E s" Cell"   single data-stack type-prefix i
 @end example
 
-This defines the prefix @code{i} to refer to the type @code{Cell} (defined
-as @code{long} in @file{mini.h}) and, by default, to the @code{data-stack}.
-It also specifies that this type takes one stack item (@code{single}).  The
-type prefix is part of the variable name.
+これは、 型 @code{Cell} (@file{mini.h} では @code{long} として定義)を参照するプレフィックス @code{i}
+を定義し、 デフォルトでは @code{data-stack} を参照します。 また、 この型が 1
+つのスタック項目(@code{single})を占めることも指定します。  型プレフィックスは変数名の一部です。
 
 @cindex stack definition
 @cindex defining a stack
-Before we can use @code{data-stack} in this way, we have to define it:
+@code{data-stack} を使用する前に、 この方法で @code{data-stack} を定義する必要があります:
 
 @example
 \E stack data-stack sp Cell
@@ -750,50 +745,41 @@ Before we can use @code{data-stack} in this way, we have to define it:
 @cindex stack basic type
 @cindex basic type of a stack
 @cindex type of a stack, basic
-This line defines the stack @code{data-stack}, which uses the stack pointer
-@code{sp}, and each item has the basic type @code{Cell}; other types have to
-fit into one or two @code{Cell}s (depending on whether the type is
-@code{single} or @code{double} wide), and are cast from and to Cells on
-accessing the @code{data-stack} with type cast macros (@pxref{VM engine}).
-By default, stacks grow towards lower addresses in Vmgen-erated interpreters
-(@pxref{Stack growth direction}).
+この行は、 スタック・ポインター @code{sp} を使用するスタック @code{data-stack} を定義し、 各項目の基本タイプは
+@code{Cell} です。 他の型は 1 つまたは 2 つの @code{Cell} に収まる必要があり(型の幅が @code{single} か
+@code{double} かによって異なります)、 型キャスト・マクロ(@pxref{VM engine})を使用して
+@code{data-stack} にアクセスするときに Cell との間でキャストされます。 Vmgen 製インタープリターではスタックは、
+デフォルトでは、 より低いアドレスに向かって伸長します(@pxref{Stack growth direction})。
 
 @cindex stack prefix
 @cindex prefix, stack
-We can override the default stack of a stack item by using a stack prefix.
-E.g., consider the following instruction:
+スタック・プレフィックスを使用して、 スタック項目のデフォルト・スタックをオーバーライドできます。 たとえば、 以下の命令について考えてみましょう:
 
 @example
 lit ( #i -- i )
 @end example
 
-The VM instruction @code{lit} takes the item @code{i} from the instruction
-stream (indicated by the prefix @code{#}), and pushes it on the (default)
-data stack.  The stack prefix is not part of the variable name.  Stack
-prefixes are defined like this:
+VM 命令 @code{lit} は、 命令ストリームから(プレフィックス @code{#} で示される) 項目 @code{i} を取得し、
+それを(デフォルトの)データ・スタックにプッシュします。  スタック・プレフィックスは変数名の一部ではありません。
+スタック・プレフィックスは以下のように定義されます:
 
 @example
 \E inst-stream stack-prefix #
 \E data-stack  stack-prefix S:
 @end example
 
-This definition defines that the stack prefix @code{#} specifies the
-``stack'' @code{inst-stream}.  Since the instruction stream behaves a little
-differently than an ordinary stack, it is predefined, and you do not need to
-define it.
+この定義は、 スタック・プレフィックス @code{#} が「スタック」 @code{inst-stream} を指定することを定義します。
+命令ストリームは通常のスタックとは振る舞いが少し異なるため、 事前に定義されており、 あなたが定義する必要はありません。
 
 @cindex instruction stream
-The instruction stream contains instructions and their immediate arguments,
-so specifying that an argument comes from the instruction stream indicates
-an immediate argument.  Of course, instruction stream arguments can only
-appear to the left of @code{--} in the stack effect.  If there are multiple
-instruction stream arguments, the leftmost is the first one (just as the
-intuition suggests).
+命令ストリームには命令とその直接引数(immediate arguments)が含まれるため、
+引数が命令ストリームからのものであることを指定することは、 直接引数であることを示しています。  もちろん、 命令ストリーム引数は、 スタック効果の
+@code{--} の左側にのみ出現できます。  複数の命令ストリーム引数がある場合、 (あなたの直観どおり)左端が最初の引数になります。
 
 @menu
-* Explicit stack access::    If the C code accesses a stack pointer
-* C Code Macros::            Macros recognized by Vmgen
-* C Code restrictions::      Vmgen makes assumptions about C code
+* Explicit stack access::    C言語コードからスタック・ポインターへアクセス
+* C Code Macros::            Vmgen が認識するマクロ
+* C Code restrictions::      Vmgen が仮定するC言語コード
 * Stack growth direction::   is configurable per stack
 @end menu
 

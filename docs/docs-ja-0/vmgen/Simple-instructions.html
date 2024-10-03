@@ -68,45 +68,40 @@ Next: <a href="Superinstructions.html" accesskey="n" rel="next">Superinstruction
 <span id="index-simple-VM-instruction"></span>
 <span id="index-instruction_002c-simple-VM"></span>
 
-<p>We will use the following simple VM instruction description as example:
+<p>例として、 以下の簡単な VM 命令の記述を使用します:
 </p>
 <div class="example">
 <pre class="example">sub ( i1 i2 -- i )
 i = i1-i2;
 </pre></div>
 
-<p>The first line specifies the name of the VM instruction (<code>sub</code>) and its
-stack effect (<code>i1 i2 -- i</code>).  The rest of the description is just plain
-C code.
+<p>最初の行には、 VM 命令の名前 (<code>sub</code>) とそのスタック効果 (<code>i1 i2 -- i</code>) を指定します。
+最初の行以外の記述の残りの部分は単なる C 言語コードです。
 </p>
 <span id="index-stack-effect"></span>
 <span id="index-effect_002c-stack"></span>
-<p>The stack effect specifies that <code>sub</code> pulls two integers from the data
-stack and puts them in the C variables <code>i1</code> and <code>i2</code> (with the
-rightmost item (<code>i2</code>) taken from the top of stack; intuition: if you
-push <code>i1</code>, then <code>i2</code> on the stack, the resulting stack picture is
-<code>i1 i2</code>) and later pushes one integer (<code>i</code>) on the data stack (the
-rightmost item is on the top afterwards).
+<p>スタック効果では、 <code>sub</code> がデータ・スタックから 2 つの整数を取得し、 それらを C 言語の変数 <code>i1</code> と
+<code>i2</code> に格納することを指定します(右端の項目 (<code>i2</code>) が、 スタックのトップです: <code>i1</code>
+をスタックにプッシュし、 次に <code>i2</code> をスタックにプッシュすると、 結果のスタック状態は <code>i1 i2</code> になります)。
+そしてその後、 その後 1 つの整数 (<code>i</code>) をスタックにプッシュします(右端の項目がスタックの一番上になります)。
 </p>
 <span id="index-prefix_002c-type"></span>
 <span id="index-type-prefix"></span>
 <span id="index-default-stack-of-a-type-prefix"></span>
-<p>How do we know the type and stack of the stack items? Vmgen uses prefixes,
-similar to Fortran; in contrast to Fortran, you have to define the prefix
-first:
+<p>スタック項目の型とスタックを知るにはどうすればよいでしょうか?  Vmgen は、 Fortran と同様にプレフィックスを使用します。 Fortran
+とは対照的に、 あなたは最初にプレフィックスを定義する必要があります:
 </p>
 <div class="example">
 <pre class="example">\E s&quot; Cell&quot;   single data-stack type-prefix i
 </pre></div>
 
-<p>This defines the prefix <code>i</code> to refer to the type <code>Cell</code> (defined
-as <code>long</code> in <samp>mini.h</samp>) and, by default, to the <code>data-stack</code>.
-It also specifies that this type takes one stack item (<code>single</code>).  The
-type prefix is part of the variable name.
+<p>これは、 型 <code>Cell</code> (<samp>mini.h</samp> では <code>long</code> として定義)を参照するプレフィックス <code>i</code>
+を定義し、 デフォルトでは <code>data-stack</code> を参照します。 また、 この型が 1
+つのスタック項目(<code>single</code>)を占めることも指定します。  型プレフィックスは変数名の一部です。
 </p>
 <span id="index-stack-definition"></span>
 <span id="index-defining-a-stack"></span>
-<p>Before we can use <code>data-stack</code> in this way, we have to define it:
+<p><code>data-stack</code> を使用する前に、 この方法で <code>data-stack</code> を定義する必要があります:
 </p>
 <div class="example">
 <pre class="example">\E stack data-stack sp Cell
@@ -115,45 +110,36 @@ type prefix is part of the variable name.
 <span id="index-stack-basic-type"></span>
 <span id="index-basic-type-of-a-stack"></span>
 <span id="index-type-of-a-stack_002c-basic"></span>
-<p>This line defines the stack <code>data-stack</code>, which uses the stack pointer
-<code>sp</code>, and each item has the basic type <code>Cell</code>; other types have to
-fit into one or two <code>Cell</code>s (depending on whether the type is
-<code>single</code> or <code>double</code> wide), and are cast from and to Cells on
-accessing the <code>data-stack</code> with type cast macros (see <a href="VM-engine.html">VM engine</a>).
-By default, stacks grow towards lower addresses in Vmgen-erated interpreters
-(see <a href="Stack-growth-direction.html">Stack growth direction</a>).
+<p>この行は、 スタック・ポインター <code>sp</code> を使用するスタック <code>data-stack</code> を定義し、 各項目の基本タイプは
+<code>Cell</code> です。 他の型は 1 つまたは 2 つの <code>Cell</code> に収まる必要があり(型の幅が <code>single</code> か
+<code>double</code> かによって異なります)、 型キャスト・マクロ(see <a href="VM-engine.html">VM engine</a>)を使用して
+<code>data-stack</code> にアクセスするときに Cell との間でキャストされます。 Vmgen 製インタープリターではスタックは、
+デフォルトでは、 より低いアドレスに向かって伸長します(see <a href="Stack-growth-direction.html">Stack growth direction</a>)。
 </p>
 <span id="index-stack-prefix"></span>
 <span id="index-prefix_002c-stack"></span>
-<p>We can override the default stack of a stack item by using a stack prefix.
-E.g., consider the following instruction:
+<p>スタック・プレフィックスを使用して、 スタック項目のデフォルト・スタックをオーバーライドできます。 たとえば、 以下の命令について考えてみましょう:
 </p>
 <div class="example">
 <pre class="example">lit ( #i -- i )
 </pre></div>
 
-<p>The VM instruction <code>lit</code> takes the item <code>i</code> from the instruction
-stream (indicated by the prefix <code>#</code>), and pushes it on the (default)
-data stack.  The stack prefix is not part of the variable name.  Stack
-prefixes are defined like this:
+<p>VM 命令 <code>lit</code> は、 命令ストリームから(プレフィックス <code>#</code> で示される) 項目 <code>i</code> を取得し、
+それを(デフォルトの)データ・スタックにプッシュします。  スタック・プレフィックスは変数名の一部ではありません。
+スタック・プレフィックスは以下のように定義されます:
 </p>
 <div class="example">
 <pre class="example">\E inst-stream stack-prefix #
 \E data-stack  stack-prefix S:
 </pre></div>
 
-<p>This definition defines that the stack prefix <code>#</code> specifies the
-&ldquo;stack&rdquo; <code>inst-stream</code>.  Since the instruction stream behaves a little
-differently than an ordinary stack, it is predefined, and you do not need to
-define it.
+<p>この定義は、 スタック・プレフィックス <code>#</code> が「スタック」 <code>inst-stream</code> を指定することを定義します。
+命令ストリームは通常のスタックとは振る舞いが少し異なるため、 事前に定義されており、 あなたが定義する必要はありません。
 </p>
 <span id="index-instruction-stream-1"></span>
-<p>The instruction stream contains instructions and their immediate arguments,
-so specifying that an argument comes from the instruction stream indicates
-an immediate argument.  Of course, instruction stream arguments can only
-appear to the left of <code>--</code> in the stack effect.  If there are multiple
-instruction stream arguments, the leftmost is the first one (just as the
-intuition suggests).
+<p>命令ストリームには命令とその直接引数(immediate arguments)が含まれるため、
+引数が命令ストリームからのものであることを指定することは、 直接引数であることを示しています。  もちろん、 命令ストリーム引数は、 スタック効果の
+<code>--</code> の左側にのみ出現できます。  複数の命令ストリーム引数がある場合、 (あなたの直観どおり)左端が最初の引数になります。
 </p>
 
 <ul class="section-toc">
