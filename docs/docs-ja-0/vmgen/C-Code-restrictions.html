@@ -72,53 +72,40 @@ Next: <a href="Stack-growth-direction.html" accesskey="n" rel="next">Stack growt
 <span id="index-accessing-stack-_0028pointer_0029"></span>
 <span id="index-stack-pointer_002c-access"></span>
 <span id="index-instruction-pointer_002c-access"></span>
-<p>Vmgen generates code and performs some optimizations under the assumption
-that the user-supplied C code does not access the stack pointers or stack
-items, and that accesses to the instruction pointer only occur through
-special macros.  In general you should heed these restrictions.  However, if
-you need to break these restrictions, read the following.
+<p>Vmgen は、ユーザー指定の C 言語コードがスタック・ポインターやスタック項目にアクセスせず、
+命令ポインターへのアクセスは特殊なマクロを介してのみ発生するという想定に基づいて、 コードを生成し、 いくつかの最適化を実行します。  一般に、
+あなたはこれらの制限に注意する必要があります。  ただし、 あなたがこれらの制限を破る必要がある場合は、 以下をお読みください。
 </p>
-<p>Accessing a stack or stack pointer directly can be a problem for several
-reasons: 
+<p>スタックまたはスタック・ポインターに直接アクセスすると、 いくつかの理由で問題が発生する可能性があります: 
 <span id="index-stack-caching_002c-restriction-on-C-code"></span>
 <span id="index-superinstructions_002c-restrictions-on-components"></span>
 </p>
 <ul>
-<li> Vmgen optionally supports caching the top-of-stack item in a local variable
-(that is allocated to a register).  This is the most frequent source of
-trouble.  You can deal with it either by not using top-of-stack caching
-(slowdown factor 1-1.4, depending on machine), or by inserting flushing code
-(e.g., &lsquo;<samp>IF_spTOS(sp[...] = spTOS);</samp>&rsquo;) at the start and reloading code
-(e.g., &lsquo;<samp>IF_spTOS(spTOS = sp[0])</samp>&rsquo;) at the end of problematic C code.
-Vmgen inserts a stack pointer update before the start of the user-supplied C
-code, so the flushing code has to use an index that corrects for that.  In
-the future, this flushing may be done automatically by mentioning a special
-string in the C code.
+<li> Vmgen はオプションで、 スタック・トップの項目をローカル変数(レジスターに割り当てられる)にキャッシュすることをサポートします。
+これは最も頻繁に起こるトラブルの原因です。  これに対処するには、 スタック・トップ・キャッシュを使用しない(マシンによって異なるが、 減速係数 1 ～
+1.4)か、 あるいは、 問題のある C 言語コードの先頭にフラッシュ・コード(たとえば &lsquo;<samp>IF_spTOS(sp[...] =
+spTOS);</samp>&rsquo;)を挿入し、 最後にコードをリロードする(たとえば &lsquo;<samp>IF_spTOS(spTOS =
+sp[0])</samp>&rsquo;)かのいずれかで対処できます。  Vmgen は、 ユーザー指定の C 言語コードの開始前にスタック・ポインターの更新を挿入するため、
+フラッシュ・コードではそれを修正するインデックスを使用する必要があります。  将来的には、 C 言語コードで特別な文字列を指定することによって、
+このフラッシュが自動的に行われるようになる可能性があります。
 
-</li><li> The Vmgen-erated code loads the stack items from stack-pointer-indexed
-memory into variables before the user-supplied C code, and stores them from
-variables to stack-pointer-indexed memory afterwards.  If you do any writes
-to the stack through its stack pointer in your C code, it will not affect
-the variables, and your write may be overwritten by the stores after the C
-code.  Similarly, a read from a stack using a stack pointer will not reflect
-computations of stack items in the same VM instruction.
+</li><li> Vmgen で生成されたコードは、 ユーザーが指定した C
+言語コードの前にスタック項目をスタック・ポインターでインデックス付けされたメモリーから変数にロードし、 その後、
+変数からスタック・ポインターでインデックス付けされたメモリーに格納します。  C
+言語コードでスタック・ポインターを介してスタックに書き込みを行った場合、 変数には影響せず、 その書き込みは C
+言語コードの格納によって上書きされる可能性があります。  同様に、 スタック・ポインターを使用したスタックからの読み取りは、 同じ VM
+命令内のスタック項目の計算を反映しません。
 
-</li><li> Superinstructions keep stack items in variables across the whole
-superinstruction.  So you should not include VM instructions, that access a
-stack or stack pointer, as components of superinstructions (see <a href="VM-profiler.html">VM profiler</a>).
+</li><li> スーパー命令(superinstructions)は、 スーパー命令全体にわたってスタック項目を変数に保持します。  したがって、
+スタックまたはスタック・ポインターにアクセスする VM 命令をスーパー命令のコンポーネントとして含めるべきではありません(see <a href="VM-profiler.html">VM profiler</a>)。
 
 </li></ul>
 
-<p>You should access the instruction pointer only through its special macros
-(&lsquo;<samp>IP</samp>&rsquo;, &lsquo;<samp>SET_IP</samp>&rsquo;, &lsquo;<samp>IPTOS</samp>&rsquo;); this ensure that these macros can
-be implemented in several ways for best performance.  &lsquo;<samp>IP</samp>&rsquo; points to
-the next instruction, and &lsquo;<samp>IPTOS</samp>&rsquo; is its contents.
+<p>命令ポインターには、 そのための特別なマクロ(&lsquo;<samp>IP</samp>&rsquo;, &lsquo;<samp>SET_IP</samp>&rsquo;,
+&lsquo;<samp>IPTOS</samp>&rsquo;)を介してのみアクセスする必要があります。 これにより、
+これらのマクロをいくつかの方法で実装して最高のパフォーマンスを実現できるようになります。  &lsquo;<samp>IP</samp>&rsquo; は次の命令を指していて、
+&lsquo;<samp>IPTOS</samp>&rsquo; はその内容です。
 </p>
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="Stack-growth-direction.html">Stack growth direction</a>, Previous: <a href="C-Code-Macros.html">C Code Macros</a>, Up: <a href="Simple-instructions.html">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

@@ -68,27 +68,23 @@ Next: <a href="C-Code-restrictions.html" accesskey="n" rel="next">C Code restric
 <span id="index-macros-recognized-by-Vmgen"></span>
 <span id="index-basic-block_002c-VM-level"></span>
 
-<p>Vmgen recognizes the following strings in the C code part of simple
-instructions:
+<p>Vmgen は、 単純な命令の C 言語コード部分にある以下の文字列を認識します:
 </p>
 <dl compact="compact">
 <dt id='index-SET_005fIP'><span><code>SET_IP</code><a href='#index-SET_005fIP' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>As far as Vmgen is concerned, a VM instruction containing this ends a VM
-basic block (used in profiling to delimit profiled sequences).  On the C
-level, this also sets the instruction pointer.
+<dd><p>Vmgen に関する限り、 これを含む VM 命令は、 (プロファイルされたシーケンスを区切るためにプロファイリングで使用される、) VM
+基本ブロックを終了します。 C 言語のレベルでは、 これにより命令ポインターも設定されます。
 </p>
 </dd>
 <dt id='index-SUPER_005fEND'><span><code>SUPER_END</code><a href='#index-SUPER_005fEND' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>This ends a basic block (for profiling), even if the instruction contains no
-<code>SET_IP</code>.
+<dd><p>これにより、 命令に <code>SET_IP</code> が含まれていない場合でも、 (プロファイリング用の)基本ブロックが終了します。
 </p>
 </dd>
 <dt id='index-INST_005fTAIL_003b'><span><code>INST_TAIL;</code><a href='#index-INST_005fTAIL_003b' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>Vmgen replaces &lsquo;<samp>INST_TAIL;</samp>&rsquo; with code for ending a VM instruction and
-dispatching the next VM instruction.  Even without a &lsquo;<samp>INST_TAIL;</samp>&rsquo; this
-happens automatically when control reaches the end of the C code.  If you
-want to have this in the middle of the C code, you need to use
-&lsquo;<samp>INST_TAIL;</samp>&rsquo;.  A typical example is a conditional VM branch:
+<dd><p>Vmgen は、 &lsquo;<samp>INST_TAIL;</samp>&rsquo; を、 VM 命令を終了して次の VM 命令をディスパッチするためのコードに置き換えます。
+&lsquo;<samp>INST_TAIL;</samp>&rsquo; がなくても、 制御が C g言語コードの最後に到達すると、 これは自動的に行われます。 これを C
+言語コードの途中に置きたい場合に &lsquo;<samp>INST_TAIL;</samp>&rsquo; を使用する必要があります。  典型的な例は、 以下のような条件付き VM
+分岐です:
 </p>
 <div class="example">
 <pre class="example">if (branch_condition) {
@@ -97,17 +93,14 @@ want to have this in the middle of the C code, you need to use
 /* implicit tail follows here */
 </pre></div>
 
-<p>In this example, &lsquo;<samp>INST_TAIL;</samp>&rsquo; is not strictly necessary, because there
-is another one implicitly after the if-statement, but using it improves
-branch prediction accuracy slightly and allows other optimizations.
+<p>この例では、 if ステートメントの後に &lsquo;<samp>INST_TAIL;</samp>&rsquo; が暗黙的に存在するため、 厳密には &lsquo;<samp>INST_TAIL;</samp>&rsquo;
+は必要ありませんが、 これを使用すると分岐予測の精度がわずかに向上し、 他の最適化が可能になります。
 </p>
 </dd>
 <dt id='index-SUPER_005fCONTINUE'><span><code>SUPER_CONTINUE</code><a href='#index-SUPER_005fCONTINUE' class='copiable-anchor'> &para;</a></span></dt>
-<dd><p>This indicates that the implicit tail at the end of the VM instruction
-dispatches the sequentially next VM instruction even if there is a
-<code>SET_IP</code> in the VM instruction.  This enables an optimization that is
-not yet implemented in the vmgen-ex code (but in Gforth).  The typical
-application is in conditional VM branches:
+<dd><p>これは、 VM 命令に <code>SET_IP</code> が含まれている場合でも、 VM 命令の終わりの暗黙の末尾に連続して次の VM
+命令をディスパッチすることを示します。 これにより、 vmgen-ex コードにはまだ実装されていない(しかし
+Gforthには実装されている)最適化が可能になります。  典型的なアプリケーションは以下のような条件付き VM 分岐内にあります:
 </p>
 <div class="example">
 <pre class="example">if (branch_condition) {
@@ -120,19 +113,12 @@ SUPER_CONTINUE;
 </dd>
 </dl>
 
-<p>Note that Vmgen is not smart about C-level tokenization, comments, strings,
-or conditional compilation, so it will interpret even a commented-out
-SUPER_END as ending a basic block (or, e.g., &lsquo;<samp>RESET_IP;</samp>&rsquo; as
-&lsquo;<samp>SET_IP;</samp>&rsquo;).  Conversely, Vmgen requires the literal presence of these
-strings; Vmgen will not see them if they are hiding in a C preprocessor
-macro.
+<p>注意: Vmgen は C 言語レベルのトークン化またはコメントまたは文字列または条件付きコンパイルについては賢明ではないため、 コメント・アウトされた
+SUPER_END であっても基本ブロックの終了として(または、 例えば、 &lsquo;<samp>RESET_IP;</samp>&rsquo; を &lsquo;<samp>SET_IP;</samp>&rsquo;
+として)解釈されることに注意してください。 逆に、 Vmgen ではこれらの文字列が文字通り存在する必要があります。 C
+言語のプリプロセッサ・マクロ内に隠れている場合、 Vmgen はそれらを認識できません。
 </p>
 
-</div>
-<hr>
-<div class="header">
-<p>
-Next: <a href="C-Code-restrictions.html">C Code restrictions</a>, Previous: <a href="Explicit-stack-access.html">Explicit stack access</a>, Up: <a href="Simple-instructions.html">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
