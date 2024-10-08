@@ -23,10 +23,10 @@ DST_FILES = $(addprefix $(DST_DIR)/,$(SRC_PACKAGE))
 # $(warning DST_FILES = $(DST_FILES))
 
 $(PO_FILES): $(PO_DIR)/%$(PO_EXT) : $(SRC_DIR)/%$(TEXI_EXT)
-	po4a-updatepo -M utf8 -f texinfo -m $< -p $@
+	po4a-updatepo --format texinfo --master-charset utf8 --master $< --po $@
 
 $(DST_FILES): $(DST_DIR)/%$(TEXI_EXT) : $(PO_DIR)/%$(PO_EXT)
-	po4a-translate -f texinfo -keep 0 -M utf8 -m $(subst $(DST_DIR),$(SRC_DIR),$(@:$(PO_EXT)=$(TEXI_EXT))) -p $< -l $@
+	po4a-translate --format texinfo --master-charset utf8 --keep 0 --master $(subst $(DST_DIR),$(SRC_DIR),$(@:$(PO_EXT)=$(TEXI_EXT))) --po $< --localized $@
 
 
 # doc/Makefile に 追加した場合に反映させる。
