@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Locals-programming-style.html" rel="prev" title="Locals programming style">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,134 +50,134 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsubsection" id="Locals-implementation">
-<div class="header">
+<div class="subsubsection-level-extent" id="Locals-implementation">
+<div class="nav-panel">
 <p>
 Next: <a href="Closures.html" accesskey="n" rel="next">Closures</a>, Previous: <a href="Locals-programming-style.html" accesskey="p" rel="prev">Locals programming style</a>, Up: <a href="Gforth-locals.html" accesskey="u" rel="up">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Locals-implementation-1"></span><h4 class="subsubsection">6.22.1.5 Locals implementation</h4>
-<span id="index-locals-implementation"></span>
-<span id="index-implementation-of-locals"></span>
+<h4 class="subsubsection" id="Locals-implementation-1"><span>6.22.1.5 Locals implementation<a class="copiable-link" href="#Locals-implementation-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-locals-implementation"></a>
+<a class="index-entry-id" id="index-implementation-of-locals"></a>
 
-<span id="index-locals-stack-1"></span>
+<a class="index-entry-id" id="index-locals-stack-1"></a>
 <p>Gforth は追加のローカル変数用スタック(ローカル・スタック)を使用します。 この最も説得力のある理由は、
 リターン・スタックが浮動小数点数に整列されていないことです。 この追加のスタックを使用すると、
 リターン・スタックをローカル変数用スタックとして使用する場合の問題や制限も解消されます。 他のスタックと同様に、
 ローカル・スタックは下位アドレスに向かって成長します。 いくつかのプリミティブにより効率的な実装になっています。 あなたは、
-これらを直接使用するべきではありませんが、 <code>see</code> の出力には表示されるため、 以下に文書化しておきます:
+これらを直接使用するべきではありませんが、 <code class="code">see</code> の出力には表示されるため、 以下に文書化しておきます:
 </p>
-<span id="index-_0040localn-_0028--noffset-_002d_002d-w--_0029-gforth_002dinternal"></span>
-<span id="index-_0040localn"></span>
-<span id="index-_0040localn-1"></span>
+<a class="index-entry-id" id="index-_0040localn-_0028-noffset-_002d_002d-w-_0029-gforth_002dinternal"></a>
+<a class="index-entry-id" id="index-_0040localn"></a>
+<a class="index-entry-id" id="index-_0040localn-1"></a>
 <div class="format">
-<pre class="format"><code>@localn</code> ( <i>noffset &ndash; w </i>) gforth-internal &ldquo;fetch-local-n&rdquo;
-\ 訳注: ローカル・スタックのTOSを0として <i>noffset</i> 番目のコピーをデータ・スタックに積む
+<pre class="format-preformatted"><code class="code">@localn</code> ( <i class="i">noffset &ndash; w </i>) gforth-internal &ldquo;fetch-local-n&rdquo;
+\ 訳注: ローカル・スタックのTOSを0として <i class="i">noffset</i> 番目のコピーをデータ・スタックに積む
 </pre></div>
 
-<span id="index-f_0040localn-_0028--noffset-_002d_002d-r--_0029-gforth_002d1_002e0"></span>
-<span id="index-f_0040localn"></span>
-<span id="index-f_0040localn-1"></span>
+<a class="index-entry-id" id="index-f_0040localn-_0028-noffset-_002d_002d-r-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-f_0040localn"></a>
+<a class="index-entry-id" id="index-f_0040localn-1"></a>
 <div class="format">
-<pre class="format"><code>f@localn</code> ( <i>noffset &ndash; r </i>) gforth-1.0 &ldquo;f-fetch-local-n&rdquo;
+<pre class="format-preformatted"><code class="code">f@localn</code> ( <i class="i">noffset &ndash; r </i>) gforth-1.0 &ldquo;f-fetch-local-n&rdquo;
 </pre></div>
 
-<span id="index-lp_0040-_0028--_002d_002d-c_002daddr--_0029-gforth_002d0_002e2-1"></span>
-<span id="index-lp_0040-1"></span>
-<span id="index-lp_0040-3"></span>
+<a class="index-entry-id" id="index-lp_0040-_0028-_002d_002d-c_002daddr-_0029-gforth_002d0_002e2-1"></a>
+<a class="index-entry-id" id="index-lp_0040-1"></a>
+<a class="index-entry-id" id="index-lp_0040-3"></a>
 <div class="format">
-<pre class="format"><code>lp@</code> ( <i>&ndash; c-addr </i>) gforth-0.2 &ldquo;lp-fetch&rdquo;
+<pre class="format-preformatted"><code class="code">lp@</code> ( <i class="i">&ndash; c-addr </i>) gforth-0.2 &ldquo;lp-fetch&rdquo;
 </pre></div>
-<p><i>C_addr</i> は、 ローカル・スタック・ポインターの現在の値です。
+<p><i class="i">C_addr</i> は、 ローカル・スタック・ポインターの現在の値です。
 </p>
 <p>doc-lp+!#(訳注: まだ説明書いて無いっぽい)
-<span id="index-lp_0021-_0028--c_002daddr-_002d_002d--_0029-gforth_002dinternal-1"></span>
-<span id="index-lp_0021-1"></span>
-<span id="index-lp_0021-3"></span>
+<a class="index-entry-id" id="index-lp_0021-_0028-c_002daddr-_002d_002d-_0029-gforth_002dinternal-1"></a>
+<a class="index-entry-id" id="index-lp_0021-1"></a>
+<a class="index-entry-id" id="index-lp_0021-3"></a>
 </p><div class="format">
-<pre class="format"><code>lp!</code> ( <i>c-addr &ndash; </i>) gforth-internal &ldquo;lp-store&rdquo;
+<pre class="format-preformatted"><code class="code">lp!</code> ( <i class="i">c-addr &ndash; </i>) gforth-internal &ldquo;lp-store&rdquo;
 </pre></div>
 
-<span id="index-_003el-_0028--w-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-_003el"></span>
-<span id="index-_003el-1"></span>
+<a class="index-entry-id" id="index-_003el-_0028-w-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-_003el"></a>
+<a class="index-entry-id" id="index-_003el-1"></a>
 <div class="format">
-<pre class="format"><code>&gt;l</code> ( <i>w &ndash; </i>) gforth-0.2 &ldquo;to-l&rdquo;
+<pre class="format-preformatted"><code class="code">&gt;l</code> ( <i class="i">w &ndash; </i>) gforth-0.2 &ldquo;to-l&rdquo;
 \ 訳注: w をローカル・スタックにプッシュ
 </pre></div>
 
-<span id="index-f_003el-_0028--r-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-f_003el"></span>
-<span id="index-f_003el-1"></span>
+<a class="index-entry-id" id="index-f_003el-_0028-r-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-f_003el"></a>
+<a class="index-entry-id" id="index-f_003el-1"></a>
 <div class="format">
-<pre class="format"><code>f&gt;l</code> ( <i>r &ndash; </i>) gforth-0.2 &ldquo;f-to-l&rdquo;
+<pre class="format-preformatted"><code class="code">f&gt;l</code> ( <i class="i">r &ndash; </i>) gforth-0.2 &ldquo;f-to-l&rdquo;
 </pre></div>
 
 
 
 <p>これらのプリミティブに加えて、 一般的に発生するインライン引数に対するこれらのプリミティブのいくつかの特殊化が、 効率上の理由から提供されています(例:
-<code>0 @localn</code> の特殊化として <code>@local0</code> )。 以下のコンパイル・ワード(compiling words)は、
-適切な特殊バージョン、 または一般バージョンを適切にコンパイルします(訳注: <code>@local0</code> シリーズは、
-<code>@local0</code> ローカル・スタックのTOS(のコピー)をスタックに積む、 <code>@local1</code>
-ローカル・スタックの2nd(のコピー)をスタックに積む、 〜 <code>@local4</code> まである):
+<code class="code">0 @localn</code> の特殊化として <code class="code">@local0</code> )。 以下のコンパイル・ワード(compiling words)は、
+適切な特殊バージョン、 または一般バージョンを適切にコンパイルします(訳注: <code class="code">@local0</code> シリーズは、
+<code class="code">@local0</code> ローカル・スタックのTOS(のコピー)をスタックに積む、 <code class="code">@local1</code>
+ローカル・スタックの2nd(のコピー)をスタックに積む、 〜 <code class="code">@local4</code> まである):
 </p>
 
-<span id="index-compile_002dlp_002b_0021-_0028--n-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-compile_002dlp_002b_0021"></span>
-<span id="index-compile_002dlp_002b_0021-1"></span>
+<a class="index-entry-id" id="index-compile_002dlp_002b_0021-_0028-n-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-compile_002dlp_002b_0021"></a>
+<a class="index-entry-id" id="index-compile_002dlp_002b_0021-1"></a>
 <div class="format">
-<pre class="format"><code>compile-lp+!</code> ( <i>n &ndash;  </i>) gforth-0.2 &ldquo;compile-l-p-plus-store&rdquo;
+<pre class="format-preformatted"><code class="code">compile-lp+!</code> ( <i class="i">n &ndash;  </i>) gforth-0.2 &ldquo;compile-l-p-plus-store&rdquo;
 </pre></div>
 
 
 
-<p><code>?branch-lp+!#</code> のような、 条件分岐と <code>lp+!#</code>
+<p><code class="code">?branch-lp+!#</code> のような、 条件分岐と <code class="code">lp+!#</code>
 の組み合わせ(ローカル・スタック・ポインターは分岐が選択された場合にのみ変更されます)は、 ループの効率と正確性のために提供されています。
 </p>
-<p>ディクショナリー空間内の特別な領域が、 ローカル変数名を保持するために予約されています。 <code>{:</code>
-はディクショナリー・ポインターをこの領域に切り替え、 <code>:}</code> はそれを元に戻し、 ローカル変数の初期化コードを生成します。
-<code>W:</code> などは通常の定義ワードです。 この特別な領域は、 すべてのコロン定義の先頭でクリアされます。
+<p>ディクショナリー空間内の特別な領域が、 ローカル変数名を保持するために予約されています。 <code class="code">{:</code>
+はディクショナリー・ポインターをこの領域に切り替え、 <code class="code">:}</code> はそれを元に戻し、 ローカル変数の初期化コードを生成します。
+<code class="code">W:</code> などは通常の定義ワードです。 この特別な領域は、 すべてのコロン定義の先頭でクリアされます。
 </p>
-<span id="index-word-list-for-defining-locals"></span>
+<a class="index-entry-id" id="index-word-list-for-defining-locals"></a>
 <p>Gforth のディクショナリーの特別な機能は、 型指定子なしでローカルの定義を実装するために使用されます。
-すべてのワードリスト(別名ボキャブラリー)には、 検索などのための独自のメソッド(methods)があります (see <a href="Word-Lists.html">Word Lists</a>)。
+すべてのワードリスト(別名ボキャブラリー)には、 検索などのための独自のメソッド(methods)があります (see <a class="pxref" href="Word-Lists.html">Word Lists</a>)。
 型指定子なしでローカルの定義を実装するという目的のために、 私達は特別な検索メソッドを使用してワードリストを定義しました。 ワードが検索されると、
-実際には <code>W:</code> を使用してそのワードが作成されます。  <code>{:</code> は、 最初に <code>:}</code> や <code>W:</code>
+実際には <code class="code">W:</code> を使用してそのワードが作成されます。  <code class="code">{:</code> は、 最初に <code class="code">:}</code> や <code class="code">W:</code>
 などを含むワードリストで検索し、 次に型指定子のないローカル変数を定義するためのワードリストで検索するよう検索順序スタック(the search
 order)を変更します。
 </p>
 <p>生存期間ルールは、 コロン定義内のスタック規律(stack discipline)をサポートします。 ローカル変数の生存期間は、
 他のローカル変数の生存期間と入れ子になっているか、 あるいは、 他のローカル変数の生存期間と重ならないか、 です。
 </p>
-<p><code>BEGIN</code> や <code>IF</code> や <code>AHEAD</code> では、 ローカル・スタック・ポインター操作のコードは生成されません。
-制御構造のワード間で、 ローカル変数定義はローカル変数をローカル・スタックにプッシュできます。 <code>AGAIN</code> は、 他の 3
-つの制御フローワードとの中で最も単純です。 分岐する前に、 対応する <code>BEGIN</code> のローカル・スタックの深さを復元する必要があります。
+<p><code class="code">BEGIN</code> や <code class="code">IF</code> や <code class="code">AHEAD</code> では、 ローカル・スタック・ポインター操作のコードは生成されません。
+制御構造のワード間で、 ローカル変数定義はローカル変数をローカル・スタックにプッシュできます。 <code class="code">AGAIN</code> は、 他の 3
+つの制御フローワードとの中で最も単純です。 分岐する前に、 対応する <code class="code">BEGIN</code> のローカル・スタックの深さを復元する必要があります。
 そのコードは以下のようになります:
 </p><div class="format">
-<pre class="format"><code>lp+!#</code> current-locals-size - dest-locals-size
-<code>branch</code> &lt;begin&gt;
+<pre class="format-preformatted"><code class="code">lp+!#</code> current-locals-size &minus; dest-locals-size
+<code class="code">branch</code> &lt;begin&gt;
 </pre></div>
 
-<p><code>UNTIL</code> はもう少し複雑です。 分岐して戻る場合は、 <code>AGAIN</code> と同じようにローカル・スタックを調整する必要があります。
+<p><code class="code">UNTIL</code> はもう少し複雑です。 分岐して戻る場合は、 <code class="code">AGAIN</code> と同じようにローカル・スタックを調整する必要があります。
 ただし、 戻らずにその後ろへ流れる場合は、 ローカル・スタックを変更してはなりません。 コンパイラーは以下のコードを生成します:
 </p><div class="format">
-<pre class="format"><code>?branch-lp+!#</code> &lt;begin&gt; current-locals-size - dest-locals-size
+<pre class="format-preformatted"><code class="code">?branch-lp+!#</code> &lt;begin&gt; current-locals-size &minus; dest-locals-size
 </pre></div>
 <p>ローカル・スタック・ポインターは、 分岐が行われた場合にのみ調整されます。
 </p>
-<p><code>THEN</code> は、 やや非効率なコードを生成する可能性があります:
+<p><code class="code">THEN</code> は、 やや非効率なコードを生成する可能性があります:
 </p><div class="format">
-<pre class="format"><code>lp+!#</code> current-locals-size - orig-locals-size
+<pre class="format-preformatted"><code class="code">lp+!#</code> current-locals-size &minus; orig-locals-size
 &lt;orig target&gt;:
-<code>lp+!#</code> orig-locals-size - new-locals-size
+<code class="code">lp+!#</code> orig-locals-size &minus; new-locals-size
 
 </pre></div>
-<p>2 番目の <code>lp+!#</code> は、 ローカル・スタック・ポインターを <i>orig</i> 時点のレベルから  <code>THEN</code>
-の後のレベルに調整します。 最初の <code>lp+!#</code> は、 ローカル・スタック・ポインターを現在のレベルから orig
-時点のレベルに調整するため、 完全な効果は、<code>THEN</code> の後の現在のレベルから正しいレベルに調整されることになります。
+<p>2 番目の <code class="code">lp+!#</code> は、 ローカル・スタック・ポインターを <i class="i">orig</i> 時点のレベルから  <code class="code">THEN</code>
+の後のレベルに調整します。 最初の <code class="code">lp+!#</code> は、 ローカル・スタック・ポインターを現在のレベルから orig
+時点のレベルに調整するため、 完全な効果は、<code class="code">THEN</code> の後の現在のレベルから正しいレベルに調整されることになります。
 </p>
-<span id="index-locals-information-on-the-control_002dflow-stack"></span>
-<span id="index-control_002dflow-stack-items_002c-locals-information"></span>
+<a class="index-entry-id" id="index-locals-information-on-the-control_002dflow-stack"></a>
+<a class="index-entry-id" id="index-control_002dflow-stack-items_002c-locals-information"></a>
 <p>従来の Forth の実装では、 dest 制御フロー・スタック・エントリはターゲット・アドレスにすぎず、 orig
 エントリはパッチ当てされるアドレスにすぎません。 ローカル変数の実装は、 すべての orig または dest 項目にワードリストを追加します。
 これは、 エントリによって記述された時点で可視である(または可視である想定される)ローカル変数のリストです。 私たちの実装では、
@@ -198,25 +186,25 @@ order)を変更します。
 </p>
 <p>ローカル変数のワードリストに対して、 いくつかの珍しい操作を実行する必要があります:
 </p>
-<span id="index-common_002dlist-_0028--list1-list2-_002d_002d-list3--_0029-gforth_002dinternal"></span>
-<span id="index-common_002dlist"></span>
-<span id="index-common_002dlist-1"></span>
+<a class="index-entry-id" id="index-common_002dlist-_0028-list1-list2-_002d_002d-list3-_0029-gforth_002dinternal"></a>
+<a class="index-entry-id" id="index-common_002dlist"></a>
+<a class="index-entry-id" id="index-common_002dlist-1"></a>
 <div class="format">
-<pre class="format"><code>common-list</code> ( <i>list1 list2 &ndash; list3  </i>) gforth-internal &ldquo;common-list&rdquo;
+<pre class="format-preformatted"><code class="code">common-list</code> ( <i class="i">list1 list2 &ndash; list3  </i>) gforth-internal &ldquo;common-list&rdquo;
 </pre></div>
 
-<span id="index-sub_002dlist_003f-_0028--list1-list2-_002d_002d-f--_0029-gforth_002dinternal"></span>
-<span id="index-sub_002dlist_003f"></span>
-<span id="index-sub_002dlist_003f-1"></span>
+<a class="index-entry-id" id="index-sub_002dlist_003f-_0028-list1-list2-_002d_002d-f-_0029-gforth_002dinternal"></a>
+<a class="index-entry-id" id="index-sub_002dlist_003f"></a>
+<a class="index-entry-id" id="index-sub_002dlist_003f-1"></a>
 <div class="format">
-<pre class="format"><code>sub-list?</code> ( <i>list1 list2 &ndash; f  </i>) gforth-internal &ldquo;sub-list?&rdquo;
+<pre class="format-preformatted"><code class="code">sub-list?</code> ( <i class="i">list1 list2 &ndash; f  </i>) gforth-internal &ldquo;sub-list?&rdquo;
 </pre></div>
 
-<span id="index-list_002dsize-_0028--list-_002d_002d-u--_0029-gforth_002dinternal"></span>
-<span id="index-list_002dsize"></span>
-<span id="index-list_002dsize-1"></span>
+<a class="index-entry-id" id="index-list_002dsize-_0028-list-_002d_002d-u-_0029-gforth_002dinternal"></a>
+<a class="index-entry-id" id="index-list_002dsize"></a>
+<a class="index-entry-id" id="index-list_002dsize-1"></a>
 <div class="format">
-<pre class="format"><code>list-size</code> ( <i>list &ndash; u  </i>) gforth-internal &ldquo;list-size&rdquo;
+<pre class="format-preformatted"><code class="code">list-size</code> ( <i class="i">list &ndash; u  </i>) gforth-internal &ldquo;list-size&rdquo;
 </pre></div>
 
 
@@ -225,24 +213,24 @@ order)を変更します。
 ローカル変数のワードリストはリンクされたリストとして編成されます。 リストに同一のローカル変数が含まれている場合、 これらのリストの末尾は共有されます。
 名前のアドレスは、 リスト内でその後ろにある名前のアドレスよりも大きくなります。
 </p>
-<p>もう 1 つの重要な実装の詳細は、 変数 <code>dead-code</code> です。これは、 <code>BEGIN</code> と <code>THEN</code>
-によって直接到達できるか、 解決するブランチ経由でのみ到達できるかを判断するために使用されます。 <code>dead-code</code> は
-<code>UNREACHABLE</code> や <code>AHEAD</code> や <code>EXIT</code> などによって設定され、 コロン定義の先頭 や
-<code>BEGIN</code> や 通常は <code>THEN</code> によってクリアされます。.
+<p>もう 1 つの重要な実装の詳細は、 変数 <code class="code">dead-code</code> です。これは、 <code class="code">BEGIN</code> と <code class="code">THEN</code>
+によって直接到達できるか、 解決するブランチ経由でのみ到達できるかを判断するために使用されます。 <code class="code">dead-code</code> は
+<code class="code">UNREACHABLE</code> や <code class="code">AHEAD</code> や <code class="code">EXIT</code> などによって設定され、 コロン定義の先頭 や
+<code class="code">BEGIN</code> や 通常は <code class="code">THEN</code> によってクリアされます。.
 </p>
-<p>カウンタ付きループはほとんどの点で他のループと似ていますが、 <code>LEAVE</code> には特別な注意が必要です。 基本的に <code>AHEAD</code>
+<p>カウンタ付きループはほとんどの点で他のループと似ていますが、 <code class="code">LEAVE</code> には特別な注意が必要です。 基本的に <code class="code">AHEAD</code>
 と同じサービスを実行しますが、 制御フロー・スタック・エントリは作成されません。 したがって、 情報は別の場所に保存する必要があります。 従来、 情報は
-<code>LEAVE</code> によって作成されたブランチのターゲット・フィールドに、
+<code class="code">LEAVE</code> によって作成されたブランチのターゲット・フィールドに、
 これらのフィールドをリンク・リストに編成することによって格納されていました。 残念ながら、 この巧妙なトリックでは、
 拡張制御フロー情報を保存するための十分なスペースが提供されません。 したがって、 別のスタックである Leave スタックを導入します。 これには、
-すべての未解決の <code>LEAVE</code> の制御フロー・スタック・エントリが含まれています。
+すべての未解決の <code class="code">LEAVE</code> の制御フロー・スタック・エントリが含まれています。
 </p>
 <p>ローカル変数名は、 どの制御フロー経路にも表示されなくなった場合でも、 コロン定義の終わりまで保持されます。 場合によっては、
 これによりローカル変数の名前領域に必要な領域が増加する可能性がありますが、 通常はこの領域を再利用するよりもコード量にかかるコストは少なくなります。
 </p>
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Closures.html">Closures</a>, Previous: <a href="Locals-programming-style.html">Locals programming style</a>, Up: <a href="Gforth-locals.html">Gforth locals</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

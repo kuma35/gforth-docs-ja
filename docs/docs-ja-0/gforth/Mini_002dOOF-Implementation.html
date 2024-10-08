@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -38,21 +38,9 @@ Foundation raise funds for GNU development." -->
 <link href="Mini_002dOOF-Example.html" rel="prev" title="Mini-OOF Example">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -61,13 +49,13 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsubsection" id="Mini_002dOOF-Implementation">
-<div class="header">
+<div class="subsubsection-level-extent" id="Mini_002dOOF-Implementation">
+<div class="nav-panel">
 <p>
-Previous: <a href="Mini_002dOOF-Example.html" accesskey="p" rel="prev">Mini-OOF Example</a>, Up: <a href="Mini_002dOOF.html" accesskey="u" rel="up">The <samp>mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Previous: <a href="Mini_002dOOF-Example.html" accesskey="p" rel="prev">Mini-OOF Example</a>, Up: <a href="Mini_002dOOF.html" accesskey="u" rel="up">The <samp class="file">mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="mini_002doof_002efs-Implementation"></span><h4 class="subsubsection">6.24.5.3 <samp>mini-oof.fs</samp> Implementation</h4>
+<h4 class="subsubsection" id="mini_002doof_002efs-Implementation"><span>6.24.5.3 <samp class="file">mini-oof.fs</samp> Implementation<a class="copiable-link" href="#mini_002doof_002efs-Implementation"> &para;</a></span></h4>
 
 <p>遅延結び付け(late binding)を備えたオブジェクト指向システムは通常、 「vtable」アプローチを使用します。 つまり、
 各オブジェクトの最初の変数はテーブルへのポインタであり、 テーブルには関数ポインターとしてメソッドが含まれています。 vtable
@@ -76,31 +64,31 @@ Previous: <a href="Mini_002dOOF-Example.html" accesskey="p" rel="prev">Mini-OOF 
 <p>まず、 セレクターを宣言しましょう:
 </p>
 <div class="example">
-<pre class="example">: method ( m v &quot;name&quot; -- m' v ) Create  over , swap cell+ swap
+<pre class="example-preformatted">: method ( m v &quot;name&quot; -- m' v ) Create  over , swap cell+ swap
   DOES&gt; ( ... o -- ... ) @ over @ + @ execute ;
 </pre></div>
 
-<p>セレクターの宣言中、 セレクターの数とインスタンス変数は(アドレス単位で)スタック上にあります。 <code>method</code> はセレクターを 1
+<p>セレクターの宣言中、 セレクターの数とインスタンス変数は(アドレス単位で)スタック上にあります。 <code class="code">method</code> はセレクターを 1
 つ作成し、 セレクター番号をインクリメントします。 セレクターを実行するには、 オブジェクトを取得し、 vtable ポインターを取得し、
-オフセットを追加して、 そこに保存されているメソッド <i>xt</i> を実行します。 実行時、 各セレクターは、 スタック・パラメーターのTOSとして、
+オフセットを追加して、 そこに保存されているメソッド <i class="i">xt</i> を実行します。 実行時、 各セレクターは、 スタック・パラメーターのTOSとして、
 セレクターを呼び出すオブジェクトを受け取り、 パラメーター(オブジェクトを含む)を変更せずに、 適切なメソッドに渡します。
 </p>
 <p>いまや、 インスタンス変数も宣言しなければなりません
 </p>
 <div class="example">
-<pre class="example">: var ( m v size &quot;name&quot; -- m v' ) Create  over , +
+<pre class="example-preformatted">: var ( m v size &quot;name&quot; -- m v' ) Create  over , +
   DOES&gt; ( o -- addr ) @ + ;
 </pre></div>
 
 <p>同様に、 ワードには現在のオフセットを書き込んで作成されます。 インスタンス変数はさまざまなサイズ(セル、 浮動小数点数、 2倍長整数、
 char)にすることができるため、 そのサイズを取得してオフセットに追加します。 マシンにアライメント制限がある場合は、 変数の前に適切な
-<code>aligned</code> または <code>faligned</code> を配置して、 変数のオフセットを調整します。 それが <i>size</i>
+<code class="code">aligned</code> または <code class="code">faligned</code> を配置して、 変数のオフセットを調整します。 それが <i class="i">size</i>
 がスタックのTOSにある理由です。
 </p>
 <p>開始点(基底オブジェクト)と、 いくつかの糖衣構文も必要です:
 </p>
 <div class="example">
-<pre class="example">Create object  1 cells , 2 cells ,
+<pre class="example-preformatted">Create object  1 cells , 2 cells ,
 : class ( class -- class selectors vars ) dup 2@ ;
 </pre></div>
 
@@ -108,39 +96,39 @@ char)にすることができるため、 そのサイズを取得してオフ�
 親クラスのすべてのメソッドが提供されますが、 それらはオーバーライドすることもできます。
 </p>
 <div class="example">
-<pre class="example">: end-class  ( class selectors vars &quot;name&quot; -- )
+<pre class="example-preformatted">: end-class  ( class selectors vars &quot;name&quot; -- )
   Create  here &gt;r , dup , 2 cells ?DO ['] noop , 1 cells +LOOP
   cell+ dup cell+ r&gt; rot @ 2 cells /string move ;
 </pre></div>
 
-<p>最初の行は、 <code>noop</code> で初期化された vtable を作成します。  2 行目は継承メカニズムで、 親 vtable から xt
+<p>最初の行は、 <code class="code">noop</code> で初期化された vtable を作成します。  2 行目は継承メカニズムで、 親 vtable から xt
 達をコピーします。
 </p>
 <p>新しいメソッドを定義する方法がまだありませんね。 ここで定義しましょう:
 </p>
 <div class="example">
-<pre class="example">: defines ( xt class &quot;name&quot; -- ) ' &gt;body @ + ! ;
+<pre class="example-preformatted">: defines ( xt class &quot;name&quot; -- ) ' &gt;body @ + ! ;
 </pre></div>
 
 <p>新しいオブジェクトを割り当てるためのワードも必要です:
 </p>
 <div class="example">
-<pre class="example">: new ( class -- o )  here over @ allot swap over ! ;
+<pre class="example-preformatted">: new ( class -- o )  here over @ allot swap over ! ;
 </pre></div>
 
 <p>派生クラスが親オブジェクトのメソッドにアクセスしたい場合があります。 Mini-OOF でこれを実現するには 2 つの方法があります: 1
 つ目は名前付きのワードを使用する方法で、 2 つ目は親オブジェクトの vtable を検索する方法です。
 </p>
 <div class="example">
-<pre class="example">: :: ( class &quot;name&quot; -- ) ' &gt;body @ + @ compile, ;
+<pre class="example-preformatted">: :: ( class &quot;name&quot; -- ) ' &gt;body @ + @ compile, ;
 </pre></div>
 
 
 <p>混乱しないためには良い例に勝るものはないので、 以下に例を示します。 まず、
-テキストとその位置を格納するテキスト・オブジェクト(<code>button</code> と呼ばれます)を宣言しましょう:
+テキストとその位置を格納するテキスト・オブジェクト(<code class="code">button</code> と呼ばれます)を宣言しましょう:
 </p>
 <div class="example">
-<pre class="example">object class
+<pre class="example-preformatted">object class
   cell var text
   cell var len
   cell var x
@@ -150,10 +138,10 @@ char)にすることができるため、 そのサイズを取得してオフ�
 end-class button
 </pre></div>
 
-<p>次に、 <code>draw</code> と <code>init</code> の 2 つのメソッドを実装します:
+<p>次に、 <code class="code">draw</code> と <code class="code">init</code> の 2 つのメソッドを実装します:
 </p>
 <div class="example">
-<pre class="example">:noname ( o -- )
+<pre class="example-preformatted">:noname ( o -- )
  &gt;r r@ x @ r@ y @ at-xy  r@ text @ r&gt; len @ type ;
  button defines draw
 :noname ( addr u o -- )
@@ -161,27 +149,27 @@ end-class button
  button defines init
 </pre></div>
 
-<p>継承のデモンストレーションとして、 新しいデータや新しいセレクターを持たない、 クラス <code>bold-button</code> を定義します:
+<p>継承のデモンストレーションとして、 新しいデータや新しいセレクターを持たない、 クラス <code class="code">bold-button</code> を定義します:
 </p>
 <div class="example">
-<pre class="example">button class
+<pre class="example-preformatted">button class
 end-class bold-button
 
 : bold   27 emit .&quot; [1m&quot; ;
 : normal 27 emit .&quot; [0m&quot; ;
 </pre></div>
 
-<p>クラス <code>bold-button</code> には <code>button</code> とは異なる draw メソッドがありますが、 新しいメソッドは
-<code>button</code> の draw メソッドに関して定義されています:
+<p>クラス <code class="code">bold-button</code> には <code class="code">button</code> とは異なる draw メソッドがありますが、 新しいメソッドは
+<code class="code">button</code> の draw メソッドに関して定義されています:
 </p>
 <div class="example">
-<pre class="example">:noname bold [ button :: draw ] normal ; bold-button defines draw
+<pre class="example-preformatted">:noname bold [ button :: draw ] normal ; bold-button defines draw
 </pre></div>
 
 <p>最後に、 2 つのオブジェクトを作成し、セレクターを適用します:
 </p>
 <div class="example">
-<pre class="example">button new Constant foo
+<pre class="example-preformatted">button new Constant foo
 s&quot; thin foo&quot; foo init
 page
 foo draw
@@ -193,9 +181,9 @@ bar draw
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
-Previous: <a href="Mini_002dOOF-Example.html">Mini-OOF Example</a>, Up: <a href="Mini_002dOOF.html">The <samp>mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Previous: <a href="Mini_002dOOF-Example.html">Mini-OOF Example</a>, Up: <a href="Mini_002dOOF.html">The <samp class="file">mini-oof.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

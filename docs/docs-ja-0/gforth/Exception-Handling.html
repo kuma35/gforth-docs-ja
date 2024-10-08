@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -38,21 +38,11 @@ Foundation raise funds for GNU development." -->
 <link href="Calls-and-returns.html" rel="prev" title="Calls and returns">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+kbd.kbd {font-style: oblique}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -61,95 +51,95 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Exception-Handling">
-<div class="header">
+<div class="subsection-level-extent" id="Exception-Handling">
+<div class="nav-panel">
 <p>
 Previous: <a href="Calls-and-returns.html" accesskey="p" rel="prev">Calls and returns</a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Exception-Handling-1"></span><h4 class="subsection">6.9.8 Exception Handling</h4>
-<span id="index-exceptions"></span>
+<h4 class="subsection" id="Exception-Handling-1"><span>6.9.8 Exception Handling<a class="copiable-link" href="#Exception-Handling-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-exceptions"></a>
 
 
-<p>ワードが処理できないエラー状態を検出した場合、 例外を投げる(<code>throw</code>)ことができます。 最も単純なケースでは、
+<p>ワードが処理できないエラー状態を検出した場合、 例外を投げる(<code class="code">throw</code>)ことができます。 最も単純なケースでは、
 これによりプログラムが終了し、適切なエラーが報告されます。
 </p>
-<span id="index-throw-_0028--y1-_002e_002e-ym-nerror-_002d_002d-y1-_002e_002e-ym-_002f-z1-_002e_002e-zn-error--_0029-exception"></span>
-<span id="index-throw"></span>
-<span id="index-throw-1"></span>
+<a class="index-entry-id" id="index-throw-_0028-y1-_002e_002e-ym-nerror-_002d_002d-y1-_002e_002e-ym-_002f-z1-_002e_002e-zn-error-_0029-exception"></a>
+<a class="index-entry-id" id="index-throw"></a>
+<a class="index-entry-id" id="index-throw-1"></a>
 <div class="format">
-<pre class="format"><code>throw</code> ( <i>y1 .. ym nerror &ndash; y1 .. ym / z1 .. zn error  </i>) exception &ldquo;throw&rdquo;
+<pre class="format-preformatted"><code class="code">throw</code> ( <i class="i">y1 .. ym nerror &ndash; y1 .. ym / z1 .. zn error  </i>) exception &ldquo;throw&rdquo;
 </pre></div>
-<p><i>nerror</i> が 0 の場合は、 それを drop して続行します。 それ以外の場合は、 動的に囲んでいる次の例外ハンドラー(next
-dynamically enclosing exception handler)に制御を移し、 それに応じてスタックをリセットし、 <i>nerror</i>
+<p><i class="i">nerror</i> が 0 の場合は、 それを drop して続行します。 それ以外の場合は、 動的に囲んでいる次の例外ハンドラー(next
+dynamically enclosing exception handler)に制御を移し、 それに応じてスタックをリセットし、 <i class="i">nerror</i>
 をプッシュします。
 </p>
 
-<span id="index-fast_002dthrow-_0028--_002e_002e_002e-wball-_002d_002d-_002e_002e_002e-wball--_0029-gforth_002dexperimental"></span>
-<span id="index-fast_002dthrow"></span>
-<span id="index-fast_002dthrow-1"></span>
+<a class="index-entry-id" id="index-fast_002dthrow-_0028-_002e_002e_002e-wball-_002d_002d-_002e_002e_002e-wball-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-fast_002dthrow"></a>
+<a class="index-entry-id" id="index-fast_002dthrow-1"></a>
 <div class="format">
-<pre class="format"><code>fast-throw</code> ( <i>... wball &ndash; ... wball </i>) gforth-experimental &ldquo;fast-throw&rdquo;
+<pre class="format-preformatted"><code class="code">fast-throw</code> ( <i class="i">... wball &ndash; ... wball </i>) gforth-experimental &ldquo;fast-throw&rdquo;
 </pre></div>
-<p>軽量の <code>throw</code> バリエーション: ゼロ以外のみに使用され、 バックトレースを保存したり、 欠落している <code>catch</code>
+<p>軽量の <code class="code">throw</code> バリエーション: ゼロ以外のみに使用され、 バックトレースを保存したり、 欠落している <code class="code">catch</code>
 を扱ったりしません。
 </p>
 
-<p><code>throw</code> は、スタック上のセル・サイズのエラー番号数値を消費します。 標準 Forth
-には事前定義されたエラー番号がいくつかあります(<samp>errors.fs</samp> 参照)。  Gforth (および他のほとんどのシステム)では、
-さまざまなワードによって生成された ior をエラー番号として使用できます(たとえば、 <code>allocate</code> の一般的な使用法は
-<code>allocate throw</code> です)。  Gforth は、 (適切なエラー報告付きで)独自のエラー番号を定義するための
-<code>Exception</code> というワードも提供します。 このワードの標準 Forth バージョン(ただしエラー・メッセージなし) は
-<code>compat/excel.fs</code> で入手できます。  最後に、 あなた独自のエラー番号(-4095 〜 0
+<p><code class="code">throw</code> は、スタック上のセル・サイズのエラー番号数値を消費します。 標準 Forth
+には事前定義されたエラー番号がいくつかあります(<samp class="file">errors.fs</samp> 参照)。  Gforth (および他のほとんどのシステム)では、
+さまざまなワードによって生成された ior をエラー番号として使用できます(たとえば、 <code class="code">allocate</code> の一般的な使用法は
+<code class="code">allocate throw</code> です)。  Gforth は、 (適切なエラー報告付きで)独自のエラー番号を定義するための
+<code class="code">Exception</code> というワードも提供します。 このワードの標準 Forth バージョン(ただしエラー・メッセージなし) は
+<code class="code">compat/excel.fs</code> で入手できます。  最後に、 あなた独自のエラー番号(-4095 〜 0
 の範囲以外の任意の番号)を使用できますが、 表示されるのは適切なエラー・メッセージではなく、数字のみです。  たとえば、
 以下のことを試してみてください:
 </p>
 <div class="example">
-<pre class="example">-10 throw                    \ 標準で定義済
+<pre class="example-preformatted">-10 throw                    \ 標準で定義済
 -267 throw                   \ システムで定義済
 s&quot; my error&quot; exception throw \ ユーザー定義
 7 throw                      \ 思いつくままの任意の番号
 </pre></div>
 
-<span id="index-exception-_0028--addr-u-_002d_002d-n--_0029-gforth_002d0_002e2"></span>
-<span id="index-exception"></span>
-<span id="index-exception-1"></span>
+<a class="index-entry-id" id="index-exception-_0028-addr-u-_002d_002d-n-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-exception"></a>
+<a class="index-entry-id" id="index-exception-1"></a>
 <div class="format">
-<pre class="format"><code>exception</code> ( <i>addr u &ndash; n  </i>) gforth-0.2 &ldquo;exception&rdquo;
+<pre class="format-preformatted"><code class="code">exception</code> ( <i class="i">addr u &ndash; n  </i>) gforth-0.2 &ldquo;exception&rdquo;
 </pre></div>
-<p><var>n</var> は、 -4095 〜 -256 の範囲内で以前に使用されていなかった <code>throw</code> 値です。
-<code>Exception</code> を連続して呼び出すと、 連続して減少する数値が返されます。 Gforth は文字列 <var>addr u</var>
+<p><var class="var">n</var> は、 -4095 〜 -256 の範囲内で以前に使用されていなかった <code class="code">throw</code> 値です。
+<code class="code">Exception</code> を連続して呼び出すと、 連続して減少する数値が返されます。 Gforth は文字列 <var class="var">addr u</var>
 をエラー・メッセージとして使用します(訳注: 同じエラーメッセージを使いまわすには、 s&quot; hoge err msg&quot; exception
 constant hoge-error hoge-error ! などとして得られた hoge-error を使いまわす。 hoge-error
 throw 等する)
 </p>
 
 
-<p>エラー番号を文字列に変換するためのワード(通常は POSIX の <code>strerror</code> をモデルにしたもの)がある場合もあります。
+<p>エラー番号を文字列に変換するためのワード(通常は POSIX の <code class="code">strerror</code> をモデルにしたもの)がある場合もあります。
 以下のワードを使用すると、 これらの文字列を Gforth のエラー処理に取り込むことができます:
 </p>
-<span id="index-exceptions-_0028--xt-n1-_002d_002d-n2--_0029-gforth_002d1_002e0"></span>
-<span id="index-exceptions-1"></span>
-<span id="index-exceptions-2"></span>
+<a class="index-entry-id" id="index-exceptions-_0028-xt-n1-_002d_002d-n2-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-exceptions-1"></a>
+<a class="index-entry-id" id="index-exceptions-2"></a>
 <div class="format">
-<pre class="format"><code>exceptions</code> ( <i>xt n1 &ndash; n2  </i>) gforth-1.0 &ldquo;exceptions&rdquo;
+<pre class="format-preformatted"><code class="code">exceptions</code> ( <i class="i">xt n1 &ndash; n2  </i>) gforth-1.0 &ldquo;exceptions&rdquo;
 </pre></div>
-<p>throw時: <i>xt</i> <code>( +n -- c-addr u )</code> は、 0&lt;=<i>n</i>&lt;<i>n1</i>
-の範囲のローカルのエラー・コードをエラー・メッセージに変換します。  <code>Exceptions</code> は、 n2-n1&lt;n3&lt;=n2 の範囲で
-<i>n1</i> 個(0 〜 n1)のエラー・コードを予約します。 n2 に、 対応する Gforth エラー・コード(ローカルのエラー番号 0 に対応。
-つまり、 0&lt;=<i>n</i>&lt;<i>n1</i> の範囲のローカルのエラー・コードに 対応する Gforth エラー・コードは n2 &lt;= n3 &lt;
-n2+n1)を返します。 (後の時点で)その範囲に対応した Gforth エラー・コード <i>n3</i> が throw されると、 <i>n2-n3</i>
-がプッシュされ(つまりローカルのエラー番号に変換した値をプッシュし)、 <i>xt</i> が実行されて、 <i>xt</i>
+<p>throw時: <i class="i">xt</i> <code class="code">( +n -- c-addr u )</code> は、 0&lt;=<i class="i">n</i>&lt;<i class="i">n1</i>
+の範囲のローカルのエラー・コードをエラー・メッセージに変換します。  <code class="code">Exceptions</code> は、 n2-n1&lt;n3&lt;=n2 の範囲で
+<i class="i">n1</i> 個(0 〜 n1)のエラー・コードを予約します。 n2 に、 対応する Gforth エラー・コード(ローカルのエラー番号 0 に対応。
+つまり、 0&lt;=<i class="i">n</i>&lt;<i class="i">n1</i> の範囲のローカルのエラー・コードに 対応する Gforth エラー・コードは n2 &lt;= n3 &lt;
+n2+n1)を返します。 (後の時点で)その範囲に対応した Gforth エラー・コード <i class="i">n3</i> が throw されると、 <i class="i">n2-n3</i>
+がプッシュされ(つまりローカルのエラー番号に変換した値をプッシュし)、 <i class="i">xt</i> が実行されて、 <i class="i">xt</i>
 がエラー・メッセージを生成します(訳注: minos2/pulse-audio.fs 等で確認。 xt にC-interface ワードをセットし、
 外部Cライブラリのエラー・メッセージを gforth 内から表示するのに使っているようだ)
 </p>
 
 
-<p>たとえば、 C言語ライブラリの <code>errno</code> エラー (および <code>strerror</code> を使用した変換) がまだ Gforth
-で直接サポートされていないとした場合、 以下のようにして <code>strerror</code> を gforth と結び付けることができます:
+<p>たとえば、 C言語ライブラリの <code class="code">errno</code> エラー (および <code class="code">strerror</code> を使用した変換) がまだ Gforth
+で直接サポートされていないとした場合、 以下のようにして <code class="code">strerror</code> を gforth と結び付けることができます:
 </p>
 <div class="example">
-<pre class="example">' strerror 1536 exceptions constant errno-base
+<pre class="example-preformatted">' strerror 1536 exceptions constant errno-base
 : errno-ior ( -- n )
 \ n は errno の値に対応する Gforth ior を求めなければならないので、
 \ ここでerrno 範囲と Gforth ior の範囲の間で変換する必要があります。
@@ -159,60 +149,60 @@ n2+n1)を返します。 (後の時点で)その範囲に対応した Gforth エ
 </pre></div>
 
 <p>C言語の関数(C言語インターフェイス(C interface)を使用)を呼び出し、 その戻り値がエラーが発生したことを示している場合、
-<code>errno-ior throw</code> を実行して、適切なエラー・メッセージ (&ldquo;Permission denied&rdquo;
+<code class="code">errno-ior throw</code> を実行して、適切なエラー・メッセージ (&ldquo;Permission denied&rdquo;
 など)を含む例外を生成できます。
 </p>
-<p>フラグが true の場合、 特定の <i>err#</i> でエラーを投げる(<code>THROW</code>)一般的な慣用句は以下のとおりです:
+<p>フラグが true の場合、 特定の <i class="i">err#</i> でエラーを投げる(<code class="code">THROW</code>)一般的な慣用句は以下のとおりです:
 </p>
 <div class="example">
-<pre class="example"><code>( flag ) 0&lt;&gt; <i>err#</i> and throw</code>
+<pre class="example-preformatted"><code class="code">( flag ) 0&lt;&gt; <i class="i">err#</i> and throw</code>
 </pre></div>
 
 <p>あなたのプログラムで、 例外をキャッチする例外ハンドラーを提供できます。  例外ハンドラーを使用すると、 問題を修正したり、
-一部のデータ構造をクリーンアップして例外を次の例外ハンドラーに投げたり(throw)することができます。  <code>throw</code>
+一部のデータ構造をクリーンアップして例外を次の例外ハンドラーに投げたり(throw)することができます。  <code class="code">throw</code>
 は動的に最も内側の例外ハンドラー(the dynamically innermost exception
 handler)にジャンプすることに注意してください。 システムの例外ハンドラーは最も外側にあり、
 エラーを出力してコマンド・ラインの通訳(interpretation)を再開するだけです(または、 バッチ・モード(つまり、
 シェル・コマンド・ラインの処理中)では Gforth を終了します)。
 </p>
-<p>例外をキャッチする標準 Forth での方法は <code>catch</code> です:
+<p>例外をキャッチする標準 Forth での方法は <code class="code">catch</code> です:
 </p>
-<span id="index-catch-_0028--x1-_002e_002e-xn-xt-_002d_002d-y1-_002e_002e-ym-0-_002f-z1-_002e_002e-zn-error--_0029-exception"></span>
-<span id="index-catch"></span>
-<span id="index-catch-1"></span>
+<a class="index-entry-id" id="index-catch-_0028-x1-_002e_002e-xn-xt-_002d_002d-y1-_002e_002e-ym-0-_002f-z1-_002e_002e-zn-error-_0029-exception"></a>
+<a class="index-entry-id" id="index-catch"></a>
+<a class="index-entry-id" id="index-catch-1"></a>
 <div class="format">
-<pre class="format"><code>catch</code> ( <i>x1 .. xn xt &ndash; y1 .. ym 0 / z1 .. zn error  </i>) exception &ldquo;catch&rdquo;
+<pre class="format-preformatted"><code class="code">catch</code> ( <i class="i">x1 .. xn xt &ndash; y1 .. ym 0 / z1 .. zn error  </i>) exception &ldquo;catch&rdquo;
 </pre></div>
-<p><i>xt</i> を実行します。  実行から正常に戻った場合、 <code>catch</code> はスタックに 0 をプッシュします。  <code>throw</code>
-を介して実行が戻った場合、 すべてのスタックは <code>catch</code> へ入る時点の深さにリセットされ、 TOS (<i>xt</i> の位置) は
+<p><i class="i">xt</i> を実行します。  実行から正常に戻った場合、 <code class="code">catch</code> はスタックに 0 をプッシュします。  <code class="code">throw</code>
+を介して実行が戻った場合、 すべてのスタックは <code class="code">catch</code> へ入る時点の深さにリセットされ、 TOS (<i class="i">xt</i> の位置) は
 throw コードに置き換えられます。
 </p>
 
-<span id="index-nothrow-_0028--_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-nothrow"></span>
-<span id="index-nothrow-1"></span>
+<a class="index-entry-id" id="index-nothrow-_0028-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-nothrow"></a>
+<a class="index-entry-id" id="index-nothrow-1"></a>
 <div class="format">
-<pre class="format"><code>nothrow</code> ( <i>&ndash;  </i>) gforth-0.7 &ldquo;nothrow&rdquo;
+<pre class="format-preformatted"><code class="code">nothrow</code> ( <i class="i">&ndash;  </i>) gforth-0.7 &ldquo;nothrow&rdquo;
 </pre></div>
-<p>再 throw しない <code>catch</code> または <code>endtry</code> の後ろでこれ (または標準のシーケンス <code>[']
-false catch 2drop</code>) を使用します。 これにより、 次の <code>throw</code> でバックトレースが確実に記録されます。
+<p>再 throw しない <code class="code">catch</code> または <code class="code">endtry</code> の後ろでこれ (または標準のシーケンス <code class="code">[']
+false catch 2drop</code>) を使用します。 これにより、 次の <code class="code">throw</code> でバックトレースが確実に記録されます。
 </p>
 
 
 <p>例外ハンドラーの最も一般的な使用法は、 エラーが発生したときに状態をクリーンアップすることです。  例：
 </p>
 <div class="example">
-<pre class="example">base @ &gt;r hex \ actually the HEX should be inside foo to protect
+<pre class="example-preformatted">base @ &gt;r hex \ actually the HEX should be inside foo to protect
               \ against exceptions between HEX and CATCH
 ['] foo catch ( nerror|0 )
 r&gt; base !
 ( nerror|0 ) throw \ pass it on
 </pre></div>
 
-<p><code>myerror</code> というエラー番号を処理するための <code>catch</code> の使用は以下のようになります:
+<p><code class="code">myerror</code> というエラー番号を処理するための <code class="code">catch</code> の使用は以下のようになります:
 </p>
 <div class="example">
-<pre class="example">['] foo catch
+<pre class="example-preformatted">['] foo catch
 CASE
   myerror OF ... ( do something about it ) nothrow ENDOF
   dup throw \ default: pass other errors on, do nothing on non-errors
@@ -222,63 +212,63 @@ ENDCASE
 <p>コードを別のワードでくるむ要があるのは面倒な場合が多いため、 Gforth では代替構文を提供しています:
 </p>
 <div class="example">
-<pre class="example">TRY
-  <i>code1</i>
+<pre class="example-preformatted">TRY
+  <i class="i">code1</i>
   IFERROR
-    <i>code2</i>
+    <i class="i">code2</i>
   THEN
-  <i>code3</i>
+  <i class="i">code3</i>
 ENDTRY
 </pre></div>
 
-<p>これは、 <i>code1</i> を実行しします。 <i>code1</i> が正常に完了すると、 <i>code3</i> の実行へ続きます。   <i>code1</i>
-または、 <code>endtry</code> より前で例外があった場合、 スタックは <code>try</code> 時の深さにリセットされ、 throw
-された値をデータ・スタックにプッシュし、 <i>code2</i> の実行に続き、 そして、 最終的に <i>code3</i> に到達します。
+<p>これは、 <i class="i">code1</i> を実行しします。 <i class="i">code1</i> が正常に完了すると、 <i class="i">code3</i> の実行へ続きます。   <i class="i">code1</i>
+または、 <code class="code">endtry</code> より前で例外があった場合、 スタックは <code class="code">try</code> 時の深さにリセットされ、 throw
+された値をデータ・スタックにプッシュし、 <i class="i">code2</i> の実行に続き、 そして、 最終的に <i class="i">code3</i> に到達します。
 </p>
-<span id="index-try-_0028--compilation-_002d_002d-orig-_003b-run_002dtime-_002d_002d-R_003asys1--_0029-gforth_002d0_002e5"></span>
-<span id="index-try"></span>
-<span id="index-try-1"></span>
+<a class="index-entry-id" id="index-try-_0028-compilation-_002d_002d-orig-_003b-run_002dtime-_002d_002d-R_003asys1-_0029-gforth_002d0_002e5"></a>
+<a class="index-entry-id" id="index-try"></a>
+<a class="index-entry-id" id="index-try-1"></a>
 <div class="format">
-<pre class="format"><code>try</code> ( <i>compilation  &ndash; orig ; run-time  &ndash; R:sys1  </i>) gforth-0.5 &ldquo;try&rdquo;
+<pre class="format-preformatted"><code class="code">try</code> ( <i class="i">compilation  &ndash; orig ; run-time  &ndash; R:sys1  </i>) gforth-0.5 &ldquo;try&rdquo;
 </pre></div>
 <p>例外キャッチ領域の開始
 </p>
 
-<span id="index-endtry-_0028--compilation-_002d_002d-_003b-run_002dtime-R_003asys1-_002d_002d--_0029-gforth_002d0_002e5"></span>
-<span id="index-endtry"></span>
-<span id="index-endtry-1"></span>
+<a class="index-entry-id" id="index-endtry-_0028-compilation-_002d_002d-_003b-run_002dtime-R_003asys1-_002d_002d-_0029-gforth_002d0_002e5"></a>
+<a class="index-entry-id" id="index-endtry"></a>
+<a class="index-entry-id" id="index-endtry-1"></a>
 <div class="format">
-<pre class="format"><code>endtry</code> ( <i>compilation  &ndash; ; run-time  R:sys1 &ndash;  </i>) gforth-0.5 &ldquo;endtry&rdquo;
+<pre class="format-preformatted"><code class="code">endtry</code> ( <i class="i">compilation  &ndash; ; run-time  R:sys1 &ndash;  </i>) gforth-0.5 &ldquo;endtry&rdquo;
 </pre></div>
 <p>例外キャッチ領域の終わり
 </p>
 
-<span id="index-iferror-_0028--compilation-orig1-_002d_002d-orig2-_003b-run_002dtime-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-iferror"></span>
-<span id="index-iferror-1"></span>
+<a class="index-entry-id" id="index-iferror-_0028-compilation-orig1-_002d_002d-orig2-_003b-run_002dtime-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-iferror"></a>
+<a class="index-entry-id" id="index-iferror-1"></a>
 <div class="format">
-<pre class="format"><code>iferror</code> ( <i>compilation  orig1 &ndash; orig2 ; run-time  &ndash;  </i>) gforth-0.7 &ldquo;iferror&rdquo;
+<pre class="format-preformatted"><code class="code">iferror</code> ( <i class="i">compilation  orig1 &ndash; orig2 ; run-time  &ndash;  </i>) gforth-0.7 &ldquo;iferror&rdquo;
 </pre></div>
-<p>例外処理コードを開始します(<code>try</code> と <code>endtry</code> の間に例外がある場合に実行されます)。 この部分は
-<code>then</code> で終了する必要があります。
+<p>例外処理コードを開始します(<code class="code">try</code> と <code class="code">endtry</code> の間に例外がある場合に実行されます)。 この部分は
+<code class="code">then</code> で終了する必要があります。
 </p>
 
 
-<p><i>code2</i> が必要ない場合は、 <code>iferror then</code> の代わりに <code>restore</code> を記述できます:
+<p><i class="i">code2</i> が必要ない場合は、 <code class="code">iferror then</code> の代わりに <code class="code">restore</code> を記述できます:
 </p>
 <div class="example">
-<pre class="example">TRY
-  <i>code1</i>
+<pre class="example-preformatted">TRY
+  <i class="i">code1</i>
 RESTORE
-  <i>code3</i>
+  <i class="i">code3</i>
 ENDTRY
 </pre></div>
 
-<span id="index-unwind_002dprotect"></span>
+<a class="index-entry-id" id="index-unwind_002dprotect"></a>
 <p>先程の例をこの構文で身綺麗にしてみます:
 </p>
 <div class="example">
-<pre class="example">base @ { oldbase }
+<pre class="example-preformatted">base @ { oldbase }
 TRY
   hex foo \ now the hex is placed correctly
   0       \ value for throw
@@ -288,67 +278,67 @@ ENDTRY
 throw
 </pre></div>
 
-<p>このバリエーションの追加の利点は、 <code>restore</code> と <code>endtry</code> の間の例外(たとえば、 ユーザーが
-<kbd>Ctrl-C</kbd> を押すことによる例外)でも、 <code>restore</code> の直後へコードの実行が移ることです。 ゆえに、
+<p>このバリエーションの追加の利点は、 <code class="code">restore</code> と <code class="code">endtry</code> の間の例外(たとえば、 ユーザーが
+<kbd class="kbd">Ctrl-C</kbd> を押すことによる例外)でも、 <code class="code">restore</code> の直後へコードの実行が移ることです。 ゆえに、
 いかなる状況であっても base は復元されます。
 </p>
-<p>ただし、 このコード自体が例外を引き起こさないようにする必要があります。 そうしないと、 <code>iferror</code>/<code>restore</code>
-コードがループします。  さらに、 <code>iferror</code>/<code>restore</code> コードで必要なスタックの内容が <code>try</code> と
-<code>endtry</code> の間のあらゆる場所に存在することも確認する必要があります。 この例では、 これは <code>try</code>
-の前にデータをローカル変数(local)に置くことによって実現されます(リターン・スタック上の例外フレーム(<i>sys1</i>)が邪魔なのでリターン・スタックは使用できません)。
+<p>ただし、 このコード自体が例外を引き起こさないようにする必要があります。 そうしないと、 <code class="code">iferror</code>/<code class="code">restore</code>
+コードがループします。  さらに、 <code class="code">iferror</code>/<code class="code">restore</code> コードで必要なスタックの内容が <code class="code">try</code> と
+<code class="code">endtry</code> の間のあらゆる場所に存在することも確認する必要があります。 この例では、 これは <code class="code">try</code>
+の前にデータをローカル変数(local)に置くことによって実現されます(リターン・スタック上の例外フレーム(<i class="i">sys1</i>)が邪魔なのでリターン・スタックは使用できません)。
 </p>
-<p>この種の使用法は、 Lisp の <code>unwind-protect</code> と同様のものです。
+<p>この種の使用法は、 Lisp の <code class="code">unwind-protect</code> と同様のものです。
 </p>
-<span id="index-recover-_0028old-Gforth-versions_0029"></span>
+<a class="index-entry-id" id="index-recover-_0028old-Gforth-versions_0029"></a>
 <p>もし、あなたが、 この例外再開始(exception-restarting)の振る舞いを望まない場合は、 以下のようにしてください:
 </p>
 <div class="example">
-<pre class="example">TRY
-  <i>code1</i>
+<pre class="example-preformatted">TRY
+  <i class="i">code1</i>
 ENDTRY-IFERROR
-  <i>code2</i>
+  <i class="i">code2</i>
 THEN
 </pre></div>
 
-<p><i>code1</i> に例外がある場合は <i>code2</i> が実行され、 それ以外の場合は <code>then</code> の後ろ (または
-<code>else</code> 分岐の可能性あり) から実行が続行されます。 これはバージョン 0.7 より前の Gforth では以下の構成要素に該当します
+<p><i class="i">code1</i> に例外がある場合は <i class="i">code2</i> が実行され、 それ以外の場合は <code class="code">then</code> の後ろ (または
+<code class="code">else</code> 分岐の可能性あり) から実行が続行されます。 これはバージョン 0.7 より前の Gforth では以下の構成要素に該当します
 </p>
 <div class="example">
-<pre class="example">TRY
-  <i>code1</i>
+<pre class="example-preformatted">TRY
+  <i class="i">code1</i>
 RECOVER
-  <i>code2</i>
+  <i class="i">code2</i>
 ENDTRY
 </pre></div>
 
-<p>つまり、 この <code>recover</code> を使用しているコードを直に <code>try ... entry-iferror ... then</code>
-へと置き換えることができます。 ただし、 その置き換え作業中に他の <code>try</code>
+<p>つまり、 この <code class="code">recover</code> を使用しているコードを直に <code class="code">try ... entry-iferror ... then</code>
+へと置き換えることができます。 ただし、 その置き換え作業中に他の <code class="code">try</code>
 バリエーションのいずれかを使用した方が良いかどうかも検討することをお勧めします。
 </p>
-<p>移行を容易にするために、 Gforth は 2 つの互換性ファイルを提供します:  1つ目は <samp>endtry-iferror.fs</samp> で、
-古いシステム用に <code>try ... endtry-iferror ... then</code> 構文を提供します(ただし、 <code>iferror</code>
-または <code>restore</code> は提供しません)。 2つ目の <samp>recover-endtry.fs</samp> は、 新しいシステム上で古い構文の
-<code>try ... recover ... endtry</code> 構文を提供するので、 古いプログラムを実行するための一時しのぎとして使用できます。
+<p>移行を容易にするために、 Gforth は 2 つの互換性ファイルを提供します:  1つ目は <samp class="file">endtry-iferror.fs</samp> で、
+古いシステム用に <code class="code">try ... endtry-iferror ... then</code> 構文を提供します(ただし、 <code class="code">iferror</code>
+または <code class="code">restore</code> は提供しません)。 2つ目の <samp class="file">recover-endtry.fs</samp> は、 新しいシステム上で古い構文の
+<code class="code">try ... recover ... endtry</code> 構文を提供するので、 古いプログラムを実行するための一時しのぎとして使用できます。
 どちらのファイルもどのシステムでも動作します(システムが、 実装する構文を既に定義済みの場合は何も行わないだけです)。 そのため、
-古いシステムと新しいシステムを混在させて使用している場合でも、 これらのファイルのいずれかを無条件に <code>require</code> することができます。
+古いシステムと新しいシステムを混在させて使用している場合でも、 これらのファイルのいずれかを無条件に <code class="code">require</code> することができます。
 </p>
-<span id="index-restore-_0028--compilation-orig1-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-restore"></span>
-<span id="index-restore-1"></span>
+<a class="index-entry-id" id="index-restore-_0028-compilation-orig1-_002d_002d-_003b-run_002dtime-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-restore"></a>
+<a class="index-entry-id" id="index-restore-1"></a>
 <div class="format">
-<pre class="format"><code>restore</code> ( <i>compilation  orig1 &ndash; ; run-time  &ndash;  </i>) gforth-0.7 &ldquo;restore&rdquo;
+<pre class="format-preformatted"><code class="code">restore</code> ( <i class="i">compilation  orig1 &ndash; ; run-time  &ndash;  </i>) gforth-0.7 &ldquo;restore&rdquo;
 </pre></div>
 <p>コードの復元(restore)を開始します。 これは、 例外がある場合と無い場合に行われます。
 </p>
 
-<span id="index-endtry_002diferror-_0028--compilation-orig1-_002d_002d-orig2-_003b-run_002dtime-R_003asys1-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-endtry_002diferror"></span>
-<span id="index-endtry_002diferror-1"></span>
+<a class="index-entry-id" id="index-endtry_002diferror-_0028-compilation-orig1-_002d_002d-orig2-_003b-run_002dtime-R_003asys1-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-endtry_002diferror"></a>
+<a class="index-entry-id" id="index-endtry_002diferror-1"></a>
 <div class="format">
-<pre class="format"><code>endtry-iferror</code> ( <i>compilation  orig1 &ndash; orig2 ; run-time  R:sys1 &ndash;  </i>) gforth-0.7 &ldquo;endtry-iferror&rdquo;
+<pre class="format-preformatted"><code class="code">endtry-iferror</code> ( <i class="i">compilation  orig1 &ndash; orig2 ; run-time  R:sys1 &ndash;  </i>) gforth-0.7 &ldquo;endtry-iferror&rdquo;
 </pre></div>
-<p>例外キャッチ領域を終了し、 その領域外で例外処理コードを開始します(<code>try</code> と <code>endtry-iferror</code>
-の間に例外がある場合に実行されます)。  この部分は <code>then</code> (または <code>else</code>...<code>then</code>)
+<p>例外キャッチ領域を終了し、 その領域外で例外処理コードを開始します(<code class="code">try</code> と <code class="code">endtry-iferror</code>
+の間に例外がある場合に実行されます)。  この部分は <code class="code">then</code> (または <code class="code">else</code>...<code class="code">then</code>)
 で終了する必要があります。
 </p>
 
@@ -356,7 +346,7 @@ ENDTRY
 <p>ここで、 エラー処理の例を以下に示します:
 </p>
 <div class="example">
-<pre class="example">TRY
+<pre class="example-preformatted">TRY
   foo
 ENDTRY-IFERROR
   CASE
@@ -367,70 +357,70 @@ THEN
 </pre></div>
 
 <p>プログラミング・スタイル・メモ:
- いつものように、 エラーを渡すための <code>throw</code> の後、 または <code>ENDTRY</code>
-の後のいずれか(または、<code>catch</code> を使用する場合は、エラーを処理するための選択構造の終了後)で、
+ いつものように、 エラーを渡すための <code class="code">throw</code> の後、 または <code class="code">ENDTRY</code>
+の後のいずれか(または、<code class="code">catch</code> を使用する場合は、エラーを処理するための選択構造の終了後)で、
 スタックの深さが静的に明白であることを保証する必要があります。
 </p>
-<p><code>throw</code> の代替は 2 つあります: <code>Abort&quot;</code> は条件付きでエラー・メッセージを提供できます。
-<code>Abort</code> は「中止」(Abort)エラーを生成するだけです。
+<p><code class="code">throw</code> の代替は 2 つあります: <code class="code">Abort&quot;</code> は条件付きでエラー・メッセージを提供できます。
+<code class="code">Abort</code> は「中止」(Abort)エラーを生成するだけです。
 </p>
-<p>これらのワードの問題は、 例外ハンドラーが、 異なる <code>abort&quot;</code> を区別できないことです。 例外ハンドラーにとってはそれらは
-<code>-2 throw</code> のように見えるだけです(標準のプログラムではエラー・メッセージにアクセスできません)。 同様に、
-<code>abort</code> は例外ハンドラーに対して <code>-1 throw</code> のように見えます。
+<p>これらのワードの問題は、 例外ハンドラーが、 異なる <code class="code">abort&quot;</code> を区別できないことです。 例外ハンドラーにとってはそれらは
+<code class="code">-2 throw</code> のように見えるだけです(標準のプログラムではエラー・メッセージにアクセスできません)。 同様に、
+<code class="code">abort</code> は例外ハンドラーに対して <code class="code">-1 throw</code> のように見えます。
 </p>
-<span id="index-ABORT_0022-_0028--compilation-_0027ccc_0022_0027-_002d_002d-_003b-run_002dtime-f-_002d_002d--_0029-core_002cexception_002dext"></span>
-<span id="index-ABORT_0022"></span>
-<span id="index-ABORT_0022-1"></span>
+<a class="index-entry-id" id="index-ABORT_0022-_0028-compilation-_0027ccc_0022_0027-_002d_002d-_003b-run_002dtime-f-_002d_002d-_0029-core_002cexception_002dext"></a>
+<a class="index-entry-id" id="index-ABORT_0022"></a>
+<a class="index-entry-id" id="index-ABORT_0022-1"></a>
 <div class="format">
-<pre class="format"><code>ABORT&quot;</code> ( <i>compilation &rsquo;ccc&quot;&rsquo; &ndash; ; run-time f &ndash;  </i>) core,exception-ext &ldquo;abort-quote&rdquo;
+<pre class="format-preformatted"><code class="code">ABORT&quot;</code> ( <i class="i">compilation &rsquo;ccc&quot;&rsquo; &ndash; ; run-time f &ndash;  </i>) core,exception-ext &ldquo;abort-quote&rdquo;
 </pre></div>
-<p><i>f</i> のいずれかのビットがゼロ以外の場合、 <code>-2 throw</code> の機能を実行し、 例外スタック上例外フレームがない場合は文字列
-<i>ccc</i> を表示します。
+<p><i class="i">f</i> のいずれかのビットがゼロ以外の場合、 <code class="code">-2 throw</code> の機能を実行し、 例外スタック上例外フレームがない場合は文字列
+<i class="i">ccc</i> を表示します。
 </p>
 
-<span id="index-abort-_0028--_003f_003f-_002d_002d-_003f_003f--_0029-core_002cexception_002dext"></span>
-<span id="index-abort"></span>
-<span id="index-abort-1"></span>
+<a class="index-entry-id" id="index-abort-_0028-_003f_003f-_002d_002d-_003f_003f-_0029-core_002cexception_002dext"></a>
+<a class="index-entry-id" id="index-abort"></a>
+<a class="index-entry-id" id="index-abort-1"></a>
 <div class="format">
-<pre class="format"><code>abort</code> ( <i>?? &ndash; ??  </i>) core,exception-ext &ldquo;abort&rdquo;
+<pre class="format-preformatted"><code class="code">abort</code> ( <i class="i">?? &ndash; ??  </i>) core,exception-ext &ldquo;abort&rdquo;
 </pre></div>
-<p><code>-1 throw</code>.
+<p><code class="code">-1 throw</code>.
 </p>
 
 
-<p>実行を中止する必要があるほど深刻でない問題の場合は、 警告を表示するだけで済みます。  変数 <code>warnings</code> を使用すると、
+<p>実行を中止する必要があるほど深刻でない問題の場合は、 警告を表示するだけで済みます。  変数 <code class="code">warnings</code> を使用すると、
 表示される警告の数を調整できます。
 </p>
-<span id="index-WARNING_0022-_0028--compilation-_0027ccc_0022_0027-_002d_002d-_003b-run_002dtime-f-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-WARNING_0022"></span>
-<span id="index-WARNING_0022-1"></span>
+<a class="index-entry-id" id="index-WARNING_0022-_0028-compilation-_0027ccc_0022_0027-_002d_002d-_003b-run_002dtime-f-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-WARNING_0022"></a>
+<a class="index-entry-id" id="index-WARNING_0022-1"></a>
 <div class="format">
-<pre class="format"><code>WARNING&quot;</code> ( <i>compilation &rsquo;ccc&quot;&rsquo; &ndash; ; run-time f &ndash;  </i>) gforth-1.0 &ldquo;WARNING&quot;&rdquo;
+<pre class="format-preformatted"><code class="code">WARNING&quot;</code> ( <i class="i">compilation &rsquo;ccc&quot;&rsquo; &ndash; ; run-time f &ndash;  </i>) gforth-1.0 &ldquo;WARNING&quot;&rdquo;
 </pre></div>
-<p><i>f</i> がゼロ以外の場合、 警告メッセージとして文字列 <i>ccc</i> を表示します。
+<p><i class="i">f</i> がゼロ以外の場合、 警告メッセージとして文字列 <i class="i">ccc</i> を表示します。
 </p>
 
-<span id="index-warnings-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-warnings"></span>
-<span id="index-warnings-1"></span>
+<a class="index-entry-id" id="index-warnings-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-warnings"></a>
+<a class="index-entry-id" id="index-warnings-1"></a>
 <div class="format">
-<pre class="format"><code>warnings</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;warnings&rdquo;
+<pre class="format-preformatted"><code class="code">warnings</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;warnings&rdquo;
 </pre></div>
 <p>以下の警告レベルをセットしてください
-</p><dl compact="compact">
-<dt><span><code>0</code></span></dt>
+</p><dl class="table">
+<dt><code class="code">0</code></dt>
 <dd><p>警告オフ
 </p></dd>
-<dt><span><code>-1</code></span></dt>
+<dt><code class="code">-1</code></dt>
 <dd><p>通常警告オン
 </p></dd>
-<dt><span><code>-2</code></span></dt>
+<dt><code class="code">-2</code></dt>
 <dd><p>初心者警告オン
 </p></dd>
-<dt><span><code>-3</code></span></dt>
+<dt><code class="code">-3</code></dt>
 <dd><p>偏執狂的警告オン
 </p></dd>
-<dt><span><code>-4</code></span></dt>
+<dt><code class="code">-4</code></dt>
 <dd><p>全ての警告をエラーとして扱います(初心者警告を含む)
 </p></dd>
 </dl>
@@ -439,7 +429,7 @@ THEN
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Previous: <a href="Calls-and-returns.html">Calls and returns</a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

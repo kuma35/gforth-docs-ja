@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Low_002dLevel-C-Interface-Words.html" rel="prev" title="Low-Level C Interface Words">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,66 +50,66 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Automated-interface-generation-using-SWIG">
-<div class="header">
+<div class="subsection-level-extent" id="Automated-interface-generation-using-SWIG">
+<div class="nav-panel">
 <p>
 Next: <a href="Migrating-the-C-interface-from-earlier-Gforth.html" accesskey="n" rel="next">Migrating from Gforth 0.7</a>, Previous: <a href="Low_002dLevel-C-Interface-Words.html" accesskey="p" rel="prev">Low-Level C Interface Words</a>, Up: <a href="C-Interface.html" accesskey="u" rel="up">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Automated-interface-generation-using-SWIG-1"></span><h4 class="subsection">6.28.9 Automated interface generation using SWIG</h4>
+<h4 class="subsection" id="Automated-interface-generation-using-SWIG-1"><span>6.28.9 Automated interface generation using SWIG<a class="copiable-link" href="#Automated-interface-generation-using-SWIG-1"> &para;</a></span></h4>
 
 <p>SWIG (Simple Wrapper Interface Generator)は、
 多くのプログラミング言語でC言語インターフェイスを作成するために使用されています。  Forth モジュールで拡張された SWIG バージョンは、
-<a href="https://github.com/GeraldWodni/swig">github</a> にあります。
+<a class="uref" href="https://github.com/GeraldWodni/swig">github</a> にあります。
 </p>
-<ul class="section-toc">
+<ul class="mini-toc">
 <li><a href="#Basic-operation" accesskey="1">Basic operation</a></li>
 <li><a href="#Detailed-operation_003a" accesskey="2">Detailed operation:</a></li>
 <li><a href="#Examples" accesskey="3">Examples</a></li>
 </ul>
-<div class="subsubsection" id="Basic-operation">
-<h4 class="subsubsection">6.28.9.1 Basic operation</h4>
+<div class="subsubsection-level-extent" id="Basic-operation">
+<h4 class="subsubsection"><span>6.28.9.1 Basic operation<a class="copiable-link" href="#Basic-operation"> &para;</a></span></h4>
 <p>C言語のヘッダーはパースされ、 前述のC言語インターフェイス関数を使用する Forth のソース・コードに変換されます。
 </p>
 </div>
-<div class="subsubsection" id="Detailed-operation_003a">
-<h4 class="subsubsection">6.28.9.2 Detailed operation:</h4>
-<ol>
-<li> ターゲットを選択します。 この例では <code>example.h</code> を使用しています。
+<div class="subsubsection-level-extent" id="Detailed-operation_003a">
+<h4 class="subsubsection"><span>6.28.9.2 Detailed operation:<a class="copiable-link" href="#Detailed-operation_003a"> &para;</a></span></h4>
+<ol class="enumerate">
+<li> ターゲットを選択します。 この例では <code class="code">example.h</code> を使用しています。
 </li><li> ヘッダー用のインターフェイス・ファイルを作成します。 これは、 オプションと、スイッチと、変数の定義を、 渡すために使用できます。
-    最も単純なケースでは、<code>example.h</code> のすべてを変換(translate)するよう指示するだけです:
+    最も単純なケースでは、<code class="code">example.h</code> のすべてを変換(translate)するよう指示するだけです:
 <div class="example">
-<pre class="example">%module example
+<pre class="example-preformatted">%module example
 %insert(&quot;include&quot;)
 {
     #include &quot;example.h&quot;
 }
 %include &quot;example.h&quot;
 </pre></div>
-</li><li> SWIG を使用して <code>.fsi-c</code> ファイルを作成します。<br>
-    <code>swig -forth -stackcomments -use-structs -enumcomments -o example-fsi.c
+</li><li> SWIG を使用して <code class="code">.fsi-c</code> ファイルを作成します。<br>
+    <code class="code">swig -forth -stackcomments -use-structs -enumcomments -o example-fsi.c
 example.i</code><br>FSI は「Forth Source Independent」の略で、
 C言語コンパイラーを備えた任意のホストに転送できることを意味します。 この時点以降、 SWIG は必要ありません。
-</li><li> ターゲット・マシンで <code>.fsi-c</code> ファイルを <code>.fsx</code> にコンパイルします(x は executable(実行可能)の意味です)<br>
-    <code>gcc -o example.fsx example-fsi.c</code><br>コンパイルすると、
+</li><li> ターゲット・マシンで <code class="code">.fsi-c</code> ファイルを <code class="code">.fsx</code> にコンパイルします(x は executable(実行可能)の意味です)<br>
+    <code class="code">gcc -o example.fsx example-fsi.c</code><br>コンパイルすると、
 すべての定数(constant)がターゲット上の値(value)に解決されます。
-</li><li> 最後のステップは、 実行可能ファイルを実行し、 その出力を Forth のソース・ファイルである <code>.fs</code> ファイルにキャプチャすることです。<br>
-    <code>./example.fsx -gforth &gt; example.fs</code><br>これで、
+</li><li> 最後のステップは、 実行可能ファイルを実行し、 その出力を Forth のソース・ファイルである <code class="code">.fs</code> ファイルにキャプチャすることです。<br>
+    <code class="code">./example.fsx -gforth &gt; example.fs</code><br>これで、
 このコードはターゲット・プラットフォームで使用できるようになりました。
 </li></ol>
 
 </div>
-<div class="subsubsection" id="Examples">
-<h4 class="subsubsection">6.28.9.3 Examples</h4>
+<div class="subsubsection-level-extent" id="Examples">
+<h4 class="subsubsection"><span>6.28.9.3 Examples<a class="copiable-link" href="#Examples"> &para;</a></span></h4>
 <p>いくつかの例: SWIG&rsquo;s
-<a href="https://github.com/GeraldWodni/swig/tree/master/Examples/forth">Forth
+<a class="uref" href="https://github.com/GeraldWodni/swig/tree/master/Examples/forth">Forth
 Example section</a>
 </p>
-<p>たくさんのインターフェイス・ファイルがこちらにあります: <a href="https://github.com/GeraldWodni/posix">Forth Posix C-Interface</a> と
-<a href="https://github.com/GeraldWodni/forth-c-interfaces">Forth C-Interface
+<p>たくさんのインターフェイス・ファイルがこちらにあります: <a class="uref" href="https://github.com/GeraldWodni/posix">Forth Posix C-Interface</a> と
+<a class="uref" href="https://github.com/GeraldWodni/forth-c-interfaces">Forth C-Interface
 Modules</a>
 </p>
-<p><a href="https://github.com/GeraldWodni/forth-c-interfaces">Forth C-Interface
+<p><a class="uref" href="https://github.com/GeraldWodni/forth-c-interfaces">Forth C-Interface
 Module repository</a> への貢献はいつでも歓迎です！
 </p>
 </div>

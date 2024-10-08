@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,12 @@ Foundation raise funds for GNU development." -->
 <link href="Your-first-definition.html" rel="prev" title="Your first definition">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+kbd.kbd {font-style: oblique}
+kbd.key {font-style: normal}
+span:hover a.copiable-link {visibility: visible}
+ul.mark-bullet {list-style-type: disc}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,14 +53,14 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="How-does-that-work_003f">
-<div class="header">
+<div class="section-level-extent" id="How-does-that-work_003f">
+<div class="nav-panel">
 <p>
 Next: <a href="Forth-is-written-in-Forth.html" accesskey="n" rel="next">Forth is written in Forth</a>, Previous: <a href="Your-first-definition.html" accesskey="p" rel="prev">Your first Forth definition</a>, Up: <a href="Introduction.html" accesskey="u" rel="up">An Introduction to Standard Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="How-does-that-work_003f-1"></span><h3 class="section">4.4 How does that work?</h3>
-<span id="index-parsing-words"></span>
+<h3 class="section" id="How-does-that-work_003f-1"><span>4.4 How does that work?<a class="copiable-link" href="#How-does-that-work_003f-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-parsing-words"></a>
 
 
 
@@ -78,66 +69,66 @@ Next: <a href="Forth-is-written-in-Forth.html" accesskey="n" rel="next">Forth is
 
 
 
-<p>ここで、 前のセクションの <code>add-two</code> の定義をもう一度見てみましょう。 テキスト・インタープリターの動作方法に関する知識から、
-<code>add-two</code> を定義しようとしたとき、 私達は以下の結果を予期したかもしれません:
+<p>ここで、 前のセクションの <code class="code">add-two</code> の定義をもう一度見てみましょう。 テキスト・インタープリターの動作方法に関する知識から、
+<code class="code">add-two</code> を定義しようとしたとき、 私達は以下の結果を予期したかもしれません:
 </p>
 <div class="example">
-<pre class="example"><kbd>: add-two 2 + . ;<span class="key">RET</span></kbd>
+<pre class="example-preformatted"><kbd class="kbd">: add-two 2 + . ;<kbd class="key">RET</kbd></kbd>
 *the terminal*:4: Undefined word
 : &gt;&gt;&gt;add-two&lt;&lt;&lt; 2 + . ;
 </pre></div>
 
-<span id="index-modifying-_003eIN"></span>
-<p>しかし、 これが起こらなかった理由は、 <code>:</code> の動作方法に関係しています。 <code>:</code> というワードは 2 つの特別な働きをします。
-1つ目の特別な機能は、 テキスト・インタープリターが <code>add-two</code> という文字を認識できないようにすることです。
-テキスト・インタープリターは、 <code>&gt;IN</code> (to-in;トゥーイン)という変数を使用して、 入力行のどこを追跡するかを保持し、
-<code>:</code> というワードに遭遇すると、 他のワードの場合とまったく同じように動作します。 名前ディクショナリーでそれを検索し、 その xt
-を見つけて実行します。  実行される <code>:</code> は、 入力バッファーを調べてワード <code>add-two</code> を見つけ、
-<code>&gt;IN</code> の値をその後ろを指すように進めておきます。 次に、 新しい定義の作成に関連するその他の処理を実行します(名前ディクショナリーに
-<code>add-two</code> のエントリを作成する等)。 <code>:</code> の実行が完了すると、 制御はテキスト・インタープリターに戻ります。
+<a class="index-entry-id" id="index-modifying-_003eIN"></a>
+<p>しかし、 これが起こらなかった理由は、 <code class="code">:</code> の動作方法に関係しています。 <code class="code">:</code> というワードは 2 つの特別な働きをします。
+1つ目の特別な機能は、 テキスト・インタープリターが <code class="code">add-two</code> という文字を認識できないようにすることです。
+テキスト・インタープリターは、 <code class="code">&gt;IN</code> (to-in;トゥーイン)という変数を使用して、 入力行のどこを追跡するかを保持し、
+<code class="code">:</code> というワードに遭遇すると、 他のワードの場合とまったく同じように動作します。 名前ディクショナリーでそれを検索し、 その xt
+を見つけて実行します。  実行される <code class="code">:</code> は、 入力バッファーを調べてワード <code class="code">add-two</code> を見つけ、
+<code class="code">&gt;IN</code> の値をその後ろを指すように進めておきます。 次に、 新しい定義の作成に関連するその他の処理を実行します(名前ディクショナリーに
+<code class="code">add-two</code> のエントリを作成する等)。 <code class="code">:</code> の実行が完了すると、 制御はテキスト・インタープリターに戻ります。
 テキスト・インタープリターは、 このトリックにより入力行の一部をスキップしていることに気づきません。
 </p>
-<span id="index-parsing-words-1"></span>
-<p><code>:</code> のようなワード(<code>&gt;IN</code> の値を進めて、 テキスト・インタープリターが入力行全体に作用するのを妨げるワード)は、
+<a class="index-entry-id" id="index-parsing-words-1"></a>
+<p><code class="code">:</code> のようなワード(<code class="code">&gt;IN</code> の値を進めて、 テキスト・インタープリターが入力行全体に作用するのを妨げるワード)は、
 「構文解析ワード」(parsing words)と呼ばれます。
 </p>
-<span id="index-state-_002d-effect-on-the-text-interpreter"></span>
-<span id="index-text-interpreter-_002d-effect-of-state"></span>
-<p><code>:</code> が行う 2 つ目の特別な処理は、 <code>state</code> と呼ばれる変数の値を変更することです。 これは、
-テキスト・インタープリターの振る舞いに影響します。 Gforth が起動するとき、 <code>state</code> の値は 0 であり、
-テキスト・インタープリターはインタープリター状態(<em>interpreting</em>)であると言われます。 (<code>:</code> で始まる)コロン定義中
-、 <code>state</code> は -1 に設定され、テキスト・インタープリターはコンパイル状態(<em>compiling</em>)と言われます。
+<a class="index-entry-id" id="index-state-_002d-effect-on-the-text-interpreter"></a>
+<a class="index-entry-id" id="index-text-interpreter-_002d-effect-of-state"></a>
+<p><code class="code">:</code> が行う 2 つ目の特別な処理は、 <code class="code">state</code> と呼ばれる変数の値を変更することです。 これは、
+テキスト・インタープリターの振る舞いに影響します。 Gforth が起動するとき、 <code class="code">state</code> の値は 0 であり、
+テキスト・インタープリターはインタープリター状態(<em class="dfn">interpreting</em>)であると言われます。 (<code class="code">:</code> で始まる)コロン定義中
+、 <code class="code">state</code> は -1 に設定され、テキスト・インタープリターはコンパイル状態(<em class="dfn">compiling</em>)と言われます。
 </p>
-<p>この例では、 テキスト・インタープリターは文字列 &ldquo;<code>2 +
-. ;</code>&rdquo;。引き続き同じ方法で文字列を文字シーケンスに分割します。ただし、数値 <code>2</code> をスタックにプッシュする代わりに、 数値
-<code>2</code> を取得する魔法を <code>add-two</code> の定義に組み込み(コンパイル)、 <code>add-two</code>
-が「実行」されたときスタックにプッシュされます。 同様に、 <code>+</code> と <code>.</code> の振る舞いも定義にコンパイルされます。
+<p>この例では、 テキスト・インタープリターは文字列 &ldquo;<code class="code">2 +
+. ;</code>&rdquo;。引き続き同じ方法で文字列を文字シーケンスに分割します。ただし、数値 <code class="code">2</code> をスタックにプッシュする代わりに、 数値
+<code class="code">2</code> を取得する魔法を <code class="code">add-two</code> の定義に組み込み(コンパイル)、 <code class="code">add-two</code>
+が「実行」されたときスタックにプッシュされます。 同様に、 <code class="code">+</code> と <code class="code">.</code> の振る舞いも定義にコンパイルされます。
 </p>
 <p>特定の種類のワードはコンパイルされません。 これらのいわゆる「即実行ワード」(immediate word)は、
-テキスト・インタープリターがインタープリター状態であるかコンパイル状態であるかに関係なく、 実行されます(今、 直ちに実行されます)。 <code>;</code>
-というワードは即実行ワードです。 定義にコンパイルされるのではなく、 実行されます。 その効果は、 <code>state</code> の値を 0
+テキスト・インタープリターがインタープリター状態であるかコンパイル状態であるかに関係なく、 実行されます(今、 直ちに実行されます)。 <code class="code">;</code>
+というワードは即実行ワードです。 定義にコンパイルされるのではなく、 実行されます。 その効果は、 <code class="code">state</code> の値を 0
 に戻すことを含む、 現在の定義を終了することです。
 </p>
-<p>あなたが <code>add-two</code> を実行すると、 その定義の外で <code>2 + . <span class="key">RET</span></code>
+<p>あなたが <code class="code">add-two</code> を実行すると、 その定義の外で <code class="code">2 + . <kbd class="key">RET</kbd></code>
 と入力した場合とまったく同一の「実行時効果」(run-time effect) が生じます。
 </p>
 <p>Forth では、 すべてのワードまたは数値は以下の 2 つの性質を持ちます:
 </p>
-<ul>
-<li> <span id="index-interpretation-semantics"></span>
+<ul class="itemize mark-bullet">
+<li><a class="index-entry-id" id="index-interpretation-semantics"></a>
 その インタープリター機能(interpretation semantics)は、
 テキスト・インタープリターがインタープリター状態でどのように動作するかを記述します。 ワードのインタープリター機能は、
-その「実行トークン」(execution token)(see <a href="Execution-token.html">Execution token</a>)によって表されます。
-</li><li> <span id="index-compilation-semantics"></span>
+その「実行トークン」(execution token)(see <a class="pxref" href="Execution-token.html">Execution token</a>)によって表されます。
+</li><li><a class="index-entry-id" id="index-compilation-semantics"></a>
 その コンパイル機能(compilation semantics)は、 テキスト・インタープリターがコンパイル状態でどのように動作するかを記述します。
-ワードのコンパイル機能は、 その「コンパイル・トークン」(see <a href="Compilation-token.html">Compilation token</a>)によって表されます。
+ワードのコンパイル機能は、 その「コンパイル・トークン」(see <a class="pxref" href="Compilation-token.html">Compilation token</a>)によって表されます。
 </li></ul>
 
 <p>数値は常に決まった方法で処理されます:
 </p>
-<ul>
-<li> その数値が通訳(interpret)される場合、 その振る舞いは、 その数値をスタックにプッシュすることです。
-</li><li> その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、
+<ul class="itemize mark-bullet">
+<li>その数値が通訳(interpret)される場合、 その振る舞いは、 その数値をスタックにプッシュすることです。
+</li><li>その数値がコンパイルされる場合、 実行時にその数値をプッシュするコードが現在の定義に追加されます。 (言い換えれば、
 数値のコンパイル機能(compilation semantics)は、 コンパイルされる定義の実行時まで、
 その数値のインタープリター機能(interpretation semantics)の実行を延期(postpone)します。)
 </li></ul>
@@ -145,83 +136,83 @@ Next: <a href="Forth-is-written-in-Forth.html" accesskey="n" rel="next">Forth is
 <p>ワードは常にこのような通常の振る舞いをするとは限りませんが、 ほとんどのワードにはデフォルトの機能(default semantics)があり、
 以下のように振る舞うことを意味します:
 </p>
-<ul>
-<li> ワードのインタープリター機能(<em>interpretation semantics</em>)は、 何かしら役に立つことを行うことです。
-</li><li> ワードのコンパイル機能(compilation semantics)は、 そのワードのインタープリター機能(interpretation
+<ul class="itemize mark-bullet">
+<li>ワードのインタープリター機能(<em class="dfn">interpretation semantics</em>)は、 何かしら役に立つことを行うことです。
+</li><li>ワードのコンパイル機能(compilation semantics)は、 そのワードのインタープリター機能(interpretation
 semantics)を現在の定義に追加します(よって、 それは実行時に何かしら役に立つことを行います)。
 </li></ul>
 
-<span id="index-immediate-words"></span>
-<p>特定のワードの実際の振る舞いは、 ワードの定義時に <code>immediate</code> や <code>compile-only</code>
+<a class="index-entry-id" id="index-immediate-words"></a>
+<p>特定のワードの実際の振る舞いは、 ワードの定義時に <code class="code">immediate</code> や <code class="code">compile-only</code>
 というワードを使用することで制御できます。 これらのワードは、 最後に定義されたワードの名前ディクショナリー・エントリにフラグを設定します。
 これらのフラグは、 名前ディクショナリーでワードが見つかったときにテキスト・インタープリターによって取得されます。
 </p>
-<p><em>immediate</em> としてマークされたワードは、 そのインタープリター機能(interpretation
+<p><em class="dfn">immediate</em> としてマークされたワードは、 そのインタープリター機能(interpretation
 semantics)と同じコンパイル機能(compilation semantics)を持ちます。 つまり、 以下のように振る舞います:
 </p>
-<ul>
-<li> ワードのインタープリター機能(<em>interpretation semantics</em>)は、 何かしら役に立つことを行うことです。
-</li><li> このワードのコンパイル機能(compilation semantics)は、
+<ul class="itemize mark-bullet">
+<li>ワードのインタープリター機能(<em class="dfn">interpretation semantics</em>)は、 何かしら役に立つことを行うことです。
+</li><li>このワードのコンパイル機能(compilation semantics)は、
 何かしら役に立つことを行うことです(実際にはインタープリター機能と同一のことを行うことです)。 つまり、
 このワードのコンパイル機能はコンパイル中に実行されます。
 </li></ul>
 
-<p>ワードを <em>compile-only</em> としてマークすると、 インタープリター状態(interpretation
-state)でこのワードを検出したときにテキスト・インタープリターが警告を生成することを意味します。 (<code>'</code> または <code>[']</code>
+<p>ワードを <em class="dfn">compile-only</em> としてマークすると、 インタープリター状態(interpretation
+state)でこのワードを検出したときにテキスト・インタープリターが警告を生成することを意味します。 (<code class="code">'</code> または <code class="code">[']</code>
 を使用して) ワードをティックすると、 警告が生成されます。
 </p>
-<p><code>compile-only</code> を使用する必要はありません(多くの実装によって提供されてはいますが、 標準 Forth
-の一部でもありません)が、 インタープリター態(interpret state)で正しく振る舞わないワードに <code>compile-only</code>
-を適用するのは良いエチケットです(そして予期しない副作用が発生する可能性があります)。 たとえば、 定義内で条件ワード <code>IF</code>
-を使用することのみが正当です。 これを忘れて別の場所で使用しようとすると、 (Gforth では) <code>compile-only</code>
+<p><code class="code">compile-only</code> を使用する必要はありません(多くの実装によって提供されてはいますが、 標準 Forth
+の一部でもありません)が、 インタープリター態(interpret state)で正しく振る舞わないワードに <code class="code">compile-only</code>
+を適用するのは良いエチケットです(そして予期しない副作用が発生する可能性があります)。 たとえば、 定義内で条件ワード <code class="code">IF</code>
+を使用することのみが正当です。 これを忘れて別の場所で使用しようとすると、 (Gforth では) <code class="code">compile-only</code>
 としてマークされているため、 テキスト・インタープリターが有用な警告を生成できます。
 </p>
 <p>以下の例は、 即実行ワードと非即実行ワードの違いを示しています:
 </p>
 <div class="example">
-<pre class="example">: show-state state @ . ;
+<pre class="example-preformatted">: show-state state @ . ;
 : show-state-now show-state ; immediate
 : word1 show-state ;
 : word2 show-state-now ;
 </pre></div>
 
-<p><code>show-state-now</code> の定義の後にあるワード <code>immediate</code> は、そのワードを即実行ワードにします。
-これらの定義では、 <code>@</code>(「フェッチ」と発音します) という新しいワードが導入されています。
-このワードは変数の値を取り出し(フェッチし)、 それをスタックに残します。 したがって、 <code>show-state</code> の振る舞いは、
-<code>state</code> の現在の値を表す数値を出力することです。
+<p><code class="code">show-state-now</code> の定義の後にあるワード <code class="code">immediate</code> は、そのワードを即実行ワードにします。
+これらの定義では、 <code class="code">@</code>(「フェッチ」と発音します) という新しいワードが導入されています。
+このワードは変数の値を取り出し(フェッチし)、 それをスタックに残します。 したがって、 <code class="code">show-state</code> の振る舞いは、
+<code class="code">state</code> の現在の値を表す数値を出力することです。
 </p>
-<p><code>word1</code> を実行すると、 システムがインタープリター状態であることを示す数値 0 が出力されます。 テキスト・インタープリターが
-<code>word1</code> の定義をコンパイルしたときに、 コンパイル機能が現在の定義に実行時コードを追加する <code>show-state</code>
-に遭遇しました。 <code>word1</code> を実行すると、 <code>show-state</code> のインタプリタ機能(interpretation
-semantics)が実行されます。  <code>word1</code> (つまり <code>show-state</code>) が実行される時点で、
+<p><code class="code">word1</code> を実行すると、 システムがインタープリター状態であることを示す数値 0 が出力されます。 テキスト・インタープリターが
+<code class="code">word1</code> の定義をコンパイルしたときに、 コンパイル機能が現在の定義に実行時コードを追加する <code class="code">show-state</code>
+に遭遇しました。 <code class="code">word1</code> を実行すると、 <code class="code">show-state</code> のインタプリタ機能(interpretation
+semantics)が実行されます。  <code class="code">word1</code> (つまり <code class="code">show-state</code>) が実行される時点で、
 システムはインタープリター状態です。
 </p>
-<p><code>word2</code> の定義を入力した後に <tt class="key">RET</tt> を押すと、 数値 -1 が出力され、 その後に <code> ok</code>
-が表示されるはずです。 テキスト・インタープリターが <code>word2</code> の定義をコンパイルすると、 即実行ワードである
-<code>show-state-now</code> が検出されたため、 そのコンパイル機能(compilation
+<p><code class="code">word2</code> の定義を入力した後に <kbd class="key">RET</kbd> を押すと、 数値 -1 が出力され、 その後に <code class="code"> ok</code>
+が表示されるはずです。 テキスト・インタープリターが <code class="code">word2</code> の定義をコンパイルすると、 即実行ワードである
+<code class="code">show-state-now</code> が検出されたため、 そのコンパイル機能(compilation
 semantics)はインタプリタ機能(interpretation semantics)を実行します。
-これは直ちにに実行されます(テキスト・インタープリターが次の文字グループ(この例では <code>;</code>)の処理に移る前に)。 これを実行すると、
-<code>word2</code> の定義途中の <code>state</code> の値が表示されます。 -1 を出力するので、
-システムがその時点でコンパイル状態であることがわかります。 もし あなたが <code>word2</code> を「実行」しても何も行いません。
+これは直ちにに実行されます(テキスト・インタープリターが次の文字グループ(この例では <code class="code">;</code>)の処理に移る前に)。 これを実行すると、
+<code class="code">word2</code> の定義途中の <code class="code">state</code> の値が表示されます。 -1 を出力するので、
+システムがその時点でコンパイル状態であることがわかります。 もし あなたが <code class="code">word2</code> を「実行」しても何も行いません。
 </p>
-<span id="index-_002e_0022_002c-how-it-works"></span>
-<p>即実行ワードの話題を離れる前に、 前のセクションの <code>greet</code> の定義における <code>.&quot;</code> の振る舞いについて検討してみましょう。
-このワードは構文解析ワード(parsing word)でもあり、 かつ、 即実行ワードでもあります。  <code>.&quot;</code> とそのテキストの先頭
-<code>Hello and welcome</code> の間にはスペースがありますが、 <code>welcome</code> の最後の文字と <code>&quot;</code>
-文字の間にはスペースがありません。 これは、<code>.&quot;</code> が Forth ワードであるということです。 テキスト・インタープリターがその
-Forth ワード <code>.&quot;</code> を識別できるように、 <code>.&quot;</code> の後ろにスペースが必要です。 <code>&quot;</code> は Forth
-ワードではなく、 区切り文字(delimiter)です。 先の例では、 文字列が表示されるときに、 <code>H</code> の前にも <code>e</code>
-の後ろにもスペースがないことを示しています。 <code>.&quot;</code> は即実行ワードなので、 <code>greet</code> の定義中に実行されます。
-実行されると、 入力行内を前方に走査して区切り文字を探します。 区切り文字が見つかると、 区切り文字の後ろを指すように <code>&gt;IN</code>
-を更新します。 また、 いくつかのマジック・コード、 つまりテキスト文字列を出力する実行時コード xtを <code>greet</code>
-の定義にコンパイルします。 文字列 <code>Hello and welcome</code> をメモリーにコンパイルして、 後で出力できるようにします。
-その後、 テキスト・インタープリターが制御を取得すると、 入力ストリーム内で次に検出されるワードは <code>;</code> であるため、
-<code>greet</code> の定義を終了します。
+<a class="index-entry-id" id="index-_002e_0022_002c-how-it-works"></a>
+<p>即実行ワードの話題を離れる前に、 前のセクションの <code class="code">greet</code> の定義における <code class="code">.&quot;</code> の振る舞いについて検討してみましょう。
+このワードは構文解析ワード(parsing word)でもあり、 かつ、 即実行ワードでもあります。  <code class="code">.&quot;</code> とそのテキストの先頭
+<code class="code">Hello and welcome</code> の間にはスペースがありますが、 <code class="code">welcome</code> の最後の文字と <code class="code">&quot;</code>
+文字の間にはスペースがありません。 これは、<code class="code">.&quot;</code> が Forth ワードであるということです。 テキスト・インタープリターがその
+Forth ワード <code class="code">.&quot;</code> を識別できるように、 <code class="code">.&quot;</code> の後ろにスペースが必要です。 <code class="code">&quot;</code> は Forth
+ワードではなく、 区切り文字(delimiter)です。 先の例では、 文字列が表示されるときに、 <code class="code">H</code> の前にも <code class="code">e</code>
+の後ろにもスペースがないことを示しています。 <code class="code">.&quot;</code> は即実行ワードなので、 <code class="code">greet</code> の定義中に実行されます。
+実行されると、 入力行内を前方に走査して区切り文字を探します。 区切り文字が見つかると、 区切り文字の後ろを指すように <code class="code">&gt;IN</code>
+を更新します。 また、 いくつかのマジック・コード、 つまりテキスト文字列を出力する実行時コード xtを <code class="code">greet</code>
+の定義にコンパイルします。 文字列 <code class="code">Hello and welcome</code> をメモリーにコンパイルして、 後で出力できるようにします。
+その後、 テキスト・インタープリターが制御を取得すると、 入力ストリーム内で次に検出されるワードは <code class="code">;</code> であるため、
+<code class="code">greet</code> の定義を終了します。
 </p>
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Forth-is-written-in-Forth.html">Forth is written in Forth</a>, Previous: <a href="Your-first-definition.html">Your first Forth definition</a>, Up: <a href="Introduction.html">An Introduction to Standard Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

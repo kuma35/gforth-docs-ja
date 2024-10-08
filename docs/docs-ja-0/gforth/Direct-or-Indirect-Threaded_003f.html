@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,8 @@ Foundation raise funds for GNU development." -->
 <link href="Scheduling.html" rel="prev" title="Scheduling">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,52 +49,52 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Direct-or-Indirect-Threaded_003f">
-<div class="header">
+<div class="subsection-level-extent" id="Direct-or-Indirect-Threaded_003f">
+<div class="nav-panel">
 <p>
 Next: <a href="Dynamic-Superinstructions.html" accesskey="n" rel="next">Dynamic Superinstructions</a>, Previous: <a href="Scheduling.html" accesskey="p" rel="prev">Scheduling</a>, Up: <a href="Threading.html" accesskey="u" rel="up">Threading</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Direct-or-Indirect-Threaded_003f-1"></span><h4 class="subsection">15.2.2 Direct or Indirect Threaded?</h4>
-<span id="index-threading_002c-direct-or-indirect_003f"></span>
+<h4 class="subsection" id="Direct-or-Indirect-Threaded_003f-1"><span>15.2.2 Direct or Indirect Threaded?<a class="copiable-link" href="#Direct-or-Indirect-Threaded_003f-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-threading_002c-direct-or-indirect_003f"></a>
 
-<p>スレッド化された forth コードは、 プリミティブ(<code>+</code> のような単純なマシン・コード・ルーチン)と非プリミティブ(コロン定義、 変数、
-定数など)への参照で構成されます。 非プリミティブの特定の種類(変数など)では、 コード・ルーチン(<code>dovar</code> など) は 1
+<p>スレッド化された forth コードは、 プリミティブ(<code class="code">+</code> のような単純なマシン・コード・ルーチン)と非プリミティブ(コロン定義、 変数、
+定数など)への参照で構成されます。 非プリミティブの特定の種類(変数など)では、 コード・ルーチン(<code class="code">dovar</code> など) は 1
 つだけですが、 各変数は各変数それぞれのデータへの個別の参照が必要です。
 </p>
 <p>伝統的に、 Forth は間接スレッド化コードとして実装されてきました。 これにより、 非プリミティブの参照は 1
 つのセルのみの使用で済ませられるためです(基本的に、 データをポイントし、 ポイントした先でコード・アドレスを見つけます)。
 </p>
-<span id="index-primitive_002dcentric-threaded-code"></span>
+<a class="index-entry-id" id="index-primitive_002dcentric-threaded-code"></a>
 <p>しかしながら  Gforth (0.6.0 以降) のスレッド化コードは、 非プリミティブに 2 つのセルを使用します。 1 つはコード・アドレス用で、
 もう 1 つはデータ・アドレス用です。 データ・ポインターは、 コード・アドレスで表される仮想マシン命令の直接の引数です。
 すべてのコード・アドレスが単純なプリミティブを指しているため、 これを「プリミティブ指向」スレッド化コードと呼びます。  たとえば、 変数の場合、
-コード・アドレスは <code>lit</code> 用です(<code>99</code> などの整数リテラルにも使用されます)。
+コード・アドレスは <code class="code">lit</code> 用です(<code class="code">99</code> などの整数リテラルにも使用されます)。
 </p>
 <p>プリミティブ指向スレッド化コードにより、 ディスパッチ手法として(より高速な)直接スレッド化を完全に移植可能な状態で使用できます(0.6.0 より前の
 Gforth の直接スレッド化コードにはアーキテクチャ固有のコードが必要でした)。  また、386 実装で直接スレッド・コードによる I
 キャッシュの一貫性に関連するパフォーマンスの問題も解消され、 追加の最適化が可能になります。
 </p>
-<span id="index-hybrid-direct_002findirect-threaded-code"></span>
-<p>ただし、 問題があります。 <code>execute</code> の <var>xt</var> パラメータは 1 つのセルしか占有できないため、
-「コードとデータ・アドレス」を持つ非プリミティブをどのように渡せばよいのでしょうか？  これに対する私達の答えは、 <code>execute</code>
+<a class="index-entry-id" id="index-hybrid-direct_002findirect-threaded-code"></a>
+<p>ただし、 問題があります。 <code class="code">execute</code> の <var class="var">xt</var> パラメータは 1 つのセルしか占有できないため、
+「コードとデータ・アドレス」を持つ非プリミティブをどのように渡せばよいのでしょうか？  これに対する私達の答えは、 <code class="code">execute</code>
 や単一セル xt を使用する他のワードに間接スレッド化ディスパッチを使用することです。  したがって、
-コロン定義内の通常のスレッド化コードは直接スレッドを使用し、 データ・スタック上の xt にディスパッチする <code>execute</code>
+コロン定義内の通常のスレッド化コードは直接スレッドを使用し、 データ・スタック上の xt にディスパッチする <code class="code">execute</code>
 や同様のワードは間接スレッド化コードを使用します。  これを 「ハイブリッド 直接/間接 スレッド化コード」と呼びます。
 </p>
-<span id="index-engines_002c-gforth-vs_002e-gforth_002dfast-vs_002e-gforth_002ditc"></span>
-<span id="index-gforth-engine"></span>
-<span id="index-gforth_002dfast-engine"></span>
-<p><code>gforth</code> エンジンと <code>gforth-fast</code> エンジンは、 ハイブリッド 直接/間接
-スレッド化コードを使用します。  つまり、 これらのエンジンでは <code>,</code> を使用して xt をコンパイルできないことを意味します。
-代わりに、 <code>compile,</code> を使用する必要があります。
+<a class="index-entry-id" id="index-engines_002c-gforth-vs_002e-gforth_002dfast-vs_002e-gforth_002ditc"></a>
+<a class="index-entry-id" id="index-gforth-engine"></a>
+<a class="index-entry-id" id="index-gforth_002dfast-engine"></a>
+<p><code class="command">gforth</code> エンジンと <code class="command">gforth-fast</code> エンジンは、 ハイブリッド 直接/間接
+スレッド化コードを使用します。  つまり、 これらのエンジンでは <code class="code">,</code> を使用して xt をコンパイルできないことを意味します。
+代わりに、 <code class="code">compile,</code> を使用する必要があります。
 </p>
-<span id="index-gforth_002ditc-engine"></span>
-<p><code>,</code> を使用して xt をコンパイルする場合は、 <code>gforth-itc</code> エンジンを使用します。  このエンジンは、
-単純な古い間接スレッド化コードを使用します。 しかし、 それでもプリミティブ指向のスタイルでコンパイルされるため、  <code>,</code> の代わりに
-<code>compile,</code> を使用することはできません(たとえば、 <code>] word1 word2 ... [</code> で xt
-達のテーブルを生成する場合)。  それを行いたい場合は、 <code>gforth-itc</code> を使用して <code>' , is
-compile,</code> を実行する必要があります。 あなたのプログラムでは、 <code>threading-method</code> を使用して、 ハイブリッド
+<a class="index-entry-id" id="index-gforth_002ditc-engine"></a>
+<p><code class="code">,</code> を使用して xt をコンパイルする場合は、 <code class="command">gforth-itc</code> エンジンを使用します。  このエンジンは、
+単純な古い間接スレッド化コードを使用します。 しかし、 それでもプリミティブ指向のスタイルでコンパイルされるため、  <code class="code">,</code> の代わりに
+<code class="code">compile,</code> を使用することはできません(たとえば、 <code class="code">] word1 word2 ... [</code> で xt
+達のテーブルを生成する場合)。  それを行いたい場合は、 <code class="command">gforth-itc</code> を使用して <code class="code">' , is
+compile,</code> を実行する必要があります。 あなたのプログラムでは、 <code class="code">threading-method</code> を使用して、 ハイブリッド
 直接/間接 スレッド化エンジンで実行されているか、 純粋な間接スレッド化エンジンで実行されているかを確認できます。
 </p>
 

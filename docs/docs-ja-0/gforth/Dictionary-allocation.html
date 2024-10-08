@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Memory-model.html" rel="prev" title="Memory model">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,213 +50,213 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Dictionary-allocation">
-<div class="header">
+<div class="subsection-level-extent" id="Dictionary-allocation">
+<div class="nav-panel">
 <p>
 Next: <a href="Heap-Allocation.html" accesskey="n" rel="next">Heap allocation</a>, Previous: <a href="Memory-model.html" accesskey="p" rel="prev">Memory model</a>, Up: <a href="Memory.html" accesskey="u" rel="up">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Dictionary-allocation-1"></span><h4 class="subsection">6.7.2 Dictionary allocation</h4>
-<span id="index-reserving-data-space"></span>
-<span id="index-data-space-_002d-reserving-some"></span>
+<h4 class="subsection" id="Dictionary-allocation-1"><span>6.7.2 Dictionary allocation<a class="copiable-link" href="#Dictionary-allocation-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-reserving-data-space"></a>
+<a class="index-entry-id" id="index-data-space-_002d-reserving-some"></a>
 
 <p>ディクショナリーの割り当てはスタック指向の割り当てスキーム(stack-oriented allocation scheme)です。 つまり、 X
 の割り当てを解除したい場合は、 X の後に割り当てられたすべての割り当ても解除します。
 </p>
-<span id="index-contiguous-regions-in-dictionary-allocation"></span>
+<a class="index-entry-id" id="index-contiguous-regions-in-dictionary-allocation"></a>
 <p>以下のワード達を使用した割り当ては連続しており、 アドレスの増加方向に向けて領域が拡張されます。
-あらゆる種類のディクショナリー・メモリーを割り当てる他のワード(つまり、 <code>:noname</code> を含む定義ワード)は、
+あらゆる種類のディクショナリー・メモリーを割り当てる他のワード(つまり、 <code class="code">:noname</code> を含む定義ワード)は、
 連続領域(contiguous region)を終了し、 新しい領域を開始します。
 </p>
-<p>標準 Forth では、 <code>create</code> されたワードのみが、 後続の連続領域の開始となるアドレスを生成することが保証されています。
-特に、 <code>variable</code> によって割り当てられたセルが、 後続の <code>allot</code>
+<p>標準 Forth では、 <code class="code">create</code> されたワードのみが、 後続の連続領域の開始となるアドレスを生成することが保証されています。
+特に、 <code class="code">variable</code> によって割り当てられたセルが、 後続の <code class="code">allot</code>
 で割り当てられたメモリーと連続していることは保証されません。
 </p>
-<p><code>allot</code> に負の引数を指定して使用すると、 メモリーの割り当てを解除できます(いくつかの制限があります。 <code>allot</code>
-を参照してください)。 大規模な割り当て解除の場合は、 <code>marker</code> を使用します。
+<p><code class="code">allot</code> に負の引数を指定して使用すると、 メモリーの割り当てを解除できます(いくつかの制限があります。 <code class="code">allot</code>
+を参照してください)。 大規模な割り当て解除の場合は、 <code class="code">marker</code> を使用します。
 </p>
 
-<span id="index-here-_0028--_002d_002d-addr--_0029-core"></span>
-<span id="index-here"></span>
-<span id="index-here-1"></span>
+<a class="index-entry-id" id="index-here-_0028-_002d_002d-addr-_0029-core"></a>
+<a class="index-entry-id" id="index-here"></a>
+<a class="index-entry-id" id="index-here-1"></a>
 <div class="format">
-<pre class="format"><code>here</code> ( <i>&ndash; addr  </i>) core &ldquo;here&rdquo;
+<pre class="format-preformatted"><code class="code">here</code> ( <i class="i">&ndash; addr  </i>) core &ldquo;here&rdquo;
 </pre></div>
 <p>データ空間内の次の空き位置のアドレスを返します。
 </p>
 
-<span id="index-unused-_0028--_002d_002d-u--_0029-core_002dext"></span>
-<span id="index-unused"></span>
-<span id="index-unused-1"></span>
+<a class="index-entry-id" id="index-unused-_0028-_002d_002d-u-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-unused"></a>
+<a class="index-entry-id" id="index-unused-1"></a>
 <div class="format">
-<pre class="format"><code>unused</code> ( <i>&ndash; u  </i>) core-ext &ldquo;unused&rdquo;
+<pre class="format-preformatted"><code class="code">unused</code> ( <i class="i">&ndash; u  </i>) core-ext &ldquo;unused&rdquo;
 </pre></div>
-<p><code>here</code> でアドレス指定された領域(以降)に残っている空き領域の量をアドレス単位(address units)で返します。
+<p><code class="code">here</code> でアドレス指定された領域(以降)に残っている空き領域の量をアドレス単位(address units)で返します。
 </p>
 
-<span id="index-allot-_0028--n-_002d_002d--_0029-core"></span>
-<span id="index-allot"></span>
-<span id="index-allot-1"></span>
+<a class="index-entry-id" id="index-allot-_0028-n-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-allot"></a>
+<a class="index-entry-id" id="index-allot-1"></a>
 <div class="format">
-<pre class="format"><code>allot</code> ( <i>n &ndash;  </i>) core &ldquo;allot&rdquo;
+<pre class="format-preformatted"><code class="code">allot</code> ( <i class="i">n &ndash;  </i>) core &ldquo;allot&rdquo;
 </pre></div>
-<p>初期化せずに、 データ空間に <i>n</i> アドレス単位を予約します。 <i>n</i> は符号付きの数値で、 負の <i>n</i>
+<p>初期化せずに、 データ空間に <i class="i">n</i> アドレス単位を予約します。 <i class="i">n</i> は符号付きの数値で、 負の <i class="i">n</i>
 を渡すとメモリーが解放されます。  ANS Forth では、この方法で現在の連続領域からメモリーの割り当てを解除することしかできません。
 Gforth では、この方法で名前付きワード以外のあらゆるものを割り当て解除できます。  システムはこの制限をチェックしません。
 </p>
 
-<span id="index-_002d_003ehere-_0028--addr-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-_002d_003ehere"></span>
-<span id="index-_002d_003ehere-1"></span>
+<a class="index-entry-id" id="index-_002d_003ehere-_0028-addr-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-_002d_003ehere"></a>
+<a class="index-entry-id" id="index-_002d_003ehere-1"></a>
 <div class="format">
-<pre class="format"><code>-&gt;here</code> ( <i>addr &ndash;  </i>) gforth-1.0 &ldquo;to-here&rdquo;
+<pre class="format-preformatted"><code class="code">-&gt;here</code> ( <i class="i">addr &ndash;  </i>) gforth-1.0 &ldquo;to-here&rdquo;
 </pre></div>
-<p><code>here</code> の値を <i>addr</i> に変更します。
+<p><code class="code">here</code> の値を <i class="i">addr</i> に変更します。
 </p>
 
-<span id="index-c_002c-_0028--c-_002d_002d--_0029-core"></span>
-<span id="index-c_002c"></span>
-<span id="index-c_002c-1"></span>
+<a class="index-entry-id" id="index-c_002c-_0028-c-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-c_002c"></a>
+<a class="index-entry-id" id="index-c_002c-1"></a>
 <div class="format">
-<pre class="format"><code>c,</code> ( <i>c &ndash;  </i>) core &ldquo;c-comma&rdquo;
+<pre class="format-preformatted"><code class="code">c,</code> ( <i class="i">c &ndash;  </i>) core &ldquo;c-comma&rdquo;
 </pre></div>
-<p>文字(char)用に1つのデータ空間を予約し、 その空間に <i>c</i> を格納します。
+<p>文字(char)用に1つのデータ空間を予約し、 その空間に <i class="i">c</i> を格納します。
 </p>
 
-<span id="index-f_002c-_0028--f-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-f_002c"></span>
-<span id="index-f_002c-1"></span>
+<a class="index-entry-id" id="index-f_002c-_0028-f-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-f_002c"></a>
+<a class="index-entry-id" id="index-f_002c-1"></a>
 <div class="format">
-<pre class="format"><code>f,</code> ( <i>f &ndash;  </i>) gforth-0.2 &ldquo;f,&rdquo;
+<pre class="format-preformatted"><code class="code">f,</code> ( <i class="i">f &ndash;  </i>) gforth-0.2 &ldquo;f,&rdquo;
 </pre></div>
-<p>浮動小数点数(floating-point number)用の1つのデータ空間を予約し、 その空間に <i>f</i> を格納します。
+<p>浮動小数点数(floating-point number)用の1つのデータ空間を予約し、 その空間に <i class="i">f</i> を格納します。
 </p>
 
-<span id="index-_002c-_0028--w-_002d_002d--_0029-core"></span>
-<span id="index-_002c"></span>
-<span id="index-_002c-1"></span>
+<a class="index-entry-id" id="index-_002c-_0028-w-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-_002c"></a>
+<a class="index-entry-id" id="index-_002c-1"></a>
 <div class="format">
-<pre class="format"><code>,</code> ( <i>w &ndash;  </i>) core &ldquo;comma&rdquo;
+<pre class="format-preformatted"><code class="code">,</code> ( <i class="i">w &ndash;  </i>) core &ldquo;comma&rdquo;
 </pre></div>
-<p>セル(cell)用の1つのデータ空間を予約し、 その空間に <i>w</i> を格納します。
+<p>セル(cell)用の1つのデータ空間を予約し、 その空間に <i class="i">w</i> を格納します。
 </p>
 
-<span id="index-2_002c-_0028--w1-w2-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-2_002c"></span>
-<span id="index-2_002c-1"></span>
+<a class="index-entry-id" id="index-2_002c-_0028-w1-w2-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-2_002c"></a>
+<a class="index-entry-id" id="index-2_002c-1"></a>
 <div class="format">
-<pre class="format"><code>2,</code> ( <i>w1 w2 &ndash;  </i>) gforth-0.2 &ldquo;2,&rdquo;
+<pre class="format-preformatted"><code class="code">2,</code> ( <i class="i">w1 w2 &ndash;  </i>) gforth-0.2 &ldquo;2,&rdquo;
 </pre></div>
-<p>2つのセル用のデータ空間を予約し、 そこに <i>w1 w2</i> 格納します。 最初(低位アドレス側)に <i>w2</i> を格納します。
+<p>2つのセル用のデータ空間を予約し、 そこに <i class="i">w1 w2</i> 格納します。 最初(低位アドレス側)に <i class="i">w2</i> を格納します。
 </p>
 
-<span id="index-w_002c-_0028--w-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-w_002c"></span>
-<span id="index-w_002c-1"></span>
+<a class="index-entry-id" id="index-w_002c-_0028-w-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-w_002c"></a>
+<a class="index-entry-id" id="index-w_002c-1"></a>
 <div class="format">
-<pre class="format"><code>w,</code> ( <i>w &ndash;  </i>) gforth-1.0 &ldquo;w-comma&rdquo;
+<pre class="format-preformatted"><code class="code">w,</code> ( <i class="i">w &ndash;  </i>) gforth-1.0 &ldquo;w-comma&rdquo;
 </pre></div>
 
-<span id="index-l_002c-_0028--l-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-l_002c"></span>
-<span id="index-l_002c-1"></span>
+<a class="index-entry-id" id="index-l_002c-_0028-l-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-l_002c"></a>
+<a class="index-entry-id" id="index-l_002c-1"></a>
 <div class="format">
-<pre class="format"><code>l,</code> ( <i>l &ndash;  </i>) gforth-1.0 &ldquo;l-comma&rdquo;
+<pre class="format-preformatted"><code class="code">l,</code> ( <i class="i">l &ndash;  </i>) gforth-1.0 &ldquo;l-comma&rdquo;
 </pre></div>
 
-<span id="index-x_002c-_0028--x-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-x_002c"></span>
-<span id="index-x_002c-1"></span>
+<a class="index-entry-id" id="index-x_002c-_0028-x-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-x_002c"></a>
+<a class="index-entry-id" id="index-x_002c-1"></a>
 <div class="format">
-<pre class="format"><code>x,</code> ( <i>x &ndash;  </i>) gforth-1.0 &ldquo;x-comma&rdquo;
+<pre class="format-preformatted"><code class="code">x,</code> ( <i class="i">x &ndash;  </i>) gforth-1.0 &ldquo;x-comma&rdquo;
 </pre></div>
 
-<span id="index-xd_002c-_0028--xd-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-xd_002c"></span>
-<span id="index-xd_002c-1"></span>
+<a class="index-entry-id" id="index-xd_002c-_0028-xd-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-xd_002c"></a>
+<a class="index-entry-id" id="index-xd_002c-1"></a>
 <div class="format">
-<pre class="format"><code>xd,</code> ( <i>xd &ndash;  </i>) gforth-1.0 &ldquo;x-d-comma&rdquo;
+<pre class="format-preformatted"><code class="code">xd,</code> ( <i class="i">xd &ndash;  </i>) gforth-1.0 &ldquo;x-d-comma&rdquo;
 </pre></div>
 
-<span id="index-A_002c-_0028--addr-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-A_002c"></span>
-<span id="index-A_002c-1"></span>
+<a class="index-entry-id" id="index-A_002c-_0028-addr-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-A_002c"></a>
+<a class="index-entry-id" id="index-A_002c-1"></a>
 <div class="format">
-<pre class="format"><code>A,</code> ( <i>addr &ndash;  </i>) gforth-0.2 &ldquo;A,&rdquo;
+<pre class="format-preformatted"><code class="code">A,</code> ( <i class="i">addr &ndash;  </i>) gforth-0.2 &ldquo;A,&rdquo;
 </pre></div>
-<p>1 つのセル用のデータ空間を予約し、 そこに <i>addr</i> を格納します。  私達のクロス・コンパイラーの場合には、
-再配置可能なイメージに必要な型情報(type information)を提供します。 ただし、 通常では、 これは <code>,</code> と同等です。
+<p>1 つのセル用のデータ空間を予約し、 そこに <i class="i">addr</i> を格納します。  私達のクロス・コンパイラーの場合には、
+再配置可能なイメージに必要な型情報(type information)を提供します。 ただし、 通常では、 これは <code class="code">,</code> と同等です。
 </p>
 
-<span id="index-mem_002c-_0028--addr-u-_002d_002d--_0029-gforth_002d0_002e6"></span>
-<span id="index-mem_002c"></span>
-<span id="index-mem_002c-1"></span>
+<a class="index-entry-id" id="index-mem_002c-_0028-addr-u-_002d_002d-_0029-gforth_002d0_002e6"></a>
+<a class="index-entry-id" id="index-mem_002c"></a>
+<a class="index-entry-id" id="index-mem_002c-1"></a>
 <div class="format">
-<pre class="format"><code>mem,</code> ( <i>addr u &ndash;  </i>) gforth-0.6 &ldquo;mem,&rdquo;
+<pre class="format-preformatted"><code class="code">mem,</code> ( <i class="i">addr u &ndash;  </i>) gforth-0.6 &ldquo;mem,&rdquo;
 </pre></div>
 
-<p><code>save-mem-dict</code> ( <i>addr1 u &ndash; addr2 u</i> ) \ 
+<p><code class="code">save-mem-dict</code> ( <i class="i">addr1 u &ndash; addr2 u</i> ) \ 
 訳注:文字列をhereからのディクショナリーに書き込み、その(ディクショナリー上の)文字列を返します
 </p>
-<p>メモリー・アクセスはアライメントする必要があります(see <a href="Address-arithmetic.html">Address arithmetic</a>)。 したがって、
-メモリー割り当てもアライメントされるべきです。 つまり、 セルを割り当てる前に、 <code>here</code> をセル・アライメントする必要があります。
-以下のワード達は、 <code>here</code> が既に指定の型のアライメントに合っている状態で無い場合は合わせます。 基本的に、
-既に割り当てたのがその型のサイズの倍数であり、 かつ、 <code>here</code> が以前にその型のアライメントに対して合うようにしてあった場合にのみ、
+<p>メモリー・アクセスはアライメントする必要があります(see <a class="pxref" href="Address-arithmetic.html">Address arithmetic</a>)。 したがって、
+メモリー割り当てもアライメントされるべきです。 つまり、 セルを割り当てる前に、 <code class="code">here</code> をセル・アライメントする必要があります。
+以下のワード達は、 <code class="code">here</code> が既に指定の型のアライメントに合っている状態で無い場合は合わせます。 基本的に、
+既に割り当てたのがその型のサイズの倍数であり、 かつ、 <code class="code">here</code> が以前にその型のアライメントに対して合うようにしてあった場合にのみ、
 その型のアライメントに対して既にすでに合っているということが言えます。
 </p>
-<p>新しくワードを <code>create</code> した後、<code>here</code> は 標準 Forth では <code>align</code> されます(Gforth
-では <code>maxalign</code> されます)。
+<p>新しくワードを <code class="code">create</code> した後、<code class="code">here</code> は 標準 Forth では <code class="code">align</code> されます(Gforth
+では <code class="code">maxalign</code> されます)。
 </p>
-<span id="index-align-_0028--_002d_002d--_0029-core"></span>
-<span id="index-align"></span>
-<span id="index-align-1"></span>
+<a class="index-entry-id" id="index-align-_0028-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-align"></a>
+<a class="index-entry-id" id="index-align-1"></a>
 <div class="format">
-<pre class="format"><code>align</code> ( <i>&ndash;  </i>) core &ldquo;align&rdquo;
+<pre class="format-preformatted"><code class="code">align</code> ( <i class="i">&ndash;  </i>) core &ldquo;align&rdquo;
 </pre></div>
 <p>データ空間ポインターがアライメントできてない場合は、 アライメントするのに十分な空間を予約します。
 </p>
 
-<span id="index-falign-_0028--_002d_002d--_0029-floating"></span>
-<span id="index-falign"></span>
-<span id="index-falign-1"></span>
+<a class="index-entry-id" id="index-falign-_0028-_002d_002d-_0029-floating"></a>
+<a class="index-entry-id" id="index-falign"></a>
+<a class="index-entry-id" id="index-falign-1"></a>
 <div class="format">
-<pre class="format"><code>falign</code> ( <i>&ndash;  </i>) floating &ldquo;f-align&rdquo;
+<pre class="format-preformatted"><code class="code">falign</code> ( <i class="i">&ndash;  </i>) floating &ldquo;f-align&rdquo;
 </pre></div>
 <p>データ空間ポインターが浮動小数点数にアライメントされていない場合は、 アライメントするのに十分な空間を予約します。
 </p>
 
-<span id="index-sfalign-_0028--_002d_002d--_0029-floating_002dext"></span>
-<span id="index-sfalign"></span>
-<span id="index-sfalign-1"></span>
+<a class="index-entry-id" id="index-sfalign-_0028-_002d_002d-_0029-floating_002dext"></a>
+<a class="index-entry-id" id="index-sfalign"></a>
+<a class="index-entry-id" id="index-sfalign-1"></a>
 <div class="format">
-<pre class="format"><code>sfalign</code> ( <i>&ndash;  </i>) floating-ext &ldquo;s-f-align&rdquo;
+<pre class="format-preformatted"><code class="code">sfalign</code> ( <i class="i">&ndash;  </i>) floating-ext &ldquo;s-f-align&rdquo;
 </pre></div>
 <p>データ空間ポインターが単精度浮動小数点数にアライメントされていない場合は、 アライメントするのに十分な空間を予約します。
 </p>
 
-<span id="index-dfalign-_0028--_002d_002d--_0029-floating_002dext"></span>
-<span id="index-dfalign"></span>
-<span id="index-dfalign-1"></span>
+<a class="index-entry-id" id="index-dfalign-_0028-_002d_002d-_0029-floating_002dext"></a>
+<a class="index-entry-id" id="index-dfalign"></a>
+<a class="index-entry-id" id="index-dfalign-1"></a>
 <div class="format">
-<pre class="format"><code>dfalign</code> ( <i>&ndash;  </i>) floating-ext &ldquo;d-f-align&rdquo;
+<pre class="format-preformatted"><code class="code">dfalign</code> ( <i class="i">&ndash;  </i>) floating-ext &ldquo;d-f-align&rdquo;
 </pre></div>
 <p>データ空間ポインターが倍精度浮動小数点数にアライメントされていない場合は、 アライメントするのに十分な空間を予約します。
 </p>
 
-<span id="index-maxalign-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-maxalign"></span>
-<span id="index-maxalign-1"></span>
+<a class="index-entry-id" id="index-maxalign-_0028-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-maxalign"></a>
+<a class="index-entry-id" id="index-maxalign-1"></a>
 <div class="format">
-<pre class="format"><code>maxalign</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;maxalign&rdquo;
+<pre class="format-preformatted"><code class="code">maxalign</code> ( <i class="i">&ndash;  </i>) gforth-0.2 &ldquo;maxalign&rdquo;
 </pre></div>
 <p>すべてのアライメント要件に合わせてデータ空間ポインターをアライメントします。
 </p>
 
-<span id="index-cfalign-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-cfalign"></span>
-<span id="index-cfalign-1"></span>
+<a class="index-entry-id" id="index-cfalign-_0028-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-cfalign"></a>
+<a class="index-entry-id" id="index-cfalign-1"></a>
 <div class="format">
-<pre class="format"><code>cfalign</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;cfalign&rdquo;
+<pre class="format-preformatted"><code class="code">cfalign</code> ( <i class="i">&ndash;  </i>) gforth-0.2 &ldquo;cfalign&rdquo;
 </pre></div>
 <p>データ空間ポインターをコード・フィールドの要件に合わせてアライメントします(つまり、 対応する本体が maxalign された状態になるようにする)。
 </p>
@@ -279,7 +267,7 @@ Gforth では、この方法で名前付きワード以外のあらゆるもの�
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Heap-Allocation.html">Heap allocation</a>, Previous: <a href="Memory-model.html">Memory model</a>, Up: <a href="Memory.html">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Object-Interfaces.html" rel="prev" title="Object Interfaces">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,78 +50,78 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsubsection" id="Objects-Implementation">
-<div class="header">
+<div class="subsubsection-level-extent" id="Objects-Implementation">
+<div class="nav-panel">
 <p>
-Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs</samp> Glossary</a>, Previous: <a href="Object-Interfaces.html" accesskey="p" rel="prev">Object Interfaces</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp class="file">objects.fs</samp> Glossary</a>, Previous: <a href="Object-Interfaces.html" accesskey="p" rel="prev">Object Interfaces</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp class="file">objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="objects_002efs-Implementation"></span><h4 class="subsubsection">6.24.3.11 <samp>objects.fs</samp> Implementation</h4>
-<span id="index-objects_002efs-implementation"></span>
+<h4 class="subsubsection" id="objects_002efs-Implementation"><span>6.24.3.11 <samp class="file">objects.fs</samp> Implementation<a class="copiable-link" href="#objects_002efs-Implementation"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-objects_002efs-implementation"></a>
 
-<span id="index-object_002dmap-discussion"></span>
-<p>オブジェクトは、 <code>struct...end-struct</code> で記述されたデータ構造体の 1 つである、 メモリーの一片です。 これは、
-そのオブジェクトのクラスのメソッド・マップ(the method map) を指すフィールド <code>object-map</code> を持っています。
+<a class="index-entry-id" id="index-object_002dmap-discussion"></a>
+<p>オブジェクトは、 <code class="code">struct...end-struct</code> で記述されたデータ構造体の 1 つである、 メモリーの一片です。 これは、
+そのオブジェクトのクラスのメソッド・マップ(the method map) を指すフィールド <code class="code">object-map</code> を持っています。
 </p>
-<span id="index-method-map"></span>
-<span id="index-virtual-function-table"></span>
-<p>「メソッド・マップ」(method map)<a id="DOCF33" href="#FOOT33"><sup>33</sup></a>は、 そのオブジェクトのクラスのメソッドの実行トークン(<i>xt</i>)を含む配列です。 各セレクターには、
+<a class="index-entry-id" id="index-method-map"></a>
+<a class="index-entry-id" id="index-virtual-function-table"></a>
+<p>「メソッド・マップ」(method map)<a class="footnote" id="DOCF33" href="#FOOT33"><sup>33</sup></a>は、 そのオブジェクトのクラスのメソッドの実行トークン(<i class="i">xt</i>)を含む配列です。 各セレクターには、
 メソッド・マップへのオフセットが含まれています。
 </p>
-<span id="index-selector-implementation_002c-class"></span>
-<p><code>selector</code> は、<code>CREATE</code> と <code>DOES&gt;</code> を使用する定義ワードです。 selector
-の本体の内容はメソッド・マップのオフセット値です。 クラスのセレクターの <code>DOES&gt;</code> アクションは、 基本的には以下のとおりです(訳注:
+<a class="index-entry-id" id="index-selector-implementation_002c-class"></a>
+<p><code class="code">selector</code> は、<code class="code">CREATE</code> と <code class="code">DOES&gt;</code> を使用する定義ワードです。 selector
+の本体の内容はメソッド・マップのオフセット値です。 クラスのセレクターの <code class="code">DOES&gt;</code> アクションは、 基本的には以下のとおりです(訳注:
 メソッド・マップの実装上のフィールド名は &quot;object-map&quot;):
 </p>
 <div class="example">
-<pre class="example">( object addr ) @ over object-map @ + @ execute
+<pre class="example-preformatted">( object addr ) @ over object-map @ + @ execute
 </pre></div>
 
-<p>なお、 <code>object-map</code> はオブジェクトの最初のフィールドであるため、 コードは生成されません。 ご覧のとおり、
+<p>なお、 <code class="code">object-map</code> はオブジェクトの最初のフィールドであるため、 コードは生成されません。 ご覧のとおり、
 セレクターの呼び出しには小さいけれども一定のコストがかかります。
 </p>
-<span id="index-current_002dinterface-discussion"></span>
-<span id="index-class-implementation-and-representation"></span>
-<p>クラスは基本的に <code>struct</code> とメソッド・マップを組み合わせたものです。 <code>struct</code> の場合と同様に、 クラス定義中に、
-クラスのアライメントとサイズがスタックに渡されるため、 <code>field</code> をクラスのフィールドの定義にも使用できます。 ただし、
-スタックにさらに多くの項目を渡すと不便になるため、 <code>class</code> はメモリー内にデータ構造を構築し、 変数
-<code>current-interface</code> を通じてアクセスします。 定義が完了すると、 クラスはポインター(たとえば、
+<a class="index-entry-id" id="index-current_002dinterface-discussion"></a>
+<a class="index-entry-id" id="index-class-implementation-and-representation"></a>
+<p>クラスは基本的に <code class="code">struct</code> とメソッド・マップを組み合わせたものです。 <code class="code">struct</code> の場合と同様に、 クラス定義中に、
+クラスのアライメントとサイズがスタックに渡されるため、 <code class="code">field</code> をクラスのフィールドの定義にも使用できます。 ただし、
+スタックにさらに多くの項目を渡すと不便になるため、 <code class="code">class</code> はメモリー内にデータ構造を構築し、 変数
+<code class="code">current-interface</code> を通じてアクセスします。 定義が完了すると、 クラスはポインター(たとえば、
 子クラス定義のパラメータとして利用したりする)としてスタックに置かれます。
 </p>
 <p>新しいクラスは、 その親のアライメントとサイズ、 およびその親のメソッド・マップのコピーから始まります。 新しいフィールドを定義すると、
-サイズとアライメントが拡張されます。 同様に、 新しいセレクターを定義すると、 メソッド・マップが拡張されます。 <code>overrides</code> は、
-セレクターによって指定されたオフセットでメソッド・マップに新しい <i>xt</i> を保存するだけです。
+サイズとアライメントが拡張されます。 同様に、 新しいセレクターを定義すると、 メソッド・マップが拡張されます。 <code class="code">overrides</code> は、
+セレクターによって指定されたオフセットでメソッド・マップに新しい <i class="i">xt</i> を保存するだけです。
 </p>
-<span id="index-class-binding_002c-implementation"></span>
-<p>クラス結び付け(class binding)は、 そのクラスのメソッド・マップからセレクターによって指定されたオフセットで <i>xt</i> を取得し、
-それをコンパイル(<code>compile,</code>)するだけです(<code>[bind]</code> の場合)。
+<a class="index-entry-id" id="index-class-binding_002c-implementation"></a>
+<p>クラス結び付け(class binding)は、 そのクラスのメソッド・マップからセレクターによって指定されたオフセットで <i class="i">xt</i> を取得し、
+それをコンパイル(<code class="code">compile,</code>)するだけです(<code class="code">[bind]</code> の場合)。
 </p>
-<span id="index-this-implementation"></span>
-<span id="index-catch-and-this"></span>
-<span id="index-this-and-catch"></span>
-<p>著者は <code>this</code> を <code>value</code> として実装しました。 <code>m:...;m</code> メソッドの開始時に、 古い
-<code>this</code> がリターン・スタックに保存され、 最後に復元されます。 TOS 上のオブジェクトは <code>TO this</code> で保存します。
-この手法には欠点が 1 つあります。 ユーザーが <code>;m</code> 経由ではなく <code>throw</code> または <code>exit</code>
-経由でメソッドを終了した場合、 <code>this</code> は復元されません(そして <code>exit</code> がクラッシュする可能性があります)。 著者は
-<code>throw</code> の問題に対処するために、 <code>this</code> を保存および復元するために <code>catch</code>
+<a class="index-entry-id" id="index-this-implementation"></a>
+<a class="index-entry-id" id="index-catch-and-this"></a>
+<a class="index-entry-id" id="index-this-and-catch"></a>
+<p>著者は <code class="code">this</code> を <code class="code">value</code> として実装しました。 <code class="code">m:...;m</code> メソッドの開始時に、 古い
+<code class="code">this</code> がリターン・スタックに保存され、 最後に復元されます。 TOS 上のオブジェクトは <code class="code">TO this</code> で保存します。
+この手法には欠点が 1 つあります。 ユーザーが <code class="code">;m</code> 経由ではなく <code class="code">throw</code> または <code class="code">exit</code>
+経由でメソッドを終了した場合、 <code class="code">this</code> は復元されません(そして <code class="code">exit</code> がクラッシュする可能性があります)。 著者は
+<code class="code">throw</code> の問題に対処するために、 <code class="code">this</code> を保存および復元するために <code class="code">catch</code>
 を再定義しました(訳注: &quot;objects.fs&quot; をインクルードした時に &quot;redefined catch&quot; と警告が出るが、
-意図的に再定義してあるので無視してください、 ということ)。 例外をキャッチできるワードについても全く同様に行うべきです。 <code>exit</code>
-については、 単純に使用を禁止します(代わりに <code>exitm</code> を用意しました)。
+意図的に再定義してあるので無視してください、 ということ)。 例外をキャッチできるワードについても全く同様に行うべきです。 <code class="code">exit</code>
+については、 単純に使用を禁止します(代わりに <code class="code">exitm</code> を用意しました)。
 </p>
-<span id="index-inst_002dvar-implementation"></span>
-<p><code>inst-var</code> は <code>field</code> とまったく同じですが、 <code>DOES&gt;</code> アクションが異なります:
+<a class="index-entry-id" id="index-inst_002dvar-implementation"></a>
+<p><code class="code">inst-var</code> は <code class="code">field</code> とまったく同じですが、 <code class="code">DOES&gt;</code> アクションが異なります:
 </p><div class="example">
-<pre class="example">@ this +
+<pre class="example-preformatted">@ this +
 </pre></div>
-<p><code>inst-value</code> も同様です。
+<p><code class="code">inst-value</code> も同様です。
 </p>
-<span id="index-class-scoping-implementation"></span>
-<p>各クラスは、 <code>inst-var</code> と <code>inst-value</code> で定義されたワードや、 それらの protected
-されたワードを含む、 ワードリストを持っています。 また、 その親へのポインターも持っています。 <code>class</code> は、
-クラスとそのすべての祖先のワードリストを検索順序スタック(the search order)にプッシュし、 <code>end-class</code>
+<a class="index-entry-id" id="index-class-scoping-implementation"></a>
+<p>各クラスは、 <code class="code">inst-var</code> と <code class="code">inst-value</code> で定義されたワードや、 それらの protected
+されたワードを含む、 ワードリストを持っています。 また、 その親へのポインターも持っています。 <code class="code">class</code> は、
+クラスとそのすべての祖先のワードリストを検索順序スタック(the search order)にプッシュし、 <code class="code">end-class</code>
 はそれらをスタックから drop します。
 </p>
-<span id="index-interface-implementation"></span>
+<a class="index-entry-id" id="index-interface-implementation"></a>
 <p>インターフェイスは、 フィールドと親と protected されたワードのないクラスに似ています。 つまり、 メソッド・マップがあるだけです。
 クラスがインターフェイスを実装する場合、 そのメソッド・マップにはインターフェイスのメソッド・マップへのポインターが含まれます。
 マップ内の正のオフセットはクラス・メソッド用に予約されているため、 インターフェイス・マップ・ポインターは負のオフセットを持ちます。
@@ -142,22 +130,22 @@ Next: <a href="Objects-Glossary.html" accesskey="n" rel="next"><samp>objects.fs<
 </p>
 <p>この構造は、 インターフェイス・セレクターがメソッドを見つけるために、 クラス・セレクターよりも 1
 つ多い間接参照を実行する必要があることを意味します。 その本体には、 クラス・メソッド・マップ内のインターフェイス・マップ・ポインター・オフセットと、
-インターフェイス・メソッド・マップ内のメソッド・オフセットが含まれています。 インターフェイス・セレクターの <code>does&gt;</code> アクションは、
+インターフェイス・メソッド・マップ内のメソッド・オフセットが含まれています。 インターフェイス・セレクターの <code class="code">does&gt;</code> アクションは、
 基本的には以下のとおりです:
 </p>
 <div class="example">
-<pre class="example">( object selector-body )
+<pre class="example-preformatted">( object selector-body )
 2dup selector-interface @ ( object selector-body object interface-offset )
 swap object-map @ + @ ( object selector-body map )
 swap selector-offset @ + @ execute
 </pre></div>
 
-<p>ここで、 <code>object-map</code> と <code>selector-offset</code> は最初のフィールドであり、 コードは生成されません。
+<p>ここで、 <code class="code">object-map</code> と <code class="code">selector-offset</code> は最初のフィールドであり、 コードは生成されません。
 </p>
 <p>具体的な例として、 以下のコードについて考えてみましょう: 
 </p>
 <div class="example">
-<pre class="example">interface
+<pre class="example-preformatted">interface
   selector if1sel1
   selector if1sel2
 end-interface if1
@@ -177,22 +165,22 @@ create obj1 object dict-new drop
 create obj2 cl1    dict-new drop
 </pre></div>
 
-<p>このコードで作成されたデータ構造 (<code>object</code> のデータ構造を含む) は、セル・サイズ 4 を想定して
-<a href="objects-implementation.png">figure</a> に図示されています。
+<p>このコードで作成されたデータ構造 (<code class="code">object</code> のデータ構造を含む) は、セル・サイズ 4 を想定して
+<a class="uref" href="objects-implementation.png">figure</a> に図示されています。
 </p>
 </div>
-<div class="footnote">
+<div class="footnotes-segment">
 <hr>
 <h4 class="footnotes-heading">Footnotes</h4>
 
-<h5><a id="FOOT33" href="#DOCF33">(33)</a></h5>
+<h5 class="footnote-body-heading"><a id="FOOT33" href="#DOCF33">(33)</a></h5>
 <p>「メソッド・マップ」(method map)は著者自作用語です。 C++ 用語では、
 仮想関数テーブル と言います。</p>
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
-Next: <a href="Objects-Glossary.html"><samp>objects.fs</samp> Glossary</a>, Previous: <a href="Object-Interfaces.html">Object Interfaces</a>, Up: <a href="Objects.html">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Objects-Glossary.html"><samp class="file">objects.fs</samp> Glossary</a>, Previous: <a href="Object-Interfaces.html">Object Interfaces</a>, Up: <a href="Objects.html">The <samp class="file">objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

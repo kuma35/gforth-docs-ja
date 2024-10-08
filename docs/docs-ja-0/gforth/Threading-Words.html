@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -38,21 +38,9 @@ Foundation raise funds for GNU development." -->
 <link href="Header-methods.html" rel="prev" title="Header methods">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -61,304 +49,304 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Threading-Words">
-<div class="header">
+<div class="subsection-level-extent" id="Threading-Words">
+<div class="nav-panel">
 <p>
 Previous: <a href="Header-methods.html" accesskey="p" rel="prev">Header methods</a>, Up: <a href="Carnal-words.html" accesskey="u" rel="up">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Threading-Words-1"></span><h4 class="subsection">6.30.3 Threading Words</h4>
-<span id="index-threading-words"></span>
+<h4 class="subsection" id="Threading-Words-1"><span>6.30.3 Threading Words<a class="copiable-link" href="#Threading-Words-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-threading-words"></a>
 
-<span id="index-code-field"></span>
-<span id="index-CFA"></span>
-<span id="index-code-address"></span>
+<a class="index-entry-id" id="index-code-field"></a>
+<a class="index-entry-id" id="index-CFA"></a>
+<a class="index-entry-id" id="index-code-address"></a>
 <p>ここで使用される用語は、 間接スレッド Forth システム(indirect threaded Forth systems)に由来しています。
 間接スレッド Forth システムでは、 ワードの XT はワードの CFA (コード・フィールド・アドレス) によって表されます。 CFA は、
 コード・アドレスを含むセルを指します。  コード・アドレスとは、 ワードを呼び出す実行時のアクションを実行するマシン・コードのアドレスです(たとえば、
-<code>dovar:</code> ルーチンは、 ワード(変数)の本体のアドレスをスタックにプッシュします)。
+<code class="code">dovar:</code> ルーチンは、 ワード(変数)の本体のアドレスをスタックにプッシュします)。
 </p>
 <p>以下のワード群は、 Gforth のコード・フィールドやコード・アドレスやその他のスレッド機能へのアクセスを提供します。
 これにより、直接スレッドと間接スレッドの違いは、 多かれ少なかれ抽象化されます。
 </p>
-<p>Gforth 0.7 までは、 ワードの種類を知るのに、 コード・アドレス(さらに、 <code>does&gt;</code> で定義されたワードの場合は、
-<code>&gt;does-code</code> によって返されるアドレス)で十分でした。  ただし、 Gforth-1.0 以降、 少なくとも、
-<code>compile,</code> や <code>name&gt;compile</code> のようなワードの振る舞いや実装は、 <a href="Header-methods.html">Header methods</a>
+<p>Gforth 0.7 までは、 ワードの種類を知るのに、 コード・アドレス(さらに、 <code class="code">does&gt;</code> で定義されたワードの場合は、
+<code class="code">&gt;does-code</code> によって返されるアドレス)で十分でした。  ただし、 Gforth-1.0 以降、 少なくとも、
+<code class="code">compile,</code> や <code class="code">name&gt;compile</code> のようなワードの振る舞いや実装は、 <a class="ref" href="Header-methods.html">Header methods</a>
 で説明されているように独立して決定できます。
 </p>
 <p>以下のワード達は、 コード・フィールドを作成し、 そして、 同時にヘッダー・メソッドを初期化します:
 </p>
-<span id="index-hmcopy_002c-_0028--xt-_002d_002d--_0029-gforth_002dexperimental"></span>
-<span id="index-hmcopy_002c"></span>
-<span id="index-hmcopy_002c-1"></span>
+<a class="index-entry-id" id="index-hmcopy_002c-_0028-xt-_002d_002d-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-hmcopy_002c"></a>
+<a class="index-entry-id" id="index-hmcopy_002c-1"></a>
 <div class="format">
-<pre class="format"><code>hmcopy,</code> ( <i>xt &ndash;  </i>) gforth-experimental &ldquo;hmcopy-comma&rdquo;
+<pre class="format-preformatted"><code class="code">hmcopy,</code> ( <i class="i">xt &ndash;  </i>) gforth-experimental &ldquo;hmcopy-comma&rdquo;
 </pre></div>
-<p>ヘッダーの構築中に、 コード・フィールドを割り当て、 コード・フィールドとヘッダー・メソッドを設定するためのプロトタイプとして <i>xt</i>
+<p>ヘッダーの構築中に、 コード・フィールドを割り当て、 コード・フィールドとヘッダー・メソッドを設定するためのプロトタイプとして <i class="i">xt</i>
 を使用します。
 </p>
 
-<span id="index-docol_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-docol_002c"></span>
-<span id="index-docol_002c-1"></span>
+<a class="index-entry-id" id="index-docol_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-docol_002c"></a>
+<a class="index-entry-id" id="index-docol_002c-1"></a>
 <div class="format">
-<pre class="format"><code>docol,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;docol,&rdquo;
+<pre class="format-preformatted"><code class="code">docol,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;docol,&rdquo;
 </pre></div>
 <p>コロン定義のコード・アドレスを書き込む。
 </p>
 
-<span id="index-docon_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-docon_002c"></span>
-<span id="index-docon_002c-1"></span>
+<a class="index-entry-id" id="index-docon_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-docon_002c"></a>
+<a class="index-entry-id" id="index-docon_002c-1"></a>
 <div class="format">
-<pre class="format"><code>docon,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;docon,&rdquo;
+<pre class="format-preformatted"><code class="code">docon,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;docon,&rdquo;
 </pre></div>
-<p><code>CONSTANT</code> のコード・アドレスを書き込む。
+<p><code class="code">CONSTANT</code> のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dovar_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-dovar_002c"></span>
-<span id="index-dovar_002c-1"></span>
+<a class="index-entry-id" id="index-dovar_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-dovar_002c"></a>
+<a class="index-entry-id" id="index-dovar_002c-1"></a>
 <div class="format">
-<pre class="format"><code>dovar,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dovar,&rdquo;
+<pre class="format-preformatted"><code class="code">dovar,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;dovar,&rdquo;
 </pre></div>
-<p><code>CREATE</code> されたワードのコード・アドレスを書き込む。
+<p><code class="code">CREATE</code> されたワードのコード・アドレスを書き込む。
 </p>
 
-<span id="index-douser_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-douser_002c"></span>
-<span id="index-douser_002c-1"></span>
+<a class="index-entry-id" id="index-douser_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-douser_002c"></a>
+<a class="index-entry-id" id="index-douser_002c-1"></a>
 <div class="format">
-<pre class="format"><code>douser,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;douser,&rdquo;
+<pre class="format-preformatted"><code class="code">douser,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;douser,&rdquo;
 </pre></div>
-<p><code>USER</code> 変数のコード・アドレスを書き込む。
+<p><code class="code">USER</code> 変数のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dodefer_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-dodefer_002c"></span>
-<span id="index-dodefer_002c-1"></span>
+<a class="index-entry-id" id="index-dodefer_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-dodefer_002c"></a>
+<a class="index-entry-id" id="index-dodefer_002c-1"></a>
 <div class="format">
-<pre class="format"><code>dodefer,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dodefer,&rdquo;
+<pre class="format-preformatted"><code class="code">dodefer,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;dodefer,&rdquo;
 </pre></div>
-<p><code>defer</code> されたワードのコード・アドレスを書き込む。
+<p><code class="code">defer</code> されたワードのコード・アドレスを書き込む。
 </p>
 
-<span id="index-dofield_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-dofield_002c"></span>
-<span id="index-dofield_002c-1"></span>
+<a class="index-entry-id" id="index-dofield_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-dofield_002c"></a>
+<a class="index-entry-id" id="index-dofield_002c-1"></a>
 <div class="format">
-<pre class="format"><code>dofield,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dofield,&rdquo;
+<pre class="format-preformatted"><code class="code">dofield,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;dofield,&rdquo;
 </pre></div>
-<p><code>field</code> のコード・アドレスを書き込む。
+<p><code class="code">field</code> のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dovalue_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-dovalue_002c"></span>
-<span id="index-dovalue_002c-1"></span>
+<a class="index-entry-id" id="index-dovalue_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-dovalue_002c"></a>
+<a class="index-entry-id" id="index-dovalue_002c-1"></a>
 <div class="format">
-<pre class="format"><code>dovalue,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;dovalue,&rdquo;
+<pre class="format-preformatted"><code class="code">dovalue,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;dovalue,&rdquo;
 </pre></div>
-<p><code>CONSTANT</code> のコード・アドレスを書き込む。
+<p><code class="code">CONSTANT</code> のコード・アドレスを書き込む。
 </p>
 
-<span id="index-doabicode_002c-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-doabicode_002c"></span>
-<span id="index-doabicode_002c-1"></span>
+<a class="index-entry-id" id="index-doabicode_002c-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-doabicode_002c"></a>
+<a class="index-entry-id" id="index-doabicode_002c-1"></a>
 <div class="format">
-<pre class="format"><code>doabicode,</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;doabicode,&rdquo;
+<pre class="format-preformatted"><code class="code">doabicode,</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;doabicode,&rdquo;
 </pre></div>
-<p><code>ABI-CODE</code> 定義のコード・アドレスを書き込む。
+<p><code class="code">ABI-CODE</code> 定義のコード・アドレスを書き込む。
 </p>
 
 
-<p><code>does&gt;</code> で定義されたワードの場合、 <code>hmcopy,</code> を使用してください。
+<p><code class="code">does&gt;</code> で定義されたワードの場合、 <code class="code">hmcopy,</code> を使用してください。
 </p>
-<p>または、 <code>create-from</code> のような高レベルのワードを使用します(see <a href="Creating-from-a-prototype.html">Creating from a prototype</a>)。
+<p>または、 <code class="code">create-from</code> のような高レベルのワードを使用します(see <a class="pxref" href="Creating-from-a-prototype.html">Creating from a prototype</a>)。
 </p>
 <p>以下のワード群はヘッダー・メソッドが導入される前に設計されたものであるため、 Gforth
 でさまざまなワード・タイプを処理する最良の(推奨される)方法ではありません。
 </p>
-<p>間接スレッド Forth では、 <code>' <i>name</i> @</code> を使用して <i>name</i> のコード・アドレスを取得できます。
-Gforth では、 スレッド化方式とは関係なく、 <code>' <i>name</i> &gt;code-address</code> で取得できます。
+<p>間接スレッド Forth では、 <code class="code">' <i class="i">name</i> @</code> を使用して <i class="i">name</i> のコード・アドレスを取得できます。
+Gforth では、 スレッド化方式とは関係なく、 <code class="code">' <i class="i">name</i> &gt;code-address</code> で取得できます。
 </p>
-<span id="index-threading_002dmethod-_0028--_002d_002d-n--_0029-gforth_002d0_002e2"></span>
-<span id="index-threading_002dmethod"></span>
-<span id="index-threading_002dmethod-1"></span>
+<a class="index-entry-id" id="index-threading_002dmethod-_0028-_002d_002d-n-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-threading_002dmethod"></a>
+<a class="index-entry-id" id="index-threading_002dmethod-1"></a>
 <div class="format">
-<pre class="format"><code>threading-method</code> ( <i>&ndash; n </i>) gforth-0.2 &ldquo;threading-method&rdquo;
+<pre class="format-preformatted"><code class="code">threading-method</code> ( <i class="i">&ndash; n </i>) gforth-0.2 &ldquo;threading-method&rdquo;
 </pre></div>
 <p>エンジンが直接スレッドの場合は 0。 注意: これはイメージの存続期間中(lifetime)に変更される可能性があることに注意してください。
 </p>
-<span id="index-_003ecode_002daddress-_0028--xt-_002d_002d-c_005faddr--_0029-gforth_002d0_002e2"></span>
-<span id="index-_003ecode_002daddress"></span>
-<span id="index-_003ecode_002daddress-1"></span>
+<a class="index-entry-id" id="index-_003ecode_002daddress-_0028-xt-_002d_002d-c_005faddr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-_003ecode_002daddress"></a>
+<a class="index-entry-id" id="index-_003ecode_002daddress-1"></a>
 <div class="format">
-<pre class="format"><code>&gt;code-address</code> ( <i>xt &ndash; c_addr  </i>) gforth-0.2 &ldquo;&gt;code-address&rdquo;
+<pre class="format-preformatted"><code class="code">&gt;code-address</code> ( <i class="i">xt &ndash; c_addr  </i>) gforth-0.2 &ldquo;&gt;code-address&rdquo;
 </pre></div>
-<p><i>c-addr</i> は、 ワード <i>xt</i> のコード・アドレスです。
+<p><i class="i">c-addr</i> は、 ワード <i class="i">xt</i> のコード・アドレスです。
 </p>
 
-<span id="index-code_002daddress_0021-_0028--c_005faddr-xt-_002d_002d--_0029-gforth_002dobsolete"></span>
-<span id="index-code_002daddress_0021"></span>
-<span id="index-code_002daddress_0021-1"></span>
+<a class="index-entry-id" id="index-code_002daddress_0021-_0028-c_005faddr-xt-_002d_002d-_0029-gforth_002dobsolete"></a>
+<a class="index-entry-id" id="index-code_002daddress_0021"></a>
+<a class="index-entry-id" id="index-code_002daddress_0021-1"></a>
 <div class="format">
-<pre class="format"><code>code-address!</code> ( <i>c_addr xt &ndash;  </i>) gforth-obsolete &ldquo;code-address!&rdquo;
+<pre class="format-preformatted"><code class="code">code-address!</code> ( <i class="i">c_addr xt &ndash;  </i>) gforth-obsolete &ldquo;code-address!&rdquo;
 </pre></div>
-<p>コード・アドレス <i>c-addr</i> のコード・フィールドを <i>xt</i> に変更します。
+<p>コード・アドレス <i class="i">c-addr</i> のコード・フィールドを <i class="i">xt</i> に変更します。
 </p>
 
 
 <p>さまざまな定義ワードによって生成されるコード・アドレスは、 以下のワード群によって生成されます:
 </p>
-<span id="index-docol_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-docol_003a"></span>
-<span id="index-docol_003a-1"></span>
+<a class="index-entry-id" id="index-docol_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-docol_003a"></a>
+<a class="index-entry-id" id="index-docol_003a-1"></a>
 <div class="format">
-<pre class="format"><code>docol:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;docol:&rdquo;
+<pre class="format-preformatted"><code class="code">docol:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;docol:&rdquo;
 </pre></div>
 <p>コロン定義のコード・アドレスを書き込む。
 </p>
 
-<span id="index-docon_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-docon_003a"></span>
-<span id="index-docon_003a-1"></span>
+<a class="index-entry-id" id="index-docon_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-docon_003a"></a>
+<a class="index-entry-id" id="index-docon_003a-1"></a>
 <div class="format">
-<pre class="format"><code>docon:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;docon:&rdquo;
+<pre class="format-preformatted"><code class="code">docon:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;docon:&rdquo;
 </pre></div>
-<p><code>CONSTANT</code> のコード・アドレスを書き込む。
+<p><code class="code">CONSTANT</code> のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dovar_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-dovar_003a"></span>
-<span id="index-dovar_003a-1"></span>
+<a class="index-entry-id" id="index-dovar_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-dovar_003a"></a>
+<a class="index-entry-id" id="index-dovar_003a-1"></a>
 <div class="format">
-<pre class="format"><code>dovar:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;dovar:&rdquo;
+<pre class="format-preformatted"><code class="code">dovar:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;dovar:&rdquo;
 </pre></div>
-<p><code>CREATE</code> されたワードのコード・アドレスを書き込む。
+<p><code class="code">CREATE</code> されたワードのコード・アドレスを書き込む。
 </p>
 
-<span id="index-douser_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-douser_003a"></span>
-<span id="index-douser_003a-1"></span>
+<a class="index-entry-id" id="index-douser_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-douser_003a"></a>
+<a class="index-entry-id" id="index-douser_003a-1"></a>
 <div class="format">
-<pre class="format"><code>douser:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;douser:&rdquo;
+<pre class="format-preformatted"><code class="code">douser:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;douser:&rdquo;
 </pre></div>
-<p><code>USER</code> 変数のコード・アドレスを書き込む。
+<p><code class="code">USER</code> 変数のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dodefer_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-dodefer_003a"></span>
-<span id="index-dodefer_003a-1"></span>
+<a class="index-entry-id" id="index-dodefer_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-dodefer_003a"></a>
+<a class="index-entry-id" id="index-dodefer_003a-1"></a>
 <div class="format">
-<pre class="format"><code>dodefer:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;dodefer:&rdquo;
+<pre class="format-preformatted"><code class="code">dodefer:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;dodefer:&rdquo;
 </pre></div>
-<p><code>defer</code> されたワードのコード・アドレスを書き込む。
+<p><code class="code">defer</code> されたワードのコード・アドレスを書き込む。
 </p>
 
-<span id="index-dofield_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e2"></span>
-<span id="index-dofield_003a"></span>
-<span id="index-dofield_003a-1"></span>
+<a class="index-entry-id" id="index-dofield_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-dofield_003a"></a>
+<a class="index-entry-id" id="index-dofield_003a-1"></a>
 <div class="format">
-<pre class="format"><code>dofield:</code> ( <i>&ndash; addr  </i>) gforth-0.2 &ldquo;dofield:&rdquo;
+<pre class="format-preformatted"><code class="code">dofield:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.2 &ldquo;dofield:&rdquo;
 </pre></div>
-<p><code>field</code> のコード・アドレスを書き込む。
+<p><code class="code">field</code> のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dovalue_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e7"></span>
-<span id="index-dovalue_003a"></span>
-<span id="index-dovalue_003a-1"></span>
+<a class="index-entry-id" id="index-dovalue_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-dovalue_003a"></a>
+<a class="index-entry-id" id="index-dovalue_003a-1"></a>
 <div class="format">
-<pre class="format"><code>dovalue:</code> ( <i>&ndash; addr  </i>) gforth-0.7 &ldquo;dovalue:&rdquo;
+<pre class="format-preformatted"><code class="code">dovalue:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.7 &ldquo;dovalue:&rdquo;
 </pre></div>
-<p><code>CONSTANT</code> のコード・アドレスを書き込む。
+<p><code class="code">CONSTANT</code> のコード・アドレスを書き込む。
 </p>
 
-<span id="index-dodoes_003a-_0028--_002d_002d-addr--_0029-gforth_002d0_002e6"></span>
-<span id="index-dodoes_003a"></span>
-<span id="index-dodoes_003a-1"></span>
+<a class="index-entry-id" id="index-dodoes_003a-_0028-_002d_002d-addr-_0029-gforth_002d0_002e6"></a>
+<a class="index-entry-id" id="index-dodoes_003a"></a>
+<a class="index-entry-id" id="index-dodoes_003a-1"></a>
 <div class="format">
-<pre class="format"><code>dodoes:</code> ( <i>&ndash; addr  </i>) gforth-0.6 &ldquo;dodoes:&rdquo;
+<pre class="format-preformatted"><code class="code">dodoes:</code> ( <i class="i">&ndash; addr  </i>) gforth-0.6 &ldquo;dodoes:&rdquo;
 </pre></div>
-<p><code>DOES&gt;</code> で定義されたワードのコード・アドレス。
+<p><code class="code">DOES&gt;</code> で定義されたワードのコード・アドレス。
 </p>
 
-<span id="index-doabicode_003a-_0028--_002d_002d-addr--_0029-gforth_002d1_002e0"></span>
-<span id="index-doabicode_003a"></span>
-<span id="index-doabicode_003a-1"></span>
+<a class="index-entry-id" id="index-doabicode_003a-_0028-_002d_002d-addr-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-doabicode_003a"></a>
+<a class="index-entry-id" id="index-doabicode_003a-1"></a>
 <div class="format">
-<pre class="format"><code>doabicode:</code> ( <i>&ndash; addr  </i>) gforth-1.0 &ldquo;doabicode:&rdquo;
+<pre class="format-preformatted"><code class="code">doabicode:</code> ( <i class="i">&ndash; addr  </i>) gforth-1.0 &ldquo;doabicode:&rdquo;
 </pre></div>
-<p><code>ABI-CODE</code> 定義のコード・アドレスを書き込む。
+<p><code class="code">ABI-CODE</code> 定義のコード・アドレスを書き込む。
 </p>
 
 
-<span id="index-does_003e_002dcode"></span>
-<p><code>set-does&gt;</code> で定義されたワード <i>X</i> の場合、 コード・アドレスは <code>dodoes:</code> を指し、 そして、
-ヘッダー・メソッドの <code>&gt;hmextra</code> フィールドには、 <i>X</i> の本体(body)アドレスをプッシュした後に呼び出されるワードの
-<i>xt</i> が含まれます。
+<a class="index-entry-id" id="index-does_003e_002dcode"></a>
+<p><code class="code">set-does&gt;</code> で定義されたワード <i class="i">X</i> の場合、 コード・アドレスは <code class="code">dodoes:</code> を指し、 そして、
+ヘッダー・メソッドの <code class="code">&gt;hmextra</code> フィールドには、 <i class="i">X</i> の本体(body)アドレスをプッシュした後に呼び出されるワードの
+<i class="i">xt</i> が含まれます。
 </p>
-<p>ワードが <code>DOES&gt;</code> で定義されたワードであるかどうか、 そしてそのワードが <i>execute</i> する Forth
-コードを知りたい場合は、<code>&gt;does-code</code> で以下のことがわかります:
+<p>ワードが <code class="code">DOES&gt;</code> で定義されたワードであるかどうか、 そしてそのワードが <i class="i">execute</i> する Forth
+コードを知りたい場合は、<code class="code">&gt;does-code</code> で以下のことがわかります:
 </p>
-<span id="index-_003edoes_002dcode-_0028--xt1-_002d_002d-xt2--_0029-gforth_002d0_002e2"></span>
-<span id="index-_003edoes_002dcode"></span>
-<span id="index-_003edoes_002dcode-1"></span>
+<a class="index-entry-id" id="index-_003edoes_002dcode-_0028-xt1-_002d_002d-xt2-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-_003edoes_002dcode"></a>
+<a class="index-entry-id" id="index-_003edoes_002dcode-1"></a>
 <div class="format">
-<pre class="format"><code>&gt;does-code</code> ( <i>xt1 &ndash; xt2  </i>) gforth-0.2 &ldquo;&gt;does-code&rdquo;
+<pre class="format-preformatted"><code class="code">&gt;does-code</code> ( <i class="i">xt1 &ndash; xt2  </i>) gforth-0.2 &ldquo;&gt;does-code&rdquo;
 </pre></div>
-<p><i>xt1</i> が <code>set-does&gt;</code> で定義されたワードの子の実行トークンである場合、 <i>xt2</i> は
-<code>set-does&gt;</code> に渡される xt 、 つまり <i>xt1</i> 実行時に実行されるワードの xt です(ただし、 最初に <i>xt1</i>
-の本体(body)アドレスがプッシュされます)。 <i>xt1</i> が <code>set-does&gt;</code> で定義されたワードに属していない場合、
-<i>xt2</i> は 0 です。
+<p><i class="i">xt1</i> が <code class="code">set-does&gt;</code> で定義されたワードの子の実行トークンである場合、 <i class="i">xt2</i> は
+<code class="code">set-does&gt;</code> に渡される xt 、 つまり <i class="i">xt1</i> 実行時に実行されるワードの xt です(ただし、 最初に <i class="i">xt1</i>
+の本体(body)アドレスがプッシュされます)。 <i class="i">xt1</i> が <code class="code">set-does&gt;</code> で定義されたワードに属していない場合、
+<i class="i">xt2</i> は 0 です。
 </p>
 
 
-<p>結果の <i>xt2</i> を <code>set-does&gt;</code> (推奨) とともに使用して、 もっとも最新のワードを変更するか以下を使用して変更できます
+<p>結果の <i class="i">xt2</i> を <code class="code">set-does&gt;</code> (推奨) とともに使用して、 もっとも最新のワードを変更するか以下を使用して変更できます
 </p>
-<span id="index-does_002dcode_0021-_0028--xt2-xt1-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-does_002dcode_0021"></span>
-<span id="index-does_002dcode_0021-1"></span>
+<a class="index-entry-id" id="index-does_002dcode_0021-_0028-xt2-xt1-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-does_002dcode_0021"></a>
+<a class="index-entry-id" id="index-does_002dcode_0021-1"></a>
 <div class="format">
-<pre class="format"><code>does-code!</code> ( <i>xt2 xt1 &ndash;  </i>) gforth-0.2 &ldquo;does-code!&rdquo;
+<pre class="format-preformatted"><code class="code">does-code!</code> ( <i class="i">xt2 xt1 &ndash;  </i>) gforth-0.2 &ldquo;does-code!&rdquo;
 </pre></div>
-<p><i>xt1</i> を <code><i>xt2</i> set-does&gt;</code> で定義されたワードに変更します。
+<p><i class="i">xt1</i> を <code class="code"><i class="i">xt2</i> set-does&gt;</code> で定義されたワードに変更します。
 </p>
 
 
 <p>任意のワードを変更するためには…
 </p>
-<span id="index-definer"></span>
-<p>以下の 2 つのワードは、 <code>&gt;code-address</code> や <code>&gt;does-code</code> や
-<code>code-address!</code> や <code>does-code!</code> を一般化します:
+<a class="index-entry-id" id="index-definer"></a>
+<p>以下の 2 つのワードは、 <code class="code">&gt;code-address</code> や <code class="code">&gt;does-code</code> や
+<code class="code">code-address!</code> や <code class="code">does-code!</code> を一般化します:
 </p>
-<span id="index-_003edefiner-_0028--xt-_002d_002d-definer--_0029-gforth_002d0_002e2"></span>
-<span id="index-_003edefiner"></span>
-<span id="index-_003edefiner-1"></span>
+<a class="index-entry-id" id="index-_003edefiner-_0028-xt-_002d_002d-definer-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-_003edefiner"></a>
+<a class="index-entry-id" id="index-_003edefiner-1"></a>
 <div class="format">
-<pre class="format"><code>&gt;definer</code> ( <i>xt &ndash; definer  </i>) gforth-0.2 &ldquo;&gt;definer&rdquo;
+<pre class="format-preformatted"><code class="code">&gt;definer</code> ( <i class="i">xt &ndash; definer  </i>) gforth-0.2 &ldquo;&gt;definer&rdquo;
 </pre></div>
-<p><var>definer</var> (definer;定義者)は、 <var>xt</var> の定義方法を示す一意の識別子です。  異なる <code>does&gt;</code>
-コードで定義されたワードには、 異なる definer が存在します。  definer は比較や <code>definer!</code> で使用できます。
+<p><var class="var">definer</var> (definer;定義者)は、 <var class="var">xt</var> の定義方法を示す一意の識別子です。  異なる <code class="code">does&gt;</code>
+コードで定義されたワードには、 異なる definer が存在します。  definer は比較や <code class="code">definer!</code> で使用できます。
 </p>
 
-<span id="index-definer_0021-_0028--definer-xt-_002d_002d--_0029-gforth_002dobsolete"></span>
-<span id="index-definer_0021"></span>
-<span id="index-definer_0021-1"></span>
+<a class="index-entry-id" id="index-definer_0021-_0028-definer-xt-_002d_002d-_0029-gforth_002dobsolete"></a>
+<a class="index-entry-id" id="index-definer_0021"></a>
+<a class="index-entry-id" id="index-definer_0021-1"></a>
 <div class="format">
-<pre class="format"><code>definer!</code> ( <i>definer xt &ndash;  </i>) gforth-obsolete &ldquo;definer!&rdquo;
+<pre class="format-preformatted"><code class="code">definer!</code> ( <i class="i">definer xt &ndash;  </i>) gforth-obsolete &ldquo;definer!&rdquo;
 </pre></div>
-<p><var>xt</var> で表されるワードは、 その振る舞いを <var>definer</var> に関連付けられた振る舞いに変更します。
+<p><var class="var">xt</var> で表されるワードは、 その振る舞いを <var class="var">definer</var> に関連付けられた振る舞いに変更します。
 </p>
 
 
-<p><code>Code-address!</code> や <code>does-code!</code> や <code>definer!</code> は、
-<code>opt-compile,</code> メソッドをそのワード型用のやや汎用的なコンパイラーに更新します(特に、 プリミティブに対しては、
-プリミティブ固有の <code>peephole-compile,</code> (peephole-compile;のぞき穴最適化コンパイル)ではなく、 遅い
-<code>general-compile,</code> (一般コンパイル)メソッドが使用されます)。
+<p><code class="code">Code-address!</code> や <code class="code">does-code!</code> や <code class="code">definer!</code> は、
+<code class="code">opt-compile,</code> メソッドをそのワード型用のやや汎用的なコンパイラーに更新します(特に、 プリミティブに対しては、
+プリミティブ固有の <code class="code">peephole-compile,</code> (peephole-compile;のぞき穴最適化コンパイル)ではなく、 遅い
+<code class="code">general-compile,</code> (一般コンパイル)メソッドが使用されます)。
 </p>
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Previous: <a href="Header-methods.html">Header methods</a>, Up: <a href="Carnal-words.html">Carnal words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

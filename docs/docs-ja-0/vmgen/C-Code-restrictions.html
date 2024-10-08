@@ -1,12 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
 0.7.9_20240418、April 18, 2024) 用です
 
-Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Author: Anton Ertl Copyright © 2002,2003,2005,2007,2008,2019 Free
 Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document under
@@ -36,21 +36,9 @@ Foundation raise funds for GNU development." -->
 <link href="C-Code-Macros.html" rel="prev" title="C Code Macros">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+span:hover a.copiable-link {visibility: visible}
+ul.mark-bullet {list-style-type: disc}
 -->
 </style>
 
@@ -58,53 +46,53 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="C-Code-restrictions">
-<div class="header">
+<div class="subsection-level-extent" id="C-Code-restrictions">
+<div class="nav-panel">
 <p>
 Next: <a href="Stack-growth-direction.html" accesskey="n" rel="next">Stack growth direction</a>, Previous: <a href="C-Code-Macros.html" accesskey="p" rel="prev">C Code Macros</a>, Up: <a href="Simple-instructions.html" accesskey="u" rel="up">Simple instructions</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="C-Code-restrictions-1"></span><h4 class="subsection">6.2.3 C Code restrictions</h4>
-<span id="index-C-code-restrictions"></span>
-<span id="index-restrictions-on-C-code"></span>
-<span id="index-assumptions-about-C-code"></span>
+<h4 class="subsection" id="C-Code-restrictions-1"><span>6.2.3 C Code restrictions<a class="copiable-link" href="#C-Code-restrictions-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-C-code-restrictions"></a>
+<a class="index-entry-id" id="index-restrictions-on-C-code"></a>
+<a class="index-entry-id" id="index-assumptions-about-C-code"></a>
 
-<span id="index-accessing-stack-_0028pointer_0029"></span>
-<span id="index-stack-pointer_002c-access"></span>
-<span id="index-instruction-pointer_002c-access"></span>
+<a class="index-entry-id" id="index-accessing-stack-_0028pointer_0029"></a>
+<a class="index-entry-id" id="index-stack-pointer_002c-access"></a>
+<a class="index-entry-id" id="index-instruction-pointer_002c-access"></a>
 <p>Vmgen は、ユーザー指定の C 言語コードがスタック・ポインターやスタック項目にアクセスせず、
 命令ポインターへのアクセスは特殊なマクロを介してのみ発生するという想定に基づいて、 コードを生成し、 いくつかの最適化を実行します。  一般に、
 あなたはこれらの制限に注意する必要があります。  ただし、 あなたがこれらの制限を破る必要がある場合は、 以下をお読みください。
 </p>
 <p>スタックまたはスタック・ポインターに直接アクセスすると、 いくつかの理由で問題が発生する可能性があります: 
-<span id="index-stack-caching_002c-restriction-on-C-code"></span>
-<span id="index-superinstructions_002c-restrictions-on-components"></span>
+<a class="index-entry-id" id="index-stack-caching_002c-restriction-on-C-code"></a>
+<a class="index-entry-id" id="index-superinstructions_002c-restrictions-on-components"></a>
 </p>
-<ul>
-<li> Vmgen はオプションで、 スタック・トップの項目をローカル変数(レジスターに割り当てられる)にキャッシュすることをサポートします。
+<ul class="itemize mark-bullet">
+<li>Vmgen はオプションで、 スタック・トップの項目をローカル変数(レジスターに割り当てられる)にキャッシュすることをサポートします。
 これは最も頻繁に起こるトラブルの原因です。  これに対処するには、 スタック・トップ・キャッシュを使用しない(マシンによって異なるが、 減速係数 1 ～
-1.4)か、 あるいは、 問題のある C 言語コードの先頭にフラッシュ・コード(たとえば &lsquo;<samp>IF_spTOS(sp[...] =
-spTOS);</samp>&rsquo;)を挿入し、 最後にコードをリロードする(たとえば &lsquo;<samp>IF_spTOS(spTOS =
+1.4)か、 あるいは、 問題のある C 言語コードの先頭にフラッシュ・コード(たとえば &lsquo;<samp class="samp">IF_spTOS(sp[...] =
+spTOS);</samp>&rsquo;)を挿入し、 最後にコードをリロードする(たとえば &lsquo;<samp class="samp">IF_spTOS(spTOS =
 sp[0])</samp>&rsquo;)かのいずれかで対処できます。  Vmgen は、 ユーザー指定の C 言語コードの開始前にスタック・ポインターの更新を挿入するため、
 フラッシュ・コードではそれを修正するインデックスを使用する必要があります。  将来的には、 C 言語コードで特別な文字列を指定することによって、
 このフラッシュが自動的に行われるようになる可能性があります。
 
-</li><li> Vmgen で生成されたコードは、 ユーザーが指定した C
+</li><li>Vmgen で生成されたコードは、 ユーザーが指定した C
 言語コードの前にスタック項目をスタック・ポインターでインデックス付けされたメモリーから変数にロードし、 その後、
 変数からスタック・ポインターでインデックス付けされたメモリーに格納します。  C
 言語コードでスタック・ポインターを介してスタックに書き込みを行った場合、 変数には影響せず、 その書き込みは C
 言語コードの格納によって上書きされる可能性があります。  同様に、 スタック・ポインターを使用したスタックからの読み取りは、 同じ VM
 命令内のスタック項目の計算を反映しません。
 
-</li><li> スーパー命令(superinstructions)は、 スーパー命令全体にわたってスタック項目を変数に保持します。  したがって、
-スタックまたはスタック・ポインターにアクセスする VM 命令をスーパー命令のコンポーネントとして含めるべきではありません(see <a href="VM-profiler.html">VM profiler</a>)。
+</li><li>スーパー命令(superinstructions)は、 スーパー命令全体にわたってスタック項目を変数に保持します。  したがって、
+スタックまたはスタック・ポインターにアクセスする VM 命令をスーパー命令のコンポーネントとして含めるべきではありません(see <a class="pxref" href="VM-profiler.html">VM profiler</a>)。
 
 </li></ul>
 
-<p>命令ポインターには、 そのための特別なマクロ(&lsquo;<samp>IP</samp>&rsquo;, &lsquo;<samp>SET_IP</samp>&rsquo;,
-&lsquo;<samp>IPTOS</samp>&rsquo;)を介してのみアクセスする必要があります。 これにより、
-これらのマクロをいくつかの方法で実装して最高のパフォーマンスを実現できるようになります。  &lsquo;<samp>IP</samp>&rsquo; は次の命令を指していて、
-&lsquo;<samp>IPTOS</samp>&rsquo; はその内容です。
+<p>命令ポインターには、 そのための特別なマクロ(&lsquo;<samp class="samp">IP</samp>&rsquo;, &lsquo;<samp class="samp">SET_IP</samp>&rsquo;,
+&lsquo;<samp class="samp">IPTOS</samp>&rsquo;)を介してのみアクセスする必要があります。 これにより、
+これらのマクロをいくつかの方法で実装して最高のパフォーマンスを実現できるようになります。  &lsquo;<samp class="samp">IP</samp>&rsquo; は次の命令を指していて、
+&lsquo;<samp class="samp">IPTOS</samp>&rsquo; はその内容です。
 </p>
 </div>
 

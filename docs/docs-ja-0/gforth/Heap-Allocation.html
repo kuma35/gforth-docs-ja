@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="Dictionary-allocation.html" rel="prev" title="Dictionary allocation">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,86 +51,86 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Heap-Allocation">
-<div class="header">
+<div class="subsection-level-extent" id="Heap-Allocation">
+<div class="nav-panel">
 <p>
 Next: <a href="Memory-Access.html" accesskey="n" rel="next">Memory Access</a>, Previous: <a href="Dictionary-allocation.html" accesskey="p" rel="prev">Dictionary allocation</a>, Up: <a href="Memory.html" accesskey="u" rel="up">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Heap-allocation"></span><h4 class="subsection">6.7.3 Heap allocation</h4>
-<span id="index-heap-allocation"></span>
-<span id="index-dynamic-allocation-of-memory"></span>
-<span id="index-memory_002dallocation-word-set"></span>
+<h4 class="subsection" id="Heap-allocation"><span>6.7.3 Heap allocation<a class="copiable-link" href="#Heap-allocation"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-heap-allocation"></a>
+<a class="index-entry-id" id="index-dynamic-allocation-of-memory"></a>
+<a class="index-entry-id" id="index-memory_002dallocation-word-set"></a>
 
-<span id="index-contiguous-regions-and-heap-allocation"></span>
+<a class="index-entry-id" id="index-contiguous-regions-and-heap-allocation"></a>
 <p>ヒープ割り当ては、 割り当てられたメモリーの割り当て解除を任意の順序でサポートします。 ディクショナリーの割り当ては影響を受けません(つまり、
 連続領域(contiguous region)は終了しません)。 Gforth では、 これらのワードは標準の C ライブラリ呼び出しである
 malloc() や free() や realloc() を使用して実装されます。
 </p>
-<p><code>allocate</code> または <code>resize</code> の 1 回の呼び出しによって生成されるメモリ領域は、 内部的に連続しています。
+<p><code class="code">allocate</code> または <code class="code">resize</code> の 1 回の呼び出しによって生成されるメモリ領域は、 内部的に連続しています。
 このような領域と他の領域(ヒープから割り当てられた他の領域を含む)との間には連続性はありません。
 </p>
-<span id="index-allocate-_0028--u-_002d_002d-a_005faddr-wior--_0029-memory"></span>
-<span id="index-allocate"></span>
-<span id="index-allocate-1"></span>
+<a class="index-entry-id" id="index-allocate-_0028-u-_002d_002d-a_005faddr-wior-_0029-memory"></a>
+<a class="index-entry-id" id="index-allocate"></a>
+<a class="index-entry-id" id="index-allocate-1"></a>
 <div class="format">
-<pre class="format"><code>allocate</code> ( <i>u &ndash; a_addr wior  </i>) memory &ldquo;allocate&rdquo;
+<pre class="format-preformatted"><code class="code">allocate</code> ( <i class="i">u &ndash; a_addr wior  </i>) memory &ldquo;allocate&rdquo;
 </pre></div>
-<p>連続したデータ空間を <i>u</i> アドレス単位分割り当てます。 データ空間の初期内容は未定義です。 割り当てが成功した場合、 <i>a-addr</i>
-は割り当てられた領域の開始アドレスで、 <i>wior</i> は 0 になります。 割り当てが失敗した場合、 <i>a-addr</i> は未定義で、
-<i>wior</i> ゼロ以外の I/O 結果コードです。
+<p>連続したデータ空間を <i class="i">u</i> アドレス単位分割り当てます。 データ空間の初期内容は未定義です。 割り当てが成功した場合、 <i class="i">a-addr</i>
+は割り当てられた領域の開始アドレスで、 <i class="i">wior</i> は 0 になります。 割り当てが失敗した場合、 <i class="i">a-addr</i> は未定義で、
+<i class="i">wior</i> ゼロ以外の I/O 結果コードです。
 </p>
 
-<span id="index-free-_0028--a_005faddr-_002d_002d-wior--_0029-memory"></span>
-<span id="index-free"></span>
-<span id="index-free-1"></span>
+<a class="index-entry-id" id="index-free-_0028-a_005faddr-_002d_002d-wior-_0029-memory"></a>
+<a class="index-entry-id" id="index-free"></a>
+<a class="index-entry-id" id="index-free-1"></a>
 <div class="format">
-<pre class="format"><code>free</code> ( <i>a_addr &ndash; wior  </i>) memory &ldquo;free&rdquo;
+<pre class="format-preformatted"><code class="code">free</code> ( <i class="i">a_addr &ndash; wior  </i>) memory &ldquo;free&rdquo;
 </pre></div>
-<p><i>a-addr</i> で始まるデータ空間の領域をシステムに返します。  領域は元々 <code>allocate</code> または <code>resize</code>
-を使用して取得されている必要があります。 操作が成功した場合、 <i>wior</i> は 0 になります。 操作が失敗した場合、 <i>wior</i>
+<p><i class="i">a-addr</i> で始まるデータ空間の領域をシステムに返します。  領域は元々 <code class="code">allocate</code> または <code class="code">resize</code>
+を使用して取得されている必要があります。 操作が成功した場合、 <i class="i">wior</i> は 0 になります。 操作が失敗した場合、 <i class="i">wior</i>
 はゼロ以外の I/O 結果コードになります。
 </p>
 
-<span id="index-resize-_0028--a_005faddr1-u-_002d_002d-a_005faddr2-wior--_0029-memory"></span>
-<span id="index-resize"></span>
-<span id="index-resize-1"></span>
+<a class="index-entry-id" id="index-resize-_0028-a_005faddr1-u-_002d_002d-a_005faddr2-wior-_0029-memory"></a>
+<a class="index-entry-id" id="index-resize"></a>
+<a class="index-entry-id" id="index-resize-1"></a>
 <div class="format">
-<pre class="format"><code>resize</code> ( <i>a_addr1 u &ndash; a_addr2 wior  </i>) memory &ldquo;resize&rdquo;
+<pre class="format-preformatted"><code class="code">resize</code> ( <i class="i">a_addr1 u &ndash; a_addr2 wior  </i>) memory &ldquo;resize&rdquo;
 </pre></div>
-<p><i>a-addr1</i> に割り当てられた領域のサイズを <i>u</i> アドレス単位に変更します。 但し内容を別の領域に移動する可能性があります。
-<i>a-addr2</i> は、 結果の領域のアドレスです。  操作が成功した場合、 <i>wior</i> は 0 になります。 操作が失敗した場合、
-<i>wior</i> はゼロ以外の I/O 結果コードになります。 <i>a-addr1</i> が 0 の場合、 Gforth の (非標準の )
-<code>resize</code> は <i>u</i> アドレス単位の割り当てを行います。
+<p><i class="i">a-addr1</i> に割り当てられた領域のサイズを <i class="i">u</i> アドレス単位に変更します。 但し内容を別の領域に移動する可能性があります。
+<i class="i">a-addr2</i> は、 結果の領域のアドレスです。  操作が成功した場合、 <i class="i">wior</i> は 0 になります。 操作が失敗した場合、
+<i class="i">wior</i> はゼロ以外の I/O 結果コードになります。 <i class="i">a-addr1</i> が 0 の場合、 Gforth の (非標準の )
+<code class="code">resize</code> は <i class="i">u</i> アドレス単位の割り当てを行います。
 </p>
 
 
 <p>以下のワード達はメモリー・ブロックを扱うのに役立ちます:
 </p>
-<span id="index-save_002dmem-_0028--addr1-u-_002d_002d-addr2-u--_0029-gforth_002d0_002e2"></span>
-<span id="index-save_002dmem"></span>
-<span id="index-save_002dmem-1"></span>
+<a class="index-entry-id" id="index-save_002dmem-_0028-addr1-u-_002d_002d-addr2-u-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-save_002dmem"></a>
+<a class="index-entry-id" id="index-save_002dmem-1"></a>
 <div class="format">
-<pre class="format"><code>save-mem</code> ( <i>addr1 u &ndash; addr2 u  </i>) gforth-0.2 &ldquo;save-mem&rdquo;
+<pre class="format-preformatted"><code class="code">save-mem</code> ( <i class="i">addr1 u &ndash; addr2 u  </i>) gforth-0.2 &ldquo;save-mem&rdquo;
 </pre></div>
 <p>指定のメモリー・ブロックをヒープ内で新しく割り当てられた領域にコピーします。
 </p>
 
-<span id="index-free_002dmem_002dvar-_0028--addr-_002d_002d--_0029-gforth_002dexperimental"></span>
-<span id="index-free_002dmem_002dvar"></span>
-<span id="index-free_002dmem_002dvar-1"></span>
+<a class="index-entry-id" id="index-free_002dmem_002dvar-_0028-addr-_002d_002d-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-free_002dmem_002dvar"></a>
+<a class="index-entry-id" id="index-free_002dmem_002dvar-1"></a>
 <div class="format">
-<pre class="format"><code>free-mem-var</code> ( <i>addr &ndash;  </i>) gforth-experimental &ldquo;free-mem-var&rdquo;
+<pre class="format-preformatted"><code class="code">free-mem-var</code> ( <i class="i">addr &ndash;  </i>) gforth-experimental &ldquo;free-mem-var&rdquo;
 </pre></div>
 <p>addr は、 メモリー範囲のアドレスとサイズを含む 2variable のアドレスです。 これはメモリーを解放し、 2variable
 をクリアします。
 </p>
 
-<span id="index-extend_002dmem-_0028--addr1-u1-u-_002d_002d-addr-addr2-u2--_0029-gforth_002dexperimental"></span>
-<span id="index-extend_002dmem"></span>
-<span id="index-extend_002dmem-1"></span>
+<a class="index-entry-id" id="index-extend_002dmem-_0028-addr1-u1-u-_002d_002d-addr-addr2-u2-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-extend_002dmem"></a>
+<a class="index-entry-id" id="index-extend_002dmem-1"></a>
 <div class="format">
-<pre class="format"><code>extend-mem</code> ( <i>addr1 u1 u &ndash; addr addr2 u2  </i>) gforth-experimental &ldquo;extend-mem&rdquo;
+<pre class="format-preformatted"><code class="code">extend-mem</code> ( <i class="i">addr1 u1 u &ndash; addr addr2 u2  </i>) gforth-experimental &ldquo;extend-mem&rdquo;
 </pre></div>
 <p>u (アドレス単位)によってヒープから割り当てられたメモリー・ブロック addr1 u1 を拡張します。  (おそらく再割り当てされた)開始アドレスは
 addr2 で、 その合計長さは u2 で、 拡張部分の開始アドレスは addr です(訳注: 例えば元々長さ10のブロックを5拡張すると( addr1
@@ -150,46 +139,46 @@ addr2 で、 その合計長さは u2 で、 拡張部分の開始アドレス�
 
 
 
-<p>$tring ワード群は、 メモリー・ブロックの処理にも使用できます。 See <a href="_0024tring-words.html">＄tring words</a> (訳注: $tring (ダラー
+<p>$tring ワード群は、 メモリー・ブロックの処理にも使用できます。 See <a class="xref" href="_0024tring-words.html">＄tring words</a> (訳注: $tring (ダラー
 tring)と String (エス string) とあることに注意)
 </p>
-<p>拡張可能なメモリー・バッファーの場合は、 $trings または以下のワード群を使用できます。  <code>adjust-buffer</code>
+<p>拡張可能なメモリー・バッファーの場合は、 $trings または以下のワード群を使用できます。  <code class="code">adjust-buffer</code>
 で管理されるバッファーに割り当てられたメモリーは縮小できないため、
 これまでに確認された最大サイズよりも小さいサイズにバッファーを調整(adjust)するときはヒープ管理のオーバーヘッドは発生しません。
 </p>
-<span id="index-buffer_0025-_0028-_002d_002d-u1-u2--_0029-gforth_002dexperimental"></span>
-<span id="index-buffer_0025"></span>
-<span id="index-buffer_0025-1"></span>
+<a class="index-entry-id" id="index-buffer_0025-_0028-_002d_002d-u1-u2-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-buffer_0025"></a>
+<a class="index-entry-id" id="index-buffer_0025-1"></a>
 <div class="format">
-<pre class="format"><code>buffer%</code> ( <i>&ndash; u1 u2  </i>) gforth-experimental &ldquo;buffer%&rdquo;
+<pre class="format-preformatted"><code class="code">buffer%</code> ( <i class="i">&ndash; u1 u2  </i>) gforth-experimental &ldquo;buffer%&rdquo;
 </pre></div>
-<p><i>u1</i> は アライメント(alignment)、 <i>u2</i> は バッファー・デスクリプタのサイズです。
+<p><i class="i">u1</i> は アライメント(alignment)、 <i class="i">u2</i> は バッファー・デスクリプタのサイズです。
 </p>
 
-<span id="index-init_002dbuffer-_0028--addr-_002d_002d--_0029-gforth_002dexperimental"></span>
-<span id="index-init_002dbuffer"></span>
-<span id="index-init_002dbuffer-1"></span>
+<a class="index-entry-id" id="index-init_002dbuffer-_0028-addr-_002d_002d-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-init_002dbuffer"></a>
+<a class="index-entry-id" id="index-init_002dbuffer-1"></a>
 <div class="format">
-<pre class="format"><code>init-buffer</code> ( <i>addr &ndash;  </i>) gforth-experimental &ldquo;init-buffer&rdquo;
+<pre class="format-preformatted"><code class="code">init-buffer</code> ( <i class="i">addr &ndash;  </i>) gforth-experimental &ldquo;init-buffer&rdquo;
 </pre></div>
 
-<span id="index-adjust_002dbuffer-_0028--u-addr-_002d_002d--_0029-gforth_002dexperimental"></span>
-<span id="index-adjust_002dbuffer"></span>
-<span id="index-adjust_002dbuffer-1"></span>
+<a class="index-entry-id" id="index-adjust_002dbuffer-_0028-u-addr-_002d_002d-_0029-gforth_002dexperimental"></a>
+<a class="index-entry-id" id="index-adjust_002dbuffer"></a>
+<a class="index-entry-id" id="index-adjust_002dbuffer-1"></a>
 <div class="format">
-<pre class="format"><code>adjust-buffer</code> ( <i>u addr &ndash;  </i>) gforth-experimental &ldquo;adjust-buffer&rdquo;
+<pre class="format-preformatted"><code class="code">adjust-buffer</code> ( <i class="i">u addr &ndash;  </i>) gforth-experimental &ldquo;adjust-buffer&rdquo;
 </pre></div>
 <p>addr の buffer% を長さ u に調整します。 これにより、 割り当てられた領域が拡大する可能性がありますが、
 決して縮小されることはありません。
 </p>
 
 
-<p><code>2@</code> を使用すると、 このようなバッファーの現在のアドレスと長さを取得できます。
+<p><code class="code">2@</code> を使用すると、 このようなバッファーの現在のアドレスと長さを取得できます。
 </p>
 <p>典型的な使い方:
 </p>
 <div class="example">
-<pre class="example">create mybuf  buffer% %size allot  mybuf init-buffer
+<pre class="example-preformatted">create mybuf  buffer% %size allot  mybuf init-buffer
 s&quot; frobnicate&quot; mybuf adjust-buffer  mybuf 2@ move
 mybuf 2@ type
 s&quot; foo&quot;        mybuf adjust-buffer  mybuf 2@ move
@@ -199,7 +188,7 @@ mybuf 2@ type
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Memory-Access.html">Memory Access</a>, Previous: <a href="Dictionary-allocation.html">Dictionary allocation</a>, Up: <a href="Memory.html">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

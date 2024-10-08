@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Automatic-Generation.html" rel="prev" title="Automatic Generation">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+span:hover a.copiable-link {visibility: visible}
+ul.mark-bullet {list-style-type: disc}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,52 +50,52 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="TOS-Optimization">
-<div class="header">
+<div class="subsection-level-extent" id="TOS-Optimization">
+<div class="nav-panel">
 <p>
 Next: <a href="Produced-code.html" accesskey="n" rel="next">Produced code</a>, Previous: <a href="Automatic-Generation.html" accesskey="p" rel="prev">Automatic Generation</a>, Up: <a href="Primitives.html" accesskey="u" rel="up">Primitives</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="TOS-Optimization-1"></span><h4 class="subsection">15.3.2 TOS Optimization</h4>
-<span id="index-TOS-optimization-for-primitives"></span>
-<span id="index-primitives_002c-keeping-the-TOS-in-a-register"></span>
+<h4 class="subsection" id="TOS-Optimization-1"><span>15.3.2 TOS Optimization<a class="copiable-link" href="#TOS-Optimization-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-TOS-optimization-for-primitives"></a>
+<a class="index-entry-id" id="index-primitives_002c-keeping-the-TOS-in-a-register"></a>
 
 <p>Forth エンジンなどのスタック・マシン・エミュレータの重要な最適化は、 1 つ以上の最上位側スタック項目をレジスターに保持することです。
-ワードにスタック効果  <code>( <i>in1</i>...<i>inx</i> -- <i>out1</i>...<i>outy</i> )</code> がある場合、 上位の
-<i>n</i> 項目をレジスターに保持します:
-</p><ul>
-<li> <i>x&gt;=n</i> かつ <i>y&gt;=n</i> の場合、 スタックへのロードとスタックへのストアがより少なくなるため、 <i>n</i>
-項目をレジスターに保持する方が <i>n-1</i> 項目をレジスターに保持するよりも優れています。
-</li><li> <i>x&lt;&gt;y</i> かつ <i>x&lt;n</i> かつ <i>y&lt;n</i> の場合、 レジスター間の追加の移動により、 <i>n</i> 項目をレジスターに保持することは
-<i>n-1</i> 項目を保持するよりも遅くなります。
+ワードにスタック効果  <code class="code">( <i class="i">in1</i>...<i class="i">inx</i> -- <i class="i">out1</i>...<i class="i">outy</i> )</code> がある場合、 上位の
+<i class="i">n</i> 項目をレジスターに保持します:
+</p><ul class="itemize mark-bullet">
+<li><i class="i">x&gt;=n</i> かつ <i class="i">y&gt;=n</i> の場合、 スタックへのロードとスタックへのストアがより少なくなるため、 <i class="i">n</i>
+項目をレジスターに保持する方が <i class="i">n-1</i> 項目をレジスターに保持するよりも優れています。
+</li><li><i class="i">x&lt;&gt;y</i> かつ <i class="i">x&lt;n</i> かつ <i class="i">y&lt;n</i> の場合、 レジスター間の追加の移動により、 <i class="i">n</i> 項目をレジスターに保持することは
+<i class="i">n-1</i> 項目を保持するよりも遅くなります。
 </li></ul>
 
-<span id="index-_002dDUSE_005fTOS"></span>
-<span id="index-_002dDUSE_005fNO_005fTOS"></span>
-<p>特に、 レジスターの数が十分であれば、 1 つの項目をレジスターに保持しておくことは決して不利にはなりません。 <code>?branch</code>
-や定数や変数やリテラルや <code>i</code> などの頻繁に使用されるワードにとって、 2 つの項目をレジスターに保持することは不利になります。
+<a class="index-entry-id" id="index-_002dDUSE_005fTOS"></a>
+<a class="index-entry-id" id="index-_002dDUSE_005fNO_005fTOS"></a>
+<p>特に、 レジスターの数が十分であれば、 1 つの項目をレジスターに保持しておくことは決して不利にはなりません。 <code class="code">?branch</code>
+や定数や変数やリテラルや <code class="code">i</code> などの頻繁に使用されるワードにとって、 2 つの項目をレジスターに保持することは不利になります。
 したがって、 ジェネレーターは、 レジスターに 0 個または 1 つの項目を保持するコードのみを生成します。 生成された
-C言語のコードは両方のケースをカバーします。 これらの選択肢の選択は、 C言語のコンパイル時にスイッチ <code>-DUSE_TOS</code>
-を使用して行われます。 <code>+</code> の C言語コードの <code>TOS</code> は、 1 項目の場合は単なる変数名ですが、 それ以外の場合は
-<code>sp[0]</code> に展開されるマクロです。  注意: GNU C コンパイラーは <code>TOS</code>
+C言語のコードは両方のケースをカバーします。 これらの選択肢の選択は、 C言語のコンパイル時にスイッチ <code class="code">-DUSE_TOS</code>
+を使用して行われます。 <code class="code">+</code> の C言語コードの <code class="code">TOS</code> は、 1 項目の場合は単なる変数名ですが、 それ以外の場合は
+<code class="code">sp[0]</code> に展開されるマクロです。  注意: GNU C コンパイラーは <code class="code">TOS</code>
 のような単純な変数をレジスターに保持しようと試み、 十分な数のレジスターがあれば、 それは通常は成功することに注意してください。
 </p>
-<span id="index-_002dDUSE_005fFTOS"></span>
-<span id="index-_002dDUSE_005fNO_005fFTOS"></span>
-<p>プリミティブ・ジェネレーターは、 浮動小数点数スタックの TOS 最適化も実行します(<code>-DUSE_FTOS</code>)。 浮動小数点数演算の場合、
+<a class="index-entry-id" id="index-_002dDUSE_005fFTOS"></a>
+<a class="index-entry-id" id="index-_002dDUSE_005fNO_005fFTOS"></a>
+<p>プリミティブ・ジェネレーターは、 浮動小数点数スタックの TOS 最適化も実行します(<code class="code">-DUSE_FTOS</code>)。 浮動小数点数演算の場合、
 この最適化の利点はさらに大きくなります。 浮動小数点数演算は、 ほとんどのプロセッサで非常に時間がかかりますが、
 その結果が利用されない間は他の演算と並行して実行できます。 FP-TOS がレジスターに保持されている場合、 他の演算との並行しての実行が機能します。
 スタック上、 つまりメモリー内に保持されている場合、 メモリーへのストアは浮動小数点数演算の結果を待つ必要があり、
 プリミティブの実行時間が大幅に長くなります。
 </p>
-<p>TOS の最適化により、 プリミティブの自動生成がちょっぴり複雑になります。 <code>sp[0]</code> のすべての出現を <code>TOS</code>
+<p>TOS の最適化により、 プリミティブの自動生成がちょっぴり複雑になります。 <code class="code">sp[0]</code> のすべての出現を <code class="code">TOS</code>
 に置き換えるだけでは十分ではありません。 考慮すべき特殊なケースがいくつかあります:
-</p><ul>
-<li> <code>dup ( w -- w w )</code> で、 TOS 最適化がオンになっている場合、
+</p><ul class="itemize mark-bullet">
+<li><code class="code">dup ( w -- w w )</code> で、 TOS 最適化がオンになっている場合、
 ジェネレーターはスタック上の項目の元の場所へのストアを削除してはなりません。
-</li><li> <code>(-- <i>out1</i>...<i>outy</i>)</code> の形式のスタック効果を持つプリミティブは、 開始時に TOS
-をスタックに保存する必要があります。  同様に、 スタック効果 <code><i>in1</i>...<i>inx</i> --)</code> を持つプリミティブは、
-最後にスタックから TOS をロードする必要があります。 ただし、 null スタック効果 <code>--</code> の場合、
+</li><li><code class="code">(-- <i class="i">out1</i>...<i class="i">outy</i>)</code> の形式のスタック効果を持つプリミティブは、 開始時に TOS
+をスタックに保存する必要があります。  同様に、 スタック効果 <code class="code"><i class="i">in1</i>...<i class="i">inx</i> --)</code> を持つプリミティブは、
+最後にスタックから TOS をロードする必要があります。 ただし、 null スタック効果 <code class="code">--</code> の場合、
 ストアやロードは生成されません。
 </li></ul>
 

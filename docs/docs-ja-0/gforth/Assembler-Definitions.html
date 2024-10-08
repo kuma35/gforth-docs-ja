@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="Assembler-and-Code-Words.html" rel="prev" title="Assembler and Code Words">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,21 +51,21 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Assembler-Definitions">
-<div class="header">
+<div class="subsection-level-extent" id="Assembler-Definitions">
+<div class="nav-panel">
 <p>
 Next: <a href="Common-Assembler.html" accesskey="n" rel="next">Common Assembler</a>, Previous: <a href="Assembler-and-Code-Words.html" accesskey="p" rel="prev">Assembler and Code Words</a>, Up: <a href="Assembler-and-Code-Words.html" accesskey="u" rel="up">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Definitions-in-assembly-language"></span><h4 class="subsection">6.29.1 Definitions in assembly language</h4>
+<h4 class="subsection" id="Definitions-in-assembly-language"><span>6.29.1 Definitions in assembly language<a class="copiable-link" href="#Definitions-in-assembly-language"> &para;</a></span></h4>
 
-<p>Gforth は、 アセンブリ言語でワードを実装する方法(<code>abi-code</code> … <code>end-code</code> を使用)と、
-任意の実行時の振る舞いを持つ定義ワードを定義する方法(<code>does&gt;</code> のようなの)を提供し、 ここで、
-この実行時の振る舞いを(<code>does&gt;</code> とは異なり、) Forth ではなくアセンブリ言語で定義します。
+<p>Gforth は、 アセンブリ言語でワードを実装する方法(<code class="code">abi-code</code> … <code class="code">end-code</code> を使用)と、
+任意の実行時の振る舞いを持つ定義ワードを定義する方法(<code class="code">does&gt;</code> のようなの)を提供し、 ここで、
+この実行時の振る舞いを(<code class="code">does&gt;</code> とは異なり、) Forth ではなくアセンブリ言語で定義します。
 </p>
 <p>ただし、 Gforth のマシン非依存の性質により、 いくつかの問題が生じます。 まず、 Gforth は複数のアーキテクチャ上で実行されるため、
 標準のアセンブラーを提供できません。 ただし、 実行されるいくつかのアーキテクチャ用のアセンブラーは提供されています。  さらに言えば、 Gforth
-ではシステムに依存しないアセンブラーを使用したり、 <code>,</code> や <code>c,</code> を使用してマシン・コードを直接コンパイルしたりできます。
+ではシステムに依存しないアセンブラーを使用したり、 <code class="code">,</code> や <code class="code">c,</code> を使用してマシン・コードを直接コンパイルしたりできます。
 </p>
 <p>もう 1 つの問題は、Gforth
 の仮想マシンのレジスター(スタック・ポインターと仮想マシン命令ポインター)がインストールとエンジンに依存することです。 また、
@@ -85,112 +74,112 @@ Next: <a href="Common-Assembler.html" accesskey="n" rel="next">Common Assembler<
 他の場所でも動く可能性はありますが、 それに頼ることはできません)。
 </p>
 <p>幸いなことに、 同じ呼び出し規約(ABI)を持つプラットフォーム上で実行されている Gforth に移植可能(portable)な
-<code>abi-code</code> ワードを Gforth で定義できます。 通常、 これは同じアーキテクチャと OS の組み合わせへの移植性を意味し、
+<code class="code">abi-code</code> ワードを Gforth で定義できます。 通常、 これは同じアーキテクチャと OS の組み合わせへの移植性を意味し、
 しばしば OS の境を越えることができます。
 </p>
-<span id="index-assembler-_0028--_002d_002d--_0029-tools_002dext"></span>
-<span id="index-assembler-1"></span>
-<span id="index-assembler-2"></span>
+<a class="index-entry-id" id="index-assembler-_0028-_002d_002d-_0029-tools_002dext"></a>
+<a class="index-entry-id" id="index-assembler-1"></a>
+<a class="index-entry-id" id="index-assembler-2"></a>
 <div class="format">
-<pre class="format"><code>assembler</code> ( <i>&ndash;  </i>) tools-ext &ldquo;assembler&rdquo;
+<pre class="format-preformatted"><code class="code">assembler</code> ( <i class="i">&ndash;  </i>) tools-ext &ldquo;assembler&rdquo;
 </pre></div>
 <p>ボキャブラリー: 検索順序スタック(the search order)のTOSのワードリストを assembler ワードリストに置き換えます。
 </p>
 
-<span id="index-init_002dasm-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-init_002dasm"></span>
-<span id="index-init_002dasm-1"></span>
+<a class="index-entry-id" id="index-init_002dasm-_0028-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-init_002dasm"></a>
+<a class="index-entry-id" id="index-init_002dasm-1"></a>
 <div class="format">
-<pre class="format"><code>init-asm</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;init-asm&rdquo;
+<pre class="format-preformatted"><code class="code">init-asm</code> ( <i class="i">&ndash;  </i>) gforth-0.2 &ldquo;init-asm&rdquo;
 </pre></div>
 <p>assembler ワードリストを検索順序スタック(the search order)にプッシュします(訳注:つまり assembler
 ワードリストが検索順序スタックのTOSになる)。
 </p>
 
-<span id="index-abi_002dcode-_0028--_0022name_0022-_002d_002d-colon_002dsys--_0029-gforth_002d1_002e0"></span>
-<span id="index-abi_002dcode"></span>
-<span id="index-abi_002dcode-1"></span>
+<a class="index-entry-id" id="index-abi_002dcode-_0028-_0022name_0022-_002d_002d-colon_002dsys-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-abi_002dcode"></a>
+<a class="index-entry-id" id="index-abi_002dcode-1"></a>
 <div class="format">
-<pre class="format"><code>abi-code</code> ( <i>&quot;name&quot; &ndash; colon-sys  </i>) gforth-1.0 &ldquo;abi-code&rdquo;
+<pre class="format-preformatted"><code class="code">abi-code</code> ( <i class="i">&quot;name&quot; &ndash; colon-sys  </i>) gforth-1.0 &ldquo;abi-code&rdquo;
 </pre></div>
 <p>C言語プロトタイプ(C-prototype)に対応するプラットフォームの ABI 規則を使用して呼び出されるネイティブ・コード定義を開始します:
 </p><div class="example">
-<pre class="example">Cell *function(Cell *sp, Float **fpp);
+<pre class="example-preformatted">Cell *function(Cell *sp, Float **fpp);
 </pre></div>
 <p>ここで、 FP スタック・ポインターは、 FP スタック・ポインターを含むメモリー位置への参照を提供することによって渡され、 (必要な場合)変更された
 FP スタック・ポインタをそこに格納することによって渡されます。
 </p>
 
-<span id="index-_003babi_002dcode-_0028--_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-_003babi_002dcode"></span>
-<span id="index-_003babi_002dcode-1"></span>
+<a class="index-entry-id" id="index-_003babi_002dcode-_0028-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-_003babi_002dcode"></a>
+<a class="index-entry-id" id="index-_003babi_002dcode-1"></a>
 <div class="format">
-<pre class="format"><code>;abi-code</code> ( <i>&ndash;  </i>) gforth-1.0 &ldquo;semicolon-abi-code&rdquo;
+<pre class="format-preformatted"><code class="code">;abi-code</code> ( <i class="i">&ndash;  </i>) gforth-1.0 &ldquo;semicolon-abi-code&rdquo;
 </pre></div>
-<p>コロン定義を終了しますが、 実行時に最後に定義されたワード <i>X</i> (<code>create</code>
+<p>コロン定義を終了しますが、 実行時に最後に定義されたワード <i class="i">X</i> (<code class="code">create</code>
 で作られたワードである必要があります)の変更もして、 C言語プロトタイプに対応するプラットフォームの ABI
 規約を使用してネイティブ・コードを呼び出します:
 </p><div class="example">
-<pre class="example">Cell *function(Cell *sp, Float **fpp, Address body);
+<pre class="example-preformatted">Cell *function(Cell *sp, Float **fpp, Address body);
 
 </pre></div>
 <p>FP スタック・ポインターは、 FP スタック・ポインターを含むメモリー位置への参照を提供することによって渡され、 変更された FP
-スタック・ポインターをそこに格納することによって渡されます(必要な場合)。  パラメータ <i>body</i> は <i>X</i> の本体です。
+スタック・ポインターをそこに格納することによって渡されます(必要な場合)。  パラメータ <i class="i">body</i> は <i class="i">X</i> の本体です。
 </p>
 
-<span id="index-end_002dcode-_0028--colon_002dsys-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-end_002dcode"></span>
-<span id="index-end_002dcode-1"></span>
+<a class="index-entry-id" id="index-end_002dcode-_0028-colon_002dsys-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-end_002dcode"></a>
+<a class="index-entry-id" id="index-end_002dcode-1"></a>
 <div class="format">
-<pre class="format"><code>end-code</code> ( <i>colon-sys &ndash;  </i>) gforth-0.2 &ldquo;end-code&rdquo;
+<pre class="format-preformatted"><code class="code">end-code</code> ( <i class="i">colon-sys &ndash;  </i>) gforth-0.2 &ldquo;end-code&rdquo;
 </pre></div>
-<p>コード定義を終了します。  ABI 呼び出しからの戻り(<code>abi-code</code> の場合)、 または次の VM
-命令へのディスパッチ(<code>code</code> および <code>;code</code> の場合)を自分でアセンブルする必要があることに注意してください。
+<p>コード定義を終了します。  ABI 呼び出しからの戻り(<code class="code">abi-code</code> の場合)、 または次の VM
+命令へのディスパッチ(<code class="code">code</code> および <code class="code">;code</code> の場合)を自分でアセンブルする必要があることに注意してください。
 </p>
 
-<span id="index-code-_0028--_0022name_0022-_002d_002d-colon_002dsys--_0029-tools_002dext"></span>
-<span id="index-code"></span>
-<span id="index-code-1"></span>
+<a class="index-entry-id" id="index-code-_0028-_0022name_0022-_002d_002d-colon_002dsys-_0029-tools_002dext"></a>
+<a class="index-entry-id" id="index-code"></a>
+<a class="index-entry-id" id="index-code-1"></a>
 <div class="format">
-<pre class="format"><code>code</code> ( <i>&quot;name&quot; &ndash; colon-sys  </i>) tools-ext &ldquo;code&rdquo;
+<pre class="format-preformatted"><code class="code">code</code> ( <i class="i">&quot;name&quot; &ndash; colon-sys  </i>) tools-ext &ldquo;code&rdquo;
 </pre></div>
 <p>Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・ード定義を開始します。  このような定義は Gforth
-インストール間で移植できないため、 <code>code</code> の代わりに <code>abi-code</code> を使用することをお勧めします。
-<code>code</code> 定義は、 次の仮想マシン命令へのディスパッチで終了する必要があります。
+インストール間で移植できないため、 <code class="code">code</code> の代わりに <code class="code">abi-code</code> を使用することをお勧めします。
+<code class="code">code</code> 定義は、 次の仮想マシン命令へのディスパッチで終了する必要があります。
 </p>
 
-<span id="index-_003bcode-_0028--compilation_002e-colon_002dsys1-_002d_002d-colon_002dsys2--_0029-tools_002dext"></span>
-<span id="index-_003bcode"></span>
-<span id="index-_003bcode-1"></span>
+<a class="index-entry-id" id="index-_003bcode-_0028-compilation_002e-colon_002dsys1-_002d_002d-colon_002dsys2-_0029-tools_002dext"></a>
+<a class="index-entry-id" id="index-_003bcode"></a>
+<a class="index-entry-id" id="index-_003bcode-1"></a>
 <div class="format">
-<pre class="format"><code>;code</code> ( <i>compilation. colon-sys1 &ndash; colon-sys2  </i>) tools-ext &ldquo;semicolon-code&rdquo;
+<pre class="format-preformatted"><code class="code">;code</code> ( <i class="i">compilation. colon-sys1 &ndash; colon-sys2  </i>) tools-ext &ldquo;semicolon-code&rdquo;
 </pre></div>
-<p><code>;code</code> の後のコードが、 最後に定義されたワード(<code>create</code> されたワードである必要があります)
-の振る舞いになります。  <code>code</code> の場合と同じ注意事項が適用されるため、 代わりに <code>;abi-code</code>
+<p><code class="code">;code</code> の後のコードが、 最後に定義されたワード(<code class="code">create</code> されたワードである必要があります)
+の振る舞いになります。  <code class="code">code</code> の場合と同じ注意事項が適用されるため、 代わりに <code class="code">;abi-code</code>
 を使用することをお勧めします。
 </p>
 
-<span id="index-flush_002dicache-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-flush_002dicache"></span>
-<span id="index-flush_002dicache-1"></span>
+<a class="index-entry-id" id="index-flush_002dicache-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-flush_002dicache"></a>
+<a class="index-entry-id" id="index-flush_002dicache-1"></a>
 <div class="format">
-<pre class="format"><code>flush-icache</code> ( <i>c-addr u &ndash; </i>) gforth-0.2 &ldquo;flush-icache&rdquo;
+<pre class="format-preformatted"><code class="code">flush-icache</code> ( <i class="i">c-addr u &ndash; </i>) gforth-0.2 &ldquo;flush-icache&rdquo;
 </pre></div>
-<p>プロセッサの命令キャッシュ(存在する場合)の <i>c-addr</i> と <i>u</i> バイト以降に古いデータが含まれていないことを確認してください。
-<code>END-CODE</code> は <code>flush-icache</code> を自動的に実行します。 注意(Caveat):
-<code>flush-icache</code> はあなたのインストール環境では機能しない可能性があります。 これは通常、
-マシンでダイレクト・スレッドがサポートされておらず(<samp>machine.h</samp> を確認してください)、
-マシンに別個の命令キャッシュがある場合に当てはまります。 このような場合、 <code>flush-icache</code>
+<p>プロセッサの命令キャッシュ(存在する場合)の <i class="i">c-addr</i> と <i class="i">u</i> バイト以降に古いデータが含まれていないことを確認してください。
+<code class="code">END-CODE</code> は <code class="code">flush-icache</code> を自動的に実行します。 注意(Caveat):
+<code class="code">flush-icache</code> はあなたのインストール環境では機能しない可能性があります。 これは通常、
+マシンでダイレクト・スレッドがサポートされておらず(<samp class="file">machine.h</samp> を確認してください)、
+マシンに別個の命令キャッシュがある場合に当てはまります。 このような場合、 <code class="code">flush-icache</code>
 は命令キャッシュをフラッシュする代わりに何も行いません。
 </p>
 
 
-<p><code>flush-icache</code> が正しく動作しない場合、 <code>abi-code</code> ワードなども(まず確実に)動作しません。
+<p><code class="code">flush-icache</code> が正しく動作しない場合、 <code class="code">abi-code</code> ワードなども(まず確実に)動作しません。
 </p>
 <p>これらのワードの一般的な使用法は、 同等の高レベルの定義ワードから類推することで最も簡単に示すことができます:
 </p>
 <div class="example">
-<pre class="example">: foo                              abi-code foo
+<pre class="example-preformatted">: foo                              abi-code foo
    &lt;high-level Forth words&gt;              &lt;assembler&gt;
 ;                                  end-code
                                 
@@ -203,26 +192,26 @@ FP スタック・ポインタをそこに格納することによって渡さ�
 ;                                  end-code
 </pre></div>
 
-<p><code>abi-code</code> を使用する場合は、 あなたのプラットフォームの ABI ドキュメントを参照して、
+<p><code class="code">abi-code</code> を使用する場合は、 あなたのプラットフォームの ABI ドキュメントを参照して、
 パラメーターがどのように渡されるか(スタック・ポインターをどこで取得するかがわかります)、
 戻り値がどのように渡されるか(データ・スタック・ポインタがどこに返されるかがわかります)を確認してください。 ABI のドキュメントでは、
 どのレジスターが呼び出し元によって保存されるか(caller-saved)や、 コード内で自由に破棄できるかや、
 どのレジスターが呼び出されたワードによって保存される必要があるか(callee-saved)についても説明されています。
 あなたはそれらを使用する前に保存し、 後で復元します。  一部のアーキテクチャと OS
-については、適切なセクションで呼び出し規約の各部分の短い概要を示します。  リバース・エンジニアリング志向の人々は、 <code>see
+については、適切なセクションで呼び出し規約の各部分の短い概要を示します。  リバース・エンジニアリング志向の人々は、 <code class="code">see
 abi-call</code> を通じてスタック・ポインターの受け渡しと戻りについて知ることもできます。
 </p>
 <p>ほとんどの ABI はレジスターを介してパラメータを渡しますが、 一部の ABI(特に最も一般的な 386 (別名 IA-32) 呼び出し規約)
 はアーキテクチャ・スタック上でパラメータを渡します。  共通の ABI はすべてレジスターで戻り値を渡します。
 </p>
-<p><code>abi-code</code> を使用する際に知っておく必要があるその他のことは、 Gforth ではデータと FP
-スタックの両方が下方向(下位アドレスに向かって)に成長し、 セルあたりのサイズは <code>1 cells</code> になり、 FP 値ごとのサイズは
-<code>1 floats</code> になるということです。
+<p><code class="code">abi-code</code> を使用する際に知っておく必要があるその他のことは、 Gforth ではデータと FP
+スタックの両方が下方向(下位アドレスに向かって)に成長し、 セルあたりのサイズは <code class="code">1 cells</code> になり、 FP 値ごとのサイズは
+<code class="code">1 floats</code> になるということです。
 </p>
-<p>386 アーキテクチャで <code>abi-code</code> を使用する例を以下に示します:
+<p>386 アーキテクチャで <code class="code">abi-code</code> を使用する例を以下に示します:
 </p>
 <div class="example">
-<pre class="example">abi-code my+ ( n1 n2 -- n )
+<pre class="example-preformatted">abi-code my+ ( n1 n2 -- n )
 4 sp d) ax mov \ sp into return reg
 ax )    cx mov \ tos
 4 #     ax add \ update sp (pop)
@@ -231,12 +220,12 @@ ret            \ return from my+
 end-code
 </pre></div>
 
-<p>この例の AMD64 バリエーションは <a href="AMD64-Assembler.html">AMD64 (x86_64) Assembler</a> にあります。
+<p>この例の AMD64 バリエーションは <a class="ref" href="AMD64-Assembler.html">AMD64 (x86_64) Assembler</a> にあります。
 </p>
 <p>386 で FP 値を扱う例を以下に示します:
 </p>
 <div class="example">
-<pre class="example">abi-code my-f+ ( r1 r2 -- r )
+<pre class="example-preformatted">abi-code my-f+ ( r1 r2 -- r )
 8 sp d) cx mov  \ load address of fp
 cx )    dx mov  \ load fp
 .fl dx )   fld  \ r2
@@ -252,7 +241,7 @@ end-code
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Common-Assembler.html">Common Assembler</a>, Previous: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a>, Up: <a href="Assembler-and-Code-Words.html">Assembler and Code Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

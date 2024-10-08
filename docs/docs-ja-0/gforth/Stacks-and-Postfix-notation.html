@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,12 @@ Foundation raise funds for GNU development." -->
 <link href="Introducing-the-Text-Interpreter.html" rel="prev" title="Introducing the Text Interpreter">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+kbd.kbd {font-style: oblique}
+kbd.key {font-style: normal}
+span:hover a.copiable-link {visibility: visible}
+ul.mark-bullet {list-style-type: disc}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,21 +53,21 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="Stacks-and-Postfix-notation">
-<div class="header">
+<div class="section-level-extent" id="Stacks-and-Postfix-notation">
+<div class="nav-panel">
 <p>
 Next: <a href="Your-first-definition.html" accesskey="n" rel="next">Your first Forth definition</a>, Previous: <a href="Introducing-the-Text-Interpreter.html" accesskey="p" rel="prev">Introducing the Text Interpreter</a>, Up: <a href="Introduction.html" accesskey="u" rel="up">An Introduction to Standard Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Stacks_002c-postfix-notation-and-parameter-passing"></span><h3 class="section">4.2 Stacks, postfix notation and parameter passing</h3>
-<span id="index-text-interpreter-1"></span>
-<span id="index-outer-interpreter-1"></span>
+<h3 class="section" id="Stacks_002c-postfix-notation-and-parameter-passing"><span>4.2 Stacks, postfix notation and parameter passing<a class="copiable-link" href="#Stacks_002c-postfix-notation-and-parameter-passing"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-text-interpreter-1"></a>
+<a class="index-entry-id" id="index-outer-interpreter-1"></a>
 
 <p>手続き型プログラミング言語(C や Pascal など)では、 プログラムの構成要素は関数(function)やプロシージャ(procedure)です。
 これらの関数またはプロシージャは、 明示的なパラメータを使用して呼び出されます。 たとえば、 C では以下のように記述できます:
 </p>
 <div class="example">
-<pre class="example">total = total + new_volume(length,height,depth);
+<pre class="example-preformatted">total = total + new_volume(length,height,depth);
 </pre></div>
 
 <p>ここで、  new_volume は別のコード片への関数呼び出し(function-call)であり、 total, length, height,
@@ -92,46 +83,46 @@ depth はすべて変数です。 length, height, depth は関数呼び出しの
 <p>スタックには後入れ先出し(last-in, first-out;LIFO)構成が採用されています。 以下のように打ち込むと:
 </p>
 <div class="example">
-<pre class="example"><kbd>1 2 3<span class="key">RET</span></kbd>  ok
+<pre class="example-preformatted"><kbd class="kbd">1 2 3<kbd class="key">RET</kbd></kbd>  ok
 </pre></div>
-<span id="index-TOS-definition"></span>
+<a class="index-entry-id" id="index-TOS-definition"></a>
 <p>これはテキスト・インタープリターに 3 つの数値を (データ)スタック に配置するように指示します。 スタックの振る舞いはトランプの扱いに例えられます。
 トランプの箱から、 (スートは何でもいいですが、) エース(1)のカードと2のカードと3のカードをテーブルの上の山に配ります。
 3のカードは山の最後のカード (last-in)であり、 山からカードを 1 枚取ると、 あなたがシャッフルとか何もいじってない限り、 取り出すカードは
 3のカードになります(first-out)。 スタックから最初に取り出されるであろう(スタック上の)数値はスタック頂上(スタック・トップ;top of
 stack)と呼ばれ、 多くの場合「TOS」と省略されます。
 </p>
-<p>Forth でパラメーターがどのように渡されるかを理解するために、 定義 <code>+</code> (「プラス」と発音します) の振る舞いを見てみましょう。
+<p>Forth でパラメーターがどのように渡されるかを理解するために、 定義 <code class="code">+</code> (「プラス」と発音します) の振る舞いを見てみましょう。
 あなたは、 この定義が加算を実行することを知っても驚かないでしょう。 より正確には、 これは 2 つの数値を加算して結果を生成します。 さて、 その 2
 つの数値はどこから取得されるのでしょうか？ これはスタック頂上から上位 2 つの数値を取り除きます。 その結果はどこに配置されるのでしょうか？
-それはスタックです。 あなたは以下のように、 トランプを使って <code>+</code> の振る舞いを演ずることができます。
+それはスタックです。 あなたは以下のように、 トランプを使って <code class="code">+</code> の振る舞いを演ずることができます。
 </p>
-<ul>
-<li> テーブル上の山(the steck)カードを 2 枚取り出します
-</li><li> あなたは、 それらをじっと見つめて、 「これら 2 つの数字の合計は何であるか」を自問してください。
-</li><li> 答えは 5 であると判明しました
-</li><li> 2 枚のカードをシャッフルしてトランプの箱に戻し、 トランプの箱の中から 5のカード を見つけます
-</li><li> テーブル上にある残りのエース(1)のカードの上に 5のカードを置きます。
+<ul class="itemize mark-bullet">
+<li>テーブル上の山(the steck)カードを 2 枚取り出します
+</li><li>あなたは、 それらをじっと見つめて、 「これら 2 つの数字の合計は何であるか」を自問してください。
+</li><li>答えは 5 であると判明しました
+</li><li>2 枚のカードをシャッフルしてトランプの箱に戻し、 トランプの箱の中から 5のカード を見つけます
+</li><li>テーブル上にある残りのエース(1)のカードの上に 5のカードを置きます。
 </li></ul>
 
-<p>トランプの箱はないですが、 Forth の実行中は、 定義 <code>.s</code> を使用して、 スタックに影響を与えることなく、
+<p>トランプの箱はないですが、 Forth の実行中は、 定義 <code class="code">.s</code> を使用して、 スタックに影響を与えることなく、
 スタックの現在の状態を表示できます。 以下の様に打ち込みます:
 </p>
 <div class="example">
-<pre class="example"><kbd>clearstacks 1 2 3<span class="key">RET</span></kbd> ok
-<kbd>.s<span class="key">RET</span></kbd> &lt;3&gt; 1 2 3  ok
+<pre class="example-preformatted"><kbd class="kbd">clearstacks 1 2 3<kbd class="key">RET</kbd></kbd> ok
+<kbd class="kbd">.s<kbd class="key">RET</kbd></kbd> &lt;3&gt; 1 2 3  ok
 </pre></div>
 
-<p>テキスト・インタープリターはワード <code>clearstacks</code> を検索して実行します。 スタック(データおよび浮動小数点スタック)を整理し、
+<p>テキスト・インタープリターはワード <code class="code">clearstacks</code> を検索して実行します。 スタック(データおよび浮動小数点スタック)を整理し、
 以前の例の実行によってスタックに残された可能性のあるエントリをすべて削除します。 続けてテキスト・インタプリタは、 3
-つの数値をそれぞれ順番にスタックにプッシュします。 最後に、 テキスト・インタープリターはワード <code>.s</code> を検索して実行します。
-<code>.s</code> を実行すると、「&lt;3&gt;」 (スタック上の項目の合計数) に続いて、スタック上のすべての項目のリストが出力されます。 一番右側の項目が
+つの数値をそれぞれ順番にスタックにプッシュします。 最後に、 テキスト・インタープリターはワード <code class="code">.s</code> を検索して実行します。
+<code class="code">.s</code> を実行すると、「&lt;3&gt;」 (スタック上の項目の合計数) に続いて、スタック上のすべての項目のリストが出力されます。 一番右側の項目が
 TOS です。
 </p>
 <p>あなたは今や以下のように打ち込めます:
 </p>
 <div class="example">
-<pre class="example"><kbd>+ .s<span class="key">RET</span></kbd> &lt;2&gt; 1 5  ok
+<pre class="example-preformatted"><kbd class="kbd">+ .s<kbd class="key">RET</kbd></kbd> &lt;2&gt; 1 5  ok
 </pre></div>
 
 <p>現在スタックには 2 つの項目があり、 (そのうちの項目の1つである)加算の結果は 5 となっていれば正解です。
@@ -160,31 +151,31 @@ Gforth を使用すると、 スタックの最大サイズを設定できます
 標準 Forth は少なくとも 16 ビットのセル・サイズを提供し、 ほとんどのデスクトップ・システムは 32 ビットのセル・サイズを使用します。
 </p>
 <p>Forth は型チェックを一切行わないため、 スタック項目を自由に操作したり組み合わせたりできます。 スタック項目を 2
-の補数の符号付き整数として扱う便利な方法は、 <code>+</code> などの標準ワードもやっています。 それゆえ、 以下のように入力できます:
+の補数の符号付き整数として扱う便利な方法は、 <code class="code">+</code> などの標準ワードもやっています。 それゆえ、 以下のように入力できます:
 </p>
 <div class="example">
-<pre class="example"><kbd>-5 12 + .s<span class="key">RET</span></kbd> &lt;1&gt; 7  ok
+<pre class="example-preformatted"><kbd class="kbd">-5 12 + .s<kbd class="key">RET</kbd></kbd> &lt;1&gt; 7  ok
 </pre></div>
 
-<p>あなたが、 Forth を電卓にするために、 数値や <code>+</code> のような定義を使用すると、
+<p>あなたが、 Forth を電卓にするために、 数値や <code class="code">+</code> のような定義を使用すると、
 それが通常の電卓とはかなり異なることがわかるでしょう。 あなたは 2 + 3 = と入力するのではなく、 2 3 +
-と入力する必要があります(ここでは、 結果を確認するには <code>.s</code> を使用する必要があるという事実は無視してください)。
+と入力する必要があります(ここでは、 結果を確認するには <code class="code">.s</code> を使用する必要があるという事実は無視してください)。
 この違いを説明するために使用される用語は、 電卓は「中置記法」(Infix Notation;パラメーターと演算子が混合されている)を使用するのに対し、
 Forth は「後置記法」(Postfix Notation;パラメーターと演算子が分かれている)、 またの名を「逆ポーランド記法」(Reverse
 Polish Notation)と呼ばれるものを使用します。
 </p>
 <p>後置記法は最初はわかりにくいように見えるかもしれませんが、 いくつかの重要な利点があります:
 </p>
-<ul>
-<li> 明白です
-</li><li> より簡潔です
-</li><li> スタックベースのシステムに自然に適合します
+<ul class="itemize mark-bullet">
+<li>明白です
+</li><li>より簡潔です
+</li><li>スタックベースのシステムに自然に適合します
 </li></ul>
 
 <p>これらの主張をさらに詳しく調べるために、 以下の計算について見てみましょう:
 </p>
 <div class="example">
-<pre class="example">6 + 5 * 4 =
+<pre class="example-preformatted">6 + 5 * 4 =
 4 * 5 + 6 =
 </pre></div>
 
@@ -193,7 +184,7 @@ Polish Notation)と呼ばれるものを使用します。
 答え 44 だと言った人に、 なぜ答えが 26 かを説明するには、 最初の計算を以下のように書き換えることになるでしょう:
 </p>
 <div class="example">
-<pre class="example">6 + (5 * 4) =
+<pre class="example-preformatted">6 + (5 * 4) =
 </pre></div>
 
 <p>あなたが、 もし、 乗算より優先して加算を実行したい場合は、 かっこを使用して強制的に加算させる必要があります。
@@ -201,7 +192,7 @@ Polish Notation)と呼ばれるものを使用します。
 <p>上記 2 つの計算を電卓で計算する場合、 以下のキーストローク・シーケンスを使用して、 入力ミスしない限り、 おそらく正しい答えが得られるでしょう:
 </p>
 <div class="example">
-<pre class="example">6 + 5 = * 4 =
+<pre class="example-preformatted">6 + 5 = * 4 =
 4 * 5 = + 6 =
 </pre></div>
 
@@ -213,12 +204,12 @@ required後置記法では演算子が適用される順序は常に明示的で
 <p>計算 6 + 5 * 4 は、 以下の 2 つの同等の方法で(後置表記で)書くことができます:
 </p>
 <div class="example">
-<pre class="example">6 5 4 * +
+<pre class="example-preformatted">6 5 4 * +
 または:
 5 4 * 6 +
 </pre></div>
 
-<p>この表記法に関して注意すべき重要な点は、 数値の順番は変わらないことです。 10 から 2 を減算する場合は、 <code>10 2 -</code>
+<p>この表記法に関して注意すべき重要な点は、 数値の順番は変わらないことです。 10 から 2 を減算する場合は、 <code class="code">10 2 -</code>
 と入力します。
 </p>
 <p>Forth が後置表記を使用する理由は非常に簡単に説明できます。 これにより実装が非常に単純になり、
@@ -230,7 +221,7 @@ required後置記法では演算子が適用される順序は常に明示的で
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Your-first-definition.html">Your first Forth definition</a>, Previous: <a href="Introducing-the-Text-Interpreter.html">Introducing the Text Interpreter</a>, Up: <a href="Introduction.html">An Introduction to Standard Forth</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

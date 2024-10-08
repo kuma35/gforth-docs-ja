@@ -1,12 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
 0.7.9_20240418、April 18, 2024) 用です
 
-Author: Anton Ertl Copyright (C) 2002,2003,2005,2007,2008,2019 Free
+Author: Anton Ertl Copyright © 2002,2003,2005,2007,2008,2019 Free
 Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document under
@@ -35,21 +35,9 @@ Foundation raise funds for GNU development." -->
 <link href="Example-overview.html" rel="prev" title="Example overview">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 
@@ -57,58 +45,58 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="Using-profiling-to-create-superinstructions">
-<div class="header">
+<div class="section-level-extent" id="Using-profiling-to-create-superinstructions">
+<div class="nav-panel">
 <p>
 Previous: <a href="Example-overview.html" accesskey="p" rel="prev">Example overview</a>, Up: <a href="Example.html" accesskey="u" rel="up">Example</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Using-profiling-to-create-superinstructions-1"></span><h3 class="section">5.2 Using profiling to create superinstructions</h3>
-<span id="index-profiling-example"></span>
-<span id="index-superinstructions-example"></span>
+<h3 class="section" id="Using-profiling-to-create-superinstructions-1"><span>5.2 Using profiling to create superinstructions<a class="copiable-link" href="#Using-profiling-to-create-superinstructions-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-profiling-example"></a>
+<a class="index-entry-id" id="index-superinstructions-example"></a>
 
-<p>作者は <samp>Makefile</samp> には、
+<p>作者は <samp class="file">Makefile</samp> には、
 プロファイリングを使用してスーパー命令を作成するためのルールを追加していません(スーパー命令選択の選択肢はたくさんありますが、 それらの選択肢を
-<samp>Makefile</samp> にハードコードしたくありませんでした)が、 サポートするスクリプトがいくつかあります。 例:
+<samp class="file">Makefile</samp> にハードコードしたくありませんでした)が、 サポートするスクリプトがいくつかあります。 例:
 </p>
-<p><samp>fib.mini</samp> と <samp>test.mini</samp> をトレーニング・プログラムとして使用すると、
+<p><samp class="file">fib.mini</samp> と <samp class="file">test.mini</samp> をトレーニング・プログラムとして使用すると、
 以下のようなプロファイルが得られます:
 </p>
 <div class="example">
-<pre class="example">make fib.prof test.prof #数秒かかります
+<pre class="example-preformatted">make fib.prof test.prof #数秒かかります
 </pre></div>
 
-<p>これらのプロファイルは <samp>stat.awk</samp> で集約できます:
+<p>これらのプロファイルは <samp class="file">stat.awk</samp> で集約できます:
 </p>
 <div class="example">
-<pre class="example">awk -f stat.awk fib.prof test.prof
+<pre class="example-preformatted">awk -f stat.awk fib.prof test.prof
 </pre></div>
 
 <p>結果には以下のような行が含まれます:
 </p>
 <div class="example">
-<pre class="example">      2      16        36910041 loadlocal lit
+<pre class="example-preformatted">      2      16        36910041 loadlocal lit
 </pre></div>
 
-<p>これは、 シーケンス <code>loadlocal lit</code> が 2 つのプロファイルで合計 16 回静的に発生し、 動的実行数が 36910041
+<p>これは、 シーケンス <code class="code">loadlocal lit</code> が 2 つのプロファイルで合計 16 回静的に発生し、 動的実行数が 36910041
 であることを意味します。
 </p>
 <p>数値はスーパー命令を選択するためにさまざまな方法で使用できます。  たとえば、 動的実行数が 10000 を超えるシーケンスをすべて選択したい場合は、
 以下のパイプラインを使用します:
 </p>
 <div class="example">
-<pre class="example">awk -f stat.awk fib.prof test.prof|
+<pre class="example-preformatted">awk -f stat.awk fib.prof test.prof|
 awk '$3&gt;=10000'|                #シーケンスを選択
 fgrep -v -f peephole-blacklist| #良くない命令を排除
 awk -f seq2rule.awk|  #シーケンスをスーパー命令ルールに変換
 sort -k 3 &gt;mini-super.vmg       #シーケンスを並べ替え
 </pre></div>
 
-<p>ファイル <samp>peephole-blacklist</samp> には、スタックまたはスタック・ポインター(mini 言語の場合: <code>call</code>
-、<code>return</code>)に直接アクセスするすべての命令が含まれています。 並べ替え手順は、 プレフィックスが、
+<p>ファイル <samp class="file">peephole-blacklist</samp> には、スタックまたはスタック・ポインター(mini 言語の場合: <code class="code">call</code>
+、<code class="code">return</code>)に直接アクセスするすべての命令が含まれています。 並べ替え手順は、 プレフィックスが、
 大きなスーパー命令よりも前に配置されるようにするために必要です。
 </p>
-<p>いまや、 あなたは &lsquo;<samp>make</samp>&rsquo; と言うだけでスーパー命令を備えたバージョンの mini 言語を作成できるようになりました。
+<p>いまや、 あなたは &lsquo;<samp class="samp">make</samp>&rsquo; と言うだけでスーパー命令を備えたバージョンの mini 言語を作成できるようになりました。
 </p>
 
 </div>

@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="Declaring-OS_002dlevel-libraries.html" rel="prev" title="Declaring OS-level libraries">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,51 +51,51 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Callbacks">
-<div class="header">
+<div class="subsection-level-extent" id="Callbacks">
+<div class="nav-panel">
 <p>
 Next: <a href="C-interface-internals.html" accesskey="n" rel="next">How the C interface works</a>, Previous: <a href="Declaring-OS_002dlevel-libraries.html" accesskey="p" rel="prev">Declaring OS-level libraries</a>, Up: <a href="C-Interface.html" accesskey="u" rel="up">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Callbacks-1"></span><h4 class="subsection">6.28.6 Callbacks</h4>
-<span id="index-Callback-functions-written-in-Forth"></span>
-<span id="index-C-function-pointers-to-Forth-words"></span>
+<h4 class="subsection" id="Callbacks-1"><span>6.28.6 Callbacks<a class="copiable-link" href="#Callbacks-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-Callback-functions-written-in-Forth"></a>
+<a class="index-entry-id" id="index-C-function-pointers-to-Forth-words"></a>
 
 <p>場合によっては、 C言語の関数へ関数のポインターを渡す必要があります。 つまり、
 ライブラリがアプリケーションにコールバックしたい場合です(ポイント先の関数はコールバック関数と呼ばれます)。
-既存のC言語の関数のアドレス(<code>lib-sym</code> で取得。 see <a href="Low_002dLevel-C-Interface-Words.html">Low-Level C Interface Words</a>)を渡すことができますが、 適切な C言語の関数がない場合、 あなたは Forth ワードをC言語の関数として定義したい筈です。 その際は、
+既存のC言語の関数のアドレス(<code class="code">lib-sym</code> で取得。 see <a class="pxref" href="Low_002dLevel-C-Interface-Words.html">Low-Level C Interface Words</a>)を渡すことができますが、 適切な C言語の関数がない場合、 あなたは Forth ワードをC言語の関数として定義したい筈です。 その際は、
 下記にて説明する、 コールバックを生成する必要があります:
 </p>
-<p><code>c-callback</code> を使用して Forth コードからC言語のコールバックを生成できます。
+<p><code class="code">c-callback</code> を使用して Forth コードからC言語のコールバックを生成できます。
 </p>
-<span id="index-c_002dcallback-_0028--_0022forth_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-c_002dcallback"></span>
-<span id="index-c_002dcallback-1"></span>
+<a class="index-entry-id" id="index-c_002dcallback-_0028-_0022forth_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-c_002dcallback"></a>
+<a class="index-entry-id" id="index-c_002dcallback-1"></a>
 <div class="format">
-<pre class="format"><code>c-callback</code> ( <i>&quot;forth-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback&rdquo;
+<pre class="format-preformatted"><code class="code">c-callback</code> ( <i class="i">&quot;forth-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback&rdquo;
 </pre></div>
-<p>指定のシグネチャ <i>forth-name</i> を使用してコールバック・インスタンス化器(instantiator;インスタンシエーター)を定義します。
-コールバック・インスタンス化器 <i>forth-name</i> <code>( xt -- addr )</code> は、 <var>xt</var> を受け取り、
-そのコールバックを処理する C言語関数の <var>addr</var> を返します。
+<p>指定のシグネチャ <i class="i">forth-name</i> を使用してコールバック・インスタンス化器(instantiator;インスタンシエーター)を定義します。
+コールバック・インスタンス化器 <i class="i">forth-name</i> <code class="code">( xt -- addr )</code> は、 <var class="var">xt</var> を受け取り、
+そのコールバックを処理する C言語関数の <var class="var">addr</var> を返します。
 </p>
 
-<span id="index-c_002dcallback_002dthread-_0028--_0022forth_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-c_002dcallback_002dthread"></span>
-<span id="index-c_002dcallback_002dthread-1"></span>
+<a class="index-entry-id" id="index-c_002dcallback_002dthread-_0028-_0022forth_002dname_0022-_0022_007btype_007d_0022-_0022_002d_002d_002d_0022-_0022type_0022-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-c_002dcallback_002dthread"></a>
+<a class="index-entry-id" id="index-c_002dcallback_002dthread-1"></a>
 <div class="format">
-<pre class="format"><code>c-callback-thread</code> ( <i>&quot;forth-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback-thread&rdquo;
+<pre class="format-preformatted"><code class="code">c-callback-thread</code> ( <i class="i">&quot;forth-name&quot; &quot;{type}&quot; &quot;&ndash;&quot; &quot;type&quot; &ndash;  </i>) gforth-1.0 &ldquo;c-callback-thread&rdquo;
 </pre></div>
-<p>指定のシグネチャ <i>forth-name</i> を使用してコールバック・インスタンス化器を定義します。  コールバック・インスタンス化器
-<i>forth-name</i> <code>( xt -- addr )</code> は、 <var>xt</var> を受け取り、 そのコールバックを処理する
-C言語の関数の <var>addr</var> を返します。  このコールバックは、 別のスレッドから呼び出された場合に安全です
+<p>指定のシグネチャ <i class="i">forth-name</i> を使用してコールバック・インスタンス化器を定義します。  コールバック・インスタンス化器
+<i class="i">forth-name</i> <code class="code">( xt -- addr )</code> は、 <var class="var">xt</var> を受け取り、 そのコールバックを処理する
+C言語の関数の <var class="var">addr</var> を返します。  このコールバックは、 別のスレッドから呼び出された場合に安全です
 </p>
 
 
-<p>これにより、 (value <code>callback#</code> までの)多数のコールバック関数がプリコンパイルされます。  C言語の関数プロトタイプは、
+<p>これにより、 (value <code class="code">callback#</code> までの)多数のコールバック関数がプリコンパイルされます。  C言語の関数プロトタイプは、
 Forth シグネチャから推定されます。  これでは不十分な場合は、 Forth 型の後に中かっこで囲んで型を追加できます。
 </p>
 <div class="example">
-<pre class="example">c-callback vector4double: f f f f -- void
+<pre class="example-preformatted">c-callback vector4double: f f f f -- void
 c-callback vector4single: f{float} f{float} f{float} f{float} -- void
 </pre></div>
 

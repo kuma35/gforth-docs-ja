@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Literal-Tutorial.html" rel="prev" title="Literal Tutorial">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,23 +50,23 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="Advanced-macros-Tutorial">
-<div class="header">
+<div class="section-level-extent" id="Advanced-macros-Tutorial">
+<div class="nav-panel">
 <p>
-Next: <a href="Compilation-Tokens-Tutorial.html" accesskey="n" rel="next">Compilation Tokens</a>, Previous: <a href="Literal-Tutorial.html" accesskey="p" rel="prev"><code>Literal</code></a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Compilation-Tokens-Tutorial.html" accesskey="n" rel="next">Compilation Tokens</a>, Previous: <a href="Literal-Tutorial.html" accesskey="p" rel="prev"><code class="code">Literal</code></a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Advanced-macros"></span><h3 class="section">3.35 Advanced macros</h3>
-<span id="index-macros_002c-advanced-tutorial"></span>
-<span id="index-run_002dtime-code-generation_002c-tutorial"></span>
+<h3 class="section" id="Advanced-macros"><span>3.35 Advanced macros<a class="copiable-link" href="#Advanced-macros"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-macros_002c-advanced-tutorial"></a>
+<a class="index-entry-id" id="index-run_002dtime-code-generation_002c-tutorial"></a>
 
-<p><a href="Execution-Tokens-Tutorial.html">Execution Tokens</a> の <code>map-array</code>
-について再検討してみましょう。 <code>map-array</code> は <code>execute</code> を頻繁に実行しますが、 これは一部の Forth
-実装では比較的高価な操作です。 <code>compile,</code> と <code>POSTPONE</code> を使用すると、 これらの
-<code>execute</code> を削除し、 直接実行されるワードを含むワードを生成できます:
+<p><a class="ref" href="Execution-Tokens-Tutorial.html">Execution Tokens</a> の <code class="code">map-array</code>
+について再検討してみましょう。 <code class="code">map-array</code> は <code class="code">execute</code> を頻繁に実行しますが、 これは一部の Forth
+実装では比較的高価な操作です。 <code class="code">compile,</code> と <code class="code">POSTPONE</code> を使用すると、 これらの
+<code class="code">execute</code> を削除し、 直接実行されるワードを含むワードを生成できます:
 </p>
 <div class="example">
-<pre class="example">: compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )
+<pre class="example-preformatted">: compile-map-array ( compilation: xt -- ; run-time: ... addr u -- ... )
 \ at run-time, execute xt ( ... x -- ... ) for each element of the
 \ array beginning at addr and containing u elements
   { xt }
@@ -95,7 +83,7 @@ a 5 sum-array .
 <p>コードの生成には Forth の機能を最大限に活用できます。 以下に、 コードがループ内で生成される例を示します:
 </p>
 <div class="example">
-<pre class="example">: compile-vmul-step ( compilation: n --; run-time: n1 addr1 -- n2 addr2 )
+<pre class="example-preformatted">: compile-vmul-step ( compilation: n --; run-time: n1 addr1 -- n2 addr2 )
 \ n2=n1+(addr1)*n, addr2=addr1+cell
   POSTPONE tuck POSTPONE @
   POSTPONE literal POSTPONE * POSTPONE +
@@ -115,7 +103,7 @@ see a-vmul
 a a-vmul .
 </pre></div>
 
-<p>この例では <code>compile-map-array</code> を使用していますが、 代わりに <code>map-array</code>
+<p>この例では <code class="code">compile-map-array</code> を使用していますが、 代わりに <code class="code">map-array</code>
 を使用することもできます(是非試してみてください)。
 </p>
 <p>この手法を使用すると、 巨大な行列を効率的に乗算できます。 行列の乗算では、 一方の行列のすべての行ともう一方の行列のすべての列を乗算します。 1

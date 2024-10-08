@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="Integer-division.html" rel="prev" title="Integer division">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,15 +51,15 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Two_002dstage-integer-division">
-<div class="header">
+<div class="subsection-level-extent" id="Two_002dstage-integer-division">
+<div class="nav-panel">
 <p>
 Next: <a href="Bitwise-operations.html" accesskey="n" rel="next">Bitwise operations</a>, Previous: <a href="Integer-division.html" accesskey="p" rel="prev">Integer division</a>, Up: <a href="Arithmetic.html" accesskey="u" rel="up">Arithmetic</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Two_002dstage-integer-division-1"></span><h4 class="subsection">6.5.5 Two-stage integer division</h4>
-<span id="index-dividing-many-integers-with-the-same-divisor"></span>
-<span id="index-reciprocal-of-integer"></span>
+<h4 class="subsection" id="Two_002dstage-integer-division-1"><span>6.5.5 Two-stage integer division<a class="copiable-link" href="#Two_002dstage-integer-division-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-dividing-many-integers-with-the-same-divisor"></a>
+<a class="index-entry-id" id="index-reciprocal-of-integer"></a>
 
 <p>(Two-stage integer divison;2段階除算)ほとんどのハードウェアでは、 乗算は除算よりも大幅に高速です。 したがって、
 多くの数値を同じ除数(割る数)で除算する必要がある場合は、 通常、 除数の逆数を一度求めて、 その逆数を数値に乗算する方が高速です。  整数の場合、
@@ -79,7 +68,7 @@ Next: <a href="Bitwise-operations.html" accesskey="n" rel="next">Bitwise operati
 <p>以下の例から始めるとしましょう。 あなたがセルの配列のすべての要素を同じ数値 n で除算したいとします。 これを素直に実装すると以下のようになります:
 </p>
 <div class="example">
-<pre class="example">: array/ ( addr u n -- )
+<pre class="example-preformatted">: array/ ( addr u n -- )
   -rot cells bounds u+do
     i @ over / i !
   1 cells +loop
@@ -89,7 +78,7 @@ Next: <a href="Bitwise-operations.html" accesskey="n" rel="next">Bitwise operati
 <p>より効率的なバージョンは以下のようになります:
 </p>
 <div class="example">
-<pre class="example">: array/ ( addr u n -- )
+<pre class="example-preformatted">: array/ ( addr u n -- )
   {: | reci[ staged/-size ] :}
   reci[ /f-stage1m
   cells bounds u+do
@@ -97,115 +86,115 @@ Next: <a href="Bitwise-operations.html" accesskey="n" rel="next">Bitwise operati
   1 cells +loop ;
 </pre></div>
 
-<p>この例では、 まず、 逆数データを格納するためのサイズ <code>staged/-size</code> のローカル・バッファー <code>reci[</code>
-を作成します。 次に、 <code>/f-stage1m</code> は <i>n</i> の逆数を計算し、 <code>reci[</code> に格納します。 最後に、
-ループ内で <code>/f-stage2m</code> が <code>reci[</code> のデータを使用して除算の商を計算します。
+<p>この例では、 まず、 逆数データを格納するためのサイズ <code class="code">staged/-size</code> のローカル・バッファー <code class="code">reci[</code>
+を作成します。 次に、 <code class="code">/f-stage1m</code> は <i class="i">n</i> の逆数を計算し、 <code class="code">reci[</code> に格納します。 最後に、
+ループ内で <code class="code">/f-stage2m</code> が <code class="code">reci[</code> のデータを使用して除算の商を計算します。
 </p>
-<p>これにはいくつかの制限があります。 <code>/f-stage1m</code> では正の除数のみがサポートされます。  <code>u/-stage1m</code> には
+<p>これにはいくつかの制限があります。 <code class="code">/f-stage1m</code> では正の除数のみがサポートされます。  <code class="code">u/-stage1m</code> には
 2 以上の数を使用できます。  サポートされていない除数を使用しようとすると、 エラーが発生します。  floored
-第2ステージ・ワードの相互(reciprocal)バッファーは <code>/f-stage1m</code> で初期化し、
-符号な無しの第2ステージ・ワードの相互バッファーは <code>u/-stage1m</code> で初期化する必要があります。
+第2ステージ・ワードの相互(reciprocal)バッファーは <code class="code">/f-stage1m</code> で初期化し、
+符号な無しの第2ステージ・ワードの相互バッファーは <code class="code">u/-stage1m</code> で初期化する必要があります。
 最初のステージと2番目のステージの間で相互バッファーを変更してはなりません。 基本的に、 これはメモリー・バッファーとして扱うのではなく、
 最初のステージでのみ変更可能なものとして扱います。 このルールのポイントは、 Gforth
 の将来のバージョンではこのバッファーのエイリアスが考慮されないということです。
 </p>
 <p>これらのワードが以下です:
 </p>
-<span id="index-staged_002f_002dsize-_0028--_002d_002d-u--_0029-gforth_002d1_002e0"></span>
-<span id="index-staged_002f_002dsize"></span>
-<span id="index-staged_002f_002dsize-1"></span>
+<a class="index-entry-id" id="index-staged_002f_002dsize-_0028-_002d_002d-u-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-staged_002f_002dsize"></a>
+<a class="index-entry-id" id="index-staged_002f_002dsize-1"></a>
 <div class="format">
-<pre class="format"><code>staged/-size</code> ( <i>&ndash; u  </i>) gforth-1.0 &ldquo;staged-slash-size&rdquo;
+<pre class="format-preformatted"><code class="code">staged/-size</code> ( <i class="i">&ndash; u  </i>) gforth-1.0 &ldquo;staged-slash-size&rdquo;
 </pre></div>
-<p><code>u/-stage1m</code> または <code>/f-stage1m</code> のバッファーのサイズ。
+<p><code class="code">u/-stage1m</code> または <code class="code">/f-stage1m</code> のバッファーのサイズ。
 </p>
 
-<span id="index-_002ff_002dstage1m-_0028--n-addr_002dreci-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-_002ff_002dstage1m"></span>
-<span id="index-_002ff_002dstage1m-1"></span>
+<a class="index-entry-id" id="index-_002ff_002dstage1m-_0028-n-addr_002dreci-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-_002ff_002dstage1m"></a>
+<a class="index-entry-id" id="index-_002ff_002dstage1m-1"></a>
 <div class="format">
-<pre class="format"><code>/f-stage1m</code> ( <i>n addr-reci &ndash;  </i>) gforth-1.0 &ldquo;slash-f-stage1m&rdquo;
+<pre class="format-preformatted"><code class="code">/f-stage1m</code> ( <i class="i">n addr-reci &ndash;  </i>) gforth-1.0 &ldquo;slash-f-stage1m&rdquo;
 </pre></div>
-<p><i>n</i> の逆数を計算し、 サイズ <code>staged/-size</code> のバッファー <i>addr-reci</i> に格納します。  <i>n</i>&lt;1
+<p><i class="i">n</i> の逆数を計算し、 サイズ <code class="code">staged/-size</code> のバッファー <i class="i">addr-reci</i> に格納します。  <i class="i">n</i>&lt;1
 の場合、 エラーを出します(throw)。
 </p>
 
-<span id="index-_002ff_002dstage2m-_0028--n1-a_002dreci-_002d_002d-nquotient--_0029-gforth_002d1_002e0"></span>
-<span id="index-_002ff_002dstage2m"></span>
-<span id="index-_002ff_002dstage2m-1"></span>
+<a class="index-entry-id" id="index-_002ff_002dstage2m-_0028-n1-a_002dreci-_002d_002d-nquotient-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-_002ff_002dstage2m"></a>
+<a class="index-entry-id" id="index-_002ff_002dstage2m-1"></a>
 <div class="format">
-<pre class="format"><code>/f-stage2m</code> ( <i>n1 a-reci &ndash; nquotient </i>) gforth-1.0 &ldquo;slash-f-stage2m&rdquo;
+<pre class="format-preformatted"><code class="code">/f-stage2m</code> ( <i class="i">n1 a-reci &ndash; nquotient </i>) gforth-1.0 &ldquo;slash-f-stage2m&rdquo;
 </pre></div>
-<p><i>Nquotient</i> は、<i>n1</i> を <i>a-reci</i> で表される除数で除算した結果であり、 <code>/f-stage1m</code>
+<p><i class="i">Nquotient</i> は、<i class="i">n1</i> を <i class="i">a-reci</i> で表される除数で除算した結果であり、 <code class="code">/f-stage1m</code>
 によって計算されます。
 </p>
-<span id="index-modf_002dstage2m-_0028--n1-a_002dreci-_002d_002d-umodulus--_0029-gforth_002d1_002e0"></span>
-<span id="index-modf_002dstage2m"></span>
-<span id="index-modf_002dstage2m-1"></span>
+<a class="index-entry-id" id="index-modf_002dstage2m-_0028-n1-a_002dreci-_002d_002d-umodulus-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-modf_002dstage2m"></a>
+<a class="index-entry-id" id="index-modf_002dstage2m-1"></a>
 <div class="format">
-<pre class="format"><code>modf-stage2m</code> ( <i>n1 a-reci &ndash; umodulus </i>) gforth-1.0 &ldquo;mod-f-stage2m&rdquo;
+<pre class="format-preformatted"><code class="code">modf-stage2m</code> ( <i class="i">n1 a-reci &ndash; umodulus </i>) gforth-1.0 &ldquo;mod-f-stage2m&rdquo;
 </pre></div>
-<p><i>Umodulus</i> は、 <i>n1</i> を <i>a-reci</i> で表される除数で割った余り(remainder)で、
-<code>/f-stage1m</code> によって計算されます。
+<p><i class="i">Umodulus</i> は、 <i class="i">n1</i> を <i class="i">a-reci</i> で表される除数で割った余り(remainder)で、
+<code class="code">/f-stage1m</code> によって計算されます。
 </p>
-<span id="index-_002fmodf_002dstage2m-_0028--n1-a_002dreci-_002d_002d-umodulus-nquotient--_0029-gforth_002d1_002e0"></span>
-<span id="index-_002fmodf_002dstage2m"></span>
-<span id="index-_002fmodf_002dstage2m-1"></span>
+<a class="index-entry-id" id="index-_002fmodf_002dstage2m-_0028-n1-a_002dreci-_002d_002d-umodulus-nquotient-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-_002fmodf_002dstage2m"></a>
+<a class="index-entry-id" id="index-_002fmodf_002dstage2m-1"></a>
 <div class="format">
-<pre class="format"><code>/modf-stage2m</code> ( <i>n1 a-reci &ndash; umodulus nquotient </i>) gforth-1.0 &ldquo;slash-mod-f-stage2m&rdquo;
+<pre class="format-preformatted"><code class="code">/modf-stage2m</code> ( <i class="i">n1 a-reci &ndash; umodulus nquotient </i>) gforth-1.0 &ldquo;slash-mod-f-stage2m&rdquo;
 </pre></div>
-<p><i>Nquotient</i> は商で、 <i>umodulus</i> は <i>n1</i> を <i>a-reci</i>
-で表される除数で割った余り(remainder)で、 <code>/f-stage1m</code> によって計算されます。 
+<p><i class="i">Nquotient</i> は商で、 <i class="i">umodulus</i> は <i class="i">n1</i> を <i class="i">a-reci</i>
+で表される除数で割った余り(remainder)で、 <code class="code">/f-stage1m</code> によって計算されます。 
 </p>
-<span id="index-u_002f_002dstage1m-_0028--u-addr_002dreci-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-u_002f_002dstage1m"></span>
-<span id="index-u_002f_002dstage1m-1"></span>
+<a class="index-entry-id" id="index-u_002f_002dstage1m-_0028-u-addr_002dreci-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-u_002f_002dstage1m"></a>
+<a class="index-entry-id" id="index-u_002f_002dstage1m-1"></a>
 <div class="format">
-<pre class="format"><code>u/-stage1m</code> ( <i>u addr-reci &ndash;  </i>) gforth-1.0 &ldquo;u-slash-stage1m&rdquo;
+<pre class="format-preformatted"><code class="code">u/-stage1m</code> ( <i class="i">u addr-reci &ndash;  </i>) gforth-1.0 &ldquo;u-slash-stage1m&rdquo;
 </pre></div>
-<p><i>u</i> の逆数を計算し、 サイズ <code>staged/-size</code> のバッファー <i>addr-reci</i> に格納します。  <i>u</i>&lt;2
+<p><i class="i">u</i> の逆数を計算し、 サイズ <code class="code">staged/-size</code> のバッファー <i class="i">addr-reci</i> に格納します。  <i class="i">u</i>&lt;2
 の場合、 エラーを出します(throw)。
 </p>
 
-<span id="index-u_002f_002dstage2m-_0028--u1-a_002dreci-_002d_002d-uquotient--_0029-gforth_002d1_002e0"></span>
-<span id="index-u_002f_002dstage2m"></span>
-<span id="index-u_002f_002dstage2m-1"></span>
+<a class="index-entry-id" id="index-u_002f_002dstage2m-_0028-u1-a_002dreci-_002d_002d-uquotient-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-u_002f_002dstage2m"></a>
+<a class="index-entry-id" id="index-u_002f_002dstage2m-1"></a>
 <div class="format">
-<pre class="format"><code>u/-stage2m</code> ( <i>u1 a-reci &ndash; uquotient </i>) gforth-1.0 &ldquo;u-slash-stage2m&rdquo;
+<pre class="format-preformatted"><code class="code">u/-stage2m</code> ( <i class="i">u1 a-reci &ndash; uquotient </i>) gforth-1.0 &ldquo;u-slash-stage2m&rdquo;
 </pre></div>
-<p><i>Uquotient</i> は、 <i>u1</i> を <i>a-reci</i> で表される除数で除算した結果であり、 <code>u/-stage1m</code>
+<p><i class="i">Uquotient</i> は、 <i class="i">u1</i> を <i class="i">a-reci</i> で表される除数で除算した結果であり、 <code class="code">u/-stage1m</code>
 によって計算されます。
 </p>
-<span id="index-umod_002dstage2m-_0028--u1-a_002dreci-_002d_002d-umodulus--_0029-gforth_002d1_002e0"></span>
-<span id="index-umod_002dstage2m"></span>
-<span id="index-umod_002dstage2m-1"></span>
+<a class="index-entry-id" id="index-umod_002dstage2m-_0028-u1-a_002dreci-_002d_002d-umodulus-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-umod_002dstage2m"></a>
+<a class="index-entry-id" id="index-umod_002dstage2m-1"></a>
 <div class="format">
-<pre class="format"><code>umod-stage2m</code> ( <i>u1 a-reci &ndash; umodulus </i>) gforth-1.0 &ldquo;u-mod-stage2m&rdquo;
+<pre class="format-preformatted"><code class="code">umod-stage2m</code> ( <i class="i">u1 a-reci &ndash; umodulus </i>) gforth-1.0 &ldquo;u-mod-stage2m&rdquo;
 </pre></div>
-<p><i>Umodulus</i> は、 <i>u1</i> を <i>a-reci</i>
-で表される除数で割った余り(remainder)で、<code>u/-stage1m</code> によって計算されます。
+<p><i class="i">Umodulus</i> は、 <i class="i">u1</i> を <i class="i">a-reci</i>
+で表される除数で割った余り(remainder)で、<code class="code">u/-stage1m</code> によって計算されます。
 </p>
-<span id="index-u_002fmod_002dstage2m-_0028--u1-a_002dreci-_002d_002d-umodulus-uquotient--_0029-gforth_002d1_002e0"></span>
-<span id="index-u_002fmod_002dstage2m"></span>
-<span id="index-u_002fmod_002dstage2m-1"></span>
+<a class="index-entry-id" id="index-u_002fmod_002dstage2m-_0028-u1-a_002dreci-_002d_002d-umodulus-uquotient-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-u_002fmod_002dstage2m"></a>
+<a class="index-entry-id" id="index-u_002fmod_002dstage2m-1"></a>
 <div class="format">
-<pre class="format"><code>u/mod-stage2m</code> ( <i>u1 a-reci &ndash; umodulus uquotient </i>) gforth-1.0 &ldquo;u-slash-mod-stage2m&rdquo;
+<pre class="format-preformatted"><code class="code">u/mod-stage2m</code> ( <i class="i">u1 a-reci &ndash; umodulus uquotient </i>) gforth-1.0 &ldquo;u-slash-mod-stage2m&rdquo;
 </pre></div>
-<p><i>Uquotient</i> は商で、 <i>umodulus</i> は <i>a-reci</i> で表される除数で <i>u1</i>
-を割った余り(remainder)で、<code>u/-stage1m</code> によって計算されます。 
+<p><i class="i">Uquotient</i> は商で、 <i class="i">umodulus</i> は <i class="i">a-reci</i> で表される除数で <i class="i">u1</i>
+を割った余り(remainder)で、<code class="code">u/-stage1m</code> によって計算されます。 
 </p>
 
 <p>Gforth は現在、 段階的対称除算(staged symmetrical division)をサポートしていません。
 </p>
-<p><code>staged/-divisor @</code> を使用すると、 逆数(のアドレス)から除数を復旧(recover)できます:
+<p><code class="code">staged/-divisor @</code> を使用すると、 逆数(のアドレス)から除数を復旧(recover)できます:
 </p>
-<span id="index-staged_002f_002ddivisor-_0028--addr1-_002d_002d-addr2--_0029-gforth_002d1_002e0"></span>
-<span id="index-staged_002f_002ddivisor"></span>
-<span id="index-staged_002f_002ddivisor-1"></span>
+<a class="index-entry-id" id="index-staged_002f_002ddivisor-_0028-addr1-_002d_002d-addr2-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-staged_002f_002ddivisor"></a>
+<a class="index-entry-id" id="index-staged_002f_002ddivisor-1"></a>
 <div class="format">
-<pre class="format"><code>staged/-divisor</code> ( <i>addr1 &ndash; addr2  </i>) gforth-1.0 &ldquo;staged-slash-divisor&rdquo;
+<pre class="format-preformatted"><code class="code">staged/-divisor</code> ( <i class="i">addr1 &ndash; addr2  </i>) gforth-1.0 &ldquo;staged-slash-divisor&rdquo;
 </pre></div>
-<p><i>Addr1</i> は逆数のアドレス、 <i>addr2</i> は逆数の計算元となった除数を含むアドレスです。
+<p><i class="i">Addr1</i> は逆数のアドレス、 <i class="i">addr2</i> は逆数の計算元となった除数を含むアドレスです。
 </p>
 
 
@@ -214,12 +203,12 @@ Next: <a href="Bitwise-operations.html" accesskey="n" rel="next">Bitwise operati
 </p>
 <p>これらのワードを使用した場合のパフォーマンスへの影響は、 アーキテクチャ(ハードウェア除算があるかどうか)と、
 特定の実装(ハードウェア除算の速さはどれくらいか)に大きく依存しますが、 これらのワードの相対的なパフォーマンスについてのアイデアを提供するために、
-以下を示します。 2 つの AMD64 実装でのマイクロ・ベンチマークの反復ごとのサイクルを以下に示します。 <i>norm</i>
-列は通常の除算ワード(例: <code>u/</code>)を示し、stg2 列は対応する stage2 ワード(例:
-<code>u/-stage2m</code>)を示します:
+以下を示します。 2 つの AMD64 実装でのマイクロ・ベンチマークの反復ごとのサイクルを以下に示します。 <i class="i">norm</i>
+列は通常の除算ワード(例: <code class="code">u/</code>)を示し、stg2 列は対応する stage2 ワード(例:
+<code class="code">u/-stage2m</code>)を示します:
 </p>
 <div class="example">
-<pre class="example">intel Skylake       AMD Zen2
+<pre class="example-preformatted">intel Skylake       AMD Zen2
 norm stg2           norm stg2
 41.3 15.8 u/        35.2 21.4 u/
 39.8 19.7 umod      36.9 25.8 umod
@@ -234,7 +223,7 @@ norm stg2           norm stg2
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Next: <a href="Bitwise-operations.html">Bitwise operations</a>, Previous: <a href="Integer-division.html">Integer division</a>, Up: <a href="Arithmetic.html">Arithmetic</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

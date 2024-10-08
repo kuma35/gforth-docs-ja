@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Class-Binding.html" rel="prev" title="Class Binding">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,45 +50,45 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsubsection" id="Method-conveniences">
-<div class="header">
+<div class="subsubsection-level-extent" id="Method-conveniences">
+<div class="nav-panel">
 <p>
-Next: <a href="Classes-and-Scoping.html" accesskey="n" rel="next">Classes and Scoping</a>, Previous: <a href="Class-Binding.html" accesskey="p" rel="prev">Class Binding</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Classes-and-Scoping.html" accesskey="n" rel="next">Classes and Scoping</a>, Previous: <a href="Class-Binding.html" accesskey="p" rel="prev">Class Binding</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp class="file">objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Method-conveniences-1"></span><h4 class="subsubsection">6.24.3.7 Method conveniences</h4>
-<span id="index-method-conveniences"></span>
+<h4 class="subsubsection" id="Method-conveniences-1"><span>6.24.3.7 Method conveniences<a class="copiable-link" href="#Method-conveniences-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-method-conveniences"></a>
 
 <p>【メソッドをより便利に】通常、 メソッドでは受信オブジェクト(receiving object)に頻繁にアクセスします。
-メソッドをプレーンなコロン定義(<code>:noname</code> など)として定義する場合、 多くのスタック体操が必要になる場合があります。
-これを回避するには、 <code>m: ... ;m</code> を使用してメソッドを定義します。たとえば、 以下を使用して <code>circle</code> を
-<code>draw</code> するメソッドを定義できます
+メソッドをプレーンなコロン定義(<code class="code">:noname</code> など)として定義する場合、 多くのスタック体操が必要になる場合があります。
+これを回避するには、 <code class="code">m: ... ;m</code> を使用してメソッドを定義します。たとえば、 以下を使用して <code class="code">circle</code> を
+<code class="code">draw</code> するメソッドを定義できます
 </p>
-<span id="index-this-usage"></span>
-<span id="index-m_003a-usage"></span>
-<span id="index-_003bm-usage"></span>
+<a class="index-entry-id" id="index-this-usage"></a>
+<a class="index-entry-id" id="index-m_003a-usage"></a>
+<a class="index-entry-id" id="index-_003bm-usage"></a>
 <div class="example">
-<pre class="example">m: ( x y circle -- )
+<pre class="example-preformatted">m: ( x y circle -- )
   ( x y ) this circle-radius @ draw-circle ;m
 </pre></div>
 
-<span id="index-exit-in-m_003a-_002e_002e_002e-_003bm"></span>
-<span id="index-exitm-discussion"></span>
-<span id="index-catch-in-m_003a-_002e_002e_002e-_003bm"></span>
-<p>このメソッドが実行されるときは、 受信オブジェクト(receiver object)(上記例の <i>circle</i>)がスタックから取り除かれます。
-その代わりに、 <i>m:</i> 〜 <i>;m</i> の間は <code>this</code> を使用して受信オブジェクトにアクセスできます(ええ、 確かに、この例では
-<code>m: ... ;m</code> を使用する利点ないかもしれませんね)。 注意: しかし、 スタック・コメントとしては <code>m:</code> と
-<code>;m</code> の間のコードだけでなく、 メソッド全体(つまり、
-受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 なお、 <code>m:...;m</code> では
-<code>exit</code> を使用できません。 代わりに、 <code>exitm</code> を使用してください<a id="DOCF32" href="#FOOT32"><sup>32</sup></a>。
+<a class="index-entry-id" id="index-exit-in-m_003a-_002e_002e_002e-_003bm"></a>
+<a class="index-entry-id" id="index-exitm-discussion"></a>
+<a class="index-entry-id" id="index-catch-in-m_003a-_002e_002e_002e-_003bm"></a>
+<p>このメソッドが実行されるときは、 受信オブジェクト(receiver object)(上記例の <i class="i">circle</i>)がスタックから取り除かれます。
+その代わりに、 <i class="i">m:</i> 〜 <i class="i">;m</i> の間は <code class="code">this</code> を使用して受信オブジェクトにアクセスできます(ええ、 確かに、この例では
+<code class="code">m: ... ;m</code> を使用する利点ないかもしれませんね)。 注意: しかし、 スタック・コメントとしては <code class="code">m:</code> と
+<code class="code">;m</code> の間のコードだけでなく、 メソッド全体(つまり、
+受信オブジェクトを含むメソッド全体)のスタック効果を指定していることに注意してください。 なお、 <code class="code">m:...;m</code> では
+<code class="code">exit</code> を使用できません。 代わりに、 <code class="code">exitm</code> を使用してください<a class="footnote" id="DOCF32" href="#FOOT32"><sup>32</sup></a>。
 </p>
-<span id="index-inst_002dvar-usage"></span>
-<p>あなたは <code>this &quot;field&quot;</code> という形式のシーケンスを頻繁に使用するハメになると思います(上記例では: <code>this
-circle-radius</code>)。 そこで、 この方法でのみフィールドを使用する場合は、 <code>inst-var</code> を使用してフィールドを定義し、
-フィールド名の前の <code>this</code> を削れます。 たとえば、 上記例の <code>circle</code> クラスは以下のように定義することもできます:
+<a class="index-entry-id" id="index-inst_002dvar-usage"></a>
+<p>あなたは <code class="code">this &quot;field&quot;</code> という形式のシーケンスを頻繁に使用するハメになると思います(上記例では: <code class="code">this
+circle-radius</code>)。 そこで、 この方法でのみフィールドを使用する場合は、 <code class="code">inst-var</code> を使用してフィールドを定義し、
+フィールド名の前の <code class="code">this</code> を削れます。 たとえば、 上記例の <code class="code">circle</code> クラスは以下のように定義することもできます:
 </p>
 <div class="example">
-<pre class="example">graphical class
+<pre class="example-preformatted">graphical class
   cell% inst-var radius
 
   m: ( x y circle -- )
@@ -114,16 +102,16 @@ circle-radius</code>)。 そこで、 この方法でのみフィールドを使
 end-class circle
 </pre></div>
 
-<p><code>radius</code> は、 <code>circle</code> や、 その子孫クラスと、 それらの <code>m:...;m</code> 内でのみ使用できます。
+<p><code class="code">radius</code> は、 <code class="code">circle</code> や、 その子孫クラスと、 それらの <code class="code">m:...;m</code> 内でのみ使用できます。
 </p>
-<span id="index-inst_002dvalue-usage"></span>
-<p><code>inst-value</code> を使用してフィールドを定義することもできます。 これは、 <code>variable</code> に対して
-<code>value</code> があるのと同様に、 <code>inst-var</code> に対して <code>inst-value</code> があるのです。
-このようなフィールドの値は <code>[to-inst]</code> を使用して変更できます。  たとえば、 クラス <code>circle</code>
+<a class="index-entry-id" id="index-inst_002dvalue-usage"></a>
+<p><code class="code">inst-value</code> を使用してフィールドを定義することもできます。 これは、 <code class="code">variable</code> に対して
+<code class="code">value</code> があるのと同様に、 <code class="code">inst-var</code> に対して <code class="code">inst-value</code> があるのです。
+このようなフィールドの値は <code class="code">[to-inst]</code> を使用して変更できます。  たとえば、 クラス <code class="code">circle</code>
 を以下のように定義することもできます:
 </p>
 <div class="example">
-<pre class="example">graphical class
+<pre class="example-preformatted">graphical class
   inst-value radius
 
   m: ( x y circle -- )
@@ -141,14 +129,14 @@ end-class circle
 
 
 </div>
-<div class="footnote">
+<div class="footnotes-segment">
 <hr>
 <h4 class="footnotes-heading">Footnotes</h4>
 
-<h5><a id="FOOT32" href="#DOCF32">(32)</a></h5>
+<h5 class="footnote-body-heading"><a id="FOOT32" href="#DOCF32">(32)</a></h5>
 <p>さらに、
-<code>catch</code> を呼び出すワードや、 <code>objects.fs</code> をロードする前に定義されているワードについては、
-<code>catch</code> を再定義したように、  これらも再定義する必要があります: <code>: catch this &gt;r catch r&gt;
+<code class="code">catch</code> を呼び出すワードや、 <code class="code">objects.fs</code> をロードする前に定義されているワードについては、
+<code class="code">catch</code> を再定義したように、  これらも再定義する必要があります: <code class="code">: catch this &gt;r catch r&gt;
 to-this ;</code></p>
 </div>
 

@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="General-control-structures-with-CASE.html" rel="prev" title="General control structures with CASE">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,148 +51,148 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Arbitrary-control-structures">
-<div class="header">
+<div class="subsection-level-extent" id="Arbitrary-control-structures">
+<div class="nav-panel">
 <p>
-Next: <a href="Calls-and-returns.html" accesskey="n" rel="next">Calls and returns</a>, Previous: <a href="General-control-structures-with-CASE.html" accesskey="p" rel="prev">General control structures with <code>case</code></a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Calls-and-returns.html" accesskey="n" rel="next">Calls and returns</a>, Previous: <a href="General-control-structures-with-CASE.html" accesskey="p" rel="prev">General control structures with <code class="code">case</code></a>, Up: <a href="Control-Structures.html" accesskey="u" rel="up">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Arbitrary-control-structures-1"></span><h4 class="subsection">6.9.6 Arbitrary control structures</h4>
-<span id="index-control-structures_002c-user_002ddefined"></span>
+<h4 class="subsection" id="Arbitrary-control-structures-1"><span>6.9.6 Arbitrary control structures<a class="copiable-link" href="#Arbitrary-control-structures-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-control-structures_002c-user_002ddefined"></a>
 
-<span id="index-control_002dflow-stack"></span>
+<a class="index-entry-id" id="index-control_002dflow-stack"></a>
 <p>標準 Forth は、 ネストされない方法での制御構造の使用を許可・サポートします。 まだ完成されてない制御構造に関する情報は、
 制御フロー・スタック(control-flow stack)に保存されます。 このスタックは Forth のデータ・スタック上に実装でき、 Gforth
 はそうしました。
 </p>
-<span id="index-orig_002c-control_002dflow-stack-item"></span>
-<span id="index-dest_002c-control_002dflow-stack-item"></span>
-<p><i>orig</i> エントリは未解決の前方分岐を表し、 <i>dest</i> エントリは後方分岐ターゲットを表します。 いくつかのワードは、
+<a class="index-entry-id" id="index-orig_002c-control_002dflow-stack-item"></a>
+<a class="index-entry-id" id="index-dest_002c-control_002dflow-stack-item"></a>
+<p><i class="i">orig</i> エントリは未解決の前方分岐を表し、 <i class="i">dest</i> エントリは後方分岐ターゲットを表します。 いくつかのワードは、
 可能なあらゆる制御構造を構築するための基礎となります(呼び出しやコルーチンやバックトラッキングのような、 ストレージを必要とする制御構造を除く)。
 </p>
 
-<span id="index-IF-_0028--compilation-_002d_002d-orig-_003b-run_002dtime-f-_002d_002d--_0029-core"></span>
-<span id="index-IF"></span>
-<span id="index-IF-1"></span>
+<a class="index-entry-id" id="index-IF-_0028-compilation-_002d_002d-orig-_003b-run_002dtime-f-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-IF"></a>
+<a class="index-entry-id" id="index-IF-1"></a>
 <div class="format">
-<pre class="format"><code>IF</code> ( <i>compilation &ndash; orig ; run-time f &ndash;  </i>) core &ldquo;IF&rdquo;
+<pre class="format-preformatted"><code class="code">IF</code> ( <i class="i">compilation &ndash; orig ; run-time f &ndash;  </i>) core &ldquo;IF&rdquo;
 </pre></div>
-<p>実行時(run-time)、 <i>f</i>=0 の場合、 (コンパイル時に) <i>orig</i> を消費する <code>THEN</code> (または
-<code>ELSE</code>) の後から実行が続行されます。 それ以外の場合は、 <code>IF</code> の直後に続きます(see <a href="Selection.html">Selection</a>)。
+<p>実行時(run-time)、 <i class="i">f</i>=0 の場合、 (コンパイル時に) <i class="i">orig</i> を消費する <code class="code">THEN</code> (または
+<code class="code">ELSE</code>) の後から実行が続行されます。 それ以外の場合は、 <code class="code">IF</code> の直後に続きます(see <a class="pxref" href="Selection.html">Selection</a>)。
 </p>
 
-<span id="index-AHEAD-_0028--compilation-_002d_002d-orig-_003b-run_002dtime-_002d_002d--_0029-tools_002dext"></span>
-<span id="index-AHEAD"></span>
-<span id="index-AHEAD-1"></span>
+<a class="index-entry-id" id="index-AHEAD-_0028-compilation-_002d_002d-orig-_003b-run_002dtime-_002d_002d-_0029-tools_002dext"></a>
+<a class="index-entry-id" id="index-AHEAD"></a>
+<a class="index-entry-id" id="index-AHEAD-1"></a>
 <div class="format">
-<pre class="format"><code>AHEAD</code> ( <i>compilation &ndash; orig ; run-time &ndash;  </i>) tools-ext &ldquo;AHEAD&rdquo;
+<pre class="format-preformatted"><code class="code">AHEAD</code> ( <i class="i">compilation &ndash; orig ; run-time &ndash;  </i>) tools-ext &ldquo;AHEAD&rdquo;
 </pre></div>
-<p>実行時、 (コンパイル時に) <i>orig</i> を消費する <code>THEN</code> の後から実行が続行されます(訳注: つまり、 単純に
-<code>THEN</code> へジャンプする)。
+<p>実行時、 (コンパイル時に) <i class="i">orig</i> を消費する <code class="code">THEN</code> の後から実行が続行されます(訳注: つまり、 単純に
+<code class="code">THEN</code> へジャンプする)。
 </p>
 
-<span id="index-THEN-_0028--compilation-orig-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-core"></span>
-<span id="index-THEN"></span>
-<span id="index-THEN-1"></span>
+<a class="index-entry-id" id="index-THEN-_0028-compilation-orig-_002d_002d-_003b-run_002dtime-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-THEN"></a>
+<a class="index-entry-id" id="index-THEN-1"></a>
 <div class="format">
-<pre class="format"><code>THEN</code> ( <i>compilation orig &ndash; ; run-time &ndash;  </i>) core &ldquo;THEN&rdquo;
+<pre class="format-preformatted"><code class="code">THEN</code> ( <i class="i">compilation orig &ndash; ; run-time &ndash;  </i>) core &ldquo;THEN&rdquo;
 </pre></div>
-<p>(コンパイル時に) <i>orig</i> をプッシュした <code>IF</code> または <code>AHEAD</code> または <code>ELSE</code> または
-<code>WHILE</code> は、 <code>THEN</code> の直後にジャンプします(see <a href="Selection.html">Selection</a>)。
+<p>(コンパイル時に) <i class="i">orig</i> をプッシュした <code class="code">IF</code> または <code class="code">AHEAD</code> または <code class="code">ELSE</code> または
+<code class="code">WHILE</code> は、 <code class="code">THEN</code> の直後にジャンプします(see <a class="pxref" href="Selection.html">Selection</a>)。
 </p>
 
-<span id="index-BEGIN-_0028--compilation-_002d_002d-dest-_003b-run_002dtime-_002d_002d--_0029-core"></span>
-<span id="index-BEGIN"></span>
-<span id="index-BEGIN-1"></span>
+<a class="index-entry-id" id="index-BEGIN-_0028-compilation-_002d_002d-dest-_003b-run_002dtime-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-BEGIN"></a>
+<a class="index-entry-id" id="index-BEGIN-1"></a>
 <div class="format">
-<pre class="format"><code>BEGIN</code> ( <i>compilation &ndash; dest ; run-time &ndash;  </i>) core &ldquo;BEGIN&rdquo;
+<pre class="format-preformatted"><code class="code">BEGIN</code> ( <i class="i">compilation &ndash; dest ; run-time &ndash;  </i>) core &ldquo;BEGIN&rdquo;
 </pre></div>
-<p>(コンパイル時に) <i>dest</i> を消費する <code>UNTIL</code> または <code>AGAIN</code> または <code>REPEAT</code> は、
-<code>BEGIN</code> の直後へジャンプします(see <a href="Simple-Loops.html">Simple Loops</a>)。
+<p>(コンパイル時に) <i class="i">dest</i> を消費する <code class="code">UNTIL</code> または <code class="code">AGAIN</code> または <code class="code">REPEAT</code> は、
+<code class="code">BEGIN</code> の直後へジャンプします(see <a class="pxref" href="Simple-Loops.html">Simple Loops</a>)。
 </p>
 
-<span id="index-UNTIL-_0028--compilation-dest-_002d_002d-_003b-run_002dtime-f-_002d_002d--_0029-core"></span>
-<span id="index-UNTIL"></span>
-<span id="index-UNTIL-1"></span>
+<a class="index-entry-id" id="index-UNTIL-_0028-compilation-dest-_002d_002d-_003b-run_002dtime-f-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-UNTIL"></a>
+<a class="index-entry-id" id="index-UNTIL-1"></a>
 <div class="format">
-<pre class="format"><code>UNTIL</code> ( <i>compilation dest &ndash; ; run-time f &ndash;  </i>) core &ldquo;UNTIL&rdquo;
+<pre class="format-preformatted"><code class="code">UNTIL</code> ( <i class="i">compilation dest &ndash; ; run-time f &ndash;  </i>) core &ldquo;UNTIL&rdquo;
 </pre></div>
-<p>実行時、 <i>f</i>=0 の場合、 (コンパイル時に) <i>dest</i> をプッシュした <code>BEGIN</code> の直後から実行が続行されます。
-それ以外の場合は、 <code>UNTIL</code>の直後から実行が続行されます(see <a href="Simple-Loops.html">Simple Loops</a>)。
+<p>実行時、 <i class="i">f</i>=0 の場合、 (コンパイル時に) <i class="i">dest</i> をプッシュした <code class="code">BEGIN</code> の直後から実行が続行されます。
+それ以外の場合は、 <code class="code">UNTIL</code>の直後から実行が続行されます(see <a class="pxref" href="Simple-Loops.html">Simple Loops</a>)。
 </p>
 
-<span id="index-AGAIN-_0028--compilation-dest-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-core_002dext"></span>
-<span id="index-AGAIN"></span>
-<span id="index-AGAIN-1"></span>
+<a class="index-entry-id" id="index-AGAIN-_0028-compilation-dest-_002d_002d-_003b-run_002dtime-_002d_002d-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-AGAIN"></a>
+<a class="index-entry-id" id="index-AGAIN-1"></a>
 <div class="format">
-<pre class="format"><code>AGAIN</code> ( <i>compilation dest &ndash; ; run-time &ndash;  </i>) core-ext &ldquo;AGAIN&rdquo;
+<pre class="format-preformatted"><code class="code">AGAIN</code> ( <i class="i">compilation dest &ndash; ; run-time &ndash;  </i>) core-ext &ldquo;AGAIN&rdquo;
 </pre></div>
-<p>実行時、 (コンパイル時に) <i>dest</i> をプッシュした <code>BEGIN</code> の直後から実行が続行されます(see <a href="Simple-Loops.html">Simple Loops</a>)。
+<p>実行時、 (コンパイル時に) <i class="i">dest</i> をプッシュした <code class="code">BEGIN</code> の直後から実行が続行されます(see <a class="pxref" href="Simple-Loops.html">Simple Loops</a>)。
 </p>
 
-<span id="index-CS_002dPICK-_0028--orig0_002fdest0-orig1_002fdest1-_002e_002e_002e-origu_002fdestu-u-_002d_002d-_002e_002e_002e-orig0_002fdest0--_0029-tools_002dext"></span>
-<span id="index-CS_002dPICK"></span>
-<span id="index-CS_002dPICK-1"></span>
+<a class="index-entry-id" id="index-CS_002dPICK-_0028-orig0_002fdest0-orig1_002fdest1-_002e_002e_002e-origu_002fdestu-u-_002d_002d-_002e_002e_002e-orig0_002fdest0-_0029-tools_002dext"></a>
+<a class="index-entry-id" id="index-CS_002dPICK"></a>
+<a class="index-entry-id" id="index-CS_002dPICK-1"></a>
 <div class="format">
-<pre class="format"><code>CS-PICK</code> ( <i>orig0/dest0 orig1/dest1 ... origu/destu u &ndash; ... orig0/dest0  </i>) tools-ext &ldquo;c-s-pick&rdquo;
+<pre class="format-preformatted"><code class="code">CS-PICK</code> ( <i class="i">orig0/dest0 orig1/dest1 ... origu/destu u &ndash; ... orig0/dest0  </i>) tools-ext &ldquo;c-s-pick&rdquo;
 </pre></div>
 
-<span id="index-CS_002dROLL-_0028--destu_002forigu-_002e_002e-dest0_002forig0-u-_002d_002d-_002e_002e-dest0_002forig0-destu_002forigu--_0029-tools_002dext"></span>
-<span id="index-CS_002dROLL"></span>
-<span id="index-CS_002dROLL-1"></span>
+<a class="index-entry-id" id="index-CS_002dROLL-_0028-destu_002forigu-_002e_002e-dest0_002forig0-u-_002d_002d-_002e_002e-dest0_002forig0-destu_002forigu-_0029-tools_002dext"></a>
+<a class="index-entry-id" id="index-CS_002dROLL"></a>
+<a class="index-entry-id" id="index-CS_002dROLL-1"></a>
 <div class="format">
-<pre class="format"><code>CS-ROLL</code> ( <i>destu/origu .. dest0/orig0 u &ndash; .. dest0/orig0 destu/origu  </i>) tools-ext &ldquo;c-s-roll&rdquo;
+<pre class="format-preformatted"><code class="code">CS-ROLL</code> ( <i class="i">destu/origu .. dest0/orig0 u &ndash; .. dest0/orig0 destu/origu  </i>) tools-ext &ldquo;c-s-roll&rdquo;
 </pre></div>
 
-<span id="index-CS_002dDROP-_0028--dest-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-CS_002dDROP"></span>
-<span id="index-CS_002dDROP-1"></span>
+<a class="index-entry-id" id="index-CS_002dDROP-_0028-dest-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-CS_002dDROP"></a>
+<a class="index-entry-id" id="index-CS_002dDROP-1"></a>
 <div class="format">
-<pre class="format"><code>CS-DROP</code> ( <i>dest &ndash;  </i>) gforth-1.0 &ldquo;CS-DROP&rdquo;
+<pre class="format-preformatted"><code class="code">CS-DROP</code> ( <i class="i">dest &ndash;  </i>) gforth-1.0 &ldquo;CS-DROP&rdquo;
 </pre></div>
 
 
-<p>標準ワードの <code>CS-PICK</code> や <code>CS-ROLL</code> を使用すると、 移植可能な方法で制御フロー・スタックを操作できます。
+<p>標準ワードの <code class="code">CS-PICK</code> や <code class="code">CS-ROLL</code> を使用すると、 移植可能な方法で制御フロー・スタックを操作できます。
 これら無しだと制御フロー・エントリが占めるスタック項目の数を知る必要があります(多くのシステムは 1 つのセルを使用します。 Gforth では現在 4
 つを使用しますが、 これは将来変更される可能性があります)。
 </p>
-<p><i>orig</i> は 1 回だけ解決する必要があるため、 <code>CS-PICK</code> は <i>dest</i> を pick することしかできず、 かつ、
-<code>CS-DROP</code> は <i>dest</i> を drop することしかできません。
+<p><i class="i">orig</i> は 1 回だけ解決する必要があるため、 <code class="code">CS-PICK</code> は <i class="i">dest</i> を pick することしかできず、 かつ、
+<code class="code">CS-DROP</code> は <i class="i">dest</i> を drop することしかできません。
 </p>
 <p>一部の標準の制御構造ワードは、 以下のワード群から構築されます:
 </p>
 
-<span id="index-ELSE-_0028--compilation-orig1-_002d_002d-orig2-_003b-run_002dtime-_002d_002d--_0029-core"></span>
-<span id="index-ELSE"></span>
-<span id="index-ELSE-1"></span>
+<a class="index-entry-id" id="index-ELSE-_0028-compilation-orig1-_002d_002d-orig2-_003b-run_002dtime-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-ELSE"></a>
+<a class="index-entry-id" id="index-ELSE-1"></a>
 <div class="format">
-<pre class="format"><code>ELSE</code> ( <i>compilation orig1 &ndash; orig2 ; run-time &ndash;  </i>) core &ldquo;ELSE&rdquo;
+<pre class="format-preformatted"><code class="code">ELSE</code> ( <i class="i">compilation orig1 &ndash; orig2 ; run-time &ndash;  </i>) core &ldquo;ELSE&rdquo;
 </pre></div>
-<p>実行時、 (コンパイル時に) <i>orig</i> を消費する <code>THEN</code> の直後から実行が続行されます。 <i>orig1</i> をプッシュした
-<code>IF</code> または <code>AHEAD</code> または <code>ELSE</code> または <code>WHILE</code> は、 <code>ELSE</code>
-の直後にジャンプします(see <a href="Selection.html">Selection</a>)。
+<p>実行時、 (コンパイル時に) <i class="i">orig</i> を消費する <code class="code">THEN</code> の直後から実行が続行されます。 <i class="i">orig1</i> をプッシュした
+<code class="code">IF</code> または <code class="code">AHEAD</code> または <code class="code">ELSE</code> または <code class="code">WHILE</code> は、 <code class="code">ELSE</code>
+の直後にジャンプします(see <a class="pxref" href="Selection.html">Selection</a>)。
 </p>
 
-<span id="index-WHILE-_0028--compilation-dest-_002d_002d-orig-dest-_003b-run_002dtime-f-_002d_002d--_0029-core"></span>
-<span id="index-WHILE"></span>
-<span id="index-WHILE-1"></span>
+<a class="index-entry-id" id="index-WHILE-_0028-compilation-dest-_002d_002d-orig-dest-_003b-run_002dtime-f-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-WHILE"></a>
+<a class="index-entry-id" id="index-WHILE-1"></a>
 <div class="format">
-<pre class="format"><code>WHILE</code> ( <i>compilation dest &ndash; orig dest ; run-time f &ndash;  </i>) core &ldquo;WHILE&rdquo;
+<pre class="format-preformatted"><code class="code">WHILE</code> ( <i class="i">compilation dest &ndash; orig dest ; run-time f &ndash;  </i>) core &ldquo;WHILE&rdquo;
 </pre></div>
-<p>実行時、 <i>f</i>=0 の場合、 (コンパイル時の) <i>orig</i> を消費する <code>REPEAT</code> (または <code>THEN</code>
-または <code>ELSE</code>) の直後から実行が継続されます。 それ以外の場合は、 <code>WHILE</code>
-の直後から実行されます(see <a href="Simple-Loops.html">Simple Loops</a>)。
+<p>実行時、 <i class="i">f</i>=0 の場合、 (コンパイル時の) <i class="i">orig</i> を消費する <code class="code">REPEAT</code> (または <code class="code">THEN</code>
+または <code class="code">ELSE</code>) の直後から実行が継続されます。 それ以外の場合は、 <code class="code">WHILE</code>
+の直後から実行されます(see <a class="pxref" href="Simple-Loops.html">Simple Loops</a>)。
 </p>
 
-<span id="index-REPEAT-_0028--compilation-orig-dest-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-core"></span>
-<span id="index-REPEAT"></span>
-<span id="index-REPEAT-1"></span>
+<a class="index-entry-id" id="index-REPEAT-_0028-compilation-orig-dest-_002d_002d-_003b-run_002dtime-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-REPEAT"></a>
+<a class="index-entry-id" id="index-REPEAT-1"></a>
 <div class="format">
-<pre class="format"><code>REPEAT</code> ( <i>compilation orig dest &ndash; ; run-time &ndash;  </i>) core &ldquo;REPEAT&rdquo;
+<pre class="format-preformatted"><code class="code">REPEAT</code> ( <i class="i">compilation orig dest &ndash; ; run-time &ndash;  </i>) core &ldquo;REPEAT&rdquo;
 </pre></div>
-<p>実行時、 (コンパイル時に) <i>dest</i> をプッシュした <code>BEGIN</code> の直後から実行が続行されます。 <i>orig</i>
-をプッシュした <code>WHILE</code> または <code>IF</code> または <code>AHEAD</code> または <code>ELSE</code> は、
-<code>REPEAT</code> の直後にジャンプします(see <a href="Simple-Loops.html">Simple Loops</a>)。
+<p>実行時、 (コンパイル時に) <i class="i">dest</i> をプッシュした <code class="code">BEGIN</code> の直後から実行が続行されます。 <i class="i">orig</i>
+をプッシュした <code class="code">WHILE</code> または <code class="code">IF</code> または <code class="code">AHEAD</code> または <code class="code">ELSE</code> は、
+<code class="code">REPEAT</code> の直後にジャンプします(see <a class="pxref" href="Simple-Loops.html">Simple Loops</a>)。
 </p>
 
 
@@ -211,121 +200,121 @@ Next: <a href="Calls-and-returns.html" accesskey="n" rel="next">Calls and return
 <p>Gforth は、さらにいくつかの制御構造ワードを追加します:
 </p>
 
-<span id="index-ENDIF-_0028--compilation-orig-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-ENDIF"></span>
-<span id="index-ENDIF-1"></span>
+<a class="index-entry-id" id="index-ENDIF-_0028-compilation-orig-_002d_002d-_003b-run_002dtime-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-ENDIF"></a>
+<a class="index-entry-id" id="index-ENDIF-1"></a>
 <div class="format">
-<pre class="format"><code>ENDIF</code> ( <i>compilation orig &ndash; ; run-time &ndash;  </i>) gforth-0.2 &ldquo;ENDIF&rdquo;
+<pre class="format-preformatted"><code class="code">ENDIF</code> ( <i class="i">compilation orig &ndash; ; run-time &ndash;  </i>) gforth-0.2 &ldquo;ENDIF&rdquo;
 </pre></div>
-<p><code>THEN</code> と同一です。
+<p><code class="code">THEN</code> と同一です。
 </p>
 
-<span id="index-_003fdup_002dIF-_0028--compilation-_002d_002d-orig-_003b-run_002dtime-n-_002d_002d-n_007c--_0029-gforth_002d0_002e2"></span>
-<span id="index-_003fdup_002dIF"></span>
-<span id="index-_003fdup_002dIF-1"></span>
+<a class="index-entry-id" id="index-_003fdup_002dIF-_0028-compilation-_002d_002d-orig-_003b-run_002dtime-n-_002d_002d-n_007c-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-_003fdup_002dIF"></a>
+<a class="index-entry-id" id="index-_003fdup_002dIF-1"></a>
 <div class="format">
-<pre class="format"><code>?dup-IF</code> ( <i>compilation &ndash; orig ; run-time n &ndash; n|  </i>) gforth-0.2 &ldquo;question-dupe-if&rdquo;
+<pre class="format-preformatted"><code class="code">?dup-IF</code> ( <i class="i">compilation &ndash; orig ; run-time n &ndash; n|  </i>) gforth-0.2 &ldquo;question-dupe-if&rdquo;
 </pre></div>
-<p>これは、スタック・チェッカー(stack checker)などのツールでより適切に処理できるため、 イディオム「<code>?DUP
-IF</code>」の代替として推奨されます。 しかも、 <code>?DUP IF</code> より速いです。
+<p>これは、スタック・チェッカー(stack checker)などのツールでより適切に処理できるため、 イディオム「<code class="code">?DUP
+IF</code>」の代替として推奨されます。 しかも、 <code class="code">?DUP IF</code> より速いです。
 </p>
 
-<span id="index-_003fDUP_002d0_003d_002dIF-_0028--compilation-_002d_002d-orig-_003b-run_002dtime-n-_002d_002d-n_007c--_0029-gforth_002d0_002e2"></span>
-<span id="index-_003fDUP_002d0_003d_002dIF"></span>
-<span id="index-_003fDUP_002d0_003d_002dIF-1"></span>
+<a class="index-entry-id" id="index-_003fDUP_002d0_003d_002dIF-_0028-compilation-_002d_002d-orig-_003b-run_002dtime-n-_002d_002d-n_007c-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-_003fDUP_002d0_003d_002dIF"></a>
+<a class="index-entry-id" id="index-_003fDUP_002d0_003d_002dIF-1"></a>
 <div class="format">
-<pre class="format"><code>?DUP-0=-IF</code> ( <i>compilation &ndash; orig ; run-time n &ndash; n|  </i>) gforth-0.2 &ldquo;question-dupe-zero-equals-if&rdquo;
+<pre class="format-preformatted"><code class="code">?DUP-0=-IF</code> ( <i class="i">compilation &ndash; orig ; run-time n &ndash; n|  </i>) gforth-0.2 &ldquo;question-dupe-zero-equals-if&rdquo;
 </pre></div>
 
 
 <p>制御構造ワードのもう一つのグループ:
 </p>
 
-<span id="index-case-_0028--compilation-_002d_002d-case_002dsys-_003b-run_002dtime-_002d_002d--_0029-core_002dext"></span>
-<span id="index-case"></span>
-<span id="index-case-1"></span>
+<a class="index-entry-id" id="index-case-_0028-compilation-_002d_002d-case_002dsys-_003b-run_002dtime-_002d_002d-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-case"></a>
+<a class="index-entry-id" id="index-case-1"></a>
 <div class="format">
-<pre class="format"><code>case</code> ( <i>compilation  &ndash; case-sys ; run-time  &ndash;  </i>) core-ext &ldquo;case&rdquo;
+<pre class="format-preformatted"><code class="code">case</code> ( <i class="i">compilation  &ndash; case-sys ; run-time  &ndash;  </i>) core-ext &ldquo;case&rdquo;
 </pre></div>
-<p><code>case</code> 構造の開始。
+<p><code class="code">case</code> 構造の開始。
 </p>
 
-<span id="index-endcase-_0028--compilation-case_002dsys-_002d_002d-_003b-run_002dtime-x-_002d_002d--_0029-core_002dext"></span>
-<span id="index-endcase"></span>
-<span id="index-endcase-1"></span>
+<a class="index-entry-id" id="index-endcase-_0028-compilation-case_002dsys-_002d_002d-_003b-run_002dtime-x-_002d_002d-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-endcase"></a>
+<a class="index-entry-id" id="index-endcase-1"></a>
 <div class="format">
-<pre class="format"><code>endcase</code> ( <i>compilation case-sys &ndash; ; run-time x &ndash;  </i>) core-ext &ldquo;end-case&rdquo;
+<pre class="format-preformatted"><code class="code">endcase</code> ( <i class="i">compilation case-sys &ndash; ; run-time x &ndash;  </i>) core-ext &ldquo;end-case&rdquo;
 </pre></div>
-<p><code>case</code> 構造を終わらせます。 x を drop して、<code>endcase</code> の後ろへ進みます。  x の drop は、
-元の(<code>of</code> のみの)<code>case</code> 構造では便利ですが、 他の場合(特に <code>?of</code> を使用する場合)では(drop
+<p><code class="code">case</code> 構造を終わらせます。 x を drop して、<code class="code">endcase</code> の後ろへ進みます。  x の drop は、
+元の(<code class="code">of</code> のみの)<code class="code">case</code> 構造では便利ですが、 他の場合(特に <code class="code">?of</code> を使用する場合)では(drop
 する為の) x を明示的に指定する必要がある場合があります。
 </p>
 
-<span id="index-next_002dcase-_0028--compilation-case_002dsys-_002d_002d-_003b-run_002dtime-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-next_002dcase"></span>
-<span id="index-next_002dcase-1"></span>
+<a class="index-entry-id" id="index-next_002dcase-_0028-compilation-case_002dsys-_002d_002d-_003b-run_002dtime-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-next_002dcase"></a>
+<a class="index-entry-id" id="index-next_002dcase-1"></a>
 <div class="format">
-<pre class="format"><code>next-case</code> ( <i>compilation case-sys &ndash; ; run-time &ndash;  </i>) gforth-1.0 &ldquo;next-case&rdquo;
+<pre class="format-preformatted"><code class="code">next-case</code> ( <i class="i">compilation case-sys &ndash; ; run-time &ndash;  </i>) gforth-1.0 &ldquo;next-case&rdquo;
 </pre></div>
-<p>一致する <code>case</code> にジャンプして、 <code>case</code> ループを再開します。 <code>endcase</code> とは異なり、
-<code>next-case</code> はセルを drop しないことに注意してください。
+<p>一致する <code class="code">case</code> にジャンプして、 <code class="code">case</code> ループを再開します。 <code class="code">endcase</code> とは異なり、
+<code class="code">next-case</code> はセルを drop しないことに注意してください。
 </p>
 
-<span id="index-of-_0028--compilation-_002d_002d-of_002dsys-_003b-run_002dtime-x1-x2-_002d_002d-_007cx1--_0029-core_002dext"></span>
-<span id="index-of"></span>
-<span id="index-of-1"></span>
+<a class="index-entry-id" id="index-of-_0028-compilation-_002d_002d-of_002dsys-_003b-run_002dtime-x1-x2-_002d_002d-_007cx1-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-of"></a>
+<a class="index-entry-id" id="index-of-1"></a>
 <div class="format">
-<pre class="format"><code>of</code> ( <i>compilation  &ndash; of-sys ; run-time x1 x2 &ndash; |x1  </i>) core-ext &ldquo;of&rdquo;
+<pre class="format-preformatted"><code class="code">of</code> ( <i class="i">compilation  &ndash; of-sys ; run-time x1 x2 &ndash; |x1  </i>) core-ext &ldquo;of&rdquo;
 </pre></div>
-<p>x1=x2 の場合は続行します(両方を drop します)。 それ以外の場合は、 x1 をスタック上に残し、 <code>endof</code> または
-<code>contof</code> の後ろにジャンプします。
+<p>x1=x2 の場合は続行します(両方を drop します)。 それ以外の場合は、 x1 をスタック上に残し、 <code class="code">endof</code> または
+<code class="code">contof</code> の後ろにジャンプします。
 </p>
 
-<span id="index-_003fof-_0028--compilation-_002d_002d-of_002dsys-_003b-run_002dtime-f-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-_003fof"></span>
-<span id="index-_003fof-1"></span>
+<a class="index-entry-id" id="index-_003fof-_0028-compilation-_002d_002d-of_002dsys-_003b-run_002dtime-f-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-_003fof"></a>
+<a class="index-entry-id" id="index-_003fof-1"></a>
 <div class="format">
-<pre class="format"><code>?of</code> ( <i>compilation  &ndash; of-sys ; run-time  f &ndash;  </i>) gforth-1.0 &ldquo;question-of&rdquo;
+<pre class="format-preformatted"><code class="code">?of</code> ( <i class="i">compilation  &ndash; of-sys ; run-time  f &ndash;  </i>) gforth-1.0 &ldquo;question-of&rdquo;
 </pre></div>
-<p>f が true の場合は続行します。 それ以外の場合は、 <code>endof</code> または <code>contof</code> の後ろにジャンプします。
+<p>f が true の場合は続行します。 それ以外の場合は、 <code class="code">endof</code> または <code class="code">contof</code> の後ろにジャンプします。
 </p>
 
-<span id="index-endof-_0028--compilation-case_002dsys1-of_002dsys-_002d_002d-case_002dsys2-_003b-run_002dtime-_002d_002d--_0029-core_002dext"></span>
-<span id="index-endof"></span>
-<span id="index-endof-1"></span>
+<a class="index-entry-id" id="index-endof-_0028-compilation-case_002dsys1-of_002dsys-_002d_002d-case_002dsys2-_003b-run_002dtime-_002d_002d-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-endof"></a>
+<a class="index-entry-id" id="index-endof-1"></a>
 <div class="format">
-<pre class="format"><code>endof</code> ( <i>compilation case-sys1 of-sys &ndash; case-sys2 ; run-time  &ndash;  </i>) core-ext &ldquo;end-of&rdquo;
+<pre class="format-preformatted"><code class="code">endof</code> ( <i class="i">compilation case-sys1 of-sys &ndash; case-sys2 ; run-time  &ndash;  </i>) core-ext &ldquo;end-of&rdquo;
 </pre></div>
-<p><code>endcase</code>/<code>next-case</code> の後ろにジャンプして、 囲んでいる <code>case</code>
+<p><code class="code">endcase</code>/<code class="code">next-case</code> の後ろにジャンプして、 囲んでいる <code class="code">case</code>
 構造を終了(exit)します。
 </p>
 
-<span id="index-contof-_0028--compilation-case_002dsys1-of_002dsys-_002d_002d-case_002dsys2-_003b-run_002dtime-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-contof"></span>
-<span id="index-contof-1"></span>
+<a class="index-entry-id" id="index-contof-_0028-compilation-case_002dsys1-of_002dsys-_002d_002d-case_002dsys2-_003b-run_002dtime-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-contof"></a>
+<a class="index-entry-id" id="index-contof-1"></a>
 <div class="format">
-<pre class="format"><code>contof</code> ( <i>compilation case-sys1 of-sys &ndash; case-sys2 ; run-time  &ndash;  </i>) gforth-1.0 &ldquo;cont-of&rdquo;
+<pre class="format-preformatted"><code class="code">contof</code> ( <i class="i">compilation case-sys1 of-sys &ndash; case-sys2 ; run-time  &ndash;  </i>) gforth-1.0 &ldquo;cont-of&rdquo;
 </pre></div>
-<p>囲んでいる <code>case</code> にジャンプして、 <code>case</code> ループを再開します。
+<p>囲んでいる <code class="code">case</code> にジャンプして、 <code class="code">case</code> ループを再開します。
 </p>
 
 
-<p>内部的には、 <i>of-sys</i> は <code>orig</code> で、 <i>case-sys</i> はセルとスタック深さ情報と、0 個以上の
-<code>orig</code> と、 <code>dest</code> です。
+<p>内部的には、 <i class="i">of-sys</i> は <code class="code">orig</code> で、 <i class="i">case-sys</i> はセルとスタック深さ情報と、0 個以上の
+<code class="code">orig</code> と、 <code class="code">dest</code> です。
 </p>
-<ul class="section-toc">
+<ul class="mini-toc">
 <li><a href="#Programming-Style" accesskey="1">Programming Style</a></li>
 </ul>
-<div class="subsubsection" id="Programming-Style">
-<h4 class="subsubsection">6.9.6.1 Programming Style</h4>
-<span id="index-control-structures-programming-style"></span>
-<span id="index-programming-style_002c-arbitrary-control-structures"></span>
+<div class="subsubsection-level-extent" id="Programming-Style">
+<h4 class="subsubsection"><span>6.9.6.1 Programming Style<a class="copiable-link" href="#Programming-Style"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-control-structures-programming-style"></a>
+<a class="index-entry-id" id="index-programming-style_002c-arbitrary-control-structures"></a>
 
 <p>読みやすさを確保するために、 任意の制御構造を直接作成せず、 必要な制御構造に対して新しい制御構造ワードを定義し、
 プログラム内でこれらのワードを使用することをお勧めします。たとえば、 以下のように書く代わりに:
 </p>
 <div class="example">
-<pre class="example">BEGIN
+<pre class="example-preformatted">BEGIN
   ...
 IF [ 1 CS-ROLL ]
   ...
@@ -335,7 +324,7 @@ AGAIN THEN
 <p>以下のように制御構造のワードを定義することをお勧めします。 例:
 </p>
 <div class="example">
-<pre class="example">: WHILE ( DEST -- ORIG DEST )
+<pre class="example-preformatted">: WHILE ( DEST -- ORIG DEST )
  POSTPONE IF
  1 CS-ROLL ; immediate
 
@@ -347,22 +336,22 @@ AGAIN THEN
 <p>そして、 次に、 これらを使用して制御構造を作成します:
 </p>
 <div class="example">
-<pre class="example">BEGIN
+<pre class="example-preformatted">BEGIN
   ...
 WHILE
   ...
 REPEAT
 </pre></div>
 
-<p>このほうがずっと読みやすいですよね。 もちろん、 <code>REPEAT</code> と <code>WHILE</code> は定義済みなので、
+<p>このほうがずっと読みやすいですよね。 もちろん、 <code class="code">REPEAT</code> と <code class="code">WHILE</code> は定義済みなので、
 この例を見て改めて定義する必要はありません。
 </p>
 </div>
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
-Next: <a href="Calls-and-returns.html">Calls and returns</a>, Previous: <a href="General-control-structures-with-CASE.html">General control structures with <code>case</code></a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Calls-and-returns.html">Calls and returns</a>, Previous: <a href="General-control-structures-with-CASE.html">General control structures with <code class="code">case</code></a>, Up: <a href="Control-Structures.html">Control Structures</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

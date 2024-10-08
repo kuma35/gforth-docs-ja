@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,8 @@ Foundation raise funds for GNU development." -->
 <link href="Method-conveniences.html" rel="prev" title="Method conveniences">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,34 +49,34 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsubsection" id="Classes-and-Scoping">
-<div class="header">
+<div class="subsubsection-level-extent" id="Classes-and-Scoping">
+<div class="nav-panel">
 <p>
-Next: <a href="Dividing-classes.html" accesskey="n" rel="next">Dividing classes</a>, Previous: <a href="Method-conveniences.html" accesskey="p" rel="prev">Method conveniences</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp>objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Dividing-classes.html" accesskey="n" rel="next">Dividing classes</a>, Previous: <a href="Method-conveniences.html" accesskey="p" rel="prev">Method conveniences</a>, Up: <a href="Objects.html" accesskey="u" rel="up">The <samp class="file">objects.fs</samp> model</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Classes-and-Scoping-1"></span><h4 class="subsubsection">6.24.3.8 Classes and Scoping</h4>
-<span id="index-classes-and-scoping"></span>
-<span id="index-scoping-and-classes"></span>
+<h4 class="subsubsection" id="Classes-and-Scoping-1"><span>6.24.3.8 Classes and Scoping<a class="copiable-link" href="#Classes-and-Scoping-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-classes-and-scoping"></a>
+<a class="index-entry-id" id="index-scoping-and-classes"></a>
 
-<p>構造体の拡張とは異なり、 継承は頻繁に行われます。 これは、フィールド名命名規則の問題をさらに悪化させます(see <a href="Structure-Naming-Convention.html">Structure Naming Convention</a>): フィールドが最初にどのクラスで定義されたかを常に覚えておく必要があります。 クラス構造の一部を変更すると、
+<p>構造体の拡張とは異なり、 継承は頻繁に行われます。 これは、フィールド名命名規則の問題をさらに悪化させます(see <a class="pxref" href="Structure-Naming-Convention.html">Structure Naming Convention</a>): フィールドが最初にどのクラスで定義されたかを常に覚えておく必要があります。 クラス構造の一部を変更すると、
 影響を受けないコードの名前も変更する必要があります。
 </p>
-<span id="index-inst_002dvar-visibility_0028Ke-Shi-Xing-_0029"></span>
-<span id="index-inst_002dvalue-visibility_0028Ke-Shi-Xing-_0029"></span>
-<p>この問題を解決するために、 著者は(著者のオリジナルのモデルにはなかった)スコープ・メカニズムを追加しました。 <code>inst-var</code> (または
-<code>inst-value</code>)で定義されたフィールドは、 それが定義されているクラスと、 そのクラスの子孫のクラスでのみ可視です。
-このようなフィールドの使用は、 いずれにしても、 これらのクラスの <code>m:</code> で定義されたメソッドでのみ意味があります。
+<a class="index-entry-id" id="index-inst_002dvar-visibility_0028Ke-Shi-Xing-_0029"></a>
+<a class="index-entry-id" id="index-inst_002dvalue-visibility_0028Ke-Shi-Xing-_0029"></a>
+<p>この問題を解決するために、 著者は(著者のオリジナルのモデルにはなかった)スコープ・メカニズムを追加しました。 <code class="code">inst-var</code> (または
+<code class="code">inst-value</code>)で定義されたフィールドは、 それが定義されているクラスと、 そのクラスの子孫のクラスでのみ可視です。
+このようなフィールドの使用は、 いずれにしても、 これらのクラスの <code class="code">m:</code> で定義されたメソッドでのみ意味があります。
 </p>
 <p>このスコープ・メカニズムにより、 名前が無関係なワードと衝突する可能性が大幅に低くなるため、 着飾っていないフィールド名を使用できます。
 </p>
-<span id="index-protected-discussion"></span>
-<span id="index-private-discussion"></span>
-<p>スコープ・メカニズムがあれば、 他のワードの可視性を制御するために使用することもできます。 <code>protected</code>
-の後に定義されたすべてのワードは、 現在のクラスとその子孫でのみ表示されます。  <code>public</code> は、 以前に有効だった the
-current wordlist (新しく定義されたワードを入れるワードリスト)(つまり ユーザー変数 <code>current</code>)を復元します。
-<code>public</code> または <code>set-current</code> が介在せずに複数の <code>protected</code> がある場合、
-<code>public</code> はこれらの最初の <code>protected</code> より前の有効な the current wordlist を復元します。
+<a class="index-entry-id" id="index-protected-discussion"></a>
+<a class="index-entry-id" id="index-private-discussion"></a>
+<p>スコープ・メカニズムがあれば、 他のワードの可視性を制御するために使用することもできます。 <code class="code">protected</code>
+の後に定義されたすべてのワードは、 現在のクラスとその子孫でのみ表示されます。  <code class="code">public</code> は、 以前に有効だった the
+current wordlist (新しく定義されたワードを入れるワードリスト)(つまり ユーザー変数 <code class="code">current</code>)を復元します。
+<code class="code">public</code> または <code class="code">set-current</code> が介在せずに複数の <code class="code">protected</code> がある場合、
+<code class="code">public</code> はこれらの最初の <code class="code">protected</code> より前の有効な the current wordlist を復元します。
 </p>
 </div>
 

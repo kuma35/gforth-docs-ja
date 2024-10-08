@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Factoring-Tutorial.html" rel="prev" title="Factoring Tutorial">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+span:hover a.copiable-link {visibility: visible}
+ul.mark-bullet {list-style-type: disc}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,15 +50,15 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="Designing-the-stack-effect-Tutorial">
-<div class="header">
+<div class="section-level-extent" id="Designing-the-stack-effect-Tutorial">
+<div class="nav-panel">
 <p>
 Next: <a href="Local-Variables-Tutorial.html" accesskey="n" rel="next">Local Variables</a>, Previous: <a href="Factoring-Tutorial.html" accesskey="p" rel="prev">Factoring</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Designing-the-stack-effect"></span><h3 class="section">3.14 Designing the stack effect</h3>
-<span id="index-Stack-effect-design_002c-tutorial"></span>
-<span id="index-design-of-stack-effects_002c-tutorial"></span>
+<h3 class="section" id="Designing-the-stack-effect"><span>3.14 Designing the stack effect<a class="copiable-link" href="#Designing-the-stack-effect"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-Stack-effect-design_002c-tutorial"></a>
+<a class="index-entry-id" id="index-design-of-stack-effects_002c-tutorial"></a>
 
 <p>他の言語では、 関数(function)のパラメータに任意の順序を使用できます。 また、 結果は 1 つだけなので、 結果の順序を扱う必要もありません。
 </p>
@@ -78,20 +66,20 @@ Next: <a href="Local-Variables-Tutorial.html" accesskey="n" rel="next">Local Var
 適切に設計する必要があります。 一般的なガイドラインは、 ワードの実装が複雑になる場合でも、
 ワードがほとんどの場合に簡単に使用できるようにスタック効果を設計することです。 いくつかの具体的なルールは以下のとおりです:
 </p>
-<ul>
-<li> ワードがパラメータの全てを消費する(例: <code>.</code>)。
+<ul class="itemize mark-bullet">
+<li>ワードがパラメータの全てを消費する(例: <code class="code">.</code>)。
 
-</li><li> パラメータの順序に関する慣習がある場合(数学や他のプログラミング言語など)、 それに従ってください(例: <code>-</code>)。
+</li><li>パラメータの順序に関する慣習がある場合(数学や他のプログラミング言語など)、 それに従ってください(例: <code class="code">-</code>)。
 
-</li><li> 1 つのパラメータが通常短い計算のみを必要とする場合(たとえば、それが定数である場合)、 それをスタック頂上(top of
+</li><li>1 つのパラメータが通常短い計算のみを必要とする場合(たとえば、それが定数である場合)、 それをスタック頂上(top of
 stack;TOS)に渡します。 逆に、 通常、 計算に長いコード シーケンスが必要なパラメータは、 スタック底(bottom) (つまり、最初の)
 パラメータとして渡す必要があります。 これにより、 リーダーはコードの長いシーケンス(またはスタック操作)を通じてスタック底の項目(bottom
-item)を追跡する必要がなくなるため、 コードが読みやすくなります。 たとえば、 <code>!</code>(「ストア」 see <a href="Memory.html">Memory</a>)は、
+item)を追跡する必要がなくなるため、 コードが読みやすくなります。 たとえば、 <code class="code">!</code>(「ストア」 see <a class="pxref" href="Memory.html">Memory</a>)は、
 通常、 格納されている値よりも計算が簡単であるため、 スタック頂上にアドレスがあるのを期待します(多くの場合、 アドレスは単なる変数です)。
 
-</li><li> 同様に、 通常すぐに消費される結果はスタック頂上(top of stack)に返されるべきですが、
-長い計算でよく使用される結果はスタック底(bottom)の結果として渡される必要があります。 たとえば、 <code>open-file</code>
-のようなファイル・ワードは、スタック頂上にエラー・コードを返します。 これは、 通常、 <code>throw</code> によってすぐに消費されるためです。
+</li><li>同様に、 通常すぐに消費される結果はスタック頂上(top of stack)に返されるべきですが、
+長い計算でよく使用される結果はスタック底(bottom)の結果として渡される必要があります。 たとえば、 <code class="code">open-file</code>
+のようなファイル・ワードは、スタック頂上にエラー・コードを返します。 これは、 通常、 <code class="code">throw</code> によってすぐに消費されるためです。
 さらに言えば、 他の結果に対して何かを行う前に、 エラー・コードをチェックする必要があります。
 
 </li></ul>

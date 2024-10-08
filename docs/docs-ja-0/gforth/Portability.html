@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,8 @@ Foundation raise funds for GNU development." -->
 <link href="Engine.html" rel="prev" title="Engine">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,32 +49,32 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="Portability">
-<div class="header">
+<div class="section-level-extent" id="Portability">
+<div class="nav-panel">
 <p>
 Next: <a href="Threading.html" accesskey="n" rel="next">Threading</a>, Previous: <a href="Engine.html" accesskey="p" rel="prev">Engine</a>, Up: <a href="Engine.html" accesskey="u" rel="up">Engine</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Portability-1"></span><h3 class="section">15.1 Portability</h3>
-<span id="index-engine-portability"></span>
+<h3 class="section" id="Portability-1"><span>15.1 Portability<a class="copiable-link" href="#Portability-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-engine-portability"></a>
 
 <p>Gforth プロジェクトの重要な目標の一つは、 様々なPCで使えることです。 fig-Forth と、 程度は低いですが F83 は、
 当時人気のあったいくつかのプロセッサ向けにエンジンをアセンブリ言語で手動でコーディングすることで、 この目標を達成しました。
 このアプローチは非常に労働集約的であり、 コンピュータ・アーキテクチャの進歩につれ短命に終わってしまいます。
 </p>
-<span id="index-C_002c-using-C-for-the-engine"></span>
+<a class="index-entry-id" id="index-C_002c-using-C-for-the-engine"></a>
 <p>たとえば Mitch Bradley (cforth)や、 Mikael Patel (TILE)や、 Dirk Zoller (pfe) など、 C
 言語でコーディングすることでこの問題を回避したモノもあります。 UNIX マシンのアーキテクチャは多種多様であるため、 このアプローチは UNIX
 ベースの Forth で特に人気があります。 残念ながら、 C 言語での実装は、 効率の目標や、 従来の手法の使用とうまく調和しません。
 間接または直接のスレッド化は C 言語では表現できず、 C 言語で利用できる最速の手法であるスイッチ・スレッディングは大幅に遅くなります。 C 言語
 のもう 1 つの問題は、 2倍長整数の演算を表現するのが非常に面倒なことです。
 </p>
-<span id="index-GNU-C-for-the-engine"></span>
-<span id="index-long-long"></span>
+<a class="index-entry-id" id="index-GNU-C-for-the-engine"></a>
+<a class="index-entry-id" id="index-long-long"></a>
 <p>幸いなことに、 これらの制限のない移植可能な言語が存在します。 それは、GNU C 言語コンパイラーによって処理される C 言語のバージョンである
-GNU Cです(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/C-Extensions.html#C-Extensions">Extensions to the C Language Family</a> in <cite>GNU
-C Manual</cite>)。 値としてのラベル機能(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values">Labels as Values</a> in <cite>GNU
-C Manual</cite>)により、 直接および間接的なスレッド化が可能になり、 その <code>long long</code> 型(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/Long-Long.html#Long-Long">Double-Word Integers</a> in <cite>GNU C Manual</cite>)は、 多くのシステムで Forth の 2倍長整数に対応します。
+GNU Cです(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/C-Extensions.html#C-Extensions">Extensions to the C Language Family</a> in <cite class="cite">GNU
+C Manual</cite>)。 値としてのラベル機能(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values">Labels as Values</a> in <cite class="cite">GNU
+C Manual</cite>)により、 直接および間接的なスレッド化が可能になり、 その <code class="code">long long</code> 型(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/Long-Long.html#Long-Long">Double-Word Integers</a> in <cite class="cite">GNU C Manual</cite>)は、 多くのシステムで Forth の 2倍長整数に対応します。
 GNU C は、 すべての重要な(および多くの重要でない) UNIX マシン や VMS や MS-DOS を実行する 80386 や Amiga や
 Atari ST で無料で利用できるため、 GNU C で書かれた Forth はこれらすべてのマシンで実行できます。
 </p>
@@ -95,14 +82,14 @@ Atari ST で無料で利用できるため、 GNU C で書かれた Forth はこ
 コンパイラーによって生成されたコードを繰り返し確認し、 ソース・コードを適切に変更することで、
 コンパイラーによって引き起こされる非効率性のほとんどを排除しています。
 </p>
-<span id="index-explicit-register-declarations"></span>
-<span id="index-_002d_002denable_002dforce_002dreg_002c-configuration-flag"></span>
-<span id="index-_002dDFORCE_005fREG"></span>
+<a class="index-entry-id" id="index-explicit-register-declarations"></a>
+<a class="index-entry-id" id="index-_002d_002denable_002dforce_002dreg_002c-configuration-flag"></a>
+<a class="index-entry-id" id="index-_002dDFORCE_005fREG"></a>
 <p>しかしながら、 プログラマはレジスター割り当てに移植可能な影響を及ぼすことができないため、 レジスターが不足しているマシンでは非効率が発生します。
-一部のマシンでは速度を向上させるために、 明示的なレジスター宣言を使用しています(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/Explicit-Reg-Vars.html#Explicit-Reg-Vars">Variables in Specified Registers</a> in <cite>GNU C Manual</cite>)。 これらは、 構成フラグ
-<code>--enable-force-reg</code> (<code>gcc</code> スイッチ <code>-DFORCE_REG</code>) を使用してオンにします。
+一部のマシンでは速度を向上させるために、 明示的なレジスター宣言を使用しています(see <a data-manual="gcc" href="https://gcc.gnu.org/onlinedocs/gcc/Explicit-Reg-Vars.html#Explicit-Reg-Vars">Variables in Specified Registers</a> in <cite class="cite">GNU C Manual</cite>)。 これらは、 構成フラグ
+<code class="code">--enable-force-reg</code> (<code class="code">gcc</code> スイッチ <code class="code">-DFORCE_REG</code>) を使用してオンにします。
 残念ながら、 この機能はマシンだけでなくコンパイラーのバージョンにも依存します。 一部のマシンでは、 特定の明示的なレジスター宣言が使用されると、
-一部のコンパイラー・バージョンでは不正なコードを生成します。 したがって、 デフォルトでは <code>-DFORCE_REG</code> は使用されません。
+一部のコンパイラー・バージョンでは不正なコードを生成します。 したがって、 デフォルトでは <code class="code">-DFORCE_REG</code> は使用されません。
 </p>
 </div>
 

@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="Defining-library-interfaces.html" rel="prev" title="Defining library interfaces">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,103 +51,108 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Declaring-OS_002dlevel-libraries">
-<div class="header">
+<div class="subsection-level-extent" id="Declaring-OS_002dlevel-libraries">
+<div class="nav-panel">
 <p>
 Next: <a href="Callbacks.html" accesskey="n" rel="next">Callbacks</a>, Previous: <a href="Defining-library-interfaces.html" accesskey="p" rel="prev">Defining library interfaces</a>, Up: <a href="C-Interface.html" accesskey="u" rel="up">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Declaring-OS_002dlevel-libraries-1"></span><h4 class="subsection">6.28.5 Declaring OS-level libraries</h4>
-<span id="index-Shared-libraries-in-C-interface"></span>
-<span id="index-Dynamically-linked-libraries-in-C-interface"></span>
-<span id="index-Libraries-in-C-interface"></span>
+<h4 class="subsection" id="Declaring-OS_002dlevel-libraries-1"><span>6.28.5 Declaring OS-level libraries<a class="copiable-link" href="#Declaring-OS_002dlevel-libraries-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-Shared-libraries-in-C-interface"></a>
+<a class="index-entry-id" id="index-Dynamically-linked-libraries-in-C-interface"></a>
+<a class="index-entry-id" id="index-Libraries-in-C-interface"></a>
 
-<p>一部の C 言語の関数を呼び出すには、 その関数を含む特定の OS レベルのライブラリとリンクする必要があります。  たとえば、<code>sin</code>
-関数では、 コマンドライン・スイッチ <code>-lm</code> を使用して特別なライブラリをリンクする必要があります。 C 言語インターフェイスでは、
-以下のように <code>add-lib</code> を呼び出して同等のことを行います:
+<p>一部の C 言語の関数を呼び出すには、 その関数を含む特定の OS レベルのライブラリとリンクする必要があります。  たとえば、<code class="code">sin</code>
+関数では、 コマンドライン・スイッチ <code class="code">-lm</code> を使用して特別なライブラリをリンクする必要があります。 C 言語インターフェイスでは、
+以下のように <code class="code">add-lib</code> を呼び出して同等のことを行います:
 </p>
 <div class="example">
-<pre class="example">clear-libs
+<pre class="example-preformatted">clear-libs
 s&quot; m&quot; add-lib
 \c #include &lt;math.h&gt;
 c-function sin sin r -- r
 </pre></div>
 
-<p>まず、 (あなたが <code>sin</code> に必要としない、)以前に宣言された可能性のあるライブラリをすべてクリアします。 次に <code>m</code>
-ライブラリ(実際には <code>libm.so</code> など) を現在宣言されているライブラリに追加します。 これは必要なだけ追加できます。  最後に、
+<p>まず、 (あなたが <code class="code">sin</code> に必要としない、)以前に宣言された可能性のあるライブラリをすべてクリアします。 次に <code class="code">m</code>
+ライブラリ(実際には <code class="code">libm.so</code> など) を現在宣言されているライブラリに追加します。 これは必要なだけ追加できます。  最後に、
 上に示したように関数を宣言します。  通常は、 多くの関数宣言に同じライブラリ宣言のセットを使用します。 あなたは、 最初に、 この組を、 ただ 1
 つだけ作成する必要があります。
 </p>
-<p>注意: <code>c-library...end-c-library</code> 内で <code>clear-libs</code>
-を呼び出してはいけないことに注意してください。 しかしながら、 <code>c-library</code> は <code>clear-libs</code>
-の機能も実行するため、 <code>clear-libs</code> は必要なく、 そして、 あなたは、 通常は <code>add-lib</code> 呼び出しを
-<code>c-library...end-c-library</code> 内に置きたいと思うでしょう。
+<p>注意: <code class="code">c-library...end-c-library</code> 内で <code class="code">clear-libs</code>
+を呼び出してはいけないことに注意してください。 しかしながら、 <code class="code">c-library</code> は <code class="code">clear-libs</code>
+の機能も実行するため、 <code class="code">clear-libs</code> は必要なく、 そして、 あなたは、 通常は <code class="code">add-lib</code> 呼び出しを
+<code class="code">c-library...end-c-library</code> 内に置きたいと思うでしょう。
 </p>
-<span id="index-clear_002dlibs-_0028--_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-clear_002dlibs"></span>
-<span id="index-clear_002dlibs-1"></span>
+<a class="index-entry-id" id="index-clear_002dlibs-_0028-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-clear_002dlibs"></a>
+<a class="index-entry-id" id="index-clear_002dlibs-1"></a>
 <div class="format">
-<pre class="format"><code>clear-libs</code> ( <i>&ndash;  </i>) gforth-0.7 &ldquo;clear-libs&rdquo;
+<pre class="format-preformatted"><code class="code">clear-libs</code> ( <i class="i">&ndash;  </i>) gforth-0.7 &ldquo;clear-libs&rdquo;
 </pre></div>
 <p>libs のリストをクリア
 </p>
 
-<span id="index-add_002dlib-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-add_002dlib"></span>
-<span id="index-add_002dlib-1"></span>
+<a class="index-entry-id" id="index-add_002dlib-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-add_002dlib"></a>
+<a class="index-entry-id" id="index-add_002dlib-1"></a>
 <div class="format">
-<pre class="format"><code>add-lib</code> ( <i>c-addr u &ndash;  </i>) gforth-0.7 &ldquo;add-lib&rdquo;
+<pre class="format-preformatted"><code class="code">add-lib</code> ( <i class="i">c-addr u &ndash;  </i>) gforth-0.7 &ldquo;add-lib&rdquo;
 </pre></div>
-<p>ライブラリ lib<i>string</i> をライブラリのリストに追加します。ここで、 <i>string</i> は <i>c-addr u</i> で表されます。
+<p>ライブラリ lib<i class="i">string</i> をライブラリのリストに追加します。ここで、 <i class="i">string</i> は <i class="i">c-addr u</i> で表されます。
 </p>
 
-<span id="index-add_002dlibpath-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-add_002dlibpath"></span>
-<span id="index-add_002dlibpath-1"></span>
+<a class="index-entry-id" id="index-add_002dlibpath-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-add_002dlibpath"></a>
+<a class="index-entry-id" id="index-add_002dlibpath-1"></a>
 <div class="format">
-<pre class="format"><code>add-libpath</code> ( <i>c-addr u &ndash;  </i>) gforth-0.7 &ldquo;add-libpath&rdquo;
+<pre class="format-preformatted"><code class="code">add-libpath</code> ( <i class="i">c-addr u &ndash;  </i>) gforth-0.7 &ldquo;add-libpath&rdquo;
 </pre></div>
-<p>パス <i>string</i> をライブラリ検索パスのリストに追加します。 ここで、<i>string</i> は <i>c-addr u</i> で表されます。
+<p>パス <i class="i">string</i> をライブラリ検索パスのリストに追加します。 ここで、<i class="i">string</i> は <i class="i">c-addr u</i> で表されます。
 </p>
 
-<span id="index-add_002dframework-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-add_002dframework"></span>
-<span id="index-add_002dframework-1"></span>
+<a class="index-entry-id" id="index-add_002dframework-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-add_002dframework"></a>
+<a class="index-entry-id" id="index-add_002dframework-1"></a>
 <div class="format">
-<pre class="format"><code>add-framework</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-framework&rdquo;
+<pre class="format-preformatted"><code class="code">add-framework</code> ( <i class="i">c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-framework&rdquo;
 </pre></div>
-<p>フレームワーク lib<i>string</i> をフレームワークのリストに追加します。 ここで、<i>string</i> は <i>c-addr u</i>
+<p>フレームワーク lib<i class="i">string</i> をフレームワークのリストに追加します。 ここで、<i class="i">string</i> は <i class="i">c-addr u</i>
 で表されます。
 </p>
 
-<span id="index-add_002dincdir-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-add_002dincdir"></span>
-<span id="index-add_002dincdir-1"></span>
+<a class="index-entry-id" id="index-add_002dincdir-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-add_002dincdir"></a>
+<a class="index-entry-id" id="index-add_002dincdir-1"></a>
 <div class="format">
-<pre class="format"><code>add-incdir</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-incdir&rdquo;
+<pre class="format-preformatted"><code class="code">add-incdir</code> ( <i class="i">c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-incdir&rdquo;
 </pre></div>
-<p>パス <i>c-addr u</i> をインクルード検索パスのリストに追加します
+<p>パス <i class="i">c-addr u</i> をインクルード検索パスのリストに追加します
 </p>
 
-<span id="index-add_002dcflags-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-add_002dcflags"></span>
-<span id="index-add_002dcflags-1"></span>
+<a class="index-entry-id" id="index-add_002dcflags-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-add_002dcflags"></a>
+<a class="index-entry-id" id="index-add_002dcflags-1"></a>
 <div class="format">
-<pre class="format"><code>add-cflags</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-cflags&rdquo;
+<pre class="format-preformatted"><code class="code">add-cflags</code> ( <i class="i">c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-cflags&rdquo;
 </pre></div>
 <p>あらゆる種類の cflags をC言語コンパイラーに追加します
 </p>
 
-<span id="index-add_002dldflags-_0028--c_002daddr-u-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-add_002dldflags"></span>
-<span id="index-add_002dldflags-1"></span>
+<a class="index-entry-id" id="index-add_002dldflags-_0028-c_002daddr-u-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-add_002dldflags"></a>
+<a class="index-entry-id" id="index-add_002dldflags-1"></a>
 <div class="format">
-<pre class="format"><code>add-ldflags</code> ( <i>c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-ldflags&rdquo;
+<pre class="format-preformatted"><code class="code">add-ldflags</code> ( <i class="i">c-addr u &ndash;  </i>) gforth-1.0 &ldquo;add-ldflags&rdquo;
 </pre></div>
 <p>リンカにフラグを追加
 </p>
 
 
+</div>
+<hr>
+<div class="nav-panel">
+<p>
+Next: <a href="Callbacks.html">Callbacks</a>, Previous: <a href="Defining-library-interfaces.html">Defining library interfaces</a>, Up: <a href="C-Interface.html">C Interface</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

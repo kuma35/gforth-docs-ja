@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -38,21 +38,9 @@ Foundation raise funds for GNU development." -->
 <link href="Address-arithmetic.html" rel="prev" title="Address arithmetic">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
-div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -61,126 +49,126 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Memory-Blocks">
-<div class="header">
+<div class="subsection-level-extent" id="Memory-Blocks">
+<div class="nav-panel">
 <p>
 Previous: <a href="Address-arithmetic.html" accesskey="p" rel="prev">Address arithmetic</a>, Up: <a href="Memory.html" accesskey="u" rel="up">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Memory-Blocks-1"></span><h4 class="subsection">6.7.7 Memory Blocks</h4>
-<span id="index-memory-block-words"></span>
-<span id="index-character-strings-_002d-moving-and-copying"></span>
+<h4 class="subsection" id="Memory-Blocks-1"><span>6.7.7 Memory Blocks<a class="copiable-link" href="#Memory-Blocks-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-memory-block-words"></a>
+<a class="index-entry-id" id="index-character-strings-_002d-moving-and-copying"></a>
 
 <p>メモリー・ブロックは多くの場合、 文字の連なり(character strings)を表します。 文字の連なりをメモリーに保存する方法については、
-<a href="String-representations.html">String representations</a> を参照してください。  他の連なり処理ワード(string-processing
-words)については、 <a href="Displaying-characters-and-strings.html">Displaying characters and strings</a> を参照してください。
+<a class="ref" href="String-representations.html">String representations</a> を参照してください。  他の連なり処理ワード(string-processing
+words)については、 <a class="ref" href="Displaying-characters-and-strings.html">Displaying characters and strings</a> を参照してください。
 </p>
 <p>これらのワードのいくつかは、 アドレス単位ブロック(address unit blocks)で機能します。  その場合、
-文字の連なり(character strings)を扱う際には通常、 ワードの前に <code>CHARS</code> を挿入する必要があります。
+文字の連なり(character strings)を扱う際には通常、 ワードの前に <code class="code">CHARS</code> を挿入する必要があります。
 ほとんどのワードは文字ブロック(character blocks)で機能し、 文字アライメント・アドレス(char-aligned
 address)を期待します。
 </p>
-<p>重複するメモリー領域間で文字達をコピーする場合は、 <code>move</code> を使用します。  <code>cmove</code> と <code>cmove&gt;</code>
-は、 適切に実装された <code>move</code> よりも遅くなる傾向があります。
+<p>重複するメモリー領域間で文字達をコピーする場合は、 <code class="code">move</code> を使用します。  <code class="code">cmove</code> と <code class="code">cmove&gt;</code>
+は、 適切に実装された <code class="code">move</code> よりも遅くなる傾向があります。
 </p>
-<span id="index-move-_0028--c_002dfrom-c_002dto-ucount-_002d_002d--_0029-core"></span>
-<span id="index-move"></span>
-<span id="index-move-1"></span>
+<a class="index-entry-id" id="index-move-_0028-c_002dfrom-c_002dto-ucount-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-move"></a>
+<a class="index-entry-id" id="index-move-1"></a>
 <div class="format">
-<pre class="format"><code>move</code> ( <i>c-from c-to ucount &ndash; </i>) core &ldquo;move&rdquo;
+<pre class="format-preformatted"><code class="code">move</code> ( <i class="i">c-from c-to ucount &ndash; </i>) core &ldquo;move&rdquo;
 </pre></div>
-<p><i>c-from</i> アドレスにある <i>ucount</i> 個のcharの内容を <i>c-to</i> アドレスにコピーします。 <code>move</code>
+<p><i class="i">c-from</i> アドレスにある <i class="i">ucount</i> 個のcharの内容を <i class="i">c-to</i> アドレスにコピーします。 <code class="code">move</code>
 は、 2 つの領域が重なっている場合でも正しく機能します。
 </p>
-<span id="index-cmove-_0028--c_002dfrom-c_002dto-u-_002d_002d--_0029-string"></span>
-<span id="index-cmove"></span>
-<span id="index-cmove-1"></span>
+<a class="index-entry-id" id="index-cmove-_0028-c_002dfrom-c_002dto-u-_002d_002d-_0029-string"></a>
+<a class="index-entry-id" id="index-cmove"></a>
+<a class="index-entry-id" id="index-cmove-1"></a>
 <div class="format">
-<pre class="format"><code>cmove</code> ( <i>c-from c-to u &ndash; </i>) string &ldquo;c-move&rdquo;
+<pre class="format-preformatted"><code class="code">cmove</code> ( <i class="i">c-from c-to u &ndash; </i>) string &ldquo;c-move&rdquo;
 </pre></div>
-<p>データ空間で <i>c-from</i> アドレスから <i>ucount</i> 個のcharの内容を <i>c-to</i> アドレスにコピーします。コピーは、  1
-<code>char</code> ずつコピーしながら下位アドレスから上位アドレス方向へ進めます。 つまり、 重複領域の場合、 <i>c-to</i> &lt;=
-<i>c-from</i> であれば安全です。
+<p>データ空間で <i class="i">c-from</i> アドレスから <i class="i">ucount</i> 個のcharの内容を <i class="i">c-to</i> アドレスにコピーします。コピーは、  1
+<code class="code">char</code> ずつコピーしながら下位アドレスから上位アドレス方向へ進めます。 つまり、 重複領域の場合、 <i class="i">c-to</i> &lt;=
+<i class="i">c-from</i> であれば安全です。
 </p>
-<span id="index-cmove_003e-_0028--c_002dfrom-c_002dto-u-_002d_002d--_0029-string"></span>
-<span id="index-cmove_003e"></span>
-<span id="index-cmove_003e-1"></span>
+<a class="index-entry-id" id="index-cmove_003e-_0028-c_002dfrom-c_002dto-u-_002d_002d-_0029-string"></a>
+<a class="index-entry-id" id="index-cmove_003e"></a>
+<a class="index-entry-id" id="index-cmove_003e-1"></a>
 <div class="format">
-<pre class="format"><code>cmove&gt;</code> ( <i>c-from c-to u &ndash; </i>) string &ldquo;c-move-up&rdquo;
+<pre class="format-preformatted"><code class="code">cmove&gt;</code> ( <i class="i">c-from c-to u &ndash; </i>) string &ldquo;c-move-up&rdquo;
 </pre></div>
-<p>データ空間で <i>c-from</i> アドレスから <i>ucount</i> 個のcharの内容を <i>c-to</i> アドレスにコピーします。 コピーは、 1
-<code>char</code> ずつコピーし上位アドレスから下位アドレス方向に進みます。 つまり、 重複領域の場合、 <i>c-to</i> &gt;=
-<i>c-from</i> であれば安全です。
+<p>データ空間で <i class="i">c-from</i> アドレスから <i class="i">ucount</i> 個のcharの内容を <i class="i">c-to</i> アドレスにコピーします。 コピーは、 1
+<code class="code">char</code> ずつコピーし上位アドレスから下位アドレス方向に進みます。 つまり、 重複領域の場合、 <i class="i">c-to</i> &gt;=
+<i class="i">c-from</i> であれば安全です。
 </p>
-<span id="index-fill-_0028--c_002daddr-u-c-_002d_002d--_0029-core"></span>
-<span id="index-fill"></span>
-<span id="index-fill-1"></span>
+<a class="index-entry-id" id="index-fill-_0028-c_002daddr-u-c-_002d_002d-_0029-core"></a>
+<a class="index-entry-id" id="index-fill"></a>
+<a class="index-entry-id" id="index-fill-1"></a>
 <div class="format">
-<pre class="format"><code>fill</code> ( <i>c-addr u c &ndash; </i>) core &ldquo;fill&rdquo;
+<pre class="format-preformatted"><code class="code">fill</code> ( <i class="i">c-addr u c &ndash; </i>) core &ldquo;fill&rdquo;
 </pre></div>
-<p><i>c</i> を <i>c-addr</i> から <i>u</i> 個char単位で格納します。
+<p><i class="i">c</i> を <i class="i">c-addr</i> から <i class="i">u</i> 個char単位で格納します。
 </p>
-<span id="index-erase-_0028--addr-u-_002d_002d--_0029-core_002dext"></span>
-<span id="index-erase"></span>
-<span id="index-erase-1"></span>
+<a class="index-entry-id" id="index-erase-_0028-addr-u-_002d_002d-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-erase"></a>
+<a class="index-entry-id" id="index-erase-1"></a>
 <div class="format">
-<pre class="format"><code>erase</code> ( <i>addr u &ndash;  </i>) core-ext &ldquo;erase&rdquo;
+<pre class="format-preformatted"><code class="code">erase</code> ( <i class="i">addr u &ndash;  </i>) core-ext &ldquo;erase&rdquo;
 </pre></div>
-<p><i>addr</i> から始まる <i>u</i> aus のすべてのビットをクリアします。
-</p>
-
-<span id="index-blank-_0028--c_002daddr-u-_002d_002d--_0029-string"></span>
-<span id="index-blank"></span>
-<span id="index-blank-1"></span>
-<div class="format">
-<pre class="format"><code>blank</code> ( <i>c-addr u &ndash;  </i>) string &ldquo;blank&rdquo;
-</pre></div>
-<p>スペース文字を <i>c-addr</i> アドレスから <i>u</i> 個char単位で格納します。
+<p><i class="i">addr</i> から始まる <i class="i">u</i> aus のすべてのビットをクリアします。
 </p>
 
-<span id="index-insert-_0028--string-length-buffer-size-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-insert"></span>
-<span id="index-insert-1"></span>
+<a class="index-entry-id" id="index-blank-_0028-c_002daddr-u-_002d_002d-_0029-string"></a>
+<a class="index-entry-id" id="index-blank"></a>
+<a class="index-entry-id" id="index-blank-1"></a>
 <div class="format">
-<pre class="format"><code>insert</code> ( <i>string length buffer size &ndash;  </i>) gforth-0.7 &ldquo;insert&rdquo;
+<pre class="format-preformatted"><code class="code">blank</code> ( <i class="i">c-addr u &ndash;  </i>) string &ldquo;blank&rdquo;
+</pre></div>
+<p>スペース文字を <i class="i">c-addr</i> アドレスから <i class="i">u</i> 個char単位で格納します。
+</p>
+
+<a class="index-entry-id" id="index-insert-_0028-string-length-buffer-size-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-insert"></a>
+<a class="index-entry-id" id="index-insert-1"></a>
+<div class="format">
+<pre class="format-preformatted"><code class="code">insert</code> ( <i class="i">string length buffer size &ndash;  </i>) gforth-0.7 &ldquo;insert&rdquo;
 </pre></div>
 <p>バッファーの先頭に文字列を挿入します。 残りのバイトは後ろにずらされます(訳注: sizeを超えた分は捨てられます)。
 </p>
 
-<span id="index-delete-_0028--buffer-size-u-_002d_002d--_0029-gforth_002d0_002e7"></span>
-<span id="index-delete"></span>
-<span id="index-delete-1"></span>
+<a class="index-entry-id" id="index-delete-_0028-buffer-size-u-_002d_002d-_0029-gforth_002d0_002e7"></a>
+<a class="index-entry-id" id="index-delete"></a>
+<a class="index-entry-id" id="index-delete-1"></a>
 <div class="format">
-<pre class="format"><code>delete</code> ( <i>buffer size u &ndash;  </i>) gforth-0.7 &ldquo;delete&rdquo;
+<pre class="format-preformatted"><code class="code">delete</code> ( <i class="i">buffer size u &ndash;  </i>) gforth-0.7 &ldquo;delete&rdquo;
 </pre></div>
-<p>最初の <var>u</var> バイトをバッファーから削除し、 その分前にずらして、 残りの最後のバイトを空白(0x20)で埋めます。
+<p>最初の <var class="var">u</var> バイトをバッファーから削除し、 その分前にずらして、 残りの最後のバイトを空白(0x20)で埋めます。
 </p>
 
-<span id="index-compare-_0028--c_002daddr1-u1-c_002daddr2-u2-_002d_002d-n--_0029-string"></span>
-<span id="index-compare"></span>
-<span id="index-compare-1"></span>
+<a class="index-entry-id" id="index-compare-_0028-c_002daddr1-u1-c_002daddr2-u2-_002d_002d-n-_0029-string"></a>
+<a class="index-entry-id" id="index-compare"></a>
+<a class="index-entry-id" id="index-compare-1"></a>
 <div class="format">
-<pre class="format"><code>compare</code> ( <i>c-addr1 u1 c-addr2 u2 &ndash; n </i>) string &ldquo;compare&rdquo;
+<pre class="format-preformatted"><code class="code">compare</code> ( <i class="i">c-addr1 u1 c-addr2 u2 &ndash; n </i>) string &ldquo;compare&rdquo;
 </pre></div>
 <p>連なり(string)内のバイトの値に基づいて、 2
 つの連なり(strings)を(英語の)辞書順(lexicographically)に比較します(つまり、 英大文字と小文字が区別され、
-ロケール固有の照合順序は無視されます)。 2つが等しい場合、 <i>n</i> は 0 です。 最初の連なり(string)が小さい場合、 <i>n</i> は
--1 です。 最初の連なり(string)が大きい場合、 <i>n</i> は 1 です。
+ロケール固有の照合順序は無視されます)。 2つが等しい場合、 <i class="i">n</i> は 0 です。 最初の連なり(string)が小さい場合、 <i class="i">n</i> は
+-1 です。 最初の連なり(string)が大きい場合、 <i class="i">n</i> は 1 です。
 </p>
-<span id="index-pad-_0028--_002d_002d-c_002daddr--_0029-core_002dext"></span>
-<span id="index-pad"></span>
-<span id="index-pad-1"></span>
+<a class="index-entry-id" id="index-pad-_0028-_002d_002d-c_002daddr-_0029-core_002dext"></a>
+<a class="index-entry-id" id="index-pad"></a>
+<a class="index-entry-id" id="index-pad-1"></a>
 <div class="format">
-<pre class="format"><code>pad</code> ( <i>&ndash; c-addr  </i>) core-ext &ldquo;pad&rdquo;
+<pre class="format-preformatted"><code class="code">pad</code> ( <i class="i">&ndash; c-addr  </i>) core-ext &ldquo;pad&rdquo;
 </pre></div>
-<p><var>c-addr</var> は、 一時的なデータ・ストレージとして使用できる一時領域のアドレスです。 少なくとも 84 文字分の空間が使用可能です。
+<p><var class="var">c-addr</var> は、 一時的なデータ・ストレージとして使用できる一時領域のアドレスです。 少なくとも 84 文字分の空間が使用可能です。
 </p>
 
 
 
 </div>
 <hr>
-<div class="header">
+<div class="nav-panel">
 <p>
 Previous: <a href="Address-arithmetic.html">Address arithmetic</a>, Up: <a href="Memory.html">Memory</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>

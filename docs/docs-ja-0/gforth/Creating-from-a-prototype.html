@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,10 @@ Foundation raise funds for GNU development." -->
 <link href="User_002ddefined-compile_002dcomma.html" rel="prev" title="User-defined compile-comma">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+pre.format-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,23 +51,23 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsubsection" id="Creating-from-a-prototype">
-<div class="header">
+<div class="subsubsection-level-extent" id="Creating-from-a-prototype">
+<div class="nav-panel">
 <p>
-Next: <a href="Making-a-word-current.html" accesskey="n" rel="next">Making a word current</a>, Previous: <a href="User_002ddefined-compile_002dcomma.html" accesskey="p" rel="prev">User-defined <code>compile,</code></a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
+Next: <a href="Making-a-word-current.html" accesskey="n" rel="next">Making a word current</a>, Previous: <a href="User_002ddefined-compile_002dcomma.html" accesskey="p" rel="prev">User-defined <code class="code">compile,</code></a>, Up: <a href="User_002ddefined-Defining-Words.html" accesskey="u" rel="up">User-defined Defining Words</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Creating-from-a-prototype-1"></span><h4 class="subsubsection">6.10.10.8 Creating from a prototype</h4>
+<h4 class="subsubsection" id="Creating-from-a-prototype-1"><span>6.10.10.8 Creating from a prototype<a class="copiable-link" href="#Creating-from-a-prototype-1"> &para;</a></span></h4>
 
-<p>上記では、 最初に <code>create</code> を使用してワードを定義し、 それから <code>set-does&gt;</code> や <code>set-to</code>
-や <code>set-optimizer</code> などで変更する方法を示しました。
+<p>上記では、 最初に <code class="code">create</code> を使用してワードを定義し、 それから <code class="code">set-does&gt;</code> や <code class="code">set-to</code>
+や <code class="code">set-optimizer</code> などで変更する方法を示しました。
 </p>
 <p>別の方法として、 以下のワード群を使用してプロトタイプを作成し、そのプロトタイプから新しいワードを作成します。
-この種のコピーでは本体(body)部分は網羅されないため、 明示的に割り当てて初期化する必要があります。  上記の <code>fvalue</code>
+この種のコピーでは本体(body)部分は網羅されないため、 明示的に割り当てて初期化する必要があります。  上記の <code class="code">fvalue</code>
 を例に取ると、 代わりに以下のように定義できます:
 </p>
 <div class="example">
-<pre class="example">create fvalue-prototype ( -- r )
+<pre class="example-preformatted">create fvalue-prototype ( -- r )
 ['] f@ set-does&gt;
 [: &gt;body ]] literal f@ [[ ;] set-optimizer
 ['] fvalue-to set-to
@@ -87,42 +76,42 @@ Next: <a href="Making-a-word-current.html" accesskey="n" rel="next">Making a wor
   ``fvalue-prototype create-from f, reveal ;
 </pre></div>
 
-<p>このアプローチの利点は、まず <code>create</code> ヘッダー・メソッド達を複製し、 それらを変更し、 最終的に重複排除する必要がないため、
-<code>fvalue</code> ワード群の作成が高速化されることだ。 ただし、 この利点は、
+<p>このアプローチの利点は、まず <code class="code">create</code> ヘッダー・メソッド達を複製し、 それらを変更し、 最終的に重複排除する必要がないため、
+<code class="code">fvalue</code> ワード群の作成が高速化されることだ。 ただし、 この利点は、
 この定義ワードで作成されるワードの数が膨大な場合にのみ意味があります。
 </p>
-<span id="index-create_002dfrom-_0028--nt-_0022name_0022-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-create_002dfrom"></span>
-<span id="index-create_002dfrom-1"></span>
+<a class="index-entry-id" id="index-create_002dfrom-_0028-nt-_0022name_0022-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-create_002dfrom"></a>
+<a class="index-entry-id" id="index-create_002dfrom-1"></a>
 <div class="format">
-<pre class="format"><code>create-from</code> ( <i>nt &quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;create-from&rdquo;
+<pre class="format-preformatted"><code class="code">create-from</code> ( <i class="i">nt &quot;name&quot; &ndash;  </i>) gforth-1.0 &ldquo;create-from&rdquo;
 </pre></div>
-<p>指定の <i>nt</i> のように振る舞うが、 ボディが空のワード <i>name</i> を作成します。  <i>nt</i> は名前付きワードの nt
+<p>指定の <i class="i">nt</i> のように振る舞うが、 ボディが空のワード <i class="i">name</i> を作成します。  <i class="i">nt</i> は名前付きワードの nt
 でなければなりません。  結果として得られるヘッダーはまだ非公開状態です(訳注: not yet
-reveal;ワードリスト未登録なので普通は呼び出せない)。  <code>set-</code> ワード群を使用せずに <code>create-from</code>
-でワードを作成すると、 <code>set-</code> ワード群または <code>immediate</code> または <code>does&gt;</code>
-を使用してワードを作成するよりも高速になります。  <code>noname</code> で <code>create-from</code> を使用できます。
+reveal;ワードリスト未登録なので普通は呼び出せない)。  <code class="code">set-</code> ワード群を使用せずに <code class="code">create-from</code>
+でワードを作成すると、 <code class="code">set-</code> ワード群または <code class="code">immediate</code> または <code class="code">does&gt;</code>
+を使用してワードを作成するよりも高速になります。  <code class="code">noname</code> で <code class="code">create-from</code> を使用できます。
 </p>
 
-<span id="index-reveal-_0028--_002d_002d--_0029-gforth_002d0_002e2"></span>
-<span id="index-reveal"></span>
-<span id="index-reveal-1"></span>
+<a class="index-entry-id" id="index-reveal-_0028-_002d_002d-_0029-gforth_002d0_002e2"></a>
+<a class="index-entry-id" id="index-reveal"></a>
+<a class="index-entry-id" id="index-reveal-1"></a>
 <div class="format">
-<pre class="format"><code>reveal</code> ( <i>&ndash;  </i>) gforth-0.2 &ldquo;reveal&rdquo;
+<pre class="format-preformatted"><code class="code">reveal</code> ( <i class="i">&ndash;  </i>) gforth-0.2 &ldquo;reveal&rdquo;
 </pre></div>
 <p>(reveal;明らかにする、暴露する)ヘッダー定義時の現在のワード・リスト(wordlist current)に現在のワードを入れます。
 </p>
 
 
-<p><code>noname</code> を定義ワードとともに使用しても、 パフォーマンス上の利点は得られません。  したがって、 以下もいっしょに使います
+<p><code class="code">noname</code> を定義ワードとともに使用しても、 パフォーマンス上の利点は得られません。  したがって、 以下もいっしょに使います
 </p>
-<span id="index-noname_002dfrom-_0028--xt-_002d_002d--_0029-gforth_002d1_002e0"></span>
-<span id="index-noname_002dfrom"></span>
-<span id="index-noname_002dfrom-1"></span>
+<a class="index-entry-id" id="index-noname_002dfrom-_0028-xt-_002d_002d-_0029-gforth_002d1_002e0"></a>
+<a class="index-entry-id" id="index-noname_002dfrom"></a>
+<a class="index-entry-id" id="index-noname_002dfrom-1"></a>
 <div class="format">
-<pre class="format"><code>noname-from</code> ( <i>xt &ndash;  </i>) gforth-1.0 &ldquo;noname-from&rdquo;
+<pre class="format-preformatted"><code class="code">noname-from</code> ( <i class="i">xt &ndash;  </i>) gforth-1.0 &ldquo;noname-from&rdquo;
 </pre></div>
-<p>指定の <i>xt</i> のように動作するが、 本体が空の名前のないワードを作成します。  <i>xt</i> は、 名前のないワードの xt
+<p>指定の <i class="i">xt</i> のように動作するが、 本体が空の名前のないワードを作成します。  <i class="i">xt</i> は、 名前のないワードの xt
 でなければなりません。
 </p>
 
@@ -130,7 +119,7 @@ reveal;ワードリスト未登録なので普通は呼び出せない)。  <cod
 <p>以下に使用例を示します:
 </p>
 <div class="example">
-<pre class="example">``fvalue-prototype noname create-from
+<pre class="example-preformatted">``fvalue-prototype noname create-from
 latestnt constant noname-fvalue-prototype
 
 : noname-fvalue ( r -- xt ; xt execution: -- r )

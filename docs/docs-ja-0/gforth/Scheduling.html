@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Threading.html" rel="prev" title="Threading">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,35 +50,35 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="subsection" id="Scheduling">
-<div class="header">
+<div class="subsection-level-extent" id="Scheduling">
+<div class="nav-panel">
 <p>
 Next: <a href="Direct-or-Indirect-Threaded_003f.html" accesskey="n" rel="next">Direct or Indirect Threaded?</a>, Previous: <a href="Threading.html" accesskey="p" rel="prev">Threading</a>, Up: <a href="Threading.html" accesskey="u" rel="up">Threading</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Scheduling-1"></span><h4 class="subsection">15.2.1 Scheduling</h4>
-<span id="index-inner-interpreter-optimization"></span>
+<h4 class="subsection" id="Scheduling-1"><span>15.2.1 Scheduling<a class="copiable-link" href="#Scheduling-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-inner-interpreter-optimization"></a>
 
 <p>スケジューリングについては少々複雑です。 パイプライン・プロセッサとスーパースカラ・プロセッサ、 つまり RISC と一部の最新の CISC マシンは、
 ある命令の結果が出るのを待つ間に別の命令を処理できます。 通常、 コンパイラーは、
 これらの遅延スロットを有効に使用できるように命令を並べ替え(スケジューリング)します。 ただし、 我々の最初の挑戦では、
-コンパイラーはプリミティブのスケジューリングをうまく機能させられませんでした。 たとえば、 <code>+</code> は以下のように実装されます
+コンパイラーはプリミティブのスケジューリングをうまく機能させられませんでした。 たとえば、 <code class="code">+</code> は以下のように実装されます
 </p><div class="example">
-<pre class="example">n=sp[0]+sp[1];
+<pre class="example-preformatted">n=sp[0]+sp[1];
 sp++;
 sp[0]=n;
 NEXT;
 </pre></div>
-<p><code>NEXT</code> は厳密に他のコードの後に配置されます。 つまり、 スケジューリングはまずありえません。
-ちょっと考えると問題が明らかになってきます: コンパイラーは、 <code>sp</code> と <code>ip</code>
-が異なるアドレスを指していることを認識できないため(そして、 たとえ認識が可能だったとしても、  私たちが使用した <code>gcc</code>
+<p><code class="code">NEXT</code> は厳密に他のコードの後に配置されます。 つまり、 スケジューリングはまずありえません。
+ちょっと考えると問題が明らかになってきます: コンパイラーは、 <code class="code">sp</code> と <code class="code">ip</code>
+が異なるアドレスを指していることを認識できないため(そして、 たとえ認識が可能だったとしても、  私たちが使用した <code class="code">gcc</code>
 のバージョンはそれを知りません。)、 ストア上の cfa の負荷を TOS に移動できませんでした。 実際、
 スタックのTOSまたはTOS付近に対するコードが実行された場合、 これらのポインターは同一になる可能性があります。 速度を重視して、 私達は、 この、
-おそらく未使用の「認識機能」を禁止した上でコンパイラーのスケジューリングを支援します(<code>NEXT</code> を幾つかの部分、 すなわち、
-<code>NEXT_P0</code> と <code>NEXT_P1</code> と <code>NEXT_P2</code> に分割します): そうすると、 <code>+</code>
+おそらく未使用の「認識機能」を禁止した上でコンパイラーのスケジューリングを支援します(<code class="code">NEXT</code> を幾つかの部分、 すなわち、
+<code class="code">NEXT_P0</code> と <code class="code">NEXT_P1</code> と <code class="code">NEXT_P2</code> に分割します): そうすると、 <code class="code">+</code>
 は以下のようになります:
 </p><div class="example">
-<pre class="example">NEXT_P0;
+<pre class="example-preformatted">NEXT_P0;
 n=sp[0]+sp[1];
 sp++;
 NEXT_P1;

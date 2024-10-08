@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 6.8, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バージョン 0.7.9_20240418,
 April 18, 2024)用です。 これはリファレンス・マニュアルとして機能しますが、 Forth の概要と Forth
 チュートリアルも含まれています。
 
-Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright (C) 1995,
+Authors: Bernd Paysan, Anton Ertl, Gerald Wodni Copyright © 1995,
 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 2011, 2012, 2013, 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 Free
 Software Foundation, Inc.
@@ -39,21 +39,9 @@ Foundation raise funds for GNU development." -->
 <link href="Interpretation-and-Compilation-Semantics-and-Immediacy-Tutorial.html" rel="prev" title="Interpretation and Compilation Semantics and Immediacy Tutorial">
 <style type="text/css">
 <!--
-a.copiable-anchor {visibility: hidden; text-decoration: none; line-height: 0em}
-a.summary-letter {text-decoration: none}
-blockquote.indentedblock {margin-right: 0em}
-div.display {margin-left: 3.2em}
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 div.example {margin-left: 3.2em}
-kbd {font-style: oblique}
-pre.display {font-family: inherit}
-pre.format {font-family: inherit}
-pre.menu-comment {font-family: serif}
-pre.menu-preformatted {font-family: serif}
-span.nolinebreak {white-space: nowrap}
-span.roman {font-family: initial; font-weight: normal}
-span.sansserif {font-family: sans-serif; font-weight: normal}
-span:hover a.copiable-anchor {visibility: visible}
-ul.no-bullet {list-style: none}
+span:hover a.copiable-link {visibility: visible}
 -->
 </style>
 <link rel="stylesheet" type="text/css" href="gforth.css">
@@ -62,28 +50,28 @@ ul.no-bullet {list-style: none}
 </head>
 
 <body lang="en">
-<div class="section" id="Execution-Tokens-Tutorial">
-<div class="header">
+<div class="section-level-extent" id="Execution-Tokens-Tutorial">
+<div class="nav-panel">
 <p>
 Next: <a href="Exceptions-Tutorial.html" accesskey="n" rel="next">Exceptions</a>, Previous: <a href="Interpretation-and-Compilation-Semantics-and-Immediacy-Tutorial.html" accesskey="p" rel="prev">Interpretation and Compilation Semantics and Immediacy</a>, Up: <a href="Tutorial.html" accesskey="u" rel="up">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 <hr>
-<span id="Execution-Tokens"></span><h3 class="section">3.29 Execution Tokens</h3>
-<span id="index-execution-tokens-tutorial"></span>
-<span id="index-XT-tutorial"></span>
+<h3 class="section" id="Execution-Tokens"><span>3.29 Execution Tokens<a class="copiable-link" href="#Execution-Tokens"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-execution-tokens-tutorial"></a>
+<a class="index-entry-id" id="index-XT-tutorial"></a>
 
-<p><code>' word</code> は、 ワードの実行トークン(execution token)(XT)を提供します。 XT は、
-ワードのインタープリター機能(interpretation semantics)表すセルです。 これは <code>execute</code> で実行できます:
+<p><code class="code">' word</code> は、 ワードの実行トークン(execution token)(XT)を提供します。 XT は、
+ワードのインタープリター機能(interpretation semantics)表すセルです。 これは <code class="code">execute</code> で実行できます:
 </p>
 <div class="example">
-<pre class="example">' + .s
+<pre class="example-preformatted">' + .s
 1 2 rot execute .
 </pre></div>
 
 <p>XT は C の関数ポインターに似ています。 ただし、 パラメータがスタックで渡されるため、もう少し柔軟になります:
 </p>
 <div class="example">
-<pre class="example">: map-array ( ... addr u xt -- ... )
+<pre class="example-preformatted">: map-array ( ... addr u xt -- ... )
 \ addr で始まり u 個の要素を含む配列のすべての要素に対して
 \ xt ( ... x -- ... ) を実行します
   { xt }
@@ -102,31 +90,31 @@ a 5 ' min map-array . \ 最初の要素は、 environment? で取得した整数
 <p>生成するより消費する要素が 1 つ多いワードの XT に対して map-array を使用できます。 理論的には、他の XT でも使用できますが、
 スタック効果は配列のサイズに依存するため、理解するのが困難です。
 </p>
-<p>XT はセルサイズであるため、 メモリーに保存し、 他のセルと同様にスタック上で操作できます。 <code>compile,</code> を使用して XT
+<p>XT はセルサイズであるため、 メモリーに保存し、 他のセルと同様にスタック上で操作できます。 <code class="code">compile,</code> を使用して XT
 をワードにコンパイルすることもできます:
 </p>
 <div class="example">
-<pre class="example">: foo1 ( n1 n2 -- n )
+<pre class="example-preformatted">: foo1 ( n1 n2 -- n )
    [ ' + compile, ] ;
 see foo1
 </pre></div>
 
-<p><code>compile,</code> は標準ではコンパイル機能(compilation semantics)がないため、 上記は標準ではないけれども、 良い
+<p><code class="code">compile,</code> は標準ではコンパイル機能(compilation semantics)がないため、 上記は標準ではないけれども、 良い
 Forth システムでは動作します。 うまくいかなかったモノついては、 以下を使用してください
 </p>
 <div class="example">
-<pre class="example">: [compile,] compile, ; immediate
+<pre class="example-preformatted">: [compile,] compile, ; immediate
 
 : foo1 ( n1 n2 -- n )
    [ ' + ] [compile,] ;
 see foo1
 </pre></div>
 
-<p><code>'</code> は、 デフォルトでコンパイル機能(compilation semantics)を持つワードです。
+<p><code class="code">'</code> は、 デフォルトでコンパイル機能(compilation semantics)を持つワードです。
 そのワードのインタープリター機能(interpretation semantics)を実行すると、 その次のワードを構文解析(parse)します。
 </p>
 <div class="example">
-<pre class="example">: foo ( -- xt )
+<pre class="example-preformatted">: foo ( -- xt )
   ' ;
 see foo
 : bar ( ... &quot;word&quot; -- ... )
@@ -136,30 +124,35 @@ see bar
 </pre></div>
 
 <p>コンパイル中にワードを解析(parse)し、 その XT をコンパイルして、 実行時にスタックにプッシュされるようにしたいことがよくあります。
-<code>[']</code> はこれを行います:
+<code class="code">[']</code> はこれを行います:
 </p>
 <div class="example">
-<pre class="example">: xt-+ ( -- xt )
+<pre class="example-preformatted">: xt-+ ( -- xt )
   ['] + ;
 see xt-+
 1 2 xt-+ execute .
 </pre></div>
 
-<p>多くのプログラマーは、 <code>'</code> とそれが解析(parse)するワードを 1 つの単位として認識し、 コンパイル時に <code>[']</code>
-のように動作することを期待し、 実際の動作に混乱する傾向があります。 あなたがもしそうなら、 Forth システムは <code>'</code> を 1
+<p>多くのプログラマーは、 <code class="code">'</code> とそれが解析(parse)するワードを 1 つの単位として認識し、 コンパイル時に <code class="code">[']</code>
+のように動作することを期待し、 実際の動作に混乱する傾向があります。 あなたがもしそうなら、 Forth システムは <code class="code">'</code> を 1
 つの単位として捉えているだけであり、
 それが解析(parse)ワードであるとはまったく考えていないことを覚えておいてください(この問題でプログラマーの便宜を図る試みは、 通常、
 さらにひどい落とし穴につながります。
-<a href="https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz"><code>State</code>-smartness&mdash;Why it is evil and How to Exorcise it</a>)。
+<a class="uref" href="https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz"><code class="code">State</code>-smartness&mdash;Why it is evil and How to Exorcise it</a>)。
 </p>
-<p>XT の作成および実行は、 インタープリターの状態には影響を受けないことに注意してください。 つまり、 コンパイル状態で <code>'</code>
+<p>XT の作成および実行は、 インタープリターの状態には影響を受けないことに注意してください。 つまり、 コンパイル状態で <code class="code">'</code>
 を実行した場合でも、 インタープリター機能(interpretation semantics)が得られます。 そして、 そこでの状態が何であれ、
-<code>execute</code> は XT によって表されるコード(つまり、<code>'</code> で生成された XT
+<code class="code">execute</code> は XT によって表されるコード(つまり、<code class="code">'</code> で生成された XT
 の場合はインタープリター機能(interpretation semantics))を実行します。
 </p>
-<p>こちらも参照ください: <a href="Tokens-for-Words.html">Tokens for Words</a>
+<p>こちらも参照ください: <a class="ref" href="Tokens-for-Words.html">Tokens for Words</a>
 </p>
 
+</div>
+<hr>
+<div class="nav-panel">
+<p>
+Next: <a href="Exceptions-Tutorial.html">Exceptions</a>, Previous: <a href="Interpretation-and-Compilation-Semantics-and-Immediacy-Tutorial.html">Interpretation and Compilation Semantics and Immediacy</a>, Up: <a href="Tutorial.html">Forth Tutorial</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Word-Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
