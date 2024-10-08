@@ -11,7 +11,7 @@ fi
 cd ${PROJ}/doc-ja
 
 for no_translate_file in Makefile Makefile.in fdl.texi gpl.texi version.texi gforth.css gforth.js ; do
-    cp -n ../doc/${no_translate_file} .
+    cp --update=none ../doc/${no_translate_file} .
 done
 
 # 2024.05.08
