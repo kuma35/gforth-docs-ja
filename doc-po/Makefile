@@ -1,9 +1,13 @@
-
+LANG_CODE = ja
 SRC_DIR = ../doc
 TEXI_EXT = .texi
+POT_DIR = ./pot
 PO_DIR = .
 PO_EXT = .po
 DST_DIR = ../doc-ja
+PO4A = po4a
+PO4A_CFG_DIR = ./po4a-cfg
+PO4A_CFG_EXT = .cfg
 IGNORE = version.texi fdl.texi gpl.texi
 
 # 2024/05/09
@@ -12,21 +16,37 @@ SRC_PACKAGE = $(filter-out $(IGNORE),$(notdir $(wildcard $(SRC_DIR)/*$(TEXI_EXT)
 
 SRC_FILES = $(addprefix $(SRC_DIR)/,$(SRC_PACKAGE))
 
-# $(warning SRC_FILES = $(SRC_FILES))
+$(warning SRC_FILES = $(SRC_FILES))
 
-PO_FILES = $(addprefix $(PO_DIR)/,$(SRC_PACKAGE:$(TEXI_EXT)=$(PO_EXT)))
+PO4A_CFG_FILES = $(addprefix $(PO4A_CFG_DIR)/,$(addsuffix $(PO4A_CFG_EXT),$(SRC_PACKAGE)))
 
-# $(warning PO_FILES = $(PO_FILES))
+$(warning PO4A_CFG_FILES = $(PO4A_CFG_FILES))
+
+# PO_FILES = $(addprefix $(PO_DIR)/,$(SRC_PACKAGE:$(TEXI_EXT)=$(PO_EXT)))
+PO_FILES = $(addprefix $(PO_DIR)/,$(addsuffix $(PO_EXT),$(SRC_PACKAGE)))
+
+$(warning PO_FILES = $(PO_FILES))
 
 DST_FILES = $(addprefix $(DST_DIR)/,$(SRC_PACKAGE))
 
-# $(warning DST_FILES = $(DST_FILES))
+$(warning DST_FILES = $(DST_FILES))
 
-$(PO_FILES): $(PO_DIR)/%$(PO_EXT) : $(SRC_DIR)/%$(TEXI_EXT)
-	po4a-updatepo --format texinfo --master-charset utf8 --master $< --po $@
+# $(error "debug stop")
 
-$(DST_FILES): $(DST_DIR)/%$(TEXI_EXT) : $(PO_DIR)/%$(PO_EXT)
-	po4a-translate --format texinfo --master-charset utf8 --keep 0 --master $(subst $(DST_DIR),$(SRC_DIR),$(@:$(PO_EXT)=$(TEXI_EXT))) --po $< --localized $@
+$(PO4A_CFG_FILES): $(PO4A_CFG_DIR)/%$(PO4A_CFG_EXT) : $(SRC_DIR)/%$(SRC_EXT)
+	bash mk-po4a-cfg.sh $< $(POT_DIR) $(LANG_CODE) $(PO_DIR) $(addprefix $(DST_DIR)/,$(notdir $<)) > $@
+	cat $@
+
+$(PO_FILES): $(PO_DIR)/%$(PO_EXT) : $(SRC_DIR)/%$(SRC_EXT) $(PO4A_CFG_FILES)
+	# po4a-updatepo -M utf8 -f texinfo -m $< -p $@
+	# po4a-updatepo --master-charset utf8 --format texinfo --master $< --po $@
+	po4a --verbose --no-translations --keep 0 --master-charset UTF-8 $(addprefix $(PO4A_CFG_DIR)/,$(notdir $($<:$(PO_EXT)=$(PO4A_CFG_EXT))))
+
+
+$(DST_FILES): $(DST_DIR)/%$(TEXI_EXT) : $(PO_DIR)/%$(PO_EXT) $(PO4A_CFG_FILES)
+	# po4a-translate -f texinfo -keep 0 -M utf8 -m $(subst $(DST_DIR),$(SRC_DIR),$(@:$(PO_EXT)=$(TEXI_EXT))) -p $< -l $@
+	# po4a-translate --format texinfo --keep 0 --master-charset utf8 --master $(subst $(DST_DIR),$(SRC_DIR),$(@:$(PO_EXT)=$(TEXI_EXT))) --po $< --localized $@
+	po4a --verbose --no-update --keep 0 --master-charset UTF-8 $(addprefix $(PO4A_CFG_DIR)/,$(addsuffix $(PO4A_CFG_EXT),$(notdir $@)))
 
 
 # doc/Makefile に 追加した場合に反映させる。
