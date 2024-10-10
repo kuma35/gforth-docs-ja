@@ -1,4 +1,4 @@
-This is gforth.info, produced by makeinfo version 6.8 from gforth.texi.
+This is gforth.info, produced by makeinfo version 7.1 from gforth.texi.
 
 このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バ
 ージョン 0.7.9_20240418, April 18, 2024)用です。 これはリファレンス・マ
@@ -14,13 +14,13 @@ Software Foundation, Inc.
      document under the terms of the GNU Free Documentation License,
      Version 1.1 or any later version published by the Free Software
      Foundation; with no Invariant Sections, with the Front-Cover texts
-     being “A GNU Manual,” and with the Back-Cover Texts as in (a)
+     being "A GNU Manual," and with the Back-Cover Texts as in (a)
      below.  A copy of the license is included in the section entitled
-     “GNU Free Documentation License.”
+     "GNU Free Documentation License."
 
-     (a) The FSF’s Back-Cover Text is: “You have freedom to copy and
+     (a) The FSF's Back-Cover Text is: "You have freedom to copy and
      modify this GNU Manual, like GNU software.  Copies published by the
-     Free Software Foundation raise funds for GNU development.”
+     Free Software Foundation raise funds for GNU development."
 INFO-DIR-SECTION Software development
 START-INFO-DIR-ENTRY
 * Gforth: (gforth).          forth言語のための高速インタープリター
@@ -51,158 +51,158 @@ representation)があります。 文字列変数に対して $tring ワード�
 が、 これは c-addr u 表現では面倒です。 セルペア表現は、 文字列を変更し
 ないで処理(検査など)するために使用します。
 
-‘$!’ ( addr1 u $addr –  ) gforth-0.7 “string-store”
+‘$!’ ( addr1 u $addr -  ) gforth-0.7 "string-store"
    文字列 addr1 u を、 新しく割り当てられた文字列バッファーに格納し、 そ
 の文字列バッファーのアドレスを $addr に格納します。 必要に応じて以前のバ
 ッファーを解放します。
 
-‘$@’ ( $addr – addr2 u  ) gforth-0.7 “string-fetch”
+‘$@’ ( $addr - addr2 u  ) gforth-0.7 "string-fetch"
    格納された文字列のアドレスと長さを返します。
 
-‘$@len’ ( $addr – u  ) gforth-0.7 “string-fetch-len”
+‘$@len’ ( $addr - u  ) gforth-0.7 "string-fetch-len"
    格納されている文字列の長さを返します。
 
-‘$!len’ ( u $addr –  ) gforth-0.7 “string-store-len”
+‘$!len’ ( u $addr -  ) gforth-0.7 "string-store-len"
    格納されている文字列(string)領域の長さを変更します(足し算ではない。 長
 さを直にいじる) それゆえ、メモリー領域を変更し、 アドレスとカウンタ・セ
 ルも調整(adjust)する必要があります(訳注: 元の長さより長くした場合、 領域
 を拡張するだけで初期化はしない。 そこにはゴミが入っているので自分で初期
 化する必要がある)
 
-‘$+!len’ ( u $addr – addr  ) gforth-1.0 “string-plus-store-len”
+‘$+!len’ ( u $addr - addr  ) gforth-1.0 "string-plus-store-len"
    $addr によって参照されるメモリー領域の最後に u バイト用の空間を確保し
 ます(追加。確保するだけで初期化はしない。 $addr の「長さ」に追加もする
 )。 addr は、 確保した空間の最初のアドレスです。
 
-‘$del’ ( addr off u –  ) gforth-0.7 “string-del”
+‘$del’ ( addr off u -  ) gforth-0.7 "string-del"
    文字列のオフセット位置 OFF から U バイト削除します。
 
-‘$ins’ ( addr1 u $addr off –  ) gforth-0.7 “string-ins”
+‘$ins’ ( addr1 u $addr off -  ) gforth-0.7 "string-ins"
    オフセット位置 OFF に文字列を挿入します。
 
-‘$+!’ ( addr1 u $addr –  ) gforth-0.7 “string-plus-store”
+‘$+!’ ( addr1 u $addr -  ) gforth-0.7 "string-plus-store"
    文字列(addr1 u)を別の文字列($addr)に追加します。
 
-‘c$+!’ ( char $addr –  ) gforth-1.0 “c-string-plus-store”
+‘c$+!’ ( char $addr -  ) gforth-1.0 "c-string-plus-store"
    文字列に文字を追加します。
 
-‘$free’ ( $addr –  ) gforth-1.0 “string-free”
+‘$free’ ( $addr -  ) gforth-1.0 "string-free"
    $addr が指す文字列を解放し、 $addr のポインターを 0 にします( $@ する
 と 0 0 を返す)
 
-‘$init’ ( $addr –  ) gforth-1.0 “string-init”
+‘$init’ ( $addr -  ) gforth-1.0 "string-init"
    以前に何があったかに関係なく、そこに空の文字列を保存します(訳注: ポイ
 ンターを 0 にする訳ではなくて、 ポインターの指す先に長さゼロの文字列があ
 る)
 
-‘$split’ ( addr u char – addr1 u1 addr2 u2  ) gforth-0.7 “string-split”
+‘$split’ ( addr u char - addr1 u1 addr2 u2  ) gforth-0.7 "string-split"
    文字列中で最初に現れる char を区切り文字として文字列を 2 つに分割しま
-す(例: HTML クエリの引数の ’?’)(訳注: 区切り文字 char 自体は分割後の文字
+す(例: HTML クエリの引数の '?')(訳注: 区切り文字 char 自体は分割後の文字
 列に含まれない)
 
-‘$iter’ ( .. $addr char xt – ..  ) gforth-0.7 “string-iter”
+‘$iter’ ( .. $addr char xt - ..  ) gforth-0.7 "string-iter"
    区切り文字 char で切り出した部分文字列(addr u)ごとに xt を呼び出しま
-す。 xt は (addr u – ) でなければなりません。 これにより、 例えば ’&’ で
-区切られた引数を簡単に分解できます(訳注: : my-type ( addr u – ) ."  ["
+す。 xt は (addr u - ) でなければなりません。 これにより、 例えば '&' で
+区切られた引数を簡単に分解できます(訳注: : my-type ( addr u - ) ."  ["
 type ."  ]"  ; variable title s" GNU gforth manual" title $!  title
-$ my-type [GNU gforth manual] title bl ’ my-type $iter
+$ my-type [GNU gforth manual] title bl ' my-type $iter
 [GNU][gforth][manual] ok)。
 
-‘$over’ ( addr u $addr off –  ) gforth-1.0 “string-over”
+‘$over’ ( addr u $addr off -  ) gforth-1.0 "string-over"
    $addr の文字列のオフセット位置 off から文字列(addr u)で上書きします。
 
-‘$exec’ ( xt addr –  ) gforth-1.0 “string-exec”
+‘$exec’ ( xt addr -  ) gforth-1.0 "string-exec"
    実行トークン xt を実行し、 その標準出力(TYPE や EMIT やそれらを使用す
 るすべてのもの)を addr が指す文字列の末尾に「追加」します。
 
-‘$tmp’ ( xt – addr u  ) gforth-1.0 “string-t-m-p”
+‘$tmp’ ( xt - addr u  ) gforth-1.0 "string-t-m-p"
    ワードの出力から一時的な文字列を生成します
 
-‘$.’ ( addr –  ) gforth-1.0 “string-dot”
+‘$.’ ( addr -  ) gforth-1.0 "string-dot"
    文字列を出力する、 ショートカット( $ TYPE → $.  )
 
-‘$slurp’ ( fid addr –  ) gforth-1.0 “string-slurp”
+‘$slurp’ ( fid addr -  ) gforth-1.0 "string-slurp"
    (slurp;音を立ててすする)ファイル fid を最後まで読み取り(ファイルのク
 ローズは行いません)、 読み取ったデータを addr の指す文字列に入れます。
 
-‘$slurp-file’ ( c-addr u addr –  ) gforth-1.0 “string-slurp-file”
+‘$slurp-file’ ( c-addr u addr -  ) gforth-1.0 "string-slurp-file"
    c-addr u という名前のファイル内のすべてのデータを addr の文字列に入力
 します。
 
-‘$+slurp’ ( fid addr –  ) gforth-1.0 “string-plus-slurp”
+‘$+slurp’ ( fid addr -  ) gforth-1.0 "string-plus-slurp"
    ファイル fid を最後まで読み取り(但しクローズはしません)、 読み取った
 データを addr の文字列に「追加」します。
 
-‘$+slurp-file’ ( c-addr u addr –  ) gforth-1.0 “string-plus+slurp-file”
+‘$+slurp-file’ ( c-addr u addr -  ) gforth-1.0 "string-plus+slurp-file"
    c-addr u という名前のファイル内のすべてのデータを addr の文字列に「追
 加」します。
 
-‘$[]’ ( u $[]addr – addr’  ) gforth-1.0 “string-array”
-   addr’ は、 文字列配列 $[]addr の u 番目の要素のアドレスです。 配列の
+‘$[]’ ( u $[]addr - addr'  ) gforth-1.0 "string-array"
+   addr' は、 文字列配列 $[]addr の u 番目の要素のアドレスです。 配列の
 サイズは必要に応じて変更されます。
 
-‘$[]!’ ( c-addr u n $[]addr –  ) gforth-1.0 “string-array-store”
+‘$[]!’ ( c-addr u n $[]addr -  ) gforth-1.0 "string-array-store"
    文字列 c-addr u を文字列配列 $[]addr のインデックス n に格納します。
 必要に応じて配列のサイズが変更されます。
 
-‘$[]+!’ ( c-addr u n $[]addr –  ) gforth-1.0 “string-array-plus-store”
+‘$[]+!’ ( c-addr u n $[]addr -  ) gforth-1.0 "string-array-plus-store"
    文字列 c-addr u をインデックス n の文字列に「追加」します。 必要に応
 じて配列のサイズが変更されます。 これを ‘$+[]!’ と混同しないでください。
 
-‘$+[]!’ ( c-addr u $[]addr –  ) gforth-1.0 “string-append-array”
+‘$+[]!’ ( c-addr u $[]addr -  ) gforth-1.0 "string-append-array"
    文字列 c-addr u を文字列配列 $[]addr の新しい最後の要素として保存しま
 す(つまり要素が1つ増える)。 必要に応じて配列のサイズが変更されます。
 
-‘$[]@’ ( n $[]addr – addr u  ) gforth-1.0 “string-array-fetch”
-   配列インデックス n から文字列を取得します — 空の場合はゼロ文字列( 0 0
-)を返し、 誤って配列が成長しないようにします(訳注:要素はあるけど空文字列
-(長さ0)の場合と、範囲外の要素を指した場合の区別は付かないので注意)
+‘$[]@’ ( n $[]addr - addr u  ) gforth-1.0 "string-array-fetch"
+   配列インデックス n から文字列を取得します -- 空の場合はゼロ文字列( 0
+0 )を返し、 誤って配列が成長しないようにします(訳注:要素はあるけど空文字
+列(長さ0)の場合と、範囲外の要素を指した場合の区別は付かないので注意)
 
-‘$[]#’ ( addr – len  ) gforth-1.0 “string-array-num”
+‘$[]#’ ( addr - len  ) gforth-1.0 "string-array-num"
    配列内の要素の数を返します
 
-‘$[]map’ ( addr xt –  ) gforth-1.0 “string-array-map”
+‘$[]map’ ( addr xt -  ) gforth-1.0 "string-array-map"
    文字列配列 ADDR のすべての要素に対して 実行トークン XT を実行します。
-xt は ( ADDR U – ) で、一度に 1 つの文字列を取得します
+xt は ( ADDR U - ) で、一度に 1 つの文字列を取得します
 
-‘$[]slurp’ ( fid addr –  ) gforth-1.0 “string-array-slurp”
+‘$[]slurp’ ( fid addr -  ) gforth-1.0 "string-array-slurp"
    ファイル FID の内容を 1 行ずつ文字列配列 ADDR に入れます
 
-‘$[]slurp-file’ ( addr u $addr –  ) gforth-1.0 “string-array-slurp-file”
+‘$[]slurp-file’ ( addr u $addr -  ) gforth-1.0 "string-array-slurp-file"
    名前付きファイル ADDR U を 1 行ずつ文字列配列 $ADDR に入れます。
 
-‘$[].’ ( addr –  ) gforth-1.0 “string-array-dot”
+‘$[].’ ( addr -  ) gforth-1.0 "string-array-dot"
    すべての配列エントリを出力します
 
-‘$[]free’ ( addr –  ) gforth-1.0 “string-array-free”
+‘$[]free’ ( addr -  ) gforth-1.0 "string-array-free"
    addr は沢山のセルカウント文字列(string)へのアドレス達を含む、 セル・
 カウント文字列(string)へのアドレスで、 $[]free はこれらの文字列を解放、
 つまり、 この配列を開放し、 addr の値を 0 にセットします。
 
-‘$save’ ( $addr –  ) gforth-1.0 “string-save”
+‘$save’ ( $addr -  ) gforth-1.0 "string-save"
    savesys のディクショナリーに文字列(string)をプッシュします
 
-‘$[]save’ ( addr –  ) gforth-1.0 “string-array-save”
+‘$[]save’ ( addr -  ) gforth-1.0 "string-array-save"
    文字列配列を savesys のディクショナリーにプッシュ
 
-‘$boot’ ( $addr –  ) gforth-1.0 “string-boot”
+‘$boot’ ( $addr -  ) gforth-1.0 "string-boot"
    ディクショナリーから文字列を新しく割り当てたメモリーに取り込みます。
 その後、 ディクショナリーのその文字列の領域を(0で)クリアします(長さはそ
 のまま)。
 
-‘$[]boot’ ( addr –  ) gforth-1.0 “string-array-boot”
+‘$[]boot’ ( addr -  ) gforth-1.0 "string-array-boot"
    ディクショナリーから、 文字列配列を割り当てられたメモリーに取得します
 
-‘$saved’ ( addr –  ) gforth-1.0 “string-saved”
+‘$saved’ ( addr -  ) gforth-1.0 "string-saved"
    アドレスを ブート済み(booted)/保存済み(saved) としてマークする
 
-‘$[]saved’ ( addr –  ) gforth-1.0 “string-array-saved”
+‘$[]saved’ ( addr -  ) gforth-1.0 "string-array-saved"
    アドレスを ブート済み(booted)/保存済み(saved) としてマークする
 
-‘$Variable’ ( –  ) gforth-1.0 “string-variable”
+‘$Variable’ ( -  ) gforth-1.0 "string-variable"
    savesystem 全体にわたって保存される文字列変数。
 
-‘$[]Variable’ ( –  ) gforth-1.0 “string-array-variable”
+‘$[]Variable’ ( -  ) gforth-1.0 "string-array-variable"
    savesystem 全体にわたって保存される文字列変数。
 
 
@@ -218,7 +218,7 @@ File: gforth.info,  Node: Counted string words,  Prev: ＄tring words,  Up: Stri
 でも、 カウンタ付文字列を処理する必要がある場合、 以下のようなワード群が
 あります:
 
-‘count’ ( c-addr1 – c-addr2 u ) core “count”
+‘count’ ( c-addr1 - c-addr2 u ) core "count"
    c-addr2 は最初の文字で、 u は c-addr1 のカウンタ付文字列の、 長さです
 。
 
@@ -227,15 +227,15 @@ File: gforth.info,  Node: Counted string words,  Prev: ＄tring words,  Up: Stri
 プリタ用コードがないため、 コロン定義内でのみ使用する必要があります(コロ
 ン定義がある場合):
 
-‘C"’ ( compilation "ccc<quote>" – ; run-time  – c-addr  ) core-ext “c-quote”
+‘C"’ ( compilation "ccc<quote>" - ; run-time  - c-addr  ) core-ext "c-quote"
    コンパイル状態: ‘"’ (二重引用符) を区切り文字として文字列 ccc をパー
 スします。 その実行時コードは、 指定のカウンタ付文字列 ccc のアドレスを
 c-addr として返します。 インタープリター機能は未定義です。
 
-   ( gforth-obsolete ) ‘place’ ( c-addr1 u c-addr2 –) \ C-ADDR2 に長さ U
+   ( gforth-obsolete ) ‘place’ ( c-addr1 u c-addr2 -) \ C-ADDR2 に長さ U
 のカウンタ付き文字列を作成し、 文字列 C-ADDR1 U をその場所にコピーします
 。
-‘string,’ ( c-addr u –  ) gforth-0.2 “string,”
+‘string,’ ( c-addr u -  ) gforth-0.2 "string,"
    文字列をカウンタ付き文字列として(here以降の)データ空間に書き込みます
 。
 
@@ -298,7 +298,7 @@ File: gforth.info,  Node: Selection,  Next: Simple Loops,  Prev: Control Structu
 を提供するシステムに ‘ENDIF’ を追加するのは以下のように簡単です:
      : ENDIF   POSTPONE then ; immediate
 
-   [‘Webster’s New Encyclopedic Dictionary’ によると、“then (副詞)” には
+   [‘Webster's New Encyclopedic Dictionary’ によると、“then (副詞)” には
 以下の意味があります:
      ...  2b: 順番に次の後に続く ...  3d: 必然的な結果として (if you
      were there, then you saw them)
@@ -563,94 +563,94 @@ File: gforth.info,  Node: Counted Loops,  Next: BEGIN loops with multiple exits,
 
    カウント・ループ・ワード群:
 
-‘?DO’ ( compilation – do-sys ; run-time w1 w2 – | loop-sys  ) core-ext “question-do”
+‘?DO’ ( compilation - do-sys ; run-time w1 w2 - | loop-sys  ) core-ext "question-do"
    *Note Counted Loops::.
 
-‘+DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “plus-do”
+‘+DO’ ( compilation - do-sys ; run-time n1 n2 - | loop-sys  ) gforth-0.2 "plus-do"
    *Note Counted Loops::.
 
-‘U+DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-plus-do”
+‘U+DO’ ( compilation - do-sys ; run-time u1 u2 - | loop-sys  ) gforth-0.2 "u-plus-do"
    *Note Counted Loops::.
 
-‘bounds’ ( addr u – addr+u addr ) gforth-0.2 “bounds”
+‘bounds’ ( addr u - addr+u addr ) gforth-0.2 "bounds"
    開始アドレス addr と長さ u で表されるメモリー・ブロックを指定すると、
 ‘u+do’ または ‘?do’ の終了アドレス addr+u と開始アドレス addr を正しい順
 序で生成します。
 
-‘-[do’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-experimental “minus-bracket-do”
+‘-[do’ ( compilation - do-sys ; run-time n1 n2 - | loop-sys  ) gforth-experimental "minus-bracket-do"
    負の方向へカウントされるループを開始します。 n2<n1 の場合、 ループを
 スキップします。 このようなカウント・ループは、 増分が負である ‘+loop’ と
 対になります。 ‘I’>=n1 である限り実行されます。
 
-‘u-[do’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-experimental “u-minus-bracket-do”
+‘u-[do’ ( compilation - do-sys ; run-time u1 u2 - | loop-sys  ) gforth-experimental "u-minus-bracket-do"
    負の方向へカウントするループを開始します。 u2<u1 の場合、ループをスキ
 ップします。 このようなカウント・ループは、 増分が負の ‘+loop’ と対にな
 ります。 ‘I’>=u1 である限り実行されます。
 
-‘-DO’ ( compilation – do-sys ; run-time n1 n2 – | loop-sys  ) gforth-0.2 “minus-do”
+‘-DO’ ( compilation - do-sys ; run-time n1 n2 - | loop-sys  ) gforth-0.2 "minus-do"
    *Note Counted Loops::.
 
-‘U-DO’ ( compilation – do-sys ; run-time u1 u2 – | loop-sys  ) gforth-0.2 “u-minus-do”
+‘U-DO’ ( compilation - do-sys ; run-time u1 u2 - | loop-sys  ) gforth-0.2 "u-minus-do"
    *Note Counted Loops::.
 
-   ‘array>mem’ ( uelements uelemsize – ubytes uelemsize) \ ubytes は
+   ‘array>mem’ ( uelements uelemsize - ubytes uelemsize) \ ubytes は
 uelements * uelementsize です
-‘mem+do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-plus-do”
+‘mem+do’ ( compilation - w xt do-sys; run-time addr ubytes +nstride -  ) gforth-experimental "mem-plus-do"
    ‘I’ を addr から開始し、 ‘I’<addr+ubytes である限り、 nstride 幅のス
 テップでメモリー内をアドレスが増える方向にカウント・アップするカウント・
 ループを開始します。 loop と対にする必要があります。
 
-‘mem-do’ ( compilation – w xt do-sys; run-time addr ubytes +nstride –  ) gforth-experimental “mem-minus-do”
+‘mem-do’ ( compilation - w xt do-sys; run-time addr ubytes +nstride -  ) gforth-experimental "mem-minus-do"
    ‘I’ を addr+ubytes-ustride として開始し、 ‘I’>=addr である間 -nstride
 幅のステップでメモリーをアドレス下位方向(backward)にステップするカウント
 ・ループを開始します。 loop と対にしなければなりません。
 
-‘DO’ ( compilation – do-sys ; run-time w1 w2 – loop-sys  ) core “DO”
+‘DO’ ( compilation - do-sys ; run-time w1 w2 - loop-sys  ) core "DO"
    *Note Counted Loops::.
 
-‘FOR’ ( compilation – do-sys ; run-time u – loop-sys  ) gforth-0.2 “FOR”
+‘FOR’ ( compilation - do-sys ; run-time u - loop-sys  ) gforth-0.2 "FOR"
    *Note Counted Loops::.
 
-‘LOOP’ ( compilation do-sys – ; run-time loop-sys1 – | loop-sys2  ) core “LOOP”
+‘LOOP’ ( compilation do-sys - ; run-time loop-sys1 - | loop-sys2  ) core "LOOP"
    *Note Counted Loops::.
 
-‘+LOOP’ ( compilation do-sys – ; run-time loop-sys1 n – | loop-sys2  ) core “plus-loop”
+‘+LOOP’ ( compilation do-sys - ; run-time loop-sys1 n - | loop-sys2  ) core "plus-loop"
    *Note Counted Loops::.
 
-‘-LOOP’ ( compilation do-sys – ; run-time loop-sys1 u – | loop-sys2  ) gforth-0.2 “minus-loop”
+‘-LOOP’ ( compilation do-sys - ; run-time loop-sys1 u - | loop-sys2  ) gforth-0.2 "minus-loop"
    *Note Counted Loops::.
 
-‘NEXT’ ( compilation do-sys – ; run-time loop-sys1 – | loop-sys2  ) gforth-0.2 “NEXT”
+‘NEXT’ ( compilation do-sys - ; run-time loop-sys1 - | loop-sys2  ) gforth-0.2 "NEXT"
    *Note Counted Loops::.
 
-‘i’ ( R:n – R:n n ) core “i”
+‘i’ ( R:n - R:n n ) core "i"
    n は、最も内側のカウント・ループのインデックスです。
 
-‘j’ ( R:n R:w1 R:w2 – n R:n R:w1 R:w2 ) core “j”
+‘j’ ( R:n R:w1 R:w2 - n R:n R:w1 R:w2 ) core "j"
    n は、 最も内側から数えて 2 番目のカウント・ループのインデックスです
 。
 
-‘k’ ( R:n R:w1 R:w2 R:w3 R:w4 – n R:n R:w1 R:w2 R:w3 R:w4 ) gforth-0.3 “k”
+‘k’ ( R:n R:w1 R:w2 R:w3 R:w4 - n R:n R:w1 R:w2 R:w3 R:w4 ) gforth-0.3 "k"
    n は、 最も内側から数えて3番目のカウント・ループのインデックスです。
 
-‘i'’ ( R:w R:w2 – R:w R:w2 w ) gforth-0.2 “i-tick”
+‘i'’ ( R:w R:w2 - R:w R:w2 w ) gforth-0.2 "i-tick"
    最も内側のカウント・ループの limit
 
-‘delta-i’ ( r:ulimit r:u – r:ulimit r:u u2 ) gforth-1.0 “delta-i”
+‘delta-i’ ( r:ulimit r:u - r:ulimit r:u u2 ) gforth-1.0 "delta-i"
    u2=‘I'’-‘I’ (limit とインデックスの差)
 
-‘LEAVE’ ( compilation – ; run-time loop-sys –  ) core “LEAVE”
+‘LEAVE’ ( compilation - ; run-time loop-sys -  ) core "LEAVE"
 \ 訳注: ‘LEAVE’ は、 最も内側のカウンタ付きループを抜け出します。
 \       それが関係する ‘LOOP’ または ‘NEXT’ の直後から実行を続行します。
    *Note Counted Loops::.
 
-‘?LEAVE’ ( compilation – ; run-time f | f loop-sys –  ) gforth-0.2 “question-leave”
+‘?LEAVE’ ( compilation - ; run-time f | f loop-sys -  ) gforth-0.2 "question-leave"
 \訳注: f が true なら LEAVE します。
    *Note Counted Loops::.
 
-‘unloop’ ( R:w1 R:w2 – ) core “unloop”
+‘unloop’ ( R:w1 R:w2 - ) core "unloop"
 
-‘DONE’ ( compilation do-sys – ; run-time –  ) gforth-0.2 “DONE”
+‘DONE’ ( compilation do-sys - ; run-time -  ) gforth-0.2 "DONE"
    do-sys までのすべての LEAVE を解決します(訳注: loop, +loop , next 等
 の中で内部的に呼び出されます)。
 
@@ -821,38 +821,38 @@ File: gforth.info,  Node: Arbitrary control structures,  Next: Calls and returns
 めの基礎となります(呼び出しやコルーチンやバックトラッキングのような、 ス
 トレージを必要とする制御構造を除く)。
 
-‘IF’ ( compilation – orig ; run-time f –  ) core “IF”
+‘IF’ ( compilation - orig ; run-time f -  ) core "IF"
    実行時(run-time)、 f=0 の場合、 (コンパイル時に) orig を消費する
 ‘THEN’ (または ‘ELSE’) の後から実行が続行されます。 それ以外の場合は、
 ‘IF’ の直後に続きます(*note Selection::)。
 
-‘AHEAD’ ( compilation – orig ; run-time –  ) tools-ext “AHEAD”
+‘AHEAD’ ( compilation - orig ; run-time -  ) tools-ext "AHEAD"
    実行時、 (コンパイル時に) orig を消費する ‘THEN’ の後から実行が続行さ
 れます(訳注: つまり、 単純に ‘THEN’ へジャンプする)。
 
-‘THEN’ ( compilation orig – ; run-time –  ) core “THEN”
+‘THEN’ ( compilation orig - ; run-time -  ) core "THEN"
    (コンパイル時に) orig をプッシュした ‘IF’ または ‘AHEAD’ または
 ‘ELSE’ または ‘WHILE’ は、 ‘THEN’ の直後にジャンプします(*note
 Selection::)。
 
-‘BEGIN’ ( compilation – dest ; run-time –  ) core “BEGIN”
+‘BEGIN’ ( compilation - dest ; run-time -  ) core "BEGIN"
    (コンパイル時に) dest を消費する ‘UNTIL’ または ‘AGAIN’ または
 ‘REPEAT’ は、 ‘BEGIN’ の直後へジャンプします(*note Simple Loops::)。
 
-‘UNTIL’ ( compilation dest – ; run-time f –  ) core “UNTIL”
+‘UNTIL’ ( compilation dest - ; run-time f -  ) core "UNTIL"
    実行時、 f=0 の場合、 (コンパイル時に) dest をプッシュした ‘BEGIN’ の
 直後から実行が続行されます。 それ以外の場合は、 ‘UNTIL’の直後から実行が
 続行されます(*note Simple Loops::)。
 
-‘AGAIN’ ( compilation dest – ; run-time –  ) core-ext “AGAIN”
+‘AGAIN’ ( compilation dest - ; run-time -  ) core-ext "AGAIN"
    実行時、 (コンパイル時に) dest をプッシュした ‘BEGIN’ の直後から実行
 が続行されます(*note Simple Loops::)。
 
-‘CS-PICK’ ( orig0/dest0 orig1/dest1 ... origu/destu u – ... orig0/dest0  ) tools-ext “c-s-pick”
+‘CS-PICK’ ( orig0/dest0 orig1/dest1 ... origu/destu u - ... orig0/dest0  ) tools-ext "c-s-pick"
 
-‘CS-ROLL’ ( destu/origu .. dest0/orig0 u – .. dest0/orig0 destu/origu  ) tools-ext “c-s-roll”
+‘CS-ROLL’ ( destu/origu .. dest0/orig0 u - .. dest0/orig0 destu/origu  ) tools-ext "c-s-roll"
 
-‘CS-DROP’ ( dest –  ) gforth-1.0 “CS-DROP”
+‘CS-DROP’ ( dest -  ) gforth-1.0 "CS-DROP"
 
    標準ワードの ‘CS-PICK’ や ‘CS-ROLL’ を使用すると、 移植可能な方法で制
 御フロー・スタックを操作できます。 これら無しだと制御フロー・エントリが
@@ -866,17 +866,17 @@ Selection::)。
 
    一部の標準の制御構造ワードは、 以下のワード群から構築されます:
 
-‘ELSE’ ( compilation orig1 – orig2 ; run-time –  ) core “ELSE”
+‘ELSE’ ( compilation orig1 - orig2 ; run-time -  ) core "ELSE"
    実行時、 (コンパイル時に) orig を消費する ‘THEN’ の直後から実行が続行
 されます。 orig1 をプッシュした ‘IF’ または ‘AHEAD’ または ‘ELSE’ または
 ‘WHILE’ は、 ‘ELSE’ の直後にジャンプします(*note Selection::)。
 
-‘WHILE’ ( compilation dest – orig dest ; run-time f –  ) core “WHILE”
+‘WHILE’ ( compilation dest - orig dest ; run-time f -  ) core "WHILE"
    実行時、 f=0 の場合、 (コンパイル時の) orig を消費する ‘REPEAT’ (また
 は ‘THEN’ または ‘ELSE’) の直後から実行が継続されます。 それ以外の場合は
 、 ‘WHILE’ の直後から実行されます(*note Simple Loops::)。
 
-‘REPEAT’ ( compilation orig dest – ; run-time –  ) core “REPEAT”
+‘REPEAT’ ( compilation orig dest - ; run-time -  ) core "REPEAT"
    実行時、 (コンパイル時に) dest をプッシュした ‘BEGIN’ の直後から実行
 が続行されます。 orig をプッシュした ‘WHILE’ または ‘IF’ または ‘AHEAD’
 または ‘ELSE’ は、 ‘REPEAT’ の直後にジャンプします(*note Simple
@@ -884,45 +884,45 @@ Loops::)。
 
 Gforth は、さらにいくつかの制御構造ワードを追加します:
 
-‘ENDIF’ ( compilation orig – ; run-time –  ) gforth-0.2 “ENDIF”
+‘ENDIF’ ( compilation orig - ; run-time -  ) gforth-0.2 "ENDIF"
    ‘THEN’ と同一です。
 
-‘?dup-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-if”
+‘?dup-IF’ ( compilation - orig ; run-time n - n|  ) gforth-0.2 "question-dupe-if"
    これは、スタック・チェッカー(stack checker)などのツールでより適切に処
 理できるため、 イディオム「‘?DUP IF’」の代替として推奨されます。 しかも
 、 ‘?DUP IF’ より速いです。
 
-‘?DUP-0=-IF’ ( compilation – orig ; run-time n – n|  ) gforth-0.2 “question-dupe-zero-equals-if”
+‘?DUP-0=-IF’ ( compilation - orig ; run-time n - n|  ) gforth-0.2 "question-dupe-zero-equals-if"
 
 制御構造ワードのもう一つのグループ:
 
-‘case’ ( compilation  – case-sys ; run-time  –  ) core-ext “case”
+‘case’ ( compilation  - case-sys ; run-time  -  ) core-ext "case"
    ‘case’ 構造の開始。
 
-‘endcase’ ( compilation case-sys – ; run-time x –  ) core-ext “end-case”
+‘endcase’ ( compilation case-sys - ; run-time x -  ) core-ext "end-case"
    ‘case’ 構造を終わらせます。 x を drop して、‘endcase’ の後ろへ進みま
 す。 x の drop は、 元の(‘of’ のみの)‘case’ 構造では便利ですが、 他の場
 合(特に ‘?of’ を使用する場合)では(drop する為の) x を明示的に指定する必
 要がある場合があります。
 
-‘next-case’ ( compilation case-sys – ; run-time –  ) gforth-1.0 “next-case”
+‘next-case’ ( compilation case-sys - ; run-time -  ) gforth-1.0 "next-case"
    一致する ‘case’ にジャンプして、 ‘case’ ループを再開します。
 ‘endcase’ とは異なり、 ‘next-case’ はセルを drop しないことに注意してく
 ださい。
 
-‘of’ ( compilation  – of-sys ; run-time x1 x2 – |x1  ) core-ext “of”
+‘of’ ( compilation  - of-sys ; run-time x1 x2 - |x1  ) core-ext "of"
    x1=x2 の場合は続行します(両方を drop します)。 それ以外の場合は、 x1
 をスタック上に残し、 ‘endof’ または ‘contof’ の後ろにジャンプします。
 
-‘?of’ ( compilation  – of-sys ; run-time  f –  ) gforth-1.0 “question-of”
+‘?of’ ( compilation  - of-sys ; run-time  f -  ) gforth-1.0 "question-of"
    f が true の場合は続行します。 それ以外の場合は、 ‘endof’ または
 ‘contof’ の後ろにジャンプします。
 
-‘endof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) core-ext “end-of”
+‘endof’ ( compilation case-sys1 of-sys - case-sys2 ; run-time  -  ) core-ext "end-of"
    ‘endcase’/‘next-case’ の後ろにジャンプして、 囲んでいる ‘case’ 構造を
 終了(exit)します。
 
-‘contof’ ( compilation case-sys1 of-sys – case-sys2 ; run-time  –  ) gforth-1.0 “cont-of”
+‘contof’ ( compilation case-sys1 of-sys - case-sys2 ; run-time  -  ) gforth-1.0 "cont-of"
    囲んでいる ‘case’ にジャンプして、 ‘case’ ループを再開します。
 
    内部的には、 of-sys は ‘orig’ で、 case-sys はセルとスタック深さ情報
@@ -973,11 +973,11 @@ File: gforth.info,  Node: Calls and returns,  Next: Exception Handling,  Prev: A
 合は、 ‘recursive’ を使用して現在の定義を見えるようにする(使えるようにす
 る)か、 ‘recurse’ を使用して現在の定義を直接呼び出すことができます。
 
-‘recursive’ ( compilation – ; run-time –  ) gforth-0.2 “recursive”
+‘recursive’ ( compilation - ; run-time -  ) gforth-0.2 "recursive"
    現在の定義中の定義をその定義内で呼び出せるように(表示できるように)し
 、 それ自体を再帰的に呼び出せるようにします。
 
-‘recurse’ ( ... – ...  ) core “recurse”
+‘recurse’ ( ... - ...  ) core "recurse"
    現在の定義の別名(alias)。
 
 これらのワードの使用例については *Note Recursion Tutorial:: を参照してく
@@ -1008,17 +1008,17 @@ the partitions)と読む(そして考える)方がはるかに優れています
    定義の終わりに達するか、 ‘EXIT’ に遭遇すると、 現在の定義は呼び出し元
 の定義に制御を返します。
 
-‘EXIT’ ( compilation – ; run-time nest-sys –  ) core “EXIT”
+‘EXIT’ ( compilation - ; run-time nest-sys -  ) core "EXIT"
    呼び出し元の定義に戻る(return): 通常、 定義から速やかに戻るのを強制す
 る方法として使用されます。 ‘EXIT’ する前に、 リターン・スタックをクリー
 ンアップし、 未処理の ‘?DO’...‘LOOP’ を ‘UNLOOP’ する必要があります。 ロ
 ーカル変数(local)が無い場合に ‘exit’ のように動作するティック可能なワー
 ド(tickable word)には ‘;s’ を使用します。
 
-‘?EXIT’ ( –  ) gforth-0.2 “?EXIT”
+‘?EXIT’ ( -  ) gforth-0.2 "?EXIT"
    f が true の場合、 呼び出し元の定義に戻ります(return)。
 
-‘;s’ ( R:w – ) gforth-0.2 “semis”
+‘;s’ ( R:w - ) gforth-0.2 "semis"
    ‘EXIT’ によってコンパイルされたプリミティブ。
 
 
@@ -1031,13 +1031,13 @@ File: gforth.info,  Node: Exception Handling,  Prev: Calls and returns,  Up: Con
 ができます。 最も単純なケースでは、 これによりプログラムが終了し、適切な
 エラーが報告されます。
 
-‘throw’ ( y1 .. ym nerror – y1 .. ym / z1 .. zn error  ) exception “throw”
+‘throw’ ( y1 .. ym nerror - y1 .. ym / z1 .. zn error  ) exception "throw"
    nerror が 0 の場合は、 それを drop して続行します。 それ以外の場合は
 、 動的に囲んでいる次の例外ハンドラー(next dynamically enclosing
 exception handler)に制御を移し、 それに応じてスタックをリセットし、
 nerror をプッシュします。
 
-‘fast-throw’ ( ... wball – ... wball ) gforth-experimental “fast-throw”
+‘fast-throw’ ( ... wball - ... wball ) gforth-experimental "fast-throw"
    軽量の ‘throw’ バリエーション: ゼロ以外のみに使用され、 バックトレー
 スを保存したり、 欠落している ‘catch’ を扱ったりしません。
 
@@ -1058,7 +1058,7 @@ nerror をプッシュします。
      s" my error" exception throw \ ユーザー定義
      7 throw                      \ 思いつくままの任意の番号
 
-‘exception’ ( addr u – n  ) gforth-0.2 “exception”
+‘exception’ ( addr u - n  ) gforth-0.2 "exception"
    N は、 -4095 〜 -256 の範囲内で以前に使用されていなかった ‘throw’ 値
 です。 ‘Exception’ を連続して呼び出すと、 連続して減少する数値が返されま
 す。 Gforth は文字列 ADDR U をエラー・メッセージとして使用します(訳注: 同
@@ -1070,7 +1070,7 @@ hoge-error throw 等する)
 モデルにしたもの)がある場合もあります。 以下のワードを使用すると、 これ
 らの文字列を Gforth のエラー処理に取り込むことができます:
 
-‘exceptions’ ( xt n1 – n2  ) gforth-1.0 “exceptions”
+‘exceptions’ ( xt n1 - n2  ) gforth-1.0 "exceptions"
    throw時: xt ‘( +n -- c-addr u )’ は、 0<=n<n1 の範囲のローカルのエラ
 ー・コードをエラー・メッセージに変換します。 ‘Exceptions’ は、
 n2-n1<n3<=n2 の範囲で n1 個(0 〜 n1)のエラー・コードを予約します。 n2 に
@@ -1097,7 +1097,7 @@ gforth 内から表示するのに使っているようだ)
 
    C言語の関数(C言語インターフェイス(C interface)を使用)を呼び出し、 そ
 の戻り値がエラーが発生したことを示している場合、 ‘errno-ior throw’ を実
-行して、適切なエラー・メッセージ (“Permission denied” など)を含む例外を
+行して、適切なエラー・メッセージ ("Permission denied" など)を含む例外を
 生成できます。
 
    フラグが true の場合、 特定の err# でエラーを投げる(‘THROW’)一般的な
@@ -1116,13 +1116,13 @@ innermost exception handler)にジャンプすることに注意してくださ�
 
    例外をキャッチする標準 Forth での方法は ‘catch’ です:
 
-‘catch’ ( x1 .. xn xt – y1 .. ym 0 / z1 .. zn error  ) exception “catch”
+‘catch’ ( x1 .. xn xt - y1 .. ym 0 / z1 .. zn error  ) exception "catch"
    xt を実行します。 実行から正常に戻った場合、 ‘catch’ はスタックに 0 を
 プッシュします。 ‘throw’ を介して実行が戻った場合、 すべてのスタックは
 ‘catch’ へ入る時点の深さにリセットされ、 TOS (xt の位置) は throw コード
 に置き換えられます。
 
-‘nothrow’ ( –  ) gforth-0.7 “nothrow”
+‘nothrow’ ( -  ) gforth-0.7 "nothrow"
    再 throw しない ‘catch’ または ‘endtry’ の後ろでこれ (または標準のシ
 ーケンス ‘['] false catch 2drop’) を使用します。 これにより、 次の
 ‘throw’ でバックトレースが確実に記録されます。
@@ -1161,13 +1161,13 @@ innermost exception handler)にジャンプすることに注意してくださ�
 クは ‘try’ 時の深さにリセットされ、 throw された値をデータ・スタックにプ
 ッシュし、 code2 の実行に続き、 そして、 最終的に code3 に到達します。
 
-‘try’ ( compilation  – orig ; run-time  – R:sys1  ) gforth-0.5 “try”
+‘try’ ( compilation  - orig ; run-time  - R:sys1  ) gforth-0.5 "try"
    例外キャッチ領域の開始
 
-‘endtry’ ( compilation  – ; run-time  R:sys1 –  ) gforth-0.5 “endtry”
+‘endtry’ ( compilation  - ; run-time  R:sys1 -  ) gforth-0.5 "endtry"
    例外キャッチ領域の終わり
 
-‘iferror’ ( compilation  orig1 – orig2 ; run-time  –  ) gforth-0.7 “iferror”
+‘iferror’ ( compilation  orig1 - orig2 ; run-time  -  ) gforth-0.7 "iferror"
    例外処理コードを開始します(‘try’ と ‘endtry’ の間に例外がある場合に実
 行されます)。 この部分は ‘then’ で終了する必要があります。
 
@@ -1241,11 +1241,11 @@ endtry-iferror ... then’ 構文を提供します(ただし、 ‘iferror’ �
 を混在させて使用している場合でも、 これらのファイルのいずれかを無条件に
 ‘require’ することができます。
 
-‘restore’ ( compilation  orig1 – ; run-time  –  ) gforth-0.7 “restore”
+‘restore’ ( compilation  orig1 - ; run-time  -  ) gforth-0.7 "restore"
    コードの復元(restore)を開始します。 これは、 例外がある場合と無い場合
 に行われます。
 
-‘endtry-iferror’ ( compilation  orig1 – orig2 ; run-time  R:sys1 –  ) gforth-0.7 “endtry-iferror”
+‘endtry-iferror’ ( compilation  orig1 - orig2 ; run-time  R:sys1 -  ) gforth-0.7 "endtry-iferror"
    例外キャッチ領域を終了し、 その領域外で例外処理コードを開始します
 (‘try’ と ‘endtry-iferror’ の間に例外がある場合に実行されます)。 この部
 分は ‘then’ (または ‘else’...‘then’) で終了する必要があります。
@@ -1275,21 +1275,21 @@ endtry-iferror ... then’ 構文を提供します(ただし、 ‘iferror’ �
 )。 同様に、 ‘abort’ は例外ハンドラーに対して ‘-1 throw’ のように見えま
 す。
 
-‘ABORT"’ ( compilation ’ccc"’ – ; run-time f –  ) core,exception-ext “abort-quote”
+‘ABORT"’ ( compilation 'ccc"' - ; run-time f -  ) core,exception-ext "abort-quote"
    f のいずれかのビットがゼロ以外の場合、 ‘-2 throw’ の機能を実行し、 例
 外スタック上例外フレームがない場合は文字列 ccc を表示します。
 
-‘abort’ ( ?? – ??  ) core,exception-ext “abort”
+‘abort’ ( ?? - ??  ) core,exception-ext "abort"
    ‘-1 throw’.
 
    実行を中止する必要があるほど深刻でない問題の場合は、 警告を表示するだ
 けで済みます。 変数 ‘warnings’ を使用すると、 表示される警告の数を調整で
 きます。
 
-‘WARNING"’ ( compilation ’ccc"’ – ; run-time f –  ) gforth-1.0 “WARNING"”
+‘WARNING"’ ( compilation 'ccc"' - ; run-time f -  ) gforth-1.0 "WARNING""
    f がゼロ以外の場合、 警告メッセージとして文字列 ccc を表示します。
 
-‘warnings’ ( – addr  ) gforth-0.2 “warnings”
+‘warnings’ ( - addr  ) gforth-0.2 "warnings"
    以下の警告レベルをセットしてください
 ‘0’
      警告オフ
@@ -1347,7 +1347,7 @@ File: gforth.info,  Node: CREATE,  Next: Variables,  Prev: Defining Words,  Up: 
 。したがって、 ‘CREATE’ は名前をメモリー領域のアドレスに関連付ける方法で
 す。
 
-‘Create’ ( "name" –  ) core “Create”
+‘Create’ ( "name" -  ) core "Create"
 
    注意: 標準 Forth は、 ‘create’ に対してのみ、 そのボディ部分がディク
 ショナリのデータ空間(つまり、 ‘here’ や ‘allot’ などが機能する空間。
@@ -1414,22 +1414,22 @@ Forth は、 2倍長変数と浮動小数点変数に対して、 それぞれ �
 期化されます。 ‘Variable’ を使用してブール値を保存する場合、 ‘on’ と
 ‘off’ を使用してその状態を切り替えることができます。
 
-‘Variable’ ( "name" –  ) core “Variable”
+‘Variable’ ( "name" -  ) core "Variable"
    name を定義し、 addr で始まるセルを予約します。 name 実行時: ‘( --
 addr )’
 
-‘AVariable’ ( "name" –  ) gforth-0.2 “AVariable”
+‘AVariable’ ( "name" -  ) gforth-0.2 "AVariable"
    ‘variable’ と同様に機能しますが、 (クロス・コンパイルされたコードで使
 用される場合)その変数に格納されているセルがアドレスであることをクロス・
 コンパイラーに伝えます。
 
-‘2Variable’ ( "name" –  ) double “two-variable”
+‘2Variable’ ( "name" -  ) double "two-variable"
 
-‘fvariable’ ( "name" –  ) floating “f-variable”
+‘fvariable’ ( "name" -  ) floating "f-variable"
 
    最後に、 任意の長さのバッファーは以下のようになります
 
-‘buffer:’ ( u "name" –  ) core-ext “buffer-colon”
+‘buffer:’ ( u "name" -  ) core-ext "buffer-colon"
    name を定義し、addr から始まる u バイトを予約します。 name 実行時: ‘(
 -- addr )’ なお、 Gforth は予約したバイトを 0 に初期化しますが、 標準で
 は保証されません。
@@ -1449,7 +1449,7 @@ File: gforth.info,  Node: Constants,  Next: Values,  Prev: Variables,  Up: Defin
    ‘Variable’ は読み取りと書き込みの両方ができるため、 その実行時の振る
 舞いは、 現在の値を操作できるアドレスを提供することです。 それとは対照的
 に、 ‘Constant’ の値は一度宣言すると変更できないため、 アドレスを指定す
-る必要はありません(1) – 定数の値を直接返す方が効率的です。 そして正にそ
+る必要はありません(1) - 定数の値を直接返す方が効率的です。 そして正にそ
 のとおりになります。 つまり、 定数の実行時の効果は、その値をスタックの頂
 上に置くことです((‘Constant’ を実装する方法の1つは *note User-defined
 Defining Words:: で見つけることができます)。
@@ -1457,18 +1457,18 @@ Defining Words:: で見つけることができます)。
    Forth は、それぞれ2倍長定数と浮動小数点定数を定義するための
 ‘2Constant’ と ‘fconstant’ も提供します。
 
-‘Constant’ ( w "name" –  ) core “Constant”
+‘Constant’ ( w "name" -  ) core "Constant"
    定数 name を値 w で定義します。
 
-   name 実行時: – w
+   name 実行時: - w
 
-‘AConstant’ ( addr "name" –  ) gforth-0.2 “AConstant”
+‘AConstant’ ( addr "name" -  ) gforth-0.2 "AConstant"
    ‘constant’ と似ていますが、 アドレスのための定数を定義します(これはク
 ロス・コンパイラーでのみ違いが生じます)。
 
-‘2Constant’ ( w1 w2 "name" –  ) double “two-constant”
+‘2Constant’ ( w1 w2 "name" -  ) double "two-constant"
 
-‘fconstant’ ( r "name" –  ) floating “f-constant”
+‘fconstant’ ( r "name" -  ) floating "f-constant"
 
    Forth の定数は、他のプログラミング言語の定数とは異なる振る舞いをしま
 す。 他の言語では、 定数(アセンブラーの EQU や C の #define など)はコン
@@ -1529,28 +1529,28 @@ Forth ではなく) Gforth では、 ‘>body’ を使用しても ‘value’ 
      1 ' APPLES >body +! \ APPLES をインクリメント。 非標準の使い方
      APPLES              \ スタック頂上に 35 を置く(はず)
 
-‘Value’ ( w "name" –  ) core-ext “Value”
+‘Value’ ( w "name" -  ) core-ext "Value"
    name を初期値 w で定義します。 この値は ‘to name’ または ‘->name’ で
 変更できます(訳注: -> と name の間に空白を開けない。 ->name とする。 ワ
 ードではなく、 テキスト・インタープリターの認識器(recognizer)機能による
 もの)。
 
-   name 実行時: – w2
+   name 実行時: - w2
 
-‘AValue’ ( w "name" –  ) gforth-0.6 “AValue”
+‘AValue’ ( w "name" -  ) gforth-0.6 "AValue"
    ‘value’ と似ていますが、 アドレスの為の値を定義します(これはクロス・
 コンパイラーでのみ違いが生じます)。
 
-‘2Value’ ( d "name" –  ) double-ext “two-value”
+‘2Value’ ( d "name" -  ) double-ext "two-value"
 
-‘fvalue’ ( r "name" –  ) floating-ext “f-value”
+‘fvalue’ ( r "name" -  ) floating-ext "f-value"
    実行時: ‘( -- r1 )’ な name を定義します。 ここで r は初期値です。 値
 は ‘to name’ または ‘->name’ で変更できます。
 
-‘TO’ ( value "name" –  ) core-ext “TO”
+‘TO’ ( value "name" -  ) core-ext "TO"
    NAME の値を VALUE に変更します
 
-‘+TO’ ( value "name" –  ) gforth-1.0 “+TO”
+‘+TO’ ( value "name" -  ) gforth-1.0 "+TO"
    NAME の値に VALUE を足し込みます
 
 
@@ -1565,22 +1565,22 @@ File: gforth.info,  Node: Varues,  Next: Colon Definitions,  Prev: Values,  Up: 
 (variable と value の特性を組み合わせたものであるため、 そのように名付け
 られました)。
 
-‘Varue’ ( w "name" –  ) gforth-1.0 “Varue”
+‘Varue’ ( w "name" -  ) gforth-1.0 "Varue"
    ‘value’ と似ていますが、 ‘addr name’ で得たアドレスで値にアクセスする
 こともできます。 将来的には、 varues の効率が values よりも低くなる可能
 性があります。
 
-‘2varue’ ( x1 x2 "name" –  ) gforth-1.0 “2varue”
+‘2varue’ ( x1 x2 "name" -  ) gforth-1.0 "2varue"
    ‘2value’ と似ていますが、 ‘addr name’ で得たアドレスで値にアクセスす
 ることもできます。 将来的には、2varues は 2values よりも効率が低くなる可
 能性があります。
 
-‘fvarue’ ( r "name" –  ) gforth-1.0 “fvarue”
+‘fvarue’ ( r "name" -  ) gforth-1.0 "fvarue"
    ‘fvalue’ と似ていますが、 ‘addr name’ で得たアドレスで値にアクセスす
 ることもできます。 将来的には、fvarues は fvalues よりも効率が低くなる可
 能性があります。
 
-‘addr’ ( "name" – addr  ) gforth-1.0 “addr”
+‘addr’ ( "name" - addr  ) gforth-1.0 "addr"
    varue NAME または 2varue NAME または fvarue NAME のアドレスを提供しま
 す。 または ‘wa: ca: da: fa: xta:’ のいずれかで定義されたローカル変数
 name のアドレスを提供します。
@@ -1602,14 +1602,14 @@ Your first definition:: を参照してください。 関連する問題の一�
 の詳細な説明については、 *Note Interpretation and Compilation
 Semantics:: を参照してください。
 
-‘:’ ( "name" – colon-sys  ) core “colon”
+‘:’ ( "name" - colon-sys  ) core "colon"
 
-‘;’ ( compilation colon-sys – ; run-time nest-sys –  ) core “semicolon”
+‘;’ ( compilation colon-sys - ; run-time nest-sys -  ) core "semicolon"
 
    最終的には自動インライン化を実行する予定ですが、 今のところは以下のよ
 うにしてインライン化を実行できます
 
-‘inline:’ ( "name" – inline:-sys  ) gforth-experimental “inline-colon”
+‘inline:’ ( "name" - inline:-sys  ) gforth-experimental "inline-colon"
    インライン・コロン定義を開始します。 ‘inline:’ と ‘;inline’ の間のコ
 ードは、 インライン化するコードを(実行するのではなく)コンパイルする必要
 がありますが、 結果の定義 name は、 インライン化されたコードを実行するコ
@@ -1617,7 +1617,7 @@ Semantics:: を参照してください。
 深さが変わらない)である必要があることに注意してください。 さもないと、
 Gforth が name のコロン定義を作成しようとしたときにエラーが発生します。
 
-‘;inline’ ( inline:-sys –  ) gforth-experimental “semi-inline”
+‘;inline’ ( inline:-sys -  ) gforth-experimental "semi-inline"
    ‘inline:’ で始まるインライン定義を終了します
 
    例として、 インライン化されたワードを定義し、 以下のようにして使いま
@@ -1677,7 +1677,7 @@ File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon
 しばしば匿名のワード(“anonymous word”)を定義したい場合があります。 つま
 り、 名前無しのワードです。 これは以下のようにします:
 
-‘:noname’ ( – xt colon-sys  ) core-ext “colon-no-name”
+‘:noname’ ( - xt colon-sys  ) core-ext "colon-no-name"
 
    これにより、 終わりの ‘;’ の後にワードの実行トークンがスタックに残り
 ます。 以下は、 defer された ワード(deferred word)が匿名コロン定義
@@ -1691,13 +1691,13 @@ File: gforth.info,  Node: Anonymous Definitions,  Next: Quotations,  Prev: Colon
 Gforth は、 2 つの別々のワードを使用して、 これを行う別の方法を提供しま
 す:
 
-‘noname’ ( –  ) gforth-0.2 “noname”
+‘noname’ ( -  ) gforth-0.2 "noname"
    次に定義するワードは匿名になります。 その定義するワードは(‘noname’が
 いじる訳ではなくて)入力ストリームからのをそのままを使います(The defining
 word will leave the input stream alone)。 その定義したワードの xt は
 ‘latestxt’ で取得します。
 
-‘latestxt’ ( – xt  ) gforth-0.6 “latestxt”
+‘latestxt’ ( - xt  ) gforth-0.6 "latestxt"
    xt は、 最後に定義されたワードの実行トークンです。
 
 先の例を、 ‘noname’ と ‘latestxt’ を使用して書き直すことができます:
@@ -1746,10 +1746,10 @@ xt を outfile-execute に渡すことができます。 その代わりに、 �
    引用(quotation)は ‘[:’ と ‘;]’ で囲まれています。 それは実行時に実行
 トークンを生成します。
 
-‘[:’ ( compile-time: – quotation-sys flag colon-sys  ) gforth-1.0 “bracket-colon”
+‘[:’ ( compile-time: - quotation-sys flag colon-sys  ) gforth-1.0 "bracket-colon"
    引用(quotation)を開始します
 
-‘;]’ ( compile-time: quotation-sys – ; run-time: – xt  ) gforth-1.0 “semi-bracket”
+‘;]’ ( compile-time: quotation-sys - ; run-time: - xt  ) gforth-1.0 "semi-bracket"
    引用(quotation)を終了します
 
 
@@ -1762,7 +1762,7 @@ File: gforth.info,  Node: Supplying names,  Next: User-defined Defining Words,  
 取得します。 しばしば文字列から名前を指定したい場合があります。 これは以
 下のようにして行うことができます:
 
-‘nextname’ ( c-addr u –  ) gforth-0.2 “nextname”
+‘nextname’ ( c-addr u -  ) gforth-0.2 "nextname"
    次に定義されるワードの名前は C-ADDR U になります。 定義中のワードは入
 力ストリームからそのままで ‘nextname’ がいじることはありません。
 
@@ -2034,7 +2034,7 @@ File: gforth.info,  Node: CREATE..DOES> details,  Next: Advanced does> usage exa
 6.10.10.4 The gory details of ‘CREATE..DOES>’
 .............................................
 
-‘DOES>’ ( compilation colon-sys1 – colon-sys2  ) core “does”
+‘DOES>’ ( compilation colon-sys1 - colon-sys2  ) core "does"
 
    以下は、 一つの定義内で ‘CREATE’ と ‘DOES>’ の両方を使用する必要がな
 いことを意味します。 ‘DOES>’ 部分を別の定義に置くことができます。 これに
@@ -2097,12 +2097,12 @@ File: gforth.info,  Node: CREATE..DOES> details,  Next: Advanced does> usage exa
        initialization
      [: code ;] set-does>
 
-‘set-does>’ ( xt –  ) gforth-1.0 “set-does>”
+‘set-does>’ ( xt -  ) gforth-1.0 "set-does>"
    現在のワードを変更して、 本体アドレスをプッシュしてから xt を実行しま
 す。 それに応じて ‘compile,’ の実装も変更します。 より効率的な実装が必要
 な場合、 この後で ‘set-optimizer’ を呼び出します。
 
-‘>body’ ( xt – a_addr  ) core “to-body”
+‘>body’ ( xt - a_addr  ) core "to-body"
    xt で表されるワードの本体(body)のアドレス(ワードのデータ・フィールド
 のアドレス)を取得します。
 
@@ -2229,27 +2229,27 @@ Gforth の value にはいくつかの操作子(operators)があります。 ‘
 
    Gforth を使用すると、 ワードの ‘(to)’ アクションを変更できます。
 
-‘(to)’ ( val operation xt –  ) gforth-1.0 “paren-to”
+‘(to)’ ( val operation xt -  ) gforth-1.0 "paren-to"
    name という名前の、 ワードに似ている value の xt です。 name に val を
 保存します。 operation は、 ‘to’ と ‘+to’ と ‘addr’ と ‘action-of’ から
 選択します。
 
-‘to-table:’ ( "name" "xt1" .. "xtn" –  ) gforth-experimental “to-table-colon”
+‘to-table:’ ( "name" "xt1" .. "xtn" -  ) gforth-experimental "to-table-colon"
    ‘TO’ や ‘+TO’ や ‘ADDR’ や ‘ACTION-OF’ のエントリを含むテーブルを作成
 します。 ‘n/a’ を使用して、 サポートされていない操作をマークします。
 
-‘to-method:’ ( xt table "name" –  ) gforth-experimental “to-method-colon”
+‘to-method:’ ( xt table "name" -  ) gforth-experimental "to-method-colon"
    to-method を作成します。 ここで、XT はフィールドにアクセスするための
 アドレスを計算し、 TABLE にはそれに格納する操作子(operators)が含まれます
 。
 
-‘set-to’ ( to-xt –  ) gforth-1.0 “set-to”
+‘set-to’ ( to-xt -  ) gforth-1.0 "set-to"
    現在のワードの ‘(to) ( val xt -- )’ メソッドの実装を to-xt に設定しま
 す。
 
-‘n/a’ ( –  ) gforth-experimental “not-available”
+‘n/a’ ( -  ) gforth-experimental "not-available"
    このワードをチック(tick)することはできますが、 インタープリター時およ
-びコンパイル時に “Operation not supported” (操作はサポートされていません
+びコンパイル時に "Operation not supported" (操作はサポートされていません
 )という例外が投げられます(throw)。 サポートされていないメソッドなどにこ
 れを使用します。
 
@@ -2289,14 +2289,14 @@ File: gforth.info,  Node: User-defined compile-comma,  Next: Creating from a pro
 以下を使用して、 とあるワードのための ‘compile,’ の実装を変更することも
 できます
 
-‘set-optimizer’ ( xt –  ) gforth-1.0 “set-optimizer”
+‘set-optimizer’ ( xt -  ) gforth-1.0 "set-optimizer"
    ‘compile,’ で xt execute するように現在のワードを変更します
 (‘compile,’ に渡されたものと同じスタック内容を使用)。 注意: ‘compile,’ は
 ‘execute’ とスタック内容が一致している必要があるため、 ‘set-optimizer’ は
 同じ振る舞いの、 より効率的な実装をインストールする場合にのみ使用しなけ
 ればならないことに注意してください。
 
-‘opt:’ ( compilation – colon-sys2 ; run-time – nest-sys  ) gforth-1.0 “opt:”
+‘opt:’ ( compilation - colon-sys2 ; run-time - nest-sys  ) gforth-1.0 "opt:"
    名前無しのコロン定義を開始します。 完了すると、 このコロン定義は
 (‘opt:’ の前の)最新のワードの ‘compile,’ の実装になります。
 
@@ -2417,7 +2417,7 @@ File: gforth.info,  Node: Creating from a prototype,  Next: Making a word curren
 の作成が高速化されることだ。 ただし、 この利点は、 この定義ワードで作成
 されるワードの数が膨大な場合にのみ意味があります。
 
-‘create-from’ ( nt "name" –  ) gforth-1.0 “create-from”
+‘create-from’ ( nt "name" -  ) gforth-1.0 "create-from"
    指定の nt のように振る舞うが、 ボディが空のワード name を作成します。
 nt は名前付きワードの nt でなければなりません。 結果として得られるヘッダ
 ーはまだ非公開状態です(訳注: not yet reveal;ワードリスト未登録なので普通
@@ -2426,14 +2426,14 @@ nt は名前付きワードの nt でなければなりません。 結果とし
 ードを作成するよりも高速になります。 ‘noname’ で ‘create-from’ を使用で
 きます。
 
-‘reveal’ ( –  ) gforth-0.2 “reveal”
+‘reveal’ ( -  ) gforth-0.2 "reveal"
    (reveal;明らかにする、暴露する)ヘッダー定義時の現在のワード・リスト
 (wordlist current)に現在のワードを入れます。
 
    ‘noname’ を定義ワードとともに使用しても、 パフォーマンス上の利点は得
 られません。 したがって、 以下もいっしょに使います
 
-‘noname-from’ ( xt –  ) gforth-1.0 “noname-from”
+‘noname-from’ ( xt -  ) gforth-1.0 "noname-from"
    指定の xt のように動作するが、 本体が空の名前のないワードを作成します
 。 xt は、 名前のないワードの xt でなければなりません。
 
@@ -2457,7 +2457,7 @@ File: gforth.info,  Node: Making a word current,  Next: Const-does>,  Prev: Crea
 を変更します。 しばしば以前のワードを変更したい場合があると思います。 そ
 の場合は以下のようにして行うことができます
 
-‘make-latest’ ( nt –  ) gforth-1.0 “make-latest”
+‘make-latest’ ( nt -  ) gforth-1.0 "make-latest"
    nt を最新の定義にし、 ‘immediate’ および ‘set-*’ 操作で操作できるよう
 にします。 nt によって参照されるワードを既に使用している(特にコンパイル
 済みの)場合、 そのワードの振る舞いを変更しないでください(その実装だけを
@@ -2473,7 +2473,7 @@ File: gforth.info,  Node: Const-does>,  Prev: Making a word current,  Up: User-d
 ‘create’...‘does>’ は、 定義時から実行時に幾つかの値を転送(transfer)する
 ためによく使用されます。 Gforth は、 このために以下を用意しています
 
-‘const-does>’ ( run-time: w*uw r*ur uw ur "name" –  ) gforth-obsolete “const-does”
+‘const-does>’ ( run-time: w*uw r*ur uw ur "name" -  ) gforth-obsolete "const-does"
    定義時: NAME を定義して返ります。
 
    NAME 実行時: W*UW R*UR をプッシュし、 ‘const-does>’ に続くコードを実
@@ -2569,7 +2569,7 @@ semantics)があり、 (‘TO’ のように)コンパイル時に名前をパ�
    ‘IS’ が適合しない状況では、 代わりに ‘defer!’ を使用してください。
 
    defer された ワードは、 xt から実行機能(execution semantics)のみを継
-承できます(xt が表現できるのはそれだけであるためです – これについての詳
+承できます(xt が表現できるのはそれだけであるためです - これについての詳
 しい説明は *note Tokens for Words:: 参照)。 デフォルトでは、この実行機能
 (execution semantics)から派生したデフォルトのインタープリター機能
 (interpretation semantics)とコンパイル機能(compilation semantics)を持ち
@@ -2583,34 +2583,34 @@ semantics)があり、 (‘TO’ のように)コンパイル時に名前をパ�
      ' bar IS jim  \ jim has default semantics
      ' bar IS fred \ fred is immediate
 
-‘Defer’ ( "name" –  ) core-ext “Defer”
+‘Defer’ ( "name" -  ) core-ext "Defer"
    defer された ワード name を定義します。 その実行機能(execution
 semantics)は ‘defer!’ または ‘is’ で設定できます(最初に name を実行する
 前に設定する必要があります)。
 
-‘defer!’ ( xt xt-deferred –  ) core-ext “defer-store”
+‘defer!’ ( xt xt-deferred -  ) core-ext "defer-store"
    xt (XT-DEFERRED) で表される defer された ワードに実行のための XT を設
 定します。
 
-‘IS’ ( xt "name" –  ) core-ext “IS”
+‘IS’ ( xt "name" -  ) core-ext "IS"
    ‘defer’ された ワード NAME に実行のための XT を設定します。
 
-‘defer@’ ( xt-deferred – xt  ) core-ext “new-defer-fetch”
+‘defer@’ ( xt-deferred - xt  ) core-ext "new-defer-fetch"
    xt は、 defer された ワード xt-deferred に現在関連付けられているワー
 ドを表します。
 
-‘action-of’ ( interpretation "name" – xt; compilation "name" – ; run-time – xt  ) core-ext “action-of”
+‘action-of’ ( interpretation "name" - xt; compilation "name" - ; run-time - xt  ) core-ext "action-of"
    Xt は、 現在 name に割り当てられている XT です。
 
    Forth-94 では、 これら Forth-2012 のワードの定義は、‘compat/defer.fs’
 で提供されます。 さらに、 Gforth は以下を提供します:
 
-‘defers’ ( compilation "name" – ; run-time ... – ...  ) gforth-0.2 “defers”
+‘defers’ ( compilation "name" - ; run-time ... - ...  ) gforth-0.2 "defers"
    defer された ワード name の現在の内容を現在の定義にコンパイルします。
 つまり、 これにより、 name が defer されなかったかのように静的結び付け
 (static binding)が生成されます。
 
-‘wrap-xt’ ( xt1 xt2 xt: xt3 – ...  ) gforth-1.0 “wrap-xt”
+‘wrap-xt’ ( xt1 xt2 xt: xt3 - ...  ) gforth-1.0 "wrap-xt"
    defer された ワード xt2 の現在の xt-current をどこかに退避して xt1 に
 設定した上で、 xt3 を実行し、 xt3 実行後、 退避した xt-current を defer
 されたワード xt2 に戻します(訳注: xt3 の内部のどこかで defer されたワー
@@ -2620,12 +2620,12 @@ try ...  restore ...  endtry で囲まれた部分なので xt3 実行中にエ�
 っても確実に復旧される。 詳しくはソースコード見て下さい。 なお、 xt: は
 xt3 を deferフレーバーに設定する)
 
-‘preserve’ ( "name" –  ) gforth-1.0 “preserve”
+‘preserve’ ( "name" -  ) gforth-1.0 "preserve"
    指定の defer された ワード name で、 現在設定されている実行機能 xt を
 、 その場で ‘is’ や ‘defer!’ したかのようなコードに変換します(訳注: 上記
-例より、 ’ greet2 is greet : preserve-greet2 preserve greet ; → greet1
+例より、 ' greet2 is greet : preserve-greet2 preserve greet ; → greet1
 is greet ok → greet Good morning ok → preserve-greet2 ok → greet Hello
-ok ; see preserve-greet2 → : preserve-greet2 ‘greet2 ‘greet !  ; ok)
+ok ; see preserve-greet2 → : preserve-greet2 'greet2 'greet !  ; ok)
 
 
 File: gforth.info,  Node: Forward,  Next: Aliases,  Prev: Deferred Words,  Up: Defining Words
@@ -2638,13 +2638,13 @@ references)を作成できます。 これは自動的に解決され、 ‘Defe
 (indirection)のような追加コストは発生しません。 ただし、 これらの
 forward 定義はコロン定義に対してのみ機能します。
 
-‘forward’ ( "name" –  ) gforth-1.0 “forward”
+‘forward’ ( "name" -  ) gforth-1.0 "forward"
    コロン定義への前方参照(forward reference)を定義します。 同一のワード
 リスト内(wordlist)で同一の名前のコロン定義を定義すると、 前方参照が解決
 されます。 ‘.unresolved’ を使用して、 未解決の forward があるかどうかを
 確認します。
 
-‘.unresolved’ ( –  ) gforth-1.0 “.unresolved”
+‘.unresolved’ ( -  ) gforth-1.0 ".unresolved"
    未解決の前方参照(forward references)をすべて出力します
 
 
@@ -2661,7 +2661,7 @@ File: gforth.info,  Node: Aliases,  Prev: Forward,  Up: Defining Words
    • あなたが同義語(synonym)を作成したい場合。 2つの名前どちらでも認識で
      きる定義(たとえば、 ‘THEN’ と ‘ENDIF’ は同義語(synonyms)です)。
 
-‘Synonym’ ( "name" "oldname" –  ) tools-ext “Synonym”
+‘Synonym’ ( "name" "oldname" -  ) tools-ext "Synonym"
    oldname と同一に振る舞うように name を定義します。 つまり、 同一のイ
 ンタプリタ機能(interpretation semantics)と、 同一のコンパイル機能
 (compilation semantics)と、 同一の ‘to’/‘defer!’ や ‘defer@’ 機能を持ち
@@ -2671,7 +2671,7 @@ File: gforth.info,  Node: Aliases,  Prev: Forward,  Up: Defining Words
 親から継承しない、 非標準の ‘alias’ も提供します。 あなたは後で、 例えば
 ‘immediate’ などを使用してコンパイル機能などを変更できます。
 
-‘Alias’ ( xt "name" –  ) gforth-0.2 “Alias”
+‘Alias’ ( xt "name" -  ) gforth-0.2 "Alias"
    name を xt を実行するワードとして定義します。 defer された ワードとは
 異なり、 エイリアス(aliase)にはコンパイル時に間接的なオーバーヘッドがあ
 りません。
@@ -2737,14 +2737,14 @@ semantics)と異なることはありませんが、 一方が定義されてい
 
    あなたは、 最後に定義されたワードの機能(semantics)を変更できます:
 
-‘immediate’ ( –  ) core “immediate”
+‘immediate’ ( -  ) core "immediate"
    ワードのコンパイル機能を、 その実行機能を実行するように設定します。
 
-‘compile-only’ ( –  ) gforth-0.2 “compile-only”
+‘compile-only’ ( -  ) gforth-0.2 "compile-only"
    最後の定義をコンパイル専用としてマークします。 その結果、 テキスト・
 インタプリタと ‘'’ は、 そのようなワードに遭遇すると警告を発します。
 
-‘restrict’ ( –  ) gforth-0.2 “restrict”
+‘restrict’ ( -  ) gforth-0.2 "restrict"
    ‘compile-only’ の同義語(synonym)
 
    慣習により、 デフォルト以外のコンパイル機能を持つワード(即実行ワード
@@ -2752,7 +2752,7 @@ semantics)と異なることはありませんが、 一方が定義されてい
 ‘[']’ *note Execution token::)。
 
    注意: compile-only のワードにチック(tick)(‘'’)を付けると、警告
-(“<word> is compile-only”)が表示されることに注意してください。
+("<word> is compile-only")が表示されることに注意してください。
 
 * Menu:
 
@@ -2776,7 +2776,7 @@ Gforth を使用すると、 複合ワード(“combined words”)、 つまり�
 ター機能(interpretation semantics)とコンパイル機能(compilation
 semantics)を任意に組み合わせたワードを定義できます。
 
-‘interpret/compile:’ ( interp-xt comp-xt "name" –  ) gforth-0.2 “interpret/compile:”
+‘interpret/compile:’ ( interp-xt comp-xt "name" -  ) gforth-0.2 "interpret/compile:"
 
    この機能は、 ‘TO’ と ‘S"’ を実装するために導入されました。 このような
 ワードは、 たとえ小さなかわいいものであっても定義しないことをお勧めしま
@@ -2833,8 +2833,8 @@ bar’ は実行されません)。 state-smart ワードは良くないアイ�
    ---------- Footnotes ----------
 
    (1) このトピックに関する議論の詳細は M. Anton Ertl,
-‘‘State’-smartness—Why it is Evil and How to Exorcise it
-(https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz)’, EuroForth ’98.
+‘‘State’-smartness--Why it is Evil and How to Exorcise it
+(https://www.complang.tuwien.ac.at/papers/ertl98.ps.gz)’, EuroForth '98.
 をご覧ください。
 
 
@@ -2880,11 +2880,11 @@ Words::) があります。
    しかしながら、 ‘`’ プレフィックスは Gforth 拡張であるため、 以下の標
 準 Forth のワードを使用する方が好ましいです:
 
-‘'’ ( "name" – xt  ) core “tick”
+‘'’ ( "name" - xt  ) core "tick"
    xt は name のインタープリター機能(interpretation semantics)を表します
 。 ワードにインタープリター機能が無い場合、 ‘-14 throw’ を実行します。
 
-‘[']’ ( compilation. "name" – ; run-time. – xt  ) core “bracket-tick”
+‘[']’ ( compilation. "name" - ; run-time. - xt  ) core "bracket-tick"
    xt は name のインタープリター機能(interpretation semantics)を表します
 。 ワードにインタープリター機能が無い場合、 ‘-14 throw’ を実行します。
 
@@ -2946,20 +2946,20 @@ semantics)) の xt が得られますが、 名前付きワードの定義の後
 はコード・フィールド・アドレス(CFA は PFA の 2 セル前)として実装されてい
 ました。
 
-‘execute’ ( xt – ) core “execute”
+‘execute’ ( xt - ) core "execute"
    実行トークン xt によって表される機能(semantics)を実行します。
 
-‘execute-exit’ ( compilation – ; run-time xt nest-sys –  ) gforth-1.0 “execute-exit”
+‘execute-exit’ ( compilation - ; run-time xt nest-sys -  ) gforth-1.0 "execute-exit"
    ‘xt’ を実行し、 末尾呼び出し最適化法(tail-call-optimized way)で現在の
 定義から戻ります。 戻りアドレス ‘nest-sys’ とローカル変数(local)は、
 ‘xt’ を execute する前に割り当て解除(deallocate)されます。
 
-‘perform’ ( a-addr – ) gforth-0.2 “perform”
+‘perform’ ( a-addr - ) gforth-0.2 "perform"
    ‘@ execute’.
 
    ‘Noop’ は、 しばしば実行トークンのプレースホルダーとして使用されます:
 
-‘noop’ ( – ) gforth-0.2 “noop”
+‘noop’ ( - ) gforth-0.2 "noop"
 
    ---------- Footnotes ----------
 
@@ -2992,25 +2992,25 @@ synonym と、 aliase と、 ‘interpret/compile:’ で定義されたワー�
    ‘``x’ (Gforth 1.0 以降) または、 以下を使用して、 ワード x の nt を取
 得します
 
-‘find-name’ ( c-addr u – nt | 0  ) gforth-0.2 “find-name”
+‘find-name’ ( c-addr u - nt | 0  ) gforth-0.2 "find-name"
    現在の検索順序スタック(the search order)で名前 c-addr u を見つけます
 。 nt が見つかった場合はそれを返し、 それ以外の場合は 0 を返します。
 
-‘find-name-in’ ( c-addr u wid – nt | 0  ) gforth-1.0 “find-name-in”
+‘find-name-in’ ( c-addr u wid - nt | 0  ) gforth-1.0 "find-name-in"
    wid で識別されるワードリストで、 c-addr u の文字列で指定された定義を
 検索します。 nt が見つかった場合はそれを返し、 それ以外の場合は 0 を返し
 ます。
 
-‘latest’ ( – nt  ) gforth-0.6 “latest”
+‘latest’ ( - nt  ) gforth-0.6 "latest"
    NT は、 最後に定義されたワードの名前トークンです。 最後のワードに名前
 がない場合は 0 です。
 
-‘latestnt’ ( – nt  ) gforth-1.0 “latestnt”
+‘latestnt’ ( - nt  ) gforth-1.0 "latestnt"
    nt は、 最後に定義されたワードの名前トークンです(訳注: 名前が無い場合
 でも nt を返す。 その nt を name>string すると、 長さ 0 の文字列(addr u)
 を返す)
 
-‘>name’ ( xt – nt|0  ) gforth-0.2 “to-name”
+‘>name’ ( xt - nt|0  ) gforth-0.2 "to-name"
    xt で表されるワードの基本名前トークン(primary name token) nt を取得し
 ます。 xt が ぢつは xt でない場合(非 xt を xt と誤認する可能性が低いヒュ
 ーリスティック・チェックを使用)、 または基本 nt (primary nt)が名前無しワ
@@ -3018,15 +3018,15 @@ synonym と、 aliase と、 ‘interpret/compile:’ で定義されたワー�
 本 nt がありますが、 他の名前付きワードも同一のインタープリター機能
 (interpretation sematics) xt を持つ可能性があります。
 
-‘xt>name’ ( xt – nt  ) gforth-1.0 “xt-to-name”
+‘xt>name’ ( xt - nt  ) gforth-1.0 "xt-to-name"
    xt の基本 nt (primary nt)を生成します。 xt が、 ぢつは xt でない場合
 、 nt は nt であるとは保証されません。
 
    以下を使用すると、 ワードリスト内のすべての nt を取得できます
 
-‘traverse-wordlist’ ( ... xt wid – ...  ) tools-ext “traverse-wordlist”
+‘traverse-wordlist’ ( ... xt wid - ...  ) tools-ext "traverse-wordlist"
    f が false になるかワードリストがなくなるまで、 ワードリスト wid 内の
-ワード nt ごとに xt ( ...  nt – f ...  )  を 1 回実行します。 xt はスタ
+ワード nt ごとに xt ( ...  nt - f ...  )  を 1 回実行します。 xt はスタ
 ックその下側を自由に使用できます(訳注: つまり TOS に f さえ返せばスタッ
 クに何が積まれても(積まれなくても)気にしない)
 
@@ -3034,24 +3034,24 @@ synonym と、 aliase と、 ‘interpret/compile:’ で定義されたワー�
 semantics)とコンパイル機能(compilation semantics)や、 その名前や、 ワー
 ドリスト内の次のワードのワード、 にアクセスできます:
 
-‘name>interpret’ ( nt – xt  ) tools-ext “name-to-interpret”
+‘name>interpret’ ( nt - xt  ) tools-ext "name-to-interpret"
    xt はワード nt のインタープリター機能(interpretation semantics)を表し
 ます。
 
-‘name>compile’ ( nt – w xt  ) tools-ext “name-to-compile”
+‘name>compile’ ( nt - w xt  ) tools-ext "name-to-compile"
    w xt はワード nt のコンパイル・トークン(compilation token)です(訳注:
 コンパイル・トークン CT は 2セル構成)。
 
-‘name>string’ ( nt – addr u  ) tools-ext “name-to-string”
+‘name>string’ ( nt - addr u  ) tools-ext "name-to-string"
    addr count は、 nt で表されるワードの名前です。
 
-‘id.’ ( nt –  ) gforth-0.6 “i-d-dot”
+‘id.’ ( nt -  ) gforth-0.6 "i-d-dot"
    NT で表されるワードの名前を出力します。
 
-‘.id’ ( nt –  ) gforth-0.6 “dot-i-d”
+‘.id’ ( nt -  ) gforth-0.6 "dot-i-d"
    ‘id.’ の F83 での名前です。
 
-‘name>link’ ( nt1 – nt2 / 0  ) gforth-1.0 “name-to-link”
+‘name>link’ ( nt1 - nt2 / 0  ) gforth-1.0 "name-to-link"
    ワード nt1 の場合、 同じワードリスト内の1つ前のワード nt2 を返します
 。 前のワードがない場合は 0 を返します。
 
@@ -3110,11 +3110,11 @@ xt で構成されるコンパイル・トークン(“compilation token”)に�
 準的な方法(例: ‘`if name>compile’)で取得できますが、 コンパイル・トーク
 ンを取得するためのパース・ワードもあります:
 
-‘[COMP']’ ( compilation "name" – ; run-time – w xt  ) gforth-0.2 “bracket-comp-tick”
+‘[COMP']’ ( compilation "name" - ; run-time - w xt  ) gforth-0.2 "bracket-comp-tick"
    コンパイル・トークン w xt は、 name のコンパイル機能(compilation
 semantics)を表します。
 
-‘COMP'’ ( "name" – w xt  ) gforth-0.2 “comp-tick”
+‘COMP'’ ( "name" - w xt  ) gforth-0.2 "comp-tick"
    コンパイル・トークン w xt は、 name のコンパイル機能(compilation
 semantics)を表します。
 
@@ -3123,7 +3123,7 @@ semantics)を表します。
 イル機能(compilation semantics)をコンパイルできます。 つまり、 ‘``x
 name>compile postpone,’ は ‘postpone x’ と同等です。
 
-‘postpone,’ ( w xt –  ) gforth-0.2 “postpone-comma”
+‘postpone,’ ( w xt -  ) gforth-0.2 "postpone-comma"
    コンパイル・トークン w xt で表されるコンパイル機能(compilation
 semantics)をコンパイルします。
 
@@ -3189,38 +3189,38 @@ File: gforth.info,  Node: Literals,  Next: Macros,  Prev: Compiling words,  Up: 
    この方法で ‘2* cells’ を ‘[ 2 cells ] literal *’ に最適化することもで
 きます。
 
-‘[’ ( –  ) core “left-bracket”
+‘[’ ( -  ) core "left-bracket"
    インタープリター状態にします。 即実行ワードです。
 
-‘]’ ( –  ) core “right-bracket”
+‘]’ ( -  ) core "right-bracket"
    コンパイル状態にします。
 
-‘Literal’ ( compilation n – ; run-time – n  ) core “Literal”
+‘Literal’ ( compilation n - ; run-time - n  ) core "Literal"
    コンパイル機能(compilation semantics): 実行機能(run-time semantics)を
 コンパイルします。 実行機能(run-time semantics): n をスタックにプッシュ
 します。 インタープリター機能(interpretation semantics): 未定義です。
 
-‘ALiteral’ ( compilation addr – ; run-time – addr  ) gforth-0.2 “ALiteral”
+‘ALiteral’ ( compilation addr - ; run-time - addr  ) gforth-0.2 "ALiteral"
    ‘literal’ と同様に機能しますが、 (クロス・コンパイルされたコードで使
 用される場合、)リテラルがアドレスであることをクロス・コンパイラーに伝え
 ます。
 
-‘]L’ ( compilation: n – ; run-time: – n  ) gforth-0.5 “]L”
+‘]L’ ( compilation: n - ; run-time: - n  ) gforth-0.5 "]L"
    ‘] literal’ と同等。
 
    単一セル以外のデータ型をリテラルとしてコンパイルするためのワードもあ
 ります:
 
-‘2Literal’ ( compilation w1 w2 – ; run-time  – w1 w2  ) double “two-literal”
+‘2Literal’ ( compilation w1 w2 - ; run-time  - w1 w2  ) double "two-literal"
    実行時に w1 w2 がスタックに配置されるように、 適切なコードをコンパイ
 ルします。 インタープリター機能(interpretation semantics)は未定義です。
 
-‘FLiteral’ ( compilation r – ; run-time – r  ) floating “f-literal”
+‘FLiteral’ ( compilation r - ; run-time - r  ) floating "f-literal"
    実行時に r が(浮動小数点)スタックに配置されるように、 適切なコードを
 コンパイルします。 インタープリター機能(interpretation semantics)は未定
 義です。
 
-‘SLiteral’ ( Compilation c-addr1 u ; run-time – c-addr2 u  ) string “SLiteral”
+‘SLiteral’ ( Compilation c-addr1 u ; run-time - c-addr2 u  ) string "SLiteral"
    コンパイル時: c-addr1, u で指定された文字列を現在の定義にコンパイルし
 ます。 実行時: 文字列のアドレスと長さを記述する c-addr2 u を返します。
 
@@ -3261,7 +3261,7 @@ File: gforth.info,  Node: Macros,  Prev: Literals,  Up: Compiling words
 ル機能(compilation semantics)を実行します。 これにより、‘+’ (の実行機能
 (execution semantics)) が ‘foo’ にコンパイルされます(1)。
 
-‘postpone’ ( "name" –  ) core “postpone”
+‘postpone’ ( "name" -  ) core "postpone"
    name の コンパイル機能(compilation semantics)をコンパイルする。
 
    ‘compile-+’ のようなコンパイル・ワード(compiling words)のコンパイルは
@@ -3285,7 +3285,7 @@ File: gforth.info,  Node: Macros,  Prev: Literals,  Up: Compiling words
      : [compile-+] ( compilation: --; interpretation: -- )
        ]] + [[ ; immediate
 
-‘]]’ ( –  ) gforth-0.6 “right-bracket-bracket”
+‘]]’ ( -  ) gforth-0.6 "right-bracket-bracket"
    postpone 状態に切り替え: すべてのワードと認識器(recognizers)は、 その
 前に ‘postpone’ があるかのように処理されます。 ‘[[’ が認識されると、
 postpone 状態は終了します。
@@ -3399,7 +3399,7 @@ Lisp)のマクロに似ています。 C言語などのマクロとの重要な�
      : 2+ ( n1 -- n2 )
        [ ' 1+ twice1 ] ;
 
-‘compile,’ ( xt –  ) core-ext “compile-comma”
+‘compile,’ ( xt -  ) core-ext "compile-comma"
    xt で表される機能(semantics)を現在の定義に追加します。 結果のコード断
 片が実行されると、 xt が ‘execute’ されたのと同一の振る舞いをします。
 
@@ -3450,7 +3450,7 @@ Words::)。 たとえば以下の代わりに
 が固定されているのに対して、 ‘create’ されたワードに関連付けられたデータ
 は変更可能なことを認識しているため、 より適切に最適化できることです。
 
-‘[compile]’ ( compilation "name" – ; run-time ? – ?  ) core-ext “bracket-compile”
+‘[compile]’ ( compilation "name" - ; run-time ? - ?  ) core-ext "bracket-compile"
    古いワード(lLegacy word)です。 代わりに ‘postpone’ を使用してください
 。 name がデフォルト以外のコンパイル機能(compilation semantics)を持つ場
 合は、 ‘postpone’ と同様に機能します。 name がデフォルトのコンパイル機能
@@ -3512,10 +3512,10 @@ state”) と コンパイル状態(“compile state”)の 2 つの状態のい
 ァーの残りを破棄し、 そして、 エラー・メッセージを発行して、そして、 さ
 らなる入力を待ちます。 いずれかの試行が成功すると、 テキスト・インタープ
 リターは入力バッファー全体が処理されるまでパース処理を繰り返し、 全体が
-処理された時点でステータス・メッセージ “‘ ok’” を出力し、 そして、 さら
+処理された時点でステータス・メッセージ "‘ ok’" を出力し、 そして、 さら
 なる入力を待ちます。
 
-   テキスト・インタープリターは、 ‘>IN’ (“to-in”(トゥーイン)と発音します
+   テキスト・インタープリターは、 ‘>IN’ ("to-in"(トゥーイン)と発音します
 )と呼ばれる変数を更新することにより、 入力バッファー内の位置を追跡します
 。 ‘>IN’ の値は 0 で始まり、 入力バッファーの先頭からのオフセットが 0 で
 あることを示します。 オフセット ‘>IN @’ から入力バッファーの末尾までの領
@@ -3578,8 +3578,8 @@ state”) と コンパイル状態(“compile state”)の 2 つの状態のい
      、 現在の定義に(リテラルとして)コンパイルされます。
    • エラーが発生した場合、 ‘state’ が変更され、 テキスト・インタープリ
      ターはインタプリタ状態に戻ります。
-   • キーボードから行が入力されるたびに、 Gforth は “ ‘ok’” ではなく “‘
-     compiled’” を出力します。
+   • キーボードから行が入力されるたびに、 Gforth は " ‘ok’" ではなく "‘
+     compiled’" を出力します。
 
    テキスト・インタープリターがキーボード以外の入力デバイスを使用してい
 る場合、 その振る舞いは以下のように変化します:
@@ -3587,28 +3587,28 @@ state”) と コンパイル状態(“compile state”)の 2 つの状態のい
    • パース領域が空の場合、 テキスト・インタープリターは入力ソースから入
      力バッファーを再充填(refill)しようと試みます。 入力ソースを使い尽く
      すと、 入力ソースは以前の入力ソースに戻ります。
-   • パース領域が空になるたびに “‘ ok’” や “‘ compiled’” メッセージは出
+   • パース領域が空になるたびに "‘ ok’" や "‘ compiled’" メッセージは出
      力されません。
    • エラーが発生した場合、 入力ソースはユーザー入力デバイスに戻されます
      。
 
    これについて詳しくは、 *note Input Sources:: をご覧ください。
 
-‘>in’ ( – addr  ) core “to-in”
-   ‘uvar’ 変数 – a-addr は、 入力バッファーの先頭からパース領域の先頭ま
+‘>in’ ( - addr  ) core "to-in"
+   ‘uvar’ 変数 - a-addr は、 入力バッファーの先頭からパース領域の先頭ま
 での char オフセットを格納するセルへのアドレスです。
 
-‘source’ ( – addr u  ) core “source”
+‘source’ ( - addr u  ) core "source"
    現在の入力バッファーのアドレス addr と長さ u を返します
 
-‘tib’ ( – addr  ) core-ext-obsolescent “t-i-b”
+‘tib’ ( - addr  ) core-ext-obsolescent "t-i-b"
 
-‘#tib’ ( – addr  ) core-ext-obsolescent “number-t-i-b”
-   ‘uvar’ 変数 – a-addr は、 端末の入力バッファー内の文字数を含むセルの
+‘#tib’ ( - addr  ) core-ext-obsolescent "number-t-i-b"
+   ‘uvar’ 変数 - a-addr は、 端末の入力バッファー内の文字数を含むセルの
 アドレスです。 時代遅れ(OBSOLESCENT): ‘source’ はこのワードの機能を置き
 換えます。
 
-‘interpret’ ( ... – ...  ) gforth-0.2 “interpret”
+‘interpret’ ( ... - ...  ) gforth-0.2 "interpret"
 
 * Menu:
 
@@ -3647,7 +3647,7 @@ File: gforth.info,  Node: Input Sources,  Next: Number Conversion,  Prev: The Te
 入力デバイス(キーボード)からの入力を処理します。 テキスト・インタープリ
 ターは、 以下のいずれかの入力ソースからの入力を処理できます:
 
-   • ユーザー入力デバイス – つまり、キーボード。
+   • ユーザー入力デバイス - つまり、キーボード。
    • ファイル。 *note Forth source files:: で説明されているワードを使用
      。
    • ブロック。 *note Blocks:: で説明されているワードを使用。
@@ -3656,21 +3656,21 @@ File: gforth.info,  Node: Input Sources,  Next: Number Conversion,  Prev: The Te
    プログラムは、 ‘source-id’ と ‘blk’ の値から現在の入力デバイスを識別
 できます。
 
-‘source-id’ ( – 0 | -1 | fileid  ) core-ext,file “source-i-d”
+‘source-id’ ( - 0 | -1 | fileid  ) core-ext,file "source-i-d"
    戻り値: 0 (入力ソースはユーザー入力デバイス)または、 -1 (入力ソースは
 ‘evaluate’ によって処理されている文字列)または、 fileid (入力ソースは
 fileid で指定されたファイル)です。
 
-‘blk’ ( – addr  ) block “b-l-k”
-   ‘uvar’ 変数 – このセルには現在のブロック番号(現在の入力ソースがブロッ
+‘blk’ ( - addr  ) block "b-l-k"
+   ‘uvar’ 変数 - このセルには現在のブロック番号(現在の入力ソースがブロッ
 クでない場合は 0)が格納されています。
 
-‘save-input’ ( – x1 .. xn n  ) core-ext “save-input”
+‘save-input’ ( - x1 .. xn n  ) core-ext "save-input"
    n 個のエントリ xn 〜 x1 は、 ‘restore-input’ で使用できるプラットフォ
 ーム依存の方法で、 入力ソース仕様(input source specification)の現在の状
 態を記述します。
 
-‘restore-input’ ( x1 .. xn n – flag  ) core-ext “restore-input”
+‘restore-input’ ( x1 .. xn n - flag  ) core-ext "restore-input"
    入力ソース仕様(input source specification)を n 個のエントリ xn 〜 x1
 で記述された状態に復元しようとします。 復元が失敗した場合は flag が true
 になります。 新しい入力プログラムを使用した Gforth では、 再度 throw す
@@ -3679,14 +3679,14 @@ fileid で指定されたファイル)です。
 ムを閉じる場合は、 開いたときとは逆の順序で行う必要がありますが、 その間
 はすべて許可されます。
 
-‘evaluate’ ( ... addr u – ...  ) core,block “evaluate”
+‘evaluate’ ( ... addr u - ...  ) core,block "evaluate"
    現在の入力ソース仕様(input source specification)を保存します。 そして
 、 ‘-1’ を ‘source-id’ に保存し、 かつ、 ‘0’ を ‘blk’ に保存します。 そ
 れから、 ‘>IN’ を ‘0’ に設定し、 文字列 c-addr u を入力ソースおよび入力
 バッファーにし、 通訳(interpret)します。 そしてパース領域が空になったら
 、 入力ソース仕様を復元します。
 
-‘query’ ( –  ) core-ext-obsolescent “query”
+‘query’ ( -  ) core-ext-obsolescent "query"
    ユーザー入力デバイスを入力ソースにします。 入力を端末入力バッファー
 (Terminal Input Buffer)で受け取ります。 ‘>IN’ をゼロに設定します。 時代
 遅れ(OBSOLESCENT): ‘accept’ で置き換えられました。
@@ -3709,25 +3709,25 @@ Literals in source code:: にあります。 このセクションでは、 関�
 、 一般的な 10 進数以外の基数については *note Literals in source code::
 で説明されている接頭辞を使用することをお勧めします。
 
-‘base-execute’ ( i*x xt u – j*x  ) gforth-0.7 “base-execute”
+‘base-execute’ ( i*x xt u - j*x  ) gforth-0.7 "base-execute"
    ‘BASE’ の内容を u にして xt を実行し、 その後元の ‘BASE’ を復元します
 。
 
-‘base’ ( – a-addr  ) core “base”
-   ‘User’ 変数 – a-addr は、 入出力時の数値変換にデフォルトで使用される
+‘base’ ( - a-addr  ) core "base"
+   ‘User’ 変数 - a-addr は、 入出力時の数値変換にデフォルトで使用される
 基数を格納するセルへのアドレスです。 ‘base’ に保存せず、 代わりに
 ‘base-execute’ を使用してください。
 
-‘hex’ ( –  ) core-ext “hex”
+‘hex’ ( -  ) core-ext "hex"
    ‘base’ を &16 (16 進数) に設定します。 ‘hex’ を使用せず、 代わりに
 ‘base-execute’ を使用してください。
 
-‘decimal’ ( –  ) core “decimal”
+‘decimal’ ( -  ) core "decimal"
    ‘base’ を &10 (10 進数) に設定します。 ‘10 進数’ を使用せず、 代わり
 に ‘base-execute’ を使用してください。
 
-‘dpl’ ( – a-addr  ) gforth-0.2 “Decimal-PLace”
-   ‘User’ 変数 – a-addr は、 最新の数値変換における小数点の位置を格納す
+‘dpl’ ( - a-addr  ) gforth-0.2 "Decimal-PLace"
+   ‘User’ 変数 - a-addr は、 最新の数値変換における小数点の位置を格納す
 るセルのアドレスです。 -1 に初期化されます。 小数点を含まない数値を変換
 すると、 ‘dpl’ は -1 になります。 ‘2.’ の変換後は 0 が保持されます。
 234123.9 の変換後は 1 が保持されます。
@@ -3783,7 +3783,7 @@ Gforth では、 非即実行バージョンがコンパイル状態でのみ使
    これは、 システムが ‘\G’ を定義していない場合は、 幾つかの置き換えプ
 ログラムをコンパイルします(機能が制限される可能性があります)。
 
-‘[IF]’ ( flag –  ) tools-ext “bracket-if”
+‘[IF]’ ( flag -  ) tools-ext "bracket-if"
    flag が ‘TRUE’ の場合は何もしません(したがって、 後続のワードは通常ど
 おり実行されます)。 flag が ‘FALSE’ の場合、 対になる ‘[ELSE]’ または
 ‘[THEN]’ がパースされて破棄されるまで、 ‘[IF]’..  ‘[ELSE]’..  ‘[THEN]’ や
@@ -3791,7 +3791,7 @@ Gforth では、 非即実行バージョンがコンパイル状態でのみ使
 /パース領域 は、 必要に応じて ‘REFILL’ を使用して再充填します)からワード
 をパースして破棄します。 即実行ワードです。
 
-‘[ELSE]’ ( –  ) tools-ext “bracket-else”
+‘[ELSE]’ ( -  ) tools-ext "bracket-else"
    対になる ‘[THEN]’ がパースされて破棄されるまで、 ‘[IF]’..  ‘[ELSE]’..
 ‘[THEN]’ や ‘[IF]’..  ‘[THEN]’ の入れ子になったモノを含むパース領域(入力
 バッファー/パース領域 は、 必要に応じて ‘REFILL’ を使用して再充填します
@@ -3799,62 +3799,62 @@ Gforth では、 非即実行バージョンがコンパイル状態でのみ使
 パースして破棄し、後続のワードは通常どおり実行されたままになります。 即
 実行ワードです。
 
-‘[THEN]’ ( –  ) tools-ext “bracket-then”
+‘[THEN]’ ( -  ) tools-ext "bracket-then"
    何もしない。 パースして破棄する他のワードのマーカーとして使用されます
 。 即実行ワードです。
 
-‘[ENDIF]’ ( –  ) gforth-0.2 “bracket-end-if”
+‘[ENDIF]’ ( -  ) gforth-0.2 "bracket-end-if"
    何もしません。 ‘[THEN]’ の同義語(synonym)です。
 
-‘[defined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-defined”
+‘[defined]’ ( "<spaces>name" - flag  ) tools-ext "bracket-defined"
    現在の検索順序スタック(the search order)で名前が見つかった場合は true
 を返します
 
-‘[undefined]’ ( "<spaces>name" – flag  ) tools-ext “bracket-undefined”
+‘[undefined]’ ( "<spaces>name" - flag  ) tools-ext "bracket-undefined"
    現在の検索順序スタック(the search order)で名前が見つかった場合は
 false を返します
 
-‘[IFDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-def”
+‘[IFDEF]’ ( "<spaces>name" -  ) gforth-0.2 "bracket-if-def"
    現在の検索順序スタック(the search order)で name が見つかった場合は、
 ‘TRUE’ フラグを伴った ‘[IF]’ のように振る舞いし、 そうでない場合は、
 ‘FALSE’ フラグを伴った ‘[IF]’ のように動作します。 即実行ワードです。
 
-‘[IFUNDEF]’ ( "<spaces>name" –  ) gforth-0.2 “bracket-if-un-def”
+‘[IFUNDEF]’ ( "<spaces>name" -  ) gforth-0.2 "bracket-if-un-def"
    現在の検索順序スタック(the search order)で name が見つからない場合は
 、 ‘TRUE’ フラグを伴った ‘[IF]’ のように動作し、 それ以外の場合は、
 ‘FALSE’ フラグを伴った ‘[IF]’ のように動作します。 即実行ワード。
 
-‘[?DO]’ ( n-limit n-index –  ) gforth-0.2 “bracket-question-do”
+‘[?DO]’ ( n-limit n-index -  ) gforth-0.2 "bracket-question-do"
 
-‘[DO]’ ( n-limit n-index –  ) gforth-0.2 “bracket-do”
+‘[DO]’ ( n-limit n-index -  ) gforth-0.2 "bracket-do"
 
-‘[LOOP]’ ( –  ) gforth-0.2 “bracket-loop”
+‘[LOOP]’ ( -  ) gforth-0.2 "bracket-loop"
 
-‘[+LOOP]’ ( n –  ) gforth-0.2 “bracket-question-plus-loop”
+‘[+LOOP]’ ( n -  ) gforth-0.2 "bracket-question-plus-loop"
 
-‘[FOR]’ ( n –  ) gforth-0.2 “bracket-for”
+‘[FOR]’ ( n -  ) gforth-0.2 "bracket-for"
 
-‘[NEXT]’ ( n –  ) gforth-0.2 “bracket-next”
+‘[NEXT]’ ( n -  ) gforth-0.2 "bracket-next"
 
-‘[I]’ ( run-time – n  ) gforth-0.2 “bracket-i”
+‘[I]’ ( run-time - n  ) gforth-0.2 "bracket-i"
    実行時、 ‘[I]’ はテキスト・インタープリター時の ‘[do]’ の反復
 (iteration)のループ・インデックスをプッシュします。 インタープリター時に
 インデックスを処理したい場合は、 ‘[I]’ を対話的に通訳(interpret)するか、
 または ‘INT-[I]’ を使用します。
 
-‘INT-[I]’ ( – n  ) gforth-1.0 “int-bracket-i”
+‘INT-[I]’ ( - n  ) gforth-1.0 "int-bracket-i"
    テキスト・インタープリター時に ‘[do]’ 反復のループ・インデックスをプ
 ッシュします。
 
-‘[BEGIN]’ ( –  ) gforth-0.2 “bracket-begin”
+‘[BEGIN]’ ( -  ) gforth-0.2 "bracket-begin"
 
-‘[UNTIL]’ ( flag –  ) gforth-0.2 “bracket-until”
+‘[UNTIL]’ ( flag -  ) gforth-0.2 "bracket-until"
 
-‘[AGAIN]’ ( –  ) gforth-0.2 “bracket-again”
+‘[AGAIN]’ ( -  ) gforth-0.2 "bracket-again"
 
-‘[WHILE]’ ( flag –  ) gforth-0.2 “bracket-while”
+‘[WHILE]’ ( flag -  ) gforth-0.2 "bracket-while"
 
-‘[REPEAT]’ ( –  ) gforth-0.2 “bracket-repeat”
+‘[REPEAT]’ ( -  ) gforth-0.2 "bracket-repeat"
 
    ‘#line’ を使用すると、 現在のソース行番号とソース・ファイルに関する
 Gforth の認識を変更できます。 これは、 Forth ファイルが他のソース・コー
@@ -3863,7 +3863,7 @@ Gforth の認識を変更できます。 これは、 Forth ファイルが他�
 Forth コード・ジェネレーターは、 必要に応じて Forth コードに ‘#line’ 行
 を挿入する必要があります。
 
-‘#line’ ( "u" "["file"]" –  ) gforth-1.0 “#line”
+‘#line’ ( "u" "["file"]" -  ) gforth-1.0 "#line"
    行番号を u に設定し、 (存在する場合)ファイル名を file に設定します。
 行の残りの部分を消費します。
 
@@ -3938,7 +3938,7 @@ order)内のワード(‘rec-nt’) と、 整数(‘rec-num’)と、 浮動小
 
    以下を使用すると、 使用されている認識器と認識器の順序を確認できます
 
-‘.recognizers’ ( –  ) gforth-experimental “dot-recognizers”
+‘.recognizers’ ( -  ) gforth-experimental "dot-recognizers"
    (.order とは異なり、)最初に検索された認識器を左端にして、 現在の認識
 器の順序を出力します。 すべての認識器に共通のプレフィックスである ‘rec-’
 の代わりに、 反転表示の ‘~’ が表示されます。
@@ -3989,7 +3989,7 @@ File: gforth.info,  Node: Dealing with existing Recognizers,  Next: Defining Rec
 ます。 このワードはトランスレーター(translator)と呼ばれます。 認識器が文
 字列を認識しない場合は、 ‘notfound’ の xt を返します。
 
-   すべての認識器(recognizers)のスタック効果は ( c-addr u – ...  xt ) で
+   すべての認識器(recognizers)のスタック効果は ( c-addr u - ...  xt ) で
 す。
 
    認識器は文字列を受け取り、 いくつかのデータと、 そのデータを通訳
@@ -4010,69 +4010,69 @@ semantics)を実行し、 データと実行時機能の xt も取得します�
 認識器群です。 つまり、 認識器スタックは実行可能であり、 文字列を受け取
 り、 トランスレーターを返します。
 
-‘notfound’ ( state –  ) gforth-experimental “notfound”
+‘notfound’ ( state -  ) gforth-experimental "notfound"
    認識器の認識が失敗すると、 ‘notfound’ の認識器トークン(訳注: 現状では
 ‘notfound’ の xt )を返します
 
-‘rec-nt’ ( addr u – nt translate-nt | notfound  ) gforth-experimental “rec-nt”
+‘rec-nt’ ( addr u - nt translate-nt | notfound  ) gforth-experimental "rec-nt"
    名前トークンを認識します
 
-‘rec-num’ ( addr u – n/d table | notfound  ) gforth-experimental “rec-num”
+‘rec-num’ ( addr u - n/d table | notfound  ) gforth-experimental "rec-num"
    数値を 1倍長/2倍長 整数に変換します
 
-‘rec-float’ ( addr u – r translate-float | notfound  ) gforth-experimental “rec-float”
+‘rec-float’ ( addr u - r translate-float | notfound  ) gforth-experimental "rec-float"
    浮動小数点数を認識します
 
-‘rec-string’ ( addr u – addr u’ r:string | rectype-null  ) gforth-experimental “rec-string”
+‘rec-string’ ( addr u - addr u' r:string | rectype-null  ) gforth-experimental "rec-string"
    二重引用符(double quotes)で囲まれた文字列(strings)を文字列リテラルに
 変換します。 エスケープは ‘S\"’ と同様に扱われます。
 
-‘rec-to’ ( addr u – xt n r:to | rectype-null  ) gforth-experimental “rec-to”
+‘rec-to’ ( addr u - xt n r:to | rectype-null  ) gforth-experimental "rec-to"
    ‘->’ で始まるワードは、 ‘TO’ が前にあるものとして扱い、 ‘+>’ で始まる
 ワードは ‘+TO’ が前にあるものとして扱い、 ‘'>’ で始まるワードは ‘ADDR’ が
 前にあるものとして扱い、 ‘@>’ で始まるワードは ‘ACTION-OF’ が前にあるも
 のとして扱い、 ‘=>’ で始まるワードは ‘IS’ が前にあるものとして扱います。
 
-‘rec-tick’ ( addr u – xt rectype-num | rectype-null  ) gforth-experimental “rec-tick”
+‘rec-tick’ ( addr u - xt rectype-num | rectype-null  ) gforth-experimental "rec-tick"
    ‘`’ (バッククォート)の接頭辞が付いたワードはその xt を返します。 例:
 ‘`dup’ は dup の xt を返します
 
-‘rec-dtick’ ( addr u – nt rectype-num | rectype-null  ) gforth-experimental “rec-dtick”
+‘rec-dtick’ ( addr u - nt rectype-num | rectype-null  ) gforth-experimental "rec-dtick"
    ‘``’ (バッククォート2つ)で始まるワードは、 その nt を返します。 例:
 ‘``S"’ は ‘S"’ の nt を返します。
 
-‘rec-body’ ( addr u – xt translate-tick | translate-null  ) gforth-experimental “rec-body”
+‘rec-body’ ( addr u - xt translate-tick | translate-null  ) gforth-experimental "rec-body"
    ‘'<'’ ‘'>'’ で囲まれたワードはその本体(body)を返します。 例: ‘<dup>’
 は dup の本体(body)を返します
 
-‘get-recognizers’ ( – xt1 .. xtn n  ) gforth-experimental “get-recognizers”
+‘get-recognizers’ ( - xt1 .. xtn n  ) gforth-experimental "get-recognizers"
    認識器スタックの内容(content)をスタックにプッシュします。 n は xt の
 個数です。
 
-‘set-recognizers’ ( xt1 .. xtn n –  ) gforth-experimental “set-recognizers”
+‘set-recognizers’ ( xt1 .. xtn n -  ) gforth-experimental "set-recognizers"
    スタック上の内容(content)を認識器スタックに設定します。 n は xt の個
 数です。
 
-‘recognize’ ( addr u rec-addr – ... rectype  ) gforth-experimental “recognize”
+‘recognize’ ( addr u rec-addr - ... rectype  ) gforth-experimental "recognize"
    訳注: 認識器スタック rec-addr の認識器を順に文字列 addr u に適用し、
 認識したら、 そのトランスレーター rectype (の xt ) を得ます。 何も適用で
 きなかった場合はトランスレーター ‘notfound’ (の xt )を返します
 
-‘recognizer-sequence:’ ( xt1 .. xtn n "name" –  ) gforth-experimental “recognizer-sequence:”
+‘recognizer-sequence:’ ( xt1 .. xtn n "name" -  ) gforth-experimental "recognizer-sequence:"
    訳注: xt1 ..  xtn n という内容で "name" という名前の認識器スタックを
 作成します。
 
-‘forth-recognize’ ( c-addr u – ... translate-xt  ) recognizer “forth-recognize”
+‘forth-recognize’ ( c-addr u - ... translate-xt  ) recognizer "forth-recognize"
    システム認識器スタックです。
 
-‘forth-recognizer’ ( – xt  ) gforth-experimental “forth-recognizer”
+‘forth-recognizer’ ( - xt  ) gforth-experimental "forth-recognizer"
    Matthias Trute recognizer API との下位互換性があります。 この構造は、
 defer されたワードを value のようなワードに変換します。
 
-‘set-forth-recognize’ ( xt –  ) recognizer “set-forth-recognize”
+‘set-forth-recognize’ ( xt -  ) recognizer "set-forth-recognize"
    システム認識器スタックを変更する
 
-‘translate:’ ( int-xt comp-xt post-xt "name" –  ) gforth-experimental “translate:”
+‘translate:’ ( int-xt comp-xt post-xt "name" -  ) gforth-experimental "translate:"
    name という名前のトランスレーター(トランスレーター・テーブル)を作成し
 、 トランスレーターのインタプリンタ機能アクション int-xt と、 トランスレ
 ーターのコンパイル機能アクション comp-xt と、 トランスレーターの
@@ -4085,33 +4085,33 @@ no.extensions の xt で埋めます)。 実行時: name の 実行時は state 
 別にセットする。アクション実行後は以前の値復元の事) ならばpostpone 機能
 アクションを実行します。
 
-‘translate-nt’ ( i*x nt – j*x  ) gforth-experimental “translate-nt”
+‘translate-nt’ ( i*x nt - j*x  ) gforth-experimental "translate-nt"
    名前トークンのトランスレーター
 
-‘translate-num’ ( x – | x  ) gforth-experimental “translate-num”
+‘translate-num’ ( x - | x  ) gforth-experimental "translate-num"
    数値のトランスレーター
 
-‘translate-dnum’ ( dx – | dx  ) gforth-experimental “translate-dnum”
+‘translate-dnum’ ( dx - | dx  ) gforth-experimental "translate-dnum"
    2倍長整数のトランスレーター
 
    doc-translate-float(訳注: まだ説明書いて無いっぽい)
-‘try-recognize’ ( addr u xt – results | false  ) gforth-experimental “try-recognize”
+‘try-recognize’ ( addr u xt - results | false  ) gforth-experimental "try-recognize"
    入れ子(nested)になった認識器(recognizers)用です: ADDR U の認識を試み
 、 XT を実行して結果が望ましいかどうかを確認します。 XT が false を返し
 た場合は、 認識器の副作用をすべてクリーンアップして false を返します。 そ
 れ以外の場合は、 XT 呼び出しの結果をスタックに返し、 そのTOSはゼロ以外で
 なければなりません。
 
-‘>interpret’ ( translator –  ) gforth-experimental “>interpret”
+‘>interpret’ ( translator -  ) gforth-experimental ">interpret"
    指定のトランスレーターのインタプリンタ機能アクションを実行します。
 
-‘>compile’ ( translator –  ) gforth-experimental “>compile”
+‘>compile’ ( translator -  ) gforth-experimental ">compile"
    指定のトランスレーターのコンパイル機能アクションを実行します。
 
-‘>postpone’ ( translator –  ) gforth-experimental “>postpone”
+‘>postpone’ ( translator -  ) gforth-experimental ">postpone"
    指定のトランスレーターの postpone 機能アクションを実行します
 
-‘translate-method:’ ( "name" –  ) gforth-experimental “translate-method:”
+‘translate-method:’ ( "name" -  ) gforth-experimental "translate-method:"
    新しいトランスレーター・メソッドを作成し、 トランスレーター・テーブル
 を拡張します。 XT RECTYPE ‘to’ TRANSLATOR を使用して、 xt を既存の
 rectypeに割り当てることができます(訳注: ‘>interpret’ や ‘>compile’ や
@@ -4119,7 +4119,7 @@ rectypeに割り当てることができます(訳注: ‘>interpret’ や ‘>
 合はこれ以降の新規 state 値に対するアクションとなる。 現時点で 7 つまで
 追加可能)
 
-‘translate-state’ ( xt –  ) gforth-experimental “translate-state”
+‘translate-state’ ( xt -  ) gforth-experimental "translate-state"
    XT として渡された translate-method に一致するトランスレーターのアクシ
 ョンを実行するように、 システムの現在の state を変更します。
 
@@ -4137,16 +4137,16 @@ File: gforth.info,  Node: Text Interpreter Hooks,  Prev: Recognizers,  Up: The T
 6.14.6 Text Interpreter Hooks
 -----------------------------
 
-‘before-line’ ( –  ) gforth-1.0 “before-line”
+‘before-line’ ( -  ) gforth-1.0 "before-line"
    テキスト・インタープリターが次の行をパースする前に呼び出される defer
 されたワード(訳注: 初期値 ‘noop’ 。 ‘interpret’ 実行開始時にも呼び出され
 る)
 
-‘before-word’ ( –  ) gforth-0.7 “before-word”
+‘before-word’ ( -  ) gforth-0.7 "before-word"
    テキスト・インタープリターが次のワードをパースする前に呼び出される
 deferd されたワード(訳注: 初期値 ‘noop’)
 
-‘line-end-hook’ ( –  ) gforth-0.7 “line-end-hook”
+‘line-end-hook’ ( -  ) gforth-0.7 "line-end-hook"
    ファイルからテキスト通訳(text-interpreting)するときに行末ごとに呼び出
 される defer されたワード(訳注: 初期値 ‘noop’ )
 
@@ -4175,29 +4175,29 @@ semantics)とコンパイル機能(compilation semantics)の組み合わせが�
 供してください。 もし、 その上でパース・ワードを実装するなら、 以下のワ
 ード群を使用できます:
 
-‘parse’ ( xchar "ccc<xchar>" – c-addr u  ) core-ext,xchar-ext “parse”
+‘parse’ ( xchar "ccc<xchar>" - c-addr u  ) core-ext,xchar-ext "parse"
    パース領域で xchar で区切られた ccc をパースします。 c-addr u は、 パ
 ース領域内でパースされた文字列を指します。 パース領域が空の場合、 u は 0
 です(訳注: ‘bl parse ccc type ccc ok’ 。 直後でENTERキーを押して行を終了
 すると(‘parse’ ENTER)、 長さ0の文字列をスタックに積む)
 
-‘string-parse’ ( c-addr1 u1 "ccc<string>" – c-addr2 u2  ) gforth-1.0 “string-parse”
+‘string-parse’ ( c-addr1 u1 "ccc<string>" - c-addr2 u2  ) gforth-1.0 "string-parse"
    文字列 c-addr1 u1 で区切られた ccc をパース領域でパースします。
 c-addr2 u2 は、 パース領域内のパースされた文字列を指します。 パース領域
 が空の場合、 u2 は 0 です(訳注: ‘" " string-parse ccc type ccc ok’)
 
-‘parse-name’ ( "name" – c-addr u  ) core-ext “parse-name”
+‘parse-name’ ( "name" - c-addr u  ) core-ext "parse-name"
    入力バッファーから次の単語(word)を取得します(訳注: ‘parse-name ccc
 type ccc ok’)
 
-‘parse-word’ ( – c-addr u  ) gforth-obsolete “parse-word”
+‘parse-word’ ( - c-addr u  ) gforth-obsolete "parse-word"
    ‘parse-name’ の古い名前。 このワード語は、他の一部のシステムでは矛盾
 する振る舞いをします。
 
-‘name’ ( – c-addr u  ) gforth-obsolete “name”
+‘name’ ( - c-addr u  ) gforth-obsolete "name"
    ‘parse-name’ の古い名前
 
-‘word’ ( char "<chars>ccc<char>– c-addr  ) core “word”
+‘word’ ( char "<chars>ccc<char>- c-addr  ) core "word"
    先頭の区切り文字をスキップします。 パース領域で char で区切られた ccc
 をパースします。 c-addr は、 カウンタ付き文字列形式で、 パースされた文字
 列を格納する一時領域のアドレスです。 パース領域が空であるか、 区切り文字
@@ -4206,7 +4206,7 @@ type ccc ok’)
 遅れ(OBSOLESCENT): カウンタ付き文字列の末尾に、 その長さに含まれないスペ
 ースがあります。
 
-‘refill’ ( – flag  ) core-ext,block-ext,file-ext “refill”
+‘refill’ ( - flag  ) core-ext,block-ext,file-ext "refill"
    入力ソースにより入力バッファーを満たすことを試みます。 入力ソースがユ
 ーザー入力デバイスの場合、 端末入力デバイスからの入力の受け取りを試みま
 す。 成功した場合は、 結果を入力バッファーにし、 ‘>IN’ を 0 に設定して
@@ -4223,7 +4223,7 @@ true を返します。 それ以外の場合は false を返します。 入力
 、 ‘execute-parsing’ を使用して(スタック経由で)文字列を渡すことができま
 す:
 
-‘execute-parsing’ ( ... addr u xt – ...  ) gforth-0.6 “execute-parsing”
+‘execute-parsing’ ( ... addr u xt - ...  ) gforth-0.6 "execute-parsing"
    addr u を現在の入力ソースにして xt ‘( ... -- ... )’ を実行してから、
 以前の入力ソースを復元します。
 
@@ -4239,7 +4239,7 @@ true を返します。 それ以外の場合は false を返します。 入力
    ファイルに対してワードのパースを実行したい場合は、 以下のワードが役に
 立ちます:
 
-‘execute-parsing-file’ ( i*x fileid xt – j*x  ) gforth-0.6 “execute-parsing-file”
+‘execute-parsing-file’ ( i*x fileid xt - j*x  ) gforth-0.6 "execute-parsing-file"
    fileid を現在の入力ソースにして、 xt ‘( i*x -- j*x )’ を実行してから
 、 以前の入力ソースを復元します。
 
@@ -4268,63 +4268,63 @@ File: gforth.info,  Node: Word Lists,  Next: Environmental Queries,  Prev: The I
 よって識別されます。 wid の数値には(移植可能な)意味はなく、 セッションご
 とに変わる可能性があります。
 
-   標準 Forth の “Search order” ワード・セットは、 さまざまな異なるスキ
+   標準 Forth の "Search order" ワード・セットは、 さまざまな異なるスキ
 ームの実装を可能にする低レベル・ツールのセットを提供することを目的として
 います。 Gforth は、 伝統的な Forth ワードである ‘vocabulary’ も提供しま
 す。 ‘compat/vocabulary.fs’ は、 標準 Forth での実装を提供します。
 
-‘forth-wordlist’ ( – wid  ) search “forth-wordlist”
-   定数(‘Constant’) – wid は、Gforth が提供するすべての標準のワードを含
+‘forth-wordlist’ ( - wid  ) search "forth-wordlist"
+   定数(‘Constant’) - wid は、Gforth が提供するすべての標準のワードを含
 むワードリストを識別します。 Gforth が呼び出されると、 このワードリスト
 がコンパイル・ワードリストとなり、 検索順序スタック(the search order)の
 TOSになります。
 
-‘definitions’ ( –  ) search “definitions”
+‘definitions’ ( -  ) search "definitions"
    現在検索順序スタック(the search order)のTOSにあるワードリストをコンパ
 イル・ワードリストにします(訳注: : ‘definitions context  current ! ;’ )
 
-‘get-current’ ( – wid  ) search “get-current”
+‘get-current’ ( - wid  ) search "get-current"
    wid は、 現在のコンパイル・ワードリストのワードリスト識別子です。
 
-‘set-current’ ( wid –  ) search “set-current”
+‘set-current’ ( wid -  ) search "set-current"
    wid で識別されるワードリストをコンパイル・ワードリストに設定します。
 
-‘get-order’ ( – widn .. wid1 n  ) search “get-order”
+‘get-order’ ( - widn .. wid1 n  ) search "get-order"
    検索順序スタック(the search order)の内容をデータ・スタックにコピーし
 ます。 現在の検索順序スタックには n 個のエントリがあり、 そのうち wid1 は
 最初に検索されるワードリスト(検索順序スタックのTOSにあるワードリスト) を
 表し、 widn は最後に検索されるワードリストを表します。
 
-‘set-order’ ( widn .. wid1 n –  ) search “set-order”
+‘set-order’ ( widn .. wid1 n -  ) search "set-order"
    N=0 の場合、 検索順序スタック(the search order)を空(empty)にします。
 N=-1 の場合、 検索順序スタックを実装定義で最小化します (Gforth の場合、
 これはワードリスト ‘Root’ です)。 それ以外の場合は、 N 個の wid エントリ
 を持ち、 WID1 が最初に検索されるワードリストを表し、 WIDN が最後に検索さ
 れるワードリストを表すように、 既存の検索順序スタックを置き換えます。
 
-‘wordlist’ ( – wid  ) search “wordlist”
+‘wordlist’ ( - wid  ) search "wordlist"
    wid で表される新しい空(empty)のワードリストを作成します。
 
-‘table’ ( – wid  ) gforth-0.2 “table”
+‘table’ ( - wid  ) gforth-0.2 "table"
    検索テーブル(lookup table)を作成します(英大文字と小文字を区別し、 警
 告なし)。
 
-‘cs-wordlist’ ( – wid  ) gforth-1.0 “cs-wordlist”
+‘cs-wordlist’ ( - wid  ) gforth-1.0 "cs-wordlist"
    英大文字小文字を区別するワードリストを作成する。
 
-‘cs-vocabulary’ ( "name" –  ) gforth-1.0 “cs-vocabulary”
+‘cs-vocabulary’ ( "name" -  ) gforth-1.0 "cs-vocabulary"
    英大文字小文字を区別するボキャブラリーを作成する
 
-‘>order’ ( wid –  ) gforth-0.5 “to-order”
+‘>order’ ( wid -  ) gforth-0.5 "to-order"
    検索順序スタック(the search order)というワードリストのスタックにワー
 ドリスト WID をプッシュする(訳注: WID が 検索順序スタックの TOS になる
 )。
 
-‘previous’ ( –  ) search-ext “previous”
+‘previous’ ( -  ) search-ext "previous"
    検索順序スタック(the search order)というワードリスト・スタックのTOSを
 捨てる
 
-‘also’ ( –  ) search-ext “also”
+‘also’ ( -  ) search-ext "also"
    検索順序スタック(the search order)でTOSを ‘DUP’ するかのように振る舞
 います(訳注: ‘: also context  >order ;’)。 通常はボキャブラリーの前で使
 います(例えば ‘also Forth’)。 これにより、 ボキャブラリーによって表され
@@ -4333,26 +4333,26 @@ N=-1 の場合、 検索順序スタックを実装定義で最小化します (
 はなくて、 検索順序スタックのTOSにさらにプッシュする形にして、 ボキャブ
 ラリーの次が以前の検索順序スタックのTOSになるようにする)
 
-‘Forth’ ( –  ) search-ext “Forth”
+‘Forth’ ( -  ) search-ext "Forth"
    検索順序スタック(the search order)の先頭にある wid を、 ワードリスト
 ‘forth-wordlist’ に関連付けられた wid に置き換えます。
 
-‘Only’ ( –  ) search-ext “Only”
+‘Only’ ( -  ) search-ext "Only"
    検索順序スタック(the search order)を実装定義で最小化します(Gforth の
 場合、 これはワードリスト ‘Root’ です)。
 
-‘order’ ( –  ) search-ext “order”
+‘order’ ( -  ) search-ext "order"
    検索順序スタック(the search order)とコンパイル・ワードリストを出力し
 ます。 検索順序スタックのワードリストは検索される順序で出力されます(従来
 のスタック表示方法とは逆になります)。 続けて、 コンパイル・ワードリスト
 が最後に表示されます。
 
-‘.voc’ ( wid –  ) gforth-0.2 “dot-voc”
+‘.voc’ ( wid -  ) gforth-0.2 "dot-voc"
    WID で表されるワードリストの名前を出力します。 ‘vocabulary’ または
 ‘wordlist constant’ で定義された名前のみ出力できます。 それ以外の場合は
 アドレスを出力します。
 
-‘find’ ( c-addr – xt +-1 | c-addr 0  ) core,search “find”
+‘find’ ( c-addr - xt +-1 | c-addr 0  ) core,search "find"
    カウンタ付き文字列 c-addr によって指定された定義の名前を現在の検索順
 序スタック(the search order)内の全てのワードリストで検索します。 定義が
 見つからない場合、 0 を返します。 定義が見つかった場合は、 1 (定義にデフ
@@ -4368,7 +4368,7 @@ N=-1 の場合、 検索順序スタックを実装定義で最小化します (
 グラムでは問題があります。 移植性がなくても問題ない場合には、
 ‘find-name’ とその友達の方が優れています(*note Name token::)。
 
-‘search-wordlist’ ( c-addr count wid – 0 | xt +-1  ) search “search-wordlist”
+‘search-wordlist’ ( c-addr count wid - 0 | xt +-1  ) search "search-wordlist"
    wid で識別されるワードリスト内で、 c-addr count の文字列で指定された
 定義を検索します。 定義が見つからない場合は 0 を返します。 定義が見つか
 った場合は、 xt とともに 1 (定義が即実行である場合)または、 -1 (定義が即
@@ -4376,18 +4376,18 @@ N=-1 の場合、 検索順序スタックを実装定義で最小化します (
 機能(interpretation semantics)を表します。 ANS Forth では、 xt が何を表
 すか明確に規定していません。
 
-‘words’ ( –  ) tools “words”
+‘words’ ( -  ) tools "words"
    検索順序スタック(the search order)の先頭にあるワードリスト内のすべて
 の定義のリストを表示します。
 
-‘vlist’ ( –  ) gforth-0.2 “vlist”
+‘vlist’ ( -  ) gforth-0.2 "vlist"
    ‘WORDS’ の古い(Forth-83 より前の)名前。
 
-‘wordlist-words’ ( wid –  ) gforth-0.6 “wordlist-words”
+‘wordlist-words’ ( wid -  ) gforth-0.6 "wordlist-words"
    ワードリスト wid の内容を表示します(訳注: ワードリストに含まれている
 ワードをリストする)。
 
-‘mwords’ ( ["pattern"] –  ) gforth-1.0 “mwords”
+‘mwords’ ( ["pattern"] -  ) gforth-1.0 "mwords"
    オプションのパラメータ PATTERN にマッチするすべてのワードをリストしま
 す。 指定しない場合、 すべてのワードが一致します。 ワードは古い方から新
 しい方へとリストされます。 ‘search’ のようなパターン・マッチ(デフォルト
@@ -4395,33 +4395,33 @@ N=-1 の場合、 検索順序スタックを実装定義で最小化します (
 ド(globbing)に切り替えることができます(訳注: ‘mwords’ ENTER で全部リスト
 、 例えば ‘mwords value’ で value を含む名前をリスト)。
 
-‘Root’ ( –  ) gforth-0.2 “Root”
+‘Root’ ( -  ) gforth-0.2 "Root"
    root ワードリストを検索順序スタック(the search order)に追加します。 こ
 のボキャブラリは最小の検索順序を構成し、 search-order のワードのみが含ま
 れます。
 
-‘Vocabulary’ ( "name" –  ) gforth-0.2 “Vocabulary”
+‘Vocabulary’ ( "name" -  ) gforth-0.2 "Vocabulary"
    "name" の定義を作成し、 それに新しいワードリストを関連付けます。
 "name" の実行時の効果は、 検索順序スタック(the search order)のTOSにある
 wid を、 "name" に関連付けられた wid に置き換えることです。
 
-‘seal’ ( –  ) gforth-0.2 “seal”
+‘seal’ ( -  ) gforth-0.2 "seal"
    現在検索順序スタック(the search order)のTOSにあるワードリスト以外のす
 べてのワードリストを検索順序スタックから削除します。
 
-‘vocs’ ( –  ) gforth-0.2 “vocs”
+‘vocs’ ( -  ) gforth-0.2 "vocs"
    システムで定義されているボキャブラリーとワードリストをリストします。
 
-‘current’ ( – addr  ) gforth-0.2 “current”
-   変数(‘Variable’) – コンパイル・ワードリストの wid を保持。
+‘current’ ( - addr  ) gforth-0.2 "current"
+   変数(‘Variable’) - コンパイル・ワードリストの wid を保持。
 
-‘context’ ( – addr  ) gforth-0.2 “context”
+‘context’ ( - addr  ) gforth-0.2 "context"
    ‘context’ ‘@’ すると、 検索順序スタック(the search order)のTOSにある
 ワードリストの wid が得られます。
 
-‘map-vocs’ ( ... xt – ...  ) gforth-1.0 “map-vocs”
+‘map-vocs’ ( ... xt - ...  ) gforth-1.0 "map-vocs"
    システム内のすべてのワードリスト(テーブルと cs-wordlist を含む)に対し
-て xt ( ...  wid – ...)  を実行します。
+て xt ( ...  wid - ...)  を実行します。
 
 * Menu:
 
@@ -4542,11 +4542,11 @@ File: gforth.info,  Node: Environmental Queries,  Next: Files,  Prev: Word Lists
 ==========================
 
 Forth-94 は、システム上で実行されているプログラムがシステムの特定の特性
-を判断する方法として「環境問い合わせ」(“environmental query”)という概念
+を判断する方法として「環境問い合わせ」("environmental query")という概念
 を導入しました。 標準では、 システムが認識できるたくさんの文字列と、 そ
 れらを問い合わせする方法が指定されています。
 
-‘environment?’ ( c-addr u – false / ... true  ) core “environment-query”
+‘environment?’ ( c-addr u - false / ... true  ) core "environment-query"
    文字列 c-addr, u を指定します。 文字列が認識されない場合は、 ‘false’
 フラグを返します。 それ以外の場合は、‘true’ フラグと、 問い合わせした文
 字列に関する(それ固有の)情報を返します。
@@ -4560,74 +4560,74 @@ Forth-94 は、システム上で実行されているプログラムがシス�
    いくつかの環境問い合わせ(environmental query)はシステムの制限を取り扱
 います:
 
-‘ADDRESS-UNIT-BITS’ ( – n  ) environment “ADDRESS-UNIT-BITS”
+‘ADDRESS-UNIT-BITS’ ( - n  ) environment "ADDRESS-UNIT-BITS"
    1 つのアドレス単位のサイズ(ビット単位)。
 
-‘MAX-CHAR’ ( – u  ) environment “MAX-CHAR”
+‘MAX-CHAR’ ( - u  ) environment "MAX-CHAR"
    文字セット内の任意の文字の最大値
 
-‘/COUNTED-STRING’ ( – n  ) environment “slash-counted-string”
+‘/COUNTED-STRING’ ( - n  ) environment "slash-counted-string"
    カウンタ付き文字列の最大サイズ(文字単位)。
 
-‘/HOLD’ ( – n  ) environment “slash-hold”
+‘/HOLD’ ( - n  ) environment "slash-hold"
    表示数値文字列の出力バッファーのサイズ(文字単位)。
 
-‘/PAD’ ( – n  ) environment “slash-pad”
+‘/PAD’ ( - n  ) environment "slash-pad"
    ‘PAD’ が指すスクラッチ領域のサイズ(文字数)。
 
-‘CORE’ ( – f  ) environment “CORE”
+‘CORE’ ( - f  ) environment "CORE"
    完全なコア・ワード・セットが存在する場合は true。 Gforth では常に当て
 はまります。
 
-‘CORE-EXT’ ( – f  ) environment “CORE-EXT”
+‘CORE-EXT’ ( - f  ) environment "CORE-EXT"
    完全なコア拡張ワード・セットが存在する場合は true。 Gforth では常に当
 てはまります。
 
-‘FLOORED’ ( – f  ) environment “FLOORED”
+‘FLOORED’ ( - f  ) environment "FLOORED"
    true ならば、 ‘/’ などで、 フロア除算(floored division)を実行します。
 
-‘MAX-N’ ( – n  ) environment “MAX-N”
+‘MAX-N’ ( - n  ) environment "MAX-N"
    使用可能な符号付き整数の最大値。
 
-‘MAX-U’ ( – u  ) environment “MAX-U”
+‘MAX-U’ ( - u  ) environment "MAX-U"
    使用可能な符号なし整数の最大値。
 
-‘MAX-D’ ( – d  ) environment “MAX-D”
+‘MAX-D’ ( - d  ) environment "MAX-D"
    使用可能な符号付き2倍長整数の最大値。
 
-‘MAX-UD’ ( – ud  ) environment “MAX-UD”
+‘MAX-UD’ ( - ud  ) environment "MAX-UD"
    使用可能な符号なし2倍長整数の最大値。
 
-‘return-stack-cells’ ( – n  ) environment “return-stack-cells”
+‘return-stack-cells’ ( - n  ) environment "return-stack-cells"
    リターン・スタックの最大サイズ(セル単位)。
 
-‘stack-cells’ ( – n  ) environment “stack-cells”
+‘stack-cells’ ( - n  ) environment "stack-cells"
    データ・スタックの最大サイズ(セル単位)。
 
-‘floating-stack’ ( – n  ) environment “floating-stack”
+‘floating-stack’ ( - n  ) environment "floating-stack"
    N はゼロ以外で、 Gforth が深さ N の別個の浮動小数点スタックを維持して
 いることを示しています。
 
-‘#locals’ ( – n  ) environment “number-locals”
+‘#locals’ ( - n  ) environment "number-locals"
    定義内のローカル変数の最大数
 
-‘wordlists’ ( – n  ) environment “wordlists”
+‘wordlists’ ( - n  ) environment "wordlists"
    検索順序スタック(the search order)で使用できるワード・リストの最大数
 
-‘max-float’ ( – r  ) environment “max-float”
+‘max-float’ ( - r  ) environment "max-float"
    使用可能な浮動小数点数の最大値(Gforth では最大の有限数(finite
 number)として実装)
 
-‘XCHAR-ENCODING’ ( – addr u  ) environment “XCHAR-ENCODING”
+‘XCHAR-ENCODING’ ( - addr u  ) environment "XCHAR-ENCODING"
    エンコーディングを表す印刷可能なASCII文字列を返し、 (あれば)、 優先さ
-れるMIME名、 または “ISO-LATIN-1” や “UTF-8” のような
+れるMIME名、 または "ISO-LATIN-1" や "UTF-8" のような
 <http://www.iana.org/assignments/character-sets> の名前を使用します。 た
-だし、“ASCII” の場合は、 エイリアスの “ASCII” を優先します。
+だし、"ASCII" の場合は、 エイリアスの "ASCII" を優先します。
 
-‘MAX-XCHAR’ ( – xchar  ) environment “MAX-XCHAR”
+‘MAX-XCHAR’ ( - xchar  ) environment "MAX-XCHAR"
    xchar の最大値。 これはエンコーディングによって異なります。
 
-‘XCHAR-MAXMEM’ ( – u  ) environment “XCHAR-MAXMEM”
+‘XCHAR-MAXMEM’ ( - u  ) environment "XCHAR-MAXMEM"
    1 つの xchar によって消費される最大メモリーをアドレス単位で返します。
 
    Forth-94 バージョンのワードセットの存在を確認するための環境問い合わせ
@@ -4671,15 +4671,15 @@ X:traverse-wordlist X:xchar’
 
    さらに、 Gforth は以下の Gforth 固有の問い合わせを実装します:
 
-‘gforth’ ( – c-addr u  ) gforth-environment “gforth”
+‘gforth’ ( - c-addr u  ) gforth-environment "gforth"
    Gforth のこのバージョン(バージョン > 0.3.0)のバージョン文字列を表す文
 字列。 さまざまなバージョンのバージョン文字列は、 辞書順
 (lexicographically)に並べることができることが保証されています。
 
-‘os-class’ ( – c-addr u  ) gforth-environment “os-class”
+‘os-class’ ( - c-addr u  ) gforth-environment "os-class"
    ホスト・オペレーティング・システムを説明する文字列。
 
-‘os-type’ ( – c-addr u  ) gforth-environment “os-type”
+‘os-type’ ( - c-addr u  ) gforth-environment "os-type"
    $host_os に等しい文字列
 
    標準の問い合わせでは、 環境問い合わせ(environmental query)に使用され
@@ -4694,11 +4694,11 @@ X:traverse-wordlist X:xchar’
 せを受け入れるために使用されるワードリストは、 他のワードリストと同様に
 操作できます。
 
-‘environment-wordlist’ ( – wid  ) gforth-0.2 “environment-wordlist”
+‘environment-wordlist’ ( - wid  ) gforth-0.2 "environment-wordlist"
    wid は、 環境問い合わせ(environmental query)によって検索されるワード
 リストを識別します(SwiftForth および VFX に存在)。
 
-‘environment’ ( –  ) gforth-0.6 “environment”
+‘environment’ ( -  ) gforth-0.6 "environment"
    ‘environment-wordlist’ のボキャブラリー (Win32Forth および VFX に存在
 )。
 
@@ -4800,55 +4800,55 @@ File: gforth.info,  Node: Forth source files,  Next: General files,  Prev: Files
 
      1024 require foo.fs drop
 
-   ここでは、 引数 1024 (バ​​ッファ・サイズなど) を ‘foo.fs’ に渡してい
-ます。 ‘foo.fs’ の通訳(interpret)にはスタック効果 ( n – n ) があり、
+   ここでは、 引数 1024 (バ​​ッファ・サイズなど) を ‘foo.fs’ に渡していま
+す。 ‘foo.fs’ の通訳(interpret)にはスタック効果 ( n - n ) があり、
 ‘require’ での使用が可能になります。 もちろん、 require されるファイルに
 このようなパラメーターを指定する場合は、 最初の ‘require’ がすべての用途
 に適合することを確認する必要があります(つまり、 マスター・ロード・ファイ
 ルの早い段階で ‘require’ することになります)。
 
-‘include-file’ ( i*x wfileid – j*x  ) file “include-file”
+‘include-file’ ( i*x wfileid - j*x  ) file "include-file"
    ファイル WFILEID の内容を通訳(interpret)します(テキスト・インタープリ
 ターを使用して処理します)。
 
-‘included’ ( i*x c-addr u – j*x  ) file “included”
+‘included’ ( i*x c-addr u - j*x  ) file "included"
    文字列 C-ADDR U で指定される名前のファイルを ‘include-file’ します。
 
-‘included?’ ( c-addr u – f  ) gforth-0.2 “included?”
+‘included?’ ( c-addr u - f  ) gforth-0.2 "included?"
    ファイル C-ADDR U が以前にインクルードされたファイルのリストにある場
 合にのみ true。 ファイルがロードされている場合、 たとえば ‘foo.fs’ とし
 て指定されたのが Forth 検索パスのどこかで見つかった可能性があります。
 ‘include?’ から ‘true’ を返すには、 (たとえ ‘./foo.fs’ であっても、 )フ
 ァイルへの正確なパスを指定する必要があります。
 
-‘include’ ( ... "file" – ...  ) file-ext “include”
+‘include’ ( ... "file" - ...  ) file-ext "include"
    FILE を ‘include-file’ する。
 
-‘required’ ( i*x addr u – i*x  ) file-ext “required”
+‘required’ ( i*x addr u - i*x  ) file-ext "required"
    既に ‘include’ (または ‘required’ ) されてないなら、 ADDR U で指定し
 た名前のファイルを ‘include-file’ します。 現状では、 これは(パス
 (path)付きの)ファイル名を以前にインクルードしたファイルの名前と比較する
 ことによって機能します。
 
-‘require’ ( ... "file" – ...  ) file-ext “require”
+‘require’ ( ... "file" - ...  ) file-ext "require"
    FILE がまだインクルードされていない場合のみ、 ‘include-file’ します。
 
-‘needs’ ( ... "name" – ...  ) gforth-0.2 “needs”
+‘needs’ ( ... "name" - ...  ) gforth-0.2 "needs"
    ‘require’ のエイリアス。 他のシステム(Win32Forth など)に存在します。
 
-‘\\\’ ( –  ) gforth-1.0 “\\\”
+‘\\\’ ( -  ) gforth-1.0 "\\\"
    ソース・ファイルの残りをEOFまでスキップする
 
-‘.included’ ( –  ) gforth-0.5 “.included”
+‘.included’ ( -  ) gforth-0.5 ".included"
    インクルードされたファイルの名前をリストします。
 
-‘sourcefilename’ ( – c-addr u  ) gforth-0.2 “sourcefilename”
+‘sourcefilename’ ( - c-addr u  ) gforth-0.2 "sourcefilename"
    現在入力ソースとなっているソース・ファイルの名前。 結果は、 ファイル
 がロードされている間のみ有効です。 現在の入力ソースが(ストリーム)ファイ
 ルでない場合、 結果は未定義です。 Gforth では、 結果はセッション全体で有
 効です(ただし、 ‘savesystem’ などを跨いで有効ではありません)。
 
-‘sourceline#’ ( – u  ) gforth-0.2 “sourceline-number”
+‘sourceline#’ ( - u  ) gforth-0.2 "sourceline-number"
    (ストリーム)ファイルから現在通訳(interpret)されている行の行番号。 最
 初の行は番号 1 です。 現在の入力ソースが(ストリーム)ファイルでない場合、
 結果は未定義です。
@@ -4865,15 +4865,15 @@ File: gforth.info,  Node: General files,  Next: Redirection,  Prev: Forth source
 ファイルは名前と種類によって開かれたり作成されたりします。 以下のファイ
 ル・アクセス・メソッド(FAM)が認識されます:
 
-‘r/o’ ( – fam  ) file “r-o”
+‘r/o’ ( - fam  ) file "r-o"
 
-‘r/w’ ( – fam  ) file “r-w”
+‘r/w’ ( - fam  ) file "r-w"
 
-‘w/o’ ( – fam  ) file “w-o”
+‘w/o’ ( - fam  ) file "w-o"
 
-‘bin’ ( fam1 – fam2  ) file “bin”
+‘bin’ ( fam1 - fam2  ) file "bin"
 
-‘+fmode’ ( fam1 rwxrwxrwx – fam2  ) gforth-1.0 “plus-f-mode”
+‘+fmode’ ( fam1 rwxrwxrwx - fam2  ) gforth-1.0 "plus-f-mode"
    ファイル・アクセス・モードを fam に追加 - create-file のみ(訳注:
 rwxrwxrwx は chmod と同様 777 とか 666 。 ただし gforth には直接 8進数記
 述する方法が無い)
@@ -4883,25 +4883,25 @@ rwxrwxrwx は chmod と同様 777 とか 666 。 ただし gforth には直接 8
 ドは、 ステータス値 wior も返します。 これは、 操作が成功した場合は 0 を
 返し、 エラーの場合は実装で定義されたゼロ以外の値を返します。
 
-‘open-file’ ( c-addr u wfam – wfileid wior ) file “open-file”
+‘open-file’ ( c-addr u wfam - wfileid wior ) file "open-file"
 
-‘create-file’ ( c-addr u wfam – wfileid wior ) file “create-file”
+‘create-file’ ( c-addr u wfam - wfileid wior ) file "create-file"
 
-‘close-file’ ( wfileid – wior ) file “close-file”
+‘close-file’ ( wfileid - wior ) file "close-file"
 
-‘delete-file’ ( c-addr u – wior ) file “delete-file”
+‘delete-file’ ( c-addr u - wior ) file "delete-file"
 
-‘rename-file’ ( c-addr1 u1 c-addr2 u2 – wior ) file-ext “rename-file”
+‘rename-file’ ( c-addr1 u1 c-addr2 u2 - wior ) file-ext "rename-file"
    ファイル c_addr1 u1 のファイル名を新しい名前 c_addr2 u2 に変更します
 (rename)
 
-‘read-file’ ( c-addr u1 wfileid – u2 wior ) file “read-file”
+‘read-file’ ( c-addr u1 wfileid - u2 wior ) file "read-file"
    ファイル wfileid から u1 文字を c_addr からのバッファーに読み取ります
 。 ゼロ以外の wior はエラーを示します。 U2は読み出したデータの長さを示し
 ます。 ファイルの終わりはエラーではなく、 u2$<$u1 かつ wior=0 によって示
 されます。
 
-‘read-line’ ( c_addr u1 wfileid – u2 flag wior  ) file “read-line”
+‘read-line’ ( c_addr u1 wfileid - u2 flag wior  ) file "read-line"
    wfileid から c_addr u1 のバッファーに行を読み取ります。 Gforth は、
 LF と CR と CRLFの 3 つの一般的な行終端文字をすべてサポートします。 ゼロ
 以外の wior はエラーを示します。 false の flag は、ファイルの最後(end of
@@ -4912,7 +4912,7 @@ the file)で ‘read-line’ が呼び出されたことを示します。 u2 �
 ‘read-line’ で読み取られます。 行の長さが u1 文字の場合、最初の
 ‘read-line’ は u2=u1 を返し、 次の read-line は u2=0 を返します。
 
-‘key-file’ ( wfileid – n  ) gforth-0.4 “key-file”
+‘key-file’ ( wfileid - n  ) gforth-0.4 "key-file"
    wfileid から 1 文字 n を読み取ります。 このワードは wfileid のバッフ
 ァリングを無効にします。 あなたが端末から非標準モード(non-canonical
 mode)(RAWモード)で文字を読み取りたい場合は、(C言語インターフェイスを使用
@@ -4920,53 +4920,53 @@ mode)(RAWモード)で文字を読み取りたい場合は、(C言語インタ�
 例外は ‘stdin’ で、 この場合 Gforth は自動的に非正規モード(non-canonical
 mode)に設定します。
 
-‘key?-file’ ( wfileid – f ) gforth-0.4 “key-q-file”
+‘key?-file’ ( wfileid - f ) gforth-0.4 "key-q-file"
    f は、 ブロッキング無しに wfileid から少なくとも 1 文字を読み取ること
 ができる場合に true になります。 ファイルに対して ‘read-file’ または
 ‘read-line’ も使用したい場合は、 最初に ‘key?-file’ または ‘key-file’ を
 呼び出す必要があります(これら 2 つのワードはバッファリングを無効にします
 )。
 
-‘file-eof?’ ( wfileid – flag ) gforth-0.6 “file-eof-query”
+‘file-eof?’ ( wfileid - flag ) gforth-0.6 "file-eof-query"
    WFILEID のファイル終了インジケーター(end-of-file indicator)がセットさ
 れている場合、 FLAG は true です。
 
-‘write-file’ ( c-addr u1 wfileid – wior ) file “write-file”
+‘write-file’ ( c-addr u1 wfileid - wior ) file "write-file"
 
-‘write-line’ ( c-addr u wfileid – ior  ) file “write-line”
+‘write-line’ ( c-addr u wfileid - ior  ) file "write-line"
 
-‘emit-file’ ( c wfileid – wior ) gforth-0.2 “emit-file”
+‘emit-file’ ( c wfileid - wior ) gforth-0.2 "emit-file"
 
-‘flush-file’ ( wfileid – wior ) file-ext “flush-file”
+‘flush-file’ ( wfileid - wior ) file-ext "flush-file"
 
-‘file-status’ ( c-addr u – wfam wior ) file-ext “file-status”
+‘file-status’ ( c-addr u - wfam wior ) file-ext "file-status"
 \ 訳注: wior <> 0 ;ファイルが存在しない(wfamは未定義の値)、
 \       wior=0 かつ  ( wfam=2 r/w 、 wfam=0 r/o 、 wfam=4 w/o 、
 \       wfam=1 r/o bin いずれのacessモードチェックもエラーになった時。
 \       便宜的に読み込み専用かつバイナリとして返す)
 
-‘file-position’ ( wfileid – ud wior ) file “file-position”
+‘file-position’ ( wfileid - ud wior ) file "file-position"
 
-‘reposition-file’ ( ud wfileid – wior ) file “reposition-file”
+‘reposition-file’ ( ud wfileid - wior ) file "reposition-file"
 
-‘file-size’ ( wfileid – ud wior ) file “file-size”
+‘file-size’ ( wfileid - ud wior ) file "file-size"
 
-‘resize-file’ ( ud wfileid – wior ) file “resize-file”
+‘resize-file’ ( ud wfileid - wior ) file "resize-file"
 
-‘slurp-file’ ( c-addr1 u1 – c-addr2 u2  ) gforth-0.6 “slurp-file”
+‘slurp-file’ ( c-addr1 u1 - c-addr2 u2  ) gforth-0.6 "slurp-file"
    C-ADDR1 U1 はファイル名、 C-ADDR2 U2 はファイルの内容です(訳注:
 slurp;音を立ててすする の意味)
 
-‘slurp-fid’ ( fid – addr u  ) gforth-0.6 “slurp-fid”
+‘slurp-fid’ ( fid - addr u  ) gforth-0.6 "slurp-fid"
    ADDR U はファイル FID の内容です(訳注: slurp;音を立ててすする の意味)
 
-‘stdin’ ( – wfileid ) gforth-0.4 “stdin”
+‘stdin’ ( - wfileid ) gforth-0.4 "stdin"
    Gforth プロセスの標準入力ファイル。
 
-‘stdout’ ( – wfileid ) gforth-0.2 “stdout”
+‘stdout’ ( - wfileid ) gforth-0.2 "stdout"
    Gforth プロセスの標準出力ファイル。
 
-‘stderr’ ( – wfileid ) gforth-0.2 “stderr”
+‘stderr’ ( - wfileid ) gforth-0.2 "stderr"
    Gforth プロセスの標準エラー出力ファイル。
 
 
@@ -4990,19 +4990,19 @@ File: gforth.info,  Node: Redirection,  Next: Directories,  Prev: General files,
 用した入力(明示的にファイルを指定しない入力用ワード)をリダイレクトするた
 めの ‘infile-execute’ があります。
 
-‘outfile-execute’ ( ... xt file-id – ...  ) gforth-0.7 “outfile-execute”
+‘outfile-execute’ ( ... xt file-id - ...  ) gforth-0.7 "outfile-execute"
    ‘type’ などの出力を file-id にリダイレクトして xt を execute します。
 
-‘outfile-id’ ( – file-id  ) gforth-0.2 “outfile-id”
+‘outfile-id’ ( - file-id  ) gforth-0.2 "outfile-id"
    File-id は、 ‘emit’ や、 ‘type’ や、 入力として file-id を受け取らな
 い出力用ワードによって使用されます。 ‘outfile-execute’ で変更しない限り
 、 デフォルトでは ‘outfile-id’ は実行中のプロセスの ‘stdout’ を生成しま
 す。
 
-‘infile-execute’ ( ... xt file-id – ...  ) gforth-0.7 “infile-execute”
+‘infile-execute’ ( ... xt file-id - ...  ) gforth-0.7 "infile-execute"
    ‘key’ などの入力を file-id にリダイレクトして xt を実行します。
 
-‘infile-id’ ( – file-id  ) gforth-0.4 “infile-id”
+‘infile-id’ ( - file-id  ) gforth-0.4 "infile-id"
    File-id は、 ‘key’ や、 ‘?key’ や、 「ユーザー入力デバイス」(user
 input device)を参照するものすべてによって使用されます。 デフォルトでは、
 ‘infile-execute’ で変更しない限り、‘infile-id’ は実行中のプロセスの
@@ -5024,13 +5024,13 @@ File: gforth.info,  Node: Directories,  Next: Search Paths,  Prev: Redirection, 
 あなたは、 ファイル名をディレクトリとベース・コンポーネントに分割できま
 す:
 
-‘basename’ ( c-addr1 u1 – c-addr2 u2  ) gforth-0.7 “basename”
+‘basename’ ( c-addr1 u1 - c-addr2 u2  ) gforth-0.7 "basename"
    ファイル名が c-addr1 u1 の場合、 c-addr2 u2 は、 先頭のディレクトリ・
 コンポーネントが削除された部分です(訳注: "os-class" environment?  type
-unix ok な環境では動いたが、 Windows系では不明(’/’ を区切り文字としてハ
+unix ok な環境では動いたが、 Windows系では不明('/' を区切り文字としてハ
 ードコーディングしてあるっぽい)。
 
-‘dirname’ ( c-addr1 u1 – c-addr1 u2  ) gforth-0.7 “dirname”
+‘dirname’ ( c-addr1 u1 - c-addr1 u2  ) gforth-0.7 "dirname"
    C-addr1 u2 は、 ファイル名 c-addr1 u1 のディレクトリ名部分で、 末尾の
 ‘/’ も含まれます。 caddr1 u1 に ‘/’ が含まれていない場合、 u2=0 です(訳
 注: pathの区切り文字として ‘/’ をハードコーディングしているので、
@@ -5040,11 +5040,11 @@ Windows系で動くかどうか不明)。
 と、 一度に 1 つのディレクトリ・エントリが得られます。 これを、 (ワイル
 ドカードを使用して)ファイル名とマッチングさせることができます。
 
-‘open-dir’ ( c-addr u – wdirid wior ) gforth-0.5 “open-dir”
+‘open-dir’ ( c-addr u - wdirid wior ) gforth-0.5 "open-dir"
    c-addr, u で指定されたディレクトリを開き、 さらにそこにアクセスするた
 めに dir-id を返します。
 
-‘read-dir’ ( c-addr u1 wdirid – u2 flag wior ) gforth-0.5 “read-dir”
+‘read-dir’ ( c-addr u1 wdirid - u2 flag wior ) gforth-0.5 "read-dir"
    dir-id で指定されたディレクトリから、 アドレス c-addr にある長さ u1 の
 バッファーへ、 次のエントリの読み取りを試みます。 これ以上エントリがない
 ために試行が失敗した場合は、 ior=0 かつ flag=0 かつ u2=0 となり、 バッフ
@@ -5056,29 +5056,29 @@ u2 を返します。 ファイル名の長さが u1 より長い場合は、 �
 注: ior= -548 日本語環境では "ファイル名が長すぎます")、 かつ flag=true
 かつ u2=u1 です。
 
-‘close-dir’ ( wdirid – wior ) gforth-0.5 “close-dir”
+‘close-dir’ ( wdirid - wior ) gforth-0.5 "close-dir"
    dir-id で指定されたディレクトリを閉じます。
 
-‘filename-match’ ( c-addr1 u1 c-addr2 u2 – flag ) gforth-0.5 “match-file”
+‘filename-match’ ( c-addr1 u1 c-addr2 u2 - flag ) gforth-0.5 "match-file"
    ファイル名 C_ADDR1 U1 とパターン C_ADDR2 U2 のマッチングを行います。
-パターンは、複数の文字 (’*’) または 1 つの文字 (’?’) のワイルドカードで
-ある特殊文字 ’*’ と ’?’ を除き、 文字ごとにマッチします。 マッチングでき
-た場合は true
+パターンは、複数の文字 ('*') または 1 つの文字 ('?')  のワイルドカードで
+ある特殊文字 '*' と '?'  を除き、 文字ごとにマッチします。 マッチングで
+きた場合は true
 
-‘get-dir’ ( c-addr1 u1 – c-addr2 u2 ) gforth-0.7 “get-dir”
+‘get-dir’ ( c-addr1 u1 - c-addr2 u2 ) gforth-0.7 "get-dir"
    c-addr1, u1で指定されたバッファーにカレント・ディレクトリのパス
 (path)を格納します。 バッファーサイズが十分でない場合は、 0 0 を返します
 。
 
-‘set-dir’ ( c-addr u – wior ) gforth-0.7 “set-dir”
+‘set-dir’ ( c-addr u - wior ) gforth-0.7 "set-dir"
    現在のディレクトリを c-addr, u に変更します。 これが不可能な場合はエ
 ラーを返します(訳注: 例えば ior = -514 ; "そのようなファイルやディレクト
 リはありません")
 
-‘=mkdir’ ( c-addr u wmode – wior ) gforth-0.7 “equals-mkdir”
+‘=mkdir’ ( c-addr u wmode - wior ) gforth-0.7 "equals-mkdir"
    モード wmode でディレクトリ c-addr u を作成します。
 
-‘mkdir-parents’ ( c-addr u mode – ior  ) gforth-0.7 “mkdir-parents”
+‘mkdir-parents’ ( c-addr u mode - ior  ) gforth-0.7 "mkdir-parents"
    ディレクトリ c-addr u とそのすべての親をモード mode (umask が掛けられ
 ます)で作成します(訳注: フルパスで指定したディレクトリを作成する。
 ‘aaa/bbb/ccc’ というディレクトリを指定すればそれを一気に作る。 ここで、
@@ -5122,7 +5122,7 @@ path)を使用します。 検索パスに書かれた各ディレクトリ内�
 ように)現在の作業ディレクトリを参照します(訳注: "~+/my-mkdir-parents.fs"
 file-status .s <2> 2 0 ok 2 )
 
-‘absolute-file?’ ( addr u – flag  ) gforth-1.0 “absolute-file?”
+‘absolute-file?’ ( addr u - flag  ) gforth-1.0 "absolute-file?"
    ファイル名が ‘/’ または ‘~’ (チルダ展開) で始まる場合、 または ‘./*’
 拡張正規表現: ‘^[/~]|./’ の形式である場合、 または 2 番目の文字としてコ
 ロンが含まれる場合(‘C:...’)、 絶対(absolute)ファイル名です( true を返す
@@ -5146,12 +5146,12 @@ File: gforth.info,  Node: Source Search Paths,  Next: General Search Paths,  Pre
 Invoking Gforth::)。 ‘fpath’ を一般的なパス処理ワードと組み合わせて使用
 ​​すると、これを表示したり変更したりできます。
 
-‘fpath’ ( – path-addr  ) gforth-0.4 “fpath”
+‘fpath’ ( - path-addr  ) gforth-0.4 "fpath"
 
-‘.fpath’ ( –  ) gforth-0.4 “.fpath”
+‘.fpath’ ( -  ) gforth-0.4 ".fpath"
    Forth 検索パスの内容を表示します。
 
-‘file>fpath’ ( addr1 u1 – addr2 u2  ) gforth-1.0 “file>fpath”
+‘file>fpath’ ( addr1 u1 - addr2 u2  ) gforth-1.0 "file>fpath"
    ‘fpath’ で c-addr1 u1 という名前のファイルを検索します。 成功した場合
 、 c-addr u2 は絶対ファイル名または現在の作業ディレクトリからの相対ファ
 イル名になります。 ファイルを開けない場合(ファイルが見つからない場合)は
@@ -5173,34 +5173,34 @@ File: gforth.info,  Node: General Search Paths,  Prev: Source Search Paths,  Up:
 に、 Gforth では、 Forth 検索パスを一般化した等価なモノを提供することで
 、 あなた独自の検索パスを定義して使用できます。
 
-‘open-path-file’ ( addr1 u1 path-addr – wfileid addr2 u2 0 | ior  ) gforth-0.2 “open-path-file”
+‘open-path-file’ ( addr1 u1 path-addr - wfileid addr2 u2 0 | ior  ) gforth-0.2 "open-path-file"
    パス PATH-ADDR で、 指定のファイル ADDR1 U1 を探します。 見つかった場
 合(IOR=0)は、 結果のパス(addr2 u2)と、 (読み取り専用の)ファイル・デスク
 リプタ(open file descriptor)(wfileid)を返します。 ファイルが見つからない
 場合、 IOR は(現在の実装では)ファイルを開こうとした最後の試行時点で返さ
 れたものです(訳注:ファイルが見つからない場合、 つまり IOR<>0 の場合、返
-されるのは IOR のみです ( addr1 u1 path-addr – ior ) )。
+されるのは IOR のみです ( addr1 u1 path-addr - ior ) )。
 
-‘file>path’ ( c-addr1 u1 path-addr – c-addr2 u2  ) gforth-1.0 “file>path”
+‘file>path’ ( c-addr1 u1 path-addr - c-addr2 u2  ) gforth-1.0 "file>path"
    path-addr に保存されたパス内で c-addr1 u1 という名前のファイルを検索
 します。 成功した場合、c-addr u2 は絶対ファイル名または現在の作業ディレ
 クトリからの相対ファイル名になります。 ファイルを開けない場合は例外をス
 ローします。
 
-‘clear-path’ ( path-addr –  ) gforth-0.5 “clear-path”
+‘clear-path’ ( path-addr -  ) gforth-0.5 "clear-path"
    パス path-addr を空(empty)にします。
 
-‘also-path’ ( c-addr len path-addr –  ) gforth-0.4 “also-path”
+‘also-path’ ( c-addr len path-addr -  ) gforth-0.4 "also-path"
    ディレクトリ c-addr len を path-addr に追加します。
 
-‘.path’ ( path-addr –  ) gforth-0.4 “.path”
+‘.path’ ( path-addr -  ) gforth-0.4 ".path"
    検索パス PATH-ADDR の内容を表示します。
 
-‘path+’ ( path-addr  "dir" –  ) gforth-0.4 “path+”
+‘path+’ ( path-addr  "dir" -  ) gforth-0.4 "path+"
    ディレクトリ DIR を検索パス PATH-ADDR に追加します(訳注: 検索パスの後
 ろに追加する)。
 
-‘path=’ ( path-addr "dir1|dir2|dir3" –  ) gforth-0.4 “path-equals”
+‘path=’ ( path-addr "dir1|dir2|dir3" -  ) gforth-0.4 "path-equals"
    パス path-addr に、 完全に新しい検索パスを作成します。 パス区切り文字
 は ‘|’ です。
 
@@ -5306,13 +5306,13 @@ Search Paths::)。
 
    ブロックの内容に構造は課されていませんが、 伝統的に内容は 1 行当たり
 64 文字の 16 行として表示します。 一つのブロックは、 単一の連続した入力
-ストリームを提供します(たとえば、単一のパース領域として機能します) – ブ
+ストリームを提供します(たとえば、単一のパース領域として機能します) - ブ
 ロック内に行末文字はなく、 ブロックの末尾にファイル終端文字もありません
 。 これは以下の 2 つの結果をもたらします:
 
    • ある行の最後の文字は、そのまま次の行の最初の文字に折り返される(訳注
      : 繋がっています)。
-   • ‘\’ というワード – 行末までのコメント – は特別な処理を行います。 ブ
+   • ‘\’ というワード - 行末までのコメント - は特別な処理を行います。 ブ
      ロックでは、 現在の 64 文字の「1行分」の終わりまでのすべての文字が
      無視されます。
 
@@ -5338,39 +5338,39 @@ Search Paths::)。
    ブロックが Forth プログラミング環境にどの程度うまく統合できるかを確認
 するには、 Frank Sergeant の Pygmy Forth を参照してください。
 
-‘open-blocks’ ( c-addr u –  ) gforth-0.2 “open-blocks”
+‘open-blocks’ ( c-addr u -  ) gforth-0.2 "open-blocks"
    c-addr u で指定された名前のファイルをブロック・ファイルとして使用しま
 す(訳注: エラーの場合はその時点で throw されます)。
 
-‘use’ ( "file" –  ) gforth-0.2 “use”
+‘use’ ( "file" -  ) gforth-0.2 "use"
    file をブロック・ファイルとして使用します。
 
-‘block-offset’ ( – addr  ) gforth-0.5 “block-offset”
+‘block-offset’ ( - addr  ) gforth-0.5 "block-offset"
    最初のブロックの番号を含むユーザー変数(0.5.0 以降のデフォルト: 0)。
 0.5.0 より前のバージョンの Gforth で作成されたブロックファイルのオフセッ
 トは 1 からです。 これらのファイルを使用する場合は、次のことができます。
 ‘1 offset !’ または、 使用されるすべてのブロック番号に 1 を加算します。
 または、 ファイルの先頭に 1024 文字追加します。
 
-‘get-block-fid’ ( – wfileid  ) gforth-0.2 “get-block-fid”
+‘get-block-fid’ ( - wfileid  ) gforth-0.2 "get-block-fid"
    現在のブロック・ファイルのファイル ID を返します。 まだブロック・ファ
 イルが開かれていない場合は、 ‘blocks.fb’ をデフォルトのブロック・ファイ
 ルとして ‘open-blocks’ し、 そのファイルID(現在のブロック・ファイルのフ
 ァイルID)を返します。
 
-‘block-position’ ( u –  ) block “block-position”
+‘block-position’ ( u -  ) block "block-position"
    ブロック・ファイル内のファイル位置をブロック番号 u のブロックの先頭に
 合わせます。
 
-‘list’ ( u –  ) block-ext “list”
+‘list’ ( u -  ) block-ext "list"
    ブロック番号 u のブロックの内容を表示します。 Gforth では、ブロックは
 1行 64 文字からなる 16 行の行番号付きで表示されます。
 
-‘scr’ ( – a-addr  ) block-ext “s-c-r”
+‘scr’ ( - a-addr  ) block-ext "s-c-r"
    このユーザー変数には、 ‘list’ によって最後に処理されたブロックのブロ
 ック番号が含まれます。
 
-‘block’ ( u – a-addr  ) block “block”
+‘block’ ( u - a-addr  ) block "block"
    ブロック番号 u のブロックにブロック・バッファーが既に割り当てられてい
 る場合、 そのブロック・バッファーが更新(「割り当て済・変更中」
 (assigned-dirty)とマークされているか)されているなら、 そのブロック・バッ
@@ -5382,59 +5382,59 @@ Search Paths::)。
 バッファーの開始アドレス a-addr を返します。 Gforth では、 ‘buffer’ は単
 に ‘block’ を呼び出します。
 
-‘buffer’ ( u – a-addr  ) block “buffer”
+‘buffer’ ( u - a-addr  ) block "buffer"
    Gforth では、 ‘buffer’ は単に ‘block’ を呼び出します。
 
-‘empty-buffers’ ( –  ) block-ext “empty-buffers”
+‘empty-buffers’ ( -  ) block-ext "empty-buffers"
    すべてのブロック・バッファーを「未割り当て」(unassigned)としてマーク
 します。 (‘update’ によって)「割り当て済・変更中」(assigned-dirty)として
 マークされているブロックがある場合、 それらのブロックへの変更は失われま
 す。
 
-‘empty-buffer’ ( buffer –  ) gforth-0.2 “empty-buffer”
+‘empty-buffer’ ( buffer -  ) gforth-0.2 "empty-buffer"
 
-‘update’ ( –  ) block “update”
+‘update’ ( -  ) block "update"
    現在のブロック・バッファー(current block buffer)の状態を「割り当て・
 ダーティ」(assigned-dirty)としてマークします。
 
-‘updated?’ ( n – f  ) gforth-0.2 “updated?”
+‘updated?’ ( n - f  ) gforth-0.2 "updated?"
    ブロック番号 n のブロックが更新されている(割り当て済・編集中」
 (assigned-dirty)としてマークされている)なら true を返す。
 
-‘save-buffers’ ( –  ) block “save-buffers”
+‘save-buffers’ ( -  ) block "save-buffers"
    更新されている(「割り当て済・変更中」(assigned-dirty)とマークされてい
 る)各ブロック・バッファーの内容を大容量ストレージに転送(上書き)し、 すべ
 てのブロック・バッファーを「割当済み・未編集」(assigned-clean)としてマー
 クします。
 
-‘save-buffer’ ( buffer –  ) gforth-0.2 “save-buffer”
+‘save-buffer’ ( buffer -  ) gforth-0.2 "save-buffer"
 
-‘flush’ ( –  ) block “flush”
+‘flush’ ( -  ) block "flush"
    ‘save-buffers’ の機能を実行してから ‘empty-buffers’ を実行します。
 
-‘load’ ( i*x u – j*x  ) block “load”
+‘load’ ( i*x u - j*x  ) block "load"
    ブロック番号 u のブロックをテキスト通訳(Text-interpret)します。 ブロ
 ック番号 0 のブロックは ‘load’ できません。
 
-‘thru’ ( i*x n1 n2 – j*x  ) block-ext “thru”
+‘thru’ ( i*x n1 n2 - j*x  ) block-ext "thru"
    ブロック n1 〜 n2 を順番に ‘load’ します。
 
-‘+load’ ( i*x n – j*x  ) gforth-0.2 “+load”
+‘+load’ ( i*x n - j*x  ) gforth-0.2 "+load"
    現在のブロック番号に n を足した番号のブロックをロードします。 ブロッ
 ク内で使います。
 
-‘+thru’ ( i*x n1 n2 – j*x  ) gforth-0.2 “+thru”
+‘+thru’ ( i*x n1 n2 - j*x  ) gforth-0.2 "+thru"
    現在のブロック番号 + n1 の番号 〜 現在のブロック + n2 の番号の、 ブロ
 ックの範囲をロードします。 ブロック内で使います。
 
-‘-->’ ( –  ) gforth-0.2 “chain”
+‘-->’ ( -  ) gforth-0.2 "chain"
    ブロック番号 n のブロックのロード中にこのシンボルが見つかった場合、 そ
 のブロックの残りを破棄してブロック n+1 をロードします。 複数のブロックを
 単一のロード可能なユニットとして連鎖させるために使用されます。 これは ロ
 ードの独立性が損なわれるため、 お勧めできません。 代わりに(標準の)
 ‘thru’ または ‘+thru’ を使用してください。
 
-‘block-included’ ( a-addr u –  ) gforth-0.2 “block-included”
+‘block-included’ ( a-addr u -  ) gforth-0.2 "block-included"
    ‘load’ によって処理されるブロック内で使用します。 現在のブロック・フ
 ァイル仕様を保存し、 a-addr u で指定されたブロック・ファイルを開き、 そ
 のファイルからブロック番号 1 のブロックを ‘load’ します(これにより、 他
@@ -5449,4 +5449,87 @@ Search Paths::)。
 ‘buffer’ はそのブロック・バッファーを返し、 ブロックの既存のコンテンツが
 利用可能になります。 それ以外の場合、 ‘buffer’ は単にそのブロックに新し
 い空のブロック・バッファーを割り当てます
+
+
+File: gforth.info,  Node: Other I/O,  Next: OS command line arguments,  Prev: Blocks,  Up: Words
+
+6.20 Other I/O
+==============
+
+* Menu:
+
+* Simple numeric output::    定義済みの書式
+* Formatted numeric output::  書式化された(目に見える)出力
+* Floating-point output::
+* Miscellaneous output::
+* Displaying characters and strings::  その他もろもろ
+* Terminal output::          カーソル移動等
+* Single-key input::
+* Line input and conversion::
+* Pipes::                    あなた独自のパイプラインの作り方
+* Xchars and Unicode::       非ASCII文字
+* i18n and l10n::            国際化(I18n)とローカライズ
+* Substitute::               テキストマクロ置換
+* CSV Reader::               データ・インポート機能
+
+
+File: gforth.info,  Node: Simple numeric output,  Next: Formatted numeric output,  Prev: Other I/O,  Up: Other I/O
+
+6.20.1 Simple numeric output
+----------------------------
+
+最も単純な出力機能は、 データ・スタックからの数値を表示する機能です。 数
+値は、 ‘base’ に保存されている基数(別名 radix)で表示されます。
+
+‘.’ ( n -  ) core "dot"
+   (符号付きの1倍長整数である) N を自由形式(free-format)で表示し、 その
+後に空白1つを続けます。
+
+‘dec.’ ( n -  ) gforth-0.2 "dec."
+   n を符号付き 10 進数として表示し、 その後に空白1つを続けます。
+
+‘h.’ ( u -  ) gforth-1.0 "h."
+   u は、 先頭に '$' を付けた符号なし 16 進数として表示し、 その後に空白
+1つ続けます。
+
+‘hex.’ ( u -  ) gforth-0.2 "hex."
+   u を符号なし 16 進数として表示し、 先頭に ‘$’ を付け、 その後に空白
+1つを付けます。 この単語の別名は ‘h.’ で、 他のいくつかのシステムには存
+在しますが、 1.0 より前の Gforth には存在しません。
+
+‘u.’ ( u -  ) core "u-dot"
+   (符号なしの1倍長整数の) U を自由形式で表示し、 その後に空白1つを続け
+ます。
+
+‘.r’ ( n1 n2 -  ) core-ext "dot-r"
+   N1 を N2 文字幅のフィールドに右揃えで表示します。 数値を表示するため
+に N2 を超える文字が必要な場合は、 すべての桁が表示されます。 必要に応じ
+て、 N2 には先頭に '-' の文字分の幅を含める必要があります。
+
+‘u.r’ ( u n -  ) core-ext "u-dot-r"
+   符号なし整数 U を N 文字幅のフィールドに右揃えで表示します。 数値を表
+示するために N 文字を超える文字が必要な場合は、すべての桁が表示されます
+。
+
+‘dec.r’ ( u n -  ) gforth-0.5 "dec.r"
+   符号なし整数 u を n 文字幅のフィールドに符号なし 10 進数として表示し
+ます。
+
+‘d.’ ( d -  ) double "d-dot"
+   (符号付き2倍長整数の) D を自由形式で表示します。 その後に空白1つが続
+きます。
+
+‘ud.’ ( ud -  ) gforth-0.2 "u-d-dot"
+   (符号付無し2倍長整数の) UD を自由形式で表示し、 その後に空白1つを続け
+ます。
+
+‘d.r’ ( d n -  ) double "d-dot-r"
+   2倍長整数 D を N 文字幅のフィールドに右揃えで表示します。 数値を表示
+するために N を超える文字が必要な場合は、 すべての桁が表示されます。 必
+要に応じて、N には先頭に '-' 文字分の幅を含める必要があります。
+
+‘ud.r’ ( ud n -  ) gforth-0.2 "u-d-dot-r"
+   符号無し2倍長整数 UD を N 文字幅のフィールドに右揃えで表示します。 数
+値を表示するために N 文字を超える文字が必要な場合は、すべての桁が表示さ
+れます。
 

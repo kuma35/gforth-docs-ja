@@ -922,41 +922,45 @@ Threaded Code by Selective Inlining’, PLDI'98 参照)、 静的スーパー命
 
      lit_sub = lit sub
 
-   ‘lit_sub’ is the name of the superinstruction, and ‘lit’ and ‘sub’
-are its components.  This superinstruction performs the same action as
-the sequence ‘lit’ and ‘sub’.  It is generated automatically by the VM
-code generation functions whenever that sequence occurs, so if you want
-to use this superinstruction, you just need to add this definition (and
-even that can be partially automatized, *note VM profiler::).
+   ‘lit_sub’ はスーパー命令(superinstruction)の名前で、 ‘lit’ と ‘sub’ は
+そのコンポーネントです。 このスーパー命令は、 シーケンス「‘lit’ ‘sub’」
+と同じアクションを実行します。 これは、 そのシーケンスが発生するたびに
+VM コード生成関数によって自動的に生成されるため、 このスーパー命令を使用
+したい場合は、 この定義を追加するだけで済みます(*note VM profiler:: によ
+り部分的に自動化することもできます)。
 
-   Vmgen requires that the component instructions are simple
-instructions defined before superinstructions using the components.
-Currently, Vmgen also requires that all the subsequences at the start of
-a superinstruction (prefixes) must be defined as superinstruction before
-the superinstruction.  I.e., if you want to define a superinstruction
+   Vmgen では、コンポーネントの命令群が、 コンポーネントを使用するスーパ
+ー命令(superinstructions)より前に定義された単純な命令(simple
+instructions)であることが必要です。 現在、 Vmgen では、 スーパー命令の先
+頭にあるすべてのサブ・シーケンス(プレフィックス)が当該スーパー命令より前
+にスーパー命令として定義されている必要もあります。 つまり、 スーパー命令
+を定義したい場合
 
      foo4 = load add sub mul
 
-   you first have to define ‘load’, ‘add’, ‘sub’ and ‘mul’, plus
+   あなたは、 まず、 ‘load’ と ‘add’ と ‘sub’ と ‘mul’ を定義する必要が
+あります。 さらに
 
      foo2 = load add
      foo3 = load add sub
 
-   Here, ‘sumof4’ is the longest prefix of ‘sumof5’, and ‘sumof3’ is the
-longest prefix of ‘sumof4’.
+   ここで、 ‘sumof4’ は ‘sumof5’ の最長のプレフィックスで、 ‘sumof3’ は
+‘sumof4’ の最長のプレフィックスです。 (訳注: 推敲途中だったかな？ 意味不
+明)
 
-   Note that Vmgen assumes that only the code it generates accesses
-stack pointers, the instruction pointer, and various stack items, and it
-performs optimizations based on this assumption.  Therefore, VM
-instructions where your C code changes the instruction pointer should
-only be used as last component; a VM instruction where your C code
-accesses a stack pointer should not be used as component at all.  Vmgen
-does not check these restrictions, they just result in bugs in your
-interpreter.
+   注意: Vmgen は、 生成するコードのみがスタック・ポインターや、 命令ポ
+インターや、 さまざまなスタック項目にアクセスすると想定しており、 この想
+定に基づいて最適化を実行することに注意してください。 したがって、 C 言語
+コードで命令ポインターを変更する VM 命令は、 最後のコンポーネントとして
+のみ使用する必要があります。 C 言語コードがスタック・ポインターにアクセ
+スする VM 命令は、 コンポーネントとしてまったく使用しないでください。
+Vmgen はこれらの制限をチェックsせず、 インタープリターでバグが発生するだ
+けです。
 
-   The Vmgen flag ‘include-skipped-insts’ influences superinstruction
-code generation.  Currently there is no support in the peephole
-optimizer for both variations, so leave this flag alone for now.
+   Vmgen フラグ ‘include-skipped-insts’ は、 スーパー命令
+(superinstruction)コードの生成に影響します。 現在、 のぞき穴最適化
+(peephole optimizer)では両方のバリエーションはサポートされていないため、
+このフラグは今のところそのままにしておきます。
 
 
 File: vmgen.info,  Node: Store Optimization,  Next: Register Machines,  Prev: Superinstructions,  Up: Input File Format
@@ -964,48 +968,49 @@ File: vmgen.info,  Node: Store Optimization,  Next: Register Machines,  Prev: Su
 6.4 Store Optimization
 ======================
 
-This minor optimization (0.6%-0.8% reduction in executed instructions
-for Gforth) puts additional requirements on the instruction descriptions
-and is therefore disabled by default.
+格納最適化(store optimization)というマイナーな最適化(Gforth の実行命令の
+0.6% ～ 0.8% 削減)では、 命令の記述に追加の要件が課されるため、 デフォル
+トでは無効になっています。
 
-   What does it do?  Consider an instruction like
+   これはは何をするのでしょうか？ 以下のような命令を考えてみましょう
 
      dup ( n -- n n )
 
-   For simplicity, also assume that we are not caching the top-of-stack
-in a register.  Now, the C code for dup first loads ‘n’ from the stack,
-and then stores it twice to the stack, one time to the address where it
-came from; that time is unnecessary, but gcc does not optimize it away,
-so vmgen can do it instead (if you turn on the store optimization).
+   簡単にするために、 スタックのトップをレジスタにキャッシュしていないこ
+とも仮定します。 今、 dup の C 言語コードは、 最初に ‘n’ をスタックから
+ロードし、 次にそれをスタックに 2 回 格納し、 そのうち 1 回は元のアドレ
+スに格納します。 元のアドレスに格納する回は不要ですが、 gcc はそれを最適
+化しないので、 代わりに vmgen がそれを行うことができます(格納最適化
+(store optimization)をオンにしている場合)。
 
-   Vmgen uses the stack item's name to determine if the stack item
-contains the same value as it did at the start.  Therefore, if you use
-the store optimization, you have to ensure that stack items that have
-the same name on input and output also have the same value, and are not
-changed in the C code you supply.  I.e., the following code could fail
-if you turn on the store optimization:
+   Vmgen は、 スタック項目の名前を使用して、 スタック項目に開始時と同一
+の値が含まれているかを決めます。 したがって、 格納最適化を使用する場合は
+、 入力と出力で同じ名前を持つスタック項目も同じ値を持ち、 提供する C 言
+語コードで変更されないことを確認する必要があります。 つまり、 格納最適化
+をオンにすると、 以下のコードは失敗する可能性があります:
 
      add1 ( n -- n )
      n++;
 
-   Instead, you have to use different names, i.e.:
+   代わりに、 あなたは別の名前を使用する必要があります。 つまり以下のよ
+うにします:
 
      add1 ( n1 -- n2 )
      n2=n1+1;
 
-   Similarly, the store optimization assumes that the stack pointer is
-only changed by Vmgen-erated code.  If your C code changes the stack
-pointer, use different names in input and output stack items to avoid a
-(probably wrong) store optimization, or turn the store optimization off
-for this VM instruction.
+   同様に、 格納最適化では、 スタック・ポインターが Vmgen で生成されたコ
+ードによってのみ変更されることを前提としています。 C 言語コードでスタッ
+ク・ポインターを変更する場合は、 入力スタック項目と出力スタック項目に異
+なる名前を使用して(おそらく間違った)格納最適化を回避するか、 この VM 命
+令の格納最適化をオフにしてください。
 
-   To turn on the store optimization, write
+   格納最適化を有効にするには、 以下のように記述します
 
      \E store-optimization on
 
-   at the start of the file.  You can turn this optimization on or off
-between any two VM instruction descriptions.  For turning it off again,
-you can use
+   これをファイルの先頭に記述します。 任意の 2 つの VM 命令記述の間で、
+この最適化をオンまたはオフにできます。 再度オフにするには、 以下を使用で
+きます。
 
      \E store-optimization off
 
@@ -1015,25 +1020,23 @@ File: vmgen.info,  Node: Register Machines,  Prev: Store Optimization,  Up: Inpu
 6.5 Register Machines
 =====================
 
-If you want to implement a register VM rather than a stack VM with
-Vmgen, there are two ways to do it: Directly and through
-superinstructions.
+Vmgen を使用してスタック VM ではなくレジスター VM を実装する場合は、 直
+接実行する方法とスーパー命令を使用する方法の 2 つがあります。
 
-   If you use the direct way, you define instructions that take the
-register numbers as immediate arguments, like this:
+   直接的な方法を使用する場合は、 以下のように、 レジスタ番号を直接の引
+数として受け取る命令を定義します:
 
      add3 ( #src1 #src2 #dest -- )
      reg[dest] = reg[src1]+reg[src2];
 
-   A disadvantage of this method is that during tracing you only see the
-register numbers, but not the register contents.  Actually, with an
-appropriate definition of ‘printarg_src’ (*note VM engine::), you can
-print the values of the source registers on entry, but you cannot print
-the value of the destination register on exit.
+   この方法の欠点は、 トレース中にレジスター番号のみが表示され、 レジス
+タの内容は表示されないことです。 実際には、 ‘printarg_src’ (*note VM
+engine::)を適切に定義すると、 開始時にソース・レジスターの値を出力できま
+すが、 終了時に宛先レジスターの値を出力することはできません。
 
-   If you use superinstructions to define a register VM, you define
-simple instructions that use a stack, and then define superinstructions
-that have no overall stack effect, like this:
+   スーパー命令(superinstructions)を使用してレジスター VM を定義する場合
+は、 以下のように、 スタックを使用する単純な命令(simple instructions)を
+定義してから、 全体的なスタック効果のないスーパー命令を定義します:
 
      loadreg ( #src -- n )
      n = reg[src];
@@ -1046,18 +1049,17 @@ that have no overall stack effect, like this:
 
      add3 = loadreg loadreg adds storereg
 
-   An advantage of this method is that you see the values and not just
-the register numbers in tracing.  A disadvantage of this method is that
-currently you cannot generate superinstructions directly, but only
-through generating a sequence of simple instructions (we might change
-this in the future if there is demand).
+   この方法の利点は、 トレース中にレジスター番号だけでなく値も表示される
+ことです。 この方法の欠点は、 現時点ではスーパー命令
+(superinstructions)を直接生成できず、 単純な命令(simple instructions)の
+シーケンスを生成することによってのみ生成できることです(需要があれば、 作
+者達は将来これを変更するかもしれません)。
 
-   Could the register VM support be improved, apart from the issues
-mentioned above?  It is hard to see how to do it in a general way,
-because there are a number of different designs that different people
-mean when they use the term _register machine_ in connection with VM
-interpreters.  However, if you have ideas or requests in that direction,
-please let me know (*note Contact::).
+   上記の問題とは別に、 レジスター VM のサポートを改善可能でしょうか？
+VM インタープリターに関連して「レジスター・マシン」という用語を使用する
+場合、 人によって意味が異なるため、 一般的な方法でこれを行う方法を理解す
+るのは困難です。 ただし、 その方向でアイデアや要望がある場合は、 著者に
+お知らせください(*note Contact::)。
 
 
 File: vmgen.info,  Node: Error messages,  Next: Using the generated code,  Prev: Input File Format,  Up: Top
@@ -1065,17 +1067,18 @@ File: vmgen.info,  Node: Error messages,  Next: Using the generated code,  Prev:
 7 Error messages
 ****************
 
-These error messages are created by Vmgen:
+以下のエラー・メッセージが Vmgen によって作成されます:
 
 ‘# can only be on the input side’
-     You have used an instruction-stream prefix (usually ‘#’) after the
-     ‘--’ (the output side); you can only use it before (the input
-     side).
+     【# は入力側にのみ指定できます】 ‘--’ (出力側) の後側で命令ストリー
+     ム(instruction-stream)のプレフィックス(通常は ‘#’)を使用しました。
+     これは前側(入力側)でのみ使用できます。
 
 ‘the prefix for this superinstruction must be defined earlier’
-     You have defined a superinstruction (e.g.  ‘abc = a b c’) without
-     defining its direct prefix (e.g., ‘ab = a b’), *Note
-     Superinstructions::.
+     【このスーパー命令(superinstruction)のプレフィックスは事前に定義す
+     る必要があります】 直接プレフィックス(たとえば ‘ab = a b’)を定義せ
+     ずにスーパー命令(superinstruction)定義(たとえば ‘abc = a b c’)を行
+     いました。 *Note Superinstructions::
 
 ‘sync line syntax’
      If you are using a preprocessor (e.g., ‘m4’) to generate Vmgen
@@ -2211,7 +2214,7 @@ Index
 * immediate arguments:                   Data handling.       (line  27)
 * immediate arguments, VM code generation: VM code generation.
                                                               (line  22)
-* include-skipped-insts:                 Superinstructions.   (line  48)
+* include-skipped-insts:                 Superinstructions.   (line  51)
 * input file format:                     Input File Format.   (line   6)
 * input file grammar:                    Input File Grammar.  (line   6)
 * instruction pointer definition:        VM engine.           (line 123)
@@ -2296,12 +2299,12 @@ Index
 * superinstructions, restrictions on components: C Code restrictions.
                                                               (line  13)
 * switch dispatch:                       Dispatch.            (line  16)
-* sync line syntax error:                Error messages.      (line  18)
+* sync line syntax error:                Error messages.      (line  19)
 * sync lines:                            Input File Grammar.  (line  53)
-* syntax error, wrong char error:        Error messages.      (line  25)
+* syntax error, wrong char error:        Error messages.      (line  26)
 * TAIL;, changes:                        Changes.             (line  33)
 * threaded code:                         Dispatch.            (line  24)
-* too many stacks error:                 Error messages.      (line  34)
+* too many stacks error:                 Error messages.      (line  35)
 * top of stack caching:                  VM engine.           (line 136)
 * TOS:                                   VM engine.           (line 136)
 * tracing of register VMs:               Register Machines.   (line   6)
@@ -2312,8 +2315,8 @@ Index
 * type prefix:                           Simple instructions. (line  22)
 * unions example:                        Example overview.    (line  16)
 * unions in type cast macros:            VM engine.           (line 108)
-* unknown prefix error:                  Error messages.      (line  38)
-* unknown primitive error:               Error messages.      (line  44)
+* unknown prefix error:                  Error messages.      (line  39)
+* unknown primitive error:               Error messages.      (line  45)
 * Using vmgen-erated code:               Using the generated code.
                                                               (line   6)
 * virtual machine:                       Front end and VM interpreter.
@@ -2363,24 +2366,24 @@ Node: C Code Macros38780
 Node: C Code restrictions41787
 Node: Stack growth direction45432
 Node: Superinstructions47030
-Node: Store Optimization49531
-Node: Register Machines51405
-Node: Error messages53297
-Node: Using the generated code55425
-Node: VM engine56274
-Node: VM instruction table65238
-Node: VM code generation67129
-Node: Peephole optimization69966
-Node: VM disassembler71446
-Node: VM profiler72785
-Node: Hints76495
-Node: Floating point76658
-Node: The future78515
-Node: Changes79644
-Node: Contact81240
-Node: Copying This Manual81702
-Node: GNU Free Documentation License81932
-Node: Index104352
+Node: Store Optimization50374
+Node: Register Machines53025
+Node: Error messages55370
+Node: Using the generated code57811
+Node: VM engine58660
+Node: VM instruction table67624
+Node: VM code generation69515
+Node: Peephole optimization72352
+Node: VM disassembler73832
+Node: VM profiler75171
+Node: Hints78881
+Node: Floating point79044
+Node: The future80901
+Node: Changes82030
+Node: Contact83626
+Node: Copying This Manual84088
+Node: GNU Free Documentation License84318
+Node: Index106738
 
 End Tag Table
 

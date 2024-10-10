@@ -67,53 +67,43 @@ Threaded Code by Selective Inlining</cite>, PLDI&rsquo;98 参照)、
 <pre class="example-preformatted">lit_sub = lit sub
 </pre></div>
 
-<p><code class="code">lit_sub</code> is the name of the superinstruction, and <code class="code">lit</code> and
-<code class="code">sub</code> are its components.  This superinstruction performs the same
-action as the sequence <code class="code">lit</code> and <code class="code">sub</code>.  It is generated
-automatically by the VM code generation functions whenever that sequence
-occurs, so if you want to use this superinstruction, you just need to add
-this definition (and even that can be partially automatized, see <a class="pxref" href="VM-profiler.html">VM profiler</a>).
+<p><code class="code">lit_sub</code> はスーパー命令(superinstruction)の名前で、 <code class="code">lit</code> と <code class="code">sub</code>
+はそのコンポーネントです。 このスーパー命令は、 シーケンス「<code class="code">lit</code> <code class="code">sub</code>」と同じアクションを実行します。  これは、
+そのシーケンスが発生するたびに VM コード生成関数によって自動的に生成されるため、 このスーパー命令を使用したい場合は、
+この定義を追加するだけで済みます(see <a class="pxref" href="VM-profiler.html">VM profiler</a> により部分的に自動化することもできます)。
 </p>
 <a class="index-entry-id" id="index-prefixes-of-superinstructions"></a>
-<p>Vmgen requires that the component instructions are simple instructions
-defined before superinstructions using the components.  Currently, Vmgen
-also requires that all the subsequences at the start of a superinstruction
-(prefixes) must be defined as superinstruction before the superinstruction.
-I.e., if you want to define a superinstruction
+<p>Vmgen では、コンポーネントの命令群が、
+コンポーネントを使用するスーパー命令(superinstructions)より前に定義された単純な命令(simple
+instructions)であることが必要です。  現在、 Vmgen では、
+スーパー命令の先頭にあるすべてのサブ・シーケンス(プレフィックス)が当該スーパー命令より前にスーパー命令として定義されている必要もあります。  つまり、
+スーパー命令を定義したい場合
 </p>
 <div class="example">
 <pre class="example-preformatted">foo4 = load add sub mul
 </pre></div>
 
-<p>you first have to define <code class="code">load</code>, <code class="code">add</code>, <code class="code">sub</code> and <code class="code">mul</code>,
-plus
+<p>あなたは、 まず、 <code class="code">load</code> と <code class="code">add</code> と <code class="code">sub</code> と <code class="code">mul</code> を定義する必要があります。
+さらに
 </p>
 <div class="example">
 <pre class="example-preformatted">foo2 = load add
 foo3 = load add sub
 </pre></div>
 
-<p>Here, <code class="code">sumof4</code> is the longest prefix of <code class="code">sumof5</code>, and
-<code class="code">sumof3</code> is the longest prefix of <code class="code">sumof4</code>.
+<p>ここで、 <code class="code">sumof4</code> は <code class="code">sumof5</code> の最長のプレフィックスで、 <code class="code">sumof3</code> は
+<code class="code">sumof4</code> の最長のプレフィックスです。 (訳注: 推敲途中だったかな？ 意味不明)
 </p>
-<p>Note that Vmgen assumes that only the code it generates accesses stack
-pointers, the instruction pointer, and various stack items, and it performs
-optimizations based on this assumption.  Therefore, VM instructions where
-your C code changes the instruction pointer should only be used as last
-component; a VM instruction where your C code accesses a stack pointer
-should not be used as component at all.  Vmgen does not check these
-restrictions, they just result in bugs in your interpreter.
+<p>注意: Vmgen は、 生成するコードのみがスタック・ポインターや、 命令ポインターや、 さまざまなスタック項目にアクセスすると想定しており、
+この想定に基づいて最適化を実行することに注意してください。  したがって、 C 言語コードで命令ポインターを変更する VM 命令は、
+最後のコンポーネントとしてのみ使用する必要があります。 C 言語コードがスタック・ポインターにアクセスする VM 命令は、
+コンポーネントとしてまったく使用しないでください。  Vmgen はこれらの制限をチェックsせず、 インタープリターでバグが発生するだけです。
 </p>
 <a class="index-entry-id" id="index-include_002dskipped_002dinsts"></a>
-<p>The Vmgen flag <code class="code">include-skipped-insts</code> influences superinstruction code
-generation.  Currently there is no support in the peephole optimizer for
-both variations, so leave this flag alone for now.
+<p>Vmgen フラグ <code class="code">include-skipped-insts</code> は、
+スーパー命令(superinstruction)コードの生成に影響します。  現在、 のぞき穴最適化(peephole
+optimizer)では両方のバリエーションはサポートされていないため、 このフラグは今のところそのままにしておきます。
 </p>
-</div>
-<hr>
-<div class="nav-panel">
-<p>
-Next: <a href="Store-Optimization.html">Store Optimization</a>, Previous: <a href="Simple-instructions.html">Simple instructions</a>, Up: <a href="Input-File-Format.html">Input File Format</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

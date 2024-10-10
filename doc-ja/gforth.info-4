@@ -1,4 +1,4 @@
-This is gforth.info, produced by makeinfo version 6.8 from gforth.texi.
+This is gforth.info, produced by makeinfo version 7.1 from gforth.texi.
 
 このマニュアルは、 標準 Forth 言語の高速で移植可能な実装である Gforth (バ
 ージョン 0.7.9_20240418, April 18, 2024)用です。 これはリファレンス・マ
@@ -14,206 +14,17 @@ Software Foundation, Inc.
      document under the terms of the GNU Free Documentation License,
      Version 1.1 or any later version published by the Free Software
      Foundation; with no Invariant Sections, with the Front-Cover texts
-     being “A GNU Manual,” and with the Back-Cover Texts as in (a)
+     being "A GNU Manual," and with the Back-Cover Texts as in (a)
      below.  A copy of the license is included in the section entitled
-     “GNU Free Documentation License.”
+     "GNU Free Documentation License."
 
-     (a) The FSF’s Back-Cover Text is: “You have freedom to copy and
+     (a) The FSF's Back-Cover Text is: "You have freedom to copy and
      modify this GNU Manual, like GNU software.  Copies published by the
-     Free Software Foundation raise funds for GNU development.”
+     Free Software Foundation raise funds for GNU development."
 INFO-DIR-SECTION Software development
 START-INFO-DIR-ENTRY
 * Gforth: (gforth).          forth言語のための高速インタープリター
 END-INFO-DIR-ENTRY
-
-
-File: gforth.info,  Node: Migrating the C interface from earlier Gforth,  Prev: Automated interface generation using SWIG,  Up: C Interface
-
-6.28.10 Migrating from Gforth 0.7
----------------------------------
-
-このバージョンでは、 ‘\c’ と ‘c-function’ と ‘add-lib’ は
-‘c-library’...‘end-c-library’ 内でのみ使用できます。 ‘add-lib’ は常に
-‘c-library’ 内の白紙の状態から開始されるため、 ほとんどの場合
-‘clear-libs’ を使用する必要はありません。
-
-   ‘c-library’...‘end-c-library’ の外側でこれらのワードを使用するプログ
-ラムがあった場合は、 あなたは、 それらを ‘c-library’...‘end-c-library’ で
-囲むだけです。 ただし、 ‘add-lib’ のインスタンスをいくつか追加する必要が
-ある場合があります。
-
-
-File: gforth.info,  Node: Assembler and Code Words,  Next: Carnal words,  Prev: C Interface,  Up: Words
-
-6.29 Assembler and Code Words
-=============================
-
-* Menu:
-
-* Assembler Definitions::    Definitions in assembly language
-* Common Assembler::         アセンブラー文法
-* Common Disassembler::
-* 386 Assembler::            逸脱(deviations)と特殊ケース
-* AMD64 Assembler::
-* Alpha Assembler::          逸脱(deviations)と特殊ケース
-* MIPS assembler::           逸脱(deviations)と特殊ケース
-* PowerPC assembler::        逸脱(deviations)と特殊ケース
-* ARM Assembler::            逸脱(deviations)と特殊ケース
-* Other assemblers::         アセンブラー自体の書き方
-
-
-File: gforth.info,  Node: Assembler Definitions,  Next: Common Assembler,  Prev: Assembler and Code Words,  Up: Assembler and Code Words
-
-6.29.1 Definitions in assembly language
----------------------------------------
-
-Gforth は、 アセンブリ言語でワードを実装する方法(‘abi-code’ … ‘end-code’
-を使用)と、 任意の実行時の振る舞いを持つ定義ワードを定義する方法(‘does>’
-のようなの)を提供し、 ここで、 この実行時の振る舞いを(‘does>’ とは異なり
-、) Forth ではなくアセンブリ言語で定義します。
-
-   ただし、 Gforth のマシン非依存の性質により、 いくつかの問題が生じます
-。 まず、 Gforth は複数のアーキテクチャ上で実行されるため、 標準のアセン
-ブラーを提供できません。 ただし、 実行されるいくつかのアーキテクチャ用の
-アセンブラーは提供されています。 さらに言えば、 Gforth ではシステムに依
-存しないアセンブラーを使用したり、 ‘,’ や ‘c,’ を使用してマシン・コード
-を直接コンパイルしたりできます。
-
-   もう 1 つの問題は、Gforth の仮想マシンのレジスター(スタック・ポインタ
-ーと仮想マシン命令ポインター)がインストールとエンジンに依存することです
-。 また、 どのレジスタを自由に使用できるかは、 インストールとエンジンに
-よって異なります。 したがって、 Gforth 仮想マシンのコンテキストで実行す
-るように記述されたコードは、 基本的に、 そのコードが開発されたインストー
-ルとエンジンに限定されます(たまたま、 他の場所でも動く可能性はありますが
-、 それに頼ることはできません)。
-
-   幸いなことに、 同じ呼び出し規約(ABI)を持つプラットフォーム上で実行さ
-れている Gforth に移植可能(portable)な ‘abi-code’ ワードを Gforth で定義
-できます。 通常、 これは同じアーキテクチャと OS の組み合わせへの移植性を
-意味し、 しばしば OS の境を越えることができます。
-
-‘assembler’ ( –  ) tools-ext “assembler”
-   ボキャブラリー: 検索順序スタック(the search order)のTOSのワードリスト
-を assembler ワードリストに置き換えます。
-
-‘init-asm’ ( –  ) gforth-0.2 “init-asm”
-   assembler ワードリストを検索順序スタック(the search order)にプッシュ
-します(訳注:つまり assembler ワードリストが検索順序スタックのTOSになる
-)。
-
-‘abi-code’ ( "name" – colon-sys  ) gforth-1.0 “abi-code”
-   C言語プロトタイプ(C-prototype)に対応するプラットフォームの ABI 規則を
-使用して呼び出されるネイティブ・コード定義を開始します:
-     Cell *function(Cell *sp, Float **fpp);
-   ここで、 FP スタック・ポインターは、 FP スタック・ポインターを含むメ
-モリー位置への参照を提供することによって渡され、 (必要な場合)変更された
-FP スタック・ポインタをそこに格納することによって渡されます。
-
-‘;abi-code’ ( –  ) gforth-1.0 “semicolon-abi-code”
-   コロン定義を終了しますが、 実行時に最後に定義されたワード X (‘create’
-で作られたワードである必要があります)の変更もして、 C言語プロトタイプに
-対応するプラットフォームの ABI 規約を使用してネイティブ・コードを呼び出
-します:
-     Cell *function(Cell *sp, Float **fpp, Address body);
-
-   FP スタック・ポインターは、 FP スタック・ポインターを含むメモリー位置
-への参照を提供することによって渡され、 変更された FP スタック・ポインタ
-ーをそこに格納することによって渡されます(必要な場合)。 パラメータ body は
-X の本体です。
-
-‘end-code’ ( colon-sys –  ) gforth-0.2 “end-code”
-   コード定義を終了します。 ABI 呼び出しからの戻り(‘abi-code’ の場合)、
-または次の VM 命令へのディスパッチ(‘code’ および ‘;code’ の場合)を自分で
-アセンブルする必要があることに注意してください。
-
-‘code’ ( "name" – colon-sys  ) tools-ext “code”
-   Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・ード
-定義を開始します。 このような定義は Gforth インストール間で移植できない
-ため、 ‘code’ の代わりに ‘abi-code’ を使用することをお勧めします。
-‘code’ 定義は、 次の仮想マシン命令へのディスパッチで終了する必要がありま
-す。
-
-‘;code’ ( compilation. colon-sys1 – colon-sys2  ) tools-ext “semicolon-code”
-   ‘;code’ の後のコードが、 最後に定義されたワード(‘create’ されたワード
-である必要があります) の振る舞いになります。 ‘code’ の場合と同じ注意事項
-が適用されるため、 代わりに ‘;abi-code’ を使用することをお勧めします。
-
-‘flush-icache’ ( c-addr u – ) gforth-0.2 “flush-icache”
-   プロセッサの命令キャッシュ(存在する場合)の c-addr と u バイト以降に古
-いデータが含まれていないことを確認してください。 ‘END-CODE’ は
-‘flush-icache’ を自動的に実行します。 注意(Caveat): ‘flush-icache’ はあ
-なたのインストール環境では機能しない可能性があります。 これは通常、 マシ
-ンでダイレクト・スレッドがサポートされておらず(‘machine.h’ を確認してく
-ださい)、 マシンに別個の命令キャッシュがある場合に当てはまります。 この
-ような場合、 ‘flush-icache’ は命令キャッシュをフラッシュする代わりに何も
-行いません。
-
-   ‘flush-icache’ が正しく動作しない場合、 ‘abi-code’ ワードなども(まず
-確実に)動作しません。
-
-   これらのワードの一般的な使用法は、 同等の高レベルの定義ワードから類推
-することで最も簡単に示すことができます:
-
-     : foo                              abi-code foo
-        <high-level Forth words>              <assembler>
-     ;                                  end-code
-
-     : bar                              : bar
-        <high-level Forth words>           <high-level Forth words>
-        CREATE                             CREATE
-           <high-level Forth words>           <high-level Forth words>
-        DOES>                              ;code
-           <high-level Forth words>           <assembler>
-     ;                                  end-code
-
-   ‘abi-code’ を使用する場合は、 あなたのプラットフォームの ABI ドキュメ
-ントを参照して、 パラメーターがどのように渡されるか(スタック・ポインター
-をどこで取得するかがわかります)、 戻り値がどのように渡されるか(データ・
-スタック・ポインタがどこに返されるかがわかります)を確認してください。
-ABI のドキュメントでは、 どのレジスターが呼び出し元によって保存されるか
-(caller-saved)や、 コード内で自由に破棄できるかや、 どのレジスターが呼び
-出されたワードによって保存される必要があるか(callee-saved)についても説明
-されています。 あなたはそれらを使用する前に保存し、 後で復元します。 一
-部のアーキテクチャと OS については、適切なセクションで呼び出し規約の各部
-分の短い概要を示します。 リバース・エンジニアリング志向の人々は、 ‘see
-abi-call’ を通じてスタック・ポインターの受け渡しと戻りについて知ることも
-できます。
-
-   ほとんどの ABI はレジスターを介してパラメータを渡しますが、 一部の
-ABI(特に最も一般的な 386 (別名 IA-32) 呼び出し規約) はアーキテクチャ・ス
-タック上でパラメータを渡します。 共通の ABI はすべてレジスターで戻り値を
-渡します。
-
-   ‘abi-code’ を使用する際に知っておく必要があるその他のことは、 Gforth
-ではデータと FP スタックの両方が下方向(下位アドレスに向かって)に成長し、
-セルあたりのサイズは ‘1 cells’ になり、 FP 値ごとのサイズは ‘1 floats’ に
-なるということです。
-
-   386 アーキテクチャで ‘abi-code’ を使用する例を以下に示します:
-
-     abi-code my+ ( n1 n2 -- n )
-     4 sp d) ax mov \ sp into return reg
-     ax )    cx mov \ tos
-     4 #     ax add \ update sp (pop)
-     cx    ax ) add \ sec = sec+tos
-     ret            \ return from my+
-     end-code
-
-   この例の AMD64 バリエーションは *note AMD64 Assembler:: にあります。
-
-   386 で FP 値を扱う例を以下に示します:
-
-     abi-code my-f+ ( r1 r2 -- r )
-     8 sp d) cx mov  \ load address of fp
-     cx )    dx mov  \ load fp
-     .fl dx )   fld  \ r2
-     8 #     dx add  \ update fp
-     .fl dx )   fadd \ r1+r2
-     .fl dx )   fstp \ store r
-     dx    cx ) mov  \ store new fp
-     4 sp d) ax mov  \ sp into return reg
-     ret             \ return from my-f+
-     end-code
 
 
 File: gforth.info,  Node: Common Assembler,  Next: Common Disassembler,  Prev: Assembler Definitions,  Up: Assembler and Code Words
@@ -277,7 +88,7 @@ File: gforth.info,  Node: Common Disassembler,  Next: 386 Assembler,  Prev: Comm
 ‘code’ ワードは ‘see’ で逆アセンブルできます(*note Debugging::)。 以下を
 使用してメモリーのセクションを逆アセンブルできます
 
-‘discode’ ( addr u –  ) gforth-0.2 “discode”
+‘discode’ ( addr u -  ) gforth-0.2 "discode"
    逆アセンブラーのフック: addr から u バイトのコードを逆アセンブルしま
 す。
 
@@ -908,7 +719,7 @@ Aliases::)では違いがあります。 以下の例で考えてみましょう
    ‘>f+c’ フィールドには、フラグと名前の長さ(カウント)が含まれます。
 ‘name>string’ でカウントを読み取り、 以下でフラグを読み取ります。
 
-‘compile-only?’ ( nt – flag  ) gforth-1.0 “compile-only?”
+‘compile-only?’ ( nt - flag  ) gforth-1.0 "compile-only?"
    nt がコンパイル専用(compile-only)としてマークされている場合は true 。
 
    ‘>link’ フィールドには、 同じワードリスト内の前のワードへのリンクが含
@@ -958,7 +769,7 @@ File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header 
 
    以下を使用すると、 ワードのヘッダー・メソッドを確認できます
 
-‘.hm’ ( nt –  ) gforth-1.0 “dot-h-m”
+‘.hm’ ( nt -  ) gforth-1.0 "dot-h-m"
    nt のヘッダー・メソッドを出力します
 
    オーバーライダー(overrider)(セッター)ワードは、 最新の定義のメソッド
@@ -975,7 +786,7 @@ File: gforth.info,  Node: Header methods,  Next: Threading Words,  Prev: Header 
 ブ・コード・アドレスを通じて実装されます。 このメソッドを設定する大まか
 な方法​​は以下のとおりです
 
-‘set-execute’ ( ca –  ) gforth-1.0 “set-execute”
+‘set-execute’ ( ca -  ) gforth-1.0 "set-execute"
    ca のネイティブ・コードにジャンプするように現在のワードを変更します。
 また、 ‘compile,’ 実装を最も一般的な(そして最も遅い)実装に変更します。 よ
 り効率的な ‘compile,’ 実装が必要な場合は、 後で ‘set-optimizer’ を呼び出
@@ -1090,7 +901,7 @@ Threading Words::)
    ‘name>interpret’ メソッドは、 同義語(synonym)や類似のワードを除くほと
 んどのワードに対して noop として実装されます。
 
-‘set->int’ ( xt –  ) gforth-1.0 “set-to-int”
+‘set->int’ ( xt -  ) gforth-1.0 "set-to-int"
    現在のワードの ‘name>interpret (nt -- xt2 )’ メソッドの実装を xt に設
 定します。
 
@@ -1102,11 +913,11 @@ semantics)を生成します。 ‘set->comp’ で変更することでコン�
 ‘interpret/compile:’ などの高レベル・ワードを使用してください(*Note
 Combined words::)。
 
-‘set->comp’ ( xt –  ) gforth-1.0 “set-to-comp”
+‘set->comp’ ( xt -  ) gforth-1.0 "set-to-comp"
    現在のワードの ‘name>compile ( nt -- w xt2 )’ メソッドの実装を xt に
 設定します。
 
-‘immediate?’ ( nt – flag  ) gforth-1.0 “immediate?”
+‘immediate?’ ( nt - flag  ) gforth-1.0 "immediate?"
    ワード nt がデフォルト以外のコンパイル機能(compilation semantics)を持
 っている場合は true (これは即時性(immediacy)の定義と完全には一致しません
 が、 多くの人はワード語を「即時」(immediate)と呼ぶときはこれを意味してい
@@ -1118,11 +929,11 @@ Combined words::)。
 使用する場合を除き、 これらのメソッドの実装を変更することはありませんが
 、 あなたがそれでも必要とするなら以下をご覧ください
 
-‘set-name>string’ ( xt –  ) gforth-1.0 “set-name-to-string”
+‘set-name>string’ ( xt -  ) gforth-1.0 "set-name-to-string"
    現在のワードの ‘name>string ( nt -- addr u )’ メソッドの実装を xt に
 設定します。
 
-‘set-name>link’ ( xt –  ) gforth-1.0 “set-name-to-link”
+‘set-name>link’ ( xt -  ) gforth-1.0 "set-name-to-link"
    現在のワードの ‘name>link (nt1 -- nt2|0 )’ メソッドの実装を xt に設定
 します。
 
@@ -1153,33 +964,33 @@ methods:: で説明されているように独立して決定できます。
    以下のワード達は、 コード・フィールドを作成し、 そして、 同時にヘッダ
 ー・メソッドを初期化します:
 
-‘hmcopy,’ ( xt –  ) gforth-experimental “hmcopy-comma”
+‘hmcopy,’ ( xt -  ) gforth-experimental "hmcopy-comma"
    ヘッダーの構築中に、 コード・フィールドを割り当て、 コード・フィール
 ドとヘッダー・メソッドを設定するためのプロトタイプとして xt を使用します
 。
 
-‘docol,’ ( –  ) gforth-1.0 “docol,”
+‘docol,’ ( -  ) gforth-1.0 "docol,"
    コロン定義のコード・アドレスを書き込む。
 
-‘docon,’ ( –  ) gforth-1.0 “docon,”
+‘docon,’ ( -  ) gforth-1.0 "docon,"
    ‘CONSTANT’ のコード・アドレスを書き込む。
 
-‘dovar,’ ( –  ) gforth-1.0 “dovar,”
+‘dovar,’ ( -  ) gforth-1.0 "dovar,"
    ‘CREATE’ されたワードのコード・アドレスを書き込む。
 
-‘douser,’ ( –  ) gforth-1.0 “douser,”
+‘douser,’ ( -  ) gforth-1.0 "douser,"
    ‘USER’ 変数のコード・アドレスを書き込む。
 
-‘dodefer,’ ( –  ) gforth-1.0 “dodefer,”
+‘dodefer,’ ( -  ) gforth-1.0 "dodefer,"
    ‘defer’ されたワードのコード・アドレスを書き込む。
 
-‘dofield,’ ( –  ) gforth-1.0 “dofield,”
+‘dofield,’ ( -  ) gforth-1.0 "dofield,"
    ‘field’ のコード・アドレスを書き込む。
 
-‘dovalue,’ ( –  ) gforth-1.0 “dovalue,”
+‘dovalue,’ ( -  ) gforth-1.0 "dovalue,"
    ‘CONSTANT’ のコード・アドレスを書き込む。
 
-‘doabicode,’ ( –  ) gforth-1.0 “doabicode,”
+‘doabicode,’ ( -  ) gforth-1.0 "doabicode,"
    ‘ABI-CODE’ 定義のコード・アドレスを書き込む。
 
    ‘does>’ で定義されたワードの場合、 ‘hmcopy,’ を使用してください。
@@ -1195,44 +1006,44 @@ Creating from a prototype::)。
 スを取得できます。 Gforth では、 スレッド化方式とは関係なく、 ‘' name
 >code-address’ で取得できます。
 
-‘threading-method’ ( – n ) gforth-0.2 “threading-method”
+‘threading-method’ ( - n ) gforth-0.2 "threading-method"
    エンジンが直接スレッドの場合は 0。 注意: これはイメージの存続期間中
 (lifetime)に変更される可能性があることに注意してください。
 
-‘>code-address’ ( xt – c_addr  ) gforth-0.2 “>code-address”
+‘>code-address’ ( xt - c_addr  ) gforth-0.2 ">code-address"
    c-addr は、 ワード xt のコード・アドレスです。
 
-‘code-address!’ ( c_addr xt –  ) gforth-obsolete “code-address!”
+‘code-address!’ ( c_addr xt -  ) gforth-obsolete "code-address!"
    コード・アドレス c-addr のコード・フィールドを xt に変更します。
 
    さまざまな定義ワードによって生成されるコード・アドレスは、 以下のワー
 ド群によって生成されます:
 
-‘docol:’ ( – addr  ) gforth-0.2 “docol:”
+‘docol:’ ( - addr  ) gforth-0.2 "docol:"
    コロン定義のコード・アドレスを書き込む。
 
-‘docon:’ ( – addr  ) gforth-0.2 “docon:”
+‘docon:’ ( - addr  ) gforth-0.2 "docon:"
    ‘CONSTANT’ のコード・アドレスを書き込む。
 
-‘dovar:’ ( – addr  ) gforth-0.2 “dovar:”
+‘dovar:’ ( - addr  ) gforth-0.2 "dovar:"
    ‘CREATE’ されたワードのコード・アドレスを書き込む。
 
-‘douser:’ ( – addr  ) gforth-0.2 “douser:”
+‘douser:’ ( - addr  ) gforth-0.2 "douser:"
    ‘USER’ 変数のコード・アドレスを書き込む。
 
-‘dodefer:’ ( – addr  ) gforth-0.2 “dodefer:”
+‘dodefer:’ ( - addr  ) gforth-0.2 "dodefer:"
    ‘defer’ されたワードのコード・アドレスを書き込む。
 
-‘dofield:’ ( – addr  ) gforth-0.2 “dofield:”
+‘dofield:’ ( - addr  ) gforth-0.2 "dofield:"
    ‘field’ のコード・アドレスを書き込む。
 
-‘dovalue:’ ( – addr  ) gforth-0.7 “dovalue:”
+‘dovalue:’ ( - addr  ) gforth-0.7 "dovalue:"
    ‘CONSTANT’ のコード・アドレスを書き込む。
 
-‘dodoes:’ ( – addr  ) gforth-0.6 “dodoes:”
+‘dodoes:’ ( - addr  ) gforth-0.6 "dodoes:"
    ‘DOES>’ で定義されたワードのコード・アドレス。
 
-‘doabicode:’ ( – addr  ) gforth-1.0 “doabicode:”
+‘doabicode:’ ( - addr  ) gforth-1.0 "doabicode:"
    ‘ABI-CODE’ 定義のコード・アドレスを書き込む。
 
    ‘set-does>’ で定義されたワード X の場合、 コード・アドレスは
@@ -1244,7 +1055,7 @@ Creating from a prototype::)。
 が execute する Forth コードを知りたい場合は、‘>does-code’ で以下のこと
 がわかります:
 
-‘>does-code’ ( xt1 – xt2  ) gforth-0.2 “>does-code”
+‘>does-code’ ( xt1 - xt2  ) gforth-0.2 ">does-code"
    xt1 が ‘set-does>’ で定義されたワードの子の実行トークンである場合、
 xt2 は ‘set-does>’ に渡される xt 、 つまり xt1 実行時に実行されるワード
 の xt です(ただし、 最初に xt1 の本体(body)アドレスがプッシュされます)。
@@ -1254,7 +1065,7 @@ xt1 が ‘set-does>’ で定義されたワードに属していない場合�
    結果の xt2 を ‘set-does>’ (推奨) とともに使用して、 もっとも最新のワ
 ードを変更するか以下を使用して変更できます
 
-‘does-code!’ ( xt2 xt1 –  ) gforth-0.2 “does-code!”
+‘does-code!’ ( xt2 xt1 -  ) gforth-0.2 "does-code!"
    xt1 を ‘xt2 set-does>’ で定義されたワードに変更します。
 
    任意のワードを変更するためには…
@@ -1262,12 +1073,12 @@ xt1 が ‘set-does>’ で定義されたワードに属していない場合�
    以下の 2 つのワードは、 ‘>code-address’ や ‘>does-code’ や
 ‘code-address!’ や ‘does-code!’ を一般化します:
 
-‘>definer’ ( xt – definer  ) gforth-0.2 “>definer”
+‘>definer’ ( xt - definer  ) gforth-0.2 ">definer"
    DEFINER (definer;定義者)は、 XT の定義方法を示す一意の識別子です。 異
 なる ‘does>’ コードで定義されたワードには、 異なる definer が存在します
 。 definer は比較や ‘definer!’ で使用できます。
 
-‘definer!’ ( definer xt –  ) gforth-obsolete “definer!”
+‘definer!’ ( definer xt -  ) gforth-obsolete "definer!"
    XT で表されるワードは、 その振る舞いを DEFINER に関連付けられた振る舞
 いに変更します。
 
@@ -1287,11 +1098,11 @@ Gforth を使用すると、 (そのようなものが存在する場合、)ホ�
 ィング・システムのシェルで実行するための任意の文字列をシェルに渡すことが
 できます。
 
-‘sh’ ( "..." –  ) gforth-0.2 “sh”
+‘sh’ ( "..." -  ) gforth-0.2 "sh"
    行(コマンド・ライン)の残りの部分をシェルコマンドとして実行します。 そ
 の後、 ワード ‘$?’ によってコマンドの終了ステータスを取得します。
 
-‘system’ ( c-addr u –  ) gforth-0.2 “system”
+‘system’ ( c-addr u -  ) gforth-0.2 "system"
    C-ADDR U で指定された文字列をホスト・オペレーティング・システムに渡し
 、 サブ・シェルで実行します。 その後、 ワード ‘$?’ によってコマンドの終
 了ステータスが生成されます。 環境変数 ‘GFORTHSYSTEMPREFIX’ の値 (または
@@ -1299,16 +1110,16 @@ Gforth を使用すると、 (そのようなものが存在する場合、)ホ�
 トで使用するシェルではなく、 Windows のシェルとして ‘command.com’ の使用
 をサポートするためです。)。 *note Environment variables::
 
-‘sh-get’ ( c-addr u – c-addr2 u2  ) gforth-1.0 “sh-get”
+‘sh-get’ ( c-addr u - c-addr2 u2  ) gforth-1.0 "sh-get"
    シェル・コマンド addr u を実行します。 c-addr2 u2 はコマンドの出力で
 す。 終了コードは ‘$?’ にあります。 コマンドの出力は ‘sh$ 2@’ にもありま
 す。
 
-‘$?’ ( – n  ) gforth-0.2 “dollar-question”
-   Value – 最後に実行された ‘system’ コマンドによって返された終了ステー
+‘$?’ ( - n  ) gforth-0.2 "dollar-question"
+   Value - 最後に実行された ‘system’ コマンドによって返された終了ステー
 タス。
 
-‘getenv’ ( c-addr1 u1 – c-addr2 u2 ) gforth-0.2 “getenv”
+‘getenv’ ( c-addr1 u1 - c-addr2 u2 ) gforth-0.2 "getenv"
    文字列 c-addr1 u1 は環境変数名を指定します。 文字列 c-addr2 u2 は、 ホ
 スト・オペレーティング・システムによる、 その環境変数の展開結果です。 環
 境変数が存在しない場合、 c-addr2 u2 は長さ 0 文字の文字列を返します(訳注
@@ -1321,17 +1132,17 @@ File: gforth.info,  Node: Keeping track of Time,  Next: Miscellaneous Words,  Pr
 6.32 Keeping track of Time
 ==========================
 
-‘ms’ ( n –  ) facility-ext “ms”
+‘ms’ ( n -  ) facility-ext "ms"
 \ 訳注: 指定のミリ秒ウエイトします(エポックでカウントします)。
 
-‘ns’ ( d –  ) gforth-1.0 “ns”
+‘ns’ ( d -  ) gforth-1.0 "ns"
 \ 訳注: 指定のナノ秒ウエイトします(エポックでカウントします)
 
-‘time&date’ ( – nsec nmin nhour nday nmonth nyear  ) facility-ext “time-and-date”
+‘time&date’ ( - nsec nmin nhour nday nmonth nyear  ) facility-ext "time-and-date"
    現在の時刻を報告します。 nsec 、 nmin、 nhour は 0 から数えます。
 nmonth は 1 から数えます。
 
-‘>time&date&tz’ ( udtime – nsec nmin nhour nday nmonth nyear fdst ndstoff c-addrtz utz ) gforth-1.0 “to-time-and-date”
+‘>time&date&tz’ ( udtime - nsec nmin nhour nday nmonth nyear fdst ndstoff c-addrtz utz ) gforth-1.0 "to-time-and-date"
    1970 年 1 月 1 日 0:00Z からの時間を秒単位で現在の時刻に変換します。
 nsec、 nmin、 nhourは 0 から数えます。 nmonth は 1 から数えます(訳注: 使
 い方: 秒単位の値を与える必要があるので、 例えば ‘utime #1000000 ud/mod
@@ -1339,14 +1150,14 @@ rot drop >time&date&tz’ とする。 fdst: 夏時間を 採用していると�
 採用していないときに 0、この情報が得られないときに正数。 ndstoff : GMTか
 らのオフセット(秒単位)、 c-addrtz utz : タイムゾーン文字列(例: JST))
 
-‘utime’ ( – dtime ) gforth-0.5 “utime”
+‘utime’ ( - dtime ) gforth-0.5 "utime"
    エポック(some epoch)以降の現在時刻をマイクロ秒単位で報告します。
 ‘#1000000 um/mod nip’ を使用して秒に変換します
 
-‘ntime’ ( – dtime ) gforth-1.0 “ntime”
+‘ntime’ ( - dtime ) gforth-1.0 "ntime"
    エポック(some epoch)以降の現在時刻をナノ秒単位で報告します。
 
-‘cputime’ ( – duser dsystem ) gforth-0.5 “cputime”
+‘cputime’ ( - duser dsystem ) gforth-0.5 "cputime"
    duser と dsystem は、 Forth システムの開始以降に使用されたユーザー・
 レベルとシステム・レベルの CPU 時間(子プロセスを除く)をマイクロ秒単位で
 表したものです(ただし、 粒度はさらに粗くなる可能性があります)。
@@ -1363,7 +1174,7 @@ File: gforth.info,  Node: Miscellaneous Words,  Prev: Keeping track of Time,  Up
 Forth のワードをリストします。 いつかは、 これらのワードはそれぞれ適切な
 セクションに配置されることになるでしょう。
 
-‘quit’ ( ?? – ??  ) core “quit”
+‘quit’ ( ?? - ??  ) core "quit"
    リターン・スタックを空にし、 ユーザー入力デバイスを入力ソースにして、
 インタプリタ状態にして、 テキスト・ インタープリターを開始します。
 
@@ -2039,7 +1850,7 @@ File: gforth.info,  Node: core-other,  Prev: core-ambcond,  Up: The Core Words
 ‘PAD’ を使用した非標準ワード:
      無し。
 
-利用可能なオペレータの端末設備(operator’s terminal facilities):
+利用可能なオペレータの端末設備(operator's terminal facilities):
      OS のコマンド・ライン処理後、 Gforth は対話モードになり、 Gforth に
      対話的にコマンドを与えることができます。 実際に利用できる機能は、
      Gforth の呼び出し方法によって異なります。
@@ -2484,7 +2295,7 @@ File: gforth.info,  Node: locals-ambcond,  Prev: locals-idef,  Up: The optional 
 名前付きローカル変数をインタープリター状態(interpretation state)で実行:
      ローカル変数は現在の定義内コンパイルします(つまりコンパイル状態です
      )。 さらに、 ローカル変数をインタープリター状態でテキスト解釈
-     (text-interpreting)すると、 “is compile-only” という警告が表示され
+     (text-interpreting)すると、 "is compile-only" という警告が表示され
      ます。
 
 name は ‘VALUE’ または ‘(LOCAL)’ で定義されていません(‘TO’):
@@ -2911,26 +2722,26 @@ File: gforth.info,  Node: Hilighting,  Next: Auto-Indentation,  Prev: Emacs Tags
 編集している間、 変更されたリージョンはその場(on-the-fly)でパース・更新
 されます。
 
-   Emacs の変数 ‘forth-hilight-level’ を使用して、 装飾レベルを 0 (まっ
+   Emacs の変数 'forth-hilight-level' を使用して、 装飾レベルを 0 (まっ
 たく強調表示なし) から 3 (デフォルト) に変更します。 強調表示レベルを 0
 に設定した場合でも、 パーサーはバックグラウンドで動作し、 テキストの領域
 が「コンパイル」(compiled)されているか「解釈」(interpreted)されているか
 に関する情報を収集します。 これらの情報は、 自動インデントが適切に機能す
 るために必要です。 コンピュータが遅すぎてパース処理できない場合は、
-Emacs の変数 ‘forth-disable-parser’ を非 nil に設定します。 ただし、 こ
+Emacs の変数 'forth-disable-parser' を非 nil に設定します。 ただし、 こ
 れは自動インデント・エンジンのスマートさに影響します。
 
    しばしば Forth のソース・コードでは、 強調表示する必要がある新しい機
 能として、 新しい制御構造や定義ワードなどが定義される場合があります。 変
-数 ‘forth-custom-words’ を使用して、 ‘forth-mode’ で追加のワードや構造を
-強調表示させることができます。 詳細については、‘forth-words’ の
+数 'forth-custom-words' を使用して、 ‘forth-mode’ で追加のワードや構造を
+強調表示させることができます。 詳細については、'forth-words' の
 docstring を参照してください(Emacs では、‘C-h v out-words’ と入力します
 )。
 
-   ‘forth-custom-words’ は ‘.emacs.d/init.el’ ファイル内でカスタマイズす
+   'forth-custom-words' は ‘.emacs.d/init.el’ ファイル内でカスタマイズす
 ることを目的としています。 ファイル固有の方法でハイライトをカスタマイズ
 するには、 あなたのソース・ファイルの最後のEmacsローカル変数セクションで
-‘forth-local-words’ を設定します(*note Variables: (emacs)Local Variables
+'forth-local-words' を設定します(*note Variables: (emacs)Local Variables
 in Files.)。
 
    Example:
@@ -2953,7 +2764,7 @@ File: gforth.info,  Node: Auto-Indentation,  Next: Blocks Files,  Prev: Hilighti
 ートな方法で行をインデントしようとします。
 
    簡単なカスタマイズは、 ‘.emacs.d/init.el’ ファイルで
-‘forth-indent-level’ と ‘forth-minor-indent-level’ を設定することで実現
+'forth-indent-level' と 'forth-minor-indent-level' を設定することで実現
 できます。 歴史的な理由により、 ‘gforth.el’ はデフォルトでは 4 の倍数の
 桁数インデントされます。 より伝統的な 3 桁のインデントを使用するには、
 ‘.emacs.d/init.el’ に以下の行を追加します:
@@ -2965,12 +2776,12 @@ File: gforth.info,  Node: Auto-Indentation,  Next: Blocks Files,  Prev: Hilighti
      )))
 
    インデントでデフォルト以外のワードを認識したい場合は、
-‘.emacs.d/init.el’ で ‘forth-custom-indent-words’ を設定してカスタマイズ
-します。 詳細については、 ‘forth-indent-words’ の docstring を参照してく
+‘.emacs.d/init.el’ で 'forth-custom-indent-words' を設定してカスタマイズ
+します。 詳細については、 'forth-indent-words' の docstring を参照してく
 ださい(Emacs では、‘C-h v four-indent-words’ と入力します)。
 
    ファイル固有の方法でインデントをカスタマイズするには、 ソースファイル
-の最後のEmacsローカル変数セクションで ‘forth-local-indent-words’ を設定
+の最後のEmacsローカル変数セクションで 'forth-local-indent-words' を設定
 します(*note Variables: (emacs)Local Variables in Files.)。
 
    Example:
@@ -2998,7 +2809,7 @@ File: gforth.info,  Node: Blocks Files,  Prev: Auto-Indentation,  Up: Emacs and 
 かの追加機能があります:
 
    • ファイルはブロック・ファイル形式でディスクに書き込まれます。
-   • スクリーン番号はモードラインに表示されます(‘forth-block-base’ で始
+   • スクリーン番号はモードラインに表示されます('forth-block-base' で始
      まる番号です。 訳注:後方互換性の為に 0 または 1 から始まります)
    • 行の長さが 64 文字を超えると警告が表示されます。
    • 現在編集されているブロックの先頭は、 オーバーレイ矢印
@@ -3008,7 +2819,7 @@ File: gforth.info,  Node: Blocks Files,  Prev: Auto-Indentation,  Up: Emacs and 
 ク・ファイルを開くと、 ファイルがディスクに書き戻されるときに、 これらの
 文字はスペースに変換されます。 ブロック・ファイルの読み取り中にタブまた
 は改行が検出された場合、 エラーがエコーエリアに表示されます。 なので、 読
-み取り中に Emacs のベルが鳴ったら、‘*Messages*’ バッファを見てください。
+み取り中に Emacs のベルが鳴ったら、'*Messages*' バッファを見てください。
 
    詳細については、 ‘C-h v forth-blocks-mode’ と入力して、
 ‘forth-blocks-mode’ の docstring を参照してください。
@@ -3140,9 +2951,9 @@ Gforth は、 (エンジン内の) リミティブだけでなく、 Forth で�
           または切り刻んだ(mangle)形式でマシン・コードで表現されます。 こ
           の形式の絶対アドレスを含む ‘CODE’ ワードを再配置可能イメージ・
           ファイルに含めることはできません。 回避策は、アドレスを何らか
-          の相対形式(たとえば、 レジ​​スタに存在する CFA を基準とした相
-          対形式)で表現するか、 アドレスが切り刻んでない(mangle)形式で格
-          納されている場所からロードすることです。
+          の相対形式(たとえば、 レジ​​スタに存在する CFA を基準とした相対
+          形式)で表現するか、 アドレスが切り刻んでない(mangle)形式で格納
+          されている場所からロードすることです。
 
    ---------- Footnotes ----------
 
@@ -3170,7 +2981,7 @@ File: gforth.info,  Node: Non-Relocatable Image Files,  Next: Data-Relocatable I
 
      gforth app.fs -e "savesystem app.fi bye"
 
-‘savesystem’ ( "image" –  ) gforth-0.2 “savesystem”
+‘savesystem’ ( "image" -  ) gforth-0.2 "savesystem"
 
 
 File: gforth.info,  Node: Data-Relocatable Image Files,  Next: Fully Relocatable Image Files,  Prev: Non-Relocatable Image Files,  Up: Image Files
@@ -3353,9 +3164,9 @@ Gforth::):
 目の使用法のため、‘#!’ と実行可能ファイルへのパスの間に空白が必要です(さ
 らに、 一部の Unix ではシーケンス ‘#! /’ が必要です)。
 
-   ほとんどの Unix システム(Linux を含む)は、 バイナリ名の後​​に 1 つの
-オプションだけをサポートします。 それでも十分でない場合は、 以下のトリッ
-クを使用できます:
+   ほとんどの Unix システム(Linux を含む)は、 バイナリ名の後​​に 1 つのオ
+プションだけをサポートします。 それでも十分でない場合は、 以下のトリック
+を使用できます:
 
      #! /bin/sh
      : ## ; 0 [if]
@@ -3381,7 +3192,7 @@ Forth スクリプトとして解釈され、 最初にコロン定義 ‘##’ 
 チの追加の利点は、 Gforth バイナリ が ‘$PATH’ 内にある限り、 Gforth バイ
 ナリがどこにあるかを知る必要がないことです。
 
-‘#!’ ( –  ) gforth-0.2 “hash-bang”
+‘#!’ ( -  ) gforth-0.2 "hash-bang"
    ‘\’ の alias です。
 
    ---------- Footnotes ----------
@@ -3440,18 +3251,18 @@ Gforth::)、 別の defer されたワードである ‘bootmessage’ を実�
 しないと、 Gforth 起動プロセスが続行され、 最終的に Forth コマンド・ライ
 ンがユーザーに表示されます。
 
-‘'cold’ ( –  ) gforth-0.2 “tick-cold”
+‘'cold’ ( -  ) gforth-0.2 "tick-cold"
    OS コマンドライン引数を解釈(interpret)する直前に何かするためのフック(
 defer されたワード)。 あなたが実行したい幾つかの初期化を行うためにありま
 す。 通常、 あなたが実行したいいくつかの初期化も行います。
 
-‘bootmessage’ ( –  ) gforth-0.4 “bootmessage”
+‘bootmessage’ ( -  ) gforth-0.4 "bootmessage"
    OS コマンドライン引数を解釈(interpret)した直後のフック(deferされたワ
 ード)。 通常は Gforth 起動メッセージを出力します(訳注: つまり、 あなたが
 何かしらワードをセットすると起動メッセージは出力されなくなります)。
 
-   ( ’quit :原文未記述)
-‘process-option’ ( addr u – true / addr u false  ) gforth-0.7 “process-option”
+   ( 'quit :原文未記述)
+‘process-option’ ( addr u - true / addr u false  ) gforth-0.7 "process-option"
    オプション ADDR U を処理し、 オプションが処理された場合は true を返し
 ます。 未処理のオプションは ‘required’ を通じてファイルとしてロードされ
 ます。
@@ -3466,12 +3277,12 @@ Gforth を使用したプログラミングにはこの章を読む必要はあ�
 が Gforth のソース・コード内を探索するのに役立つかもしれません。
 
    このセクションのアイデアは次の論文にも掲載されています: Bernd Paysan,
-‘ANS fig/GNU/??? Forth’ (in German), Forth-Tagung ’93; M. Anton Ertl, ‘A
+‘ANS fig/GNU/??? Forth’ (in German), Forth-Tagung '93; M. Anton Ertl, ‘A
 Portable Forth Engine
-(https://www.complang.tuwien.ac.at/papers/ertl93.ps.Z)’, EuroForth ’93;
+(https://www.complang.tuwien.ac.at/papers/ertl93.ps.Z)’, EuroForth '93;
 M. Anton Ertl, ‘Threaded code variations and optimizations (extended
 version) (https://www.complang.tuwien.ac.at/papers/ertl02.ps.gz)’,
-Forth-Tagung ’02.
+Forth-Tagung '02.
 
 * Menu:
 
@@ -3993,7 +3804,7 @@ RISC では、Gforth エンジンは限りなく最適な状態に近くなり�
 Beta (‘gcc-2.6.3 -O3 -fomit-frame-pointer’ でコンパイル; ThisForth はス
 レッド化されたコードののぞき穴最適化を採用)、 TILE (‘make opt’ でコンパ
 イル)。 Linux 上の 486DX2/66 で、 Gforth と PFE と ThisForth と TILE の
-ベンチマークを実行しました。 Kenneth O’Heskin は、 Windows NT で同様のメ
+ベンチマークを実行しました。 Kenneth O'Heskin は、 Windows NT で同様のメ
 モリー・パフォーマンスを備えた 486DX2/66 上の Win32Forth と NT Forth の
 結果を親切に提供してくれました。 Marcel Hendrix は Eforth を Linux に移
 植し、 ベンチマークを実行できるように拡張し、 覗き穴・オプティマイザーを
@@ -4045,7 +3856,7 @@ Variables: (gcc)Global Reg Vars.)。 さらに言えば、 現在の C コンパ
 
    ‘Translating Forth to Efficient C
 (https://www.complang.tuwien.ac.at/papers/ertl&maierhofer95.ps.gz)’ by
-M. Anton Ertl and Martin Maierhofer (presented at EuroForth ’95) では、
+M.  Anton Ertl and Martin Maierhofer (presented at EuroForth '95) では、
 Gforth の間接スレッド化バージョンが、 Win32Forth や NT Forth や PFE や
 ThisForth や、 いくつかのネイティブ・コード・システムと比較されます。 そ
 のバージョンの Gforth は、 486 ではここで使用されているバージョンよりも
@@ -4142,11 +3953,11 @@ description file name)を期待します。 クロス・コンパイラ自体
 たは ‘machine-file’ がファイル名のアドレスとカウントのペアをスタックに残
 すかのいずれかを想定します。
 
-   機能リスト(feature list)は通常​​ ‘SetValue’ を使用して制御されますが
-、 複数のプロジェクトで使用される汎用ファイルは代わりに ‘DefaultValue’ を
-使用できます。 どちらのワードも、 値が定義されていない場合は ‘Value’ の
-ように動作しますが、 値が定義されている場合は ‘SetValue’ は ‘to’ のよう
-に動作し、 値が定義されている場合は ‘DefaultValue’ は何も設定しません。
+   機能リスト(feature list)は通常​​ ‘SetValue’ を使用して制御されますが、
+複数のプロジェクトで使用される汎用ファイルは代わりに ‘DefaultValue’ を使
+用できます。 どちらのワードも、 値が定義されていない場合は ‘Value’ のよ
+うに動作しますが、 値が定義されている場合は ‘SetValue’ は ‘to’ のように
+動作し、 値が定義されている場合は ‘DefaultValue’ は何も設定しません。
 
      \ generic mach file for pc gforth                       03sep97jaw
 
@@ -4216,10 +4027,10 @@ File: gforth.info,  Node: MINOS2 object framework,  Next: MINOS2 tutorial,  Prev
 MINOS2 は、 ‘mini-oof2.fs’ のオブジェクト・モデルで書かれた GUI ライブラ
 リです。 これには 2 つの主要なクラス階層があります:
 
-‘actor’ ( – class  ) minos2 “actor”
+‘actor’ ( - class  ) minos2 "actor"
    コンポーネントに結び付けられたされたアクションのクラス。
 
-‘widget’ ( – class  ) minos2 “widget”
+‘widget’ ( - class  ) minos2 "widget"
    ビジュアル・コンポーネントのクラス
 
 
@@ -4228,61 +4039,61 @@ File: gforth.info,  Node: actor methods,  Next: widget methods,  Prev: MINOS2 ob
 17.1.1 ‘actor’ methods:
 -----------------------
 
-‘caller-w’ ( – optr  ) minos2 “caller-w”
+‘caller-w’ ( - optr  ) minos2 "caller-w"
    アクターを埋め込むウィジェットへのポインター
 
-‘active-w’ ( – optr  ) minos2 “active-w”
+‘active-w’ ( - optr  ) minos2 "active-w"
    アクターを埋め込むアクティブなサブウィジェットへのポインター
 
-‘act-name$’ ( – addr u  ) minos2 “act-name-string”
+‘act-name$’ ( - addr u  ) minos2 "act-name-string"
    デバッグ支援: アクターの名前
 
-‘clicked’ ( rx ry bmask n –  ) minos2 “clicked”
+‘clicked’ ( rx ry bmask n -  ) minos2 "clicked"
    処理されたクリック(達)
 
-‘scrolled’ ( axis dir –  ) minos2 “scrolled”
+‘scrolled’ ( axis dir -  ) minos2 "scrolled"
    スクロール処理
 
-‘touchdown’ ( $rxy*n bmask –  ) minos2 “touchdown”
+‘touchdown’ ( $rxy*n bmask -  ) minos2 "touchdown"
    生のクリック・ダウン
 
-‘touchup’ ( $rxy*n bmask –  ) minos2 “touchup”
+‘touchup’ ( $rxy*n bmask -  ) minos2 "touchup"
    生のクリック・アップ
 
-‘ukeyed’ ( addr u –  ) minos2 “ukeyed”
+‘ukeyed’ ( addr u -  ) minos2 "ukeyed"
    キーイベント。 印刷可能な Unicode 文字の文字列
 
-‘ekeyed’ ( ekey –  ) minos2 “ekeyed”
+‘ekeyed’ ( ekey -  ) minos2 "ekeyed"
    キーイベント。 印刷不可能なキー
 
-‘?inside’ ( rx ry – act / 0  ) minos2 “query-inside”
+‘?inside’ ( rx ry - act / 0  ) minos2 "query-inside"
    座標がウィジェット内にあるかどうかをチェック。
 
-‘focus’ ( –  ) minos2 “focus”
+‘focus’ ( -  ) minos2 "focus"
    ウィジェットにフォーカスする
 
-‘defocus’ ( –  ) minos2 “defocus”
+‘defocus’ ( -  ) minos2 "defocus"
    ウィジェットをフォーカスから外す
 
-‘entered’ ( –  ) minos2 “entered”
+‘entered’ ( -  ) minos2 "entered"
    カーソルがウィジェット領域に入ると反応します
 
-‘left’ ( –  ) minos2 “left”
+‘left’ ( -  ) minos2 "left"
    カーソルがウィジェット領域から離れると反応します
 
-‘show’ ( –  ) minos2 “show”
+‘show’ ( -  ) minos2 "show"
    ウィジェットが表示されます
 
-‘hide’ ( –  ) minos2 “hide”
+‘hide’ ( -  ) minos2 "hide"
    ウィジェットを非表示にします
 
-‘get’ ( – something  ) minos2 “get”
+‘get’ ( - something  ) minos2 "get"
    ウィジェットの背後にある値のゲッター
 
-‘set’ ( something –  ) minos2 “set”
+‘set’ ( something -  ) minos2 "set"
    ウィジェットの背後にある値のセッター
 
-‘show-you’ ( –  ) minos2 “show-you”
+‘show-you’ ( -  ) minos2 "show-you"
    ウィジェットを表示させる
 
 
@@ -4291,110 +4102,110 @@ File: gforth.info,  Node: widget methods,  Prev: actor methods,  Up: MINOS2 obje
 17.1.2 ‘widget’ methods:
 ------------------------
 
-‘parent-w’ ( – optr  ) minos2 “parent-w”
+‘parent-w’ ( - optr  ) minos2 "parent-w"
    親ウィジェットへのポインター
 
-‘act’ ( – optr  ) minos2 “act”
+‘act’ ( - optr  ) minos2 "act"
    アクターへのポインター
 
-‘name$’ ( – addr u  ) minos2 “name-string”
+‘name$’ ( - addr u  ) minos2 "name-string"
    デバッグと検索用のウィジェット名
 
-‘x’ ( – r  ) minos2 “x”
+‘x’ ( - r  ) minos2 "x"
    ウィジェット x 座標
 
-‘y’ ( – r  ) minos2 “y”
+‘y’ ( - r  ) minos2 "y"
    ウィジェットの y 座標
 
-‘w’ ( – r  ) minos2 “w”
+‘w’ ( - r  ) minos2 "w"
    ウィジェットの幅
 
-‘h’ ( – r  ) minos2 “h”
+‘h’ ( - r  ) minos2 "h"
    ベースラインより上のウィジェットの高さ
 
-‘d’ ( – r  ) minos2 “d”
+‘d’ ( - r  ) minos2 "d"
    ベースラインより下のウィジェットの深さ
 
-‘gap’ ( – r  ) minos2 “gap”
+‘gap’ ( - r  ) minos2 "gap"
    行間の隙間
 
-‘baseline’ ( – r  ) minos2 “baseline”
+‘baseline’ ( - r  ) minos2 "baseline"
    行ごとの最小スキップ
 
-‘kerning’ ( – r  ) minos2 “kerning”
+‘kerning’ ( - r  ) minos2 "kerning"
    カーニングを追加
 
-‘raise’ ( – r  ) minos2 “raise”
+‘raise’ ( - r  ) minos2 "raise"
    ボックスを 上げる/下げる
 
-‘border’ ( – r  ) minos2 “border”
+‘border’ ( - r  ) minos2 "border"
    周囲の境界線、全方向
 
-‘borderv’ ( – r  ) minos2 “borderv”
+‘borderv’ ( - r  ) minos2 "borderv"
    垂直境界線のオフセット
 
-‘bordert’ ( – r  ) minos2 “bordert”
+‘bordert’ ( - r  ) minos2 "bordert"
    上枠のオフセット
 
-‘borderl’ ( – r  ) minos2 “borderl”
+‘borderl’ ( - r  ) minos2 "borderl"
    左境界オフセット
 
-‘w-color’ ( – r  ) minos2 “w-color”
+‘w-color’ ( - r  ) minos2 "w-color"
    ウィジェットのカラー・インデックス(カラーマップ内)(存在する場合)
 
-‘draw-init’ ( –  ) minos2 “draw-init”
+‘draw-init’ ( -  ) minos2 "draw-init"
    draw 初期化
 
-‘draw’ ( –  ) minos2 “draw”
+‘draw’ ( -  ) minos2 "draw"
    ウィジェットを描く
 
-‘split’ ( firstflag rstart1 rx – o rstart2  ) minos2 “split”
+‘split’ ( firstflag rstart1 rx - o rstart2  ) minos2 "split"
    ウィジェットを段落を植字するための部分(parts for typesetting
 paragraphs)に分割します
 
-‘lastfit’ ( –  ) minos2 “lastfit”
+‘lastfit’ ( -  ) minos2 "lastfit"
    最後のウィジェット要素をボックスに収めます(fit)
 
-‘hglue’ ( – rtyp rsub radd  ) minos2 “hglue”
+‘hglue’ ( - rtyp rsub radd  ) minos2 "hglue"
    水平グルーを計算
 
-‘dglue’ ( – rtyp rsub radd  ) minos2 “dglue”
+‘dglue’ ( - rtyp rsub radd  ) minos2 "dglue"
    ベースラインの下の垂直グルーを計算
 
-‘vglue’ ( – rtyp rsub radd  ) minos2 “vglue”
+‘vglue’ ( - rtyp rsub radd  ) minos2 "vglue"
    ベースラインより上の垂直グルーを計算
 
-‘hglue@’ ( – rtyp rsub radd  ) minos2 “hglue-fetch”
+‘hglue@’ ( - rtyp rsub radd  ) minos2 "hglue-fetch"
    ‘hglue’ のキャッシュされたバリエーション
 
-‘dglue@’ ( – rtyp rsub radd  ) minos2 “dglue-fetch”
+‘dglue@’ ( - rtyp rsub radd  ) minos2 "dglue-fetch"
    ‘dglue’ のキャッシュされたバリエーション
 
-‘vglue@’ ( – rtyp rsub radd  ) minos2 “vglue-fetch”
+‘vglue@’ ( - rtyp rsub radd  ) minos2 "vglue-fetch"
    ‘vglue’ のキャッシュされたバリエーション
 
-‘xywh’ ( – rx0 ry0 rw rh  ) minos2 “xywh”
+‘xywh’ ( - rx0 ry0 rw rh  ) minos2 "xywh"
    ウィジェット境界(bound)ボックス、左上隅から開始
 
-‘xywhd’ ( – rx ry rw rh rd  ) minos2 “xywhd”
+‘xywhd’ ( - rx ry rw rh rd  ) minos2 "xywhd"
    左のベースライン点から始まるウィジェット境界(bound)ボックス
 
-‘!resize’ ( rx ry rw rh rd –  ) minos2 “store-resize”
+‘!resize’ ( rx ry rw rh rd -  ) minos2 "store-resize"
    ウィジェットのサイズ変更
 
-‘!size’ ( –  ) minos2 “store-size”
+‘!size’ ( -  ) minos2 "store-size"
    ウィジェットにサイズを自己決定させます
 
-‘dispose-widget’ ( –  ) minos2 “dispose-widget”
+‘dispose-widget’ ( -  ) minos2 "dispose-widget"
    ウィジェットを削除
 
-‘.widget’ ( –  ) minos2 “print-widget”
+‘.widget’ ( -  ) minos2 "print-widget"
    デバッグ: ウィジェットに関する情報を出力
 
-‘par-split’ ( rw –  ) minos2 “par-split”
+‘par-split’ ( rw -  ) minos2 "par-split"
    段落を幅 RW で分割します
 
-‘resized’ ( –  ) minos2 “resized”
+‘resized’ ( -  ) minos2 "resized"
    ウィジェットのサイズが変更されました
 
    コンポーネントは、 段落区切りを含め、 LaTeX に似た box&glue モデルを
@@ -4406,7 +4217,7 @@ paragraphs)に分割します
 に使用され、 隣接するスキーム間の遷移をアニメーション化することもできま
 す。
 
-‘>animate’ ( rdelta addr xt –  ) minos2 “to-animate”
+‘>animate’ ( rdelta addr xt -  ) minos2 "to-animate"
    RDELTA のタイムアウトが期限切れになるまで、 スタック効果 ‘( addr
 r0..1 -- )’ を指定して XT を繰り返し呼び出して、 新しいアニメーションを
 作成します。 最後の呼び出しは常に引数 1E を使用して行われます。
@@ -4414,52 +4225,52 @@ r0..1 -- )’ を指定して XT を繰り返し呼び出して、 新しいア�
    名前付きカラー・インデックスを作成し、 現在アクティブなカラー・スキー
 ムのカラー値を割り当てることができます。
 
-‘color:’ ( rgba "name" –  ) minos2 “color:”
+‘color:’ ( rgba "name" -  ) minos2 "color:"
    RGBA で初期化された(おそらく共有される)カラー・インデックスを作成しま
 す。
 
-‘new-color:’ ( rgba "name" –  ) minos2 “new-color:”
+‘new-color:’ ( rgba "name" -  ) minos2 "new-color:"
    RGBA で初期化された一意(unique)のカラー・インデックスを作成します。
 
-‘text-color:’ ( rgba "name" –  ) minos2 “text-color:”
+‘text-color:’ ( rgba "name" -  ) minos2 "text-color:"
    RGBA で初期化された一意のテキスト・カラー・インデックスを作成します。
 対応する絵文字の色は白に設定されます。
 
-‘text-emoji-color:’ ( rgbatext rgbaemoji "name" –  ) minos2 “text-emoji-color:”
+‘text-emoji-color:’ ( rgbatext rgbaemoji "name" -  ) minos2 "text-emoji-color:"
    RGBATEXT で初期化された一意のテキスト・カラー・インデックスを作成しま
 す。 対応する絵文字の色は RGBAEMOJI に設定されます。
 
-‘fade-color:’ ( rgba1 rgba2 "name" –  ) minos2 “fade-color:”
+‘fade-color:’ ( rgba1 rgba2 "name" -  ) minos2 "fade-color:"
    RGBA1 と RGBA2 で初期化されたテキスト・カラー・インデックスの一意のペ
 アを作成します。 対応する絵文字の色は白に設定されます。 インデックスをあ
 るインデックスから次のインデックスにゆっくりと移動すると、 オブジェクト
 は再描画時に線形補間(linear interpolation)を使用してその色を変更します。
 
-‘text-emoji-fade-color:’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" –  ) minos2 “text-emoji-fade-color:”
+‘text-emoji-fade-color:’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" -  ) minos2 "text-emoji-fade-color:"
    RGBATEXT1 と ~2 で初期化されたテキスト・カラー・インデックスの一意の
 ペアを作成します。 対応する絵文字カラー・ペアは RGBAEMOJI1 から ~2 に設
 定されます。 インデックスをあるインデックスから次のインデックスにゆっく
 りと移動すると、 オブジェクトは再描画時に線形補間を使用してその色を変更
 します。
 
-‘re-color’ ( rgba "name" –  ) minos2 “re-color”
+‘re-color’ ( rgba "name" -  ) minos2 "re-color"
    現在のカラースキームの名前付きカラーインデックス "NAME" に値 RGBA を
 割り当てます。
 
-‘re-text-color’ ( rgba "name" –  ) minos2 “re-text-color”
+‘re-text-color’ ( rgba "name" -  ) minos2 "re-text-color"
    現在のカラー・スキームの名前付きテキスト・カラー・インデックス "NAME"
 に値 RGBA を割り当てます。
 
-‘re-emoji-color’ ( rgbatext rgbaemoji "name" –  ) minos2 “re-emoji-color”
+‘re-emoji-color’ ( rgbatext rgbaemoji "name" -  ) minos2 "re-emoji-color"
    現在のカラー・スキームの名前付きテキスト・カラー・インデックスと名前
 付き絵文字カラー・インデックス "NAME" に値 RGBATEXT と RGBAEMOJI を割り
 当てます。
 
-‘re-fade-color’ ( rgba1 rgba2 "name" –  ) minos2 “re-fade-color”
+‘re-fade-color’ ( rgba1 rgba2 "name" -  ) minos2 "re-fade-color"
    現在のカラー・スキーム内の名前付きカラー・インデックスのペア "NAME" に
 値 RGBA1 および RGBA2 を割り当てます。
 
-‘re-text-emoji-fade-color’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" –  ) minos2 “re-text-emoji-fade-color”
+‘re-text-emoji-fade-color’ ( rgbatext1 ~2 rgbaemoji1 ~2 "name" -  ) minos2 "re-text-emoji-fade-color"
    現在のカラー・スキーム内の名前付きカラー・インデックスのペア "NAME" に
 それぞれ値 RGBATEXT1 と ~2 を割り当てます。 RGBAEMOJI1 と ~2.
 
@@ -4468,22 +4279,22 @@ r0..1 -- )’ を指定して XT を繰り返し呼び出して、 新しいア�
 
    • Viewport
 
-     ‘vp-top’ ( o:vp –  ) minos2 “vp-top”
+     ‘vp-top’ ( o:vp -  ) minos2 "vp-top"
      ビューポートを一番上までスクロール
 
-     ‘vp-bottom’ ( o:vp –  ) minos2 “vp-bottom”
+     ‘vp-bottom’ ( o:vp -  ) minos2 "vp-bottom"
      ビューポートを一番下までスクロール
 
-     ‘vp-left’ ( o:vp –  ) minos2 “vp-left”
+     ‘vp-left’ ( o:vp -  ) minos2 "vp-left"
      ビューポートを左にスクロール
 
-     ‘vp-right’ ( o:vp –  ) minos2 “vp-right”
+     ‘vp-right’ ( o:vp -  ) minos2 "vp-right"
      ビューポートを右にスクロール
 
-     ‘vp-reslide’ ( o:vp –  ) minos2 “vp-reslide”
+     ‘vp-reslide’ ( o:vp -  ) minos2 "vp-reslide"
      スクロール後にビューポートのスライダーを調整します
 
-     ‘vp-needed’ ( xt –  ) minos2 “vp-needed”
+     ‘vp-needed’ ( xt -  ) minos2 "vp-needed"
      ビューポートの vp-need でニーズ(needs)を収集します
 
 
@@ -4660,7 +4471,7 @@ D.1 GNU Free Documentation License
      author and publisher a way to get credit for their work, while not
      being considered responsible for modifications made by others.
 
-     This License is a kind of “copyleft”, which means that derivative
+     This License is a kind of "copyleft", which means that derivative
      works of the document must themselves be free in the same sense.
      It complements the GNU General Public License, which is a copyleft
      license designed for free software.
@@ -4681,18 +4492,18 @@ D.1 GNU Free Documentation License
      be distributed under the terms of this License.  Such a notice
      grants a world-wide, royalty-free license, unlimited in duration,
      to use that work under the conditions stated herein.  The
-     “Document”, below, refers to any such manual or work.  Any member
-     of the public is a licensee, and is addressed as “you”.  You accept
+     "Document", below, refers to any such manual or work.  Any member
+     of the public is a licensee, and is addressed as "you".  You accept
      the license if you copy, modify or distribute the work in a way
      requiring permission under copyright law.
 
-     A “Modified Version” of the Document means any work containing the
+     A "Modified Version" of the Document means any work containing the
      Document or a portion of it, either copied verbatim, or with
      modifications and/or translated into another language.
 
-     A “Secondary Section” is a named appendix or a front-matter section
+     A "Secondary Section" is a named appendix or a front-matter section
      of the Document that deals exclusively with the relationship of the
-     publishers or authors of the Document to the Document’s overall
+     publishers or authors of the Document to the Document's overall
      subject (or to related matters) and contains nothing that could
      fall directly within that overall subject.  (Thus, if the Document
      is in part a textbook of mathematics, a Secondary Section may not
@@ -4701,7 +4512,7 @@ D.1 GNU Free Documentation License
      of legal, commercial, philosophical, ethical or political position
      regarding them.
 
-     The “Invariant Sections” are certain Secondary Sections whose
+     The "Invariant Sections" are certain Secondary Sections whose
      titles are designated, as being those of Invariant Sections, in the
      notice that says that the Document is released under this License.
      If a section does not fit the above definition of Secondary then it
@@ -4709,13 +4520,13 @@ D.1 GNU Free Documentation License
      contain zero Invariant Sections.  If the Document does not identify
      any Invariant Sections then there are none.
 
-     The “Cover Texts” are certain short passages of text that are
+     The "Cover Texts" are certain short passages of text that are
      listed, as Front-Cover Texts or Back-Cover Texts, in the notice
      that says that the Document is released under this License.  A
      Front-Cover Text may be at most 5 words, and a Back-Cover Text may
      be at most 25 words.
 
-     A “Transparent” copy of the Document means a machine-readable copy,
+     A "Transparent" copy of the Document means a machine-readable copy,
      represented in a format whose specification is available to the
      general public, that is suitable for revising the document
      straightforwardly with generic text editors or (for images composed
@@ -4727,7 +4538,7 @@ D.1 GNU Free Documentation License
      been arranged to thwart or discourage subsequent modification by
      readers is not Transparent.  An image format is not Transparent if
      used for any substantial amount of text.  A copy that is not
-     “Transparent” is called “Opaque”.
+     "Transparent" is called "Opaque".
 
      Examples of suitable formats for Transparent copies include plain
      ASCII without markup, Texinfo input format, LaTeX input format,
@@ -4740,20 +4551,20 @@ D.1 GNU Free Documentation License
      the machine-generated HTML, PostScript or PDF produced by some word
      processors for output purposes only.
 
-     The “Title Page” means, for a printed book, the title page itself,
+     The "Title Page" means, for a printed book, the title page itself,
      plus such following pages as are needed to hold, legibly, the
      material this License requires to appear in the title page.  For
-     works in formats which do not have any title page as such, “Title
-     Page” means the text near the most prominent appearance of the
-     work’s title, preceding the beginning of the body of the text.
+     works in formats which do not have any title page as such, "Title
+     Page" means the text near the most prominent appearance of the
+     work's title, preceding the beginning of the body of the text.
 
-     A section “Entitled XYZ” means a named subunit of the Document
+     A section "Entitled XYZ" means a named subunit of the Document
      whose title either is precisely XYZ or contains XYZ in parentheses
      following text that translates XYZ in another language.  (Here XYZ
      stands for a specific section name mentioned below, such as
-     “Acknowledgements”, “Dedications”, “Endorsements”, or “History”.)
-     To “Preserve the Title” of such a section when you modify the
-     Document means that it remains a section “Entitled XYZ” according
+     "Acknowledgements", "Dedications", "Endorsements", or "History".)
+     To "Preserve the Title" of such a section when you modify the
+     Document means that it remains a section "Entitled XYZ" according
      to this definition.
 
      The Document may include Warranty Disclaimers next to the notice
@@ -4783,7 +4594,7 @@ D.1 GNU Free Documentation License
 
      If you publish printed copies (or copies in media that commonly
      have printed covers) of the Document, numbering more than 100, and
-     the Document’s license notice requires Cover Texts, you must
+     the Document's license notice requires Cover Texts, you must
      enclose the copies in covers that carry, clearly and legibly, all
      these Cover Texts: Front-Cover Texts on the front cover, and
      Back-Cover Texts on the back cover.  Both covers must also clearly
@@ -4855,15 +4666,15 @@ D.1 GNU Free Documentation License
           the Addendum below.
 
        G. Preserve in that license notice the full lists of Invariant
-          Sections and required Cover Texts given in the Document’s
+          Sections and required Cover Texts given in the Document's
           license notice.
 
        H. Include an unaltered copy of this License.
 
-       I. Preserve the section Entitled “History”, Preserve its Title,
+       I. Preserve the section Entitled "History", Preserve its Title,
           and add to it an item stating at least the title, year, new
           authors, and publisher of the Modified Version as given on the
-          Title Page.  If there is no section Entitled “History” in the
+          Title Page.  If there is no section Entitled "History" in the
           Document, create one stating the title, year, authors, and
           publisher of the Document as given on its Title Page, then add
           an item describing the Modified Version as stated in the
@@ -4873,12 +4684,12 @@ D.1 GNU Free Documentation License
           for public access to a Transparent copy of the Document, and
           likewise the network locations given in the Document for
           previous versions it was based on.  These may be placed in the
-          “History” section.  You may omit a network location for a work
+          "History" section.  You may omit a network location for a work
           that was published at least four years before the Document
           itself, or if the original publisher of the version it refers
           to gives permission.
 
-       K. For any section Entitled “Acknowledgements” or “Dedications”,
+       K. For any section Entitled "Acknowledgements" or "Dedications",
           Preserve the Title of the section, and preserve in the section
           all the substance and tone of each of the contributor
           acknowledgements and/or dedications given therein.
@@ -4887,11 +4698,11 @@ D.1 GNU Free Documentation License
           in their text and in their titles.  Section numbers or the
           equivalent are not considered part of the section titles.
 
-       M. Delete any section Entitled “Endorsements”.  Such a section
+       M. Delete any section Entitled "Endorsements".  Such a section
           may not be included in the Modified Version.
 
        N. Do not retitle any existing section to be Entitled
-          “Endorsements” or to conflict in title with any Invariant
+          "Endorsements" or to conflict in title with any Invariant
           Section.
 
        O. Preserve any Warranty Disclaimers.
@@ -4900,15 +4711,15 @@ D.1 GNU Free Documentation License
      appendices that qualify as Secondary Sections and contain no
      material copied from the Document, you may at your option designate
      some or all of these sections as invariant.  To do this, add their
-     titles to the list of Invariant Sections in the Modified Version’s
+     titles to the list of Invariant Sections in the Modified Version's
      license notice.  These titles must be distinct from any other
      section titles.
 
-     You may add a section Entitled “Endorsements”, provided it contains
+     You may add a section Entitled "Endorsements", provided it contains
      nothing but endorsements of your Modified Version by various
-     parties—for example, statements of peer review or that the text has
-     been approved by an organization as the authoritative definition of
-     a standard.
+     parties--for example, statements of peer review or that the text
+     has been approved by an organization as the authoritative
+     definition of a standard.
 
      You may add a passage of up to five words as a Front-Cover Text,
      and a passage of up to 25 words as a Back-Cover Text, to the end of
@@ -4946,10 +4757,10 @@ D.1 GNU Free Documentation License
      combined work.
 
      In the combination, you must combine any sections Entitled
-     “History” in the various original documents, forming one section
-     Entitled “History”; likewise combine any sections Entitled
-     “Acknowledgements”, and any sections Entitled “Dedications”.  You
-     must delete all sections Entitled “Endorsements.”
+     "History" in the various original documents, forming one section
+     Entitled "History"; likewise combine any sections Entitled
+     "Acknowledgements", and any sections Entitled "Dedications".  You
+     must delete all sections Entitled "Endorsements."
 
   6. COLLECTIONS OF DOCUMENTS
 
@@ -4970,16 +4781,16 @@ D.1 GNU Free Documentation License
 
      A compilation of the Document or its derivatives with other
      separate and independent documents or works, in or on a volume of a
-     storage or distribution medium, is called an “aggregate” if the
+     storage or distribution medium, is called an "aggregate" if the
      copyright resulting from the compilation is not used to limit the
-     legal rights of the compilation’s users beyond what the individual
+     legal rights of the compilation's users beyond what the individual
      works permit.  When the Document is included in an aggregate, this
      License does not apply to the other works in the aggregate which
      are not themselves derivative works of the Document.
 
      If the Cover Text requirement of section 3 is applicable to these
      copies of the Document, then if the Document is less than one half
-     of the entire aggregate, the Document’s Cover Texts may be placed
+     of the entire aggregate, the Document's Cover Texts may be placed
      on covers that bracket the Document within the aggregate, or the
      electronic equivalent of covers if the Document is in electronic
      form.  Otherwise they must appear on printed covers that bracket
@@ -5001,8 +4812,8 @@ D.1 GNU Free Documentation License
      this License or a notice or disclaimer, the original version will
      prevail.
 
-     If a section in the Document is Entitled “Acknowledgements”,
-     “Dedications”, or “History”, the requirement (section 4) to
+     If a section in the Document is Entitled "Acknowledgements",
+     "Dedications", or "History", the requirement (section 4) to
      Preserve its Title (section 1) will typically require changing the
      actual title.
 
@@ -5026,7 +4837,7 @@ D.1 GNU Free Documentation License
 
      Each version of the License is given a distinguishing version
      number.  If the Document specifies that a particular numbered
-     version of this License “or any later version” applies to it, you
+     version of this License "or any later version" applies to it, you
      have the option of following the terms and conditions either of
      that specified version or of any later version that has been
      published (not as a draft) by the Free Software Foundation.  If the
@@ -5050,7 +4861,7 @@ notices just after the title page:
        Free Documentation License''.
 
    If you have Invariant Sections, Front-Cover Texts and Back-Cover
-Texts, replace the “with...Texts.” line with this:
+Texts, replace the "with...Texts."  line with this:
 
          with the Invariant Sections being LIST THEIR TITLES, with
          the Front-Cover Texts being LIST, and with the Back-Cover Texts
@@ -5087,7 +4898,7 @@ and other kinds of works.
    The licenses for most software and other practical works are designed
 to take away your freedom to share and change the works.  By contrast,
 the GNU General Public License is intended to guarantee your freedom to
-share and change all versions of a program—to make sure it remains free
+share and change all versions of a program--to make sure it remains free
 software for all its users.  We, the Free Software Foundation, use the
 GNU General Public License for most of our software; it applies also to
 any other work released this way by its authors.  You can apply it to
@@ -5115,16 +4926,16 @@ know their rights.
 (1) assert copyright on the software, and (2) offer you this License
 giving you legal permission to copy, distribute and/or modify it.
 
-   For the developers’ and authors’ protection, the GPL clearly explains
-that there is no warranty for this free software.  For both users’ and
-authors’ sake, the GPL requires that modified versions be marked as
+   For the developers' and authors' protection, the GPL clearly explains
+that there is no warranty for this free software.  For both users' and
+authors' sake, the GPL requires that modified versions be marked as
 changed, so that their problems will not be attributed erroneously to
 authors of previous versions.
 
    Some devices are designed to deny users access to install or run
 modified versions of the software inside them, although the manufacturer
 can do so.  This is fundamentally incompatible with the aim of
-protecting users’ freedom to change the software.  The systematic
+protecting users' freedom to change the software.  The systematic
 pattern of such abuse occurs in the area of products for individuals to
 use, which is precisely where it is most unacceptable.  Therefore, we
 have designed this version of the GPL to prohibit the practice for those
@@ -5147,25 +4958,25 @@ TERMS AND CONDITIONS
 
   0. Definitions.
 
-     “This License” refers to version 3 of the GNU General Public
+     "This License" refers to version 3 of the GNU General Public
      License.
 
-     “Copyright” also means copyright-like laws that apply to other
+     "Copyright" also means copyright-like laws that apply to other
      kinds of works, such as semiconductor masks.
 
-     “The Program” refers to any copyrightable work licensed under this
-     License.  Each licensee is addressed as “you”.  “Licensees” and
-     “recipients” may be individuals or organizations.
+     "The Program" refers to any copyrightable work licensed under this
+     License.  Each licensee is addressed as "you".  "Licensees" and
+     "recipients" may be individuals or organizations.
 
-     To “modify” a work means to copy from or adapt all or part of the
+     To "modify" a work means to copy from or adapt all or part of the
      work in a fashion requiring copyright permission, other than the
-     making of an exact copy.  The resulting work is called a “modified
-     version” of the earlier work or a work “based on” the earlier work.
+     making of an exact copy.  The resulting work is called a "modified
+     version" of the earlier work or a work "based on" the earlier work.
 
-     A “covered work” means either the unmodified Program or a work
+     A "covered work" means either the unmodified Program or a work
      based on the Program.
 
-     To “propagate” a work means to do anything with it that, without
+     To "propagate" a work means to do anything with it that, without
      permission, would make you directly or secondarily liable for
      infringement under applicable copyright law, except executing it on
      a computer or modifying a private copy.  Propagation includes
@@ -5173,12 +4984,12 @@ TERMS AND CONDITIONS
      available to the public, and in some countries other activities as
      well.
 
-     To “convey” a work means any kind of propagation that enables other
+     To "convey" a work means any kind of propagation that enables other
      parties to make or receive copies.  Mere interaction with a user
      through a computer network, with no transfer of a copy, is not
      conveying.
 
-     An interactive user interface displays “Appropriate Legal Notices”
+     An interactive user interface displays "Appropriate Legal Notices"
      to the extent that it includes a convenient and prominently visible
      feature that (1) displays an appropriate copyright notice, and (2)
      tells the user that there is no warranty for the work (except to
@@ -5190,33 +5001,33 @@ TERMS AND CONDITIONS
 
   1. Source Code.
 
-     The “source code” for a work means the preferred form of the work
-     for making modifications to it.  “Object code” means any non-source
+     The "source code" for a work means the preferred form of the work
+     for making modifications to it.  "Object code" means any non-source
      form of a work.
 
-     A “Standard Interface” means an interface that either is an
+     A "Standard Interface" means an interface that either is an
      official standard defined by a recognized standards body, or, in
      the case of interfaces specified for a particular programming
      language, one that is widely used among developers working in that
      language.
 
-     The “System Libraries” of an executable work include anything,
+     The "System Libraries" of an executable work include anything,
      other than the work as a whole, that (a) is included in the normal
      form of packaging a Major Component, but which is not part of that
      Major Component, and (b) serves only to enable use of the work with
      that Major Component, or to implement a Standard Interface for
      which an implementation is available to the public in source code
-     form.  A “Major Component”, in this context, means a major
+     form.  A "Major Component", in this context, means a major
      essential component (kernel, window system, and so on) of the
      specific operating system (if any) on which the executable work
      runs, or a compiler used to produce the work, or an object code
      interpreter used to run it.
 
-     The “Corresponding Source” for a work in object code form means all
+     The "Corresponding Source" for a work in object code form means all
      the source code needed to generate, install, and (for an executable
      work) run the object code and to modify the work, including scripts
      to control those activities.  However, it does not include the
-     work’s System Libraries, or general-purpose tools or generally
+     work's System Libraries, or general-purpose tools or generally
      available free programs which are used unmodified in performing
      those activities but which are not part of the work.  For example,
      Corresponding Source includes interface definition files associated
@@ -5260,7 +5071,7 @@ TERMS AND CONDITIONS
      the conditions stated below.  Sublicensing is not allowed; section
      10 makes it unnecessary.
 
-  3. Protecting Users’ Legal Rights From Anti-Circumvention Law.
+  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
 
      No covered work shall be deemed part of an effective technological
      measure under any applicable law fulfilling obligations under
@@ -5273,12 +5084,12 @@ TERMS AND CONDITIONS
      circumvention is effected by exercising rights under this License
      with respect to the covered work, and you disclaim any intention to
      limit operation or modification of the work as a means of
-     enforcing, against the work’s users, your or third parties’ legal
+     enforcing, against the work's users, your or third parties' legal
      rights to forbid circumvention of technological measures.
 
   4. Conveying Verbatim Copies.
 
-     You may convey verbatim copies of the Program’s source code as you
+     You may convey verbatim copies of the Program's source code as you
      receive it, in any medium, provided that you conspicuously and
      appropriately publish on each copy an appropriate copyright notice;
      keep intact all notices stating that this License and any
@@ -5302,7 +5113,7 @@ TERMS AND CONDITIONS
        b. The work must carry prominent notices stating that it is
           released under this License and any conditions added under
           section 7.  This requirement modifies the requirement in
-          section 4 to “keep intact all notices”.
+          section 4 to "keep intact all notices".
 
        c. You must license the entire work, as a whole, under this
           License to anyone who comes into possession of a copy.  This
@@ -5322,9 +5133,9 @@ TERMS AND CONDITIONS
      works, which are not by their nature extensions of the covered
      work, and which are not combined with it such as to form a larger
      program, in or on a volume of a storage or distribution medium, is
-     called an “aggregate” if the compilation and its resulting
+     called an "aggregate" if the compilation and its resulting
      copyright are not used to limit the access or legal rights of the
-     compilation’s users beyond what the individual works permit.
+     compilation's users beyond what the individual works permit.
      Inclusion of a covered work in an aggregate does not cause this
      License to apply to the other parts of the aggregate.
 
@@ -5382,13 +5193,13 @@ TERMS AND CONDITIONS
      excluded from the Corresponding Source as a System Library, need
      not be included in conveying the object code work.
 
-     A “User Product” is either (1) a “consumer product”, which means
+     A "User Product" is either (1) a "consumer product", which means
      any tangible personal property which is normally used for personal,
      family, or household purposes, or (2) anything designed or sold for
      incorporation into a dwelling.  In determining whether a product is
      a consumer product, doubtful cases shall be resolved in favor of
      coverage.  For a particular product received by a particular user,
-     “normally used” refers to a typical or common use of that class of
+     "normally used" refers to a typical or common use of that class of
      product, regardless of the status of the particular user or of the
      way in which the particular user actually uses, or expects or is
      expected to use, the product.  A product is a consumer product
@@ -5396,7 +5207,7 @@ TERMS AND CONDITIONS
      industrial or non-consumer uses, unless such uses represent the
      only significant mode of use of the product.
 
-     “Installation Information” for a User Product means any methods,
+     "Installation Information" for a User Product means any methods,
      procedures, authorization keys, or other information required to
      install and execute modified versions of a covered work in that
      User Product from a modified version of its Corresponding Source.
@@ -5432,7 +5243,7 @@ TERMS AND CONDITIONS
 
   7. Additional Terms.
 
-     “Additional permissions” are terms that supplement the terms of
+     "Additional permissions" are terms that supplement the terms of
      this License by making exceptions from one or more of its
      conditions.  Additional permissions that are applicable to the
      entire Program shall be treated as though they were included in
@@ -5477,8 +5288,8 @@ TERMS AND CONDITIONS
           the recipient, for any liability that these contractual
           assumptions directly impose on those licensors and authors.
 
-     All other non-permissive additional terms are considered “further
-     restrictions” within the meaning of section 10.  If the Program as
+     All other non-permissive additional terms are considered "further
+     restrictions" within the meaning of section 10.  If the Program as
      you received it, or any part of it, contains a notice stating that
      it is governed by this License along with a term that is a further
      restriction, you may remove that term.  If a license document
@@ -5544,12 +5355,12 @@ TERMS AND CONDITIONS
      responsible for enforcing compliance by third parties with this
      License.
 
-     An “entity transaction” is a transaction transferring control of an
+     An "entity transaction" is a transaction transferring control of an
      organization, or substantially all assets of one, or subdividing an
      organization, or merging organizations.  If propagation of a
      covered work results from an entity transaction, each party to that
      transaction who receives a copy of the work also receives whatever
-     licenses to the work the party’s predecessor in interest had or
+     licenses to the work the party's predecessor in interest had or
      could give under the previous paragraph, plus a right to possession
      of the Corresponding Source of the work from the predecessor in
      interest, if the predecessor has it or can get it with reasonable
@@ -5566,31 +5377,31 @@ TERMS AND CONDITIONS
 
   11. Patents.
 
-     A “contributor” is a copyright holder who authorizes use under this
+     A "contributor" is a copyright holder who authorizes use under this
      License of the Program or a work on which the Program is based.
-     The work thus licensed is called the contributor’s “contributor
-     version”.
+     The work thus licensed is called the contributor's "contributor
+     version".
 
-     A contributor’s “essential patent claims” are all patent claims
+     A contributor's "essential patent claims" are all patent claims
      owned or controlled by the contributor, whether already acquired or
      hereafter acquired, that would be infringed by some manner,
      permitted by this License, of making, using, or selling its
      contributor version, but do not include claims that would be
      infringed only as a consequence of further modification of the
-     contributor version.  For purposes of this definition, “control”
+     contributor version.  For purposes of this definition, "control"
      includes the right to grant patent sublicenses in a manner
      consistent with the requirements of this License.
 
      Each contributor grants you a non-exclusive, worldwide,
-     royalty-free patent license under the contributor’s essential
+     royalty-free patent license under the contributor's essential
      patent claims, to make, use, sell, offer for sale, import and
      otherwise run, modify and propagate the contents of its contributor
      version.
 
-     In the following three paragraphs, a “patent license” is any
+     In the following three paragraphs, a "patent license" is any
      express agreement or commitment, however denominated, not to
      enforce a patent (such as an express permission to practice a
-     patent or covenant not to sue for patent infringement).  To “grant”
+     patent or covenant not to sue for patent infringement).  To "grant"
      such a patent license to a party means to make such an agreement or
      commitment not to enforce a patent against the party.
 
@@ -5603,9 +5414,9 @@ TERMS AND CONDITIONS
      yourself of the benefit of the patent license for this particular
      work, or (3) arrange, in a manner consistent with the requirements
      of this License, to extend the patent license to downstream
-     recipients.  “Knowingly relying” means you have actual knowledge
+     recipients.  "Knowingly relying" means you have actual knowledge
      that, but for the patent license, your conveying the covered work
-     in a country, or your recipient’s use of the covered work in a
+     in a country, or your recipient's use of the covered work in a
      country, would infringe one or more identifiable patents in that
      country that you have reason to believe are valid.
 
@@ -5617,7 +5428,7 @@ TERMS AND CONDITIONS
      patent license you grant is automatically extended to all
      recipients of the covered work and works based on it.
 
-     A patent license is “discriminatory” if it does not include within
+     A patent license is "discriminatory" if it does not include within
      the scope of its coverage, prohibits the exercise of, or is
      conditioned on the non-exercise of one or more of the rights that
      are specifically granted under this License.  You may not convey a
@@ -5637,7 +5448,7 @@ TERMS AND CONDITIONS
      any implied license or other defenses to infringement that may
      otherwise be available to you under applicable patent law.
 
-  12. No Surrender of Others’ Freedom.
+  12. No Surrender of Others' Freedom.
 
      If conditions are imposed on you (whether by court order, agreement
      or otherwise) that contradict the conditions of this License, they
@@ -5670,7 +5481,7 @@ TERMS AND CONDITIONS
 
      Each version is given a distinguishing version number.  If the
      Program specifies that a certain numbered version of the GNU
-     General Public License “or any later version” applies to it, you
+     General Public License "or any later version" applies to it, you
      have the option of following the terms and conditions either of
      that numbered version or of any later version published by the Free
      Software Foundation.  If the Program does not specify a version
@@ -5679,7 +5490,7 @@ TERMS AND CONDITIONS
 
      If the Program specifies that a proxy can decide which future
      versions of the GNU General Public License can be used, that
-     proxy’s public statement of acceptance of a version permanently
+     proxy's public statement of acceptance of a version permanently
      authorizes you to choose that version for the Program.
 
      Later license versions may give you additional or different
@@ -5691,7 +5502,7 @@ TERMS AND CONDITIONS
 
      THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
      APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE
-     COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS”
+     COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS"
      WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
      INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
      MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE
@@ -5735,7 +5546,7 @@ terms.
    To do so, attach the following notices to the program.  It is safest
 to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least the
-“copyright” line and a pointer to where the full notice is found.
+"copyright" line and a pointer to where the full notice is found.
 
      ONE LINE TO GIVE THE PROGRAM'S NAME AND A BRIEF IDEA OF WHAT IT DOES.
      Copyright (C) YEAR NAME OF AUTHOR
@@ -5766,11 +5577,11 @@ notice like this when it starts in an interactive mode:
 
    The hypothetical commands ‘show w’ and ‘show c’ should show the
 appropriate parts of the General Public License.  Of course, your
-program’s commands might be different; for a GUI interface, you would
-use an “about box”.
+program's commands might be different; for a GUI interface, you would
+use an "about box".
 
    You should also get your employer (if you work as a programmer) or
-school, if any, to sign a “copyright disclaimer” for the program, if
+school, if any, to sign a "copyright disclaimer" for the program, if
 necessary.  For more information on this, and how to apply and follow
 the GNU GPL, see <http://www.gnu.org/licenses/>.
 
