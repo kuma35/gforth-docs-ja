@@ -58,117 +58,97 @@ Next: <a href="VM-instruction-table.html" accesskey="n" rel="next">VM instructio
 <a class="index-entry-id" id="index-engine_002ec"></a>
 <a class="index-entry-id" id="index-_002dvm_002ei-output-file"></a>
 
-<p>The VM engine is the VM interpreter that executes the VM code.  It is
-essential for an interpretive system.
+<p>VM エンジンは、 VM コードを実行するための VM インタープリターです。  それはインタープリター的システムにとって不可欠なものです。
 </p>
-<p>Vmgen supports two methods of VM instruction dispatch: <em class="emph">threaded code</em>
-(fast, but gcc-specific), and <em class="emph">switch dispatch</em> (slow, but portable
-across C compilers); you can use conditional compilation
-(&lsquo;<samp class="samp">defined(__GNUC__)</samp>&rsquo;) to choose between these methods, and our example
-does so.
+<p>Vmgen は、 VM 命令ディスパッチ(dispatch;切り替え作業)の 2 つの方法をサポートしています。 「スレッド化コード」(高速ですが
+gcc 固有)と、 「スイッチ・ディスパッチ」(低速ですが、 C 言語コンパイラ間で移植可能)です。
+条件付きコンパイル(&lsquo;<samp class="samp">defined(__GNUC__)</samp>&rsquo;)を使用してこれらの方法を選択でき、 著者達の例ではそうしています。
 </p>
-<p>For both methods, the VM engine is contained in a C-level function.  Vmgen
-generates most of the contents of the function for you
-(<samp class="file"><var class="var">name</var>-vm.i</samp>), but you have to define this function, and macros
-and variables used in the engine, and initialize the variables.  In our
-example the engine function also includes <samp class="file"><var class="var">name</var>-labels.i</samp>
-(see <a class="pxref" href="VM-instruction-table.html">VM instruction table</a>).
+<p>どちらの方法でも、 VM エンジンは C 言語レベルの関数に含まれています。  Vmgen は関数の内容のほとんどを生成しますが、
+この関数の定義と、エンジンで使用されるマクロと変数の定義と、 変数の初期化を行う必要があります。  私達の例では、 エンジン関数には
+<samp class="file"><var class="var">name</var>-labels.i</samp> も含まれています(see <a class="pxref" href="VM-instruction-table.html">VM instruction table</a>)。
 </p>
 <a class="index-entry-id" id="index-tracing-VM-code"></a>
 <a class="index-entry-id" id="index-superinstructions-and-tracing"></a>
-<p>In addition to executing the code, the VM engine can optionally also print
-out a trace of the executed instructions, their arguments and results.  For
-superinstructions it prints the trace as if only component instructions were
-executed; this allows to introduce new superinstructions while keeping the
-traces comparable to old ones (important for regression tests).
+<p>コードの実行に加えて、 VM エンジンはオプションで、 実行された命令や、 実行された命令の引数や、
+実行された命令の結果のトレースを出力することもできます。  スーパー命令(superinstructions)の場合は、
+コンポーネント命令のみが実行されたかのようにトレースを出力します。 これにより、 古いスーパー命令と比較可能なトレースを維持しながら、
+新しいスーパー命令を導入することができます(これは デグレ・チェック(regression tests)のために重要です)。
 </p>
-<p>It costs significant performance to check in each instruction whether to
-print tracing code, so we recommend producing two copies of the engine: one
-for fast execution, and one for tracing.  See the rules for <samp class="file">engine.o</samp>
-and <samp class="file">engine-debug.o</samp> in <samp class="file">vmgen-ex/Makefile</samp> for an example.
+<p>トレース・コードを出力するかどうかを各命令でチェックするとパフォーマンスが大幅に低下するため、 エンジンのコピーを 2 つ作成することをお勧めします。
+1 つは高速実行用、 もう 1 つはトレース用です。 例については、 <samp class="file">vmgen-ex/Makefile</samp> の
+<samp class="file">engine.o</samp> と <samp class="file">engine-debug.o</samp> の makeルールを参照してください。
 </p>
-<p>The following macros and variables are used in <samp class="file"><var class="var">name</var>-vm.i</samp>:
+<p>以下のマクロと変数が <samp class="file"><var class="var">name</var>-vm.i</samp> で使用されます:
 </p>
 <dl class="table">
 <dt><a id="index-LABEL"></a><span><code class="code">LABEL(<var class="var">inst_name</var>)</code><a class="copiable-link" href="#index-LABEL"> &para;</a></span></dt>
-<dd><p>This is used just before each VM instruction to provide a jump or
-<code class="code">switch</code> label (the &lsquo;<samp class="samp">:</samp>&rsquo; is provided by Vmgen).  For switch
-dispatch this should expand to &lsquo;<samp class="samp">case <var class="var">label</var>:</samp>&rsquo;; for threaded-code
-dispatch this should just expand to &lsquo;<samp class="samp"><var class="var">label</var>:</samp>&rsquo;.  In either case
-<var class="var">label</var> is usually the <var class="var">inst_name</var> with some prefix or suffix to
-avoid naming conflicts.
+<dd><p>これは、 ジャンプまたは <code class="code">switch</code> ラベルを提供するために各 VM 命令の直前で使用されます(&lsquo;<samp class="samp">:</samp>&rsquo; は Vmgen
+によって提供されます)。  スイッチ・ディスパッチの場合、 これは &lsquo;<samp class="samp">case <var class="var">label</var>:</samp>&rsquo; に展開されるべきです。
+スレッド化コード・ディスパッチの場合は、 これを &lsquo;<samp class="samp"><var class="var">label</var>:</samp>&rsquo; に展開するだけです。  どちらの場合も、
+<var class="var">label</var> は通常、 名前の競合を避けるために何らかのプレフィックスまたはサフィックスを付けた <var class="var">inst_name</var> です。
 </p>
 </dd>
 <dt><a id="index-LABEL2"></a><span><code class="code">LABEL2(<var class="var">inst_name</var>)</code><a class="copiable-link" href="#index-LABEL2"> &para;</a></span></dt>
-<dd><p>This will be used for dynamic superinstructions; at the moment, this should
-expand to nothing.
+<dd><p>これは動的スーパー命令(dynamic superinstructions)に使用されます。 現時点では、
+これは「無」(nothing)に展開されるべきです。
 </p>
 </dd>
 <dt><a id="index-NAME"></a><span><code class="code">NAME(<var class="var">inst_name_string</var>)</code><a class="copiable-link" href="#index-NAME"> &para;</a></span></dt>
-<dd><p>Called on entering a VM instruction with a string containing the name of the
-VM instruction as parameter.  In normal execution this should be expand to
-nothing, but for tracing this usually prints the name, and possibly other
-information (several VM registers in our example).
+<dd><p>VM 命令の名前をパラメーターとして含む文字列を含む VM 命令を入力すると呼び出されます。 通常の実行では、
+これは「無」(nothing)に展開されるはずですが、 トレースの場合は通常、 名前と、 場合によってはその他の情報(この例ではいくつかの VM
+レジスター)が出力されます。
 </p>
 </dd>
 <dt><a id="index-DEF_005fCA"></a><span><code class="code">DEF_CA</code><a class="copiable-link" href="#index-DEF_005fCA"> &para;</a></span></dt>
-<dd><p>Usually empty.  Called just inside a new scope at the start of a VM
-instruction.  Can be used to define variables that should be visible during
-every VM instruction.  If you define this macro as non-empty, you have to
-provide the finishing &lsquo;<samp class="samp">;</samp>&rsquo; in the macro.
+<dd><p>通常は空(empty)です。  VM 命令の開始時に新しいスコープ内で呼び出されます。  すべての VM
+命令中に表示される変数を定義するために使用できます。  このマクロを空ではないものとして定義する場合は、 マクロ定義は &lsquo;<samp class="samp">;</samp>&rsquo;
+で終了させる必要があります。
 </p>
 </dd>
 <dt><a class="index-entry-id" id="index-NEXT_005fP1"></a>
 <a class="index-entry-id" id="index-NEXT_005fP2"></a>
 <a id="index-NEXT_005fP0"></a><span><code class="code">NEXT_P0 NEXT_P1 NEXT_P2</code><a class="copiable-link" href="#index-NEXT_005fP0"> &para;</a></span></dt>
-<dd><p>The three parts of instruction dispatch.  They can be defined in different
-ways for best performance on various processors (see <samp class="file">engine.c</samp> in the
-example or <samp class="file">engine/threaded.h</samp> in Gforth).  &lsquo;<samp class="samp">NEXT_P0</samp>&rsquo; is invoked
-right at the start of the VM instruction (but after &lsquo;<samp class="samp">DEF_CA</samp>&rsquo;),
-&lsquo;<samp class="samp">NEXT_P1</samp>&rsquo; right after the user-supplied C code, and &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; at
-the end.  The actual jump has to be performed by &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; (if you
-would do it earlier, important parts of the VM instruction would not be
-executed).
+<dd><p>命令ディスパッチ用の 3 つの部品。 さまざまなプロセッサで最高のパフォーマンスを得るために、 さまざまな方法で定義できます(例の
+<samp class="file">engine.c</samp> または Gforth の <samp class="file">engine/threaded.h</samp> を参照)。  &lsquo;<samp class="samp">NEXT_P0</samp>&rsquo;
+は VM 命令の開始直後(ただし &lsquo;<samp class="samp">DEF_CA</samp>&rsquo; の後)、 &lsquo;<samp class="samp">NEXT_P1</samp>&rsquo; はユーザー指定の C 言語コードの直後、 そして
+&lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; は最後に呼び出されます。  実際のジャンプは &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo;
+によって実行する必要があります(これを実行するのが早すぎると、 VM 命令の重要な部分が実行されなくなります)。
 </p>
-<p>The simplest variant is if &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; does everything and the other
-macros do nothing.  Then also related macros like &lsquo;<samp class="samp">IP</samp>&rsquo;, &lsquo;<samp class="samp">SET_IP</samp>&rsquo;,
-&lsquo;<samp class="samp">IP</samp>&rsquo;, &lsquo;<samp class="samp">INC_IP</samp>&rsquo; and &lsquo;<samp class="samp">IPTOS</samp>&rsquo; are very straightforward to
-define.  For switch dispatch this code consists just of a jump to the
-dispatch code (&lsquo;<samp class="samp">goto next_inst;</samp>&rsquo; in our example); for direct threaded
-code it consists of something like &lsquo;<samp class="samp">({cfa=*ip++; goto *cfa;})</samp>&rsquo;.
+<p>バリエーションの最も単純なモノは、 &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; がすべてを行い、 他のマクロは何も実行しないヤツです。 &lsquo;<samp class="samp">IP</samp>&rsquo; や
+&lsquo;<samp class="samp">SET_IP</samp>&rsquo; や &lsquo;<samp class="samp">IP</samp>&rsquo; や &lsquo;<samp class="samp">INC_IP</samp>&rsquo; や &lsquo;<samp class="samp">IPTOS</samp>&rsquo;
+などの関連マクロも非常に簡単に定義できます。  スイッチ・ディスパッチの場合、 このコードはディスパッチ・コード(この例では &lsquo;<samp class="samp">goto
+next_inst;</samp>&rsquo;) へのジャンプだけで構成されます。 直接スレッド化コード(direct threaded code)の場合は、
+&lsquo;<samp class="samp">({cfa=*ip++; goto *cfa;})</samp>&rsquo; のようなもので構成されます。
 </p>
-<p>Pulling code (usually the &lsquo;<samp class="samp">cfa=*ip++;</samp>&rsquo;) up into &lsquo;<samp class="samp">NEXT_P1</samp>&rsquo; usually
-does not cause problems, but pulling things up into &lsquo;<samp class="samp">NEXT_P0</samp>&rsquo; usually
-requires changing the other macros (and, at least for Gforth on Alpha, it
-does not buy much, because the compiler often manages to schedule the
-relevant stuff up by itself).  An even more extreme variant is to pull code
-up even further, into, e.g., NEXT_P1 of the previous VM instruction
-(prefetching, useful on PowerPCs).
+<p>コード(普通は &lsquo;<samp class="samp">cfa=*ip++;</samp>&rsquo; というコード)を &lsquo;<samp class="samp">NEXT_P1</samp>&rsquo; にセットすることは通常問題を引き起こしませんが、
+&lsquo;<samp class="samp">NEXT_P0</samp>&rsquo; にコードをセットすると、 通常、他のマクロも変更する必要があります(そして、 少なくとも Alpha 版の Gforth
+については、 コンパイラーは関連するものを自動的にスケジュール設定することが多いため、 それほど大きな価値はありません)。
+さらに極端なバリエーションとしては、 コードをさらに離れた、 たとえば前の VM 命令の NEXT_P1 にセットすることです (プリフェッチ。
+PowerPC で便利です)。
 </p>
 </dd>
 <dt><a id="index-INC_005fIP"></a><span><code class="code">INC_IP(<var class="var">n</var>)</code><a class="copiable-link" href="#index-INC_005fIP"> &para;</a></span></dt>
-<dd><p>This increments <code class="code">IP</code> by <var class="var">n</var>.
+<dd><p><code class="code">IP</code> に <var class="var">n</var> を足しこみます。
 </p>
 </dd>
 <dt><a id="index-SET_005fIP-1"></a><span><code class="code">SET_IP(<var class="var">target</var>)</code><a class="copiable-link" href="#index-SET_005fIP-1"> &para;</a></span></dt>
-<dd><p>This sets <code class="code">IP</code> to <var class="var">target</var>.
+<dd><p><code class="code">IP</code> に <var class="var">target</var> をセットします。
 </p>
 </dd>
 <dt><a class="index-entry-id" id="index-vm_005fA2B"></a>
 <a id="index-type-cast-macro"></a><span><code class="code">vm_<var class="var">A</var>2<var class="var">B</var>(a,b)</code><a class="copiable-link" href="#index-type-cast-macro"> &para;</a></span></dt>
-<dd><p>Type casting macro that assigns &lsquo;<samp class="samp">a</samp>&rsquo; (of type <var class="var">A</var>) to &lsquo;<samp class="samp">b</samp>&rsquo; (of
-type <var class="var">B</var>).  This is mainly used for getting stack items into variables
-and back.  So you need to define macros for every combination of stack basic
-type (<code class="code">Cell</code> in our example) and type-prefix types used with that stack
-(in both directions).  For the type-prefix type, you use the type-prefix
-(not the C type string) as type name (e.g., &lsquo;<samp class="samp">vm_Cell2i</samp>&rsquo;, not
-&lsquo;<samp class="samp">vm_Cell2Cell</samp>&rsquo;).  In addition, you have to define a vm_<var class="var">X</var>2<var class="var">X</var>
-macro for the stack&rsquo;s basic type <var class="var">X</var> (used in superinstructions).
+<dd><p>(<var class="var">A</var> 型の) &lsquo;<samp class="samp">a</samp>&rsquo; を (<var class="var">B</var> 型の) &lsquo;<samp class="samp">b</samp>&rsquo; に割り当てる型キャスト・マクロ。  これは主に、
+スタック項目を変数に入れたりスタック項目から変数へ戻したりするために使用されます。  したがって、 スタックの基本型(この例では
+<code class="code">Cell</code>)と、
+そのスタックで使用される型プレフィックス形式(スタック項目を変数に入れる方向とスタック項目から変数へ戻す方向)すべての組み合わせに対してマクロを定義する必要があります。
+型プレフィックス形式の場合は、  (C言語の型名ではない)型プレフィックスを型名(&lsquo;<samp class="samp">vm_Cell2Cell</samp>&rsquo; ではなく
+&lsquo;<samp class="samp">vm_Cell2i</samp>&rsquo;)として使用します。  さらに、 スタックの基本型 <var class="var">X</var> に対して(スーパー命令で使われる)
+vm_<var class="var">X</var>2<var class="var">X</var> マクロを定義する必要があります。
 </p>
 <a class="index-entry-id" id="index-instruction-stream_002c-basic-type"></a>
-<p>The stack basic type for the predefined &lsquo;<samp class="samp">inst-stream</samp>&rsquo; is &lsquo;<samp class="samp">Cell</samp>&rsquo;.
-If you want a stack with the same item size, making its basic type
-&lsquo;<samp class="samp">Cell</samp>&rsquo; usually reduces the number of macros you have to define.
+<p>事前定義された  &lsquo;<samp class="samp">inst-stream</samp>&rsquo; のスタック基本型は &lsquo;<samp class="samp">Cell</samp>&rsquo; です。  同一項目サイズのスタックが必要な場合、
+その基本型を &lsquo;<samp class="samp">Cell</samp>&rsquo; にすると、 通常、 定義する必要があるマクロの数が減ります。
 </p>
 <a class="index-entry-id" id="index-unions-in-type-cast-macros"></a>
 <a class="index-entry-id" id="index-casts-in-type-cast-macros"></a>

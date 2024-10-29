@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 PROJ=${HOME}/work/gforth-docs-ja
 BRANCH=docs-ja-0
 cd ${PROJ}/doc-po
