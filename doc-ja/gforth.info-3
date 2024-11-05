@@ -5193,7 +5193,7 @@ Forth部分
 たは関数プロトタイプを提供していない場合)、 C 言語インターフェイスには変
 換先の C 言語の型がないため、 自動変換は行われず、 場合によっては移植性
 の問題が発生する可能性があることに注意してください。 C 言語の型キャスト
-を中括弧で囲んで Forth 型の後に追加できます。 これにより、 例えば、
+を波括弧({})で囲んで Forth 型の後に追加できます。 これにより、 例えば、
 Forth ではスタック上に存在できない構造体を C 言語の関数へ渡す事も可能に
 なります。
 
@@ -5373,7 +5373,7 @@ string は c-addr u で表されます。
    あらゆる種類の cflags をC言語コンパイラーに追加します
 
 ‘add-ldflags’ ( c-addr u -  ) gforth-1.0 "add-ldflags"
-   リンカにフラグを追加
+   リンカー(linker)にフラグを追加
 
 
 File: gforth.info,  Node: Callbacks,  Next: C interface internals,  Prev: Declaring OS-level libraries,  Up: C Interface
@@ -5407,8 +5407,8 @@ File: gforth.info,  Node: Callbacks,  Next: C interface internals,  Prev: Declar
 
    これにより、 (value ‘callback#’ までの)多数のコールバック関数がプリコ
 ンパイルされます。 C言語の関数プロトタイプは、 Forth シグネチャから推定
-されます。 これでは不十分な場合は、 Forth 型の後に中かっこで囲んで型を追
-加できます。
+されます。 これでは不十分な場合は、 Forth 型の後に波括弧({})で囲んで型を
+追加できます。
 
      c-callback vector4double: f f f f -- void
      c-callback vector4single: f{float} f{float} f{float} f{float} -- void
@@ -5419,8 +5419,8 @@ File: gforth.info,  Node: C interface internals,  Next: Low-Level C Interface Wo
 6.28.7 How the C interface works
 --------------------------------
 
-文書化されたC言語インターフェイスは、 宣言から C コードを生成することに
-よって機能します。
+文書化されたC言語インターフェイスは、 宣言より C 言語のコードを生成する
+ことによって機能します。
 
    特に、 ‘c-function’ で宣言されたすべての Forth ワードに対して、 Forth
 スタックから Forth データを取得するラッパー関数をC言語で生成し、 これら
@@ -5495,19 +5495,19 @@ Forth のソース・コードに変換されます。
               #include "example.h"
           }
           %include "example.h"
-  3. SWIG を使用して ‘.fsi-c’ ファイルを作成します。
+  3. SWIG を使用して ‘.fsi-c’ ファイルを作成します:
      ‘swig -forth -stackcomments -use-structs -enumcomments -o
      example-fsi.c example.i’
-     FSI は「Forth Source Independent」の略で、 C言語コンパイラーを備え
-     た任意のホストに転送できることを意味します。 この時点以降、 SWIG は
-     必要ありません。
+     とします。FSI は「Forth Source Independent」の略で、 C言語コンパイ
+     ラーを備えた任意のホストに転送できることを意味します。 この時点以降
+     、 SWIG は必要ありません。
   4. ターゲット・マシンで ‘.fsi-c’ ファイルを ‘.fsx’ にコンパイルします
-     (x は executable(実行可能)の意味です)
+     (x は executable(実行可能)の意味です):
      ‘gcc -o example.fsx example-fsi.c’
-     コンパイルすると、 すべての定数(constant)がターゲット上の値
-     (value)に解決されます。
+     こうすると、 すべての定数(constant)がターゲット上の値(value)に解決
+     されます。
   5. 最後のステップは、 実行可能ファイルを実行し、 その出力を Forth のソ
-     ース・ファイルである ‘.fs’ ファイルにキャプチャすることです。
+     ース・ファイルである ‘.fs’ ファイルに取り込むことです:
      ‘./example.fsx -gforth > example.fs’
      これで、 このコードはターゲット・プラットフォームで使用できるように
      なりました。
@@ -5627,9 +5627,9 @@ X の本体です。
 アセンブルする必要があることに注意してください。
 
 ‘code’ ( "name" - colon-sys  ) tools-ext "code"
-   Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・ード
-定義を開始します。 このような定義は Gforth インストール間で移植できない
-ため、 ‘code’ の代わりに ‘abi-code’ を使用することをお勧めします。
+   Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・コー
+ド定義を開始します。 このような定義は Gforth インストール間で移植できな
+いため、 ‘code’ の代わりに ‘abi-code’ を使用することをお勧めします。
 ‘code’ 定義は、 次の仮想マシン命令へのディスパッチで終了する必要がありま
 す。
 

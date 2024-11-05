@@ -13879,7 +13879,7 @@ locate ->mydefer
 
 
 通常、 認識器は、 他の認識器と同一の文字列との一致を避けるように設計されています。  たとえば、@code{rec-env} (環境変数認識器)には、
-@code{$ADD} のような入力文字列の数値認識器との競合を避けるために中かっこ(braces)が必要です。 ただし、
+@code{$ADD} のような入力文字列の数値認識器との競合を避けるために波括弧(braces;@{@})が必要です。 ただし、
 このポリシーにはいくつかの例外があります:
 
 @itemize @bullet
@@ -24229,8 +24229,8 @@ c-function printf-rn printf a r n -- n
 
 注意: C 言語の関数が可変個(variadic)の引数として宣言されている場合(または関数プロトタイプを提供していない場合)、 C
 言語インターフェイスには変換先の C 言語の型がないため、 自動変換は行われず、
-場合によっては移植性の問題が発生する可能性があることに注意してください。  C 言語の型キャストを中括弧で囲んで Forth 型の後に追加できます。
-これにより、 例えば、 Forth ではスタック上に存在できない構造体を C 言語の関数へ渡す事も可能になります。
+場合によっては移植性の問題が発生する可能性があることに注意してください。  C 言語の型キャストを波括弧(@{@})で囲んで Forth
+型の後に追加できます。  これにより、 例えば、 Forth ではスタック上に存在できない構造体を C 言語の関数へ渡す事も可能になります。
 
 @example
 c-function printfll printf a n@{(long long)@} -- n
@@ -24479,7 +24479,7 @@ libs のリストをクリア
 @format
 @code{add-ldflags} ( @i{c-addr u --  }) gforth-1.0 ``add-ldflags''
 @end format
-リンカにフラグを追加
+リンカー(linker)にフラグを追加
 
 
 
@@ -24520,7 +24520,7 @@ C言語の関数の @var{addr} を返します。  このコールバックは�
 
 
 これにより、 (value @code{callback#} までの)多数のコールバック関数がプリコンパイルされます。  C言語の関数プロトタイプは、
-Forth シグネチャから推定されます。  これでは不十分な場合は、 Forth 型の後に中かっこで囲んで型を追加できます。
+Forth シグネチャから推定されます。  これでは不十分な場合は、 Forth 型の後に波括弧(@{@})で囲んで型を追加できます。
 
 @example
 c-callback vector4double: f f f f -- void
@@ -24549,7 +24549,7 @@ c-callback vector4single: f@{float@} f@{float@} f@{float@} f@{float@} -- void
 @node C interface internals, Low-Level C Interface Words, Callbacks, C Interface
 @subsection How the C interface works
 
-文書化されたC言語インターフェイスは、 宣言から C コードを生成することによって機能します。
+文書化されたC言語インターフェイスは、 宣言より C 言語のコードを生成することによって機能します。
 
 特に、 @code{c-function} で宣言されたすべての Forth ワードに対して、 Forth スタックから Forth
 データを取得するラッパー関数をC言語で生成し、 これらのデータを引数としてターゲットのC言語の関数を呼び出します。  次に、 C言語のコンパイラーは、
@@ -24623,14 +24623,14 @@ C言語のヘッダーはパースされ、 前述のC言語インターフェ�
 @}
 %include "example.h"
 @end example
-@item SWIG を使用して @code{.fsi-c} ファイルを作成します。@*
+@item SWIG を使用して @code{.fsi-c} ファイルを作成します:@*
     @code{swig -forth -stackcomments -use-structs -enumcomments -o example-fsi.c
-example.i}@*FSI は「Forth Source Independent」の略で、
+example.i}@*とします。FSI は「Forth Source Independent」の略で、
 C言語コンパイラーを備えた任意のホストに転送できることを意味します。 この時点以降、 SWIG は必要ありません。
-@item ターゲット・マシンで @code{.fsi-c} ファイルを @code{.fsx} にコンパイルします(x は executable(実行可能)の意味です)@*
-    @code{gcc -o example.fsx example-fsi.c}@*コンパイルすると、
+@item ターゲット・マシンで @code{.fsi-c} ファイルを @code{.fsx} にコンパイルします(x は executable(実行可能)の意味です):@*
+    @code{gcc -o example.fsx example-fsi.c}@*こうすると、
 すべての定数(constant)がターゲット上の値(value)に解決されます。
-@item 最後のステップは、 実行可能ファイルを実行し、 その出力を Forth のソース・ファイルである @code{.fs} ファイルにキャプチャすることです。@*
+@item 最後のステップは、 実行可能ファイルを実行し、 その出力を Forth のソース・ファイルである @code{.fs} ファイルに取り込むことです:@*
     @code{./example.fsx -gforth > example.fs}@*これで、
 このコードはターゲット・プラットフォームで使用できるようになりました。
 @end enumerate
@@ -24766,7 +24766,7 @@ FP スタック・ポインターは、 FP スタック・ポインターを含�
 @format
 @code{code} ( @i{"name" -- colon-sys  }) tools-ext ``code''
 @end format
-Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・ード定義を開始します。  このような定義は Gforth
+Gforth 仮想マシン(エンジン)のコンテキストで実行されるネイティブ・コード定義を開始します。  このような定義は Gforth
 インストール間で移植できないため、 @code{code} の代わりに @code{abi-code} を使用することをお勧めします。
 @code{code} 定義は、 次の仮想マシン命令へのディスパッチで終了する必要があります。
 
