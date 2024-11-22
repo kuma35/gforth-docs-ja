@@ -704,14 +704,14 @@ i’) を指定します。 最初の行以外の記述の残りの部分は単�
    VM 命令 ‘lit’ は、 命令ストリームから(プレフィックス ‘#’ で示される)
 項目 ‘i’ を取得し、 それを(デフォルトの)データ・スタックにプッシュします
 。 スタック・プレフィックスは変数名の一部ではありません。 スタック・プレ
-フィックスは以下のように定義されます:
+フィックスは以下のように定義されています:
 
      \E inst-stream stack-prefix #
      \E data-stack  stack-prefix S:
 
-   この定義は、 スタック・プレフィックス ‘#’ が「スタック」
-‘inst-stream’ を指定することを定義します。 命令ストリームは通常のスタッ
-クとは振る舞いが少し異なるため、 事前に定義されており、 あなたが定義する
+   この定義は、 スタック・プレフィックス ‘#’ が「スタック ‘inst-stream’
+」を指定することを定義します。 命令ストリーム(‘inst-stream’)は通常のスタ
+ックとは振る舞いが少し異なるため、 事前に定義済であり、 あなたが定義する
 必要はありません。
 
    命令ストリームには命令とその直接引数(immediate arguments)が含まれるた
@@ -1242,88 +1242,93 @@ instruction table::)。
      に対して(スーパー命令で使われる) vm_X2X マクロを定義する必要があり
      ます。
 
-     事前定義された ‘inst-stream’ のスタック基本型は ‘Cell’ です。 同一
-     項目サイズのスタックが必要な場合、 その基本型を ‘Cell’ にすると、 通
-     常、 定義する必要があるマクロの数が減ります。
+     事前定義された ‘inst-stream’ (命令ストリーム)のスタック基本型は
+     ‘Cell’ です。 同一項目サイズのスタックが必要な場合、 その基本型を
+     ‘Cell’ にすると、 通常、 定義する必要があるマクロの数が減ります。
 
-     Here our examples differ a lot: ‘vmgen-ex’ uses casts in these
-     macros, whereas ‘vmgen-ex2’ uses union-field selection (or
-     assignment to union fields).  Note that casting floats into
-     integers and vice versa changes the bit pattern (and you do not
-     want that).  In this case your options are to use a (temporary)
-     union, or to take the address of the value, cast the pointer, and
-     dereference that (not always possible, and sometimes expensive).
+     ただし、 私達の例では大きく異なります: ‘vmgen-ex’ はこれらのマクロ
+     でキャストを使用しますが、 ‘vmgen-ex2’ は共用体(union)フィールドの
+     選択(または共用体フィールドへの代入)を使用します。 浮動小数点数
+     (floats)を整数にキャストしたり、 その逆を行うとビット・パターンが変
+     更されることに注意してください(そして、 これはあなたが望む事ではあ
+     りません)。 この場合の選択肢は、 (一時的な(temporary))共用体を使用
+     するか、 値のアドレスを取得してポインタをキャストし、 それを逆参照
+     (dereference)することです(常に可能であるとは限らず、 しばしばコスト
+     がかさみます)。
 
 ‘vm_twoA2B(a1,a2,b)’
 ‘vm_B2twoA(b,a1,a2)’
-     Type casting between two stack items (‘a1’, ‘a2’) and a variable
-     ‘b’ of a type that takes two stack items.  This does not occur in
-     our small examples, but you can look at Gforth for examples (see
-     ‘vm_twoCell2d’ in ‘engine/forth.h’).
+     2 つのスタック項目(‘a1’、‘a2’)と 2 つのスタック項目を取る型の変数
+     ‘b’ の間の型キャスト。 これは私達の小さな例では発生しませんが、 例
+     として Gforth を参照してください(‘engine/forth.h’ の ‘vm_twoCell2d’
+     を参照してください)。
 
 ‘STACKPOINTER’
-     For each stack used, the stackpointer name given in the stack
-     declaration is used.  For a regular stack this must be an
-     l-expression; typically it is a variable declared as a pointer to
-     the stack's basic type.  For ‘inst-stream’, the name is ‘IP’, and
-     it can be a plain r-value; typically it is a macro that abstracts
-     away the differences between the various implementations of
-     ‘NEXT_P*’.
+     使用されるスタックごとに、 スタック宣言で指定されたスタック・ポイン
+     ター名が使用されます。 通常のスタックの場合、 これは左辺値に解決さ
+     れる式(l-expression)でなければなりません。 通常、 これはスタックの
+     基本型へのポインタとして宣言された変数です。 ‘inst-stream’ (命令ス
+     トリーム)の場合、 名前は ‘IP’ で、 プレーンな右辺値を指定できます。
+     通常、 これは ‘NEXT_P*’ のさまざまな実装間の違いを抽象化するマクロ
+     です。
 
 ‘IMM_ARG(access,value)’
-     Define this to expland to "(access)".  This is just a placeholder
-     for future extensions.
+     これを "(access)" に展開するように定義します。 これは将来の拡張機能
+     のための単なるプレースホルダーです。
 
 ‘STACKPOINTERTOS’
-     The top-of-stack for the stack pointed to by STACKPOINTER.  If you
-     are using top-of-stack caching for that stack, this should be
-     defined as variable; if you are not using top-of-stack caching for
-     that stack, this should be a macro expanding to ‘STACKPOINTER[0]’.
-     The stack pointer for the predefined ‘inst-stream’ is called ‘IP’,
-     so the top-of-stack is called ‘IPTOS’.
+     STACKPOINTER が指し示すスタックのTOS(スタックのトップ)。 そのスタッ
+     クに対してスタックのトップ・キャッシュを使用している場合は、 これを
+     変数として定義する必要があります。 そのスタックがスタックのトップ・
+     キャッシュを使用していない場合、 これは ‘STACKPOINTER[0]’ に展開さ
+     れるマクロである必要があります。 事前定義された ‘inst-stream’ (命令
+     ストリーム)のスタック・ポインターは ‘IP’ と呼ばれるため、 TOS(スタ
+     ックの最上位)は ‘IPTOS’ と呼ばれます。
 
 ‘IF_STACKPOINTERTOS(EXPR)’
-     Macro for executing EXPR, if top-of-stack caching is used for the
-     STACKPOINTER stack.  I.e., this should do EXPR if there is
-     top-of-stack caching for STACKPOINTER; otherwise it should do
-     nothing.
+     STACKPOINTER が指し示すスタックにスタックのトップ・キャッシュが使用
+     されている場合に、 EXPR を実行するためのマクロ。 つまり、
+     STACKPOINTER のスタックのトップ・キャッシュがある場合に EXPR を実行
+     する必要があります。 それ以外の場合は何もしません。
 
 ‘SUPER_END’
-     This is used by the VM profiler (*note VM profiler::); it should
-     not do anything in normal operation, and call ‘vm_count_block(IP)’
-     for profiling.
+     これは VM プロファイラー(*note VM profiler::)によって使用されます。
+     通常の操作では何も行わないので、 プロファイリングのためには
+     ‘vm_count_block(IP)’ を呼び出す必要があります。
 
 ‘SUPER_CONTINUE’
-     This is just a hint to Vmgen and does nothing at the C level.
+     これは Vmgen への単なるヒントであり、 C 言語レベルでは何も行いませ
+     ん。
 
 ‘MAYBE_UNUSED’
-     This should be defined as ‘__attribute__((unused))’ for gcc-2.7 and
-     higher.  It suppresses the warnings about unused variables in the
-     code for superinstructions.  You need to define this only if you
-     are using superinstructions.
+     gcc-2.7 以降では、 これを ‘__attribute__((unused))’ として定義する
+     必要があります。 スーパー命令(superinstructions)のコード内の未使用
+     の変数に関する警告が抑制されます。 これを定義する必要があるのは、 あ
+     なたがスーパー命令を使用している場合のみです。
 
 ‘VM_DEBUG’
-     If this is defined, the tracing code will be compiled in (slower
-     interpretation, but better debugging).  Our example compiles two
-     versions of the engine, a fast-running one that cannot trace, and
-     one with potential tracing and profiling.
+     これが定義されている場合、 トレース・コードがコンパイルされます(解
+     釈(interpretation)は遅くなりますが、 デバッグは向上します)。 私達の
+     例では、 エンジンの 2 つのバージョンをコンパイルします: 1 つはトレ
+     ースできない高速実行バージョンで、 もう 1 つはトレースとプロファイ
+     リングが可能です。
 
 ‘vm_debug’
-     Needed only if ‘VM_DEBUG’ is defined.  If this variable contains
-     true, the VM instructions produce trace output.  It can be turned
-     on or off at any time.
+     ‘VM_DEBUG’ が定義されている場合にのみ必要です。 この変数に true が
+     含まれている場合、 VM 命令はトレース出力を生成します。 いつでもオン
+     またはオフにできます。
 
 ‘vm_out’
-     Needed only if ‘VM_DEBUG’ is defined.  Specifies the file on which
-     to print the trace output (type ‘FILE *’).
+     ‘VM_DEBUG’ が定義されている場合にのみ必要です。 トレース出力を印刷
+     するファイルを指定します(‘FILE *’ とタイプします)。
 
 ‘printarg_TYPE(VALUE)’
-     Needed only if ‘VM_DEBUG’ is defined.  Macro or function for
-     printing VALUE in a way appropriate for the TYPE.  This is used for
-     printing the values of stack items during tracing.  TYPE is
-     normally the type prefix specified in a ‘type-prefix’ definition
-     (e.g., ‘printarg_i’); in superinstructions it is currently the
-     basic type of the stack.
+     ‘VM_DEBUG’ が定義されている場合にのみ必要です。 TYPE に適した方法で
+     VALUE を出力するためのマクロまたは関数です。 これは、 トレース中に
+     スタック項目の値を出力するために使用されます。 TYPE は通常、
+     ‘type-prefix’ 定義で指定された型プレフィックスです(例:
+     ‘printarg_i’)。 スーパー命令(superinstructions)では、 これは現在の
+     スタックの基本タイプです。
 
 
 File: vmgen.info,  Node: VM instruction table,  Next: VM code generation,  Prev: VM engine,  Up: Using the generated code
@@ -1331,38 +1336,38 @@ File: vmgen.info,  Node: VM instruction table,  Next: VM code generation,  Prev:
 8.2 VM instruction table
 ========================
 
-For threaded code we also need to produce a table containing the labels
-of all VM instructions.  This is needed for VM code generation (*note VM
-code generation::), and it has to be done in the engine function,
-because the labels are not visible outside.  It then has to be passed
-outside the function (and assigned to ‘vm_prim’), to be used by the VM
-code generation functions.
+スレッド化コードの場合は、 すべての VM 命令のラベルを含んだテーブルを作
+成する必要もあります。 これは VM コード生成(*note VM code generation::)に
+必要であり、 ラベルは外部から見えないため、 エンジン関数内で実行する必要
+があります。 次に、 VM コード生成関数で使用できるように、 関数の外に渡す
+(そして ‘vm_prim’ に割り当てする)必要があります。
 
-   This means that the engine function has to be called first to produce
-the VM instruction table, and later, after generating VM code, it has to
-be called again to execute the generated VM code (yes, this is ugly).
-In our example program, these two modes of calling the engine function
-are differentiated by the value of the parameter ip0 (if it equals 0,
-then the table is passed out, otherwise the VM code is executed); in our
-example, we pass the table out by assigning it to ‘vm_prim’ and
-returning from ‘engine’.
+   これは、 VM 命令テーブルを生成するために最初にエンジン関数を呼び出す
+必要があり、 その後 VM コードを生成した後、 生成された VM コードを実行す
+るためにエンジン関数を再度呼び出す必要があることを意味します(はい、これ
+は醜いです)。 我々のプログラム例では、 エンジン関数を呼び出すこれら 2 つ
+のモードは、 パラメーター ip0 の値によって区別されます(0 に等しい場合は
+テーブルが渡され、 それ以外の場合は VM コードが実行されます)。 我々の例
+では、 テーブルを ‘vm_prim’ に割り当て、 それを ‘engine’ から返すことに
+よってテーブルを渡します。
 
-   In our example (‘vmgen-ex/engine.c’), we also build such a table for
-switch dispatch; this is mainly done for uniformity.
+   我々の例 (‘vmgen-ex/engine.c’) では、スイッチ・ディスパッチ用のテーブ
+ルも構築します。 これは主に均一性を目的として行われます。
 
-   For switch dispatch, we also need to define the VM instruction
-opcodes used as case labels in an ‘enum’.
+   スイッチ・ディスパッチの場合、 ‘enum’ で case ラベルとして使用される
+VM 命令オペコードも定義する必要があります。
 
-   For both purposes (VM instruction table, and enum), the file
-‘NAME-labels.i’ is generated by Vmgen.  You have to define the following
-macro used in this file:
+   両方の目的 (VM 命令テーブルと enum )のために、 ファイル
+‘NAME-labels.i’ が Vmgen によって生成されます。 あなたはこのファイルで使
+用される以下のマクロを定義する必要があります:
 
 ‘INST_ADDR(INST_NAME)’
-     For switch dispatch, this is just the name of the switch label (the
-     same name as used in ‘LABEL(INST_NAME)’), for both uses of
-     ‘NAME-labels.i’.  For threaded-code dispatch, this is the address
-     of the label defined in ‘LABEL(INST_NAME)’); the address is taken
-     with ‘&&’ (*note Labels as Values: (gcc.info)Labels as Values.).
+     スイッチ・ディスパッチの場合、 これは ‘NAME-labels.i’ のどちらの使
+     用法でもスイッチ・ラベルの名前にすぎません(‘LABEL(INST_NAME)’ で使
+     用されているのと同一の名前です)。 スレッド化コード・ディスパッチの
+     場合、 これは ‘LABEL(INST_NAME)’ で定義されたラベルのアドレスです。
+     アドレスは ‘&&’ で取得されます(*note Labels as Values:
+     (gcc.info)Labels as Values.)。
 
 
 File: vmgen.info,  Node: VM code generation,  Next: Peephole optimization,  Prev: VM instruction table,  Up: Using the generated code
@@ -1370,62 +1375,60 @@ File: vmgen.info,  Node: VM code generation,  Next: Peephole optimization,  Prev
 8.3 VM code generation
 ======================
 
-Vmgen generates VM code generation functions in ‘NAME-gen.i’ that the
-front end can call to generate VM code.  This is essential for an
-interpretive system.
+Vmgen は、フロント・エンドが VM コードを生成するために呼び出すことができ
+る VM コード生成関数を ‘NAME-gen.i’ に生成します。 これはインタープリタ
+ー・システム(interpretive system)には不可欠なものです。
 
-   For a VM instruction ‘x ( #a b #c -- d )’, Vmgen generates a function
-with the prototype
+   VM 命令 ‘x ( #a b #c -- d )’ の場合、 Vmgen は以下のプロトタイプを持
+つ関数を生成します
 
      void gen_x(Inst **ctp, a_type a, c_type c)
 
-   The ‘ctp’ argument points to a pointer to the next instruction.
-‘*ctp’ is increased by the generation functions; i.e., you should
-allocate memory for the code to be generated beforehand, and start with
-*ctp set at the start of this memory area.  Before running out of
-memory, allocate a new area, and generate a VM-level jump to the new
-area (this overflow handling is not implemented in our examples).
+   ‘ctp’ 引数は、 次の命令へのポインターを指します。 ‘*ctp’ は生成関数に
+よって増加されます。 つまり、 あなたは生成するコード用のメモリを事前に割
+り当て、 このメモリ領域の先頭に *ctp を設定して開始する必要があります。
+メモリが不足する前に、 新しい領域を割り当て、 新しい領域への VM レベルの
+ジャンプを生成します(このオーバーフロー処理は我々の例では実装されていま
+せん)。
 
-   The other arguments correspond to the immediate arguments of the VM
-instruction (with their appropriate types as defined in the
-‘type_prefix’ declaration.
+   他の引数は、 VM 命令の直接引数(immediate arguments)に対応します
+(‘type_prefix’ 宣言で定義されている適切な型を使用します)。
 
-   The following types, variables, and functions are used in
-‘NAME-gen.i’:
+   以下の型や変数や関数が ‘NAME-gen.i’ で使用されます:
 
 ‘Inst’
-     The type of the VM instruction; if you use threaded code, this is
-     ‘void *’; for switch dispatch this is an integer type.
+     VM 命令のタイプ。 スレッド化コードを使用する場合、 これは ‘void *’
+     です。 スイッチ・ディスパッチの場合、 これは整数型です。
 
 ‘vm_prim’
-     The VM instruction table (type: ‘Inst *’, *note VM instruction
-     table::).
+     VM 命令テーブル (タイプ: ‘Inst *’ 。 *note VM instruction table::)。
 
 ‘gen_inst(Inst **ctp, Inst i)’
-     This function compiles the instruction ‘i’.  Take a look at it in
-     ‘vmgen-ex/peephole.c’.  It is trivial when you don't want to use
-     superinstructions (just the last two lines of the example
-     function), and slightly more complicated in the example due to its
-     ability to use superinstructions (*note Peephole optimization::).
+     この関数は命令 ‘i’ をコンパイルします。 ‘vmgen-ex/peephole.c’ をご
+     覧ください。 スーパー命令(superinstructions)を使用したくない場合(関
+     数例の最後の 2 行のみの場合)は簡単ですが、 この例ではスーパー命令を
+     使用可能なため、 少し複雑になります(*note Peephole optimization::)。
 
 ‘genarg_TYPE_PREFIX(Inst **ctp, TYPE TYPE_PREFIX)’
-     This compiles an immediate argument of TYPE (as defined in a
-     ‘type-prefix’ definition).  These functions are trivial to define
-     (see ‘vmgen-ex/support.c’).  You need one of these functions for
-     every type that you use as immediate argument.
+     これにより、 (‘type-prefix’ 定義で定義されている) TYPE の直接引数
+     (immediate argument)がコンパイルされます。 これらの関数を定義するの
+     は簡単です(‘vmgen-ex/support.c’ を参照)。 あなたが直接引数
+     (immediate argument)として使用するタイプごとに、 これらの関数のいず
+     れかが必要です。
 
-   In addition to using these functions to generate code, you should
-call ‘BB_BOUNDARY’ at every basic block entry point if you ever want to
-use superinstructions (or if you want to use the profiling supported by
-Vmgen; but this support is also useful mainly for selecting
-superinstructions).  If you use ‘BB_BOUNDARY’, you should also define it
-(take a look at its definition in ‘vmgen-ex/mini.y’).
+   これらの関数を使用してコードを生成することに加えて、 スーパー命令
+(superinstructions)を使用したい場合は(または、 Vmgen でサポートされてい
+るプロファイリングを使用したい場合は; ただし、 このサポートは主にスーパ
+ー命令の選択にも役立ちます)は、 すべての基本ブロック・エントリ・ポイント
+で ‘BB_BOUNDARY’ を呼び出す必要があります。 あなたが ‘BB_BOUNDARY’ を利
+用する場合、 あなたは ‘BB_BOUNDARY’ も定義する必要があります
+(‘vmgen-ex/mini.y’ の定義をご覧ください)。
 
-   You do not need to call ‘BB_BOUNDARY’ after branches, because you
-will not define superinstructions that contain branches in the middle
-(and if you did, and it would work, there would be no reason to end the
-superinstruction at the branch), and because the branches announce
-themselves to the profiler.
+   分岐の後に ‘BB_BOUNDARY’ を呼び出す必要はありません。 なぜなら、 あな
+たは途中に分岐を含むスーパー命令を定義することはないでしょう(もしあなた
+がそうして、 それがうまくいくなら、 分岐でスーパー命令で終了する理由はあ
+りません)、 そして、 分岐はプロファイラに自分自身をアナウンスするからで
+す。
 
 
 File: vmgen.info,  Node: Peephole optimization,  Next: VM disassembler,  Prev: VM code generation,  Up: Using the generated code
@@ -2210,7 +2213,7 @@ Index
                                                               (line   6)
 * grammar, input file:                   Input File Grammar.  (line   6)
 * hints:                                 Hints.               (line   6)
-* IMM_ARG:                               VM engine.           (line 133)
+* IMM_ARG:                               VM engine.           (line 135)
 * immediate argument, VM instruction:    Front end and VM interpreter.
                                                               (line  10)
 * immediate arguments:                   Data handling.       (line  27)
@@ -2219,7 +2222,7 @@ Index
 * include-skipped-insts:                 Superinstructions.   (line  51)
 * input file format:                     Input File Format.   (line   6)
 * input file grammar:                    Input File Grammar.  (line   6)
-* instruction pointer definition:        VM engine.           (line 124)
+* instruction pointer definition:        VM engine.           (line 126)
 * instruction pointer, access:           C Code restrictions. (line   6)
 * instruction stream:                    Data handling.       (line  27)
 * instruction stream <1>:                Simple instructions. (line  65)
@@ -2271,7 +2274,7 @@ Index
 * stack access, explicit:                Explicit stack access.
                                                               (line   6)
 * stack basic type:                      Simple instructions. (line  38)
-* stack caching:                         VM engine.           (line 137)
+* stack caching:                         VM engine.           (line 139)
 * stack caching, restriction on C code:  C Code restrictions. (line  13)
 * stack definition:                      Simple instructions. (line  33)
 * stack effect:                          Simple instructions. (line  15)
@@ -2281,7 +2284,7 @@ Index
 * stack machine:                         Data handling.       (line   6)
 * Stack pointer access:                  Explicit stack access.
                                                               (line   6)
-* stack pointer definition:              VM engine.           (line 124)
+* stack pointer definition:              VM engine.           (line 126)
 * stack pointer, access:                 C Code restrictions. (line   6)
 * stack prefix:                          Simple instructions. (line  46)
 * stack stores, optimization:            Store Optimization.  (line   6)
@@ -2307,8 +2310,8 @@ Index
 * TAIL;, changes:                        Changes.             (line  33)
 * threaded code:                         Dispatch.            (line  24)
 * too many stacks error:                 Error messages.      (line  34)
-* top of stack caching:                  VM engine.           (line 137)
-* TOS:                                   VM engine.           (line 137)
+* top of stack caching:                  VM engine.           (line 139)
+* TOS:                                   VM engine.           (line 139)
 * tracing of register VMs:               Register Machines.   (line   6)
 * tracing VM code:                       VM engine.           (line  21)
 * type cast macro:                       VM engine.           (line  93)
@@ -2339,7 +2342,7 @@ Index
 * VM_IS_INST in profiling:               VM profiler.         (line  70)
 * vm_prim, definition:                   VM instruction table.
                                                               (line   6)
-* vm_prim, use:                          VM code generation.  (line  33)
+* vm_prim, use:                          VM code generation.  (line  31)
 * vm_twoA2B, changes:                    Changes.             (line  40)
 * vmgen-ex:                              Example overview.    (line   6)
 * vmgen-ex2:                             Example overview.    (line   6)
@@ -2363,29 +2366,29 @@ Node: Input File Format25177
 Node: Input File Grammar25731
 Node: Eval escapes29053
 Node: Simple instructions31244
-Node: Explicit stack access35657
-Node: C Code Macros38791
-Node: C Code restrictions41798
-Node: Stack growth direction45443
-Node: Superinstructions47041
-Node: Store Optimization50385
-Node: Register Machines53036
-Node: Error messages55381
-Node: Using the generated code58548
-Node: VM engine59616
-Node: VM instruction table70776
-Node: VM code generation72667
-Node: Peephole optimization75504
-Node: VM disassembler76984
-Node: VM profiler78323
-Node: Hints82033
-Node: Floating point82196
-Node: The future84053
-Node: Changes85182
-Node: Contact86778
-Node: Copying This Manual87240
-Node: GNU Free Documentation License87470
-Node: Index109890
+Node: Explicit stack access35679
+Node: C Code Macros38813
+Node: C Code restrictions41820
+Node: Stack growth direction45465
+Node: Superinstructions47063
+Node: Store Optimization50407
+Node: Register Machines53058
+Node: Error messages55403
+Node: Using the generated code58570
+Node: VM engine59638
+Node: VM instruction table72596
+Node: VM code generation75180
+Node: Peephole optimization78890
+Node: VM disassembler80370
+Node: VM profiler81709
+Node: Hints85419
+Node: Floating point85582
+Node: The future87439
+Node: Changes88568
+Node: Contact90164
+Node: Copying This Manual90626
+Node: GNU Free Documentation License90856
+Node: Index113276
 
 End Tag Table
 

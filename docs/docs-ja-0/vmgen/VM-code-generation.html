@@ -57,80 +57,62 @@ Next: <a href="Peephole-optimization.html" accesskey="n" rel="next">Peephole opt
 <a class="index-entry-id" id="index-code-generation_002c-VM"></a>
 <a class="index-entry-id" id="index-_002dgen_002ei-output-file"></a>
 
-<p>Vmgen generates VM code generation functions in <samp class="file"><var class="var">name</var>-gen.i</samp> that
-the front end can call to generate VM code.  This is essential for an
-interpretive system.
+<p>Vmgen は、フロント・エンドが VM コードを生成するために呼び出すことができる VM コード生成関数を
+<samp class="file"><var class="var">name</var>-gen.i</samp> に生成します。 これはインタープリター・システム(interpretive
+system)には不可欠なものです。
 </p>
 <a class="index-entry-id" id="index-gen_005finst"></a>
-<p>For a VM instruction &lsquo;<samp class="samp">x ( #a b #c -- d )</samp>&rsquo;, Vmgen generates a function
-with the prototype
+<p>VM 命令 &lsquo;<samp class="samp">x ( #a b #c -- d )</samp>&rsquo; の場合、 Vmgen は以下のプロトタイプを持つ関数を生成します
 </p>
 <div class="example">
 <pre class="example-preformatted">void gen_x(Inst **ctp, a_type a, c_type c)
 </pre></div>
 
-<p>The <code class="code">ctp</code> argument points to a pointer to the next instruction.
-<code class="code">*ctp</code> is increased by the generation functions; i.e., you should
-allocate memory for the code to be generated beforehand, and start with *ctp
-set at the start of this memory area.  Before running out of memory,
-allocate a new area, and generate a VM-level jump to the new area (this
-overflow handling is not implemented in our examples).
+<p><code class="code">ctp</code> 引数は、 次の命令へのポインターを指します。  <code class="code">*ctp</code> は生成関数によって増加されます。 つまり、
+あなたは生成するコード用のメモリを事前に割り当て、 このメモリ領域の先頭に *ctp を設定して開始する必要があります。 メモリが不足する前に、
+新しい領域を割り当て、 新しい領域への VM レベルのジャンプを生成します(このオーバーフロー処理は我々の例では実装されていません)。
 </p>
 <a class="index-entry-id" id="index-immediate-arguments_002c-VM-code-generation"></a>
-<p>The other arguments correspond to the immediate arguments of the VM
-instruction (with their appropriate types as defined in the
-<code class="code">type_prefix</code> declaration.
+<p>他の引数は、 VM 命令の直接引数(immediate arguments)に対応します(<code class="code">type_prefix</code>
+宣言で定義されている適切な型を使用します)。
 </p>
-<p>The following types, variables, and functions are used in
-<samp class="file"><var class="var">name</var>-gen.i</samp>:
+<p>以下の型や変数や関数が <samp class="file"><var class="var">name</var>-gen.i</samp> で使用されます:
 </p>
 <dl class="table">
 <dt><a id="index-Inst"></a><span><code class="code">Inst</code><a class="copiable-link" href="#index-Inst"> &para;</a></span></dt>
-<dd><p>The type of the VM instruction; if you use threaded code, this is <code class="code">void
-*</code>; for switch dispatch this is an integer type.
+<dd><p>VM 命令のタイプ。 スレッド化コードを使用する場合、 これは <code class="code">void *</code> です。 スイッチ・ディスパッチの場合、 これは整数型です。
 </p>
 </dd>
 <dt><a id="index-vm_005fprim_002c-use"></a><span><code class="code">vm_prim</code><a class="copiable-link" href="#index-vm_005fprim_002c-use"> &para;</a></span></dt>
-<dd><p>The VM instruction table (type: <code class="code">Inst *</code>, see <a class="pxref" href="VM-instruction-table.html">VM instruction table</a>).
+<dd><p>VM 命令テーブル (タイプ: <code class="code">Inst *</code> 。 see <a class="pxref" href="VM-instruction-table.html">VM instruction table</a>)。
 </p>
 </dd>
 <dt><a id="index-gen_005finst-1"></a><span><code class="code">gen_inst(Inst **ctp, Inst i)</code><a class="copiable-link" href="#index-gen_005finst-1"> &para;</a></span></dt>
-<dd><p>This function compiles the instruction <code class="code">i</code>.  Take a look at it in
-<samp class="file">vmgen-ex/peephole.c</samp>.  It is trivial when you don&rsquo;t want to use
-superinstructions (just the last two lines of the example function), and
-slightly more complicated in the example due to its ability to use
-superinstructions (see <a class="pxref" href="Peephole-optimization.html">Peephole optimization</a>).
+<dd><p>この関数は命令 <code class="code">i</code> をコンパイルします。  <samp class="file">vmgen-ex/peephole.c</samp> をご覧ください。
+スーパー命令(superinstructions)を使用したくない場合(関数例の最後の 2 行のみの場合)は簡単ですが、
+この例ではスーパー命令を使用可能なため、 少し複雑になります(see <a class="pxref" href="Peephole-optimization.html">Peephole optimization</a>)。
 </p>
 </dd>
 <dt><a id="index-genarg_005ftype_005fprefix"></a><span><code class="code">genarg_<var class="var">type_prefix</var>(Inst **ctp, <var class="var">type</var> <var class="var">type_prefix</var>)</code><a class="copiable-link" href="#index-genarg_005ftype_005fprefix"> &para;</a></span></dt>
-<dd><p>This compiles an immediate argument of <var class="var">type</var> (as defined in a
-<code class="code">type-prefix</code> definition).  These functions are trivial to define (see
-<samp class="file">vmgen-ex/support.c</samp>).  You need one of these functions for every type
-that you use as immediate argument.
+<dd><p>これにより、 (<code class="code">type-prefix</code> 定義で定義されている) <var class="var">type</var> の直接引数(immediate
+argument)がコンパイルされます。  これらの関数を定義するのは簡単です(<samp class="file">vmgen-ex/support.c</samp> を参照)。
+あなたが直接引数(immediate argument)として使用するタイプごとに、 これらの関数のいずれかが必要です。
 </p>
 </dd>
 </dl>
 
 <a class="index-entry-id" id="index-BB_005fBOUNDARY"></a>
-<p>In addition to using these functions to generate code, you should call
-<code class="code">BB_BOUNDARY</code> at every basic block entry point if you ever want to use
-superinstructions (or if you want to use the profiling supported by Vmgen;
-but this support is also useful mainly for selecting superinstructions).  If
-you use <code class="code">BB_BOUNDARY</code>, you should also define it (take a look at its
-definition in <samp class="file">vmgen-ex/mini.y</samp>).
+<p>これらの関数を使用してコードを生成することに加えて、 スーパー命令(superinstructions)を使用したい場合は(または、 Vmgen
+でサポートされているプロファイリングを使用したい場合は; ただし、 このサポートは主にスーパー命令の選択にも役立ちます)は、
+すべての基本ブロック・エントリ・ポイントで <code class="code">BB_BOUNDARY</code> を呼び出す必要があります。 あなたが
+<code class="code">BB_BOUNDARY</code> を利用する場合、 あなたは <code class="code">BB_BOUNDARY</code>
+も定義する必要があります(<samp class="file">vmgen-ex/mini.y</samp> の定義をご覧ください)。
 </p>
-<p>You do not need to call <code class="code">BB_BOUNDARY</code> after branches, because you will
-not define superinstructions that contain branches in the middle (and if you
-did, and it would work, there would be no reason to end the superinstruction
-at the branch), and because the branches announce themselves to the
-profiler.
+<p>分岐の後に <code class="code">BB_BOUNDARY</code> を呼び出す必要はありません。 なぜなら、
+あなたは途中に分岐を含むスーパー命令を定義することはないでしょう(もしあなたがそうして、 それがうまくいくなら、
+分岐でスーパー命令で終了する理由はありません)、 そして、 分岐はプロファイラに自分自身をアナウンスするからです。
 </p>
 
-</div>
-<hr>
-<div class="nav-panel">
-<p>
-Next: <a href="Peephole-optimization.html">Peephole optimization</a>, Previous: <a href="VM-instruction-table.html">VM instruction table</a>, Up: <a href="Using-the-generated-code.html">Using the generated code</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 

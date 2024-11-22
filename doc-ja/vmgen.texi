@@ -761,15 +761,16 @@ lit ( #i -- i )
 
 VM 命令 @code{lit} は、 命令ストリームから(プレフィックス @code{#} で示される) 項目 @code{i} を取得し、
 それを(デフォルトの)データ・スタックにプッシュします。  スタック・プレフィックスは変数名の一部ではありません。
-スタック・プレフィックスは以下のように定義されます:
+スタック・プレフィックスは以下のように定義されています:
 
 @example
 \E inst-stream stack-prefix #
 \E data-stack  stack-prefix S:
 @end example
 
-この定義は、 スタック・プレフィックス @code{#} が「スタック」 @code{inst-stream} を指定することを定義します。
-命令ストリームは通常のスタックとは振る舞いが少し異なるため、 事前に定義されており、 あなたが定義する必要はありません。
+この定義は、 スタック・プレフィックス @code{#} が「スタック @code{inst-stream} 」を指定することを定義します。
+命令ストリーム(@code{inst-stream})は通常のスタックとは振る舞いが少し異なるため、 事前に定義済であり、
+あなたが定義する必要はありません。
 
 @cindex instruction stream
 命令ストリームには命令とその直接引数(immediate arguments)が含まれるため、
@@ -1294,106 +1295,93 @@ PowerPC で便利です)。
 vm_@var{X}2@var{X} マクロを定義する必要があります。
 
 @cindex instruction stream, basic type
-事前定義された  @samp{inst-stream} のスタック基本型は @samp{Cell} です。  同一項目サイズのスタックが必要な場合、
-その基本型を @samp{Cell} にすると、 通常、 定義する必要があるマクロの数が減ります。
+事前定義された  @samp{inst-stream} (命令ストリーム)のスタック基本型は @samp{Cell} です。
+同一項目サイズのスタックが必要な場合、 その基本型を @samp{Cell} にすると、 通常、 定義する必要があるマクロの数が減ります。
 
 @cindex unions in type cast macros
 @cindex casts in type cast macros
 @cindex type casting between floats and integers
-Here our examples differ a lot: @file{vmgen-ex} uses casts in these macros,
-whereas @file{vmgen-ex2} uses union-field selection (or assignment to union
-fields).  Note that casting floats into integers and vice versa changes the
-bit pattern (and you do not want that).  In this case your options are to
-use a (temporary) union, or to take the address of the value, cast the
-pointer, and dereference that (not always possible, and sometimes
-expensive).
+ただし、 私達の例では大きく異なります: @file{vmgen-ex} はこれらのマクロでキャストを使用しますが、 @file{vmgen-ex2}
+は共用体(union)フィールドの選択(または共用体フィールドへの代入)を使用します。  浮動小数点数(floats)を整数にキャストしたり、
+その逆を行うとビット・パターンが変更されることに注意してください(そして、 これはあなたが望む事ではありません)。  この場合の選択肢は、
+(一時的な(temporary))共用体を使用するか、 値のアドレスを取得してポインタをキャストし、
+それを逆参照(dereference)することです(常に可能であるとは限らず、 しばしばコストがかさみます)。
 
 @findex vm_two@var{A}2@var{B}
 @findex vm_@var{B}2two@var{A}
 @item vm_two@var{A}2@var{B}(a1,a2,b)
 @item vm_@var{B}2two@var{A}(b,a1,a2)
-Type casting between two stack items (@code{a1}, @code{a2}) and a variable
-@code{b} of a type that takes two stack items.  This does not occur in our
-small examples, but you can look at Gforth for examples (see
-@code{vm_twoCell2d} in @file{engine/forth.h}).
+2 つのスタック項目(@code{a1}、@code{a2})と 2 つのスタック項目を取る型の変数 @code{b} の間の型キャスト。
+これは私達の小さな例では発生しませんが、 例として Gforth を参照してください(@file{engine/forth.h} の
+@code{vm_twoCell2d} を参照してください)。
 
 @cindex stack pointer definition
 @cindex instruction pointer definition
 @item @var{stackpointer}
-For each stack used, the stackpointer name given in the stack declaration is
-used.  For a regular stack this must be an l-expression; typically it is a
-variable declared as a pointer to the stack's basic type.  For
-@samp{inst-stream}, the name is @samp{IP}, and it can be a plain r-value;
-typically it is a macro that abstracts away the differences between the
-various implementations of @code{NEXT_P*}.
+使用されるスタックごとに、 スタック宣言で指定されたスタック・ポインター名が使用されます。  通常のスタックの場合、
+これは左辺値に解決される式(l-expression)でなければなりません。 通常、 これはスタックの基本型へのポインタとして宣言された変数です。
+@samp{inst-stream} (命令ストリーム)の場合、 名前は @samp{IP} で、 プレーンな右辺値を指定できます。 通常、 これは
+@code{NEXT_P*} のさまざまな実装間の違いを抽象化するマクロです。
 
 @cindex IMM_ARG
 @findex IMM_ARG
 @item IMM_ARG(access,value)
-Define this to expland to ``(access)''.  This is just a placeholder for
-future extensions.
+これを "(access)" に展開するように定義します。  これは将来の拡張機能のための単なるプレースホルダーです。
 
 @cindex top of stack caching
 @cindex stack caching
 @cindex TOS
 @findex IPTOS
 @item @var{stackpointer}TOS
-The top-of-stack for the stack pointed to by @var{stackpointer}.  If you are
-using top-of-stack caching for that stack, this should be defined as
-variable; if you are not using top-of-stack caching for that stack, this
-should be a macro expanding to @samp{@var{stackpointer}[0]}.  The stack
-pointer for the predefined @samp{inst-stream} is called @samp{IP}, so the
-top-of-stack is called @samp{IPTOS}.
+@var{stackpointer} が指し示すスタックのTOS(スタックのトップ)。
+そのスタックに対してスタックのトップ・キャッシュを使用している場合は、 これを変数として定義する必要があります。
+そのスタックがスタックのトップ・キャッシュを使用していない場合、 これは @samp{@var{stackpointer}[0]}
+に展開されるマクロである必要があります。  事前定義された @samp{inst-stream} (命令ストリーム)のスタック・ポインターは
+@samp{IP} と呼ばれるため、 TOS(スタックの最上位)は @samp{IPTOS} と呼ばれます。
 
 @findex IF_@var{stackpointer}TOS
 @item IF_@var{stackpointer}TOS(@var{expr})
-Macro for executing @var{expr}, if top-of-stack caching is used for the
-@var{stackpointer} stack.  I.e., this should do @var{expr} if there is
-top-of-stack caching for @var{stackpointer}; otherwise it should do nothing.
+@var{stackpointer} が指し示すスタックにスタックのトップ・キャッシュが使用されている場合に、 @var{expr}
+を実行するためのマクロ。 つまり、 @var{stackpointer} のスタックのトップ・キャッシュがある場合に @var{expr}
+を実行する必要があります。 それ以外の場合は何もしません。
 
 @findex SUPER_END
 @item SUPER_END
-This is used by the VM profiler (@pxref{VM profiler}); it should not do
-anything in normal operation, and call @code{vm_count_block(IP)} for
-profiling.
+これは  VM プロファイラー(@pxref{VM profiler})によって使用されます。 通常の操作では何も行わないので、
+プロファイリングのためには @code{vm_count_block(IP)} を呼び出す必要があります。
 
 @findex SUPER_CONTINUE
 @item SUPER_CONTINUE
-This is just a hint to Vmgen and does nothing at the C level.
+これは Vmgen への単なるヒントであり、 C 言語レベルでは何も行いません。
 
 @findex MAYBE_UNUSED
 @item MAYBE_UNUSED
-This should be defined as @code{__attribute__((unused))} for gcc-2.7 and
-higher.  It suppresses the warnings about unused variables in the code for
-superinstructions.  You need to define this only if you are using
-superinstructions.
+gcc-2.7 以降では、 これを @code{__attribute__((unused))} として定義する必要があります。
+スーパー命令(superinstructions)のコード内の未使用の変数に関する警告が抑制されます。  これを定義する必要があるのは、
+あなたがスーパー命令を使用している場合のみです。
 
 @findex VM_DEBUG
 @item VM_DEBUG
-If this is defined, the tracing code will be compiled in (slower
-interpretation, but better debugging).  Our example compiles two versions of
-the engine, a fast-running one that cannot trace, and one with potential
-tracing and profiling.
+これが定義されている場合、 トレース・コードがコンパイルされます(解釈(interpretation)は遅くなりますが、 デバッグは向上します)。
+私達の例では、 エンジンの 2 つのバージョンをコンパイルします: 1 つはトレースできない高速実行バージョンで、 もう 1
+つはトレースとプロファイリングが可能です。
 
 @findex vm_debug
 @item vm_debug
-Needed only if @samp{VM_DEBUG} is defined.  If this variable contains true,
-the VM instructions produce trace output.  It can be turned on or off at any
-time.
+@samp{VM_DEBUG} が定義されている場合にのみ必要です。  この変数に true が含まれている場合、 VM
+命令はトレース出力を生成します。  いつでもオンまたはオフにできます。
 
 @findex vm_out
 @item vm_out
-Needed only if @samp{VM_DEBUG} is defined.  Specifies the file on which to
-print the trace output (type @samp{FILE *}).
+@samp{VM_DEBUG} が定義されている場合にのみ必要です。  トレース出力を印刷するファイルを指定します(@samp{FILE *}
+とタイプします)。
 
 @findex printarg_@var{type}
 @item printarg_@var{type}(@var{value})
-Needed only if @samp{VM_DEBUG} is defined.  Macro or function for printing
-@var{value} in a way appropriate for the @var{type}.  This is used for
-printing the values of stack items during tracing.  @var{Type} is normally
-the type prefix specified in a @code{type-prefix} definition (e.g.,
-@samp{printarg_i}); in superinstructions it is currently the basic type of
-the stack.
+@samp{VM_DEBUG} が定義されている場合にのみ必要です。  @var{type} に適した方法で @var{value}
+を出力するためのマクロまたは関数です。  これは、 トレース中にスタック項目の値を出力するために使用されます。  @var{Type}
+は通常、@code{type-prefix} 定義で指定された型プレフィックスです(例: @samp{printarg_i})。
+スーパー命令(superinstructions)では、 これは現在のスタックの基本タイプです。
 
 @end table
 
@@ -1407,41 +1395,33 @@ the stack.
 @cindex @code{vm_prim}, definition
 @cindex @file{-labels.i} output file
 
-For threaded code we also need to produce a table containing the labels of
-all VM instructions.  This is needed for VM code generation (@pxref{VM code
-generation}), and it has to be done in the engine function, because the
-labels are not visible outside.  It then has to be passed outside the
-function (and assigned to @samp{vm_prim}), to be used by the VM code
-generation functions.
+スレッド化コードの場合は、 すべての VM 命令のラベルを含んだテーブルを作成する必要もあります。  これは VM コード生成(@pxref{VM
+code generation})に必要であり、 ラベルは外部から見えないため、 エンジン関数内で実行する必要があります。  次に、 VM
+コード生成関数で使用できるように、 関数の外に渡す(そして @samp{vm_prim} に割り当てする)必要があります。
 
-This means that the engine function has to be called first to produce the VM
-instruction table, and later, after generating VM code, it has to be called
-again to execute the generated VM code (yes, this is ugly).  In our example
-program, these two modes of calling the engine function are differentiated
-by the value of the parameter ip0 (if it equals 0, then the table is passed
-out, otherwise the VM code is executed); in our example, we pass the table
-out by assigning it to @samp{vm_prim} and returning from @samp{engine}.
+これは、 VM 命令テーブルを生成するために最初にエンジン関数を呼び出す必要があり、 その後 VM コードを生成した後、 生成された VM
+コードを実行するためにエンジン関数を再度呼び出す必要があることを意味します(はい、これは醜いです)。  我々のプログラム例では、
+エンジン関数を呼び出すこれら 2 つのモードは、 パラメーター ip0 の値によって区別されます(0 に等しい場合はテーブルが渡され、 それ以外の場合は
+VM コードが実行されます)。 我々の例では、 テーブルを @samp{vm_prim} に割り当て、 それを @samp{engine}
+から返すことによってテーブルを渡します。
 
-In our example (@file{vmgen-ex/engine.c}), we also build such a table for
-switch dispatch; this is mainly done for uniformity.
+我々の例 (@file{vmgen-ex/engine.c}) では、スイッチ・ディスパッチ用のテーブルも構築します。
+これは主に均一性を目的として行われます。
 
-For switch dispatch, we also need to define the VM instruction opcodes used
-as case labels in an @code{enum}.
+スイッチ・ディスパッチの場合、 @code{enum} で case ラベルとして使用される VM 命令オペコードも定義する必要があります。
 
-For both purposes (VM instruction table, and enum), the file
-@file{@var{name}-labels.i} is generated by Vmgen.  You have to define the
-following macro used in this file:
+両方の目的 (VM 命令テーブルと enum )のために、 ファイル @file{@var{name}-labels.i} が Vmgen
+によって生成されます。  あなたはこのファイルで使用される以下のマクロを定義する必要があります:
 
 @table @code
 
 @findex INST_ADDR
 @item INST_ADDR(@var{inst_name})
-For switch dispatch, this is just the name of the switch label (the same
-name as used in @samp{LABEL(@var{inst_name})}), for both uses of
-@file{@var{name}-labels.i}.  For threaded-code dispatch, this is the address
-of the label defined in @samp{LABEL(@var{inst_name})}); the address is taken
-with @samp{&&} (@pxref{Labels as Values, , Labels as Values, gcc.info, GNU C
-Manual}).
+スイッチ・ディスパッチの場合、 これは @file{@var{name}-labels.i}
+のどちらの使用法でもスイッチ・ラベルの名前にすぎません(@samp{LABEL(@var{inst_name})}
+で使用されているのと同一の名前です)。 スレッド化コード・ディスパッチの場合、 これは @samp{LABEL(@var{inst_name})}
+で定義されたラベルのアドレスです。 アドレスは @samp{&&} で取得されます(@pxref{Labels as Values, , Labels
+as Values, gcc.info, GNU C Manual})。
 
 @end table
 
@@ -1453,75 +1433,61 @@ Manual}).
 @cindex code generation, VM
 @cindex @file{-gen.i} output file
 
-Vmgen generates VM code generation functions in @file{@var{name}-gen.i} that
-the front end can call to generate VM code.  This is essential for an
-interpretive system.
+Vmgen は、フロント・エンドが VM コードを生成するために呼び出すことができる VM コード生成関数を
+@file{@var{name}-gen.i} に生成します。 これはインタープリター・システム(interpretive
+system)には不可欠なものです。
 
 @findex gen_@var{inst}
-For a VM instruction @samp{x ( #a b #c -- d )}, Vmgen generates a function
-with the prototype
+VM 命令 @samp{x ( #a b #c -- d )} の場合、 Vmgen は以下のプロトタイプを持つ関数を生成します
 
 @example
 void gen_x(Inst **ctp, a_type a, c_type c)
 @end example
 
-The @code{ctp} argument points to a pointer to the next instruction.
-@code{*ctp} is increased by the generation functions; i.e., you should
-allocate memory for the code to be generated beforehand, and start with *ctp
-set at the start of this memory area.  Before running out of memory,
-allocate a new area, and generate a VM-level jump to the new area (this
-overflow handling is not implemented in our examples).
+@code{ctp} 引数は、 次の命令へのポインターを指します。  @code{*ctp} は生成関数によって増加されます。 つまり、
+あなたは生成するコード用のメモリを事前に割り当て、 このメモリ領域の先頭に *ctp を設定して開始する必要があります。 メモリが不足する前に、
+新しい領域を割り当て、 新しい領域への VM レベルのジャンプを生成します(このオーバーフロー処理は我々の例では実装されていません)。
 
 @cindex immediate arguments, VM code generation
-The other arguments correspond to the immediate arguments of the VM
-instruction (with their appropriate types as defined in the
-@code{type_prefix} declaration.
+他の引数は、 VM 命令の直接引数(immediate arguments)に対応します(@code{type_prefix}
+宣言で定義されている適切な型を使用します)。
 
-The following types, variables, and functions are used in
-@file{@var{name}-gen.i}:
+以下の型や変数や関数が @file{@var{name}-gen.i} で使用されます:
 
 @table @code
 
 @findex Inst
 @item Inst
-The type of the VM instruction; if you use threaded code, this is @code{void
-*}; for switch dispatch this is an integer type.
+VM 命令のタイプ。 スレッド化コードを使用する場合、 これは @code{void *} です。 スイッチ・ディスパッチの場合、 これは整数型です。
 
 @cindex @code{vm_prim}, use
 @item vm_prim
-The VM instruction table (type: @code{Inst *}, @pxref{VM instruction
-table}).
+VM 命令テーブル (タイプ: @code{Inst *} 。 @pxref{VM instruction table})。
 
 @findex gen_inst
 @item gen_inst(Inst **ctp, Inst i)
-This function compiles the instruction @code{i}.  Take a look at it in
-@file{vmgen-ex/peephole.c}.  It is trivial when you don't want to use
-superinstructions (just the last two lines of the example function), and
-slightly more complicated in the example due to its ability to use
-superinstructions (@pxref{Peephole optimization}).
+この関数は命令 @code{i} をコンパイルします。  @file{vmgen-ex/peephole.c} をご覧ください。
+スーパー命令(superinstructions)を使用したくない場合(関数例の最後の 2 行のみの場合)は簡単ですが、
+この例ではスーパー命令を使用可能なため、 少し複雑になります(@pxref{Peephole optimization})。
 
 @findex genarg_@var{type_prefix}
 @item genarg_@var{type_prefix}(Inst **ctp, @var{type} @var{type_prefix})
-This compiles an immediate argument of @var{type} (as defined in a
-@code{type-prefix} definition).  These functions are trivial to define (see
-@file{vmgen-ex/support.c}).  You need one of these functions for every type
-that you use as immediate argument.
+これにより、 (@code{type-prefix} 定義で定義されている) @var{type} の直接引数(immediate
+argument)がコンパイルされます。  これらの関数を定義するのは簡単です(@file{vmgen-ex/support.c} を参照)。
+あなたが直接引数(immediate argument)として使用するタイプごとに、 これらの関数のいずれかが必要です。
 
 @end table
 
 @findex BB_BOUNDARY
-In addition to using these functions to generate code, you should call
-@code{BB_BOUNDARY} at every basic block entry point if you ever want to use
-superinstructions (or if you want to use the profiling supported by Vmgen;
-but this support is also useful mainly for selecting superinstructions).  If
-you use @code{BB_BOUNDARY}, you should also define it (take a look at its
-definition in @file{vmgen-ex/mini.y}).
+これらの関数を使用してコードを生成することに加えて、 スーパー命令(superinstructions)を使用したい場合は(または、 Vmgen
+でサポートされているプロファイリングを使用したい場合は; ただし、 このサポートは主にスーパー命令の選択にも役立ちます)は、
+すべての基本ブロック・エントリ・ポイントで @code{BB_BOUNDARY} を呼び出す必要があります。 あなたが
+@code{BB_BOUNDARY} を利用する場合、 あなたは @code{BB_BOUNDARY}
+も定義する必要があります(@file{vmgen-ex/mini.y} の定義をご覧ください)。
 
-You do not need to call @code{BB_BOUNDARY} after branches, because you will
-not define superinstructions that contain branches in the middle (and if you
-did, and it would work, there would be no reason to end the superinstruction
-at the branch), and because the branches announce themselves to the
-profiler.
+分岐の後に @code{BB_BOUNDARY} を呼び出す必要はありません。 なぜなら、
+あなたは途中に分岐を含むスーパー命令を定義することはないでしょう(もしあなたがそうして、 それがうまくいくなら、
+分岐でスーパー命令で終了する理由はありません)、 そして、 分岐はプロファイラに自分自身をアナウンスするからです。
 
 
 @c --------------------------------------------------------------------
