@@ -57,29 +57,24 @@ Next: <a href="VM-disassembler.html" accesskey="n" rel="next">VM disassembler</a
 <a class="index-entry-id" id="index-peephole_002ec"></a>
 <a class="index-entry-id" id="index-_002dpeephole_002ei-output-file"></a>
 
-<p>You need peephole optimization only if you want to use superinstructions.
-But having the code for it does not hurt much if you do not use
-superinstructions.
+<p>あなたがスーパー命令(superinstructions)を使用する場合にのみ、 のぞき穴最適化(peephole
+optimization)が必要です。  ただし、 スーパー命令を使用しない場合に、 のぞき穴最適化のコードを持っていても、
+それほど差し障りはありません。
 </p>
-<p>A simple greedy peephole optimization algorithm is used for superinstruction
-selection: every time <code class="code">gen_inst</code> compiles a VM instruction, it checks
-if it can combine it with the last VM instruction (which may also be a
-superinstruction resulting from a previous peephole optimization); if so, it
-changes the last instruction to the combined instruction instead of laying
-down <code class="code">i</code> at the current &lsquo;<samp class="samp">*ctp</samp>&rsquo;.
+<p>スーパー命令(superinstruction)の選択には、 単純な貪欲な覗き穴最適化(simple greedy peephole
+optimization)アルゴリズムが使用されます: <code class="code">gen_inst</code> が VM 命令をコンパイルするたびに、 それを直前の VM
+命令と結合(combine)できるかどうかがチェックされます(これは、以前ののぞき穴最適化から生じたスーパー命令である可能性もあります)。
+結合できる場合、 現在の &lsquo;<samp class="samp">*ctp</samp>&rsquo; に <code class="code">i</code> を配置する代わりに、 最後の命令を結合された命令に変更します。
 </p>
-<p>The code for peephole optimization is in <samp class="file">vmgen-ex/peephole.c</samp>.  You
-can use this file almost verbatim.  Vmgen generates
-<samp class="file"><var class="var">file</var>-peephole.i</samp> which contains data for the peephole optimizer.
+<p>のぞき穴最適化のコードは <samp class="file">vmgen-ex/peephole.c</samp> にあります。  このファイルはほぼそのまま使用できます。  Vmgen
+は、 除き穴最適化のデータを含む <samp class="file"><var class="var">file</var>-peephole.i</samp> を生成します。
 </p>
 <a class="index-entry-id" id="index-init_005fpeeptable"></a>
-<p>You have to call &lsquo;<samp class="samp">init_peeptable()</samp>&rsquo; after initializing &lsquo;<samp class="samp">vm_prim</samp>&rsquo;,
-and before compiling any VM code to initialize data structures for peephole
-optimization.  After that, compiling with the VM code generation functions
-will automatically combine VM instructions into superinstructions.  Since
-you do not want to combine instructions across VM branch targets (otherwise
-there will not be a proper VM instruction to branch to), you have to call
-<code class="code">BB_BOUNDARY</code> (see <a class="pxref" href="VM-code-generation.html">VM code generation</a>) at branch targets.
+<p>あなたは、 &lsquo;<samp class="samp">vm_prim</samp>&rsquo; を初期化した後、 VM コードをコンパイルして覗き穴最適化のためのデータ構造を初期化する前に、
+&lsquo;<samp class="samp">init_peeptable()</samp>&rsquo; を呼び出す必要があります。  その後、 VM コード生成関数を使用してコンパイルすると、 VM
+命令がスーパー命令(superinstructions)に自動的に結合されます。  あなたが VM
+分岐ターゲット間で命令を結合したくない時(そうしないと、 分岐先の適切な VM 命令が存在しなくなります)、 分岐ターゲットで
+<code class="code">BB_BOUNDARY</code> (see <a class="pxref" href="VM-code-generation.html">VM code generation</a>) を呼び出す必要があります。
 </p>
 
 </div>

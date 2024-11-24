@@ -1436,29 +1436,30 @@ File: vmgen.info,  Node: Peephole optimization,  Next: VM disassembler,  Prev: V
 8.4 Peephole optimization
 =========================
 
-You need peephole optimization only if you want to use
-superinstructions.  But having the code for it does not hurt much if you
-do not use superinstructions.
+あなたがスーパー命令(superinstructions)を使用する場合にのみ、 のぞき穴最
+適化(peephole optimization)が必要です。 ただし、 スーパー命令を使用しな
+い場合に、 のぞき穴最適化のコードを持っていても、 それほど差し障りはあり
+ません。
 
-   A simple greedy peephole optimization algorithm is used for
-superinstruction selection: every time ‘gen_inst’ compiles a VM
-instruction, it checks if it can combine it with the last VM instruction
-(which may also be a superinstruction resulting from a previous peephole
-optimization); if so, it changes the last instruction to the combined
-instruction instead of laying down ‘i’ at the current ‘*ctp’.
+   スーパー命令(superinstruction)の選択には、 単純な貪欲な覗き穴最適化
+(simple greedy peephole optimization)アルゴリズムが使用されます:
+‘gen_inst’ が VM 命令をコンパイルするたびに、 それを直前の VM 命令と結合
+(combine)できるかどうかがチェックされます(これは、以前ののぞき穴最適化か
+ら生じたスーパー命令である可能性もあります)。 結合できる場合、 現在の
+‘*ctp’ に ‘i’ を配置する代わりに、 最後の命令を結合された命令に変更しま
+す。
 
-   The code for peephole optimization is in ‘vmgen-ex/peephole.c’.  You
-can use this file almost verbatim.  Vmgen generates ‘FILE-peephole.i’
-which contains data for the peephole optimizer.
+   のぞき穴最適化のコードは ‘vmgen-ex/peephole.c’ にあります。 このファ
+イルはほぼそのまま使用できます。 Vmgen は、 除き穴最適化のデータを含む
+‘FILE-peephole.i’ を生成します。
 
-   You have to call ‘init_peeptable()’ after initializing ‘vm_prim’, and
-before compiling any VM code to initialize data structures for peephole
-optimization.  After that, compiling with the VM code generation
-functions will automatically combine VM instructions into
-superinstructions.  Since you do not want to combine instructions across
-VM branch targets (otherwise there will not be a proper VM instruction
-to branch to), you have to call ‘BB_BOUNDARY’ (*note VM code
-generation::) at branch targets.
+   あなたは、 ‘vm_prim’ を初期化した後、 VM コードをコンパイルして覗き穴
+最適化のためのデータ構造を初期化する前に、 ‘init_peeptable()’ を呼び出す
+必要があります。 その後、 VM コード生成関数を使用してコンパイルすると、
+VM 命令がスーパー命令(superinstructions)に自動的に結合されます。 あなた
+が VM 分岐ターゲット間で命令を結合したくない時(そうしないと、 分岐先の適
+切な VM 命令が存在しなくなります)、 分岐ターゲットで ‘BB_BOUNDARY’
+(*note VM code generation::) を呼び出す必要があります。
 
 
 File: vmgen.info,  Node: VM disassembler,  Next: VM profiler,  Prev: Peephole optimization,  Up: Using the generated code
@@ -1466,30 +1467,29 @@ File: vmgen.info,  Node: VM disassembler,  Next: VM profiler,  Prev: Peephole op
 8.5 VM disassembler
 ===================
 
-A VM code disassembler is optional for an interpretive system, but
-highly recommended during its development and maintenance, because it is
-very useful for detecting bugs in the front end (and for distinguishing
-them from VM interpreter bugs).
+VM コード逆アセンブラはインタープリター・システムではオプションですが、
+フロント・エンドでのバグの検出(および VM インタープリターのバグと区別す
+るため)に非常に役立つため、 開発およびメンテナンス中は強く推奨します。
 
-   Vmgen supports VM code disassembling by generating ‘FILE-disasm.i’.
-This code has to be wrapped into a function, as is done in
-‘vmgen-ex/disasm.c’.  You can use this file almost verbatim.  In
-addition to ‘vm_A2B(a,b)’, ‘vm_out’, ‘printarg_TYPE(VALUE)’, which are
-explained above, the following macros and variables are used in
-‘FILE-disasm.i’ (and you have to define them):
+   Vmgen は、 ‘FILE-disasm.i’ を生成することで VM コードの逆アセンブルを
+サポートします。 ‘vmgen-ex/disasm.c’ と同様に、 このコードを関数にラップ
+する必要があります。 このファイルはほぼそのまま使用できます。
+‘vm_A2B(a,b)’ や ‘vm_out’ や ‘printarg_TYPE(VALUE)’ に加えて、 上記で説
+明したように、 以下のマクロと変数が ‘FILE-disasm.i’ で使用されます(あな
+たはこれらを定義する必要があります):
 
 ‘ip’
-     This variable points to the opcode of the current VM instruction.
+     この変数は、 現在の VM 命令のオペコードを指します。
 
 ‘IP IPTOS’
-     ‘IPTOS’ is the first argument of the current VM instruction, and
-     ‘IP’ points to it; this is just as in the engine, but here ‘ip’
-     points to the opcode of the VM instruction (in contrast to the
-     engine, where ‘ip’ points to the next cell, or even one further).
+     ‘IPTOS’ は現在の VM 命令の最初の引数であり、 ‘IP’ はそれを指します
+     。 これはエンジンとまったく同じですが、 ここで ‘ip’ は VM 命令のオ
+     ペコードを指します(エンジンとは対照的に、 ‘ip’ は次のセル、 または
+     さらにその 1 つ先のセルを指します)。
 
 ‘VM_IS_INST(Inst i, int n)’
-     Tests if the opcode ‘i’ is the same as the ‘n’th entry in the VM
-     instruction table.
+     オペコード ‘i’ が VM 命令テーブルの ‘n’ 番目のエントリと同じかどう
+     かをテストします。
 
 
 File: vmgen.info,  Node: VM profiler,  Prev: VM disassembler,  Up: Using the generated code
@@ -2234,7 +2234,7 @@ Index
                                                               (line  10)
 * interpreters, advantages:              Why interpreters?.   (line   6)
 * Invoking Vmgen:                        Invoking Vmgen.      (line   6)
-* IP, IPTOS in disassmbler:              VM disassembler.     (line  21)
+* IP, IPTOS in disassmbler:              VM disassembler.     (line  20)
 * labels for threaded code:              VM instruction table.
                                                               (line   6)
 * macros recognized by Vmgen:            C Code Macros.       (line   6)
@@ -2379,16 +2379,16 @@ Node: VM engine59638
 Node: VM instruction table72596
 Node: VM code generation75180
 Node: Peephole optimization78890
-Node: VM disassembler80370
-Node: VM profiler81709
-Node: Hints85419
-Node: Floating point85582
-Node: The future87439
-Node: Changes88568
-Node: Contact90164
-Node: Copying This Manual90626
-Node: GNU Free Documentation License90856
-Node: Index113276
+Node: VM disassembler80914
+Node: VM profiler82589
+Node: Hints86299
+Node: Floating point86462
+Node: The future88319
+Node: Changes89448
+Node: Contact91044
+Node: Copying This Manual91506
+Node: GNU Free Documentation License91736
+Node: Index114156
 
 End Tag Table
 
