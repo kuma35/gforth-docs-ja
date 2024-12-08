@@ -1497,39 +1497,43 @@ File: vmgen.info,  Node: VM profiler,  Prev: VM disassembler,  Up: Using the gen
 8.6 VM profiler
 ===============
 
-The VM profiler is designed for getting execution and occurence counts
-for VM instruction sequences, and these counts can then be used for
-selecting sequences as superinstructions.  The VM profiler is probably
-not useful as profiling tool for the interpretive system.  I.e., the VM
-profiler is useful for the developers, but not the users of the
-interpretive system.
+VM プロファイラーは、 VM 命令シーケンスの実行カウントと出現カウントを取
+得するように設計されており、 これらのカウントはスーパー命令
+(superinstructions)としてシーケンスを選択するために使用できます。 VM プ
+ロファイラーは、 おそらくインタプリタ・システム(interpretive system)のプ
+ロファイリング・ツールとしては役に立ちません。 つまり、VM プロファイラー
+は開発者にとっては役立ちますが、 インタプリタ・システム(interpretive
+system)のユーザーにとっては役に立ちません。
 
-   The output of the profiler is: for each basic block (executed at
-least once), it produces the dynamic execution count of that basic block
-and all its subsequences; e.g.,
+   プロファイラーの出力は次のとおりです: 各基本ブロック(少なくとも 1 回
+実行される)について、その基本ブロックとそのすべてのサブシーケンスの動的
+実行回数を出力します。 例:
 
             9227465  lit storelocal
             9227465  storelocal branch
             9227465  lit storelocal branch
 
-   I.e., a basic block consisting of ‘lit storelocal branch’ is executed
-9227465 times.
+   これは、 ‘lit storelocal branch’ で構成される基本ブロックは 9227465 回
+実行されるということを示しています。
 
-   This output can be combined in various ways.  E.g.,
-‘vmgen-ex/stat.awk’ adds up the occurences of a given sequence wrt
-dynamic execution, static occurence, and per-program occurence.  E.g.,
+   この出力をさまざまな方法で組み合わせることができます。 たとえば、
+‘vmgen-ex/stat.awk’ は、 動的実行(dynamic execution)や、静的発生(static
+occurence)や、 プログラムごとの発生を参照して、 指定のシーケンスの発生を
+合計します。 例：
 
            2      16        36910041 loadlocal lit
 
-indicates that the sequence ‘loadlocal lit’ occurs in 2 programs, in 16
-places, and has been executed 36910041 times.  Now you can select
-superinstructions in any way you like (note that compile time and space
-typically limit the number of superinstructions to 100-1000).  After you
-have done that, ‘vmgen/seq2rule.awk’ turns lines of the form above into
-rules for inclusion in a Vmgen input file.  Note that this script does
-not ensure that all prefixes are defined, so you have to do that in
-other ways.  So, an overall script for turning profiles into
-superinstructions can look like this:
+これは、 シーケンス ‘loadlocal lit’ が 2 つのプログラムの 16 か所で発生
+し、 36910041 回実行されたことを示します。 これで、 スーパー命令
+(superinstructions)を任意の方法で選択できるようになりました(注意: コンパ
+イルの時間制約と空間的制約により、 スーパー命令の数は通常 100 ～ 1000 に
+制限されることに注意してください)。 これを完了すると、
+‘vmgen/seq2rule.awk’ によって、 上記形式行が Vmgen 入力ファイルにインク
+ルードできるルールに変換されます。 このスクリプトではすべてのプレフィッ
+クスが定義されていることは保証されないため、 プレフィックスは他の方法で
+定義する必要があることに注意してください。 したがって、 プロファイルをス
+ーパー命令(superinstructions)に変換するための全体的なスクリプトは以下の
+ようになります:
 
      awk -f stat.awk fib.prof test.prof|
      awk '$3>=10000'|                #select sequences
@@ -1537,34 +1541,33 @@ superinstructions can look like this:
      awk -f seq2rule.awk|            #turn into superinstructions
      sort -k 3 >mini-super.vmg       #sort sequences
 
-   Here the dynamic count is used for selecting sequences (preliminary
-results indicate that the static count gives better results, though);
-the third line eliminates sequences containing instructions that must
-not occur in a superinstruction, because they access a stack directly.
-The dynamic count selection ensures that all subsequences (including
-prefixes) of longer sequences occur (because subsequences have at least
-the same count as the longer sequences); the sort in the last line
-ensures that longer superinstructions occur after their prefixes.
+   ここでは、 動的カウント(dynamic count)がシーケンスの選択に使用されま
+す(ただし、 暫定的な結果では、 静的カウントの方が良い結果が得られること
+を示しています)。 3 行目は、 スタックに直接アクセスするため、 スーパー命
+令内で発生してはいけない命令を含むシーケンスを削除します。 動的なカウン
+ト選択により、 より長いシーケンスのすべてのサブシーケンス(プレフィックス
+を含む)が確実に発生します(サブシーケンスは少なくとも長いシーケンスと同じ
+カウントを持つため)。 最後の行でのソートにより、 プレフィックスの後ろで
+長いスーパー命令が確実に発生するようになります。
 
-   But before using this, you have to have the profiler.  Vmgen supports
-its creation by generating ‘FILE-profile.i’; you also need the wrapper
-file ‘vmgen-ex/profile.c’ that you can use almost verbatim.
+   ただし、 これを使用する前に、 あなたにはプロファイラーが必要です。
+Vmgen は ‘FILE-profile.i’ を生成することでその作成をサポートします。 ほ
+ぼそのまま使用できるラッパー・ファイル ‘vmgen-ex/profile.c’ も必要です。
 
-   The profiler works by recording the targets of all VM control flow
-changes (through ‘SUPER_END’ during execution, and through ‘BB_BOUNDARY’
-in the front end), and counting (through ‘SUPER_END’) how often they
-were targeted.  After the program run, the numbers are corrected such
-that each VM basic block has the correct count (entering a block without
-executing a branch does not increase the count, and the correction fixes
-that), then the subsequences of all basic blocks are printed.  To get
-all this, you just have to define ‘SUPER_END’ (and ‘BB_BOUNDARY’)
-appropriately, and call ‘vm_print_profile(FILE *file)’ when you want to
-output the profile on ‘file’.
+   プロファイラーは、すべての VM 制御フロー変更のターゲットを(実行中は
+‘SUPER_END’ を通じて、 フロント・エンドでは ‘BB_BOUNDARY’ を通じて)記録
+し、(‘SUPER_END’ を通じて)ターゲットにされた変更の頻度をカウントすること
+によって機能します。 プログラムの実行後、 各 VM 基本ブロックが正しいカウ
+ントになるように数値が修正され(分岐を実行せずにブロックに入ってもカウン
+トは増加しないという点を修正します)、 すべての基本ブロックのサブ・シーケ
+ンスが出力されます。 これらすべてを取得するには、 ‘SUPER_END’ (および
+‘BB_BOUNDARY’) を適切に定義し、 ‘file’ にプロファイルを出力するときに
+‘vm_print_profile(FILE *file)’ を呼び出すだけです。
 
-   The ‘FILE-profile.i’ is similar to the disassembler file, and it uses
-variables and functions defined in ‘vmgen-ex/profile.c’, plus
-‘VM_IS_INST’ already defined for the VM disassembler (*note VM
-disassembler::).
+   ‘FILE-profile.i’ は逆アセンブラー・ファイルに似ており、
+‘vmgen-ex/profile.c’ で定義された変数と関数に加えて、 VM 逆アセンブラー
+用すでに定義されている ‘VM_IS_INST’ を使用します(*note VM
+disassembler::)。
 
 
 File: vmgen.info,  Node: Hints,  Next: The future,  Prev: Using the generated code,  Up: Top
@@ -1582,9 +1585,10 @@ File: vmgen.info,  Node: Floating point,  Prev: Hints,  Up: Hints
 9.1 Floating point
 ==================
 
-How should you deal with floating point values?  Should you use the same
-stack as for integers/pointers, or a different one?  This section
-discusses this issue with a view on execution speed.
+浮動小数点値をどのように扱うべきでしょうか？ あなたは整数/ポインターと同
+一のスタックを使用するべきでしょうか、 それとも別のスタックを使用するべ
+きでしょうか？ このセクションでは、 実行速度の観点からこの問題について説
+明します。
 
    The simpler approach is to use a separate floating-point stack.  This
 allows you to choose FP value size without considering the size of the
@@ -2169,7 +2173,7 @@ Index
 * assumptions about C code:              C Code restrictions. (line   6)
 * basic block, VM level:                 C Code Macros.       (line   6)
 * basic type of a stack:                 Simple instructions. (line  38)
-* BB_BOUNDARY in profiling:              VM profiler.         (line  59)
+* BB_BOUNDARY in profiling:              VM profiler.         (line  63)
 * branch instruction, VM:                Front end and VM interpreter.
                                                               (line  10)
 * C code restrictions:                   C Code restrictions. (line   6)
@@ -2266,7 +2270,7 @@ Index
 * register, VM:                          Front end and VM interpreter.
                                                               (line  10)
 * restrictions on C code:                C Code restrictions. (line   6)
-* seq2rule.awk:                          VM profiler.         (line  24)
+* seq2rule.awk:                          VM profiler.         (line  25)
 * simple VM instruction:                 Simple instructions. (line   6)
 * size, stack items:                     Data handling.       (line  21)
 * speed for JVM:                         Introduction.        (line  70)
@@ -2290,9 +2294,9 @@ Index
 * stack stores, optimization:            Store Optimization.  (line   6)
 * stack-access-transform:                Stack growth direction.
                                                               (line   6)
-* stat.awk:                              VM profiler.         (line  24)
+* stat.awk:                              VM profiler.         (line  25)
 * store optimization:                    Store Optimization.  (line   6)
-* SUPER_END in profiling:                VM profiler.         (line  59)
+* SUPER_END in profiling:                VM profiler.         (line  63)
 * superinstructions and profiling:       VM profiler.         (line   6)
 * superinstructions and tracing:         VM engine.           (line  21)
 * superinstructions example:             Using profiling to create superinstructions.
@@ -2339,7 +2343,7 @@ Index
 * VM register:                           Front end and VM interpreter.
                                                               (line  10)
 * vm_A2B, changes:                       Changes.             (line  37)
-* VM_IS_INST in profiling:               VM profiler.         (line  70)
+* VM_IS_INST in profiling:               VM profiler.         (line  73)
 * vm_prim, definition:                   VM instruction table.
                                                               (line   6)
 * vm_prim, use:                          VM code generation.  (line  31)
@@ -2381,14 +2385,14 @@ Node: VM code generation75180
 Node: Peephole optimization78890
 Node: VM disassembler80914
 Node: VM profiler82589
-Node: Hints86299
-Node: Floating point86462
-Node: The future88319
-Node: Changes89448
-Node: Contact91044
-Node: Copying This Manual91506
-Node: GNU Free Documentation License91736
-Node: Index114156
+Node: Hints87854
+Node: Floating point88017
+Node: The future90021
+Node: Changes91150
+Node: Contact92746
+Node: Copying This Manual93208
+Node: GNU Free Documentation License93438
+Node: Index115858
 
 End Tag Table
 
