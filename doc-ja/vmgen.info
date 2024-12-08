@@ -1590,31 +1590,31 @@ File: vmgen.info,  Node: Floating point,  Prev: Hints,  Up: Hints
 きでしょうか？ このセクションでは、 実行速度の観点からこの問題について説
 明します。
 
-   The simpler approach is to use a separate floating-point stack.  This
-allows you to choose FP value size without considering the size of the
-integers/pointers, and you avoid a number of performance problems.  The
-main downside is that this needs an FP stack pointer (and that may not
-fit in the register file on the 386 arhitecture, costing some
-performance, but comparatively little if you take the other option into
-account).  If you use a separate FP stack (with stack pointer ‘fp’),
-using an fpTOS is helpful on most machines, but some spill the fpTOS
-register into memory, and fpTOS should not be used there.
+   より単純なアプローチは、 別の浮動小数点スタックを使用することです。 こ
+れにより、 整数/ポインターのサイズを考慮せずに FP 値のサイズを選択できる
+ようになり、 多くのパフォーマンスの問題を回避できます。 主な欠点は、 こ
+れには FP スタック・ポインターが必要であることです(そして、 これは 386 ア
+ーキテクチャーのレジスター・ファイルに収まらない可能性があり、 パフォー
+マンスが多少低下しますが、 他のオプションを考慮すると比較的わずかです)。
+別の FP スタック(スタック・ポインタ ‘fp’ を使用)を使用する場合、 fpTOS の
+使用はほとんどのマシンで役に立ちますが、 一部のマシンでは fpTOS レジスタ
+がメモリに配置(spill)されるため、 fpTOS を使用すべきではありません。
 
-   The other approach is to share one stack (pointed to by, say, ‘sp’)
-between integer/pointer and floating-point values.  This is ok if you do
-not use ‘spTOS’.  If you do use ‘spTOS’, the compiler has to decide
-whether to put that variable into an integer or a floating point
-register, and the other type of operation becomes quite expensive on
-most machines (because moving values between integer and FP registers is
-quite expensive).  If a value of one type has to be synthesized out of
-two values of the other type (‘double’ types), things are even more
-interesting.
+   もう一つのアプローチは、 整数/ポインターと浮動小数点値で 1 つのスタッ
+ク(たとえば、‘sp’ によってポイントされる)を共有することです。 ‘spTOS’ を
+使用しなくても、 これは問題ありません。 ‘spTOS’ を使用する場合、 コンパ
+イラーはその変数を整数レジスターに入れるか浮動小数点レジスターに入れるか
+を決定する必要があり、 他の型の操作はほとんどのマシンで非常に高価になり
+ます(整数レジスターと FP レジスターの間で値を移動するため、 かなり高価で
+す)。 一方の型の値を、 もう一方の型の 2 つの値(‘double’ 型)から合成する
+必要がある場合、 事態はさらに興味深いものになります。
 
-   One way around this problem would be to not use the ‘spTOS’ supported
-by Vmgen, but to use explicit top-of-stack variables (one for integers,
-one for FP values), and having a kind of accumulator+stack architecture
-(e.g., Ocaml bytecode uses this approach); however, this is a major
-change, and its ramifications are not completely clear.
+   この問題を回避する 1 つの方法は、Vmgen でサポートされている ‘spTOS’ を
+使用せず、 明示的なスタックのトップ変数(整数用に 1 つ、 FP 値用に 1 つ
+)を使用し、 一種の アキュムレータ+スタック・アーキテクチャを使用すること
+です。 (たとえば、 Ocaml バイト・コードはこのアプローチを使用します)。 た
+だし、 これは大きな変更であり、 その影響範囲は完全には明らかにはなってい
+ません。
 
 
 File: vmgen.info,  Node: The future,  Next: Changes,  Prev: Hints,  Up: Top
@@ -1622,23 +1622,22 @@ File: vmgen.info,  Node: The future,  Next: Changes,  Prev: Hints,  Up: Top
 10 The future
 *************
 
-We have a number of ideas for future versions of Vmgen.  However, there
-are so many possible things to do that we would like some feedback from
-you.  What are you doing with Vmgen, what features are you missing, and
-why?
+Vmgen の将来のバージョンについては、 作者達はいくつかのアイデアを持って
+います。 ただし、できることはたくさんありますので、 皆様からのフィードバ
+ックをお待ちしております。 あなたは Vmgen で何をしていますか？ 不足して
+いる機能はありませんか？
 
-   One idea we are thinking about is to generate just one ‘.c’ file
-instead of letting you copy and adapt all the wrapper files (you would
-still have to define stuff like the type-specific macros, and stack
-pointers etc.  somewhere).  The advantage would be that, if we change
-the wrapper files between versions, you would not need to integrate your
-changes and our changes to them; Vmgen would also be easier to use for
-beginners.  The main disadvantage of that is that it would reduce the
-flexibility of Vmgen a little (well, those who like flexibility could
-still patch the resulting ‘.c’ file, like they are now doing for the
-wrapper files).  In any case, if you are doing things to the wrapper
-files that would cause problems in a generated-‘.c’-file approach,
-please let us know.
+   私たちが考えているアイデアの 1 つは、 すべてのラッパー・ファイルをコ
+ピーして適応させる代わりに ‘.c’ ファイルを 1 つだけ生成することです(型固
+有のマクロやスタック・ポインターなどをどこかで定義する必要があります)。
+利点は、 バージョン間でラッパー・ファイルを変更した場合に、 あなたの変更
+とそれらに対する我々の変更を統合する必要がないことです。 これにより
+Vmgen は初心者にとっても使いやすくなるでしょう。 その主な欠点は、Vmgen の
+柔軟性が少し低下することです (柔軟性を好む人は、 現在ラッパー・ファイル
+に対して行っているように、 結果として得られる ‘.c’ ファイルにパッチを適
+用することもできます)。 いずれにせよ、 生成された ‘.c’ ファイルのアプロ
+ーチで問題を引き起こすようなことをラッパー・ファイルに対して行っている場
+合は、 作者達までお知らせください。
 
 
 File: vmgen.info,  Node: Changes,  Next: Contact,  Prev: The future,  Up: Top
@@ -1646,46 +1645,47 @@ File: vmgen.info,  Node: Changes,  Next: Contact,  Prev: The future,  Up: Top
 11 Changes
 **********
 
-User-visible changes between 0.5.9-20020822 and 0.5.9-20020901:
+ユーザーに関係する変更点 0.5.9-20020822 → 0.5.9-20020901:
 
-   The store optimization is now disabled by default, but can be enabled
-by the user (*note Store Optimization::).  Documentation for this
-optimization is also new.
+   ストアの最適化はデフォルトで無効になっていますが、 ユーザーが有効にす
+ることができます(*note Store Optimization::)。 この最適化に関するドキュ
+メントも新しくなりました。
 
-   User-visible changes between 0.5.9-20010501 and 0.5.9-20020822:
+   ユーザーに関係する変更点 0.5.9-20010501 → 0.5.9-20020822:
 
-   There is now a manual (in info, HTML, Postscript, or plain text
-format).
+   今やマニュアルがあります(info, HTML, Postscriot, or plain text
+format)。
 
-   There is the vmgen-ex2 variant of the vmgen-ex example; the new
-variant uses a union type instead of lots of casting.
+   vmgen-ex サンプルのバリエーション vmgen-ex2 があります。 vmgen-ex2 で
+は、 多くのキャストの代わりに共用体型(union)が使用されます。
 
-   Both variants of the example can now be compiled with an ANSI C
-compiler (using switch dispatch and losing quite a bit of performance);
-tested with ‘lcc’.
+   この例の両方のバリエーションは、 ANSI C コンパイラでコンパイルできる
+ようになりました(スイッチ・ディスパッチを使用するため、 パフォーマンスが
+かなり低下します)。 ‘lcc’ でテストしました。
 
-   Users of the gforth-0.5.9-20010501 version of Vmgen need to change
-several things in their source code to use the current version.  I
-recommend keeping the gforth-0.5.9-20010501 version until you have
-completed the change (note that you can have several versions of Gforth
-installed at the same time).  I hope to avoid such incompatible changes
-in the future.
+   Vmgen の gforth-0.5.9-20010501 バージョンのユーザーが現在のバージョン
+を使用するには、 あなたのソース・コード内のいくつかの点を変更する必要が
+あります。 変更が完了するまで、 gforth-0.5.9-20010501 バージョンを保持し
+ておくことをお勧めします(あなたは複数のバージョンの Gforth を同時にイン
+ストールできることに注意してください)。 今後は、 このような互換性のない
+変更は避けたいと思っています。
 
-   The required changes are:
+   変更が必要な箇所:
 
 ‘TAIL;’
-     has been renamed into ‘INST_TAIL;’ (less chance of an accidental
-     match).
+     は ‘INST_TAIL;’ に名前変更されました(偶然一致する可能性が低くなりま
+     す)。
 
 ‘vm_A2B’
-     now takes two arguments.
+     いまや2つの引数を取ります。
 
 ‘vm_twoA2B(b,a1,a2);’
-     changed to vm_twoA2B(a1,a2,b) (note the absence of the ‘;’).
+     vm_twoA2B(a1,a2,b) に変更されました(‘;’ が無いことに注意してくださ
+     い)。
 
-   Also some new macros have to be defined, e.g., ‘INST_ADDR’, and
-‘LABEL’; some macros have to be defined in new contexts, e.g.,
-‘VM_IS_INST’ is now also needed in the disassembler.
+   また、 ‘INST_ADDR’ や ‘LABEL’ など、 いくつかの新しいマクロを定義する
+必要があります。 一部のマクロは新しいコンテキストで定義する必要がありま
+す。 たとえば、 ‘VM_IS_INST’ は逆アセンブラーでも必要になります。
 
 
 File: vmgen.info,  Node: Contact,  Next: Copying This Manual,  Prev: Changes,  Up: Top
@@ -1693,15 +1693,16 @@ File: vmgen.info,  Node: Contact,  Next: Copying This Manual,  Prev: Changes,  U
 12 Contact
 **********
 
-To report a bug, use
-<https://savannah.gnu.org/bugs/?func=addbug&group_id=2672>.
+バグを報告するには、
+<https://savannah.gnu.org/bugs/?func=addbug&group_id=2672> を使用してく
+ださい。
 
-   For discussion on Vmgen (e.g., how to use it), use the mailing list
-<bug-vmgen@mail.freesoftware.fsf.org> (use
-<http://mail.gnu.org/mailman/listinfo/help-vmgen> to subscribe).
+   Vmgen に関する議論(使用方法など) については、 メーリング・リスト
+<bug-vmgen@mail.freesoftware.fsf.org> を使用してください (購読には
+<http://mail.gnu.org/mailman/listinfo/help-vmgen> を使ってください)。
 
-   You can find vmgen information at
-<http://www.complang.tuwien.ac.at/anton/vmgen/>.
+   vmgen の情報は、 <http://www.complang.tuwien.ac.at/anton/vmgen/> で見
+つけることができます。
 
 
 File: vmgen.info,  Node: Copying This Manual,  Next: Index,  Prev: Contact,  Up: Top
@@ -2387,12 +2388,12 @@ Node: VM disassembler80914
 Node: VM profiler82589
 Node: Hints87854
 Node: Floating point88017
-Node: The future90021
-Node: Changes91150
-Node: Contact92746
-Node: Copying This Manual93208
-Node: GNU Free Documentation License93438
-Node: Index115858
+Node: The future90776
+Node: Changes92353
+Node: Contact94611
+Node: Copying This Manual95217
+Node: GNU Free Documentation License95447
+Node: Index117867
 
 End Tag Table
 

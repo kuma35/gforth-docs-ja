@@ -55,36 +55,23 @@ Previous: <a href="Hints.html" accesskey="p" rel="prev">Hints</a>, Up: <a href="
 <p>浮動小数点値をどのように扱うべきでしょうか？ あなたは整数/ポインターと同一のスタックを使用するべきでしょうか、
 それとも別のスタックを使用するべきでしょうか？ このセクションでは、 実行速度の観点からこの問題について説明します。
 </p>
-<p>The simpler approach is to use a separate floating-point stack.  This allows
-you to choose FP value size without considering the size of the
-integers/pointers, and you avoid a number of performance problems.  The main
-downside is that this needs an FP stack pointer (and that may not fit in the
-register file on the 386 arhitecture, costing some performance, but
-comparatively little if you take the other option into account).  If you use
-a separate FP stack (with stack pointer <code class="code">fp</code>), using an fpTOS is
-helpful on most machines, but some spill the fpTOS register into memory, and
-fpTOS should not be used there.
+<p>より単純なアプローチは、 別の浮動小数点スタックを使用することです。  これにより、 整数/ポインターのサイズを考慮せずに  FP
+値のサイズを選択できるようになり、 多くのパフォーマンスの問題を回避できます。  主な欠点は、 これには FP
+スタック・ポインターが必要であることです(そして、 これは 386 アーキテクチャーのレジスター・ファイルに収まらない可能性があり、
+パフォーマンスが多少低下しますが、 他のオプションを考慮すると比較的わずかです)。  別の FP スタック(スタック・ポインタ <code class="code">fp</code>
+を使用)を使用する場合、 fpTOS の使用はほとんどのマシンで役に立ちますが、 一部のマシンでは fpTOS
+レジスタがメモリに配置(spill)されるため、 fpTOS を使用すべきではありません。
 </p>
-<p>The other approach is to share one stack (pointed to by, say, <code class="code">sp</code>)
-between integer/pointer and floating-point values.  This is ok if you do not
-use <code class="code">spTOS</code>.  If you do use <code class="code">spTOS</code>, the compiler has to decide
-whether to put that variable into an integer or a floating point register,
-and the other type of operation becomes quite expensive on most machines
-(because moving values between integer and FP registers is quite
-expensive).  If a value of one type has to be synthesized out of two values
-of the other type (<code class="code">double</code> types), things are even more interesting.
+<p>もう一つのアプローチは、 整数/ポインターと浮動小数点値で 1 つのスタック(たとえば、<code class="code">sp</code> によってポイントされる)を共有することです。
+<code class="code">spTOS</code> を使用しなくても、 これは問題ありません。  <code class="code">spTOS</code> を使用する場合、
+コンパイラーはその変数を整数レジスターに入れるか浮動小数点レジスターに入れるかを決定する必要があり、
+他の型の操作はほとんどのマシンで非常に高価になります(整数レジスターと FP レジスターの間で値を移動するため、 かなり高価です)。  一方の型の値を、
+もう一方の型の 2 つの値(<code class="code">double</code> 型)から合成する必要がある場合、 事態はさらに興味深いものになります。
 </p>
-<p>One way around this problem would be to not use the <code class="code">spTOS</code> supported
-by Vmgen, but to use explicit top-of-stack variables (one for integers, one
-for FP values), and having a kind of accumulator+stack architecture (e.g.,
-Ocaml bytecode uses this approach); however, this is a major change, and its
-ramifications are not completely clear.
+<p>この問題を回避する 1 つの方法は、Vmgen でサポートされている <code class="code">spTOS</code> を使用せず、 明示的なスタックのトップ変数(整数用に 1
+つ、 FP 値用に 1 つ)を使用し、 一種の アキュムレータ+スタック・アーキテクチャを使用することです。 (たとえば、 Ocaml
+バイト・コードはこのアプローチを使用します)。 ただし、 これは大きな変更であり、 その影響範囲は完全には明らかにはなっていません。
 </p>
-</div>
-<hr>
-<div class="nav-panel">
-<p>
-Previous: <a href="Hints.html">Hints</a>, Up: <a href="Hints.html">Hints</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
 </div>
 
 
