@@ -33,6 +33,8 @@ install-info --info-file=vmgen.info --dir-file=dir
 # cp htmls
 cp -rp --update ${PROJ}/doc-ja/gforth/* ${PROJ}/docs/${BRANCH}/gforth/
 cp -rp --update ${PROJ}/doc-ja/vmgen/* ${PROJ}/docs/${BRANCH}/vmgen/
+cp -rp --update ${PROJ}/doc-ja/gforth-no-split/* ${PROJ}/docs/${BRANCH}/gforth-no-split/
+cp -rp --update ${PROJ}/doc-ja/vmgen-no-split/* ${PROJ}/docs/${BRANCH}/vmgen-no-split/
 
 # restore htmls and manpaese in Documentation-ja
 #${PROJ}/doc-po/restore-htmls.sh

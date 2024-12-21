@@ -1,0 +1,2448 @@
+<!DOCTYPE html>
+<html>
+<!-- Created by GNU Texinfo 7.1, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+
+Author: Anton Ertl Copyright © 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being "A GNU Manual," and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development." -->
+<title>Vmgen (Gforth 0.7.9_20240418)</title>
+
+<meta name="description" content="Vmgen (Gforth 0.7.9_20240418)">
+<meta name="keywords" content="Vmgen (Gforth 0.7.9_20240418)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="#Top" rel="start" title="Top">
+<link href="#Index" rel="index" title="Index">
+<link href="#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="dir.html#Top" rel="up" title="(dir)">
+<link href="#Introduction" rel="next" title="Introduction">
+<link href="dir.html#Top" rel="prev" title="(dir)">
+<style type="text/css">
+<!--
+a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
+a.summary-letter-printindex {text-decoration: none}
+div.center {text-align:center}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+pre.display-preformatted {font-family: inherit}
+span:hover a.copiable-link {visibility: visible}
+td.printindex-index-entry {vertical-align: top}
+td.printindex-index-section {vertical-align: top; padding-left: 1em}
+th.entries-header-printindex {text-align:left}
+th.sections-header-printindex {text-align:left; padding-left: 1em}
+ul.mark-bullet {list-style-type: disc}
+ul.toc-numbered-mark {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+
+
+
+
+<div class="top-level-extent" id="Top">
+<h1 class="top" id="Vmgen"><span>Vmgen<a class="copiable-link" href="#Vmgen"> &para;</a></span></h1>
+
+<p>このマニュアルは、 仮想マシン・インタープリタ・ジェネレーターである Vmgen (バージョン
+0.7.9_20240418、April 18, 2024) 用です
+</p>
+<p>Author: Anton Ertl Copyright &copy; 2002,2003,2005,2007,2008,2019 Free
+Software Foundation, Inc.
+</p>
+<blockquote class="quotation">
+<p>Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with the Front-Cover texts being &ldquo;A GNU Manual,&rdquo; and with the
+Back-Cover Texts as in (a) below.  A copy of the license is included in the
+section entitled &ldquo;GNU Free Documentation License.&rdquo;
+</p>
+<p>(a) The FSF&rsquo;s Back-Cover Text is: &ldquo;You have freedom to copy and modify this
+GNU Manual, like GNU software.  Copies published by the Free Software
+Foundation raise funds for GNU development.&rdquo;
+</p></blockquote>
+
+
+
+<div class="element-contents" id="SEC_Contents">
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+
+<ul class="toc-numbered-mark">
+  <li><a id="toc-Introduction-1" href="#Introduction">1 Introduction</a></li>
+  <li><a id="toc-Why-interpreters_003f-1" href="#Why-interpreters_003f">2 Why interpreters?</a></li>
+  <li><a id="toc-Concepts-1" href="#Concepts">3 Concepts</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Front-end-and-VM-interpreter-1" href="#Front-end-and-VM-interpreter">3.1 Front end and VM interpreter</a></li>
+    <li><a id="toc-Data-handling-1" href="#Data-handling">3.2 Data handling</a></li>
+    <li><a id="toc-Dispatch-1" href="#Dispatch">3.3 Dispatch</a></li>
+  </ul></li>
+  <li><a id="toc-Invoking-Vmgen-1" href="#Invoking-Vmgen">4 Invoking Vmgen</a></li>
+  <li><a id="toc-Example-1" href="#Example">5 Example</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Example-overview-1" href="#Example-overview">5.1 Example overview</a></li>
+    <li><a id="toc-Using-profiling-to-create-superinstructions-1" href="#Using-profiling-to-create-superinstructions">5.2 Using profiling to create superinstructions</a></li>
+  </ul></li>
+  <li><a id="toc-Input-File-Format-1" href="#Input-File-Format">6 Input File Format</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Input-File-Grammar-1" href="#Input-File-Grammar">6.1 Input File Grammar</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Eval-escapes-1" href="#Eval-escapes">6.1.1 Eval escapes</a></li>
+    </ul></li>
+    <li><a id="toc-Simple-instructions-1" href="#Simple-instructions">6.2 Simple instructions</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Explicit-stack-access-1" href="#Explicit-stack-access">6.2.1 Explicit stack access</a></li>
+      <li><a id="toc-C-Code-Macros-1" href="#C-Code-Macros">6.2.2 C Code Macros</a></li>
+      <li><a id="toc-C-Code-restrictions-1" href="#C-Code-restrictions">6.2.3 C Code restrictions</a></li>
+      <li><a id="toc-Stack-growth-direction-1" href="#Stack-growth-direction">6.2.4 Stack growth direction</a></li>
+    </ul></li>
+    <li><a id="toc-Superinstructions-1" href="#Superinstructions">6.3 Superinstructions</a></li>
+    <li><a id="toc-Store-Optimization-1" href="#Store-Optimization">6.4 Store Optimization</a></li>
+    <li><a id="toc-Register-Machines-1" href="#Register-Machines">6.5 Register Machines</a></li>
+  </ul></li>
+  <li><a id="toc-Error-messages-1" href="#Error-messages">7 Error messages</a></li>
+  <li><a id="toc-Using-the-generated-code-1" href="#Using-the-generated-code">8 Using the generated code</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-VM-engine-1" href="#VM-engine">8.1 VM engine</a></li>
+    <li><a id="toc-VM-instruction-table-1" href="#VM-instruction-table">8.2 VM instruction table</a></li>
+    <li><a id="toc-VM-code-generation-1" href="#VM-code-generation">8.3 VM code generation</a></li>
+    <li><a id="toc-Peephole-optimization-1" href="#Peephole-optimization">8.4 Peephole optimization</a></li>
+    <li><a id="toc-VM-disassembler-1" href="#VM-disassembler">8.5 VM disassembler</a></li>
+    <li><a id="toc-VM-profiler-1" href="#VM-profiler">8.6 VM profiler</a></li>
+  </ul></li>
+  <li><a id="toc-Hints-1" href="#Hints">9 Hints</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Floating-point-1" href="#Floating-point">9.1 Floating point</a></li>
+  </ul></li>
+  <li><a id="toc-The-future-1" href="#The-future">10 The future</a></li>
+  <li><a id="toc-Changes-1" href="#Changes">11 Changes</a></li>
+  <li><a id="toc-Contact-1" href="#Contact">12 Contact</a></li>
+  <li><a id="toc-Copying-This-Manual-1" href="#Copying-This-Manual">Appendix A Copying This Manual</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-GNU-Free-Documentation-License-1" href="#GNU-Free-Documentation-License">A.1 GNU Free Documentation License</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-ADDENDUM_003a-How-to-use-this-License-for-your-documents" href="#ADDENDUM_003a-How-to-use-this-License-for-your-documents">A.1.1 ADDENDUM: How to use this License for your documents</a></li>
+    </ul></li>
+  </ul></li>
+  <li><a id="toc-Index-1" href="#Index" rel="index">Index</a></li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="chapter-level-extent" id="Introduction">
+<h2 class="chapter" id="Introduction-1"><span>1 Introduction<a class="copiable-link" href="#Introduction-1"> &para;</a></span></h2>
+
+<p>Vmgen は、 効率的なインタープリターを作成するためのツールです。  これは、 単純な仮想マシンの記述を受け取り、
+さまざまな方法で仮想マシン・コードを処理する(特に、 それを実行する)ための効率的な C 言語のコードを生成します。
+その結果得られるインタープリターの実行効率は、 最適化コンパイラーによって生成されるマシンコードの10分の1以内に収まるのが普通です。
+</p>
+<p>Vmgen がサポートするインタープリター設計戦略は、 インタープリターを以下の 2 つの部分に分割することです:
+</p>
+<ul class="itemize mark-bullet">
+<li>「フロント・エンド」は、 実装する言語のソース・コードを取得し、 それを仮想マシン・コードに変換します。
+これは通常のコンパイラー・フロント・エンドに似ています。 通常、 インタープリターのフロント・エンドは最適化を実行しないため、 実装が比較的簡単で、
+高速に実行されます。
+
+</li><li>「仮想マシン・インタープリター」は仮想マシン・コードを実行します。
+
+</li></ul>
+
+<p>このような分割は通常、 モジュール性と効率性のためにインタープリターで使用されます。  仮想マシン・コードは通常、 load-and-go
+コンパイラーのように、 フロント・エンドとメモリ内の仮想マシン・インタープリターの間で受け渡されます。 これにより、
+コードをファイルに書き込んで再度読み取るという複雑さと時間のコストが回避されます。
+</p>
+<p>「仮想マシン」(VM) は、 実際のマシン・コードと同様に、 メモリ内で相互に続く「VM 命令」のシーケンスとしてプログラムを表します。
+制御フローは、 実際のマシンと同様に、 VM 分岐命令を通じて発生します。
+</p>
+<a class="index-entry-id" id="index-functionality-features-overview"></a>
+<p>このセットアップでは、 Vmgen は、 仮想マシン命令の簡単な記述(see <a class="pxref" href="#Input-File-Format">Input File Format</a>)から仮想マシン命令を処理するほとんどのコードを生成できます。 特に以下のようなものです:
+</p>
+<dl class="table">
+<dt><strong class="strong">VM instruction execution</strong></dt>
+<dt><strong class="strong">VM code generation</strong></dt>
+<dd><p>フロント・エンドで役立ちます。
+</p>
+</dd>
+<dt><strong class="strong">VM code decompiler</strong></dt>
+<dd><p>フロント・エンドのデバッグに役立ちます。
+</p>
+</dd>
+<dt><strong class="strong">VM code tracing</strong></dt>
+<dd><p>フロント・エンドと VM インタープリターのデバッグに役立ちます。  あなたは、 通常は、
+ユーザーのプログラムをソース・レベルでデバッグするための他の手段を提供するでしょう。
+</p>
+</dd>
+<dt><strong class="strong">VM code profiling</strong></dt>
+<dd><p>スーパー命令(superinstructions)を使用して VM インタープリターを最適化するのに役立ちます(see <a class="pxref" href="#VM-profiler">VM profiler</a>)。
+</p>
+</dd>
+</dl>
+
+<p>VM 命令を処理しないインタープリター・システムのパーツを作成するには、 他のツール(例: <code class="command">bison</code>)を使用するか、
+手動でコーディングする必要があります。
+</p>
+<a class="index-entry-id" id="index-efficiency-features-overview"></a>
+<p>Vmgen は、さまざまな最適化を通じて効率的なインタープリターをサポートします。 特に
+</p>
+<ul class="itemize mark-bullet">
+<li>コードのスレッド化
+
+</li><li>TOSをレジスターにキャッシュ
+
+</li><li>VM 命令をスーパー命令(superinstructions)に結合
+
+</li><li>BTB 予測精度を向上させるために VM (スーパー) 命令を複製(vmgen-ex にはまだ含まれていませんが、 Gforth
+にはすでに含まれています)。
+
+</li></ul>
+
+<a class="index-entry-id" id="index-speed-for-JVM"></a>
+<p>その結果、Vmgen ベースのインタープリターは、 小規模なベンチマークでは、 最適化された C 言語コンパイラーからのネイティブ・コードよりも 1
+桁ほど遅いだけです。 ランタイム・システムでより多くの時間を費やす大規模なベンチマークでは、 多くの場合、 速度低下は少なくなります(たとえば、
+Vmgen で生成された JVM インタープリターの速度の低下は、 大規模なベンチマークの場合、 測定した最高​​の JVM JIT
+コンパイラーと比べてわずか 2 から 3 分の 1 です。 他のいくつかの JIT と、 私たちが調べた他のすべてのインタープリターは、
+私たちのインタープリターよりも遅かったです)。
+</p>
+<p>VM は通常、 スタック・シン(VM 命令間のデータを受け渡しをスタック上で行う)として設計されており、 Vmgen
+はそのような設計を特に適切にサポートします。 ただし、 Vmgen を使用して レジスター型 VM (see <a class="pxref" href="#Register-Machines">Register Machines</a>) を実装することもでき、 それでも Vmgen が提供する利点のほとんどを活用できます。
+</p>
+<p>今現在では実装されていない命令記述(instruction descriptions)には多くの潜在的な用途がありうるものと思います。
+私達は機能のリクエストは受け付けており、 誰かがリクエストした場合は新しい機能を検討します。 そのため、
+上記の機能リストはすべてを網羅したものではありません。
+</p>
+<hr>
+</div>
+<div class="chapter-level-extent" id="Why-interpreters_003f">
+<h2 class="chapter" id="Why-interpreters_003f-1"><span>2 Why interpreters?<a class="copiable-link" href="#Why-interpreters_003f-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-interpreters_002c-advantages"></a>
+<a class="index-entry-id" id="index-advantages-of-interpreters"></a>
+<a class="index-entry-id" id="index-advantages-of-vmgen"></a>
+
+<p>インタープリターは、 以下の 3 つの利点をすべて兼ね備えた、 人気のある言語実装手法です:
+</p>
+<ul class="itemize mark-bullet">
+<li>実装の容易さ
+
+</li><li>移植性が高い
+
+</li><li>編集、コンパイル、実行のサイクルが速い
+
+</li></ul>
+
+<p>Vmgen を使用すると、 インタープリターの実装がさらに簡単になります。
+</p>
+<a class="index-entry-id" id="index-speed-of-interpreters"></a>
+<p>インタープリターの主な欠点は、 実行速度です。 ただし、 実行速度の分野では、 インタープリターごとに大きな違いがあります。
+単純な操作で構成されるプログラム上の最適化された C 言語コードの速度の低下は、 通常、 より効率的なインタープリターでは 10 倍、
+効率の低いインタープリタでは 1000 倍になります(複雑な操作を実行するためのライブラリーで費やされる時間はすべての実装戦略で同一であるため、
+複雑な操作を実行するプログラムの速度低下は少なくなります)。
+</p>
+<p>Vmgen は、 効率的なインタープリターを構築するための手法をサポートしています。
+</p>
+<hr>
+</div>
+<div class="chapter-level-extent" id="Concepts">
+<h2 class="chapter" id="Concepts-1"><span>3 Concepts<a class="copiable-link" href="#Concepts-1"> &para;</a></span></h2>
+
+
+<hr>
+<div class="section-level-extent" id="Front-end-and-VM-interpreter">
+<h3 class="section" id="Front-end-and-VM-interpreter-1"><span>3.1 Front end and VM interpreter<a class="copiable-link" href="#Front-end-and-VM-interpreter-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-modularization-of-interpreters"></a>
+
+<a class="index-entry-id" id="index-front_002dend"></a>
+<p>インタープリター・ステムは通常、 入力言語をパースしてプログラムの中間表現を生成する「フロント・エンド」と、
+プログラムの中間表現を実行するインタープリターに分かれます。
+</p>
+<a class="index-entry-id" id="index-virtual-machine"></a>
+<a class="index-entry-id" id="index-VM"></a>
+<a class="index-entry-id" id="index-VM-instruction"></a>
+<a class="index-entry-id" id="index-instruction_002c-VM"></a>
+<a class="index-entry-id" id="index-VM-branch-instruction"></a>
+<a class="index-entry-id" id="index-branch-instruction_002c-VM"></a>
+<a class="index-entry-id" id="index-VM-register"></a>
+<a class="index-entry-id" id="index-register_002c-VM"></a>
+<a class="index-entry-id" id="index-opcode_002c-VM-instruction"></a>
+<a class="index-entry-id" id="index-immediate-argument_002c-VM-instruction"></a>
+<p>効率的なインタープリターの場合、 選択される中間表現は(抽象構文ツリーなどではなく、 )仮想マシン・コードです。 「仮想仮想マシン」(VM) コードは、
+メモリー内に順番に配置された VM 命令で構成されます。 これらは VM インタープリターによって順番に実行されますが、 VM
+分岐命令は制御フローを変更することができ、 制御構造の実装に使用されます。  実際のマシン・コードと概念的に類似しているため、
+「仮想マシン」という名前が付けられます。  実機の用語に類似したさまざまな用語が使用されています。 たとえば、 「VM
+レジスター」(命令ポインターやスタック・ポインターなど)があり、 VM 命令は 「オペコード」と 「直接引数」(immediate
+arguments)で構成されます。
+</p>
+<p>このフレームワークでは、 Vmgen は VM インタープリターと、 VM 命令を処理するその他のコンポーネントの構築をサポートします。  VM
+コード生成のサポートを除いて、 フロント・エンドのサポートはありません。  フロント・エンドは、 <code class="command">flex</code> や
+<code class="command">bison</code> などのツールでサポートされる、 従来のコンパイラー・フロント・エンド手法を使用して実装できます。
+</p>
+<p>中間表現は通常、 インタープリターの内部にのみ存在しますが、 一部のシステムでは、 イメージ・ファイルとして、
+または完全なリンク可能なファイル形式(JVM など)でのファイルへの保存もサポートしています。  現在、 Vmgen
+ではそのような機能に対する特別なサポートはありませんが、 命令記述に記載されている情報が役に立つ可能性があります。 また、
+私達は機能のリクエストや提案をお待ちしています。
+</p>
+<hr>
+</div>
+<div class="section-level-extent" id="Data-handling">
+<h3 class="section" id="Data-handling-1"><span>3.2 Data handling<a class="copiable-link" href="#Data-handling-1"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-stack-machine"></a>
+<a class="index-entry-id" id="index-register-machine"></a>
+<p>ほとんどの VM は、 VM 命令間で一時データを渡すために 1 つ以上のスタックを使用します。  私達は、 通常、
+スタック・アーキテクチャを使用する方が簡単かつ高速であると考えていますが、 もう一つのオプションとして、
+仮想マシンにレジスター・マシン・アーキテクチャを使用することが考えられます。
+</p>
+<p>ただし、 このオプションはスタック・マシン・アーキテクチャよりも実装に時間がかかるか、 非常に複雑です。
+</p>
+<p>Vmgen にはスタック VM に対する特別なサポートと最適化があり、 スタック VM の実装が簡単かつ効率的に行えます。
+</p>
+<p>また、 Vmgen (see <a class="pxref" href="#Register-Machines">Register Machines</a>) を使用して レジスター VM を実装することもできます。 その場合でも、
+あなたは Vmgen のほとんどの機能を活用できます。
+</p>
+<a class="index-entry-id" id="index-stack-item-size"></a>
+<a class="index-entry-id" id="index-size_002c-stack-items"></a>
+<p>スタック項目はすべて同一サイズなので、 通常は整数やポインターや浮動小数点数値は同じサイズ幅になります。  Vmgen は、 2
+つの連続したスタック項目を単一の値として扱うことをサポートしていますが、 それより大きいものは、 スタックに置いた、 データへのポインターを使用して、
+他のメモリ領域(ヒープなど)に保持するのが最適です。
+</p>
+<a class="index-entry-id" id="index-instruction-stream"></a>
+<a class="index-entry-id" id="index-immediate-arguments"></a>
+<p>もう 1 つのデータ源は、 (VM 命令ストリーム内の) 即時引数 VM 命令達(immediate arguments VM
+instructions)です。 VM 命令ストリームは、 Vmgen のスタックと同様に処理されます。
+</p>
+<a class="index-entry-id" id="index-garbage-collection"></a>
+<a class="index-entry-id" id="index-reference-counting"></a>
+<p>Vmgen には、 「ガーベジ・コレクション」に対するサポートも制限も組み込まれていません。  ガベージ・コレクションが必要な場合は、
+ランタイム・ライブラリーでそれを提供する必要があります。  「参照カウント」(reference counting)を使用するのはおそらく困難、
+可能な場合もあります(興味がある場合は私達にお問い合わせください)。
+</p>
+<hr>
+</div>
+<div class="section-level-extent" id="Dispatch">
+<h3 class="section" id="Dispatch-1"><span>3.3 Dispatch<a class="copiable-link" href="#Dispatch-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-Dispatch-of-VM-instructions"></a>
+<a class="index-entry-id" id="index-main-interpreter-loop"></a>
+
+<p>Vmgen を使用する場合、 このセクションを理解する必要はおそらくありませんが、 役立つ場合もあります。 ここでスキップして、
+あとでディスパッチ方法に関する記述がわかりにくい場合にこのセクションを読むといいでしょう。
+</p>
+<p>1 つの VM 命令を実行した後、 VM インタープリターは次の VM
+命令にディスパッチ(dispatch;切り替え作業)する必要があります(Vmgen はディスパッチ・ルーチン「NEXT」を呼び出します)。  Vmgen
+は 2 つのディスパッチ方法をサポートしています:
+</p>
+<dl class="table">
+<dt><a id="index-switch-dispatch"></a><span><strong class="strong">switch dispatch</strong><a class="copiable-link" href="#index-switch-dispatch"> &para;</a></span></dt>
+<dd><p>この方法では、 VM インタープリターに巨大な <code class="code">switch</code> ステートメントが含まれており、 VM 命令ごとに 1 つの
+<code class="code">case</code> があります。  VM 命令のオペコードは、 VM コード内の整数(<code class="code">enum</code>
+によって生成されるなどする)によって表され、 ディスパッチは、 次のオペコードをロードし、 <code class="code">switch</code> して、 適切な
+<code class="code">case</code> で続行することによって行います。 VM 命令の実行後、 VM インタープリタはディスパッチ・コードに戻ります。
+</p>
+</dd>
+<dt><a id="index-threaded-code"></a><span><strong class="strong">threaded code</strong><a class="copiable-link" href="#index-threaded-code"> &para;</a></span></dt>
+<dd><p>このメソッドは、 VM 命令を実行するためのマシン・コード断片の開始アドレスによって VM 命令オペコードを表します。 ディスパッチ(切り替え作業)は、
+このアドレスのロードと、 そこへのジャンプと VM 命令ポインターのインクリメントで構成されます。  通常、 スレッド化コードのディスパッチ・コードは、
+VM 命令を実行するコードに直接追加されます。  スレッド化コードは ANSI C では実装できませんが、 GNU C の
+label-as-values 拡張機能を使用して実装できます(see <a data-manual="gcc.info" href="https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values">Labels as Values</a> in <cite class="cite">GNU C Manual</cite>)。
+</p>
+</dd>
+</dl>
+
+<p>インタープリターやベンチマークやマシンによっては、 スレッド化コードはスイッチ・ディスパッチより 2 倍早くなることがあります。
+</p>
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="Invoking-Vmgen">
+<h2 class="chapter" id="Invoking-Vmgen-1"><span>4 Invoking Vmgen<a class="copiable-link" href="#Invoking-Vmgen-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-Invoking-Vmgen"></a>
+
+<p>Vmgen を呼び出す通常の方法は以下のとおりです:
+</p>
+<div class="example">
+<pre class="example-preformatted">vmgen <var class="var">inputfile</var>
+</pre></div>
+
+<p>ここで <var class="var">inputfile</var> は VM 命令記述ファイルで、 通常は <samp class="file">.vmg</samp> で終わります。  それぞれの出力ファイル名は、
+<samp class="file">inputfile</samp> のベース名を取得し(つまり、 出力ファイルは現在の作業ディレクトリに作成されます)、 <samp class="file">.vmg</samp>
+の部分を、 <samp class="file">-vm.i</samp> と <samp class="file">-disasm.i</samp> と <samp class="file">-gen.i</samp> と  <samp class="file">-labels.i</samp> と
+<samp class="file">-profile.i</samp> と <samp class="file">-peephole.i</samp> とにに置き換えることによって作成されます。
+たとえば、<code class="command">vmgen hack/foo.vmg</code> なら、 <samp class="file">foo-vm.i</samp> と <samp class="file">foo-disasm.i</samp>
+と <samp class="file">foo-gen.i</samp> と <samp class="file">foo-labels.i</samp> と <samp class="file">foo-profile.i</samp> と
+<samp class="file">foo-peephole.i</samp> を作成します。
+</p>
+<p>Vmgen でサポートされるコマンドライン・オプションは以下のとおりです
+</p>
+<dl class="table">
+<dt><a class="index-entry-id" id="index-_002d_002dhelp_002c-command_002dline-option"></a>
+<a id="index-_002dh_002c-command_002dline-option"></a><span><samp class="option">--help</samp><a class="copiable-link" href="#index-_002dh_002c-command_002dline-option"> &para;</a></span></dt>
+<dt><samp class="option">-h</samp></dt>
+<dd><p>コマンドライン・オプションに関するメッセージを出力します
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-_002d_002dversion_002c-command_002dline-option"></a>
+<a id="index-_002dv_002c-command_002dline-option"></a><span><samp class="option">--version</samp><a class="copiable-link" href="#index-_002dv_002c-command_002dline-option"> &para;</a></span></dt>
+<dt><samp class="option">-v</samp></dt>
+<dd><p>バージョンを出力して終了(exit)
+</p></dd>
+</dl>
+
+
+<hr>
+</div>
+<div class="chapter-level-extent" id="Example">
+<h2 class="chapter" id="Example-1"><span>5 Example<a class="copiable-link" href="#Example-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-example-of-a-Vmgen_002dbased-interpreter"></a>
+
+
+<hr>
+<div class="section-level-extent" id="Example-overview">
+<h3 class="section" id="Example-overview-1"><span>5.1 Example overview<a class="copiable-link" href="#Example-overview-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-example-overview"></a>
+<a class="index-entry-id" id="index-vmgen_002dex"></a>
+<a class="index-entry-id" id="index-vmgen_002dex2"></a>
+
+<p>Vmgen を使用する同一の例として、 <samp class="file">vmgen-ex</samp> と <samp class="file">vmgen-ex2</samp> の 2 つのバージョンがあります(例として
+Gforth もありますが、 追加の(文書化されていない)機能が使用されており、 他のいくつかの点でも異なります)。  この例では、 JavaVM
+のような小さな仮想マシンを備えた小さな Modula-2 のような言語である「mini」言語を実装しています。
+</p>
+<p>2つの例の違いは、 <samp class="file">vmgen-ex</samp> は多くのキャスト(cast)を使用するのに対し、 <samp class="file">vmgen-ex2</samp>
+はほとんどのキャストを回避し、 代わりに共用体(unions)を使用することです。  このマニュアルの残りの部分では、 通常、
+<samp class="file">vmgen-ex</samp> 内のファイルについてのみ言及します。 共用体(union)を使用したい場合は、 <samp class="file">vmgen-ex2</samp>
+内の同等のファイルを使用してください。
+<a class="index-entry-id" id="index-unions-example"></a>
+<a class="index-entry-id" id="index-casts-example"></a>
+</p>
+<p>各例で提供されるファイルは以下のとおりです:
+<a class="index-entry-id" id="index-example-files"></a>
+</p>
+<div class="example">
+<pre class="example-preformatted">Makefile
+README
+disasm.c           wrapper file
+engine.c           wrapper file
+peephole.c         wrapper file
+profile.c          wrapper file
+mini-inst.vmg      simple VM instructions
+mini-super.vmg     superinstructions (empty at first)
+mini.h             common declarations
+mini.l             scanner
+mini.y             front end (parser, VM code generator)
+support.c          main() and other support functions
+fib.mini           example mini program
+simple.mini        example mini program
+test.mini          example mini program (tests everything)
+test.out           test.mini output
+stat.awk           プロファイル情報を集約するためのスクリプト
+peephole-blacklist スーパー命令で許可されない命令のリスト
+seq2rule.awk       スーパー命令を生成するためのスクリプト
+</pre></div>
+
+<p>あなた独自のインタープリターを作る場合、 通常、 以下のファイル群はコピーして使い、 変更することはほとんどないでしょう:
+<a class="index-entry-id" id="index-wrapper-files"></a>
+</p>
+<div class="example">
+<pre class="example-preformatted">disasm.c           wrapper file
+engine.c           wrapper file
+peephole.c         wrapper file
+profile.c          wrapper file
+stat.awk           プロファイル情報を集約するためのスクリプト
+seq2rule.awk       スーパー命令を生成するためのスクリプト
+</pre></div>
+
+<p>そして、 通常、 あなたは、 以下のファイル群を大幅に変更するか、 置き換える事になります:
+</p>
+<div class="example">
+<pre class="example-preformatted">Makefile
+mini-inst.vmg      simple VM instructions
+mini.h             common declarations
+mini.l             scanner
+mini.y             front end (parser, VM code generator)
+support.c          main() and other support functions
+peephole-blacklist スーパー命令で許可されない命令のリスト
+</pre></div>
+
+<p>example のディレクトリに <code class="code">cd</code> してから <code class="code">make</code> と入力すると、 example をビルドできます。
+<code class="code">make check</code> で動作することを確認できます。  以下のようにして mini 言語のプログラムを実行できます:
+</p>
+<div class="example">
+<pre class="example-preformatted">./mini fib.mini
+</pre></div>
+
+<p>オプションについて詳しくは、 <code class="code">./mini -h</code> と入力してください。
+</p>
+<hr>
+</div>
+<div class="section-level-extent" id="Using-profiling-to-create-superinstructions">
+<h3 class="section" id="Using-profiling-to-create-superinstructions-1"><span>5.2 Using profiling to create superinstructions<a class="copiable-link" href="#Using-profiling-to-create-superinstructions-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-profiling-example"></a>
+<a class="index-entry-id" id="index-superinstructions-example"></a>
+
+<p>作者は <samp class="file">Makefile</samp> には、
+プロファイリングを使用してスーパー命令を作成するためのルールを追加していません(スーパー命令選択の選択肢はたくさんありますが、 それらの選択肢を
+<samp class="file">Makefile</samp> にハードコードしたくありませんでした)が、 サポートするスクリプトがいくつかあります。 例:
+</p>
+<p><samp class="file">fib.mini</samp> と <samp class="file">test.mini</samp> をトレーニング・プログラムとして使用すると、
+以下のようなプロファイルが得られます:
+</p>
+<div class="example">
+<pre class="example-preformatted">make fib.prof test.prof #数秒かかります
+</pre></div>
+
+<p>これらのプロファイルは <samp class="file">stat.awk</samp> で集約できます:
+</p>
+<div class="example">
+<pre class="example-preformatted">awk -f stat.awk fib.prof test.prof
+</pre></div>
+
+<p>結果には以下のような行が含まれます:
+</p>
+<div class="example">
+<pre class="example-preformatted">      2      16        36910041 loadlocal lit
+</pre></div>
+
+<p>これは、 シーケンス <code class="code">loadlocal lit</code> が 2 つのプロファイルで合計 16 回静的に発生し、 動的実行数が 36910041
+であることを意味します。
+</p>
+<p>数値はスーパー命令を選択するためにさまざまな方法で使用できます。  たとえば、 動的実行数が 10000 を超えるシーケンスをすべて選択したい場合は、
+以下のパイプラインを使用します:
+</p>
+<div class="example">
+<pre class="example-preformatted">awk -f stat.awk fib.prof test.prof|
+awk '$3&gt;=10000'|                #シーケンスを選択
+fgrep -v -f peephole-blacklist| #良くない命令を排除
+awk -f seq2rule.awk|  #シーケンスをスーパー命令ルールに変換
+sort -k 3 &gt;mini-super.vmg       #シーケンスを並べ替え
+</pre></div>
+
+<p>ファイル <samp class="file">peephole-blacklist</samp> には、スタックまたはスタック・ポインター(mini 言語の場合: <code class="code">call</code>
+、<code class="code">return</code>)に直接アクセスするすべての命令が含まれています。 並べ替え手順は、 プレフィックスが、
+大きなスーパー命令よりも前に配置されるようにするために必要です。
+</p>
+<p>いまや、 あなたは &lsquo;<samp class="samp">make</samp>&rsquo; と言うだけでスーパー命令を備えたバージョンの mini 言語を作成できるようになりました。
+</p>
+
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="Input-File-Format">
+<h2 class="chapter" id="Input-File-Format-1"><span>6 Input File Format<a class="copiable-link" href="#Input-File-Format-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-input-file-format"></a>
+<a class="index-entry-id" id="index-format_002c-input-file"></a>
+
+<p>Vmgen は、 仮想マシン命令の仕様を含むファイルを入力として受け取ります。  通常、 このファイルの名前は <samp class="file">.vmg</samp> で終わります。
+</p>
+<p>ほとんどの例は <samp class="file">vmgen-ex</samp> のを使っています。
+</p>
+
+<hr>
+<div class="section-level-extent" id="Input-File-Grammar">
+<h3 class="section" id="Input-File-Grammar-1"><span>6.1 Input File Grammar<a class="copiable-link" href="#Input-File-Grammar-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-grammar_002c-input-file"></a>
+<a class="index-entry-id" id="index-input-file-grammar"></a>
+
+<p>文法は EBNF 形式で、 <code class="code"><var class="var">a</var>|<var class="var">b</var></code> は「<var class="var">a</var> または <var class="var">b</var>」、
+<code class="code">{<var class="var">c</var>}</code> は <var class="var">c</var> の 0 回以上の繰り返しを意味し、 <code class="code">[<var class="var">d</var>]</code> は <var class="var">d</var> の
+0 回または 1 回の繰り返しを意味します。
+</p>
+<a class="index-entry-id" id="index-free_002dformat_002c-not"></a>
+<a class="index-entry-id" id="index-newlines_002c-significance-in-syntax"></a>
+<p>Vmgen の入力は自由書式ではないため、 改行(および場合によっては空白)をどこに入れるかに注意する必要があります。
+</p>
+<div class="example">
+<pre class="example-preformatted">description: {instruction|comment|eval-escape|c-escape}
+
+instruction: simple-inst|superinst
+
+simple-inst: ident '(' stack-effect ')' newline c-code newline newline
+
+stack-effect: {ident} '--' {ident}
+
+super-inst: ident '=' ident {ident}  
+
+comment:      '\ '  text newline
+
+eval-escape:  '\E ' text newline
+
+c-escape:     '\C ' text newline
+</pre></div>
+
+<p>注意: この文法の <code class="code">\</code> は、 印刷不可能な文字の C 言語スタイルのエンコーディングではなく、
+文字通りの意味であることに注意してください。
+</p>
+<p><code class="code">simple-inst</code> で C 言語コードを区切る(delimit)方法は 2 つあります:
+</p>
+<ul class="itemize mark-bullet">
+<li>行頭が &lsquo;<samp class="samp">{</samp>&rsquo; で始まる場合(つまり、 その前に空白も無い場合)、 (改行に続いて)行頭の &lsquo;<samp class="samp">}</samp>&rsquo; で終了する必要があります。
+この場合、 C 言語コード内に空行が含まれる可能性があります(通常、 変数定義とステートメントの間で使用されます)。
+
+</li><li>&lsquo;<samp class="samp">{</samp>&rsquo; で始めない場合。 この場合、 C 言語コードは最初の空行で終了するため、 このコード内に空行を含めることはできません。
+
+</li></ul>
+
+<p><code class="code">comment</code> と <code class="code">eval-escape</code> と <code class="code">c-escape</code> 内の text
+には改行を含めることはできません。  <code class="code">Ide​​nt</code> は、 C 言語識別子の通常の規則に準拠する必要があります(そうしないと、 Vmgen
+出力で C 言語のコンパイラーが詰まり(choke)ます)。 <code class="code">Ide​​nt</code> は、 <code class="code">stack-effect</code> の ident
+にスタック・プレフィックス(スタック・プレフィックス構文については see <a class="pxref" href="#Eval-escapes">Eval escapes</a> 参照)が付いている場合がある点を除き、 C
+言語識別子の通常の規則に準拠する必要があります。
+</p>
+<a class="index-entry-id" id="index-C-escape"></a>
+<a class="index-entry-id" id="index-_005cC"></a>
+<a class="index-entry-id" id="index-conditional-compilation-of-Vmgen-output"></a>
+<p><code class="code">c-escape</code> は text を各出力ファイルに渡します(&lsquo;<samp class="samp">\C</samp>&rsquo; 無しで)。
+これは主に条件付きコンパイルに役立ちます(つまり、 &lsquo;<samp class="samp">\C #if ...</samp>&rsquo; などを記述します)。
+</p>
+<a class="index-entry-id" id="index-sync-lines"></a>
+<a class="index-entry-id" id="index-_0023line"></a>
+<p>文法で指定された構文に加えて、 Vmgen は &lsquo;<samp class="samp">m4 -s</samp>&rsquo; (see <a data-manual="m4.info" href="https://www.gnu.org/software/m4/manual/m4.html#Invoking-m4">Invoking m4</a> in <cite class="cite">GNU m4</cite>)や、 同様のツールによって生成された同期行(sync lines)(&lsquo;<samp class="samp">#line</samp>&rsquo;
+で始まる行)も処理します。 これにより、 C 言語コンパイラーのエラー・メッセージを C 言語コードの元のソースに関連付けることができます。
+</p>
+<p>Vmgen は、 ここで説明した文法を超えたいくつかの拡張機能を理解しますが、 これらの拡張機能は Gforth を構築する場合にのみ役立ちます。
+Gforth に使用される書式の説明は <samp class="file">prim</samp> にあります。
+</p>
+
+<hr>
+<div class="subsection-level-extent" id="Eval-escapes">
+<h4 class="subsection" id="Eval-escapes-1"><span>6.1.1 Eval escapes<a class="copiable-link" href="#Eval-escapes-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-escape-to-Forth"></a>
+<a class="index-entry-id" id="index-eval-escape"></a>
+<a class="index-entry-id" id="index-_005cE"></a>
+
+<p><code class="code">eval-escape</code> 内の text は、 Vmgen が行を読み取るときに評価(eval)される Forth コードです。  通常、
+この機能を使用してスタックと型を定義します。
+</p>
+<p>あなたが Forth を知らない (そして学びたくない) 場合は、 以下の文法に従って text を作成できます。 これらのルールは通常、 Vmgen
+を使用するために必要な Forth の全てです:
+</p>
+<div class="example">
+<pre class="example-preformatted">text: stack-decl|type-prefix-decl|stack-prefix-decl|set-flag
+
+stack-decl: 'stack ' ident ident ident
+type-prefix-decl: 
+    's&quot; ' string '&quot; ' ('single'|'double') ident 'type-prefix' ident
+stack-prefix-decl:  ident 'stack-prefix' string
+set-flag: ('store-optimization'|'include-skipped-insts') ('on'|'off')
+</pre></div>
+
+<p>このコードの構文は完全にはチェックされていないことに注意してください(eval-escape で記述できる Forth
+プログラムの断片は他にも多数あります)。
+</p>
+<p>スタック・プレフィックスには文字または数字または &lsquo;<samp class="samp">:</samp>&rsquo; を含めることができ、&lsquo;<samp class="samp">#</samp>&rsquo; で始まる場合もあります。
+たとえば、Gforth では、 リターン・スタックにはスタック・プレフィックス &lsquo;<samp class="samp">R:</samp>&rsquo; が付きます。  この制限は、
+スタック・プレフィックスの定義ではチェックされませんが、 後でスタック項目のパース・ルールによって強制されます。
+</p>
+<p>あなたが既に Forth をご存知の場合、 関連する非標準ワードのスタック効果は以下のとおりです:
+<a class="index-entry-id" id="index-stack"></a>
+<a class="index-entry-id" id="index-type_002dprefix"></a>
+<a class="index-entry-id" id="index-single"></a>
+<a class="index-entry-id" id="index-double"></a>
+<a class="index-entry-id" id="index-stack_002dprefix"></a>
+<a class="index-entry-id" id="index-store_002doptimization"></a>
+</p><div class="example">
+<pre class="example-preformatted">stack                 ( &quot;name&quot; &quot;pointer&quot; &quot;type&quot; -- )
+                      ( name execution: -- stack )
+type-prefix           ( addr u item-size stack &quot;prefix&quot; -- )
+single                ( -- item-size )
+double                ( -- item-size )
+stack-prefix          ( stack &quot;prefix&quot; -- )
+store-optimization    ( -- addr )
+include-skipped-insts ( -- addr )
+</pre></div>
+
+<p><var class="var">item-size</var> はスタック上で 3 つのセルを占有します。
+</p>
+<hr>
+</div>
+</div>
+<div class="section-level-extent" id="Simple-instructions">
+<h3 class="section" id="Simple-instructions-1"><span>6.2 Simple instructions<a class="copiable-link" href="#Simple-instructions-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-simple-VM-instruction"></a>
+<a class="index-entry-id" id="index-instruction_002c-simple-VM"></a>
+
+<p>例として、 以下の簡単な VM 命令の記述を使用します:
+</p>
+<div class="example">
+<pre class="example-preformatted">sub ( i1 i2 -- i )
+i = i1-i2;
+</pre></div>
+
+<p>最初の行には、 VM 命令の名前 (<code class="code">sub</code>) とそのスタック効果 (<code class="code">i1 i2 -- i</code>) を指定します。
+最初の行以外の記述の残りの部分は単なる C 言語コードです。
+</p>
+<a class="index-entry-id" id="index-stack-effect"></a>
+<a class="index-entry-id" id="index-effect_002c-stack"></a>
+<p>スタック効果では、 <code class="code">sub</code> がデータ・スタックから 2 つの整数を取得し、 それらを C 言語の変数 <code class="code">i1</code> と
+<code class="code">i2</code> に格納することを指定します(右端の項目 (<code class="code">i2</code>) が、 スタックのトップです: <code class="code">i1</code>
+をスタックにプッシュし、 次に <code class="code">i2</code> をスタックにプッシュすると、 結果のスタック状態は <code class="code">i1 i2</code> になります)。
+そしてその後、 その後 1 つの整数 (<code class="code">i</code>) をスタックにプッシュします(右端の項目がスタックの一番上になります)。
+</p>
+<a class="index-entry-id" id="index-prefix_002c-type"></a>
+<a class="index-entry-id" id="index-type-prefix"></a>
+<a class="index-entry-id" id="index-default-stack-of-a-type-prefix"></a>
+<p>スタック項目の型とスタックを知るにはどうすればよいでしょうか?  Vmgen は、 Fortran と同様にプレフィックスを使用します。 Fortran
+とは対照的に、 あなたは最初にプレフィックスを定義する必要があります:
+</p>
+<div class="example">
+<pre class="example-preformatted">\E s&quot; Cell&quot;   single data-stack type-prefix i
+</pre></div>
+
+<p>これは、 型 <code class="code">Cell</code> (<samp class="file">mini.h</samp> では <code class="code">long</code> として定義)を参照するプレフィックス <code class="code">i</code>
+を定義し、 デフォルトでは <code class="code">data-stack</code> を参照します。 また、 この型が 1
+つのスタック項目(<code class="code">single</code>)を占めることも指定します。  型プレフィックスは変数名の一部です。
+</p>
+<a class="index-entry-id" id="index-stack-definition"></a>
+<a class="index-entry-id" id="index-defining-a-stack"></a>
+<p><code class="code">data-stack</code> を使用する前に、 この方法で <code class="code">data-stack</code> を定義する必要があります:
+</p>
+<div class="example">
+<pre class="example-preformatted">\E stack data-stack sp Cell
+</pre></div>
+
+<a class="index-entry-id" id="index-stack-basic-type"></a>
+<a class="index-entry-id" id="index-basic-type-of-a-stack"></a>
+<a class="index-entry-id" id="index-type-of-a-stack_002c-basic"></a>
+<p>この行は、 スタック・ポインター <code class="code">sp</code> を使用するスタック <code class="code">data-stack</code> を定義し、 各項目の基本タイプは
+<code class="code">Cell</code> です。 他の型は 1 つまたは 2 つの <code class="code">Cell</code> に収まる必要があり(型の幅が <code class="code">single</code> か
+<code class="code">double</code> かによって異なります)、 型キャスト・マクロ(see <a class="pxref" href="#VM-engine">VM engine</a>)を使用して
+<code class="code">data-stack</code> にアクセスするときに Cell との間でキャストされます。 Vmgen 製インタープリターではスタックは、
+デフォルトでは、 より低いアドレスに向かって伸長します(see <a class="pxref" href="#Stack-growth-direction">Stack growth direction</a>)。
+</p>
+<a class="index-entry-id" id="index-stack-prefix"></a>
+<a class="index-entry-id" id="index-prefix_002c-stack"></a>
+<p>スタック・プレフィックスを使用して、 スタック項目のデフォルト・スタックをオーバーライドできます。 たとえば、 以下の命令について考えてみましょう:
+</p>
+<div class="example">
+<pre class="example-preformatted">lit ( #i -- i )
+</pre></div>
+
+<p>VM 命令 <code class="code">lit</code> は、 命令ストリームから(プレフィックス <code class="code">#</code> で示される) 項目 <code class="code">i</code> を取得し、
+それを(デフォルトの)データ・スタックにプッシュします。  スタック・プレフィックスは変数名の一部ではありません。
+スタック・プレフィックスは以下のように定義されています:
+</p>
+<div class="example">
+<pre class="example-preformatted">\E inst-stream stack-prefix #
+\E data-stack  stack-prefix S:
+</pre></div>
+
+<p>この定義は、 スタック・プレフィックス <code class="code">#</code> が「スタック <code class="code">inst-stream</code> 」を指定することを定義します。
+命令ストリーム(<code class="code">inst-stream</code>)は通常のスタックとは振る舞いが少し異なるため、 事前に定義済であり、
+あなたが定義する必要はありません。
+</p>
+<a class="index-entry-id" id="index-instruction-stream-1"></a>
+<p>命令ストリームには命令とその直接引数(immediate arguments)が含まれるため、
+引数が命令ストリームからのものであることを指定することは、 直接引数であることを示しています。  もちろん、 命令ストリーム引数は、 スタック効果の
+<code class="code">--</code> の左側にのみ出現できます。  複数の命令ストリーム引数がある場合、 (あなたの直観どおり)左端が最初の引数になります。
+</p>
+
+<hr>
+<div class="subsection-level-extent" id="Explicit-stack-access">
+<h4 class="subsection" id="Explicit-stack-access-1"><span>6.2.1 Explicit stack access<a class="copiable-link" href="#Explicit-stack-access-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-stack-access_002c-explicit"></a>
+<a class="index-entry-id" id="index-Stack-pointer-access"></a>
+<a class="index-entry-id" id="index-explicit-stack-access"></a>
+
+<p>この機能は、 ここで説明されている(デフォルトで呼び出される) vmgen の 0.6.2 バージョンでは必要なく、 サポートされていません。
+</p>
+<p>上記のスタック効果の仕様を使用して、 すべてのスタック効果を指定できるわけではありません。  他のスタック効果がある VM 命令の場合は、 C
+言語コードでスタック・ポインターにアクセスすることで明示的に指定できます。 ただし、 そのような明示的なスタック・アクセスを Vmgen
+に通知する必要があります。 そうしないと、 Vmgen の最適化が、 この明示的なスタック・アクセスと競合する可能性があります。
+</p>
+<p>Vmgen に通知するには、 <code class="code">...</code> と適切なスタック・プレフィックスをスタック・コメントに入れます。  次に、 VM
+命令はまずスタック効果で指定された他のスタック項目を C 言語の変数に取り込み、 次にそのスタックの他のすべてのスタック項目がメモリ内にあり、
+スタックのスタック・ポインターが先頭を指していることを確認します(デフォルトでは。 あなたがスタック・アクセス変換(the stack access
+transformation)を変更しない限り: see <a class="pxref" href="#Stack-growth-direction">Stack growth direction</a>)。
+</p>
+<p>一般的なルールは次のとおりです: VM 命令の C 言語コードでスタック・ポインターに言及する場合は、 スタック効果にそのスタックの
+<code class="code">...</code> を含める必要があります。
+</p>
+<p>以下の例について考えてみましょう:
+</p>
+<div class="example">
+<pre class="example-preformatted">return ( #iadjust S:... target afp i1 -- i2 )
+SET_IP(target);
+sp = (Cell *)(((char *)sp)+iadjust);
+fp = afp;
+i2=i1;
+</pre></div>
+
+<p>最初に変数 <code class="code">target afp i1</code> がスタックからポップされ、 次にスタック・ポインター <code class="code">sp</code>
+が新しいスタックの深さに正しく設定され、 次に C 言語のコードがスタックの深さを変更して他の処理を行い、 最後に <code class="code">i2</code>
+は新しい深さでスタックにプッシュされます。
+</p>
+<p>スタック効果内の <code class="code">...</code> の位置は関係ありません。  異なるスタックに複数の <code class="code">...</code> を使用することも、
+同一のスタックに複数の <code class="code">...</code> を使用することもできます(追加の効果はありません)。  スタック・プレフィックスなしで
+<code class="code">...</code> を使用すると、 命令ストリームを除くすべてのスタックが指定されます。
+</p>
+<p>命令ストリームに <code class="code">...</code> を使用することはできませんが、 その必要はありません。 C 言語のコードの先頭で、 <code class="code">IP</code> は次の
+VM 命令の先頭(つまり、 現在の VM 命令の末尾のすぐ次)を指し、 <code class="code">SET_IP</code>
+を使用して命令ポインターを変更できます(see <a class="pxref" href="#VM-engine">VM engine</a>)。
+</p>
+
+<hr>
+</div>
+<div class="subsection-level-extent" id="C-Code-Macros">
+<h4 class="subsection" id="C-Code-Macros-1"><span>6.2.2 C Code Macros<a class="copiable-link" href="#C-Code-Macros-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-macros-recognized-by-Vmgen"></a>
+<a class="index-entry-id" id="index-basic-block_002c-VM-level"></a>
+
+<p>Vmgen は、 単純な命令の C 言語コード部分にある以下の文字列を認識します:
+</p>
+<dl class="table">
+<dt><a id="index-SET_005fIP"></a><span><code class="code">SET_IP</code><a class="copiable-link" href="#index-SET_005fIP"> &para;</a></span></dt>
+<dd><p>Vmgen に関する限り、 これを含む VM 命令は、 (プロファイルされたシーケンスを区切るためにプロファイリングで使用される、) VM
+基本ブロックを終了します。 C 言語のレベルでは、 これにより命令ポインターも設定されます。
+</p>
+</dd>
+<dt><a id="index-SUPER_005fEND"></a><span><code class="code">SUPER_END</code><a class="copiable-link" href="#index-SUPER_005fEND"> &para;</a></span></dt>
+<dd><p>これにより、 命令に <code class="code">SET_IP</code> が含まれていない場合でも、 (プロファイリング用の)基本ブロックが終了します。
+</p>
+</dd>
+<dt><a id="index-INST_005fTAIL_003b"></a><span><code class="code">INST_TAIL;</code><a class="copiable-link" href="#index-INST_005fTAIL_003b"> &para;</a></span></dt>
+<dd><p>Vmgen は、 &lsquo;<samp class="samp">INST_TAIL;</samp>&rsquo; を、 VM 命令を終了して次の VM 命令をディスパッチするためのコードに置き換えます。
+&lsquo;<samp class="samp">INST_TAIL;</samp>&rsquo; がなくても、 制御が C g言語コードの最後に到達すると、 これは自動的に行われます。 これを C
+言語コードの途中に置きたい場合に &lsquo;<samp class="samp">INST_TAIL;</samp>&rsquo; を使用する必要があります。  典型的な例は、 以下のような条件付き VM
+分岐です:
+</p>
+<div class="example">
+<pre class="example-preformatted">if (branch_condition) {
+  SET_IP(target); INST_TAIL;
+}
+/* implicit tail follows here */
+</pre></div>
+
+<p>この例では、 if ステートメントの後に &lsquo;<samp class="samp">INST_TAIL;</samp>&rsquo; が暗黙的に存在するため、 厳密には &lsquo;<samp class="samp">INST_TAIL;</samp>&rsquo;
+は必要ありませんが、 これを使用すると分岐予測の精度がわずかに向上し、 他の最適化が可能になります。
+</p>
+</dd>
+<dt><a id="index-SUPER_005fCONTINUE"></a><span><code class="code">SUPER_CONTINUE</code><a class="copiable-link" href="#index-SUPER_005fCONTINUE"> &para;</a></span></dt>
+<dd><p>これは、 VM 命令に <code class="code">SET_IP</code> が含まれている場合でも、 VM 命令の終わりの暗黙の末尾に連続して次の VM
+命令をディスパッチすることを示します。 これにより、 vmgen-ex コードにはまだ実装されていない(しかし
+Gforthには実装されている)最適化が可能になります。  典型的なアプリケーションは以下のような条件付き VM 分岐内にあります:
+</p>
+<div class="example">
+<pre class="example-preformatted">if (branch_condition) {
+  SET_IP(target); INST_TAIL; /* now this INST_TAIL is necessary */
+}
+SUPER_CONTINUE;
+</pre></div>
+
+
+</dd>
+</dl>
+
+<p>注意: Vmgen は C 言語レベルのトークン化またはコメントまたは文字列または条件付きコンパイルについては賢明ではないため、 コメント・アウトされた
+SUPER_END であっても基本ブロックの終了として(または、 例えば、 &lsquo;<samp class="samp">RESET_IP;</samp>&rsquo; を &lsquo;<samp class="samp">SET_IP;</samp>&rsquo;
+として)解釈されることに注意してください。 逆に、 Vmgen ではこれらの文字列が文字通り存在する必要があります。 C
+言語のプリプロセッサ・マクロ内に隠れている場合、 Vmgen はそれらを認識できません。
+</p>
+
+<hr>
+</div>
+<div class="subsection-level-extent" id="C-Code-restrictions">
+<h4 class="subsection" id="C-Code-restrictions-1"><span>6.2.3 C Code restrictions<a class="copiable-link" href="#C-Code-restrictions-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-C-code-restrictions"></a>
+<a class="index-entry-id" id="index-restrictions-on-C-code"></a>
+<a class="index-entry-id" id="index-assumptions-about-C-code"></a>
+
+<a class="index-entry-id" id="index-accessing-stack-_0028pointer_0029"></a>
+<a class="index-entry-id" id="index-stack-pointer_002c-access"></a>
+<a class="index-entry-id" id="index-instruction-pointer_002c-access"></a>
+<p>Vmgen は、ユーザー指定の C 言語コードがスタック・ポインターやスタック項目にアクセスせず、
+命令ポインターへのアクセスは特殊なマクロを介してのみ発生するという想定に基づいて、 コードを生成し、 いくつかの最適化を実行します。  一般に、
+あなたはこれらの制限に注意する必要があります。  ただし、 あなたがこれらの制限を破る必要がある場合は、 以下をお読みください。
+</p>
+<p>スタックまたはスタック・ポインターに直接アクセスすると、 いくつかの理由で問題が発生する可能性があります: 
+<a class="index-entry-id" id="index-stack-caching_002c-restriction-on-C-code"></a>
+<a class="index-entry-id" id="index-superinstructions_002c-restrictions-on-components"></a>
+</p>
+<ul class="itemize mark-bullet">
+<li>Vmgen はオプションで、 スタック・トップの項目をローカル変数(レジスターに割り当てられる)にキャッシュすることをサポートします。
+これは最も頻繁に起こるトラブルの原因です。  これに対処するには、 スタック・トップ・キャッシュを使用しない(マシンによって異なるが、 減速係数 1 ～
+1.4)か、 あるいは、 問題のある C 言語コードの先頭にフラッシュ・コード(たとえば &lsquo;<samp class="samp">IF_spTOS(sp[...] =
+spTOS);</samp>&rsquo;)を挿入し、 最後にコードをリロードする(たとえば &lsquo;<samp class="samp">IF_spTOS(spTOS =
+sp[0])</samp>&rsquo;)かのいずれかで対処できます。  Vmgen は、 ユーザー指定の C 言語コードの開始前にスタック・ポインターの更新を挿入するため、
+フラッシュ・コードではそれを修正するインデックスを使用する必要があります。  将来的には、 C 言語コードで特別な文字列を指定することによって、
+このフラッシュが自動的に行われるようになる可能性があります。
+
+</li><li>Vmgen で生成されたコードは、 ユーザーが指定した C
+言語コードの前にスタック項目をスタック・ポインターでインデックス付けされたメモリーから変数にロードし、 その後、
+変数からスタック・ポインターでインデックス付けされたメモリーに格納します。  C
+言語コードでスタック・ポインターを介してスタックに書き込みを行った場合、 変数には影響せず、 その書き込みは C
+言語コードの格納によって上書きされる可能性があります。  同様に、 スタック・ポインターを使用したスタックからの読み取りは、 同じ VM
+命令内のスタック項目の計算を反映しません。
+
+</li><li>スーパー命令(superinstructions)は、 スーパー命令全体にわたってスタック項目を変数に保持します。  したがって、
+スタックまたはスタック・ポインターにアクセスする VM 命令をスーパー命令のコンポーネントとして含めるべきではありません(see <a class="pxref" href="#VM-profiler">VM profiler</a>)。
+
+</li></ul>
+
+<p>命令ポインターには、 そのための特別なマクロ(&lsquo;<samp class="samp">IP</samp>&rsquo;, &lsquo;<samp class="samp">SET_IP</samp>&rsquo;,
+&lsquo;<samp class="samp">IPTOS</samp>&rsquo;)を介してのみアクセスする必要があります。 これにより、
+これらのマクロをいくつかの方法で実装して最高のパフォーマンスを実現できるようになります。  &lsquo;<samp class="samp">IP</samp>&rsquo; は次の命令を指していて、
+&lsquo;<samp class="samp">IPTOS</samp>&rsquo; はその内容です。
+</p>
+<hr>
+</div>
+<div class="subsection-level-extent" id="Stack-growth-direction">
+<h4 class="subsection" id="Stack-growth-direction-1"><span>6.2.4 Stack growth direction<a class="copiable-link" href="#Stack-growth-direction-1"> &para;</a></span></h4>
+<a class="index-entry-id" id="index-stack-growth-direction"></a>
+
+<a class="index-entry-id" id="index-stack_002daccess_002dtransform"></a>
+<p>デフォルトでは、 スタックは下位アドレスに向かって伸長します。 これを変更するには、 スタックの
+<code class="code">stack-access-transform</code> フィールドを、 適切なインデックス変換を実行する xt <code class="code">( itemnum --
+index )</code> に設定します。
+</p>
+<p>たとえば、 <code class="code">data-stack</code> をより高いアドレスに向かって伸長させ、
+スタック・ポインターが常にスタックの最上位のすぐ先を指すようにする場合は、 <code class="code">data-stack</code> を定義した直後に以下を使用します:
+</p>
+<div class="example">
+<pre class="example-preformatted">\E : sp-access-transform ( itemnum -- index ) negate 1- ;
+\E ' sp-access-transform ' data-stack &gt;body stack-access-transform !
+</pre></div>
+
+<p>これは、 <code class="code">sp-access-transform</code> を使用して <code class="code">data-stack</code>
+にアクセスするためのインデックスを生成することを意味します。  上記の <code class="code">sp-access-transform</code> の定義は、 n を
+-n-1 に変換します(例: 1 を -2 にする)。  これは、 sp[-1] の 0 番目のデータ・スタック要素(スタックの先頭)、 sp[-2]
+の 1 番目のデータースタック要素などにアクセスします。 これは、 上向きに成長するスタックが使用される一般的な方法です。
+あなたが別のインデックス変換が必要で、 それをプログラムするのに十分な Forth の知識がない場合は、 我々にお尋ね下さい。
+</p>
+<hr>
+</div>
+</div>
+<div class="section-level-extent" id="Superinstructions">
+<h3 class="section" id="Superinstructions-1"><span>6.3 Superinstructions<a class="copiable-link" href="#Superinstructions-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-superinstructions_002c-defining"></a>
+<a class="index-entry-id" id="index-defining-superinstructions"></a>
+
+<p>注意: (静的な)スーパー命令(superinstructions)にあまり多くの作業を費やさないでください。 Vmgen の将来のバージョンでは、
+動的スーパー命令がサポートされる予定で(Ian Piumarta and Fabio Riccardi, <cite class="cite">Optimizing Direct
+Threaded Code by Selective Inlining</cite>, PLDI&rsquo;98 参照)、
+静的スーパー命令の利点ははるかに少なくなっています(暫定的な結果は、 係数 1.1 の高速化)。
+</p>
+<p>以下にスーパー命令(superinstruction)定義の例を示します:
+</p>
+<div class="example">
+<pre class="example-preformatted">lit_sub = lit sub
+</pre></div>
+
+<p><code class="code">lit_sub</code> はスーパー命令(superinstruction)の名前で、 <code class="code">lit</code> と <code class="code">sub</code>
+はそのコンポーネントです。 このスーパー命令は、 シーケンス「<code class="code">lit</code> <code class="code">sub</code>」と同じアクションを実行します。  これは、
+そのシーケンスが発生するたびに VM コード生成関数によって自動的に生成されるため、 このスーパー命令を使用したい場合は、
+この定義を追加するだけで済みます(see <a class="pxref" href="#VM-profiler">VM profiler</a> により部分的に自動化することもできます)。
+</p>
+<a class="index-entry-id" id="index-prefixes-of-superinstructions"></a>
+<p>Vmgen では、コンポーネントの命令群が、
+コンポーネントを使用するスーパー命令(superinstructions)より前に定義された単純な命令(simple
+instructions)であることが必要です。  現在、 Vmgen では、
+スーパー命令の先頭にあるすべてのサブ・シーケンス(プレフィックス)が当該スーパー命令より前にスーパー命令として定義されている必要もあります。  つまり、
+スーパー命令を定義したい場合
+</p>
+<div class="example">
+<pre class="example-preformatted">foo4 = load add sub mul
+</pre></div>
+
+<p>あなたは、 まず、 <code class="code">load</code> と <code class="code">add</code> と <code class="code">sub</code> と <code class="code">mul</code> を定義する必要があります。
+さらに
+</p>
+<div class="example">
+<pre class="example-preformatted">foo2 = load add
+foo3 = load add sub
+</pre></div>
+
+<p>ここで、 <code class="code">sumof4</code> は <code class="code">sumof5</code> の最長のプレフィックスで、 <code class="code">sumof3</code> は
+<code class="code">sumof4</code> の最長のプレフィックスです。 (訳注: 推敲途中だったかな？ 意味不明)
+</p>
+<p>注意: Vmgen は、 生成するコードのみがスタック・ポインターや、 命令ポインターや、 さまざまなスタック項目にアクセスすると想定しており、
+この想定に基づいて最適化を実行することに注意してください。  したがって、 C 言語コードで命令ポインターを変更する VM 命令は、
+最後のコンポーネントとしてのみ使用する必要があります。 C 言語コードがスタック・ポインターにアクセスする VM 命令は、
+コンポーネントとしてまったく使用しないでください。  Vmgen はこれらの制限をチェックsせず、 インタープリターでバグが発生するだけです。
+</p>
+<a class="index-entry-id" id="index-include_002dskipped_002dinsts"></a>
+<p>Vmgen フラグ <code class="code">include-skipped-insts</code> は、
+スーパー命令(superinstruction)コードの生成に影響します。  現在、 のぞき穴最適化(peephole
+optimizer)では両方のバリエーションはサポートされていないため、 このフラグは今のところそのままにしておきます。
+</p>
+<hr>
+</div>
+<div class="section-level-extent" id="Store-Optimization">
+<h3 class="section" id="Store-Optimization-1"><span>6.4 Store Optimization<a class="copiable-link" href="#Store-Optimization-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-store-optimization"></a>
+<a class="index-entry-id" id="index-optimization_002c-stack-stores"></a>
+<a class="index-entry-id" id="index-stack-stores_002c-optimization"></a>
+<a class="index-entry-id" id="index-eliminating-stack-stores"></a>
+
+<p>格納最適化(store optimization)というマイナーな最適化(Gforth の実行命令の 0.6% ～ 0.8% 削減)では、
+命令の記述に追加の要件が課されるため、 デフォルトでは無効になっています。
+</p>
+<p>これはは何をするのでしょうか？ 以下のような命令を考えてみましょう
+</p>
+<div class="example">
+<pre class="example-preformatted">dup ( n -- n n )
+</pre></div>
+
+<p>簡単にするために、 スタックのトップをレジスタにキャッシュしていないことも仮定します。  今、 dup の C 言語コードは、 最初に <code class="code">n</code>
+をスタックからロードし、 次にそれをスタックに 2 回 格納し、 そのうち 1 回は元のアドレスに格納します。 元のアドレスに格納する回は不要ですが、
+gcc はそれを最適化しないので、 代わりに vmgen がそれを行うことができます(格納最適化(store
+optimization)をオンにしている場合)。
+</p>
+<p>Vmgen は、 スタック項目の名前を使用して、 スタック項目に開始時と同一の値が含まれているかを決めます。  したがって、
+格納最適化を使用する場合は、 入力と出力で同じ名前を持つスタック項目も同じ値を持ち、 提供する C
+言語コードで変更されないことを確認する必要があります。  つまり、 格納最適化をオンにすると、 以下のコードは失敗する可能性があります:
+</p>
+<div class="example">
+<pre class="example-preformatted">add1 ( n -- n )
+n++;
+</pre></div>
+
+<p>代わりに、 あなたは別の名前を使用する必要があります。 つまり以下のようにします:
+</p>
+<div class="example">
+<pre class="example-preformatted">add1 ( n1 -- n2 )
+n2=n1+1;
+</pre></div>
+
+<p>同様に、 格納最適化では、 スタック・ポインターが Vmgen で生成されたコードによってのみ変更されることを前提としています。  C
+言語コードでスタック・ポインターを変更する場合は、 入力スタック項目と出力スタック項目に異なる名前を使用して(おそらく間違った)格納最適化を回避するか、
+この VM 命令の格納最適化をオフにしてください。
+</p>
+<p>格納最適化を有効にするには、 以下のように記述します
+</p>
+<div class="example">
+<pre class="example-preformatted">\E store-optimization on
+</pre></div>
+
+<p>これをファイルの先頭に記述します。  任意の 2 つの VM 命令記述の間で、 この最適化をオンまたはオフにできます。  再度オフにするには、
+以下を使用できます。
+</p>
+<div class="example">
+<pre class="example-preformatted">\E store-optimization off
+</pre></div>
+
+<hr>
+</div>
+<div class="section-level-extent" id="Register-Machines">
+<h3 class="section" id="Register-Machines-1"><span>6.5 Register Machines<a class="copiable-link" href="#Register-Machines-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-Register-VM"></a>
+<a class="index-entry-id" id="index-Superinstructions-for-register-VMs"></a>
+<a class="index-entry-id" id="index-tracing-of-register-VMs"></a>
+
+<p>Vmgen を使用してスタック VM ではなくレジスター VM を実装する場合は、 直接実行する方法とスーパー命令を使用する方法の 2 つがあります。
+</p>
+<p>直接的な方法を使用する場合は、 以下のように、 レジスタ番号を直接の引数として受け取る命令を定義します:
+</p>
+<div class="example">
+<pre class="example-preformatted">add3 ( #src1 #src2 #dest -- )
+reg[dest] = reg[src1]+reg[src2];
+</pre></div>
+
+<p>この方法の欠点は、 トレース中にレジスター番号のみが表示され、 レジスタの内容は表示されないことです。  実際には、
+<code class="code">printarg_src</code> (see <a class="pxref" href="#VM-engine">VM engine</a>)を適切に定義すると、 開始時にソース・レジスターの値を出力できますが、
+終了時に宛先レジスターの値を出力することはできません。
+</p>
+<p>スーパー命令(superinstructions)を使用してレジスター VM を定義する場合は、 以下のように、
+スタックを使用する単純な命令(simple instructions)を定義してから、 全体的なスタック効果のないスーパー命令を定義します:
+</p>
+<div class="example">
+<pre class="example-preformatted">loadreg ( #src -- n )
+n = reg[src];
+
+storereg ( n #dest -- )
+reg[dest] = n;
+
+adds ( n1 n2 -- n )
+n = n1+n2;
+
+add3 = loadreg loadreg adds storereg
+</pre></div>
+
+<p>この方法の利点は、 トレース中にレジスター番号だけでなく値も表示されることです。  この方法の欠点は、
+現時点ではスーパー命令(superinstructions)を直接生成できず、 単純な命令(simple
+instructions)のシーケンスを生成することによってのみ生成できることです(需要があれば、 作者達は将来これを変更するかもしれません)。
+</p>
+<p>上記の問題とは別に、 レジスター VM のサポートを改善可能でしょうか？ VM
+インタープリターに関連して「レジスター・マシン」という用語を使用する場合、 人によって意味が異なるため、
+一般的な方法でこれを行う方法を理解するのは困難です。  ただし、 その方向でアイデアや要望がある場合は、
+著者にお知らせください(see <a class="pxref" href="#Contact">Contact</a>)。
+</p>
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="Error-messages">
+<h2 class="chapter" id="Error-messages-1"><span>7 Error messages<a class="copiable-link" href="#Error-messages-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-error-messages"></a>
+
+<p>以下のエラー・メッセージが Vmgen によって作成されます:
+</p>
+<dl class="table">
+<dt><a id="index-_0023-can-only-be-on-the-input-side-error"></a><span><code class="code"># can only be on the input side</code><a class="copiable-link" href="#index-_0023-can-only-be-on-the-input-side-error"> &para;</a></span></dt>
+<dd><p>【# は入力側にのみ指定できます】 &lsquo;<samp class="samp">--</samp>&rsquo; (出力側)
+の後側で命令ストリーム(instruction-stream)のプレフィックス(通常は &lsquo;<samp class="samp">#</samp>&rsquo;)を使用しました。
+これは前側(入力側)でのみ使用できます。
+</p>
+</dd>
+<dt><a id="index-prefix-for-this-combination-must-be-defined-earlier-error"></a><span><code class="code">the prefix for this superinstruction must be defined earlier</code><a class="copiable-link" href="#index-prefix-for-this-combination-must-be-defined-earlier-error"> &para;</a></span></dt>
+<dd><p>【このスーパー命令(superinstruction)のプレフィックスは事前に定義する必要があります】 直接プレフィックス(たとえば <code class="code">ab
+= a b</code>)を定義せずにスーパー命令(superinstruction)定義(たとえば <code class="code">abc = a b c</code>)を行いました。
+See <a class="xref" href="#Superinstructions">Superinstructions</a>
+</p>
+</dd>
+<dt><a id="index-sync-line-syntax-error"></a><span><code class="code">sync line syntax</code><a class="copiable-link" href="#index-sync-line-syntax-error"> &para;</a></span></dt>
+<dd><p>【同期行構文】プリプロセッサ(たとえば <code class="command">m4</code>)を使用して Vmgen 入力コードを生成している場合は、 <code class="code">#line</code>
+(別名 sync lines;同期行)ディレクティブを作成するとよいでしょう。  このエラーは、 そのような行が Vmgen
+が期待する構文に無いことを示します(こんなことが起こってはいけません。 問題の行をバグ・レポートで報告してください)。
+</p>
+</dd>
+<dt><a id="index-syntax-error_002c-wrong-char-error"></a><span><code class="code">syntax error, wrong char</code><a class="copiable-link" href="#index-syntax-error_002c-wrong-char-error"> &para;</a></span></dt>
+<dd><p>【構文エラー、 不正な文字】構文エラーです。  エラーの場所がすぐにわからない場合は、 次の点を確認すると役立つ場合があります: C
+言語のコードが波かっこ({};braces)で区切られていない VM 命令に空行を入れていませんか？ 波かっこで区切られた C
+言語のコードを使用した場合、 先頭に空白を入れずに、 行の先頭に区切りの波かっこを置きましたか？ 区切りの波かっこを忘れせんでしたか？
+</p>
+</dd>
+<dt><a id="index-too-many-stacks-error"></a><span><code class="code">too many stacks</code><a class="copiable-link" href="#index-too-many-stacks-error"> &para;</a></span></dt>
+<dd><p>【スタックの数が多すぎます】Vmgen は現在、3 つのスタック(に加えて命令ストリーム)をサポートしています。
+さらに必要な場合は作者にご連絡ください。
+</p>
+</dd>
+<dt><a id="index-unknown-prefix-error"></a><span><code class="code">unknown prefix</code><a class="copiable-link" href="#index-unknown-prefix-error"> &para;</a></span></dt>
+<dd><p>【不明のプレフィックスです】スタック項目が定義された型プレフィックスと一致しません(スタック・プレフィックス削除後)。
+そのスタック項目に必要な型プレフィックスを宣言するか、 別の型プレフィックスを使用する必要があります
+</p>
+</dd>
+<dt><a id="index-unknown-primitive-error"></a><span><code class="code">unknown primitive</code><a class="copiable-link" href="#index-unknown-primitive-error"> &para;</a></span></dt>
+<dd><p>【不明のプリミティブです】最初に単純な VM 命令(simple VM instruction)を定義せずに、
+スーパー命令(superinstruction)定義で単純 VM 命令の名前を使用しました。
+</p>
+</dd>
+</dl>
+
+<p>さらに、 C 言語のコンパイラは、 Vmgen によって生成されたコードが原因でエラーを生成する可能性があり、 たとえば、
+あなたは型キャスト関数を定義する必要があるかもしれません。
+</p>
+<hr>
+</div>
+<div class="chapter-level-extent" id="Using-the-generated-code">
+<h2 class="chapter" id="Using-the-generated-code-1"><span>8 Using the generated code<a class="copiable-link" href="#Using-the-generated-code-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-generated-code_002c-usage"></a>
+<a class="index-entry-id" id="index-Using-vmgen_002derated-code"></a>
+
+<p>Vmgen で動作する VM インタープリターを作成する最も簡単な方法は、 おそらく <samp class="file">vmgen-ex</samp> から始めて、
+目的に応じて変更することです。  この章では、 さまざまなラッパーと、 生成されたファイルの機能について説明します。  また、
+生成されたコードで使用されるマクロや変数などの、 リファレンス・マニュアル形式の説明も含まれており、
+リファレンス・マニュアル形式の説明は最初に読むときはスキップできます。
+</p>
+
+<hr>
+<div class="section-level-extent" id="VM-engine">
+<h3 class="section" id="VM-engine-1"><span>8.1 VM engine<a class="copiable-link" href="#VM-engine-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-VM-instruction-execution"></a>
+<a class="index-entry-id" id="index-engine"></a>
+<a class="index-entry-id" id="index-executing-VM-code"></a>
+<a class="index-entry-id" id="index-engine_002ec"></a>
+<a class="index-entry-id" id="index-_002dvm_002ei-output-file"></a>
+
+<p>VM エンジンは、 VM コードを実行するための VM インタープリターです。  それはインタープリター的システムにとって不可欠なものです。
+</p>
+<p>Vmgen は、 VM 命令ディスパッチ(dispatch;切り替え作業)の 2 つの方法をサポートしています。 「スレッド化コード」(高速ですが
+gcc 固有)と、 「スイッチ・ディスパッチ」(低速ですが、 C 言語コンパイラ間で移植可能)です。
+条件付きコンパイル(&lsquo;<samp class="samp">defined(__GNUC__)</samp>&rsquo;)を使用してこれらの方法を選択でき、 著者達の例ではそうしています。
+</p>
+<p>どちらの方法でも、 VM エンジンは C 言語レベルの関数に含まれています。  Vmgen は関数の内容のほとんどを生成しますが、
+この関数の定義と、エンジンで使用されるマクロと変数の定義と、 変数の初期化を行う必要があります。  私達の例では、 エンジン関数には
+<samp class="file"><var class="var">name</var>-labels.i</samp> も含まれています(see <a class="pxref" href="#VM-instruction-table">VM instruction table</a>)。
+</p>
+<a class="index-entry-id" id="index-tracing-VM-code"></a>
+<a class="index-entry-id" id="index-superinstructions-and-tracing"></a>
+<p>コードの実行に加えて、 VM エンジンはオプションで、 実行された命令や、 実行された命令の引数や、
+実行された命令の結果のトレースを出力することもできます。  スーパー命令(superinstructions)の場合は、
+コンポーネント命令のみが実行されたかのようにトレースを出力します。 これにより、 古いスーパー命令と比較可能なトレースを維持しながら、
+新しいスーパー命令を導入することができます(これは デグレ・チェック(regression tests)のために重要です)。
+</p>
+<p>トレース・コードを出力するかどうかを各命令でチェックするとパフォーマンスが大幅に低下するため、 エンジンのコピーを 2 つ作成することをお勧めします。
+1 つは高速実行用、 もう 1 つはトレース用です。 例については、 <samp class="file">vmgen-ex/Makefile</samp> の
+<samp class="file">engine.o</samp> と <samp class="file">engine-debug.o</samp> の makeルールを参照してください。
+</p>
+<p>以下のマクロと変数が <samp class="file"><var class="var">name</var>-vm.i</samp> で使用されます:
+</p>
+<dl class="table">
+<dt><a id="index-LABEL"></a><span><code class="code">LABEL(<var class="var">inst_name</var>)</code><a class="copiable-link" href="#index-LABEL"> &para;</a></span></dt>
+<dd><p>これは、 ジャンプまたは <code class="code">switch</code> ラベルを提供するために各 VM 命令の直前で使用されます(&lsquo;<samp class="samp">:</samp>&rsquo; は Vmgen
+によって提供されます)。  スイッチ・ディスパッチの場合、 これは &lsquo;<samp class="samp">case <var class="var">label</var>:</samp>&rsquo; に展開されるべきです。
+スレッド化コード・ディスパッチの場合は、 これを &lsquo;<samp class="samp"><var class="var">label</var>:</samp>&rsquo; に展開するだけです。  どちらの場合も、
+<var class="var">label</var> は通常、 名前の競合を避けるために何らかのプレフィックスまたはサフィックスを付けた <var class="var">inst_name</var> です。
+</p>
+</dd>
+<dt><a id="index-LABEL2"></a><span><code class="code">LABEL2(<var class="var">inst_name</var>)</code><a class="copiable-link" href="#index-LABEL2"> &para;</a></span></dt>
+<dd><p>これは動的スーパー命令(dynamic superinstructions)に使用されます。 現時点では、
+これは「無」(nothing)に展開されるべきです。
+</p>
+</dd>
+<dt><a id="index-NAME"></a><span><code class="code">NAME(<var class="var">inst_name_string</var>)</code><a class="copiable-link" href="#index-NAME"> &para;</a></span></dt>
+<dd><p>VM 命令の名前をパラメーターとして含む文字列を含む VM 命令を入力すると呼び出されます。 通常の実行では、
+これは「無」(nothing)に展開されるはずですが、 トレースの場合は通常、 名前と、 場合によってはその他の情報(この例ではいくつかの VM
+レジスター)が出力されます。
+</p>
+</dd>
+<dt><a id="index-DEF_005fCA"></a><span><code class="code">DEF_CA</code><a class="copiable-link" href="#index-DEF_005fCA"> &para;</a></span></dt>
+<dd><p>通常は空(empty)です。  VM 命令の開始時に新しいスコープ内で呼び出されます。  すべての VM
+命令中に表示される変数を定義するために使用できます。  このマクロを空ではないものとして定義する場合は、 マクロ定義は &lsquo;<samp class="samp">;</samp>&rsquo;
+で終了させる必要があります。
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-NEXT_005fP1"></a>
+<a class="index-entry-id" id="index-NEXT_005fP2"></a>
+<a id="index-NEXT_005fP0"></a><span><code class="code">NEXT_P0 NEXT_P1 NEXT_P2</code><a class="copiable-link" href="#index-NEXT_005fP0"> &para;</a></span></dt>
+<dd><p>命令ディスパッチ用の 3 つの部品。 さまざまなプロセッサで最高のパフォーマンスを得るために、 さまざまな方法で定義できます(例の
+<samp class="file">engine.c</samp> または Gforth の <samp class="file">engine/threaded.h</samp> を参照)。  &lsquo;<samp class="samp">NEXT_P0</samp>&rsquo;
+は VM 命令の開始直後(ただし &lsquo;<samp class="samp">DEF_CA</samp>&rsquo; の後)、 &lsquo;<samp class="samp">NEXT_P1</samp>&rsquo; はユーザー指定の C 言語コードの直後、 そして
+&lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; は最後に呼び出されます。  実際のジャンプは &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo;
+によって実行する必要があります(これを実行するのが早すぎると、 VM 命令の重要な部分が実行されなくなります)。
+</p>
+<p>バリエーションの最も単純なモノは、 &lsquo;<samp class="samp">NEXT_P2</samp>&rsquo; がすべてを行い、 他のマクロは何も実行しないヤツです。 &lsquo;<samp class="samp">IP</samp>&rsquo; や
+&lsquo;<samp class="samp">SET_IP</samp>&rsquo; や &lsquo;<samp class="samp">IP</samp>&rsquo; や &lsquo;<samp class="samp">INC_IP</samp>&rsquo; や &lsquo;<samp class="samp">IPTOS</samp>&rsquo;
+などの関連マクロも非常に簡単に定義できます。  スイッチ・ディスパッチの場合、 このコードはディスパッチ・コード(この例では &lsquo;<samp class="samp">goto
+next_inst;</samp>&rsquo;) へのジャンプだけで構成されます。 直接スレッド化コード(direct threaded code)の場合は、
+&lsquo;<samp class="samp">({cfa=*ip++; goto *cfa;})</samp>&rsquo; のようなもので構成されます。
+</p>
+<p>コード(普通は &lsquo;<samp class="samp">cfa=*ip++;</samp>&rsquo; というコード)を &lsquo;<samp class="samp">NEXT_P1</samp>&rsquo; にセットすることは通常問題を引き起こしませんが、
+&lsquo;<samp class="samp">NEXT_P0</samp>&rsquo; にコードをセットすると、 通常、他のマクロも変更する必要があります(そして、 少なくとも Alpha 版の Gforth
+については、 コンパイラーは関連するものを自動的にスケジュール設定することが多いため、 それほど大きな価値はありません)。
+さらに極端なバリエーションとしては、 コードをさらに離れた、 たとえば前の VM 命令の NEXT_P1 にセットすることです (プリフェッチ。
+PowerPC で便利です)。
+</p>
+</dd>
+<dt><a id="index-INC_005fIP"></a><span><code class="code">INC_IP(<var class="var">n</var>)</code><a class="copiable-link" href="#index-INC_005fIP"> &para;</a></span></dt>
+<dd><p><code class="code">IP</code> に <var class="var">n</var> を足しこみます。
+</p>
+</dd>
+<dt><a id="index-SET_005fIP-1"></a><span><code class="code">SET_IP(<var class="var">target</var>)</code><a class="copiable-link" href="#index-SET_005fIP-1"> &para;</a></span></dt>
+<dd><p><code class="code">IP</code> に <var class="var">target</var> をセットします。
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-vm_005fA2B"></a>
+<a id="index-type-cast-macro"></a><span><code class="code">vm_<var class="var">A</var>2<var class="var">B</var>(a,b)</code><a class="copiable-link" href="#index-type-cast-macro"> &para;</a></span></dt>
+<dd><p>(<var class="var">A</var> 型の) &lsquo;<samp class="samp">a</samp>&rsquo; を (<var class="var">B</var> 型の) &lsquo;<samp class="samp">b</samp>&rsquo; に割り当てる型キャスト・マクロ。  これは主に、
+スタック項目を変数に入れたりスタック項目から変数へ戻したりするために使用されます。  したがって、 スタックの基本型(この例では
+<code class="code">Cell</code>)と、
+そのスタックで使用される型プレフィックス形式(スタック項目を変数に入れる方向とスタック項目から変数へ戻す方向)すべての組み合わせに対してマクロを定義する必要があります。
+型プレフィックス形式の場合は、  (C言語の型名ではない)型プレフィックスを型名(&lsquo;<samp class="samp">vm_Cell2Cell</samp>&rsquo; ではなく
+&lsquo;<samp class="samp">vm_Cell2i</samp>&rsquo;)として使用します。  さらに、 スタックの基本型 <var class="var">X</var> に対して(スーパー命令で使われる)
+vm_<var class="var">X</var>2<var class="var">X</var> マクロを定義する必要があります。
+</p>
+<a class="index-entry-id" id="index-instruction-stream_002c-basic-type"></a>
+<p>事前定義された  &lsquo;<samp class="samp">inst-stream</samp>&rsquo; (命令ストリーム)のスタック基本型は &lsquo;<samp class="samp">Cell</samp>&rsquo; です。
+同一項目サイズのスタックが必要な場合、 その基本型を &lsquo;<samp class="samp">Cell</samp>&rsquo; にすると、 通常、 定義する必要があるマクロの数が減ります。
+</p>
+<a class="index-entry-id" id="index-unions-in-type-cast-macros"></a>
+<a class="index-entry-id" id="index-casts-in-type-cast-macros"></a>
+<a class="index-entry-id" id="index-type-casting-between-floats-and-integers"></a>
+<p>ただし、 私達の例では大きく異なります: <samp class="file">vmgen-ex</samp> はこれらのマクロでキャストを使用しますが、 <samp class="file">vmgen-ex2</samp>
+は共用体(union)フィールドの選択(または共用体フィールドへの代入)を使用します。  浮動小数点数(floats)を整数にキャストしたり、
+その逆を行うとビット・パターンが変更されることに注意してください(そして、 これはあなたが望む事ではありません)。  この場合の選択肢は、
+(一時的な(temporary))共用体を使用するか、 値のアドレスを取得してポインタをキャストし、
+それを逆参照(dereference)することです(常に可能であるとは限らず、 しばしばコストがかさみます)。
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-vm_005fB2twoA"></a>
+<a id="index-vm_005ftwoA2B"></a><span><code class="code">vm_two<var class="var">A</var>2<var class="var">B</var>(a1,a2,b)</code><a class="copiable-link" href="#index-vm_005ftwoA2B"> &para;</a></span></dt>
+<dt><code class="code">vm_<var class="var">B</var>2two<var class="var">A</var>(b,a1,a2)</code></dt>
+<dd><p>2 つのスタック項目(<code class="code">a1</code>、<code class="code">a2</code>)と 2 つのスタック項目を取る型の変数 <code class="code">b</code> の間の型キャスト。
+これは私達の小さな例では発生しませんが、 例として Gforth を参照してください(<samp class="file">engine/forth.h</samp> の
+<code class="code">vm_twoCell2d</code> を参照してください)。
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-instruction-pointer-definition"></a>
+<a id="index-stack-pointer-definition"></a><span><code class="code"><var class="var">stackpointer</var></code><a class="copiable-link" href="#index-stack-pointer-definition"> &para;</a></span></dt>
+<dd><p>使用されるスタックごとに、 スタック宣言で指定されたスタック・ポインター名が使用されます。  通常のスタックの場合、
+これは左辺値に解決される式(l-expression)でなければなりません。 通常、 これはスタックの基本型へのポインタとして宣言された変数です。
+&lsquo;<samp class="samp">inst-stream</samp>&rsquo; (命令ストリーム)の場合、 名前は &lsquo;<samp class="samp">IP</samp>&rsquo; で、 プレーンな右辺値を指定できます。 通常、 これは
+<code class="code">NEXT_P*</code> のさまざまな実装間の違いを抽象化するマクロです。
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-IMM_005fARG-1"></a>
+<a id="index-IMM_005fARG"></a><span><code class="code">IMM_ARG(access,value)</code><a class="copiable-link" href="#index-IMM_005fARG"> &para;</a></span></dt>
+<dd><p>これを &quot;(access)&quot; に展開するように定義します。  これは将来の拡張機能のための単なるプレースホルダーです。
+</p>
+</dd>
+<dt><a class="index-entry-id" id="index-stack-caching"></a>
+<a class="index-entry-id" id="index-TOS"></a>
+<a class="index-entry-id" id="index-IPTOS"></a>
+<a id="index-top-of-stack-caching"></a><span><code class="code"><var class="var">stackpointer</var>TOS</code><a class="copiable-link" href="#index-top-of-stack-caching"> &para;</a></span></dt>
+<dd><p><var class="var">stackpointer</var> が指し示すスタックのTOS(スタックのトップ)。
+そのスタックに対してスタックのトップ・キャッシュを使用している場合は、 これを変数として定義する必要があります。
+そのスタックがスタックのトップ・キャッシュを使用していない場合、 これは &lsquo;<samp class="samp"><var class="var">stackpointer</var>[0]</samp>&rsquo;
+に展開されるマクロである必要があります。  事前定義された &lsquo;<samp class="samp">inst-stream</samp>&rsquo; (命令ストリーム)のスタック・ポインターは
+&lsquo;<samp class="samp">IP</samp>&rsquo; と呼ばれるため、 TOS(スタックの最上位)は &lsquo;<samp class="samp">IPTOS</samp>&rsquo; と呼ばれます。
+</p>
+</dd>
+<dt><a id="index-IF_005fstackpointerTOS"></a><span><code class="code">IF_<var class="var">stackpointer</var>TOS(<var class="var">expr</var>)</code><a class="copiable-link" href="#index-IF_005fstackpointerTOS"> &para;</a></span></dt>
+<dd><p><var class="var">stackpointer</var> が指し示すスタックにスタックのトップ・キャッシュが使用されている場合に、 <var class="var">expr</var>
+を実行するためのマクロ。 つまり、 <var class="var">stackpointer</var> のスタックのトップ・キャッシュがある場合に <var class="var">expr</var>
+を実行する必要があります。 それ以外の場合は何もしません。
+</p>
+</dd>
+<dt><a id="index-SUPER_005fEND-1"></a><span><code class="code">SUPER_END</code><a class="copiable-link" href="#index-SUPER_005fEND-1"> &para;</a></span></dt>
+<dd><p>これは  VM プロファイラー(see <a class="pxref" href="#VM-profiler">VM profiler</a>)によって使用されます。 通常の操作では何も行わないので、
+プロファイリングのためには <code class="code">vm_count_block(IP)</code> を呼び出す必要があります。
+</p>
+</dd>
+<dt><a id="index-SUPER_005fCONTINUE-1"></a><span><code class="code">SUPER_CONTINUE</code><a class="copiable-link" href="#index-SUPER_005fCONTINUE-1"> &para;</a></span></dt>
+<dd><p>これは Vmgen への単なるヒントであり、 C 言語レベルでは何も行いません。
+</p>
+</dd>
+<dt><a id="index-MAYBE_005fUNUSED"></a><span><code class="code">MAYBE_UNUSED</code><a class="copiable-link" href="#index-MAYBE_005fUNUSED"> &para;</a></span></dt>
+<dd><p>gcc-2.7 以降では、 これを <code class="code">__attribute__((unused))</code> として定義する必要があります。
+スーパー命令(superinstructions)のコード内の未使用の変数に関する警告が抑制されます。  これを定義する必要があるのは、
+あなたがスーパー命令を使用している場合のみです。
+</p>
+</dd>
+<dt><a id="index-VM_005fDEBUG"></a><span><code class="code">VM_DEBUG</code><a class="copiable-link" href="#index-VM_005fDEBUG"> &para;</a></span></dt>
+<dd><p>これが定義されている場合、 トレース・コードがコンパイルされます(解釈(interpretation)は遅くなりますが、 デバッグは向上します)。
+私達の例では、 エンジンの 2 つのバージョンをコンパイルします: 1 つはトレースできない高速実行バージョンで、 もう 1
+つはトレースとプロファイリングが可能です。
+</p>
+</dd>
+<dt><a id="index-vm_005fdebug"></a><span><code class="code">vm_debug</code><a class="copiable-link" href="#index-vm_005fdebug"> &para;</a></span></dt>
+<dd><p>&lsquo;<samp class="samp">VM_DEBUG</samp>&rsquo; が定義されている場合にのみ必要です。  この変数に true が含まれている場合、 VM
+命令はトレース出力を生成します。  いつでもオンまたはオフにできます。
+</p>
+</dd>
+<dt><a id="index-vm_005fout"></a><span><code class="code">vm_out</code><a class="copiable-link" href="#index-vm_005fout"> &para;</a></span></dt>
+<dd><p>&lsquo;<samp class="samp">VM_DEBUG</samp>&rsquo; が定義されている場合にのみ必要です。  トレース出力を印刷するファイルを指定します(&lsquo;<samp class="samp">FILE *</samp>&rsquo;
+とタイプします)。
+</p>
+</dd>
+<dt><a id="index-printarg_005ftype"></a><span><code class="code">printarg_<var class="var">type</var>(<var class="var">value</var>)</code><a class="copiable-link" href="#index-printarg_005ftype"> &para;</a></span></dt>
+<dd><p>&lsquo;<samp class="samp">VM_DEBUG</samp>&rsquo; が定義されている場合にのみ必要です。  <var class="var">type</var> に適した方法で <var class="var">value</var>
+を出力するためのマクロまたは関数です。  これは、 トレース中にスタック項目の値を出力するために使用されます。  <var class="var">Type</var>
+は通常、<code class="code">type-prefix</code> 定義で指定された型プレフィックスです(例: &lsquo;<samp class="samp">printarg_i</samp>&rsquo;)。
+スーパー命令(superinstructions)では、 これは現在のスタックの基本タイプです。
+</p>
+</dd>
+</dl>
+
+
+<hr>
+</div>
+<div class="section-level-extent" id="VM-instruction-table">
+<h3 class="section" id="VM-instruction-table-1"><span>8.2 VM instruction table<a class="copiable-link" href="#VM-instruction-table-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-instruction-table"></a>
+<a class="index-entry-id" id="index-opcode-definition"></a>
+<a class="index-entry-id" id="index-labels-for-threaded-code"></a>
+<a class="index-entry-id" id="index-vm_005fprim_002c-definition"></a>
+<a class="index-entry-id" id="index-_002dlabels_002ei-output-file"></a>
+
+<p>スレッド化コードの場合は、 すべての VM 命令のラベルを含んだテーブルを作成する必要もあります。  これは VM コード生成(see <a class="pxref" href="#VM-code-generation">VM code generation</a>)に必要であり、 ラベルは外部から見えないため、 エンジン関数内で実行する必要があります。  次に、 VM
+コード生成関数で使用できるように、 関数の外に渡す(そして &lsquo;<samp class="samp">vm_prim</samp>&rsquo; に割り当てする)必要があります。
+</p>
+<p>これは、 VM 命令テーブルを生成するために最初にエンジン関数を呼び出す必要があり、 その後 VM コードを生成した後、 生成された VM
+コードを実行するためにエンジン関数を再度呼び出す必要があることを意味します(はい、これは醜いです)。  我々のプログラム例では、
+エンジン関数を呼び出すこれら 2 つのモードは、 パラメーター ip0 の値によって区別されます(0 に等しい場合はテーブルが渡され、 それ以外の場合は
+VM コードが実行されます)。 我々の例では、 テーブルを &lsquo;<samp class="samp">vm_prim</samp>&rsquo; に割り当て、 それを &lsquo;<samp class="samp">engine</samp>&rsquo;
+から返すことによってテーブルを渡します。
+</p>
+<p>我々の例 (<samp class="file">vmgen-ex/engine.c</samp>) では、スイッチ・ディスパッチ用のテーブルも構築します。
+これは主に均一性を目的として行われます。
+</p>
+<p>スイッチ・ディスパッチの場合、 <code class="code">enum</code> で case ラベルとして使用される VM 命令オペコードも定義する必要があります。
+</p>
+<p>両方の目的 (VM 命令テーブルと enum )のために、 ファイル <samp class="file"><var class="var">name</var>-labels.i</samp> が Vmgen
+によって生成されます。  あなたはこのファイルで使用される以下のマクロを定義する必要があります:
+</p>
+<dl class="table">
+<dt><a id="index-INST_005fADDR"></a><span><code class="code">INST_ADDR(<var class="var">inst_name</var>)</code><a class="copiable-link" href="#index-INST_005fADDR"> &para;</a></span></dt>
+<dd><p>スイッチ・ディスパッチの場合、 これは <samp class="file"><var class="var">name</var>-labels.i</samp>
+のどちらの使用法でもスイッチ・ラベルの名前にすぎません(&lsquo;<samp class="samp">LABEL(<var class="var">inst_name</var>)</samp>&rsquo;
+で使用されているのと同一の名前です)。 スレッド化コード・ディスパッチの場合、 これは &lsquo;<samp class="samp">LABEL(<var class="var">inst_name</var>)</samp>&rsquo;
+で定義されたラベルのアドレスです。 アドレスは &lsquo;<samp class="samp">&amp;&amp;</samp>&rsquo; で取得されます(see <a data-manual="gcc.info" href="https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html#Labels-as-Values">Labels
+as Values</a> in <cite class="cite">GNU C Manual</cite>)。
+</p>
+</dd>
+</dl>
+
+
+<hr>
+</div>
+<div class="section-level-extent" id="VM-code-generation">
+<h3 class="section" id="VM-code-generation-1"><span>8.3 VM code generation<a class="copiable-link" href="#VM-code-generation-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-VM-code-generation"></a>
+<a class="index-entry-id" id="index-code-generation_002c-VM"></a>
+<a class="index-entry-id" id="index-_002dgen_002ei-output-file"></a>
+
+<p>Vmgen は、フロント・エンドが VM コードを生成するために呼び出すことができる VM コード生成関数を
+<samp class="file"><var class="var">name</var>-gen.i</samp> に生成します。 これはインタープリター・システム(interpretive
+system)には不可欠なものです。
+</p>
+<a class="index-entry-id" id="index-gen_005finst"></a>
+<p>VM 命令 &lsquo;<samp class="samp">x ( #a b #c -- d )</samp>&rsquo; の場合、 Vmgen は以下のプロトタイプを持つ関数を生成します
+</p>
+<div class="example">
+<pre class="example-preformatted">void gen_x(Inst **ctp, a_type a, c_type c)
+</pre></div>
+
+<p><code class="code">ctp</code> 引数は、 次の命令へのポインターを指します。  <code class="code">*ctp</code> は生成関数によって増加されます。 つまり、
+あなたは生成するコード用のメモリを事前に割り当て、 このメモリ領域の先頭に *ctp を設定して開始する必要があります。 メモリが不足する前に、
+新しい領域を割り当て、 新しい領域への VM レベルのジャンプを生成します(このオーバーフロー処理は我々の例では実装されていません)。
+</p>
+<a class="index-entry-id" id="index-immediate-arguments_002c-VM-code-generation"></a>
+<p>他の引数は、 VM 命令の直接引数(immediate arguments)に対応します(<code class="code">type_prefix</code>
+宣言で定義されている適切な型を使用します)。
+</p>
+<p>以下の型や変数や関数が <samp class="file"><var class="var">name</var>-gen.i</samp> で使用されます:
+</p>
+<dl class="table">
+<dt><a id="index-Inst"></a><span><code class="code">Inst</code><a class="copiable-link" href="#index-Inst"> &para;</a></span></dt>
+<dd><p>VM 命令のタイプ。 スレッド化コードを使用する場合、 これは <code class="code">void *</code> です。 スイッチ・ディスパッチの場合、 これは整数型です。
+</p>
+</dd>
+<dt><a id="index-vm_005fprim_002c-use"></a><span><code class="code">vm_prim</code><a class="copiable-link" href="#index-vm_005fprim_002c-use"> &para;</a></span></dt>
+<dd><p>VM 命令テーブル (タイプ: <code class="code">Inst *</code> 。 see <a class="pxref" href="#VM-instruction-table">VM instruction table</a>)。
+</p>
+</dd>
+<dt><a id="index-gen_005finst-1"></a><span><code class="code">gen_inst(Inst **ctp, Inst i)</code><a class="copiable-link" href="#index-gen_005finst-1"> &para;</a></span></dt>
+<dd><p>この関数は命令 <code class="code">i</code> をコンパイルします。  <samp class="file">vmgen-ex/peephole.c</samp> をご覧ください。
+スーパー命令(superinstructions)を使用したくない場合(関数例の最後の 2 行のみの場合)は簡単ですが、
+この例ではスーパー命令を使用可能なため、 少し複雑になります(see <a class="pxref" href="#Peephole-optimization">Peephole optimization</a>)。
+</p>
+</dd>
+<dt><a id="index-genarg_005ftype_005fprefix"></a><span><code class="code">genarg_<var class="var">type_prefix</var>(Inst **ctp, <var class="var">type</var> <var class="var">type_prefix</var>)</code><a class="copiable-link" href="#index-genarg_005ftype_005fprefix"> &para;</a></span></dt>
+<dd><p>これにより、 (<code class="code">type-prefix</code> 定義で定義されている) <var class="var">type</var> の直接引数(immediate
+argument)がコンパイルされます。  これらの関数を定義するのは簡単です(<samp class="file">vmgen-ex/support.c</samp> を参照)。
+あなたが直接引数(immediate argument)として使用するタイプごとに、 これらの関数のいずれかが必要です。
+</p>
+</dd>
+</dl>
+
+<a class="index-entry-id" id="index-BB_005fBOUNDARY"></a>
+<p>これらの関数を使用してコードを生成することに加えて、 スーパー命令(superinstructions)を使用したい場合は(または、 Vmgen
+でサポートされているプロファイリングを使用したい場合は; ただし、 このサポートは主にスーパー命令の選択にも役立ちます)は、
+すべての基本ブロック・エントリ・ポイントで <code class="code">BB_BOUNDARY</code> を呼び出す必要があります。 あなたが
+<code class="code">BB_BOUNDARY</code> を利用する場合、 あなたは <code class="code">BB_BOUNDARY</code>
+も定義する必要があります(<samp class="file">vmgen-ex/mini.y</samp> の定義をご覧ください)。
+</p>
+<p>分岐の後に <code class="code">BB_BOUNDARY</code> を呼び出す必要はありません。 なぜなら、
+あなたは途中に分岐を含むスーパー命令を定義することはないでしょう(もしあなたがそうして、 それがうまくいくなら、
+分岐でスーパー命令で終了する理由はありません)、 そして、 分岐はプロファイラに自分自身をアナウンスするからです。
+</p>
+
+<hr>
+</div>
+<div class="section-level-extent" id="Peephole-optimization">
+<h3 class="section" id="Peephole-optimization-1"><span>8.4 Peephole optimization<a class="copiable-link" href="#Peephole-optimization-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-peephole-optimization"></a>
+<a class="index-entry-id" id="index-superinstructions_002c-generating"></a>
+<a class="index-entry-id" id="index-peephole_002ec"></a>
+<a class="index-entry-id" id="index-_002dpeephole_002ei-output-file"></a>
+
+<p>あなたがスーパー命令(superinstructions)を使用する場合にのみ、 のぞき穴最適化(peephole
+optimization)が必要です。  ただし、 スーパー命令を使用しない場合に、 のぞき穴最適化のコードを持っていても、
+それほど差し障りはありません。
+</p>
+<p>スーパー命令(superinstruction)の選択には、 単純な貪欲な覗き穴最適化(simple greedy peephole
+optimization)アルゴリズムが使用されます: <code class="code">gen_inst</code> が VM 命令をコンパイルするたびに、 それを直前の VM
+命令と結合(combine)できるかどうかがチェックされます(これは、以前ののぞき穴最適化から生じたスーパー命令である可能性もあります)。
+結合できる場合、 現在の &lsquo;<samp class="samp">*ctp</samp>&rsquo; に <code class="code">i</code> を配置する代わりに、 最後の命令を結合された命令に変更します。
+</p>
+<p>のぞき穴最適化のコードは <samp class="file">vmgen-ex/peephole.c</samp> にあります。  このファイルはほぼそのまま使用できます。  Vmgen
+は、 除き穴最適化のデータを含む <samp class="file"><var class="var">file</var>-peephole.i</samp> を生成します。
+</p>
+<a class="index-entry-id" id="index-init_005fpeeptable"></a>
+<p>あなたは、 &lsquo;<samp class="samp">vm_prim</samp>&rsquo; を初期化した後、 VM コードをコンパイルして覗き穴最適化のためのデータ構造を初期化する前に、
+&lsquo;<samp class="samp">init_peeptable()</samp>&rsquo; を呼び出す必要があります。  その後、 VM コード生成関数を使用してコンパイルすると、 VM
+命令がスーパー命令(superinstructions)に自動的に結合されます。  あなたが VM
+分岐ターゲット間で命令を結合したくない時(そうしないと、 分岐先の適切な VM 命令が存在しなくなります)、 分岐ターゲットで
+<code class="code">BB_BOUNDARY</code> (see <a class="pxref" href="#VM-code-generation">VM code generation</a>) を呼び出す必要があります。
+</p>
+
+<hr>
+</div>
+<div class="section-level-extent" id="VM-disassembler">
+<h3 class="section" id="VM-disassembler-1"><span>8.5 VM disassembler<a class="copiable-link" href="#VM-disassembler-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-VM-disassembler"></a>
+<a class="index-entry-id" id="index-disassembler_002c-VM-code"></a>
+<a class="index-entry-id" id="index-disasm_002ec"></a>
+<a class="index-entry-id" id="index-_002ddisasm_002ei-output-file"></a>
+
+<p>VM コード逆アセンブラはインタープリター・システムではオプションですが、 フロント・エンドでのバグの検出(および VM
+インタープリターのバグと区別するため)に非常に役立つため、 開発およびメンテナンス中は強く推奨します。
+</p>
+<p>Vmgen は、 <samp class="file"><var class="var">file</var>-disasm.i</samp> を生成することで VM コードの逆アセンブルをサポートします。
+<samp class="file">vmgen-ex/disasm.c</samp> と同様に、 このコードを関数にラップする必要があります。  このファイルはほぼそのまま使用できます。
+&lsquo;<samp class="samp">vm_<var class="var">A</var>2<var class="var">B</var>(a,b)</samp>&rsquo; や &lsquo;<samp class="samp">vm_out</samp>&rsquo; や
+&lsquo;<samp class="samp">printarg_<var class="var">type</var>(<var class="var">value</var>)</samp>&rsquo; に加えて、 上記で説明したように、 以下のマクロと変数が
+<samp class="file"><var class="var">file</var>-disasm.i</samp> で使用されます(あなたはこれらを定義する必要があります):
+</p>
+<dl class="table">
+<dt><code class="code">ip</code></dt>
+<dd><p>この変数は、 現在の VM 命令のオペコードを指します。
+</p>
+</dd>
+<dt><a id="index-IP_002c-IPTOS-in-disassmbler"></a><span><code class="code">IP IPTOS</code><a class="copiable-link" href="#index-IP_002c-IPTOS-in-disassmbler"> &para;</a></span></dt>
+<dd><p>&lsquo;<samp class="samp">IPTOS</samp>&rsquo; は現在の VM 命令の最初の引数であり、 &lsquo;<samp class="samp">IP</samp>&rsquo; はそれを指します。 これはエンジンとまったく同じですが、 ここで
+&lsquo;<samp class="samp">ip</samp>&rsquo; は VM 命令のオペコードを指します(エンジンとは対照的に、 &lsquo;<samp class="samp">ip</samp>&rsquo; は次のセル、 またはさらにその 1
+つ先のセルを指します)。
+</p>
+</dd>
+<dt><a id="index-VM_005fIS_005fINST"></a><span><code class="code">VM_IS_INST(Inst i, int n)</code><a class="copiable-link" href="#index-VM_005fIS_005fINST"> &para;</a></span></dt>
+<dd><p>オペコード &lsquo;<samp class="samp">i</samp>&rsquo; が VM 命令テーブルの &lsquo;<samp class="samp">n</samp>&rsquo; 番目のエントリと同じかどうかをテストします。
+</p>
+</dd>
+</dl>
+
+
+<hr>
+</div>
+<div class="section-level-extent" id="VM-profiler">
+<h3 class="section" id="VM-profiler-1"><span>8.6 VM profiler<a class="copiable-link" href="#VM-profiler-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-VM-profiler"></a>
+<a class="index-entry-id" id="index-profiling-for-selecting-superinstructions"></a>
+<a class="index-entry-id" id="index-superinstructions-and-profiling"></a>
+<a class="index-entry-id" id="index-profile_002ec"></a>
+<a class="index-entry-id" id="index-_002dprofile_002ei-output-file"></a>
+
+<p>VM プロファイラーは、 VM 命令シーケンスの実行カウントと出現カウントを取得するように設計されており、
+これらのカウントはスーパー命令(superinstructions)としてシーケンスを選択するために使用できます。  VM プロファイラーは、
+おそらくインタプリタ・システム(interpretive system)のプロファイリング・ツールとしては役に立ちません。  つまり、VM
+プロファイラーは開発者にとっては役立ちますが、 インタプリタ・システム(interpretive system)のユーザーにとっては役に立ちません。
+</p>
+<p>プロファイラーの出力は次のとおりです: 各基本ブロック(少なくとも 1
+回実行される)について、その基本ブロックとそのすべてのサブシーケンスの動的実行回数を出力します。 例:
+</p>
+<div class="example">
+<pre class="example-preformatted">       9227465  lit storelocal 
+       9227465  storelocal branch 
+       9227465  lit storelocal branch 
+</pre></div>
+
+<p>これは、 &lsquo;<samp class="samp">lit storelocal branch</samp>&rsquo; で構成される基本ブロックは 9227465 回実行されるということを示しています。
+</p>
+<a class="index-entry-id" id="index-stat_002eawk"></a>
+<a class="index-entry-id" id="index-seq2rule_002eawk"></a>
+<p>この出力をさまざまな方法で組み合わせることができます。 たとえば、 <samp class="file">vmgen-ex/stat.awk</samp> は、 動的実行(dynamic
+execution)や、静的発生(static occurence)や、 プログラムごとの発生を参照して、 指定のシーケンスの発生を合計します。 例：
+</p>
+<div class="example">
+<pre class="example-preformatted">      2      16        36910041 loadlocal lit 
+</pre></div>
+
+<p>これは、 シーケンス &lsquo;<samp class="samp">loadlocal lit</samp>&rsquo; が 2 つのプログラムの 16 か所で発生し、 36910041
+回実行されたことを示します。  これで、 スーパー命令(superinstructions)を任意の方法で選択できるようになりました(注意:
+コンパイルの時間制約と空間的制約により、 スーパー命令の数は通常 100 ～ 1000 に制限されることに注意してください)。  これを完了すると、
+<samp class="file">vmgen/seq2rule.awk</samp> によって、 上記形式行が Vmgen 入力ファイルにインクルードできるルールに変換されます。
+このスクリプトではすべてのプレフィックスが定義されていることは保証されないため、 プレフィックスは他の方法で定義する必要があることに注意してください。
+したがって、 プロファイルをスーパー命令(superinstructions)に変換するための全体的なスクリプトは以下のようになります:
+</p>
+<div class="example">
+<pre class="example-preformatted">awk -f stat.awk fib.prof test.prof|
+awk '$3&gt;=10000'|                #select sequences
+fgrep -v -f peephole-blacklist| #eliminate wrong instructions
+awk -f seq2rule.awk|            #turn into superinstructions
+sort -k 3 &gt;mini-super.vmg       #sort sequences
+</pre></div>
+
+<p>ここでは、 動的カウント(dynamic count)がシーケンスの選択に使用されます(ただし、 暫定的な結果では、
+静的カウントの方が良い結果が得られることを示しています)。  3 行目は、 スタックに直接アクセスするため、
+スーパー命令内で発生してはいけない命令を含むシーケンスを削除します。  動的なカウント選択により、
+より長いシーケンスのすべてのサブシーケンス(プレフィックスを含む)が確実に発生します(サブシーケンスは少なくとも長いシーケンスと同じカウントを持つため)。
+最後の行でのソートにより、 プレフィックスの後ろで長いスーパー命令が確実に発生するようになります。
+</p>
+<p>ただし、 これを使用する前に、 あなたにはプロファイラーが必要です。  Vmgen は <samp class="file"><var class="var">file</var>-profile.i</samp>
+を生成することでその作成をサポートします。 ほぼそのまま使用できるラッパー・ファイル <samp class="file">vmgen-ex/profile.c</samp> も必要です。
+</p>
+<a class="index-entry-id" id="index-SUPER_005fEND-in-profiling"></a>
+<a class="index-entry-id" id="index-BB_005fBOUNDARY-in-profiling"></a>
+<p>プロファイラーは、すべての VM 制御フロー変更のターゲットを(実行中は <code class="code">SUPER_END</code> を通じて、 フロント・エンドでは
+<code class="code">BB_BOUNDARY</code> を通じて)記録し、(<code class="code">SUPER_END</code>
+を通じて)ターゲットにされた変更の頻度をカウントすることによって機能します。 プログラムの実行後、 各 VM
+基本ブロックが正しいカウントになるように数値が修正され(分岐を実行せずにブロックに入ってもカウントは増加しないという点を修正します)、
+すべての基本ブロックのサブ・シーケンスが出力されます。  これらすべてを取得するには、 <code class="code">SUPER_END</code> (および
+<code class="code">BB_BOUNDARY</code>) を適切に定義し、 <code class="code">file</code> にプロファイルを出力するときに
+<code class="code">vm_print_profile(FILE *file)</code> を呼び出すだけです。
+</p>
+<a class="index-entry-id" id="index-VM_005fIS_005fINST-in-profiling"></a>
+<p><samp class="file"><var class="var">file</var>-profile.i</samp> は逆アセンブラー・ファイルに似ており、<samp class="file">vmgen-ex/profile.c</samp>
+で定義された変数と関数に加えて、 VM 逆アセンブラー用すでに定義されている <code class="code">VM_IS_INST</code> を使用します(see <a class="pxref" href="#VM-disassembler">VM disassembler</a>)。
+</p>
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="Hints">
+<h2 class="chapter" id="Hints-1"><span>9 Hints<a class="copiable-link" href="#Hints-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-hints"></a>
+
+
+<hr>
+<div class="section-level-extent" id="Floating-point">
+<h3 class="section" id="Floating-point-1"><span>9.1 Floating point<a class="copiable-link" href="#Floating-point-1"> &para;</a></span></h3>
+
+<p>浮動小数点値をどのように扱うべきでしょうか？ あなたは整数/ポインターと同一のスタックを使用するべきでしょうか、
+それとも別のスタックを使用するべきでしょうか？ このセクションでは、 実行速度の観点からこの問題について説明します。
+</p>
+<p>より単純なアプローチは、 別の浮動小数点スタックを使用することです。  これにより、 整数/ポインターのサイズを考慮せずに  FP
+値のサイズを選択できるようになり、 多くのパフォーマンスの問題を回避できます。  主な欠点は、 これには FP
+スタック・ポインターが必要であることです(そして、 これは 386 アーキテクチャーのレジスター・ファイルに収まらない可能性があり、
+パフォーマンスが多少低下しますが、 他のオプションを考慮すると比較的わずかです)。  別の FP スタック(スタック・ポインタ <code class="code">fp</code>
+を使用)を使用する場合、 fpTOS の使用はほとんどのマシンで役に立ちますが、 一部のマシンでは fpTOS
+レジスタがメモリに配置(spill)されるため、 fpTOS を使用すべきではありません。
+</p>
+<p>もう一つのアプローチは、 整数/ポインターと浮動小数点値で 1 つのスタック(たとえば、<code class="code">sp</code> によってポイントされる)を共有することです。
+<code class="code">spTOS</code> を使用しなくても、 これは問題ありません。  <code class="code">spTOS</code> を使用する場合、
+コンパイラーはその変数を整数レジスターに入れるか浮動小数点レジスターに入れるかを決定する必要があり、
+他の型の操作はほとんどのマシンで非常に高価になります(整数レジスターと FP レジスターの間で値を移動するため、 かなり高価です)。  一方の型の値を、
+もう一方の型の 2 つの値(<code class="code">double</code> 型)から合成する必要がある場合、 事態はさらに興味深いものになります。
+</p>
+<p>この問題を回避する 1 つの方法は、Vmgen でサポートされている <code class="code">spTOS</code> を使用せず、 明示的なスタックのトップ変数(整数用に 1
+つ、 FP 値用に 1 つ)を使用し、 一種の アキュムレータ+スタック・アーキテクチャを使用することです。 (たとえば、 Ocaml
+バイト・コードはこのアプローチを使用します)。 ただし、 これは大きな変更であり、 その影響範囲は完全には明らかにはなっていません。
+</p>
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="The-future">
+<h2 class="chapter" id="The-future-1"><span>10 The future<a class="copiable-link" href="#The-future-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-future-ideas"></a>
+
+<p>Vmgen の将来のバージョンについては、 作者達はいくつかのアイデアを持っています。  ただし、できることはたくさんありますので、
+皆様からのフィードバックをお待ちしております。  あなたは Vmgen で何をしていますか？ 不足している機能はありませんか？
+</p>
+<p>私たちが考えているアイデアの 1 つは、 すべてのラッパー・ファイルをコピーして適応させる代わりに <samp class="file">.c</samp> ファイルを 1
+つだけ生成することです(型固有のマクロやスタック・ポインターなどをどこかで定義する必要があります)。 利点は、
+バージョン間でラッパー・ファイルを変更した場合に、 あなたの変更とそれらに対する我々の変更を統合する必要がないことです。 これにより Vmgen
+は初心者にとっても使いやすくなるでしょう。 その主な欠点は、Vmgen の柔軟性が少し低下することです (柔軟性を好む人は、
+現在ラッパー・ファイルに対して行っているように、 結果として得られる <samp class="file">.c</samp> ファイルにパッチを適用することもできます)。  いずれにせよ、
+生成された <samp class="file">.c</samp> ファイルのアプローチで問題を引き起こすようなことをラッパー・ファイルに対して行っている場合は、
+作者達までお知らせください。
+</p>
+<hr>
+</div>
+<div class="chapter-level-extent" id="Changes">
+<h2 class="chapter" id="Changes-1"><span>11 Changes<a class="copiable-link" href="#Changes-1"> &para;</a></span></h2>
+<a class="index-entry-id" id="index-Changes-from-old-versions"></a>
+
+<p>ユーザーに関係する変更点 0.5.9-20020822 → 0.5.9-20020901:
+</p>
+<p>ストアの最適化はデフォルトで無効になっていますが、 ユーザーが有効にすることができます(see <a class="pxref" href="#Store-Optimization">Store Optimization</a>)。
+この最適化に関するドキュメントも新しくなりました。
+</p>
+<p>ユーザーに関係する変更点 0.5.9-20010501 → 0.5.9-20020822:
+</p>
+<p>今やマニュアルがあります(info, HTML, Postscriot, or plain text format)。
+</p>
+<p>vmgen-ex サンプルのバリエーション vmgen-ex2 があります。 vmgen-ex2 では、
+多くのキャストの代わりに共用体型(union)が使用されます。
+</p>
+<p>この例の両方のバリエーションは、 ANSI C コンパイラでコンパイルできるようになりました(スイッチ・ディスパッチを使用するため、
+パフォーマンスがかなり低下します)。 <code class="command">lcc</code> でテストしました。
+</p>
+<p>Vmgen の gforth-0.5.9-20010501 バージョンのユーザーが現在のバージョンを使用するには、
+あなたのソース・コード内のいくつかの点を変更する必要があります。  変更が完了するまで、 gforth-0.5.9-20010501
+バージョンを保持しておくことをお勧めします(あなたは複数のバージョンの Gforth を同時にインストールできることに注意してください)。  今後は、
+このような互換性のない変更は避けたいと思っています。
+</p>
+<p>変更が必要な箇所:
+</p>
+<dl class="table">
+<dt><a id="index-TAIL_003b_002c-changes"></a><span><code class="code">TAIL;</code><a class="copiable-link" href="#index-TAIL_003b_002c-changes"> &para;</a></span></dt>
+<dd><p>は <code class="code">INST_TAIL;</code> に名前変更されました(偶然一致する可能性が低くなります)。
+</p>
+</dd>
+<dt><a id="index-vm_005fA2B_002c-changes"></a><span><code class="code">vm_<var class="var">A</var>2<var class="var">B</var></code><a class="copiable-link" href="#index-vm_005fA2B_002c-changes"> &para;</a></span></dt>
+<dd><p>いまや2つの引数を取ります。
+</p>
+</dd>
+<dt><a id="index-vm_005ftwoA2B_002c-changes"></a><span><code class="code">vm_two<var class="var">A</var>2<var class="var">B</var>(b,a1,a2);</code><a class="copiable-link" href="#index-vm_005ftwoA2B_002c-changes"> &para;</a></span></dt>
+<dd><p>vm_two<var class="var">A</var>2<var class="var">B</var>(a1,a2,b) に変更されました(&lsquo;<samp class="samp">;</samp>&rsquo; が無いことに注意してください)。
+</p>
+</dd>
+</dl>
+
+<p>また、 <code class="code">INST_ADDR</code> や <code class="code">LABEL</code> など、 いくつかの新しいマクロを定義する必要があります。
+一部のマクロは新しいコンテキストで定義する必要があります。 たとえば、 <code class="code">VM_IS_INST</code> は逆アセンブラーでも必要になります。
+</p>
+<hr>
+</div>
+<div class="chapter-level-extent" id="Contact">
+<h2 class="chapter" id="Contact-1"><span>12 Contact<a class="copiable-link" href="#Contact-1"> &para;</a></span></h2>
+
+<p>バグを報告するには、 <a class="url" href="https://savannah.gnu.org/bugs/?func=addbug&amp;group_id=2672">https://savannah.gnu.org/bugs/?func=addbug&amp;group_id=2672</a>
+を使用してください。
+</p>
+<p>Vmgen に関する議論(使用方法など) については、 メーリング・リスト
+<a class="email" href="mailto:bug-vmgen@mail.freesoftware.fsf.org">bug-vmgen@mail.freesoftware.fsf.org</a> を使用してください (購読には
+<a class="url" href="http://mail.gnu.org/mailman/listinfo/help-vmgen">http://mail.gnu.org/mailman/listinfo/help-vmgen</a> を使ってください)。
+</p>
+<p>vmgen の情報は、 <a class="url" href="http://www.complang.tuwien.ac.at/anton/vmgen/">http://www.complang.tuwien.ac.at/anton/vmgen/</a>
+で見つけることができます。
+</p>
+<hr>
+</div>
+<div class="appendix-level-extent" id="Copying-This-Manual">
+<h2 class="appendix" id="Copying-This-Manual-1"><span>Appendix A Copying This Manual<a class="copiable-link" href="#Copying-This-Manual-1"> &para;</a></span></h2>
+
+
+<hr>
+<div class="appendixsec-level-extent" id="GNU-Free-Documentation-License">
+<h3 class="appendixsec" id="GNU-Free-Documentation-License-1"><span>A.1 GNU Free Documentation License<a class="copiable-link" href="#GNU-Free-Documentation-License-1"> &para;</a></span></h3>
+<a class="index-entry-id" id="index-FDL_002c-GNU-Free-Documentation-License"></a>
+<div class="center">Version 1.2, November 2002
+</div>
+<div class="display">
+<pre class="display-preformatted">Copyright &copy; 2000,2001,2002 Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+</pre></div>
+
+<ol class="enumerate" start="0">
+<li> PREAMBLE
+
+<p>The purpose of this License is to make a manual, textbook, or other
+functional and useful document <em class="dfn">free</em> in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it,
+with or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible
+for modifications made by others.
+</p>
+<p>This License is a kind of &ldquo;copyleft&rdquo;, which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.
+</p>
+<p>We have designed this License in order to use it for manuals for free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.
+</p>
+</li><li> APPLICABILITY AND DEFINITIONS
+
+<p>This License applies to any manual or other work, in any medium, that
+contains a notice placed by the copyright holder saying it can be
+distributed under the terms of this License.  Such a notice grants a
+world-wide, royalty-free license, unlimited in duration, to use that
+work under the conditions stated herein.  The &ldquo;Document&rdquo;, below,
+refers to any such manual or work.  Any member of the public is a
+licensee, and is addressed as &ldquo;you&rdquo;.  You accept the license if you
+copy, modify or distribute the work in a way requiring permission
+under copyright law.
+</p>
+<p>A &ldquo;Modified Version&rdquo; of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.
+</p>
+<p>A &ldquo;Secondary Section&rdquo; is a named appendix or a front-matter section
+of the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document&rsquo;s overall
+subject (or to related matters) and contains nothing that could fall
+directly within that overall subject.  (Thus, if the Document is in
+part a textbook of mathematics, a Secondary Section may not explain
+any mathematics.)  The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.
+</p>
+<p>The &ldquo;Invariant Sections&rdquo; are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License.  If a
+section does not fit the above definition of Secondary then it is not
+allowed to be designated as Invariant.  The Document may contain zero
+Invariant Sections.  If the Document does not identify any Invariant
+Sections then there are none.
+</p>
+<p>The &ldquo;Cover Texts&rdquo; are certain short passages of text that are listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License.  A Front-Cover Text may
+be at most 5 words, and a Back-Cover Text may be at most 25 words.
+</p>
+<p>A &ldquo;Transparent&rdquo; copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, that is suitable for revising the document
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters.  A copy made in an otherwise Transparent file
+format whose markup, or absence of markup, has been arranged to thwart
+or discourage subsequent modification by readers is not Transparent.
+An image format is not Transparent if used for any substantial amount
+of text.  A copy that is not &ldquo;Transparent&rdquo; is called &ldquo;Opaque&rdquo;.
+</p>
+<p>Examples of suitable formats for Transparent copies include plain
+<small class="sc">ASCII</small> without markup, Texinfo input format, LaTeX input
+format, <abbr class="acronym">SGML</abbr> or <abbr class="acronym">XML</abbr> using a publicly available
+<abbr class="acronym">DTD</abbr>, and standard-conforming simple <abbr class="acronym">HTML</abbr>,
+PostScript or <abbr class="acronym">PDF</abbr> designed for human modification.  Examples
+of transparent image formats include <abbr class="acronym">PNG</abbr>, <abbr class="acronym">XCF</abbr> and
+<abbr class="acronym">JPG</abbr>.  Opaque formats include proprietary formats that can be
+read and edited only by proprietary word processors, <abbr class="acronym">SGML</abbr> or
+<abbr class="acronym">XML</abbr> for which the <abbr class="acronym">DTD</abbr> and/or processing tools are
+not generally available, and the machine-generated <abbr class="acronym">HTML</abbr>,
+PostScript or <abbr class="acronym">PDF</abbr> produced by some word processors for
+output purposes only.
+</p>
+<p>The &ldquo;Title Page&rdquo; means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page.  For works in
+formats which do not have any title page as such, &ldquo;Title Page&rdquo; means
+the text near the most prominent appearance of the work&rsquo;s title,
+preceding the beginning of the body of the text.
+</p>
+<p>A section &ldquo;Entitled XYZ&rdquo; means a named subunit of the Document whose
+title either is precisely XYZ or contains XYZ in parentheses following
+text that translates XYZ in another language.  (Here XYZ stands for a
+specific section name mentioned below, such as &ldquo;Acknowledgements&rdquo;,
+&ldquo;Dedications&rdquo;, &ldquo;Endorsements&rdquo;, or &ldquo;History&rdquo;.)  To &ldquo;Preserve the Title&rdquo;
+of such a section when you modify the Document means that it remains a
+section &ldquo;Entitled XYZ&rdquo; according to this definition.
+</p>
+<p>The Document may include Warranty Disclaimers next to the notice which
+states that this License applies to the Document.  These Warranty
+Disclaimers are considered to be included by reference in this
+License, but only as regards disclaiming warranties: any other
+implication that these Warranty Disclaimers may have is void and has
+no effect on the meaning of this License.
+</p>
+</li><li> VERBATIM COPYING
+
+<p>You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+</p>
+<p>You may also lend copies, under the same conditions stated above, and
+you may publicly display copies.
+</p>
+</li><li> COPYING IN QUANTITY
+
+<p>If you publish printed copies (or copies in media that commonly have
+printed covers) of the Document, numbering more than 100, and the
+Document&rsquo;s license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover.  Both covers must also clearly and legibly identify
+you as the publisher of these copies.  The front cover must present
+the full title with all words of the title equally prominent and
+visible.  You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.
+</p>
+<p>If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.
+</p>
+<p>If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a computer-network location from which the general network-using
+public has access to download using public-standard network protocols
+a complete Transparent copy of the Document, free of added material.
+If you use the latter option, you must take reasonably prudent steps,
+when you begin distribution of Opaque copies in quantity, to ensure
+that this Transparent copy will remain thus accessible at the stated
+location until at least one year after the last time you distribute an
+Opaque copy (directly or through your agents or retailers) of that
+edition to the public.
+</p>
+<p>It is requested, but not required, that you contact the authors of the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.
+</p>
+</li><li> MODIFICATIONS
+
+<p>You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it.  In addition, you must do these things in the Modified Version:
+</p>
+<ol class="enumerate" type="A" start="1">
+<li> Use in the Title Page (and on the covers, if any) a title distinct
+from that of the Document, and from those of previous versions
+(which should, if there were any, be listed in the History section
+of the Document).  You may use the same title as a previous version
+if the original publisher of that version gives permission.
+
+</li><li> List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified
+Version, together with at least five of the principal authors of the
+Document (all of its principal authors, if it has fewer than five),
+unless they release you from this requirement.
+
+</li><li> State on the Title page the name of the publisher of the
+Modified Version, as the publisher.
+
+</li><li> Preserve all the copyright notices of the Document.
+
+</li><li> Add an appropriate copyright notice for your modifications
+adjacent to the other copyright notices.
+
+</li><li> Include, immediately after the copyright notices, a license notice
+giving the public permission to use the Modified Version under the
+terms of this License, in the form shown in the Addendum below.
+
+</li><li> Preserve in that license notice the full lists of Invariant Sections
+and required Cover Texts given in the Document&rsquo;s license notice.
+
+</li><li> Include an unaltered copy of this License.
+
+</li><li> Preserve the section Entitled &ldquo;History&rdquo;, Preserve its Title, and add
+to it an item stating at least the title, year, new authors, and
+publisher of the Modified Version as given on the Title Page.  If
+there is no section Entitled &ldquo;History&rdquo; in the Document, create one
+stating the title, year, authors, and publisher of the Document as
+given on its Title Page, then add an item describing the Modified
+Version as stated in the previous sentence.
+
+</li><li> Preserve the network location, if any, given in the Document for
+public access to a Transparent copy of the Document, and likewise
+the network locations given in the Document for previous versions
+it was based on.  These may be placed in the &ldquo;History&rdquo; section.
+You may omit a network location for a work that was published at
+least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.
+
+</li><li> For any section Entitled &ldquo;Acknowledgements&rdquo; or &ldquo;Dedications&rdquo;, Preserve
+the Title of the section, and preserve in the section all the
+substance and tone of each of the contributor acknowledgements and/or
+dedications given therein.
+
+</li><li> Preserve all the Invariant Sections of the Document,
+unaltered in their text and in their titles.  Section numbers
+or the equivalent are not considered part of the section titles.
+
+</li><li> Delete any section Entitled &ldquo;Endorsements&rdquo;.  Such a section
+may not be included in the Modified Version.
+
+</li><li> Do not retitle any existing section to be Entitled &ldquo;Endorsements&rdquo; or
+to conflict in title with any Invariant Section.
+
+</li><li> Preserve any Warranty Disclaimers.
+</li></ol>
+
+<p>If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version&rsquo;s license notice.
+These titles must be distinct from any other section titles.
+</p>
+<p>You may add a section Entitled &ldquo;Endorsements&rdquo;, provided it contains
+nothing but endorsements of your Modified Version by various
+parties&mdash;for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.
+</p>
+<p>You may add a passage of up to five words as a Front-Cover Text, and a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity.  If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.
+</p>
+<p>The author(s) and publisher(s) of the Document do not by this License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.
+</p>
+</li><li> COMBINING DOCUMENTS
+
+<p>You may combine the Document with other documents released under this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice, and that you preserve all their Warranty Disclaimers.
+</p>
+<p>The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.
+</p>
+<p>In the combination, you must combine any sections Entitled &ldquo;History&rdquo;
+in the various original documents, forming one section Entitled
+&ldquo;History&rdquo;; likewise combine any sections Entitled &ldquo;Acknowledgements&rdquo;,
+and any sections Entitled &ldquo;Dedications&rdquo;.  You must delete all
+sections Entitled &ldquo;Endorsements.&rdquo;
+</p>
+</li><li> COLLECTIONS OF DOCUMENTS
+
+<p>You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.
+</p>
+<p>You may extract a single document from such a collection, and distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.
+</p>
+</li><li> AGGREGATION WITH INDEPENDENT WORKS
+
+<p>A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, is called an &ldquo;aggregate&rdquo; if the copyright
+resulting from the compilation is not used to limit the legal rights
+of the compilation&rsquo;s users beyond what the individual works permit.
+When the Document is included in an aggregate, this License does not
+apply to the other works in the aggregate which are not themselves
+derivative works of the Document.
+</p>
+<p>If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document&rsquo;s Cover Texts may be placed on
+covers that bracket the Document within the aggregate, or the
+electronic equivalent of covers if the Document is in electronic form.
+Otherwise they must appear on printed covers that bracket the whole
+aggregate.
+</p>
+</li><li> TRANSLATION
+
+<p>Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers.  In case of a disagreement between
+the translation and the original version of this License or a notice
+or disclaimer, the original version will prevail.
+</p>
+<p>If a section in the Document is Entitled &ldquo;Acknowledgements&rdquo;,
+&ldquo;Dedications&rdquo;, or &ldquo;History&rdquo;, the requirement (section 4) to Preserve
+its Title (section 1) will typically require changing the actual
+title.
+</p>
+</li><li> TERMINATION
+
+<p>You may not copy, modify, sublicense, or distribute the Document except
+as expressly provided for under this License.  Any other attempt to
+copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License.  However,
+parties who have received copies, or rights, from you under this
+License will not have their licenses terminated so long as such
+parties remain in full compliance.
+</p>
+</li><li> FUTURE REVISIONS OF THIS LICENSE
+
+<p>The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time.  Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.  See
+<a class="uref" href="http://www.gnu.org/copyleft/">http://www.gnu.org/copyleft/</a>.
+</p>
+<p>Each version of the License is given a distinguishing version number.
+If the Document specifies that a particular numbered version of this
+License &ldquo;or any later version&rdquo; applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.
+</p></li></ol>
+
+<div class="appendixsubsec-level-extent" id="ADDENDUM_003a-How-to-use-this-License-for-your-documents">
+<h4 class="appendixsubsec"><span>A.1.1 ADDENDUM: How to use this License for your documents<a class="copiable-link" href="#ADDENDUM_003a-How-to-use-this-License-for-your-documents"> &para;</a></span></h4>
+
+<p>To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and
+license notices just after the title page:
+</p>
+<div class="example smallexample">
+<div class="group"><pre class="example-preformatted">  Copyright (C)  <var class="var">year</var>  <var class="var">your name</var>.
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.  A copy of the license is included in the section entitled ``GNU
+  Free Documentation License''.
+</pre></div></div>
+
+<p>If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
+replace the &ldquo;with...Texts.&rdquo; line with this:
+</p>
+<div class="example smallexample">
+<div class="group"><pre class="example-preformatted">    with the Invariant Sections being <var class="var">list their titles</var>, with
+    the Front-Cover Texts being <var class="var">list</var>, and with the Back-Cover Texts
+    being <var class="var">list</var>.
+</pre></div></div>
+
+<p>If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
+</p>
+<p>If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License,
+to permit their use in free software.
+</p>
+
+
+
+<hr>
+</div>
+</div>
+</div>
+<div class="unnumbered-level-extent" id="Index">
+<h2 class="unnumbered" id="Index-1"><span>Index<a class="copiable-link" href="#Index-1"> &para;</a></span></h2>
+
+<div class="printindex cp-printindex">
+<table class="cp-letters-header-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Index_cp_symbol-1"><b>-</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_symbol-2"><b>\</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_symbol-3"><b>#</b></a>
+ &nbsp; 
+<br>
+<a class="summary-letter-printindex" href="#Index_cp_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-B"><b>B</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-D"><b>D</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-F"><b>F</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-G"><b>G</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-H"><b>H</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-I"><b>I</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-L"><b>L</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-M"><b>M</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-N"><b>N</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-O"><b>O</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-T"><b>T</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-U"><b>U</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-V"><b>V</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+<table class="cp-entries-printindex" border="0">
+<tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_symbol-1">-</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002ddisasm_002ei-output-file"><samp class="file">-disasm.i</samp> output file</a></td><td class="printindex-index-section"><a href="#VM-disassembler">VM disassembler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dgen_002ei-output-file"><samp class="file">-gen.i</samp> output file</a></td><td class="printindex-index-section"><a href="#VM-code-generation">VM code generation</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dh_002c-command_002dline-option">-h, command-line option</a></td><td class="printindex-index-section"><a href="#Invoking-Vmgen">Invoking Vmgen</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002d_002dhelp_002c-command_002dline-option">&ndash;help, command-line option</a></td><td class="printindex-index-section"><a href="#Invoking-Vmgen">Invoking Vmgen</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dlabels_002ei-output-file"><samp class="file">-labels.i</samp> output file</a></td><td class="printindex-index-section"><a href="#VM-instruction-table">VM instruction table</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dpeephole_002ei-output-file"><samp class="file">-peephole.i</samp> output file</a></td><td class="printindex-index-section"><a href="#Peephole-optimization">Peephole optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dprofile_002ei-output-file"><samp class="file">-profile.i</samp> output file</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dv_002c-command_002dline-option">-v, command-line option</a></td><td class="printindex-index-section"><a href="#Invoking-Vmgen">Invoking Vmgen</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002d_002dversion_002c-command_002dline-option">&ndash;version, command-line option</a></td><td class="printindex-index-section"><a href="#Invoking-Vmgen">Invoking Vmgen</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_002dvm_002ei-output-file"><samp class="file">-vm.i</samp> output file</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_symbol-2">\</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_005cC"><code class="code">\C</code></a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_005cE"><code class="code">\E</code></a></td><td class="printindex-index-section"><a href="#Eval-escapes">Eval escapes</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_symbol-3">#</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_0023-can-only-be-on-the-input-side-error"><code class="code"># can only be on the input side</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-_0023line"><code class="code">#line</code></a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-A">A</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-accessing-stack-_0028pointer_0029">accessing stack (pointer)</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-advantages-of-interpreters">advantages of interpreters</a></td><td class="printindex-index-section"><a href="#Why-interpreters_003f">Why interpreters?</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-advantages-of-vmgen">advantages of vmgen</a></td><td class="printindex-index-section"><a href="#Why-interpreters_003f">Why interpreters?</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-assumptions-about-C-code">assumptions about C code</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-B">B</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-basic-block_002c-VM-level">basic block, VM level</a></td><td class="printindex-index-section"><a href="#C-Code-Macros">C Code Macros</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-basic-type-of-a-stack">basic type of a stack</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-BB_005fBOUNDARY-in-profiling"><code class="code">BB_BOUNDARY</code> in profiling</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-branch-instruction_002c-VM">branch instruction, VM</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-C">C</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-C-code-restrictions">C code restrictions</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-C-escape">C escape</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-casts-example">casts example</a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-casts-in-type-cast-macros">casts in type cast macros</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Changes-from-old-versions">Changes from old versions</a></td><td class="printindex-index-section"><a href="#Changes">Changes</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-code-generation_002c-VM">code generation, VM</a></td><td class="printindex-index-section"><a href="#VM-code-generation">VM code generation</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-conditional-compilation-of-Vmgen-output">conditional compilation of Vmgen output</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-D">D</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-default-stack-of-a-type-prefix">default stack of a type prefix</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-defining-a-stack">defining a stack</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-defining-superinstructions">defining superinstructions</a></td><td class="printindex-index-section"><a href="#Superinstructions">Superinstructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-disasm_002ec"><samp class="file">disasm.c</samp></a></td><td class="printindex-index-section"><a href="#VM-disassembler">VM disassembler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-disassembler_002c-VM-code">disassembler, VM code</a></td><td class="printindex-index-section"><a href="#VM-disassembler">VM disassembler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Dispatch-of-VM-instructions">Dispatch of VM instructions</a></td><td class="printindex-index-section"><a href="#Dispatch">Dispatch</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-E">E</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-effect_002c-stack">effect, stack</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-efficiency-features-overview">efficiency features overview</a></td><td class="printindex-index-section"><a href="#Introduction">Introduction</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-eliminating-stack-stores">eliminating stack stores</a></td><td class="printindex-index-section"><a href="#Store-Optimization">Store Optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-engine">engine</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-engine_002ec"><samp class="file">engine.c</samp></a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-error-messages">error messages</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-escape-to-Forth">escape to Forth</a></td><td class="printindex-index-section"><a href="#Eval-escapes">Eval escapes</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-eval-escape">eval escape</a></td><td class="printindex-index-section"><a href="#Eval-escapes">Eval escapes</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-example-files">example files</a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-example-of-a-Vmgen_002dbased-interpreter">example of a Vmgen-based interpreter</a></td><td class="printindex-index-section"><a href="#Example">Example</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-example-overview">example overview</a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-executing-VM-code">executing VM code</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-explicit-stack-access">explicit stack access</a></td><td class="printindex-index-section"><a href="#Explicit-stack-access">Explicit stack access</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-F">F</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-FDL_002c-GNU-Free-Documentation-License">FDL, GNU Free Documentation License</a></td><td class="printindex-index-section"><a href="#GNU-Free-Documentation-License">GNU Free Documentation License</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-format_002c-input-file">format, input file</a></td><td class="printindex-index-section"><a href="#Input-File-Format">Input File Format</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-free_002dformat_002c-not">free-format, not</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-front_002dend">front-end</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-functionality-features-overview">functionality features overview</a></td><td class="printindex-index-section"><a href="#Introduction">Introduction</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-future-ideas">future ideas</a></td><td class="printindex-index-section"><a href="#The-future">The future</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-G">G</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-garbage-collection">garbage collection</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-generated-code_002c-usage">generated code, usage</a></td><td class="printindex-index-section"><a href="#Using-the-generated-code">Using the generated code</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-grammar_002c-input-file">grammar, input file</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-H">H</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-hints">hints</a></td><td class="printindex-index-section"><a href="#Hints">Hints</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-I">I</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-IMM_005fARG">IMM_ARG</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-immediate-argument_002c-VM-instruction">immediate argument, VM instruction</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-immediate-arguments">immediate arguments</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-immediate-arguments_002c-VM-code-generation">immediate arguments, VM code generation</a></td><td class="printindex-index-section"><a href="#VM-code-generation">VM code generation</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-include_002dskipped_002dinsts">include-skipped-insts</a></td><td class="printindex-index-section"><a href="#Superinstructions">Superinstructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-input-file-format">input file format</a></td><td class="printindex-index-section"><a href="#Input-File-Format">Input File Format</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-input-file-grammar">input file grammar</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction-pointer-definition">instruction pointer definition</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction-pointer_002c-access">instruction pointer, access</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction-stream">instruction stream</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction-stream-1">instruction stream</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction-stream_002c-basic-type">instruction stream, basic type</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction-table">instruction table</a></td><td class="printindex-index-section"><a href="#VM-instruction-table">VM instruction table</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction_002c-simple-VM">instruction, simple VM</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-instruction_002c-VM">instruction, VM</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-interpreters_002c-advantages">interpreters, advantages</a></td><td class="printindex-index-section"><a href="#Why-interpreters_003f">Why interpreters?</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Invoking-Vmgen">Invoking Vmgen</a></td><td class="printindex-index-section"><a href="#Invoking-Vmgen">Invoking Vmgen</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-IP_002c-IPTOS-in-disassmbler"><code class="code">IP</code>, <code class="code">IPTOS</code> in disassmbler</a></td><td class="printindex-index-section"><a href="#VM-disassembler">VM disassembler</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-L">L</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-labels-for-threaded-code">labels for threaded code</a></td><td class="printindex-index-section"><a href="#VM-instruction-table">VM instruction table</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-M">M</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-macros-recognized-by-Vmgen">macros recognized by Vmgen</a></td><td class="printindex-index-section"><a href="#C-Code-Macros">C Code Macros</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-main-interpreter-loop">main interpreter loop</a></td><td class="printindex-index-section"><a href="#Dispatch">Dispatch</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-modularization-of-interpreters">modularization of interpreters</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-N">N</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-newlines_002c-significance-in-syntax">newlines, significance in syntax</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-O">O</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-opcode-definition">opcode definition</a></td><td class="printindex-index-section"><a href="#VM-instruction-table">VM instruction table</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-opcode_002c-VM-instruction">opcode, VM instruction</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-optimization_002c-stack-stores">optimization, stack stores</a></td><td class="printindex-index-section"><a href="#Store-Optimization">Store Optimization</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-P">P</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-peephole-optimization">peephole optimization</a></td><td class="printindex-index-section"><a href="#Peephole-optimization">Peephole optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-peephole_002ec"><samp class="file">peephole.c</samp></a></td><td class="printindex-index-section"><a href="#Peephole-optimization">Peephole optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-prefix-for-this-combination-must-be-defined-earlier-error"><code class="code">prefix for this combination must be defined earlier</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-prefix_002c-stack">prefix, stack</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-prefix_002c-type">prefix, type</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-prefixes-of-superinstructions">prefixes of superinstructions</a></td><td class="printindex-index-section"><a href="#Superinstructions">Superinstructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-profile_002ec"><samp class="file">profile.c</samp></a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-profiling-example">profiling example</a></td><td class="printindex-index-section"><a href="#Using-profiling-to-create-superinstructions">Using profiling to create superinstructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-profiling-for-selecting-superinstructions">profiling for selecting superinstructions</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-R">R</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-reference-counting">reference counting</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-register-machine">register machine</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Register-VM">Register VM</a></td><td class="printindex-index-section"><a href="#Register-Machines">Register Machines</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-register_002c-VM">register, VM</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-restrictions-on-C-code">restrictions on C code</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-S">S</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-seq2rule_002eawk"><samp class="file">seq2rule.awk</samp></a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simple-VM-instruction">simple VM instruction</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-size_002c-stack-items">size, stack items</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-speed-for-JVM">speed for JVM</a></td><td class="printindex-index-section"><a href="#Introduction">Introduction</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-speed-of-interpreters">speed of interpreters</a></td><td class="printindex-index-section"><a href="#Why-interpreters_003f">Why interpreters?</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-access_002c-explicit">stack access, explicit</a></td><td class="printindex-index-section"><a href="#Explicit-stack-access">Explicit stack access</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-basic-type">stack basic type</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-caching">stack caching</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-caching_002c-restriction-on-C-code">stack caching, restriction on C code</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-definition">stack definition</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-effect">stack effect</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-growth-direction">stack growth direction</a></td><td class="printindex-index-section"><a href="#Stack-growth-direction">Stack growth direction</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-item-size">stack item size</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-machine">stack machine</a></td><td class="printindex-index-section"><a href="#Data-handling">Data handling</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Stack-pointer-access">Stack pointer access</a></td><td class="printindex-index-section"><a href="#Explicit-stack-access">Explicit stack access</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-pointer-definition">stack pointer definition</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-pointer_002c-access">stack pointer, access</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-prefix">stack prefix</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack-stores_002c-optimization">stack stores, optimization</a></td><td class="printindex-index-section"><a href="#Store-Optimization">Store Optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stack_002daccess_002dtransform"><code class="code">stack-access-transform</code></a></td><td class="printindex-index-section"><a href="#Stack-growth-direction">Stack growth direction</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-stat_002eawk"><samp class="file">stat.awk</samp></a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-store-optimization">store optimization</a></td><td class="printindex-index-section"><a href="#Store-Optimization">Store Optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-SUPER_005fEND-in-profiling"><code class="code">SUPER_END</code> in profiling</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-superinstructions-and-profiling">superinstructions and profiling</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-superinstructions-and-tracing">superinstructions and tracing</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-superinstructions-example">superinstructions example</a></td><td class="printindex-index-section"><a href="#Using-profiling-to-create-superinstructions">Using profiling to create superinstructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Superinstructions-for-register-VMs">Superinstructions for register VMs</a></td><td class="printindex-index-section"><a href="#Register-Machines">Register Machines</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-superinstructions_002c-defining">superinstructions, defining</a></td><td class="printindex-index-section"><a href="#Superinstructions">Superinstructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-superinstructions_002c-generating">superinstructions, generating</a></td><td class="printindex-index-section"><a href="#Peephole-optimization">Peephole optimization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-superinstructions_002c-restrictions-on-components">superinstructions, restrictions on components</a></td><td class="printindex-index-section"><a href="#C-Code-restrictions">C Code restrictions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-switch-dispatch">switch dispatch</a></td><td class="printindex-index-section"><a href="#Dispatch">Dispatch</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-sync-line-syntax-error"><code class="code">sync line syntax</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-sync-lines">sync lines</a></td><td class="printindex-index-section"><a href="#Input-File-Grammar">Input File Grammar</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-syntax-error_002c-wrong-char-error"><code class="code">syntax error, wrong char</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-T">T</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-TAIL_003b_002c-changes"><code class="code">TAIL;</code>, changes</a></td><td class="printindex-index-section"><a href="#Changes">Changes</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-threaded-code">threaded code</a></td><td class="printindex-index-section"><a href="#Dispatch">Dispatch</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-too-many-stacks-error"><code class="code">too many stacks</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-top-of-stack-caching">top of stack caching</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-TOS">TOS</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-tracing-of-register-VMs">tracing of register VMs</a></td><td class="printindex-index-section"><a href="#Register-Machines">Register Machines</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-tracing-VM-code">tracing VM code</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-type-cast-macro">type cast macro</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-type-casting-between-floats-and-integers">type casting between floats and integers</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-type-of-a-stack_002c-basic">type of a stack, basic</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-type-prefix">type prefix</a></td><td class="printindex-index-section"><a href="#Simple-instructions">Simple instructions</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-U">U</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-unions-example">unions example</a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-unions-in-type-cast-macros">unions in type cast macros</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-unknown-prefix-error"><code class="code">unknown prefix</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-unknown-primitive-error"><code class="code">unknown primitive</code> error</a></td><td class="printindex-index-section"><a href="#Error-messages">Error messages</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-Using-vmgen_002derated-code">Using vmgen-erated code</a></td><td class="printindex-index-section"><a href="#Using-the-generated-code">Using the generated code</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-V">V</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-virtual-machine">virtual machine</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM">VM</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-branch-instruction">VM branch instruction</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-code-generation">VM code generation</a></td><td class="printindex-index-section"><a href="#VM-code-generation">VM code generation</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-disassembler">VM disassembler</a></td><td class="printindex-index-section"><a href="#VM-disassembler">VM disassembler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-instruction">VM instruction</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-instruction-execution">VM instruction execution</a></td><td class="printindex-index-section"><a href="#VM-engine">VM engine</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-profiler">VM profiler</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM-register">VM register</a></td><td class="printindex-index-section"><a href="#Front-end-and-VM-interpreter">Front end and VM interpreter</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-vm_005fA2B_002c-changes"><code class="code">vm_<var class="var">A</var>2<var class="var">B</var></code>, changes</a></td><td class="printindex-index-section"><a href="#Changes">Changes</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-VM_005fIS_005fINST-in-profiling"><code class="code">VM_IS_INST</code> in profiling</a></td><td class="printindex-index-section"><a href="#VM-profiler">VM profiler</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-vm_005fprim_002c-definition"><code class="code">vm_prim</code>, definition</a></td><td class="printindex-index-section"><a href="#VM-instruction-table">VM instruction table</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-vm_005fprim_002c-use"><code class="code">vm_prim</code>, use</a></td><td class="printindex-index-section"><a href="#VM-code-generation">VM code generation</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-vm_005ftwoA2B_002c-changes"><code class="code">vm_two<var class="var">A</var>2<var class="var">B</var></code>, changes</a></td><td class="printindex-index-section"><a href="#Changes">Changes</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-vmgen_002dex"><samp class="file">vmgen-ex</samp></a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-vmgen_002dex2"><samp class="file">vmgen-ex2</samp></a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Index_cp_letter-W">W</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-wrapper-files">wrapper files</a></td><td class="printindex-index-section"><a href="#Example-overview">Example overview</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+</table>
+<table class="cp-letters-footer-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Index_cp_symbol-1"><b>-</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_symbol-2"><b>\</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_symbol-3"><b>#</b></a>
+ &nbsp; 
+<br>
+<a class="summary-letter-printindex" href="#Index_cp_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-B"><b>B</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-D"><b>D</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-F"><b>F</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-G"><b>G</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-H"><b>H</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-I"><b>I</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-L"><b>L</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-M"><b>M</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-N"><b>N</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-O"><b>O</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-T"><b>T</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-U"><b>U</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-V"><b>V</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Index_cp_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+</div>
+
+</div>
+</div>
+
+
+
+</body>
+</html>
